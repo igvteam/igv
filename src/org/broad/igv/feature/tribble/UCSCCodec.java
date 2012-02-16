@@ -19,6 +19,7 @@
 package org.broad.igv.feature.tribble;
 
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
@@ -36,9 +37,17 @@ import java.io.IOException;
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
     protected String[] tokens = new String[50];
-    protected int startBase = 0;
     protected boolean gffTags = false;
     FeatureFileHeader header;
+
+
+    /**
+     * The startBase of the FILE. This can only be 0 or 1.
+     * If this value is 1, then we assume the file is 1-based, and inclusive of start and end
+     * If this value is 0, then we assume the file is 0-based, inclusive of start, exclusive of end
+     * So the start positions need to have 1 subtracted in the case of startBase == 1.
+     */
+    protected int startOffsetValue = 0;
 
 
     /**
@@ -83,6 +92,15 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
                     // log.error("Error converting track type: " + tokens[1]);
                 }
             }
+        } else if (line.startsWith("#coords")) {
+            String[] tokens = Globals.equalPattern.split(line);
+            int cBase = Integer.parseInt(tokens[1].trim());
+            if(cBase == 0 || cBase == 1){
+                this.startOffsetValue = cBase;
+            }else{
+                throw new IllegalArgumentException("Found #coords tag with illegal value " + cBase + ". Must be 0 or 1");
+            }
+
         } else if (line.startsWith("#track") || line.startsWith("track")) {
             TrackProperties tp = new TrackProperties();
             ParsingUtils.parseTrackLine(line, tp);

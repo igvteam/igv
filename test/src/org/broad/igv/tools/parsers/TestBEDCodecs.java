@@ -19,6 +19,8 @@
 package org.broad.igv.tools.parsers;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
@@ -63,33 +65,33 @@ public class TestBEDCodecs {
     @Test
     public void testLargeBedNoHeader() throws Exception {
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.noheader.sorted.bed";
-        testUnigeneBed(bedFile, new BEDCodec());
+        tstUnigeneBed(bedFile, new BEDCodec());
 
-        testUnigeneBed(bedFile, new IGVBEDCodec());
+        tstUnigeneBed(bedFile, new IGVBEDCodec());
     }
 
     @Test
     public void testLargeBedWithHeader() throws Exception {
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.withheader.sorted.bed";
-        testUnigeneBed(bedFile, new BEDCodec());
+        tstUnigeneBed(bedFile, new BEDCodec());
 
-        testUnigeneBed(bedFile, new IGVBEDCodec());
+        tstUnigeneBed(bedFile, new IGVBEDCodec());
     }
 
     @Test
     public void testLargeBedWeirdHeader() throws Exception {
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.weirdheader.sorted.bed";
-        testUnigeneBed(bedFile, new BEDCodec());
+        tstUnigeneBed(bedFile, new BEDCodec());
 
-        testUnigeneBed(bedFile, new IGVBEDCodec());
+        tstUnigeneBed(bedFile, new IGVBEDCodec());
     }
 
     @Test
     public void testLargeBedNoTrack() throws Exception {
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.notrack.sorted.bed";
-        testUnigeneBed(bedFile, new BEDCodec());
+        tstUnigeneBed(bedFile, new BEDCodec());
 
-        testUnigeneBed(bedFile, new IGVBEDCodec());
+        tstUnigeneBed(bedFile, new IGVBEDCodec());
     }
 
     public void intervalTestFile(FeatureCodec codec) throws Exception {
@@ -118,14 +120,13 @@ public class TestBEDCodecs {
     }
 
 
-    public void testUnigeneBed(String bedFile, FeatureCodec codec) throws Exception {
+    public void tstUnigeneBed(String bedFile, FeatureCodec codec) throws Exception {
         //chr2:178,599,764-179,830,787 <- CONTAINS TTN
         int startOffset = 0;
         if (codec instanceof BEDCodec) {
             startOffset = ((BEDCodec) codec).getStartOffset();
         }
 
-        // Interval index
         TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
 
 
@@ -175,5 +176,19 @@ public class TestBEDCodecs {
         assertTrue(feat.getEnd() > feat.getStart());
         assertTrue("Start out of range", feat.getStart() >= start);
         assertTrue("end out of range", feat.getStart() <= end);
+    }
+    
+    
+    @Test
+    public void testLength1Feature() throws Exception{
+        String bedFile = TestUtils.DATA_DIR + "/bed/snp_calls.bed";
+        TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
+        FeatureCodec codec = CodecFactory.getCodec(bedFile, null);
+
+        AbstractFeatureReader<Feature> bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
+        for(Feature feat: bfr.iterator()){
+            BasicFeature f = (BasicFeature) feat;
+            assertEquals(1, f.getLength());
+        }
     }
 }

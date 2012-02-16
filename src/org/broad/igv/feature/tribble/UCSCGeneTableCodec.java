@@ -91,7 +91,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         String chrToken = tokens[chrColumn].trim();
         String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
 
-        int start = Integer.parseInt(tokens[startColumn]) - startBase;
+        int start = Integer.parseInt(tokens[startColumn]) - startOffsetValue;
         int end = Integer.parseInt(tokens[endColumn]);
         String strandString = tokens[strandColumn];
         Strand strand = Strand.NONE;
@@ -138,7 +138,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
                              Strand strand)
             throws NumberFormatException {
 
-        int cdStart = Integer.parseInt(tokens[cdStartColumn]) - startBase;
+        int cdStart = Integer.parseInt(tokens[cdStartColumn]) - startOffsetValue;
         int cdEnd = Integer.parseInt(tokens[cdEndColumn]);
 
         int exonCount = Integer.parseInt(tokens[exonCountColumn]);
@@ -151,7 +151,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         if (startsBuffer.length == endsBuffer.length) {
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
             for (int i = 0; i < startsBuffer.length; i++) {
-                int exonStart = Integer.parseInt(startsBuffer[i]) - startBase;
+                int exonStart = Integer.parseInt(startsBuffer[i]) - startOffsetValue;
                 int exonEnd = Integer.parseInt(endsBuffer[i]);
                 Exon exon = new Exon(chr, exonStart, exonEnd, strand);
                 exon.setCodingStart(cdStart);

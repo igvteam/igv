@@ -81,11 +81,12 @@ public class IGVBEDCodec extends UCSCCodec {
         String c = tokens[0];
         String chr = genome == null ? c : genome.getChromosomeAlias(c);
 
-        int start = Integer.parseInt(tokens[1]) - startBase;
+        //BED format, and IGV, use starting element as 0.
+        int start = Integer.parseInt(tokens[1]) - startOffsetValue;
 
         int end = start + 1;
         if (tokenCount > 2) {
-            end = Integer.parseInt(tokens[2]) - startBase;
+            end = Integer.parseInt(tokens[2]);
         }
 
         BasicFeature feature = new BasicFeature(chr, start, end);
@@ -200,7 +201,7 @@ public class IGVBEDCodec extends UCSCCodec {
     private void createExons(int start, String[] tokens, BasicFeature gene, String chr,
                              Strand strand) throws NumberFormatException {
 
-        int cdStart = Integer.parseInt(tokens[6]);
+        int cdStart = Integer.parseInt(tokens[6]) - startOffsetValue;
         int cdEnd = Integer.parseInt(tokens[7]);
 
         int exonCount = Integer.parseInt(tokens[9]);
