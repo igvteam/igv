@@ -86,14 +86,16 @@ public class GenomeImpl implements Genome {
 
 
     public String getChromosomeAlias(String str) {
-        if (chrAliasTable == null || str == null) {
+        if (str == null) {
             return str;
         } else {
             if (chrAliasTable.containsKey(str)) {
                 return chrAliasTable.get(str);
+            }else{
+                chrAliasTable.put(str, str);
+                return str;
             }
         }
-        return str;
     }
 
     public void loadUserDefinedAliases() {
