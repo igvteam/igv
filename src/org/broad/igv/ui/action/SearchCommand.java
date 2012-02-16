@@ -319,7 +319,7 @@ public class SearchCommand implements Command {
         //Simple feature
         String feature = chromo_string;
         //Amino acid mutation notation. e.g. KRAS:G12C
-        String featureMutAA = chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]";
+        String featureMutAA = chromo_string + ":[A-Z,a-z]" + num_withcommas + "[A-Z,a-z]";
 
         //Nucleotide mutation notation. e.g. KRAS:123A>T
         String nts = "[A,C,G,T,a,c,g,t]";

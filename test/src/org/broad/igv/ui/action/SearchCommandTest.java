@@ -93,7 +93,7 @@ public class SearchCommandTest {
 
     @Test
     public void testSingleFeatures() throws Exception {
-        String[] features = {"EGFR", "ABO", "BRCA1"};
+        String[] features = {"EGFR", "ABO", "BRCA1", "egFr"};
         tstFeatureTypes(features, SearchCommand.ResultType.FEATURE);
     }
 
@@ -105,7 +105,7 @@ public class SearchCommandTest {
      */
     @Test
     public void testFeatureMuts() throws Exception {
-        String[] features = {"EGFR:M1I", "EGFR:G5R"};
+        String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r"};
         tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
 
         String egfr_seq = "atgcgaccctccgggacggccggggcagcgctcctggcgctgctggctgcgctc";
