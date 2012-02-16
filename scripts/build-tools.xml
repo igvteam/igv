@@ -53,7 +53,7 @@
 
         <!-- Copy resource files to the tmp directory (.txt files, etc) -->
         <copy todir="${tmp.dir}" overwrite="true">
-            <fileset dir="${src.dir}">
+            <fileset dir="src">
                 <exclude name="**/*.form"/>
                 <exclude name="**/*.java"/>
                 <exclude name="**/*.svn"/>
