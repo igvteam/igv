@@ -19,13 +19,23 @@
 package org.broad.igv.cbio;
 
 import org.apache.commons.collections.Predicate;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -36,6 +46,14 @@ public class NetworkAnnotatorTest {
 
     private String localpath = TestUtils.DATA_DIR + "/tp53network.xml";
     private NetworkAnnotator annotator;
+
+//    //Copied on Feb 16, 2012, from "LoadFromServer" / Cancer Genome Atlas / GBM Subtypes
+//    public static final String[] data_urls = new String[]{
+//            "http://igv.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz",
+//    "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/",
+//    "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/unifiedScaled.tab.gz",
+//    "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz"
+//    };
 
     @Before
     public void setUp() {
@@ -70,6 +88,52 @@ public class NetworkAnnotatorTest {
         annotator.loadNetwork(localpath);
         int removed = annotator.filterNodes(tPred);
         assertTrue(removed > 0);
+    }
+    
+    @Test
+    public void testAnnotateAll() throws Exception{
+        //TODO Run this test headless
+        IGV igv = TestUtils.startGUI();
+        Genome genome = TestUtils.loadGenome();
+        
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml";
+        assertTrue(annotator.loadNetwork(networkPath));
+
+        //Load some tracks
+        String dataPath = TestUtils.DATA_DIR + "/seg/Broad.080528.subtypes.seg.gz";
+        ResourceLocator locator = new ResourceLocator(dataPath);
+        List<Track> tracks = new TrackLoader().load(locator, genome);
+        annotator.annotateAll(tracks);
+
+        //Check data
+        NodeList nodes = annotator.getNodes();
+        for(int nn=0; nn < nodes.getLength(); nn++){
+            Node node = nodes.item(nn);
+            for(String key: NetworkAnnotator.attribute_map.keySet()){
+                String data = NetworkAnnotator.getNodeKeyData(node, key);
+                String name = NetworkAnnotator.getNodeKeyData(node, NetworkAnnotator.LABEL);
+                if(!"CHMP3".equalsIgnoreCase(name)){
+                    assertNotNull(data);
+                }
+            }
+        }
+
+        //Check schema
+        Document doc = annotator.getDocument();
+        Node gml = doc.getFirstChild();
+        for(String key: NetworkAnnotator.attribute_map.keySet()){
+            String data = NetworkAnnotator.getNodeAttrValue(gml, "id", key);
+            assertNotNull(data);
+        }
+        
+
+        //Check valid XML
+        String outPath = TestUtils.DATA_DIR + "/out/test.xml"; 
+        assertTrue(annotator.writeDocument(outPath));
+        NetworkAnnotator at = new NetworkAnnotator();
+        assertTrue(at.loadNetwork(outPath));
+
+        TestUtils.stopGUI();
     }
 
 
