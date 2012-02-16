@@ -45,8 +45,11 @@ public class VCFWrapperCodec implements FeatureCodec {
 
     public Feature decode(String line) {
         VariantContext vc = (VariantContext) wrappedCodec.decode(line);
+        if(vc == null){
+            return null;
+        }
         String chr = genome == null ? vc.getChr() : genome.getChromosomeAlias(vc.getChr());
-        return vc == null ? null : new VCFVariant(vc, chr);
+        return new VCFVariant(vc, chr);
 
     }
 

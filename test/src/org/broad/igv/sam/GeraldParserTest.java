@@ -95,7 +95,7 @@ public class GeraldParserTest {
         assertEquals(34, result.getMappingQuality());
 
 
-        System.out.println(result.getReadName());
+        //System.out.println(result.getReadName());
 
     }
 
