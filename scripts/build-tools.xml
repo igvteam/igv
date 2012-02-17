@@ -26,6 +26,7 @@
     <property name="deploy.dir" value="igvtools-dist"/>
     <property name="genome.dir" value="../server/web/resources/prod/"/>
     <property name="version" value="v0.0"/>
+    <property name="build-number" value="0.0"/>
 
     <target name="extract-classes">
         <unzip dest="${tmp.dir}">
@@ -43,7 +44,9 @@
             <fileset id="jar.lib" dir="lib"/>
         </path>
         <echo message="Version ${version}"/>
+        <echo message="Build ${build-number}"/>
         <replace file="src/org/broad/igv/tools/IgvTools.java" token="@VERSION" value="${version}"/>
+        <replace file="src/org/broad/igv/tools/IgvTools.java" token="@BUILD" value="${build-number}"/>
 
     </target>
 

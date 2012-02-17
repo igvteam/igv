@@ -69,6 +69,7 @@ import java.util.*;
 public class IgvTools {
 
     static String version = "@VERSION";
+    static String build = "@BUILD";
 
     static final String CMD_TILE = "tile";
     static final String CMD_TOTDF = "totdf";
@@ -81,6 +82,14 @@ public class IgvTools {
     static final String CMD_HELP = "help";
 
     static Map<String, String> commandList = new HashMap<String, String>(9);
+    
+    public static String getVersionString(){
+        String out = "Version: " + version;
+        if("test".equals(version)){
+            out += " Build: " + build;
+        }
+        return out;
+    }
 
     static {
         String typ_end = "[options] inputFile outputFile genome\n";
@@ -192,7 +201,7 @@ public class IgvTools {
     static String usageString() {
         StringBuffer buf = new StringBuffer();
 
-        buf.append("\nProgram: igvtools. Version " + version + "\n\n");
+        buf.append("\nProgram: igvtools. "  + getVersionString() + "\n\n");
         buf.append("Usage: igvtools [command] [options] [input file/dir] [other arguments]\n\n");
         buf.append("Command:");
         for (String c : commandDocs) {
@@ -280,7 +289,7 @@ public class IgvTools {
 
         // Do "version" now, its the only command with no arguments
         if (command.equals(CMD_VERSION)) {
-            System.out.println("Version " + version);
+            System.out.println(getVersionString());
             return;
         }
 
