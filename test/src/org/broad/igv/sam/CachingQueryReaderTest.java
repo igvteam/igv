@@ -25,8 +25,10 @@ package org.broad.igv.sam;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
@@ -46,9 +48,10 @@ public class CachingQueryReaderTest {
 
     String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
     String sequence = "chr1";
-    int start = 44780145 - 100000;
+    int start = 44680145;
     int end = 44789983;
-    private boolean contained = false;;
+    private boolean contained = false;
+    ;
 
     public CachingQueryReaderTest() {
     }
@@ -104,18 +107,34 @@ public class CachingQueryReaderTest {
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
         CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
-        //TODO the results may be returned in a different order. Not sure if that's a bug or not
+
         Map<String, Alignment> expectedResult = new HashMap();
         while (iter.hasNext()) {
             Alignment rec = iter.next();
+
+            // the following filters are applied in teh Caching reader, so we need to apply them here.
+            boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
+            ReadGroupFilter filter = ReadGroupFilter.getFilter();
+            boolean showDuplicates = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
+            int qualityThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
+            if (!rec.isMapped() || (!showDuplicates && rec.isDuplicate()) ||
+                    (filterFailedReads && rec.isVendorFailedRead()) ||
+                    rec.getMappingQuality() < qualityThreshold ||
+                    (filter != null && filter.filterAlignment(rec))) {
+                continue;
+            }
+
             expectedResult.put(rec.getReadName(), rec);
+            assertTrue(rec.getStart() >= start);
+            assertTrue(rec.getEnd() < end);
+            assertEquals(sequence, rec.getChr());
         }
         reader.close();
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end,
-                new ArrayList(), new ArrayList(), 100, null);
+        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
+                new ArrayList(), 100, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -123,14 +142,21 @@ public class CachingQueryReaderTest {
         }
         cachingReader.close();
 
+
         assertTrue(expectedResult.size() > 0);
         assertEquals(expectedResult.size(), result.size());
         for (int i = 0; i < result.size(); i++) {
-            Alignment res = result.get(i);
-            assertTrue(expectedResult.containsKey(res.getReadName()));
-            Alignment exp = expectedResult.get(res.getReadName());
-            assertEquals(exp.getAlignmentStart(), res.getAlignmentStart());
-            assertEquals(exp.getAlignmentEnd(), res.getAlignmentEnd());
+            Alignment rec = result.get(i);
+            assertTrue(rec.getStart() >= start);
+            assertTrue(rec.getEnd() < end);
+            assertEquals(sequence, rec.getChr());
+
+            assertTrue(expectedResult.containsKey(rec.getReadName()));
+            Alignment exp = expectedResult.get(rec.getReadName());
+            assertEquals(exp.getAlignmentStart(), rec.getAlignmentStart());
+            assertEquals(exp.getAlignmentEnd(), rec.getAlignmentEnd());
+
+
         }
     }
 }
