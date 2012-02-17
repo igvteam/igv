@@ -216,22 +216,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(SAVE_IMAGE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
-
-        // Export Regions
-        menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Import Regions
-        menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGV.getInstance());
-        menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Import Regions
-        menuAction = new ClearRegionsMenuAction("Clear Regions ...", IGV.getInstance());
-        menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // batch script
         menuItems.add(new JSeparator());
@@ -497,6 +481,24 @@ public class IGVMenuBar extends JMenuBar {
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuItems.add(new JSeparator());
+
+         // Export Regions
+         menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
+         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
+         // Import Regions
+         menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGV.getInstance());
+         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
+         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+         // Import Regions
+//         menuAction = new ClearRegionsMenuAction("Clear Regions ...", IGV.getInstance());
+//         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
+//         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         MenuAction dataMenuAction = new MenuAction("Regions", null, KeyEvent.VK_V);
         viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
