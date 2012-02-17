@@ -26,6 +26,7 @@ import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
@@ -41,6 +42,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +65,20 @@ public class NetworkAnnotator {
     public static final String KEY = "key";
     public static final String LABEL = "label";
 
+    /**
+     * URL that cbio will use when service is released
+     */
+    public static final String REAL_URL = "http://www.cbioportal.org/public-portal/webservice.do";
+    /**
+     * URL they use for testing
+     */
+    public static final String BASE_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    private static final String common_parms = "format=gml&gzip=on";
+    private static final String GENE_LIST = "gene_list";
+    
+
     static Map<String, RegionScoreType> attribute_map = new HashMap();
+
     static{
         attribute_map.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
         attribute_map.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
@@ -98,6 +113,17 @@ public class NetworkAnnotator {
         percentAltered = totalAltered / numberSamples;
         float avgScore = totalScore / numberSamples;
         return new ScoreData(avgScore, percentAltered);
+    }
+
+    public static NetworkAnnotator getFromCBIO(Iterable<String> geneList){
+        String query = HttpUtils.buildURLString(geneList, "+");
+        String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
+        NetworkAnnotator annotator = new NetworkAnnotator();
+        if(annotator.loadNetwork(url)){
+            return annotator;
+        }else{
+            return null;
+        }
     }
 
     /**

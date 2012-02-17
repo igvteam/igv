@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
@@ -61,8 +62,9 @@ public class NetworkAnnotatorTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception{
         annotator = null;
+        TestUtils.clearOutputDir();
     }
 
     @Test
@@ -89,6 +91,18 @@ public class NetworkAnnotatorTest {
         int removed = annotator.filterNodes(tPred);
         assertTrue(removed > 0);
     }
+
+    /**
+     * Load some data from cbio.
+     * Checks that we are looking at the right urls
+     * @throws Exception
+     */
+    @Test
+    public void testDownloadCBIO() throws Exception{
+        String[] gene_list = new String[]{"egfr", "brca1", "jun"};
+        NetworkAnnotator anno = NetworkAnnotator.getFromCBIO(Arrays.asList(gene_list));
+        assertNotNull(anno);
+    }
     
     @Test
     public void testAnnotateAll() throws Exception{
@@ -96,7 +110,7 @@ public class NetworkAnnotatorTest {
         IGV igv = TestUtils.startGUI();
         Genome genome = TestUtils.loadGenome();
         
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml";
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
         assertTrue(annotator.loadNetwork(networkPath));
 
         //Load some tracks
