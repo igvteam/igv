@@ -28,6 +28,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -121,6 +122,9 @@ public class CommandExecutor {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equals("tofront")) {
                     return bringToFront();
+                } else if (cmd.equalsIgnoreCase("viewaspairs")){
+                    //TODO Allow user to name a specific track
+                     return setViewAsPairs(param1);
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
@@ -147,6 +151,18 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
+    }
+
+    private String setViewAsPairs(String param1) {
+        List<Track> tracks = igv.getAllTracks(false);
+        boolean vAP = "false".equalsIgnoreCase(param1) ? false : true;
+        for(Track track: tracks){
+            if(track instanceof AlignmentTrack){
+                AlignmentTrack atrack = (AlignmentTrack) track;
+                atrack.setViewAsPairs(vAP);
+            }
+        }
+        return "OK";
     }
 
     private String gotoImmediate(List<String> args) {

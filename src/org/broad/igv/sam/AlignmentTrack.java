@@ -669,6 +669,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
+    public void setViewAsPairs(boolean vAP){
+        // TODO -- generalize this test to all incompatible pairings
+        if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {
+            boolean ungroup = MessageUtils.confirm("\"View as pairs\" is incompatible with \"Group by strand\". Ungroup?");
+            if (ungroup) {
+                renderOptions.groupByOption = null;
+            } else {
+                return;
+            }
+        }
+
+        dataManager.setViewAsPairs(vAP, renderOptions.groupByOption, renderOptions.getGroupByTag());
+        refresh();
+    }
+
     public static class RenderOptions {
         boolean shadeBases;
         boolean shadeCenters;
@@ -1446,25 +1461,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         public void addViewAsPairsMenuItem() {
-            // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
             item.setSelected(dataManager.isViewAsPairs());
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     boolean viewAsPairs = item.isSelected();
-
-                    // TODO -- generalize this test to all incompatible pairings
-                    if (viewAsPairs && renderOptions.groupByOption == GroupOption.STRAND) {
-                        boolean ungroup = MessageUtils.confirm("\"View as pairs\" is incompatible with \"Group by strand\". Ungroup?");
-                        if (ungroup) {
-                            renderOptions.groupByOption = null;
-                        } else {
-                            return;
-                        }
-                    }
-
-                    dataManager.setViewAsPairs(item.isSelected(), renderOptions.groupByOption, renderOptions.getGroupByTag());
-                    refresh();
+                    setViewAsPairs(viewAsPairs);
                 }
             });
             item.setEnabled(dataManager.isPairedEnd());
