@@ -98,7 +98,7 @@ public class IgvTools {
         String wsize = "-w, --windowSize [wz]\tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
         String ext = "-e, --extFactor [ef]\tThe read or feature is extended by the specified distance in bp prior to counting\n";
         String readstr = "--strands [arg] \t By default, counting is combined among both strands. " +
-                            " Setting outputs the count for each strand separately. \n" +
+                            " Setting outputs the count for each strand separately." +
                             " Legal argument values are 'read' or 'first'." +
                             " 'read' Separates count by 'read' strand, 'first' uses the first in pair strand\n";
         String bases = "--bases \t Count the occurrence of each base (A,G,C,T,N). Takes no arguments\n";
@@ -141,8 +141,7 @@ public class IgvTools {
             "count   compute coverage density for an alignment file",
             "formatexp  center, scale, and log2 normalize an expression file",
             "gui      Start the gui",
-            "help     display this help message, or help on a specific command",
-            "help <command>    display help on a specific command",
+            "help <command>     display this help message, or help on a specific command",
             "See http://www.broadinstitute.org/software/igv/igvtools_commandline for more detailed help"
     };
     public static final int MAX_RECORDS_IN_RAM = 500000;
@@ -264,6 +263,7 @@ public class IgvTools {
             } else {
                 System.out.println(usageString());
             }
+            return;
         }
 
         if (command.equals(CMD_GUI)) {
