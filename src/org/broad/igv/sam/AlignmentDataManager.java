@@ -54,13 +54,14 @@ public class AlignmentDataManager {
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
-    private SpliceJunctionFinderTrack spliceJunctionTrack;
     private int maxLevels;
 
 
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
     Map<String, PEStats> peStats;
+
+    private boolean showSpliceJunctions;
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -69,7 +70,12 @@ public class AlignmentDataManager {
         maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
+        showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         initChrMap(genome);
+    }
+
+    public void setShowSpliceJunctions(boolean showSpliceJunctions) {
+        this.showSpliceJunctions = showSpliceJunctions;
     }
 
     /**
@@ -116,11 +122,6 @@ public class AlignmentDataManager {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
-    }
-
-
-    public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
-        this.spliceJunctionTrack = spliceJunctionTrack;
     }
 
     /**
@@ -317,10 +318,13 @@ public class AlignmentDataManager {
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
                     List<AlignmentCounts> counts = new ArrayList();
-                    List<SpliceJunctionFeature> spliceJunctions = new ArrayList<SpliceJunctionFeature>();
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions,
-                            maxLevels, peStats);
+                    List<SpliceJunctionFeature> spliceJunctions = null;
+                    if (showSpliceJunctions) {
+                        spliceJunctions = new ArrayList<SpliceJunctionFeature>();
+                    }
+
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, maxLevels, peStats);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
@@ -429,5 +433,8 @@ public class AlignmentDataManager {
         }
     }
 
+    public boolean isShowSpliceJunctions() {
+        return showSpliceJunctions;
+    }
 }
 
