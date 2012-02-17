@@ -95,10 +95,19 @@ public class IgvTools {
         commandList.put(CMD_TILE, tstring);
 
         String countstring = "Usage: igvtools count " + typ_end;
-        String wsize = "-w, --windowSize \tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
-        String ext = "-e, --extFactor \tThe read or feature is extended by the specified distance in bp prior to counting\n";
-        //TODO MORE OPTIONS
-        countstring += zoom += wfunc += wsize += ext;
+        String wsize = "-w, --windowSize [wz]\tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
+        String ext = "-e, --extFactor [ef]\tThe read or feature is extended by the specified distance in bp prior to counting\n";
+        String readstr = "--strands [arg] \t By default, counting is combined among both strands. " +
+                            " Setting outputs the count for each strand separately. \n" +
+                            " Legal argument values are 'read' or 'first'." +
+                            " 'read' Separates count by 'read' strand, 'first' uses the first in pair strand\n";
+        String bases = "--bases \t Count the occurrence of each base (A,G,C,T,N). Takes no arguments\n";
+        String query = "--query [querystring] \t Only count a specific region. Query string has syntax " +
+                " <chr>:<start>-<end>. e.g. chr1:100-1000. Input file must be indexed.\n";
+        String minMap = "--minMapQuality [mqual]\t Set the minimum mapping quality of reads to include. Default is 0.\n";
+        String includeDups = "--includeDuplicates \t Include duplicate alignments in count. Default false." +
+                 " If this flag is included, duplicates are counted. Takes no arguments\n";
+        countstring += zoom += wfunc += wsize += ext += readstr += bases += query += minMap += includeDups;
         commandList.put(CMD_COUNT, countstring);
 
         String indexstring = "Usage: igvtools index inputFile\n";
@@ -133,6 +142,7 @@ public class IgvTools {
             "formatexp  center, scale, and log2 normalize an expression file",
             "gui      Start the gui",
             "help     display this help message, or help on a specific command",
+            "help <command>    display help on a specific command",
             "See http://www.broadinstitute.org/software/igv/igvtools_commandline for more detailed help"
     };
     public static final int MAX_RECORDS_IN_RAM = 500000;
@@ -458,7 +468,7 @@ public class IgvTools {
                 windowSizeOption = parser.addIntegerOption('w', "windowSize");
 
                 separateBasesOption = parser.addBooleanOption("bases");
-                strandOption = parser.addStringOption("strand");
+                strandOption = parser.addStringOption("strands");
                 queryStringOpt = parser.addStringOption("query");
                 minMapQualityOpt = parser.addStringOption("minMapQuality");
                 includeDupsOpt = parser.addStringOption("includeDuplicates");
@@ -488,9 +498,12 @@ public class IgvTools {
         countFlags += (Boolean) parser.getOptionValue(includeDupsOpt, false) ? CoverageCounter.INCLUDE_DUPS : 0;
         String strandopt = (String) parser.getOptionValue(strandOption, "");
         if (strandopt.equals("read")) {
-            countFlags += CoverageCounter.STRAND_SEPARATE;
+            countFlags += CoverageCounter.STRANDS_BY_READ;
         } else if (strandopt.equals("first")) {
-            countFlags += CoverageCounter.FIRST_IN_PAIR;
+            countFlags += CoverageCounter.STRANDS_BY_FIRST_IN_PAIR;
+        }else if (strandopt.equals("second")) {
+            System.out.println("Warning: 'second' Option undocumented and may be removed in the future. BE WARNED!");
+            countFlags += CoverageCounter.STRANDS_BY_SECOND_IN_PAIR;
         }
         return countFlags;
     }

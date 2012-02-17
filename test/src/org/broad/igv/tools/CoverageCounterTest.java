@@ -23,6 +23,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.tools.CoverageCounter.*;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -101,7 +102,13 @@ public class CoverageCounterTest {
         Genome genome = this.genome;
 
 
-        int[] countFlags = new int[]{0x0, 0x01, 0x04, 0x08, 0xC, 0x1C, 0x05, 0x02};
+        int[] countFlags = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR,
+                                    CoverageCounter.BASES,
+                                    CoverageCounter.INCLUDE_DUPS, CoverageCounter.BASES + CoverageCounter.STRANDS_BY_READ,
+                                    CoverageCounter.BASES + CoverageCounter.STRANDS_BY_FIRST_IN_PAIR};
+        //We specifically do not test this, because it's unreliable. Some alignments default to assuming they
+        //are the first in pair, but let secondinpair be none
+        //countFlags = new int[]{CoverageCounter.STRANDS_BY_SECOND_IN_PAIR};
         int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, expTot, expTot};
 
         for (int ii = 0; ii < countFlags.length; ii++) {
@@ -127,7 +134,7 @@ public class CoverageCounterTest {
         Genome genome = this.genome;
         //Test that when we run the process twice, with separate and totalled strands, the results add
         //up properly
-        int[] strandOptions = new int[]{0, CoverageCounter.STRAND_SEPARATE};
+        int[] strandOptions = new int[]{0, CoverageCounter.STRANDS_BY_READ};
         int[] expected_cols = new int[]{1, 2};
         TestDataConsumer[] tdcs = new TestDataConsumer[2];
 
@@ -163,7 +170,7 @@ public class CoverageCounterTest {
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
-        int strandOptions = CoverageCounter.STRAND_SEPARATE + CoverageCounter.BASES;
+        int strandOptions = CoverageCounter.STRANDS_BY_READ + CoverageCounter.BASES;
         CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, null, 0, strandOptions);
         cc.parse();
 
@@ -210,7 +217,7 @@ public class CoverageCounterTest {
         //All possible combinations of STRAND_XXX flags
         int[] strandops = new int[2];
         strandops[0] = 0;
-        strandops[1] = CoverageCounter.STRAND_SEPARATE;
+        strandops[1] = CoverageCounter.STRANDS_BY_READ;
 
 //        String[] otherflags = new String[]{CoverageCounter.FIRST_IN_PAIR, CoverageCounter.BASES,
 //                CoverageCounter.FIRST_IN_PAIR + CoverageCounter.BASES};

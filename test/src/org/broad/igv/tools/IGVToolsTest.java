@@ -248,7 +248,7 @@ public class IGVToolsTest {
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
 
-        String[] opts = new String[]{"", "--bases", "--strand=read", "--strand=first", "--strand=read --bases"};
+        String[] opts = new String[]{"", "--bases", "--strands=read", "--strands=first", "--strands=read --bases"};
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             int winsize = 5;
@@ -335,7 +335,7 @@ public class IGVToolsTest {
         String outputFile = TestUtils.DATA_DIR + "/out/file_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
-        String[] opts = new String[]{"--strand=read", "--strand=first", ""};
+        String[] opts = new String[]{"--strands=read", "--strands=first", ""};
 
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];

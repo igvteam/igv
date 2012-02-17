@@ -71,24 +71,33 @@ public class CoverageCounter {
 
     /*
      * Output data from each strand separately (as opposed to combining them)
+     * using the read strand.
      */
-    static final int STRAND_SEPARATE = 0x01;
+    static final int STRANDS_BY_READ = 0x01;
+
     /*
-     * Gather data by first read/second read,
-     * instead of by positive/negative (if this flag is unset)
+     * Output strand data separately by first-in-pair
      */
-    static final int FIRST_IN_PAIR = 0x02;
+    static final int STRANDS_BY_FIRST_IN_PAIR = 0x02;
+
+    /**
+     * Output strand data separately by second-in-pair
+     *
+     */
+    static final int STRANDS_BY_SECOND_IN_PAIR = 0x04;
+
     /**
      * Output counts of each base. Whether the data will be output
      * for each strand separately is determined by STRAND_SEPARATE
      * by
      */
-    static final int BASES = 0x04;
+    static final int BASES = 0x08;
 
-    public static final Integer INCLUDE_DUPS = 0x10;
+    public static final Integer INCLUDE_DUPS = 0x20;
 
     private boolean outputSeparate;
     private boolean firstInPair;
+    private boolean secondInPair;
     private boolean outputBases;
 
     private static final int[] output_strands = new int[]{0, 1};
@@ -191,15 +200,22 @@ public class CoverageCounter {
             this.interval = new Locus(queryString);
         }
         this.minMappingQuality = minMapQual;
-        outputSeparate = (countFlags & STRAND_SEPARATE) > 0;
-        firstInPair = (countFlags & FIRST_IN_PAIR) > 0;
+        outputSeparate = (countFlags & STRANDS_BY_READ) > 0;
+        firstInPair = (countFlags & STRANDS_BY_FIRST_IN_PAIR) > 0;
+        secondInPair = (countFlags & STRANDS_BY_SECOND_IN_PAIR) > 0;
+        outputSeparate |= firstInPair || secondInPair;
+        if(firstInPair && secondInPair){
+            throw new IllegalArgumentException("Can't set both first and second in pair");
+        }
         outputBases = (countFlags & BASES) > 0;
+        includeDuplicates = (countFlags & INCLUDE_DUPS) > 0;
     }
 
 
     // TODO -- command-line options to override all of these checks
     private boolean passFilter(Alignment alignment) {
-        boolean pairingInfo = !firstInPair || (alignment.getFirstOfPairStrand() != Strand.NONE);
+        boolean pairingInfo = (!firstInPair && !secondInPair) ||
+                (alignment.getFirstOfPairStrand() != Strand.NONE);
 
         return alignment.isMapped() && pairingInfo &&
                 (includeDuplicates || !alignment.isDuplicate()) &&
@@ -244,11 +260,14 @@ public class CoverageCounter {
                 Alignment alignment = iter.next();
                 if (passFilter(alignment)) {
                     //Sort into the read strand or first-in-pair strand,
-                    //depending on input flag
+                    //depending on input flag. Note that this can
+                    //be very unreliable depending on data
                     Strand strand;
                     if (firstInPair) {
                         strand = alignment.getFirstOfPairStrand();
-                    } else {
+                    }else if (secondInPair){
+                        strand = alignment.getSecondOfPairStrand();
+                    }else {
                         strand = alignment.getReadStrand();
                     }
                     if (strand.equals(Strand.NONE)) {
