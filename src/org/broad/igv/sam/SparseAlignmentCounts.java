@@ -49,9 +49,9 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     private IntArrayList totalQ;
 
 
-    public SparseAlignmentCounts(int start, int end) {
+    public SparseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-        super(start, end);
+        super(start, end, bisulfiteContext);
 
         indexMap = new HashMap<Integer, Integer>(1000);
         posA = new IntArrayList(1000);

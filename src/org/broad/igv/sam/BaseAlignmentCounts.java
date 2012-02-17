@@ -31,8 +31,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     private BisulfiteCounts bisulfiteCounts;
 
 
-
-    public BaseAlignmentCounts(int start, int end) {
+    public BaseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
         final PreferenceManager prefs = PreferenceManager.getInstance();
         String snpsFile = prefs.get(PreferenceManager.KNOWN_SNPS, null);
         if (snpsFile != null && knownSnps == null) {
@@ -41,8 +40,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         this.start = start;
         this.end = end;
 
-        // TODO -- experiment
-       // bisulfiteCounts = new BisulfiteCounts(AlignmentTrack.BisulfiteContext.CG, IGV.getInstance().getGenomeManager().getCurrentGenome());
+        // TODO -- experimental.  Needs to be done optional, and with the correct context.
+        bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, IGV.getInstance().getGenomeManager().getCurrentGenome());
     }
 
 
@@ -67,7 +66,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
      */
     public void incCounts(Alignment alignment) {
 
-        if(bisulfiteCounts != null) {
+        if (bisulfiteCounts != null) {
             bisulfiteCounts.incrementCounts(alignment);
         }
 

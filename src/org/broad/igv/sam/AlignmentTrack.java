@@ -69,6 +69,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
 
+    public enum ExperimentType {
+        RNA, BISULFITE, OTHER
+    }
 
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
@@ -85,6 +88,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public enum BisulfiteContext {
         CG, CHH, CHG, HCG, GCH, WCG
     }
+
 
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();
 
@@ -108,14 +112,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
 
-    public static final int MIN_ALIGNMENT_SPACING = 10;
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
     static final boolean DEFAULT_SHOWALLBASES = false;
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
-
-    //private static GroupOption groupByOption = null;
-    //private static ColorOption colorByOption = null;
-    //private static BisulfiteContext bisulfiteContext = null;
 
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
@@ -134,10 +133,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private int selectionColorIndex = 0;
     private int minHeight = 100;
     private AlignmentDataManager dataManager;
-    Genome genome;
 
-    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
-    // directory,  so this field might be null at any given time.  It is updated each repaint.
+    private Genome genome;
+
+    // The "parent" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
     DataPanel parent;
 
 
@@ -172,6 +171,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions = new RenderOptions();
 
+        if(renderOptions.getColorOption() == ColorOption.BISULFITE) {
+            setExperimentType(ExperimentType.BISULFITE);
+        }
+
         // Register track
         if (!Globals.isHeadless()) {
             IGV.getInstance().addAlignmentTrackEventListener(this);
@@ -179,6 +182,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
+    /**
+     * Set the experiment type (RNA, Bisulfite, or OTHER)
+     *
+     * @param type
+     */
+    public void setExperimentType(ExperimentType type) {
+        dataManager.setExperimentType(type);
+        if(spliceJunctionTrack != null) {
+            spliceJunctionTrack.setVisible(type != ExperimentType.BISULFITE);
+        }
+    }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
@@ -190,6 +204,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
+        if(dataManager.getExperimentType() == ExperimentType.BISULFITE) {
+            spliceJunctionTrack.setVisible(false);
+        }
     }
 
     public void setRenderer(FeatureRenderer renderer) {
@@ -257,7 +274,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         try {
             log.debug("Render features");
             Map<String, List<AlignmentInterval.Row>> groups =
-                    dataManager.getGroups(context, renderOptions.groupByOption, renderOptions.getGroupByTag());
+                    dataManager.getGroups(context, renderOptions.groupByOption, renderOptions.getGroupByTag(),
+                            renderOptions.bisulfiteContext);
 
             Map<String, PEStats> peStats = dataManager.getPEStats();
             if (peStats != null) {
@@ -896,6 +914,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setGroupByTag(String groupByTag) {
             this.groupByTag = groupByTag;
         }
+
     }
 
     class PopupMenu extends IGVPopupMenu {
@@ -1257,7 +1276,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private void setColorOption(ColorOption option) {
             renderOptions.colorOption = option;
             PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY, option.toString());
+
+            // TODO Setting "color-by bisulfite"  also controls the experiment type.  This is temporary, until we
+            // expose experimentType directory.
+            ExperimentType t = (option == ColorOption.BISULFITE ? ExperimentType.BISULFITE : ExperimentType.OTHER);
+            setExperimentType(t);
+
         }
+
 
         public void addColorByMenuItem() {
             // Change track height by attribute

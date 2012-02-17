@@ -50,16 +50,17 @@ public class AlignmentDataManager {
     //TODO -- this is a  potential memory leak, this map needs cleared when the gene list changes
     private HashMap<String, AlignmentInterval> loadedIntervalMap = new HashMap(50);
 
-    HashMap<String, String> chrMappings = new HashMap();
+    private HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
     private int maxLevels;
 
-
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
-    Map<String, PEStats> peStats;
+    private Map<String, PEStats> peStats;
+
+    private AlignmentTrack.ExperimentType experimentType;
 
     private boolean showSpliceJunctions;
 
@@ -92,6 +93,20 @@ public class AlignmentDataManager {
                 }
             }
         }
+    }
+
+    public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
+        this.experimentType = experimentType;
+        if(experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
+            showSpliceJunctions = false;
+        }
+        else {
+           showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        }
+    }
+
+    public AlignmentTrack.ExperimentType getExperimentType() {
+        return experimentType;
     }
 
     public CachingQueryReader getReader() {
@@ -255,7 +270,8 @@ public class AlignmentDataManager {
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
                                                                                      AlignmentTrack.GroupOption groupByOption,
-                                                                                     String tag) {
+                                                                                     String tag,
+                                                                                     AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final String genomeId = context.getGenomeId();
         final String chr = context.getChr();
@@ -266,7 +282,7 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
-            loadAlignments(chr, start, end, groupByOption, tag, context);
+            loadAlignments(chr, start, end, groupByOption, tag, context, bisulfiteContext);
         }
 
         // If there is any overlap in the loaded interval and the requested interval return it.
@@ -286,7 +302,8 @@ public class AlignmentDataManager {
     public synchronized void loadAlignments(final String chr, final int start, final int end,
                                             final AlignmentTrack.GroupOption groupByOption,
                                             final String tag,
-                                            final RenderContext context) {
+                                            final RenderContext context,
+                                            final AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
@@ -324,7 +341,8 @@ public class AlignmentDataManager {
                         spliceJunctions = new ArrayList<SpliceJunctionFeature>();
                     }
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, maxLevels, peStats);
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, maxLevels,
+                            peStats, bisulfiteContext);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 

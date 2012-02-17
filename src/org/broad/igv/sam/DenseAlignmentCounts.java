@@ -53,8 +53,8 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     private int maxCount = 0;
 
 
-    public DenseAlignmentCounts(int start, int end) {
-        super(start, end);
+    public DenseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        super(start, end, bisulfiteContext);
 
         int nPts = end - start;
         posA = new int[nPts];

@@ -54,6 +54,7 @@ public class AlignmentInterval extends Locus {
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
         genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+
         //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
         for (AlignmentCounts c : counts) {

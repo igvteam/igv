@@ -85,8 +85,6 @@ public class CoverageTrack extends AbstractTrack {
     JMenuItem autoscaleItem;
     Genome genome;
 
-    boolean bisulfiteMode = false;
-
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
@@ -295,6 +293,8 @@ public class CoverageTrack extends AbstractTrack {
             final double colorScaleMax = getColorScale().getMaximum();
             final double scale = context.getScale();
 
+            boolean bisulfiteMode = dataManager.getExperimentType() == AlignmentTrack.ExperimentType.BISULFITE;
+
             for (AlignmentCounts alignmentCounts : countList) {
 
                 final int intervalEnd = alignmentCounts.getEnd();
@@ -359,7 +359,6 @@ public class CoverageTrack extends AbstractTrack {
                                 if (height > 0) {
                                     negGraphics.fillRect(pX, pY, dX, height);
                                     if (mismatch) {
-
                                         drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX,
                                                 false, alignmentCounts);
                                     }
@@ -656,20 +655,6 @@ public class CoverageTrack extends AbstractTrack {
         }
 
         popupMenu.addSeparator();
-
-        // addSortMenuItem(popupMenu);
-        // addPackMenuItem(popupMenu);
-        // addShadeBaseMenuItem(popupMenu);
-        // addCopyToClipboardItem(popupMenu, evt);
-        // addGoToMate(popupMenu, evt);
-        // popupMenu.addSeparator();
-
-
-        //JLabel trackSettingsHeading = new JLabel("  Track Settings",
-        //        JLabel.LEFT);
-        //trackSettingsHeading.setFont(newFont);
-
-        //popupMenu.add(trackSettingsHeading);
 
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);

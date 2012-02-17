@@ -141,7 +141,8 @@ public class CachingQueryReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end,
                                               List<AlignmentCounts> counts,
                                               List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                              int maxReadDepth, Map<String, PEStats> peStats) {
+                                              int maxReadDepth, Map<String, PEStats> peStats,
+                                              AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         // Get the tiles covering this interval
         int startTile = (start + 1) / getTileSize(sequence);
@@ -150,7 +151,7 @@ public class CachingQueryReader {
         // Be a bit conservative with maxReadDepth (get a few more reads than we think neccessary)
         int readDepthPlus = (int) (1.1 * maxReadDepth);
 
-        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats);
+        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats, bisulfiteContext);
         if (tiles.size() == 0) {
             return EmptyAlignmentIterator.getInstance();
         }
@@ -164,21 +165,26 @@ public class CachingQueryReader {
         List<Alignment> alignments = new ArrayList(recordCount);
         alignments.addAll(tiles.get(0).getOverlappingRecords());
 
-        List<SpliceJunctionFeature> tmp = tiles.get(0).getOverlappingSpliceJunctionFeatures();
-        if (tmp != null) spliceJunctionFeatures.addAll(tmp);
+        if (spliceJunctionFeatures != null) {
+            List<SpliceJunctionFeature> tmp = tiles.get(0).getOverlappingSpliceJunctionFeatures();
+            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
+        }
 
         for (AlignmentTile t : tiles) {
             alignments.addAll(t.getContainedRecords());
             counts.add(t.getCounts());
 
-            tmp = t.getContainedSpliceJunctionFeatures();
-            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
+            if (spliceJunctionFeatures != null) {
+                List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
+                if (tmp != null) spliceJunctionFeatures.addAll(tmp);
+            }
         }
 
         return new TiledIterator(start, end, alignments);
     }
 
-    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth, Map<String, PEStats> peStats) {
+    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth,
+                                        Map<String, PEStats> peStats, AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         if (!seq.equals(cachedChr)) {
             cache.clear();
@@ -196,7 +202,7 @@ public class CachingQueryReader {
                 int start = t * tileSize;
                 int end = start + tileSize;
 
-                tile = new AlignmentTile(seq, t, start, end, maxReadDepth);
+                tile = new AlignmentTile(seq, t, start, end, maxReadDepth, bisulfiteContext);
             }
 
             tiles.add(tile);
@@ -541,7 +547,7 @@ public class CachingQueryReader {
 
         private static final Random RAND = new Random(System.currentTimeMillis());
 
-        AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth) {
+        AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.tileNumber = tileNumber;
             this.start = start;
             this.end = end;
@@ -550,9 +556,9 @@ public class CachingQueryReader {
 
             // Use a sparse array for large regions
             if ((end - start) > 100000) {
-                this.counts = new SparseAlignmentCounts(start, end);
+                this.counts = new SparseAlignmentCounts(start, end, bisulfiteContext);
             } else {
-                this.counts = new DenseAlignmentCounts(start, end);
+                this.counts = new DenseAlignmentCounts(start, end, bisulfiteContext);
             }
 
             // Set the max depth, and the max depth of the sampling bucket.
