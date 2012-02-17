@@ -549,7 +549,7 @@ public class HttpUtils {
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
-        conn.setRequestProperty("Connection", "close");
+        conn.setRequestProperty("Connection", "Keep-Alive");
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
