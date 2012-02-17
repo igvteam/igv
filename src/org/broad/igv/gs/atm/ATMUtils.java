@@ -53,7 +53,7 @@ public class ATMUtils {
         String contents = HttpUtils.getInstance().getContentsAsJSON(url);
         JSONTokener tk = new JSONTokener(contents);
         JSONArray array = new JSONArray(tk);
-       // JSONObject webDescArray = (JSONObject) array.get(1);
+        // JSONObject webDescArray = (JSONObject) array.get(1);
         List<WebToolDescriptor> webTools = parseWebtools(array);
         return webTools;
     }
@@ -83,7 +83,7 @@ public class ATMUtils {
         List<WebToolDescriptor> webTools = new ArrayList();
         for (int i = 0; i < count; i++) {
             JSONObject obj = webDescArray.getJSONObject(i);
-           //JSONObject obj = ar.getJSONObject(1);
+            //JSONObject obj = ar.getJSONObject(1);
 
             final WebToolDescriptor webToolDescriptor = parseWebTool(obj);
 
@@ -178,11 +178,19 @@ public class ATMUtils {
         return fileParameters;
     }
 
+
     /**
-     * 
-     * Notes:  Currently only a single file parameter is supported, if/when there is a GS client that accepts 
+     * Return a launch URL with no parameters
+     */
+    public static String getWebtoolLaunchURL(WebToolDescriptor descriptor) throws IOException {
+
+        return getWebtoolLaunchURL(descriptor, null);
+    }
+
+    /**
+     * Notes:  Currently only a single file parameter is supported, if/when there is a GS client that accepts
      * multiple named file parameters we will deal with it then.
-     * 
+     *
      * @param descriptor
      * @param file
      * @return
@@ -190,18 +198,17 @@ public class ATMUtils {
     public static String getWebtoolLaunchURL(WebToolDescriptor descriptor, String file) throws IOException {
 
         String name = descriptor.getName().replace(" ", "%20");
-        String url = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER)+
+        String url = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) +
                 "webtool/" + name + "/launchurl";
-        
+
         List<FileParameter> fileParameters = descriptor.getFileParameters();
-        if(file != null && fileParameters != null && fileParameters.size() > 0) {
-           FileParameter param = fileParameters.get(0);
+        if (file != null && fileParameters != null && fileParameters.size() > 0) {
+            FileParameter param = fileParameters.get(0);
             url += "?" + param.getName() + "=" + URLEncoder.encode(file);
         }
 
         return HttpUtils.getInstance().getContentsAsString(new URL(url));
     }
-
 
 
 }

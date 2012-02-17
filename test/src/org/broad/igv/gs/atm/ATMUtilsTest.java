@@ -96,13 +96,11 @@ public class ATMUtilsTest {
             toolMap.put(wt.getName(), wt);
         }
 
-        String file = "/users/igvtest/Broad.080528.subtypes.seg.gz";
         String toolname = ("UCSC Genome Browser");
         WebToolDescriptor ucscDesc = ATMUtils.getWebTool(toolname);
 
-        String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(ucscDesc, file));
-        assertTrue(url.startsWith(ucscDesc.getBaseUrl() + "?file="));
-        assertTrue(url.endsWith(file));
+        String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(ucscDesc));
+        assertNotNull(url);
     }
 
     static class GSTestAuthenticator extends Authenticator {
