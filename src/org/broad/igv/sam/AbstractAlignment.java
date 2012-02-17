@@ -41,50 +41,8 @@ public abstract class AbstractAlignment implements Alignment {
     AlignmentBlock[] insertions;
     char[] gapTypes;
     private boolean negativeStrand;
-    private Strand firstOfPairStrand;
-    private Strand secondOfPairStrand;
 
     public AbstractAlignment() {
-        setPairStrands();
-    }
-
-    /**
-     * Set the strands of first and second in pair.  Used for strand specific libraries to recover strand of
-     * originating fragment.
-     */
-    private void setPairStrands() {
-
-        if (isPaired()) {
-            if (isFirstOfPair()) {
-                firstOfPairStrand = getReadStrand();
-            } else {
-                // If we have a mate, the mate must be the firstOfPair
-                ReadMate mate = getMate();
-                if (mate != null && mate.isMapped()) {
-                    firstOfPairStrand = mate.getStrand();
-                } else {
-                    // No Mate, or mate is not mapped, FOP strand is not defined
-                    firstOfPairStrand = Strand.NONE;
-                }
-            }
-
-            if (isSecondOfPair()) {
-                secondOfPairStrand = isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
-            } else {
-                ReadMate mate = getMate();
-                if (mate.isMapped() && isProperPair()) {
-                    secondOfPairStrand = mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
-                } else {
-                    // No Mate, or mate is not mapped, FOP strand is not defined
-                    secondOfPairStrand = Strand.NONE;
-                }
-            }
-
-        } else {
-            // This alignment is not paired -- by definition "firstOfPair" is this alignment
-            firstOfPairStrand = getReadStrand();
-            secondOfPairStrand = Strand.NONE;
-        }
     }
 
     public String getChromosome() {
@@ -279,27 +237,6 @@ public abstract class AbstractAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         return null;
-    }
-
-
-    /**
-     * Return the strand of the read marked "first-in-pair" for a paired alignment. This method can return
-     * Strand.NONE if the end marked first is unmapped.
-     *
-     * @return strand of first-of-pair
-     */
-    public Strand getFirstOfPairStrand() {
-       return firstOfPairStrand;
-    }
-
-    /**
-     * Return the strand of the read marked "second-in-pair" for a paired alignment.  The strand is
-     * undefined (Strand.NONE) for non-paired alignments
-     *
-     * @return strand of second-of-pair
-     */
-    public Strand getSecondOfPairStrand() {
-        return secondOfPairStrand;
     }
 
 

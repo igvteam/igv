@@ -156,6 +156,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
+        dataManager.setShowSpliceJunctions(prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
+
         float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         minVisibleScale = (maxRange * 1000) / 700;
 
@@ -188,12 +190,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
-        dataManager.setSpliceJunctionTrack(spliceJunctionTrack);
-    }
-
-
-    public SpliceJunctionFinderTrack getSpliceJunctionTrack() {
-        return spliceJunctionTrack;
     }
 
     public void setRenderer(FeatureRenderer renderer) {
@@ -546,6 +542,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 break;
             case RELOAD:
             case SPLICE_JUNCTION:
+                final boolean showJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+                dataManager.setShowSpliceJunctions(showJunctions);
                 clearCaches();
                 break;
         }
@@ -628,6 +626,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public Map<String, String> getPersistentState() {
         Map<String, String> attrs = super.getPersistentState();
         attrs.putAll(renderOptions.getPersistentState());
+
+        if (dataManager.isShowSpliceJunctions()) {
+            attrs.put("showSpliceJunctions", String.valueOf(dataManager.isShowSpliceJunctions()));
+        }
+
         return attrs;
     }
 
@@ -635,6 +638,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
         renderOptions.restorePersistentState(attributes);
+
+        String spliceJunctionOption = attributes.get("showSpliceJunctions");
+        if (spliceJunctionOption != null) {
+            try {
+                dataManager.setShowSpliceJunctions(Boolean.parseBoolean(spliceJunctionOption));
+            } catch (Exception e) {
+                log.error("Error restoring splice junction option: " + spliceJunctionOption);
+            }
+        }
+
     }
 
 

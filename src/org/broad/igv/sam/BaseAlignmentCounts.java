@@ -3,6 +3,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;

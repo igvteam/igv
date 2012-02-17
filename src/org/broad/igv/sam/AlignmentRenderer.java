@@ -58,20 +58,16 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
     // Bisulfite constants
-    public static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
-    public static final Color bisulfiteColorRev1 = new Color(195, 210, 195); // A bit lighter than normal LR_COLOR
-    public static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
-    public static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
-    public static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+    public static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
+    public static final Color bisulfiteColorRev1 = new Color(195, 210, 195);
+    public static final Color nomeseqColor = new Color(195, 195, 195);
 
-    public static final Color negStrandColor = new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
-    public static final Color posStrandColor = new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
-    //public static final Color negStrandColor = new Color(150, 150, 200);
-    // public static final Color posStrandColor = new Color(200, 150, 150);
+    public static final Color negStrandColor = new Color(140, 140, 230);
+    public static final Color posStrandColor = new Color(230, 140, 140);
 
-    private ColorTable readGroupColors;
-    private ColorTable sampleColors;
-    private ColorTable tagValueColors;
+    private static ColorTable readGroupColors;
+    private static ColorTable sampleColors;
+    private static ColorTable tagValueColors;
 
     private static final Color LR_COLOR = grey1; // "Normal" alignment color
     private static final Color RL_COLOR = new Color(0, 150, 0);
@@ -80,15 +76,33 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
-    static Map<String, Color> frOrientationColors;
-    static Map<String, Color> ffOrientationColors;
-    static Map<String, Color> rfOrientationColors;
-
+    private static Map<String, Color> frOrientationColors;
+    private static Map<String, Color> ffOrientationColors;
+    private static Map<String, Color> rfOrientationColors;
 
     PreferenceManager prefs;
+
     private static AlignmentRenderer instance;
 
-    static {
+    public static FeatureRenderer getInstance() {
+        if (instance == null) {
+            instance = new AlignmentRenderer();
+        }
+        return instance;
+    }
+
+
+    private AlignmentRenderer() {
+        this.prefs = PreferenceManager.getInstance();
+        initializeTagColors();
+    }
+
+    private void initializeTagColors() {
+        ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
+        readGroupColors = new PaletteColorTable(palette);
+        sampleColors = new PaletteColorTable(palette);
+        tagValueColors = new PaletteColorTable(palette);
+
         nucleotideColors = new HashMap();
         nucleotideColors.put('A', Color.GREEN);
         nucleotideColors.put('a', Color.GREEN);
@@ -100,7 +114,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         nucleotideColors.put('g', new Color(209, 113, 5));
         nucleotideColors.put('N', Color.gray.brighter());
         nucleotideColors.put('n', Color.gray.brighter());
-
 
         // fr Orienations (e.g. Illumina paired-end libraries)
         frOrientationColors = new HashMap();
@@ -163,27 +176,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         //RL
         ffOrientationColors.put("R1R2", RL_COLOR);
         ffOrientationColors.put("F2F1", RL_COLOR);
-    }
-
-
-    public static FeatureRenderer getInstance() {
-        if (instance == null) {
-            instance = new AlignmentRenderer();
-        }
-        return instance;
-    }
-
-
-    private AlignmentRenderer() {
-        this.prefs = PreferenceManager.getInstance();
-        initializeTagColors();
-    }
-
-    private void initializeTagColors() {
-        ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
-        readGroupColors = new PaletteColorTable(palette);
-        sampleColors = new PaletteColorTable(palette);
-        tagValueColors = new PaletteColorTable(palette);
     }
 
     /**

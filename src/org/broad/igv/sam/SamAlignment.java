@@ -69,10 +69,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     SAMRecord record;
     String cigarString;
     String readSequence;
-    private boolean softClippedStart = false;
-    private boolean softClippedEnd = false;
-    private Strand firstReadStrand = Strand.NONE;
-    private Strand secondReadStrand = Strand.NONE;
     boolean firstRead = false;
     boolean secondRead = false;
     private String mateSequence = null;
@@ -82,23 +78,23 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private String library;
     private String sample;
 
-	private boolean firstInPair;
+    private boolean firstInPair;
+    private Strand firstOfPairStrand;
+    private Strand secondOfPairStrand;
 
-    /**
-     * Constructs ...
-     *
-     * @param record
-     */
+
+    // Default constructor to support unit tests
+    SamAlignment() {
+    }
+
+
     public SamAlignment(SAMRecord record) {
 
         this.record = record;
 
-
         String refName = record.getReferenceName();
-
         Genome genome = Globals.isHeadless() ? null : IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
-
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
         this.alignmentStart = record.getAlignmentStart() - 1;
@@ -116,11 +112,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.setInferredInsertSize(record.getInferredInsertSize());
         this.readSequence = record.getReadString();
         this.readLength = record.getReadLength();
-        this.firstInPair = record.getReadPairedFlag() ?  record.getFirstOfPairFlag() : true;
+        this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
         setMatePair(record, genome);
         setPairOrientation(record);
-        setFirstReadStrand(record);
+        setPairStrands();
+
         createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities());
 
         SAMFileHeader header = record.getHeader();
@@ -146,29 +143,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 defaultColor = AlignmentRenderer.grey1;
             }
         }
-    }
+    }      // End constructor
 
-    // Default constructor to support unit tests
-    SamAlignment() {
-    }
-
-    private void setFirstReadStrand(SAMRecord record) {
-        if (!record.getReadPairedFlag()) {
-            firstReadStrand = (record.getReadNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
-        } else if (record.getProperPairFlag()) {
-            if (record.getFirstOfPairFlag()) {
-                firstReadStrand = (record.getReadNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
-                if (!record.getMateUnmappedFlag()) {
-                    secondReadStrand = (record.getMateNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
-                }
-            } else {
-                if (!record.getMateUnmappedFlag()) {
-                    firstReadStrand = (record.getMateNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
-                }
-                secondReadStrand = (record.getReadNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
-            }
-        }
-    }
 
     private void setMatePair(SAMRecord record, Genome genome) {
         if (record.getReadPairedFlag()) {
@@ -219,6 +195,47 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             pairOrientation = new String(tmp);
         }
     }
+
+    /**
+     * Set pair strands.  Used for strand specific libraries to recover strand of
+     * originating fragment.
+     */
+    private void setPairStrands() {
+
+        if (isPaired()) {
+            if (isFirstOfPair()) {
+                firstOfPairStrand = getReadStrand();
+            } else {
+                // If we have a mate, the mate must be the firstOfPair
+                ReadMate mate = getMate();
+                if (mate != null && mate.isMapped()) {
+                    firstOfPairStrand = mate.getStrand();
+                } else {
+                    // No Mate, or mate is not mapped, FOP strand is not defined
+                    firstOfPairStrand = Strand.NONE;
+                }
+            }
+
+            if (isSecondOfPair()) {
+                secondOfPairStrand = isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            } else {
+                ReadMate mate = getMate();
+                if (mate.isMapped() && isProperPair()) {
+                    secondOfPairStrand = mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                } else {
+                    // No Mate, or mate is not mapped, FOP strand is not defined
+                    secondOfPairStrand = Strand.NONE;
+                }
+            }
+
+        } else {
+            // This alignment is not paired -- by definition "firstOfPair" is this alignment
+            firstOfPairStrand = getReadStrand();
+            secondOfPairStrand = Strand.NONE;
+        }
+    }
+
+
     /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
@@ -413,8 +430,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public boolean isFirstInPair() {
-    	return firstInPair;
+        return firstInPair;
     }
+
     public boolean isNegativeStrand() {
         return readNegativeStrandFlag;
     }
@@ -426,9 +444,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public boolean isMapped() {
         return !readUnmappedFlag;
     }
-    
-    public int getReadLength() { 
-    	return this.readLength;
+
+    public int getReadLength() {
+        return this.readLength;
     }
 
     public boolean isPaired() {
@@ -630,6 +648,27 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public Color getDefaultColor() {
         return defaultColor;
+    }
+
+
+    /**
+     * Return the strand of the read marked "first-in-pair" for a paired alignment. This method can return
+     * Strand.NONE if the end marked first is unmapped.
+     *
+     * @return strand of first-of-pair
+     */
+    public Strand getFirstOfPairStrand() {
+        return firstOfPairStrand;
+    }
+
+    /**
+     * Return the strand of the read marked "second-in-pair" for a paired alignment.  The strand is
+     * undefined (Strand.NONE) for non-paired alignments
+     *
+     * @return strand of second-of-pair
+     */
+    public Strand getSecondOfPairStrand() {
+        return secondOfPairStrand;
     }
 
     static class CigarOperator {

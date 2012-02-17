@@ -22,7 +22,6 @@
  */
 package org.broad.igv.sam;
 
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
@@ -131,16 +130,20 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         return null;
     }
 
-    public Strand getFragmentStrand(int read) {
-        return Strand.NONE;
-    }
-
 	public boolean isFirstOfPair() {
 		return false;
 	}
 
 	public boolean isSecondOfPair() {
 		return false;
-	}   
-    
+	}
+
+    public Strand getFirstOfPairStrand() {
+        return Strand.NONE;
+    }
+
+    public Strand getSecondOfPairStrand() {
+       return Strand.NONE;
+    }
+
 }

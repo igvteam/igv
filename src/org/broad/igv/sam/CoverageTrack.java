@@ -188,6 +188,10 @@ public class CoverageTrack extends AbstractTrack {
                 rect.x + rect.width, rect.y + rect.height);
 
         // Draw scale
+        drawScale(context, rect);
+    }
+
+    private void drawScale(RenderContext context, Rectangle rect) {
         DataRange range = getDataRange();
         if (range != null) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
@@ -274,7 +278,6 @@ public class CoverageTrack extends AbstractTrack {
         private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
 
 
-
             Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
             Graphics2D posGraphics = context.getGraphic2DForColor(posStrandColor);
             Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
@@ -333,7 +336,7 @@ public class CoverageTrack extends AbstractTrack {
                                 if (bisulfiteMode) {
                                     // TODO -- extend for all contexts
                                     mismatch = true; //ref == 'c' && (idx + 1 < refBases.length) &&
-                                           // Character.toLowerCase(idx + 1) == 'g';
+                                    // Character.toLowerCase(idx + 1) == 'g';
                                 } else {
 
                                     mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
@@ -402,10 +405,12 @@ public class CoverageTrack extends AbstractTrack {
 
                                         if (bisulfiteMode) {
                                             BisulfiteCounts bc = alignmentCounts.getBisulfiteCounts();
-                                            BisulfiteCounts.Count cnt = bc.getCount(pos);
-                                            if (cnt != null) {
-                                                drawBarBisulfite(context, pos, rect, totalCount, max,
-                                                        pY, pX, dX, cnt, range.isLog());
+                                            if (bc != null) {
+                                                BisulfiteCounts.Count cnt = bc.getCount(pos);
+                                                if (cnt != null) {
+                                                    drawBarBisulfite(context, pos, rect, totalCount, max,
+                                                            pY, pX, dX, cnt, range.isLog());
+                                                }
                                             }
 
                                         } else {
