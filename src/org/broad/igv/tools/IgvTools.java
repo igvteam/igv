@@ -413,13 +413,7 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else if (command.equals("lanecounter")) {
-                validateArgsLength(nonOptionArgs, 3, "This command is not documented");
-                Genome genome = loadGenome(nonOptionArgs[1], false);
-                String bamFileList = nonOptionArgs[2];
-                String queryInterval = nonOptionArgs[3];
-                LaneCounter.run(genome, bamFileList, queryInterval);
-            } else if (command.equals("sumwigs")) {
+            }  else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals("densitiestobedgraph")) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
@@ -683,14 +677,7 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else if (command.equals("lanecounter")) {
-                //TODO
-                validateArgsLength(nonOptionArgs, 3, "This command is not documented");
-                Genome genome = loadGenome(nonOptionArgs[1], false);
-                String bamFileList = nonOptionArgs[2];
-                String queryInterval = nonOptionArgs[3];
-                LaneCounter.run(genome, bamFileList, queryInterval);
-            } else if (command.equals("sumwigs")) {
+            }  else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals("densitiestobedgraph")) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
