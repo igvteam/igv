@@ -42,7 +42,9 @@ import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Wrapper utility class... for interacting with HttpURLConnection.
@@ -90,6 +92,37 @@ public class HttpUtils {
         String lcString = string.toLowerCase();
         return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://")
                 || lcString.startsWith("file://");
+    }
+
+    /**
+     * Join the {@code elements} with the character {@code joiner},
+     * URLencoding the {@code elements} along the way. {@code joiner}
+     * is NOT URLEncoded
+     * Example:
+     *  String[] parm_list = new String[]{"app les", "oranges", "bananas"};
+     *  String formatted = buildURLString(Arrays.asList(parm_list), "+");
+     *
+     *  formatted will be "app%20les+oranges+bananas"
+     *
+     * @param elements
+     * @param joiner
+     * @return
+     */
+    public static String buildURLString(Iterable<String> elements, String joiner) {
+
+        Iterator<String> iter = elements.iterator();
+        if (!iter.hasNext()) {
+            return "";
+        }
+        String wholequery = iter.next();
+        try {
+            while (iter.hasNext()) {
+                wholequery += joiner + URLEncoder.encode(iter.next(), "UTF-8");
+            }
+            return wholequery;
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Bad argument in genelist: " + e.getMessage());
+        }
     }
 
     /**
@@ -211,15 +244,18 @@ public class HttpUtils {
             return new FTPStream(ftp);
 
         } else {
-            return openConnection(url, null).getInputStream();
+            return openConnectionStream(url, null);
         }
     }
 
     public InputStream openConnectionStream(URL url, Map<String, String> requestProperties) throws IOException {
 
         HttpURLConnection conn = openConnection(url, requestProperties);
-        return conn.getInputStream();
-
+        InputStream input = conn.getInputStream();
+        if ("gzip".equals(conn.getContentEncoding())) {
+            input = new GZIPInputStream(input);
+        }
+        return input;
     }
 
 
