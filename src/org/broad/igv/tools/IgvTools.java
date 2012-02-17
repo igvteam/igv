@@ -85,7 +85,7 @@ public class IgvTools {
     
     public static String getVersionString(){
         String out = "Version: " + version;
-        if("test".equals(version)){
+        if(true || "test".equals(version)){
             out += " Build: " + build;
         }
         return out;

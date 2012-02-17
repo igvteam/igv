@@ -1046,79 +1046,43 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
+        private JCheckBoxMenuItem getGroupMenuItem(String label, final GroupOption option){
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
+            mi.setSelected(renderOptions.groupByOption == option);
+            if(option == GroupOption.NONE){
+                mi.setSelected(renderOptions.groupByOption == null);
+            }
+            mi.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGV.getInstance().groupAlignmentTracks(option);
+                    refresh();
+
+                }
+            });
+
+            return mi;
+        }
+
         public void addGroupMenuItem() {//ReferenceFrame frame) {
             // Change track height by attribute
-            JMenu groupMenu = new JMenu("Group alignments");
+            JMenu groupMenu = new JMenu("Group alignments by");
             ButtonGroup group = new ButtonGroup();
 
-            JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("none");
-            m1.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.NONE);
-                    refresh();
+            Map<String, GroupOption> mappings = new LinkedHashMap<String, GroupOption>();
+            mappings.put("none", GroupOption.NONE);
+            mappings.put("read strand", GroupOption.STRAND);
+            mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
+            mappings.put("sample", GroupOption.SAMPLE);
+            mappings.put("read group", GroupOption.READ_GROUP);
 
-                }
-            });
-            m1.setSelected(renderOptions.groupByOption == null);
-            groupMenu.add(m1);
-            group.add(m1);
+            for(Map.Entry<String, GroupOption> el: mappings.entrySet()){
+                JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
+                groupMenu.add(mi);
+                group.add(mi);
+            }
 
-            JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("by read strand");
-            m2.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.STRAND);
-                    refresh();
-
-                }
-            });
-            m2.setSelected(renderOptions.groupByOption == GroupOption.STRAND);
-            groupMenu.add(m2);
-            group.add(m2);
-
-            JCheckBoxMenuItem fragmentStrandOption = new JCheckBoxMenuItem("by first-of-pair strand");
-            fragmentStrandOption.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.FIRST_OF_PAIR_STRAND);
-                    refresh();
-
-                }
-            });
-            fragmentStrandOption.setSelected(renderOptions.groupByOption == GroupOption.FIRST_OF_PAIR_STRAND);
-            groupMenu.add(fragmentStrandOption);
-            group.add(fragmentStrandOption);
-
-            JCheckBoxMenuItem m5 = new JCheckBoxMenuItem("by sample");
-            m5.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.SAMPLE);
-                    refresh();
-
-                }
-            });
-            m5.setSelected(renderOptions.groupByOption == GroupOption.SAMPLE);
-            groupMenu.add(m5);
-            group.add(m5);
-
-            JCheckBoxMenuItem m6 = new JCheckBoxMenuItem("by read group");
-            m6.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.READ_GROUP);
-                    refresh();
-
-                }
-            });
-            m6.setSelected(renderOptions.groupByOption == GroupOption.READ_GROUP);
-            groupMenu.add(m6);
-            group.add(m6);
-
-
-            JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("by tag");
+            JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("tag");
             tagOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
@@ -1133,20 +1097,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupMenu.add(tagOption);
             group.add(tagOption);
 
-
-//            JMenuItem tagOption = new JMenuItem("by tag");
-//            tagOption.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent aEvt) {
-//                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getTagKey());
-//                    renderOptions.setTagKey(tag);
-//                    IGV.getInstance().sortAlignmentTracks(SortOption.TAG, tag);
-//                    refresh();
-//                }
-//            });
-//            sortMenu.add(tagOption);
-//
-
             add(groupMenu);
+        }
+        
+        private JMenuItem getSortMenuItem(String label, final SortOption option){
+            JMenuItem mi = new JMenuItem(label);
+            mi.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGV.getInstance().sortAlignmentTracks(option, null);
+                    refresh();
+
+                }
+            });
+            
+            return mi;
         }
 
 
@@ -1156,118 +1121,28 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void addSortMenuItem() {
 
 
-            JMenu sortMenu = new JMenu("Sort alignments");
-            JMenuItem m1 = new JMenuItem("by start location");
-            m1.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.START, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m1);
-
-            JMenuItem m2 = new JMenuItem("by read strand");
-            m2.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.STRAND, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m2);
-
-            JMenuItem fragmentStrandOption = new JMenuItem("by first-of-pair strand");
-            fragmentStrandOption.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.FIRST_OF_PAIR_STRAND, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(fragmentStrandOption);
-
-            JMenuItem m3 = new JMenuItem("by base");
-            m3.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().sortAlignmentTracks(SortOption.NUCELOTIDE, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m3);
-
-            JMenuItem m4 = new JMenuItem("by mapping quality");
-            m4.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().sortAlignmentTracks(SortOption.QUALITY, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m4);
-
-
-            JMenuItem m5 = new JMenuItem("by sample");
-            m5.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().sortAlignmentTracks(SortOption.SAMPLE, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m5);
-
-            JMenuItem m6 = new JMenuItem("by read group");
-            m6.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGV.getInstance().sortAlignmentTracks(SortOption.READ_GROUP, null);
-                    refresh();
-
-                }
-            });
-            sortMenu.add(m6);
+            JMenu sortMenu = new JMenu("Sort alignments by");
+            //LinkedHashMap is supposed to preserve order of insertion for iteration
+            Map<String, SortOption> mappings = new LinkedHashMap<String, SortOption>();
+            
+            mappings.put("start location", SortOption.START);
+            mappings.put("read strand", SortOption.STRAND);
+            mappings.put("first-of-pair strand", SortOption.FIRST_OF_PAIR_STRAND);
+            mappings.put("base", SortOption.NUCELOTIDE);
+            mappings.put("mapping quality", SortOption.QUALITY);
+            mappings.put("sample", SortOption.SAMPLE);
+            mappings.put("read group", SortOption.READ_GROUP);
 
             if (dataManager.isPairedEnd()) {
-                JMenuItem m7 = new JMenuItem("by insert size");
-                m7.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-
-                        IGV.getInstance().sortAlignmentTracks(SortOption.INSERT_SIZE, null);
-                        refresh();
-
-                    }
-                });
-                sortMenu.add(m7);
+                mappings.put("insert size", SortOption.INSERT_SIZE);
+                mappings.put("chromosome of mate", SortOption.MATE_CHR);
+            }
+            
+            for(Map.Entry<String, SortOption> el: mappings.entrySet()){
+                sortMenu.add(getSortMenuItem(el.getKey(), el.getValue()));
             }
 
-            if (dataManager.isPairedEnd()) {
-                JMenuItem m7 = new JMenuItem("by chromosome of mate");
-                m7.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent aEvt) {
-
-                        IGV.getInstance().sortAlignmentTracks(SortOption.MATE_CHR, null);
-                        refresh();
-
-                    }
-                });
-                sortMenu.add(m7);
-            }
-
-            JMenuItem tagOption = new JMenuItem("by tag");
+            JMenuItem tagOption = new JMenuItem("tag");
             tagOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
@@ -1299,97 +1174,56 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
+        private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option){
+            JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
+            mi.setSelected(renderOptions.colorOption == option);
+            mi.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(option);
+                    refresh();
+
+                }
+            });
+
+            return mi;
+        }
+
 
         public void addColorByMenuItem() {
             // Change track height by attribute
-            JMenu colorMenu = new JMenu("Color alignments");
+            JMenu colorMenu = new JMenu("Color alignments by");
 
             ButtonGroup group = new ButtonGroup();
 
-            JRadioButtonMenuItem noneOption = new JRadioButtonMenuItem("no color");
-            noneOption.setSelected(renderOptions.colorOption == ColorOption.NONE);
-            noneOption.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.NONE);
-                    refresh();
-                }
-            });
-            colorMenu.add(noneOption);
-            group.add(noneOption);
-
+            Map<String, ColorOption> mappings = new LinkedHashMap<String, ColorOption>();
+            
+            mappings.put("no color", ColorOption.NONE);
 
             if (dataManager.isPairedEnd()) {
-                JRadioButtonMenuItem isizeOption = new JRadioButtonMenuItem("by insert size");
-                isizeOption.setSelected(renderOptions.colorOption == ColorOption.INSERT_SIZE);
-                isizeOption.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent aEvt) {
-                        setColorOption(ColorOption.INSERT_SIZE);
-                        refresh();
-                    }
-                });
-                colorMenu.add(isizeOption);
-                group.add(isizeOption);
-
-                JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
-                m1a.setSelected(renderOptions.colorOption == ColorOption.PAIR_ORIENTATION);
-                m1a.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent aEvt) {
-                        setColorOption(ColorOption.PAIR_ORIENTATION);
-                        refresh();
-                    }
-                });
-                colorMenu.add(m1a);
-                group.add(m1a);
+                
+                mappings.put("insert size", ColorOption.INSERT_SIZE);
+                mappings.put("pair orientation", ColorOption.PAIR_ORIENTATION);
+                
             }
 
-            JRadioButtonMenuItem readStrandOption = new JRadioButtonMenuItem("by read strand");
-            readStrandOption.setSelected(renderOptions.colorOption == ColorOption.READ_STRAND);
-            readStrandOption.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.READ_STRAND);
-                    refresh();
-                }
-            });
-            colorMenu.add(readStrandOption);
-            group.add(readStrandOption);
-
+            mappings.put("read strand", ColorOption.READ_STRAND);
+            
             if (dataManager.isPairedEnd()) {
-                JRadioButtonMenuItem fragmentStrandOption = new JRadioButtonMenuItem("by first-of-pair strand");
-                fragmentStrandOption.setSelected(renderOptions.colorOption == ColorOption.FIRST_OF_PAIR_STRAND);
-                fragmentStrandOption.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent aEvt) {
-                        setColorOption(ColorOption.FIRST_OF_PAIR_STRAND);
-                        refresh();
-                    }
-                });
-                colorMenu.add(fragmentStrandOption);
-                group.add(fragmentStrandOption);
+                mappings.put("first-of-pair strand", ColorOption.FIRST_OF_PAIR_STRAND);
             }
 
-            JRadioButtonMenuItem readGroupOption = new JRadioButtonMenuItem("by read group");
-            readGroupOption.setSelected(renderOptions.colorOption == ColorOption.READ_GROUP);
-            readGroupOption.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.READ_GROUP);
-                    refresh();
-                }
-            });
-            colorMenu.add(readGroupOption);
-            group.add(readGroupOption);
-
-            JRadioButtonMenuItem sampleOption = new JRadioButtonMenuItem("by sample");
-            sampleOption.setSelected(renderOptions.colorOption == ColorOption.SAMPLE);
-            sampleOption.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.SAMPLE);
-                    refresh();
-                }
-            });
-            colorMenu.add(sampleOption);
-            group.add(sampleOption);
+            mappings.put("read group", ColorOption.READ_GROUP);
+            mappings.put("sample", ColorOption.SAMPLE);
 
 
-            JRadioButtonMenuItem tagOption = new JRadioButtonMenuItem("by tag");
+            for(Map.Entry<String,ColorOption> el: mappings.entrySet()){
+                JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
+                colorMenu.add(mi);
+                group.add(mi);
+            }
+
+            JRadioButtonMenuItem tagOption = new JRadioButtonMenuItem("tag");
             tagOption.setSelected(renderOptions.colorOption == ColorOption.TAG);
             tagOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
