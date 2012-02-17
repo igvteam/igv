@@ -89,7 +89,7 @@ public class IgvTools {
         String zoom = "-z, --maxZoom \tMaximum zoom levels to precompute. Default 7\n";
         String wfunc = "-f, --windowFunctions \tComma-separated list of window functions. Possible values are min, mean, max\n";
         String probFile = "-p, --probeFile \tSpecifies a \"bed\" file to be used to map probe identifiers to locations.\n";
-        tstring += zoom += wfunc += probFile;
+        tstring += zoom + wfunc + probFile;
         commandList.put(CMD_TOTDF, tstring);
         tstring = "Note: This command is deprecated and being renamed to totdf\n" + tstring;
         commandList.put(CMD_TILE, tstring);
@@ -107,7 +107,7 @@ public class IgvTools {
         String minMap = "--minMapQuality [mqual]\t Set the minimum mapping quality of reads to include. Default is 0.\n";
         String includeDups = "--includeDuplicates \t Include duplicate alignments in count. Default false." +
                  " If this flag is included, duplicates are counted. Takes no arguments\n";
-        countstring += zoom += wfunc += wsize += ext += readstr += bases += query += minMap += includeDups;
+        countstring += zoom + wfunc + wsize + ext + readstr + bases + query + minMap + includeDups;
         commandList.put(CMD_COUNT, countstring);
 
         String indexstring = "Usage: igvtools index inputFile\n";
@@ -119,7 +119,7 @@ public class IgvTools {
         String sortstring = "Usage: igvtools sort [options] inputFile outputFile";
         String tmpDir = "-t, --tmpdir \tSpecify a temporary working directory. Default is users temp directory\n";
         String maxRec = "-m, --maxRecords \tThe maximum number of records to keep in memory during the sort\n";
-        sortstring += tmpDir += maxRec;
+        sortstring += tmpDir + maxRec;
         commandList.put(CMD_SORT, sortstring);
 
         String fexpstring = "Usage: igvtools formatexp inputFile outputFile\n";
@@ -192,7 +192,7 @@ public class IgvTools {
     static String usageString() {
         StringBuffer buf = new StringBuffer();
 
-        buf.append("\nProgram: igvtools\n\n");
+        buf.append("\nProgram: igvtools. Version " + version + "\n\n");
         buf.append("Usage: igvtools [command] [options] [input file/dir] [other arguments]\n\n");
         buf.append("Command:");
         for (String c : commandDocs) {
@@ -255,6 +255,13 @@ public class IgvTools {
     }
 
     void run(String[] argv) {
+        
+        if(argv.length == 0){
+            System.out.println("Error: No arguments provided");
+            System.out.println(usageString());
+            return;
+        }
+        
         String command = argv[0].toLowerCase();
 
         if (command.equals(CMD_HELP)) {
