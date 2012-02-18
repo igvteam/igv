@@ -1,6 +1,7 @@
 package org.broad.igv.hic.data;
 
 import java.awt.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,18 +40,22 @@ public class Block {
     }
 
     public void parsingComplete() {
-        if (contactRecordMap.size() > 0) {
-            records = new ContactRecord[contactRecordMap.size()];
-            int i = 0;
-            for (ContactRecord rec : contactRecordMap.values()) {
-                records[i] = rec;
-                i++;
-            }
-        }
+//        if (contactRecordMap.size() > 0) {
+//            records = new ContactRecord[contactRecordMap.size()];
+//            int i = 0;
+//            for (ContactRecord rec : contactRecordMap.values()) {
+//                records[i] = rec;
+//                i++;
+//            }
+//        }
     }
 
 
     public ContactRecord[] getContactRecords() {
         return records;
+    }
+
+    public Collection<ContactRecord> getContractRecordValues() {
+        return contactRecordMap.values();
     }
 }

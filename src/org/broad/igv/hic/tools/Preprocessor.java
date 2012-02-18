@@ -8,6 +8,7 @@ import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class Preprocessor {
     Map<String, IndexEntry> matrixPositions = new LinkedHashMap();
     Map<String, Long> blockIndexPositions = new LinkedHashMap();
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
+    private int countThreshold = 3;
     //static DensityCalculation densityCalculation;
 
     public Preprocessor(File outputFile) {
@@ -322,17 +324,18 @@ public class Preprocessor {
      */
     private void writeContactRecords(Block block) throws IOException {
 
-        final ContactRecord[] records = block.getContactRecords();
-        final int len = records.length;
+        final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
+        final int len = records.size();
 
         BufferedByteWriter buffer = new BufferedByteWriter(len * 12);
 
         buffer.putInt(len);
-        for (int i = 0; i < len; i++) {
-            ContactRecord rec = records[i];
-            buffer.putInt(rec.getX());
-            buffer.putInt(rec.getY());
-            buffer.putInt(rec.getCounts());
+        for (ContactRecord rec : records) {
+            if (rec.getCounts() >= countThreshold) {
+                buffer.putInt(rec.getX());
+                buffer.putInt(rec.getY());
+                buffer.putInt(rec.getCounts());
+            }
         }
 
         byte[] bytes = buffer.getBytes();
