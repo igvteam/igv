@@ -30,6 +30,8 @@ public class Preprocessor {
     Map<String, Long> blockIndexPositions = new LinkedHashMap();
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
     private int countThreshold = 3;
+
+    private boolean diagonalsOnly = true;
     //static DensityCalculation densityCalculation;
 
     public Preprocessor(File outputFile) {
@@ -67,6 +69,8 @@ public class Preprocessor {
 
                     // Index zero is whole genome
                     if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
+
+                    if(diagonalsOnly && c1 != c2) continue;
 
                     Matrix matrix = computeMatrix(inputFileList, c1, c2);
 
