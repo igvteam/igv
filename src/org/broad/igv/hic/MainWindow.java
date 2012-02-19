@@ -899,7 +899,7 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new BorderLayout());
+                panel3.setLayout(new HiCLayout());
 
                 //---- rulerPanel2 ----
                 rulerPanel2.setMaximumSize(new Dimension(4000, 50));
