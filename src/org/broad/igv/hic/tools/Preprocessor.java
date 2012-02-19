@@ -8,10 +8,7 @@ import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -29,15 +26,29 @@ public class Preprocessor {
     Map<String, IndexEntry> matrixPositions = new LinkedHashMap();
     Map<String, Long> blockIndexPositions = new LinkedHashMap();
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
-    private int countThreshold = 3;
 
-    private boolean diagonalsOnly = true;
+
+    private int countThreshold = 0;
+    private boolean diagonalsOnly = false;
+    private Set<String> chromosomes = null;
+
     //static DensityCalculation densityCalculation;
 
     public Preprocessor(File outputFile) {
         this.outputFile = outputFile;
     }
 
+    public void setCountThreshold(int countThreshold) {
+        this.countThreshold = countThreshold;
+    }
+
+    public void setDiagonalsOnly(boolean diagonalsOnly) {
+        this.diagonalsOnly = diagonalsOnly;
+    }
+
+    public void setChromosomes(Set<String> chromosomes) {
+        this.chromosomes = chromosomes;
+    }
 
     public void preprocess(List<String> inputFileList, String genomeId) throws IOException {
 
@@ -63,8 +74,17 @@ public class Preprocessor {
             // Future -- loop through attributes writing key/value pairs
 
 
-            // Data
+            // Compute matrices.  Note that c2 is always >= c1
             for (int c1 = 0; c1 < nChrs; c1++) {
+
+                // Optionally filter on chromosome
+                if(chromosomes != null && c1 != 0) {
+                    String chrName = HiCTools.chromosomes[c1].getName();
+                    if(!chromosomes.contains(chrName)) {
+                        continue;
+                    }
+                }
+
                 for (int c2 = c1; c2 < nChrs; c2++) {
 
                     // Index zero is whole genome

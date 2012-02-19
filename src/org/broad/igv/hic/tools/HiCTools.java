@@ -18,6 +18,7 @@
 
 package org.broad.igv.hic.tools;
 
+import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.hic.data.Chromosome;
@@ -39,12 +40,51 @@ import java.util.*;
 public class HiCTools {
 
 
-    public static void main(String[] args) throws IOException {
+    static class CommandLineParser extends CmdLineParser {
+        private CmdLineParser.Option diagonalsOption = null;
+        private CmdLineParser.Option chromosomeOption = null;
+        private CmdLineParser.Option countThresholdOption = null;
 
-        if (args.length < 4 )  {
-            System.out.println("Usage: hictools pre <inputFile> <outputFile> <genomeID>");
+        CommandLineParser() {
+            diagonalsOption = addBooleanOption('d', "diagonals");
+            chromosomeOption = addStringOption('c', "chromosomes");
+            countThresholdOption = addIntegerOption('t', "countThreshold");
+        }
+
+        boolean getDiagonalsOption() {
+            Object opt = getOptionValue(diagonalsOption);
+            return opt == null ? false : ((Boolean) opt).booleanValue();
+        }
+
+        Set<String> getchromosomeOption() {
+            Object opt = getOptionValue(chromosomeOption);
+            if(opt != null) {
+                String [] tokens = opt.toString().split(",");
+                return new HashSet<String>(Arrays.asList(tokens));
+            }
+            else {
+                return null;
+            }
+        }
+
+        int getCountThresholdOption() {
+            Object opt = getOptionValue(countThresholdOption);
+            return opt == null ? -1 : ((Number) opt).intValue();
+        }
+    }
+
+
+    public static void main(String[] args) throws IOException, CmdLineParser.UnknownOptionException, CmdLineParser.IllegalOptionValueException {
+
+        if (args.length < 4) {
+            System.out.println("Usage: hictools pre <options> <inputFile> <outputFile> <genomeID>");
             System.exit(0);
         }
+
+
+        CommandLineParser parser = new CommandLineParser();
+        parser.parse(args);
+
 
         Globals.setHeadless(true);
 
@@ -60,7 +100,7 @@ public class HiCTools {
                 chromosomes = chr14;
             } else if (genomeId.equals("mm9")) {
                 chromosomes = mm9Chromosomes;
-            }else {
+            } else {
                 chromosomes = dmelChromosomes;
             }
 
@@ -86,7 +126,13 @@ public class HiCTools {
                     files.add(f);
                 }
 
-                (new Preprocessor(new File(args[2]))).preprocess(files, genomeId);
+                Preprocessor preprocessor = new Preprocessor(new File(args[2]));
+
+                preprocessor.setChromosomes(parser.getchromosomeOption());
+                preprocessor.setCountThreshold(parser.getCountThresholdOption());
+                preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
+
+                preprocessor.preprocess(files, genomeId);
             }
         }
     }
