@@ -5,8 +5,10 @@ import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
+import sun.security.provider.SystemSigner;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +31,6 @@ public class DatasetReader {
     }
 
     public Dataset read() throws FileNotFoundException {
-
 
 
         try {
@@ -102,7 +103,7 @@ public class DatasetReader {
 
         totalCount = dis.readLong();
 
-        int gridSize =   dis.readInt();
+        int gridSize = dis.readInt();
         int nGrids = dis.readInt();
         double[] densities = new double[nGrids];
         for (int i = 0; i < nGrids; i++) {
@@ -110,10 +111,10 @@ public class DatasetReader {
         }
 
         int nNormFactors = dis.readInt();
-        Map<Integer,Double> normFactors = new HashMap<Integer, Double>(nNormFactors);
-        for (int i=0; i<nNormFactors; i++) {
+        Map<Integer, Double> normFactors = new HashMap<Integer, Double>(nNormFactors);
+        for (int i = 0; i < nNormFactors; i++) {
             Integer key = dis.readInt();
-            Double  norm = dis.readDouble();
+            Double norm = dis.readDouble();
             normFactors.put(key, norm);
         }
         densityFunction = new DensityFunction(gridSize, densities, normFactors);
@@ -174,11 +175,19 @@ public class DatasetReader {
         int nRecords = dis.readInt();
         ContactRecord[] records = new ContactRecord[nRecords];
         for (int i = 0; i < nRecords; i++) {
-            int bin1 = dis.readInt();
-            int bin2 = dis.readInt();
-            int counts = dis.readInt();
+            try {
+                int bin1 = dis.readInt();
+                int bin2 = dis.readInt();
+                int counts = dis.readInt();
+                records[i] = new ContactRecord(blockNumber, bin1, bin2, counts);
+            } catch (EOFException e) {
+                nRecords = i;
+                ContactRecord[] modifiedRecords = new ContactRecord[nRecords];
+                System.arraycopy(records, 0, modifiedRecords, 0, nRecords);
+                records = modifiedRecords;
+                break;
+            }
 
-            records[i] = new ContactRecord(blockNumber, bin1, bin2, counts);
         }
 
         return new Block(blockNumber, records);
