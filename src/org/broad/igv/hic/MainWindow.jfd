@@ -490,7 +490,7 @@
               </void> 
               <void method="setProperty"> 
                <string>majorTickSpacing</string> 
-               <int>10</int> 
+               <int>500</int> 
               </void> 
               <void method="setProperty"> 
                <string>maximumSize</string> 
@@ -512,6 +512,18 @@
                 <int>36</int> 
                 <int>52</int> 
                </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>maximum</string> 
+               <int>2000</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>upperValue</string> 
+               <int>500</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minorTickSpacing</string> 
+               <int>100</int> 
               </void> 
               <void property="name"> 
                <string>colorRangeSlider</string> 

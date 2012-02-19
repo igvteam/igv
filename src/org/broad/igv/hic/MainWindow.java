@@ -634,11 +634,11 @@ public class MainWindow extends JFrame {
     }
 
     private void colorRangeLabelMouseClicked(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        //if (e.isPopupTrigger()) {
             ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
             rangeDialog.setVisible(true);
 
-        }
+        //}
 
     }
 
@@ -842,10 +842,13 @@ public class MainWindow extends JFrame {
                     colorRangeSlider.setPaintTicks(true);
                     colorRangeSlider.setPaintLabels(true);
                     colorRangeSlider.setLowerValue(0);
-                    colorRangeSlider.setMajorTickSpacing(10);
+                    colorRangeSlider.setMajorTickSpacing(500);
                     colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
                     colorRangeSlider.setPreferredSize(new Dimension(200, 52));
                     colorRangeSlider.setMinimumSize(new Dimension(36, 52));
+                    colorRangeSlider.setMaximum(2000);
+                    colorRangeSlider.setUpperValue(500);
+                    colorRangeSlider.setMinorTickSpacing(100);
                     colorRangeSlider.addChangeListener(new ChangeListener() {
                         public void stateChanged(ChangeEvent e) {
                             colorRangeSliderStateChanged(e);

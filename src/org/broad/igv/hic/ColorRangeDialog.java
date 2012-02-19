@@ -36,6 +36,7 @@ public class ColorRangeDialog extends JDialog {
         colorSlider.setMinimum(min);
         colorSlider.setMaximum(max);
         colorSlider.setMajorTickSpacing(tickSpacing);
+        colorSlider.setMinorTickSpacing(tickSpacing);
         setVisible(false);
     }
 
