@@ -65,10 +65,9 @@ public class MainWindow extends JFrame {
 
 
     public static Cursor fistCursor;
-    //int refMaxCount = 500;
 
-    public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
-    public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "2.5 KB", "1 KB"};
+    public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000}; //, 5000, 2500, 1000};
+    public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB"}; //, "5 KB", "2.5 KB", "1 KB"};
     public static final int MAX_ZOOM = 10;
     public static final int BIN_PIXEL_WIDTH = 1;
 
@@ -879,7 +878,7 @@ public class MainWindow extends JFrame {
                         panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
                         //---- resolutionSlider ----
-                        resolutionSlider.setMaximum(10);
+                        resolutionSlider.setMaximum(7);
                         resolutionSlider.setMajorTickSpacing(1);
                         resolutionSlider.setPaintTicks(true);
                         resolutionSlider.setSnapToTicks(true);
@@ -900,7 +899,7 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new HiCLayout());
+                panel3.setLayout(new BorderLayout());
 
                 //---- rulerPanel2 ----
                 rulerPanel2.setMaximumSize(new Dimension(4000, 50));

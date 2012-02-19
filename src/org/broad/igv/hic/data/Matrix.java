@@ -8,9 +8,9 @@ import org.broad.igv.hic.MainWindow;
  */
 public class Matrix {
 
-    public int chr1;
-    public int chr2;
-    public MatrixZoomData[] zoomData;
+    private int chr1;
+    private int chr2;
+    private MatrixZoomData[] zoomData;
 
 
     /**
@@ -92,5 +92,29 @@ public class Matrix {
         for (MatrixZoomData zd : zoomData) {
             zd.parsingComplete();
         }
+    }
+
+    public int getChr1() {
+        return chr1;
+    }
+
+    public void setChr1(int chr1) {
+        this.chr1 = chr1;
+    }
+
+    public int getChr2() {
+        return chr2;
+    }
+
+    public void setChr2(int chr2) {
+        this.chr2 = chr2;
+    }
+
+    public MatrixZoomData[] getZoomData() {
+        return zoomData;
+    }
+
+    public void setZoomData(MatrixZoomData[] zoomData) {
+        this.zoomData = zoomData;
     }
 }

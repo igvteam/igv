@@ -278,17 +278,17 @@ public class Preprocessor {
 
         long position = bytesWritten;
 
-        writeInt(matrix.chr1);
-        writeInt(matrix.chr2);
-        writeInt(matrix.zoomData.length);
-        for (MatrixZoomData zd : matrix.zoomData) {
+        writeInt(matrix.getChr1());
+        writeInt(matrix.getChr2());
+        writeInt(matrix.getZoomData().length);
+        for (MatrixZoomData zd : matrix.getZoomData()) {
             writeZoomHeader(zd);
         }
         int size = (int) (bytesWritten - position);
         matrixPositions.put(matrix.getKey(), new IndexEntry(position, size));
 
 
-        for (MatrixZoomData zd : matrix.zoomData) {
+        for (MatrixZoomData zd : matrix.getZoomData()) {
             IndexEntry[] blockIndex = writeZoomData(zd);
             blockIndexMap.put(getBlockKey(zd), blockIndex);
         }

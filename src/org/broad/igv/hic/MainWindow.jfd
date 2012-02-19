@@ -625,7 +625,7 @@
                 <string>javax.swing.JSlider</string> 
                 <void method="setProperty"> 
                  <string>maximum</string> 
-                 <int>10</int> 
+                 <int>7</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>majorTickSpacing</string> 
