@@ -24,7 +24,9 @@ import org.broad.igv.util.ParsingUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -37,6 +39,12 @@ public class AsciiPairIterator implements PairIterator {
     AlignmentPair nextPair = null;
     BufferedReader reader;
     String [] tokens = new String[12];
+
+    /**
+     * A map of chromosome name -> chromosome string.  A private "intern" pool.  The java "intern" pool stores string
+     * in perm space, which is rather limited and can cause us to run out of memory.
+     */
+    Map<String, String> stringInternPool = new HashMap();
 
     public AsciiPairIterator(String path) throws IOException {
 
@@ -52,8 +60,8 @@ public class AsciiPairIterator implements PairIterator {
 
                 int nTokens =  ParsingUtils.splitWhitespace(nextLine, tokens);
                 if (nTokens < 10) {
-                    String chrom1 = tokens[1];
-                    String chrom2 = tokens[5];
+                    String chrom1 = getInternedString(tokens[1]);
+                    String chrom2 = getInternedString(tokens[5]);
                     int pos1 = Integer.parseInt(tokens[2]);
                     int pos2 = Integer.parseInt(tokens[6]);
 
@@ -67,6 +75,23 @@ public class AsciiPairIterator implements PairIterator {
         }
         nextPair = null;
 
+    }
+
+    /**
+     * Replace "aString" with a stored equivalent object, if it exists.  If it does not store it.  The purpose
+     * of this class is to avoid running out of memory storing zillions of equivalent string.
+     *
+     *
+     * @param aString
+     * @return
+     */
+    private String getInternedString(String aString) {
+        String s = stringInternPool.get(aString);
+        if(s == null) {
+            s = new String(aString); // THe "new" will break any dependency on larger strings if this is a "substring"
+            stringInternPool.put(aString, s);
+        }
+        return s;
     }
 
     public boolean hasNext() {
