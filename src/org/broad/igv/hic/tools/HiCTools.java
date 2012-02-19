@@ -74,19 +74,21 @@ public class HiCTools {
     }
 
 
-    public static void main(String[] args) throws IOException, CmdLineParser.UnknownOptionException, CmdLineParser.IllegalOptionValueException {
+    public static void main(String[] argv) throws IOException, CmdLineParser.UnknownOptionException, CmdLineParser.IllegalOptionValueException {
 
-        if (args.length < 4) {
+        if (argv.length < 4) {
             System.out.println("Usage: hictools pre <options> <inputFile> <outputFile> <genomeID>");
             System.exit(0);
         }
 
 
         CommandLineParser parser = new CommandLineParser();
-        parser.parse(args);
+        parser.parse(argv);
 
 
         Globals.setHeadless(true);
+
+        String [] args = parser.getRemainingArgs();
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
@@ -128,7 +130,7 @@ public class HiCTools {
 
                 Preprocessor preprocessor = new Preprocessor(new File(args[2]));
 
-                preprocessor.setChromosomes(parser.getchromosomeOption());
+                preprocessor.setIncludedChromosomes(parser.getchromosomeOption());
                 preprocessor.setCountThreshold(parser.getCountThresholdOption());
                 preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
 

@@ -30,7 +30,7 @@ public class Preprocessor {
 
     private int countThreshold = 0;
     private boolean diagonalsOnly = false;
-    private Set<String> chromosomes = null;
+    private Set<String> includedChromosomes = null;
 
     //static DensityCalculation densityCalculation;
 
@@ -46,8 +46,8 @@ public class Preprocessor {
         this.diagonalsOnly = diagonalsOnly;
     }
 
-    public void setChromosomes(Set<String> chromosomes) {
-        this.chromosomes = chromosomes;
+    public void setIncludedChromosomes(Set<String> includedChromosomes) {
+        this.includedChromosomes = includedChromosomes;
     }
 
     public void preprocess(List<String> inputFileList, String genomeId) throws IOException {
@@ -76,21 +76,21 @@ public class Preprocessor {
 
             // Compute matrices.  Note that c2 is always >= c1
             for (int c1 = 0; c1 < nChrs; c1++) {
-
-                // Optionally filter on chromosome
-                if(chromosomes != null && c1 != 0) {
-                    String chrName = HiCTools.chromosomes[c1].getName();
-                    if(!chromosomes.contains(chrName)) {
-                        continue;
-                    }
-                }
-
                 for (int c2 = c1; c2 < nChrs; c2++) {
 
                     // Index zero is whole genome
                     if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
 
-                    if(diagonalsOnly && c1 != c2) continue;
+                    if (diagonalsOnly && c1 != c2) continue;
+
+                    // Optionally filter on chromosome
+                    if (includedChromosomes != null && c1 != 0) {
+                        String c1Name = HiCTools.chromosomes[c1].getName();
+                        String c2Name = HiCTools.chromosomes[c2].getName();
+                        if (!(includedChromosomes.contains(c1Name) || includedChromosomes.contains(c2Name))) {
+                            continue;
+                        }
+                    }
 
                     Matrix matrix = computeMatrix(inputFileList, c1, c2);
 
