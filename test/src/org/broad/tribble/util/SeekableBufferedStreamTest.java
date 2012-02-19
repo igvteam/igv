@@ -58,6 +58,12 @@ public class SeekableBufferedStreamTest {
         bufferedStream.close();
     }
 
+
+    /**
+     * Test reading byte arrays
+     *
+     * @throws Exception
+     */
     @Test
     public void testReadBuffer() throws Exception {
 
