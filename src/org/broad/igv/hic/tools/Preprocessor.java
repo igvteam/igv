@@ -349,11 +349,23 @@ public class Preprocessor {
     private void writeContactRecords(Block block) throws IOException {
 
         final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
-        final int len = records.size();
 
-        BufferedByteWriter buffer = new BufferedByteWriter(len * 12);
 
-        buffer.putInt(len);
+        // Count records first
+        int nRecords;
+        if (countThreshold > 0) {
+            nRecords = 0;
+            for (ContactRecord rec : records) {
+                if (rec.getCounts() >= countThreshold) {
+                    nRecords++;
+                }
+            }
+        } else {
+            nRecords = records.size();
+        }
+
+        BufferedByteWriter buffer = new BufferedByteWriter(nRecords * 12);
+        buffer.putInt(nRecords);
         for (ContactRecord rec : records) {
             if (rec.getCounts() >= countThreshold) {
                 buffer.putInt(rec.getX());

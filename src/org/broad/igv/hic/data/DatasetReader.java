@@ -88,11 +88,11 @@ public class DatasetReader {
             masterIndex.put(key, new Preprocessor.IndexEntry(filePosition, sizeInBytes));
         }
 
-        try {
-            readExpectedValues(dis);
-        } catch (IOException e) {
-            System.err.println("Warning: No expected value information available.");
-        }
+//        try {
+//         //   readExpectedValues(dis);
+//        } catch (IOException e) {
+//            System.err.println("Warning: No expected value information available.");
+//        }
 
         return masterIndex;
 
