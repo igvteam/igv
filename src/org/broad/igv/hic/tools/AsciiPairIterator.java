@@ -19,10 +19,13 @@
 package org.broad.igv.hic.tools;
 
 
+import org.broad.igv.util.ParsingUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /**
  * @author Jim Robinson
@@ -30,11 +33,13 @@ import java.util.Iterator;
  */
 public class AsciiPairIterator implements PairIterator {
 
+    static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
     AlignmentPair nextPair = null;
     BufferedReader reader;
-
+    String [] tokens = new String[12];
 
     public AsciiPairIterator(String path) throws IOException {
+
         this.reader = org.broad.igv.util.ParsingUtils.openBufferedReader(path);
         advance();
     }
@@ -45,9 +50,8 @@ public class AsciiPairIterator implements PairIterator {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
 
-                String[] tokens = nextLine.split("\\s+");
-                int nTokens = tokens.length;
-                if (nTokens <= 9) {
+                int nTokens =  ParsingUtils.splitWhitespace(nextLine, tokens);
+                if (nTokens < 10) {
                     String chrom1 = tokens[1];
                     String chrom2 = tokens[5];
                     int pos1 = Integer.parseInt(tokens[2]);
