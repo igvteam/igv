@@ -137,6 +137,7 @@ public class MainWindow extends JFrame {
             }
         }
         resolutionSlider.setLabelTable(resolutionLabels);
+
         //resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
         // setLayout(new HiCLayout());
 
@@ -157,7 +158,7 @@ public class MainWindow extends JFrame {
         DropTarget target = new DropTarget(this, new FileDropTargetListener());
         setDropTarget(target);
 
-
+         colorRangeSlider.setUpperValue(1200);
 
     }
 
