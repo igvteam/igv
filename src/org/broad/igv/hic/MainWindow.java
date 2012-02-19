@@ -4,6 +4,10 @@
 
 package org.broad.igv.hic;
 
+import java.awt.List;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.*;
 import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -11,14 +15,21 @@ import javax.swing.event.*;
 import com.jidesoft.swing.*;
 
 
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.MessageCollection;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
@@ -29,10 +40,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
 
@@ -145,6 +153,10 @@ public class MainWindow extends JFrame {
 
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        DropTarget target = new DropTarget(this, new FileDropTargetListener());
+        setDropTarget(target);
+
 
 
     }
@@ -635,20 +647,97 @@ public class MainWindow extends JFrame {
 
     private void colorRangeLabelMouseClicked(MouseEvent e) {
         //if (e.isPopupTrigger()) {
-            ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
-            rangeDialog.setVisible(true);
+        ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
+        rangeDialog.setVisible(true);
 
         //}
 
     }
 
-    private void colorRangeLabelMousePressed(MouseEvent e) {        if (e.isPopupTrigger()) {
+    private void colorRangeLabelMousePressed(MouseEvent e) {
+        if (e.isPopupTrigger()) {
             ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
             rangeDialog.setVisible(true);
 
         }
 
     }
+
+    /**
+     * Listener for drag&drop actions
+     */
+    class FileDropTargetListener implements DropTargetListener {
+
+
+        public FileDropTargetListener() {
+        }
+
+        public void dragEnter(DropTargetDragEvent event) {
+
+            if (!isDragAcceptable(event)) {
+                event.rejectDrag();
+                return;
+            }
+        }
+
+        public void dragExit(DropTargetEvent event) {
+        }
+
+        public void dragOver(DropTargetDragEvent event) {
+            // you can provide visual feedback here
+        }
+
+        public void dropActionChanged(DropTargetDragEvent event) {
+            if (!isDragAcceptable(event)) {
+                event.rejectDrag();
+                return;
+            }
+        }
+
+        public void drop(DropTargetDropEvent event) {
+            if (!isDropAcceptable(event)) {
+                event.rejectDrop();
+                return;
+            }
+
+            event.acceptDrop(DnDConstants.ACTION_COPY);
+
+            Transferable transferable = event.getTransferable();
+
+            try {
+                java.util.List<File> files = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+                load(files.get(0).getAbsolutePath());
+
+            } catch (Exception e) {
+                String obj = null;
+                try {
+                    obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
+                    if (HttpUtils.getInstance().isURL(obj)) {
+                        load(obj);
+                    }
+                }
+                catch (Exception e1) {
+                }
+
+            }
+            repaint();
+            event.dropComplete(true);
+        }
+
+
+        public boolean isDragAcceptable(DropTargetDragEvent event) {
+            //  Check the  available data flavors here
+            //  Currently accepting all flavors
+            return (event.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) != 0;
+        }
+
+        public boolean isDropAcceptable(DropTargetDropEvent event) {
+            //  Check the  available data flavors here
+            //  Currently accepting all flavors
+            return (event.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) != 0;
+        }
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -739,8 +828,8 @@ public class MainWindow extends JFrame {
                         panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
                         //---- chrBox1 ----
-                        chrBox1.setModel(new DefaultComboBoxModel(new String[] {
-                            "All"
+                        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                "All"
                         }));
                         chrBox1.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -750,8 +839,8 @@ public class MainWindow extends JFrame {
                         panel9.add(chrBox1);
 
                         //---- chrBox2 ----
-                        chrBox2.setModel(new DefaultComboBoxModel(new String[] {
-                            "All"
+                        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
+                                "All"
                         }));
                         chrBox2.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -797,8 +886,8 @@ public class MainWindow extends JFrame {
                         panel1.setLayout(new GridLayout(1, 0, 20, 0));
 
                         //---- comboBox1 ----
-                        comboBox1.setModel(new DefaultComboBoxModel(new String[] {
-                            "Observed"
+                        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                "Observed"
                         }));
                         panel1.add(comboBox1);
                     }
@@ -829,6 +918,7 @@ public class MainWindow extends JFrame {
                             public void mousePressed(MouseEvent e) {
                                 colorRangeLabelMousePressed(e);
                             }
+
                             @Override
                             public void mouseClicked(MouseEvent e) {
                                 colorRangeLabelMouseClicked(e);
@@ -964,7 +1054,7 @@ public class MainWindow extends JFrame {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel8.getComponentCount(); i++) {
+                        for (int i = 0; i < panel8.getComponentCount(); i++) {
                             Rectangle bounds = panel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
