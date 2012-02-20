@@ -495,10 +495,10 @@ public class CoverageTrack extends AbstractTrack {
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             //Not all reads at a position are informative,  color by % of informative reads
-            double totalInformative = count.methylatedCount + count.unmethylatedCount;
-            double mult = totalCount / totalInformative;
-            nMethylated *= mult;
-            unMethylated *= mult;
+           // double totalInformative = count.methylatedCount + count.unmethylatedCount;
+           // double mult = totalCount / totalInformative;
+           // nMethylated *= mult;
+           // unMethylated *= mult;
 
             double tmp = isLog ?
                     (nMethylated / totalCount) * Math.log10(totalCount) / maxRange :
