@@ -79,7 +79,8 @@ public class BisulfiteCounts {
                         AlignmentTrack.BisulfiteContext matchingContext = contextIsMatching(reference, read, idx, bisulfiteContext);
                         boolean matchesContext = (matchingContext != null);
                         if (matchesContext) {
-                            int extension = this.getBisulfiteSymmetricCytosineExtension(bisulfiteContext);
+                            //int extension = this.getBisulfiteSymmetricCytosineExtension(bisulfiteContext);
+                            int extension = 0; // Don't extend
                             int step = flipRead ? -1 : 1;
                             for (int i = 0; i <= extension; i++) {
                                 int position = start + idxFw + step*i;
@@ -89,7 +90,6 @@ public class BisulfiteCounts {
                                     count = new Count();
                                     counts.put(position, count);
                                 }
-
                                 if (AlignmentUtils.compareBases((byte) 'T', readbase)) {
                                     count.increment(false);
                                 } else if (AlignmentUtils.compareBases((byte) 'C', readbase)) {
@@ -98,6 +98,9 @@ public class BisulfiteCounts {
                             }
                         }
                     }
+                }
+                else {
+                    // Non-informative
                 }
             }
         }

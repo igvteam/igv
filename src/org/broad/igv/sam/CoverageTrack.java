@@ -281,7 +281,7 @@ public class CoverageTrack extends AbstractTrack {
             Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
 
             DataRange range = getDataRange();
-            double max = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
+            double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
 
             int lastpX = -1;
             final double rectX = rect.getX();
@@ -391,7 +391,7 @@ public class CoverageTrack extends AbstractTrack {
 
                                 int totalCount = alignmentCounts.getTotalCount(pos);
 
-                                double tmp = range.isLog() ? Math.log10(totalCount) / max : totalCount / max;
+                                double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
                                 int height = (int) (tmp * rectHeight);
 
                                 height = Math.min(height, rect.height - 1);
@@ -407,13 +407,13 @@ public class CoverageTrack extends AbstractTrack {
                                             if (bc != null) {
                                                 BisulfiteCounts.Count cnt = bc.getCount(pos);
                                                 if (cnt != null) {
-                                                    drawBarBisulfite(context, pos, rect, totalCount, max,
+                                                    drawBarBisulfite(context, pos, rect, totalCount, maxRange,
                                                             pY, pX, dX, cnt, range.isLog());
                                                 }
                                             }
 
                                         } else {
-                                            drawBar(context, pos, rect, totalCount, max,
+                                            drawBar(context, pos, rect, totalCount, maxRange,
                                                     pY, pX, dX, alignmentCounts, range.isLog());
                                         }
                                     }
@@ -481,7 +481,7 @@ public class CoverageTrack extends AbstractTrack {
                               int pos,
                               Rectangle rect,
                               double totalCount,
-                              double max,
+                              double maxRange,
                               int pY,
                               int pX,
                               int dX,
@@ -489,13 +489,20 @@ public class CoverageTrack extends AbstractTrack {
                               boolean isLog) {
 
 
-            int nMethylated = count.methylatedCount;
+            double nMethylated = count.methylatedCount;
+            double unMethylated = count.unmethylatedCount;
             Color c = Color.red;
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
+            //Not all reads at a position are informative,  color by % of informative reads
+            double totalInformative = count.methylatedCount + count.unmethylatedCount;
+            double mult = totalCount / totalInformative;
+            nMethylated *= mult;
+            unMethylated *= mult;
+
             double tmp = isLog ?
-                    (nMethylated / totalCount) * Math.log10(totalCount) / max :
-                    nMethylated / max;
+                    (nMethylated / totalCount) * Math.log10(totalCount) / maxRange :
+                    nMethylated / maxRange;
             int height = (int) (tmp * rect.getHeight());
 
             height = Math.min(pY - rect.y, height);
@@ -505,13 +512,12 @@ public class CoverageTrack extends AbstractTrack {
             }
             pY = baseY;
 
-            int unMethylated = count.unmethylatedCount;
             c = Color.blue;
             tGraphics = context.getGraphic2DForColor(c);
 
             tmp = isLog ?
-                    (unMethylated / totalCount) * Math.log10(totalCount) / max :
-                    unMethylated / max;
+                    (unMethylated / totalCount) * Math.log10(totalCount) / maxRange :
+                    unMethylated / maxRange;
             height = (int) (tmp * rect.getHeight());
 
             height = Math.min(pY - rect.y, height);
