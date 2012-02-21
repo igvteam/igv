@@ -33,6 +33,7 @@ import org.broad.igv.ui.event.TrackGroupEvent;
 import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -227,7 +228,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         isAbsolute = alignmentPath.startsWith(prefix);
                     }
                     if(!isAbsolute) {
-                        alignmentPath = IGVSessionReader.getAbsolutePath(alignmentPath, bamListPath);
+                        alignmentPath = FileUtils.getAbsolutePath(alignmentPath, bamListPath);
                     }
 
 
