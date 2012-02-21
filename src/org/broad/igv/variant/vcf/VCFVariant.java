@@ -18,6 +18,7 @@
 
 package org.broad.igv.variant.vcf;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
@@ -33,6 +34,8 @@ import java.util.*;
  * @date Aug 1, 2011
  */
 public class VCFVariant implements Variant {
+
+    private static Logger log = Logger.getLogger(Variant.class);
 
     VariantContext variantContext;
     Set<Allele> alternateAlleles;
@@ -57,13 +60,25 @@ public class VCFVariant implements Variant {
             Genotype genotype = getGenotype(sample);
             zygosityCount.incrementCount(genotype);
         }
-        alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("AF", "-1"));
-        if (alleleFreq < 0) {
-            alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("GMAF", "-1"));
+
+        // TODO -- deal with multiple value allele freq, e.g. [0.01,0.001]
+        String afString = null;
+        try {
+            afString = variantContext.getAttributeAsString("AF", "-1");
+            alleleFreq = Double.parseDouble(afString);
+        } catch (NumberFormatException e) {
+            alleleFreq = -1;
+            log.error("Error parsing allele fraction: " + afString);
         }
-
-
-
+        if (alleleFreq < 0) {
+            try {
+                afString = variantContext.getAttributeAsString("GMAF", "-1");
+                alleleFreq = Double.parseDouble(afString);
+            } catch (NumberFormatException e) {
+                alleleFreq = -1;
+                log.error("Error parsing allele fraction: " + afString);
+            }
+        }
     }
 
     /**
