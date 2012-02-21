@@ -178,33 +178,30 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                     try {
                         ResourceLocator locator = new ResourceLocator(file.getAbsolutePath());
                         IGV.getInstance().load(locator, panel);
-                    }
-                    catch (DataLoadException de) {
+                    } catch (DataLoadException de) {
                         messages.append(de.getMessage());
                     }
                 }
                 String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
                 if (HttpUtils.getInstance().isURL(obj)) {
-                    IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
-                } else {
-
+                    IGV.getInstance().load(new ResourceLocator(obj), panel);
                 }
-
                 if (messages != null && !messages.isEmpty()) {
                     log.error(messages.getFormattedMessage());
                     MessageUtils.showMessage(messages.getFormattedMessage());
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 String obj = null;
                 try {
                     obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
                     if (HttpUtils.getInstance().isURL(obj)) {
-                        IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
+                        IGV.getInstance().load(new ResourceLocator(obj), panel);
                     }
-                }
-                catch (Exception e1) {
+                } catch (Exception e1) {
                     log.error(e1);
+                    if (messages != null && !messages.isEmpty()) {
+                        MessageUtils.showMessage(messages.getFormattedMessage());
+                    }
                 }
             }
             IGV.getMainFrame().repaint();

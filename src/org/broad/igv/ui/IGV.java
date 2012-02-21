@@ -1098,7 +1098,7 @@ public class IGV {
         contentPane.getStatusBar().setMessage(message);
     }
 
-        /**
+    /**
      * Set the status bar message.  If the message equals "Done." intercept
      * and reset to the default "quite" message,  currently the number of tracks
      * loaded.
@@ -1545,6 +1545,13 @@ public class IGV {
      * Load the data file into the specified panel.   Triggered via drag and drop.
      */
     public void load(ResourceLocator locator, TrackPanel panel) {
+        // If this is a session  TODO -- need better "is a session?" test
+        if (locator.getPath().endsWith(".xml") || locator.getPath().endsWith(("session"))) {
+            boolean merge = false;  // TODO -- ask user?
+            this.doRestoreSession(locator.getPath(), null, merge);
+        }
+
+        // Not a session, load into target panel
         List<Track> tracks = load(locator);
         panel.addTracks(tracks);
         doRefresh();
