@@ -562,7 +562,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     }//To change body of implemented methods use File | Settings | File Templates.
                 }
             };
-            clickScheduler.scheduleClickTask(clickTask);
+            //clickScheduler.scheduleClickTask(clickTask);
+            clickTask.run();
         }
 
         protected void fireGhostDropEvent(GhostDropEvent evt) {

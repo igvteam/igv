@@ -30,7 +30,6 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Arc2D;
 import java.util.*;
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class VariantMenu extends IGVPopupMenu {
 
         this.track = variantTrack;
 
-        if (track.hasBamFiles()) {
+        if (track.hasAlignmentFiles()) {
             selectedSamples = track.getSelectedSamples();
         }
 
@@ -70,7 +69,7 @@ public class VariantMenu extends IGVPopupMenu {
             }
 
             private void close() {
-                track.clearSelectedVariant();
+               // track.clearSelectedVariant();
             }
 
         });
@@ -137,7 +136,7 @@ public class VariantMenu extends IGVPopupMenu {
         add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
 
-        if (track.hasBamFiles()) {
+        if (track.hasAlignmentFiles()) {
             addSeparator();
             add(getLoadBamsItem());
         }
@@ -373,7 +372,7 @@ public class VariantMenu extends IGVPopupMenu {
      * @return
      */
     private JMenuItem getLoadBamsItem() {
-        final JMenuItem item = new JMenuItem("Load bams");
+        final JMenuItem item = new JMenuItem("Load alignments");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.loadSelectedBams();

@@ -673,7 +673,8 @@ public class IGVSessionReader implements SessionReader {
 
     }
 
-    private String getAbsolutePath(String path, String sessionPath) {
+    // TODO -- move
+    public static String getAbsolutePath(String path, String sessionPath) {
         String absolutePath;
         if (FileUtils.isRemote(sessionPath)) {
             int idx = sessionPath.lastIndexOf("/");

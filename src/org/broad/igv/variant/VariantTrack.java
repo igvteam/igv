@@ -40,8 +40,8 @@ import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Arc2D;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -69,7 +69,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     // TODO -- this needs to be settable
-     public static  int METHYLATION_MIN_BASE_COUNT = 10;
+    public static int METHYLATION_MIN_BASE_COUNT = 10;
 
     /**
      * The renderer.
@@ -160,7 +160,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * Map of sample name -> associated bam file
      */
-    Map<String, String> bamFiles;
+    Map<String, String> alignmentFiles;
 
 
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
@@ -195,16 +195,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         IGV.getInstance().addGroupEventListener(this);
 
         // If sample->bam list file is supplied enable vcfToBamMode.
-        String bamListPath = locator.getPath() + ".bams";
+        String bamListPath = locator.getPath() + ".mapping";
         if (ParsingUtils.pathExists(bamListPath)) {
-            loadBamMappings(bamListPath);
+            loadAlignmentMappings(bamListPath);
 
         }
 
     }
 
-    private void loadBamMappings(String bamListPath) {
-        bamFiles = new HashMap<String, String>();
+    private void loadAlignmentMappings(String bamListPath) {
+        alignmentFiles = new HashMap<String, String>();
         BufferedReader br = null;
 
         try {
@@ -215,7 +215,23 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 if (tokens.length < 2) {
                     log.info("Skipping bam mapping file line: " + nextLine);
                 } else {
-                    bamFiles.put(tokens[0], tokens[1]);
+
+                    String alignmentPath = tokens[1];
+                    boolean isAbsolute;
+                    if(alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
+                        isAbsolute = true;
+                    }
+                    else {
+                        String absolutePath = (new File(alignmentPath)).getAbsolutePath();
+                        String prefix = absolutePath.substring(0, 3);
+                        isAbsolute = alignmentPath.startsWith(prefix);
+                    }
+                    if(!isAbsolute) {
+                        alignmentPath = IGVSessionReader.getAbsolutePath(alignmentPath, bamListPath);
+                    }
+
+
+                    alignmentFiles.put(tokens[0], alignmentPath);
                 }
             }
         } catch (IOException e) {
@@ -232,7 +248,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     String getBamFileForSample(String sample) {
-        return bamFiles == null ? null : bamFiles.get(sample);
+        return alignmentFiles == null ? null : alignmentFiles.get(sample);
     }
 
 
@@ -795,10 +811,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     public String getNameValueString(int y) {
-        if(y < top + variantBandHeight) {
+        if (y < top + variantBandHeight) {
             return getName();
-        }
-        else {
+        } else {
             String sample = getSampleAtPosition(y);
             return sample;
         }
@@ -1026,8 +1041,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         setupGroupsFromAttributes();
     }
 
-    public boolean hasBamFiles() {
-        return bamFiles != null && !bamFiles.isEmpty();
+    public boolean hasAlignmentFiles() {
+        return alignmentFiles != null && !alignmentFiles.isEmpty();
     }
 
     public Collection<String> getSelectedSamples() {
@@ -1067,8 +1082,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     private String getSampleToolTip(String sample, Variant variant) {
         double goodBaseCount = variant.getGenotype(sample).getAttributeAsDouble("GB");
-        if(Double.isNaN(goodBaseCount)) goodBaseCount = 0;
-        if (isEnableMethylationRateSupport() &&  goodBaseCount < 10) {
+        if (Double.isNaN(goodBaseCount)) goodBaseCount = 0;
+        if (isEnableMethylationRateSupport() && goodBaseCount < 10) {
             return sample;
         }
         String id = variant.getID();
@@ -1176,10 +1191,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public void handleNameClick(MouseEvent e) {
         String sampleAtPosition = getSampleAtPosition(e.getY());
 
+        if (e.isPopupTrigger()) {
+            return;
+        }
+
         if (e.isMetaDown() || e.isControlDown()) {
             if (sampleAtPosition != null) {
                 if (selectedSamples.contains(sampleAtPosition)) {
-                    selectedSamples.remove(sampleAtPosition);
+                //    selectedSamples.remove(sampleAtPosition);
                 } else {
                     selectedSamples.add(sampleAtPosition);
                 }
@@ -1196,8 +1215,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             }
 
         } else {
-            selectedSamples.clear();
             if (sampleAtPosition != null) {
+                if (selectedSamples.size() == 1 && selectedSamples.contains(sampleAtPosition)) {
+                    selectedSamples.clear();
+                    IGV.getInstance().repaint();
+                    return;
+                } else {
+                    selectedSamples.clear();
+                }
                 selectedSamples.add(sampleAtPosition);
             }
         }
@@ -1231,7 +1256,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
 
-        if (!hasBamFiles()) {
+        if (!hasAlignmentFiles()) {
             return false;
         }
 
@@ -1333,6 +1358,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             public void run() {
                 // Use a set to enforce uniqueness
                 final int nSamples = selectedSamples.size();
+                if (nSamples == 0) {
+                    return;
+                }
 
                 Set<String> bams = new HashSet<String>(nSamples);
                 String name = "";
