@@ -20,6 +20,7 @@ package org.broad.igv.gs;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 
 import java.io.*;
 import java.net.URL;
@@ -81,17 +82,20 @@ public class GSUtils {
         return gsDir;
     }
 
-    public static File getTokenFile() {
+    private static File getTokenFile() {
         File gsDir = getTokenSaveDir();
         return (gsDir != null && gsDir.exists()) ? new File(gsDir, tokenSaveFileName) : null;
     }
 
-    public static File getUsernameFile() {
+    private static File getUsernameFile() {
         File gsDir = getTokenSaveDir();
         return (gsDir != null && gsDir.exists()) ? new File(gsDir, usernameSaveFileName) : null;
     }
 
     public static void setGSToken(String newToken) {
+        if (Globals.isTesting()) {
+            return;
+        }
         if (gsToken == null || !gsToken.equals(newToken)) {
             gsToken = newToken;
             BufferedWriter bw = null;
@@ -108,6 +112,9 @@ public class GSUtils {
     }
 
     public static String getGSToken() {
+        if (Globals.isTesting()) {
+            return null;
+        }
         if (gsToken == null) {
             File file = GSUtils.getTokenFile();
             if (file.exists()) {
@@ -131,6 +138,9 @@ public class GSUtils {
 
 
     public static void setGSUser(String newUser) {
+        if (Globals.isTesting()) {
+            return;
+        }
         if (gsUser == null || !gsUser.equals(newUser)) {
             gsUser = newUser;
             BufferedWriter bw = null;
@@ -148,6 +158,9 @@ public class GSUtils {
 
 
     public static String getGSUser() throws IOException {
+        if (Globals.isTesting()) {
+            return null;
+        }
         if (gsUser == null) {
             BufferedReader br = null;
             try {
