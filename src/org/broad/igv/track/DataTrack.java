@@ -340,7 +340,7 @@ public abstract class DataTrack extends AbstractTrack {
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
                 if (!Globals.isHeadless() && tracks == null) {
-                    tracks = IGV.getInstance().getAllTracks(false);
+                    tracks = IGV.getInstance().getOverlayTracks(this);
                 }
                 float count = 0;
                 if (tracks != null && this.getSample() != null) {
