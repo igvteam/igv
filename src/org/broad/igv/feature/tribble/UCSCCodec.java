@@ -41,13 +41,14 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     FeatureFileHeader header;
 
 
-    /**
+    /** @deprecated should always be 0
      * The startBase of the FILE. This can only be 0 or 1.
      * If this value is 1, then we assume the file is 1-based, and inclusive of start and end
      * If this value is 0, then we assume the file is 0-based, inclusive of start, exclusive of end
      * So the start positions need to have 1 subtracted in the case of startBase == 1.
      */
-    protected int startOffsetValue = 0;
+    @Deprecated
+    protected final int startOffsetValue = 0;
 
 
     /**
@@ -92,15 +93,6 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
                     // log.error("Error converting track type: " + tokens[1]);
                 }
             }
-        } else if (line.startsWith("#coords")) {
-            String[] tokens = Globals.equalPattern.split(line);
-            int cBase = Integer.parseInt(tokens[1].trim());
-            if(cBase == 0 || cBase == 1){
-                this.startOffsetValue = cBase;
-            }else{
-                throw new IllegalArgumentException("Found #coords tag with illegal value " + cBase + ". Must be 0 or 1");
-            }
-
         } else if (line.startsWith("#track") || line.startsWith("track")) {
             TrackProperties tp = new TrackProperties();
             ParsingUtils.parseTrackLine(line, tp);
