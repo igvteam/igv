@@ -62,7 +62,7 @@ public class NetworkAnnotatorTest {
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
         annotator = null;
         TestUtils.clearOutputDir();
     }
@@ -95,21 +95,23 @@ public class NetworkAnnotatorTest {
     /**
      * Load some data from cbio.
      * Checks that we are looking at the right urls
+     *
      * @throws Exception
      */
     @Test
-    public void testDownloadCBIO() throws Exception{
+    public void testDownloadCBIO() throws Exception {
         String[] gene_list = new String[]{"egfr", "brca1", "jun"};
         NetworkAnnotator anno = NetworkAnnotator.getFromCBIO(Arrays.asList(gene_list));
         assertNotNull(anno);
     }
-    
+
     @Test
-    public void testAnnotateAll() throws Exception{
+    public void testAnnotateAll() throws Exception {
         //TODO Run this test headless
-        IGV igv = TestUtils.startGUI();
+        //IGV igv = TestUtils.startGUI();
+        TestUtils.setUpHeadless();
         Genome genome = TestUtils.loadGenome();
-        
+
         String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
         assertTrue(annotator.loadNetwork(networkPath));
 
@@ -121,12 +123,12 @@ public class NetworkAnnotatorTest {
 
         //Check data
         NodeList nodes = annotator.getNodes();
-        for(int nn=0; nn < nodes.getLength(); nn++){
+        for (int nn = 0; nn < nodes.getLength(); nn++) {
             Node node = nodes.item(nn);
-            for(String key: NetworkAnnotator.attribute_map.keySet()){
+            for (String key : NetworkAnnotator.attribute_map.keySet()) {
                 String data = NetworkAnnotator.getNodeKeyData(node, key);
                 String name = NetworkAnnotator.getNodeKeyData(node, NetworkAnnotator.LABEL);
-                if(!"CHMP3".equalsIgnoreCase(name)){
+                if (!"CHMP3".equalsIgnoreCase(name)) {
                     assertNotNull(data);
                 }
             }
@@ -135,19 +137,19 @@ public class NetworkAnnotatorTest {
         //Check schema
         Document doc = annotator.getDocument();
         Node gml = doc.getFirstChild();
-        for(String key: NetworkAnnotator.attribute_map.keySet()){
+        for (String key : NetworkAnnotator.attribute_map.keySet()) {
             String data = NetworkAnnotator.getNodeAttrValue(gml, "id", key);
             assertNotNull(data);
         }
-        
+
 
         //Check valid XML
-        String outPath = TestUtils.DATA_DIR + "/out/test.xml"; 
+        String outPath = TestUtils.DATA_DIR + "/out/test.xml";
         assertTrue(annotator.writeDocument(outPath));
         NetworkAnnotator at = new NetworkAnnotator();
         assertTrue(at.loadNetwork(outPath));
 
-        TestUtils.stopGUI();
+        //TestUtils.stopGUI();
     }
 
 

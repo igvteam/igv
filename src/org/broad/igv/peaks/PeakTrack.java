@@ -239,7 +239,6 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
-
     public Renderer getRenderer() {
         return renderer;
     }
@@ -412,7 +411,7 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
 
         int interval = end - start;
         if (interval <= 0) {
@@ -643,8 +642,6 @@ public class PeakTrack extends AbstractTrack {
     }
 
 
-
-
     private InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
 
         InViewInterval interval = new InViewInterval();
@@ -684,7 +681,6 @@ public class PeakTrack extends AbstractTrack {
         float dataMax = 0;
         float dataMin = 0;
     }
-
 
 
 }

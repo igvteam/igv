@@ -215,7 +215,7 @@ public class MAFTrack extends AbstractTrack {
     }
 
     public float getRegionScore(String chr, int start, int end, int zoom,
-                                RegionScoreType type, ReferenceFrame frame) {
+                                RegionScoreType type, String frameName) {
         return 0;
     }
 

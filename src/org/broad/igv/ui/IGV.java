@@ -1736,7 +1736,7 @@ public class IGV {
     /**
      * Reset the overlay tracks collection.  Currently the only overlayable track
      * type is Mutation.  This method finds all mutation tracks and builds a map
-     * of key -> mutatinon track,  where the key is the specified attribute value
+     * of key -> mutation track,  where the key is the specified attribute value
      * for linking tracks for overlay.
      */
     public void resetOverlayTracks() {
@@ -2134,8 +2134,8 @@ public class IGV {
                         if (t1 == null) return 1;
                         if (t2 == null) return -1;
 
-                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
-                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
+                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame.getName());
+                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame.getName());
 
                         if (s1 < s2) {
                             return -1;

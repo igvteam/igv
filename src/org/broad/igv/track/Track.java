@@ -54,6 +54,7 @@ public interface Track extends Persistable {
      * Return an identifier for the track.   The identifier should be unique in the context of a session.  For
      * files that produce a single track (e.g. wig) the absolute path name for the underlying file can be
      * used.
+     *
      * @return
      */
     public String getId();
@@ -63,7 +64,7 @@ public interface Track extends Persistable {
      * bounds of the rectangle.
      *
      * @param context the render context
-     * @param rect the track bounds, relative to the enclosing DataPanel bounds.
+     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void render(RenderContext context, Rectangle rect);
 
@@ -71,7 +72,7 @@ public interface Track extends Persistable {
      * Render the track as an overlay, presumably on another track.
      *
      * @param context the render context
-     * @param rect the track bounds, relative to the enclosing DataPanel bounds.
+     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void overlay(RenderContext context, Rectangle rect);
 
@@ -81,7 +82,7 @@ public interface Track extends Persistable {
      * on the viewport for large tracks that extend outside the viewport.
      *
      * @param graphics
-     * @param trackRectangle  the track bounds, relative to the enclosing DataPanel bounds.
+     * @param trackRectangle   the track bounds, relative to the enclosing DataPanel bounds.
      * @param visibleRectangle
      */
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
@@ -107,7 +108,7 @@ public interface Track extends Persistable {
     public void setOverlayed(boolean overlayVisible);
 
     public TrackType getTrackType();
-        
+
     public void setHeight(int preferredHeight);
 
     public void setY(int top);
@@ -154,7 +155,9 @@ public interface Track extends Persistable {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame);
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame);
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName);
+
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName, List<Track> tracks);
 
     public void setFontSize(int h);
 
@@ -187,16 +190,15 @@ public interface Track extends Persistable {
     float getViewLimitMin();
 
     float getViewLimitMax();
-    
+
     DisplayMode getDisplayMode();
 
     void setDisplayMode(DisplayMode mode);
- 
+
     IGVPopupMenu getPopupMenu(final TrackClickEvent te);
 
     boolean isDrawYLine();
 
     float getYLine();
 
-    
 }

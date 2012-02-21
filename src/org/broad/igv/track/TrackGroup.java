@@ -113,14 +113,14 @@ public class TrackGroup {
      * @param end
      * @param zoom
      * @param type
-     * @param frame
+     * @param frameName
      * @return
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         float score = -Float.MAX_VALUE;
         for (Track track : tracks) {
             if (track.isVisible()) {
-                score = Math.max(score, track.getRegionScore(chr, start, end, zoom, type, frame));
+                score = Math.max(score, track.getRegionScore(chr, start, end, zoom, type, frameName));
 
             }
         }

@@ -171,7 +171,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions = new RenderOptions();
 
-        if(renderOptions.getColorOption() == ColorOption.BISULFITE) {
+        if (renderOptions.getColorOption() == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
 
@@ -189,7 +189,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      */
     public void setExperimentType(ExperimentType type) {
         dataManager.setExperimentType(type);
-        if(spliceJunctionTrack != null) {
+        if (spliceJunctionTrack != null) {
             spliceJunctionTrack.setVisible(type != ExperimentType.BISULFITE);
         }
     }
@@ -204,7 +204,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
-        if(dataManager.getExperimentType() == ExperimentType.BISULFITE) {
+        if (dataManager.getExperimentType() == ExperimentType.BISULFITE) {
             spliceJunctionTrack.setVisible(false);
         }
     }
@@ -498,7 +498,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return false;
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0.0f;
     }
 
@@ -669,7 +669,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
-    public void setViewAsPairs(boolean vAP){
+    public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
         if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {
             boolean ungroup = MessageUtils.confirm("\"View as pairs\" is incompatible with \"Group by strand\". Ungroup?");
@@ -1046,10 +1046,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        private JCheckBoxMenuItem getGroupMenuItem(String label, final GroupOption option){
+        private JCheckBoxMenuItem getGroupMenuItem(String label, final GroupOption option) {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
             mi.setSelected(renderOptions.groupByOption == option);
-            if(option == GroupOption.NONE){
+            if (option == GroupOption.NONE) {
                 mi.setSelected(renderOptions.groupByOption == null);
             }
             mi.addActionListener(new ActionListener() {
@@ -1076,7 +1076,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
 
-            for(Map.Entry<String, GroupOption> el: mappings.entrySet()){
+            for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
                 JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
                 groupMenu.add(mi);
                 group.add(mi);
@@ -1099,8 +1099,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             add(groupMenu);
         }
-        
-        private JMenuItem getSortMenuItem(String label, final SortOption option){
+
+        private JMenuItem getSortMenuItem(String label, final SortOption option) {
             JMenuItem mi = new JMenuItem(label);
             mi.addActionListener(new ActionListener() {
 
@@ -1110,7 +1110,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 }
             });
-            
+
             return mi;
         }
 
@@ -1124,7 +1124,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             JMenu sortMenu = new JMenu("Sort alignments by");
             //LinkedHashMap is supposed to preserve order of insertion for iteration
             Map<String, SortOption> mappings = new LinkedHashMap<String, SortOption>();
-            
+
             mappings.put("start location", SortOption.START);
             mappings.put("read strand", SortOption.STRAND);
             mappings.put("first-of-pair strand", SortOption.FIRST_OF_PAIR_STRAND);
@@ -1137,8 +1137,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 mappings.put("insert size", SortOption.INSERT_SIZE);
                 mappings.put("chromosome of mate", SortOption.MATE_CHR);
             }
-            
-            for(Map.Entry<String, SortOption> el: mappings.entrySet()){
+
+            for (Map.Entry<String, SortOption> el : mappings.entrySet()) {
                 sortMenu.add(getSortMenuItem(el.getKey(), el.getValue()));
             }
 
@@ -1174,7 +1174,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         }
 
-        private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option){
+        private JRadioButtonMenuItem getColorMenuItem(String label, final ColorOption option) {
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(label);
             mi.setSelected(renderOptions.colorOption == option);
             mi.addActionListener(new ActionListener() {
@@ -1197,18 +1197,18 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             ButtonGroup group = new ButtonGroup();
 
             Map<String, ColorOption> mappings = new LinkedHashMap<String, ColorOption>();
-            
+
             mappings.put("no color", ColorOption.NONE);
 
             if (dataManager.isPairedEnd()) {
-                
+
                 mappings.put("insert size", ColorOption.INSERT_SIZE);
                 mappings.put("pair orientation", ColorOption.PAIR_ORIENTATION);
-                
+
             }
 
             mappings.put("read strand", ColorOption.READ_STRAND);
-            
+
             if (dataManager.isPairedEnd()) {
                 mappings.put("first-of-pair strand", ColorOption.FIRST_OF_PAIR_STRAND);
             }
@@ -1217,7 +1217,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("sample", ColorOption.SAMPLE);
 
 
-            for(Map.Entry<String,ColorOption> el: mappings.entrySet()){
+            for (Map.Entry<String, ColorOption> el : mappings.entrySet()) {
                 JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
                 colorMenu.add(mi);
                 group.add(mi);

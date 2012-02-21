@@ -56,7 +56,7 @@ import java.util.Map;
  * Date: 2012/02/09
  */
 public class NetworkAnnotator {
-    private Logger logger = Logger.getLogger(NetworkAnnotator.class);
+    private static Logger logger = Logger.getLogger(NetworkAnnotator.class);
 
     private Document document;
     private Node graph;
@@ -68,18 +68,29 @@ public class NetworkAnnotator {
     /**
      * URL that cbio will use when service is released
      */
-    public static final String REAL_URL = "http://www.cbioportal.org/public-portal/webservice.do";
+    public static String REAL_URL = "http://www.cbioportal.org/public-portal/webservice.do";
     /**
      * URL they use for testing
      */
-    public static final String BASE_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    public static String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    public static String BASE_URL = TEST_URL;
+    //    static{
+//        InputStream is = NetworkAnnotator.class.getResourceAsStream("resources/url.txt");
+//        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+//        try{
+//            BASE_URL = br.readLine();
+//        }catch(IOException e){
+//            logger.error("url resource not found, defaulting to " + TEST_URL);
+//            BASE_URL = TEST_URL;
+//        }
+//    }
     private static final String common_parms = "format=gml&gzip=on";
     private static final String GENE_LIST = "gene_list";
-    
+
 
     static Map<String, RegionScoreType> attribute_map = new HashMap();
 
-    static{
+    static {
         attribute_map.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
         attribute_map.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
         attribute_map.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
@@ -91,7 +102,7 @@ public class NetworkAnnotator {
         List<NamedFeature> features = FeatureDB.getFeaturesList(name, Integer.MAX_VALUE);
 
         int numberSamples = features.size() * tracks.size();
-        if(numberSamples == 0){
+        if (numberSamples == 0) {
             return null;
         }
         float totalScore = 0.0f;
@@ -101,27 +112,27 @@ public class NetworkAnnotator {
         for (Feature feat : features) {
             for (Track track : tracks) {
                 float score = track.getRegionScore(feat.getChr(), feat.getStart(), feat.getEnd(), zoom = -1,
-                        type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame());
+                        type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
                 //Note: Some methods return things like -Float.MAX_VALUE if they get confused
-                if(score > (-Float.MAX_VALUE + 1) && score > (Integer.MIN_VALUE + 1)){
+                if (score > (-Float.MAX_VALUE + 1) && score > (Integer.MIN_VALUE + 1)) {
                     totalScore += score;
                 }
                 totalAltered += score != 0.0 ? 1 : 0;
             }
         }
-        
+
         percentAltered = totalAltered / numberSamples;
         float avgScore = totalScore / numberSamples;
         return new ScoreData(avgScore, percentAltered);
     }
 
-    public static NetworkAnnotator getFromCBIO(Iterable<String> geneList){
+    public static NetworkAnnotator getFromCBIO(Iterable<String> geneList) {
         String query = HttpUtils.buildURLString(geneList, "+");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
         NetworkAnnotator annotator = new NetworkAnnotator();
-        if(annotator.loadNetwork(url)){
+        if (annotator.loadNetwork(url)) {
             return annotator;
-        }else{
+        } else {
             return null;
         }
     }
@@ -158,12 +169,12 @@ public class NetworkAnnotator {
     public NodeList getNodes() {
         return this.document.getElementsByTagName(NODE_TAG);
     }
-    
-    Document getDocument(){
+
+    Document getDocument() {
         return this.document;
     }
-    
-    public void annotateAll(List<Track> tracks){
+
+    public void annotateAll(List<Track> tracks) {
         this.annotate(tracks, attribute_map.keySet());
     }
 
@@ -171,6 +182,7 @@ public class NetworkAnnotator {
      * Add schema information for the provided datakeys.
      * They will all be set as the provided dataType (string, double, float, etc.)
      * and graph element
+     *
      * @param dataKeys
      * @param dataType Legal values are long, integer, float, double, boolean, string. Case insensitive.
      *                 All dataKeys will be set to the provided type.
@@ -206,25 +218,25 @@ public class NetworkAnnotator {
         NodeList nodes = getNodes();
         String name;
         Node node;
-        for(int nn=0; nn < nodes.getLength(); nn++){
+        for (int nn = 0; nn < nodes.getLength(); nn++) {
             node = nodes.item(nn);
             name = getNodeKeyData(node, LABEL);
-            for(String attr: node_attributes){
+            for (String attr : node_attributes) {
                 RegionScoreType type = attribute_map.get(attr);
                 ScoreData data = this.collectScoreData(name, tracks, type);
                 //If we don't have any data to look at
-                if(data == null){
+                if (data == null) {
                     continue;
                 }
                 float rel_data = data.getPercentAltered();
-                if(rel_data == 0 && !Globals.isTesting()){
+                if (rel_data == 0 && !Globals.isTesting()) {
                     continue;
                 }
 
                 Element newData = this.document.createElement("data");
                 newData.setAttribute(KEY, attr);
                 newData.setTextContent("" + data.getPercentAltered());
-                
+
                 node.appendChild(newData);
             }
         }
@@ -238,19 +250,20 @@ public class NetworkAnnotator {
      * So getNodeKeyData(node, "key", "label") returns "JUN".
      * Note: This comment contains XML, it won't show
      * up properly when rendered.
-     *
+     * <p/>
      * "<node id="3725"/>
-     *   <data key="label">JUN</data>
-     *   <data key="type">Protein</data>
-     *  <data key="RELATIONSHIP_XREF">HGNC:JUN;Entrez Gene:3725</data>
-     *  <data key="IN_QUERY">false</data>
-     *  </node>"
-     * @param node  
-     * @param attrName  
-     * @param attrValue 
+     * <data key="label">JUN</data>
+     * <data key="type">Protein</data>
+     * <data key="RELATIONSHIP_XREF">HGNC:JUN;Entrez Gene:3725</data>
+     * <data key="IN_QUERY">false</data>
+     * </node>"
+     *
+     * @param node
+     * @param attrName
+     * @param attrValue
      * @return String value of key found. null if not found
      */
-    public static String getNodeAttrValue(Node node, String attrName, String attrValue){
+    public static String getNodeAttrValue(Node node, String attrName, String attrValue) {
         NodeList elements = node.getChildNodes();
         for (int ee = 0; ee < elements.getLength(); ee++) {
             Node el = elements.item(ee);
@@ -267,7 +280,7 @@ public class NetworkAnnotator {
                 continue;
             }
         }
-        return null;    
+        return null;
     }
 
     /**
@@ -275,8 +288,9 @@ public class NetworkAnnotator {
      * equal to {@code key} parameter.
      * Equal to getNodeAttrValue(node, NetworkAnnotator.KEY, key);
      * {@see getNodeAttrValue}
-     * @param node  Node to search
-     * @param key   Key to search for
+     *
+     * @param node Node to search
+     * @param key  Key to search for
      * @return String value of key found. null if not found
      */
     public static String getNodeKeyData(Node node, String key) {
@@ -295,8 +309,8 @@ public class NetworkAnnotator {
         }
         return count;
     }
-    
-    boolean writeDocument(String outputFile) throws IOException{
+
+    boolean writeDocument(String outputFile) throws IOException {
         return writeDocument(document, outputFile);
     }
 
@@ -348,7 +362,7 @@ public class NetworkAnnotator {
     }
 
 
-    public static class ScoreData{
+    public static class ScoreData {
 
         /**
          * The average of each score of a large number of tracks
@@ -359,11 +373,10 @@ public class NetworkAnnotator {
         /**
          * Here we do not distinguish between any alteration value.
          * So 0,1,2,3 -> percentAltered = 3/4.
-         *
          */
         private float percentAltered;
 
-        public ScoreData(float avgScore, float percentAltered){
+        public ScoreData(float avgScore, float percentAltered) {
             this.avgScore = avgScore;
             this.percentAltered = percentAltered;
         }

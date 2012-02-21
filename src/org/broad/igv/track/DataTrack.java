@@ -26,6 +26,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
@@ -282,17 +283,22 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
     /**
-     * Method description
+     * Get the score over the provided region for the given type. Different types
+     * are processed differently. Results are cached according to the provided frameName,
+     * if provided. If not, a string is created based on the inputs.
      *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @param type
-     * @param frame
+     * @param frameName
+     * @param tracks    Mutation scores require other tracks to calculate the score. If provided,
+     *                  use these tracks. If null and not headless we use the currently loaded tracks.
      * @return
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName,
+                                List<Track> tracks) {
 
         if (end <= start) {
             return 0;
@@ -300,12 +306,19 @@ public abstract class DataTrack extends AbstractTrack {
         if (isRegionScoreType(type)) {
 
             List<LocusScore> scores = null;
-            LoadedDataInterval loadedInterval = loadedIntervalCache.get(frame.getName());
+            if (frameName == null) {
+                //Essentially covering headless case here
+                frameName = (chr + start) + end;
+                frameName += zoom;
+                frameName += type;
+            }
+
+            LoadedDataInterval loadedInterval = loadedIntervalCache.get(frameName);
             if (loadedInterval != null && loadedInterval.contains(chr, start, end, zoom)) {
                 scores = loadedInterval.getScores();
             } else {
                 scores = this.getSummaryScores(chr, start, end, zoom);
-                loadedIntervalCache.put(frame.getName(), new LoadedDataInterval(chr, start, end, zoom, scores));
+                loadedIntervalCache.put(frameName, new LoadedDataInterval(chr, start, end, zoom, scores));
             }
 
 
@@ -326,11 +339,15 @@ public abstract class DataTrack extends AbstractTrack {
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(this);
+                if (!Globals.isHeadless() && tracks == null) {
+                    tracks = IGV.getInstance().getAllTracks(false);
+                }
                 float count = 0;
-                if (overlayTracks != null) {
-                    for (Track t : overlayTracks) {
-                        count += t.getRegionScore(chr, start, end, zoom, type, frame);
+                if (tracks != null && this.getSample() != null) {
+                    for (Track t : tracks) {
+                        if (t.getTrackType() == TrackType.MUTATION && this.getSample().equals(t.getSample())) {
+                            count += t.getRegionScore(chr, start, end, zoom, type, frameName);
+                        }
                     }
                 }
                 return count;

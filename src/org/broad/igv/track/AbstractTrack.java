@@ -1030,7 +1030,23 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
+        // Required method for track interface, ignore
+        return getRegionScore(chr, start, end, zoom, type, frameName, null);
+    }
+
+
+    /**
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @param type
+     * @param frameName
+     * @param tracks
+     * @return
+     */
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName, List<Track> tracks) {
         // Required method for track interface, ignore
         return 0;
     }

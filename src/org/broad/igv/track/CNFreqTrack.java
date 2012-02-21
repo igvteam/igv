@@ -64,7 +64,7 @@ public class CNFreqTrack extends AbstractTrack {
         renderer.render(data.getAmpCounts(context.getChr()), context, rect, this);
         renderer.setMarginFraction(0);
         renderer.renderBorder(this, context, rect);
-        context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height-1);
+        context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height - 1);
 
     }
 
@@ -75,9 +75,9 @@ public class CNFreqTrack extends AbstractTrack {
         List<LocusScore> delScores = data.getDelCounts(chr);
         StringBuffer buf = new StringBuffer();
         int startIdx = Math.max(0, FeatureUtils.getIndexBefore(position, ampScores));
-        for(int i = startIdx ;i<ampScores.size(); i++) {
+        for (int i = startIdx; i < ampScores.size(); i++) {
             LocusScore ampScore = ampScores.get(i);
-            if(position >= ampScore.getStart() && position <= ampScore.getEnd())  {
+            if (position >= ampScore.getStart() && position <= ampScore.getEnd()) {
                 buf.append("<br>Amplifications: ");
                 buf.append(ampScore.getValueString(position, null));
                 buf.append("<br>Deletions     : ");
@@ -109,7 +109,7 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

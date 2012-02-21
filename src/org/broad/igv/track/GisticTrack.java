@@ -34,7 +34,6 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.GisticScore;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GisticTrackRenderer;
 import org.broad.igv.renderer.Renderer;
@@ -55,7 +54,7 @@ public class GisticTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(GisticTrack.class);
 
     private static final int DEFAULT_HEIGHT = 50;
-    
+
     private double maxQValue = 0;
 
     private double maxGScore = 0;
@@ -85,8 +84,6 @@ public class GisticTrack extends AbstractTrack {
     public int getMinimumHeight() {
         return 25;
     }
-
-
 
 
     /**
@@ -319,10 +316,10 @@ public class GisticTrack extends AbstractTrack {
      * @param end
      * @param zoom
      * @param type
-     * @param frame
+     * @param frameName
      * @return
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
     }
 

@@ -27,14 +27,12 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
-import org.broad.igv.renderer.FeatureRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -72,9 +70,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
     }
-
-
-
 
 
     @Override
@@ -124,7 +119,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         return false;
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
     }
 
@@ -135,7 +130,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
             final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
             if (loadedInterval != null) {
                 List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
-                if(features == null) {
+                if (features == null) {
                     features = Collections.emptyList();
                 }
                 int intervalStart = loadedInterval.getStart();

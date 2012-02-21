@@ -87,17 +87,15 @@ public class ExportTrackNamesMenuAction extends MenuAction {
                         String chr = frame.getChrName();
                         int start = (int) frame.getOrigin();
                         int end = (int) frame.getEnd();
-                        float score = t.getRegionScore(chr, start, end, frame.getZoom(), RegionScoreType.SCORE, frame);
+                        float score = t.getRegionScore(chr, start, end, frame.getZoom(), RegionScoreType.SCORE, frame.getName());
                         pw.print("\t" + score);
                     }
                     pw.println();
                 }
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             MessageUtils.showMessage("IO Error: " + ex.getMessage());
-        }
-        finally {
+        } finally {
             if (pw != null) {
                 pw.close();
             }

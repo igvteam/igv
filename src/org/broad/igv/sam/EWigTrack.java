@@ -92,7 +92,7 @@ public class EWigTrack extends AbstractTrack {
         return false;
     }
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
     }
 

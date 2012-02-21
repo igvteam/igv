@@ -136,7 +136,7 @@ public class GeneNetwork extends Pseudograph<Vertex, BaseElement> {
             for (Feature feat : features) {
                 for (Track track : tracks) {
                     float score = track.getRegionScore(feat.getChr(), feat.getStart(), feat.getEnd(), zoom = -1,
-                            type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame());
+                            type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName());
                     total_tracks++;
                     total_score += score > 0 ? score : 0;
                 }

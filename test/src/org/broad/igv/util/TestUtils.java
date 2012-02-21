@@ -38,7 +38,7 @@ import java.io.IOException;
 @Ignore
 public class TestUtils {
     public static String DATA_DIR = "test/data";
-    static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";
+    public static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";
     public static String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
     public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
     //This is so ant can set the large data directory

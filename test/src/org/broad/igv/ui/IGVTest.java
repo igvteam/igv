@@ -116,8 +116,8 @@ public class IGVTest {
                     continue;
                 }
 
-                float s2 = track.getRegionScore(chr, start, end, zoom, type, frame);
-                float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, frame);
+                float s2 = track.getRegionScore(chr, start, end, zoom, type, null);
+                float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, null);
                 assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type,
                         s2 >= s1);
 
@@ -127,4 +127,5 @@ public class IGVTest {
 
         return count;
     }
+
 }

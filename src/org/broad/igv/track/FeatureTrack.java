@@ -107,7 +107,7 @@ public class FeatureTrack extends AbstractTrack {
     public FeatureTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         setSortable(false);
-     }
+    }
 
     /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
@@ -126,6 +126,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Constructor specifically for BigWig data source
+     *
      * @param locator
      * @param id
      * @param name
@@ -135,7 +136,7 @@ public class FeatureTrack extends AbstractTrack {
         super(locator, id, name);
         init(source);
         setSortable(false);
-     }
+    }
 
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
@@ -239,7 +240,7 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Return a score over the interval.  This is required by the track interface to support sorting.
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType scoreType, ReferenceFrame frame) {
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType scoreType, String frameName) {
 
         try {
             if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
@@ -540,7 +541,7 @@ public class FeatureTrack extends AbstractTrack {
     public void setDisplayMode(DisplayMode mode) {
         // Explicity setting the display mode overrides the automatic switch
         lastFeatureMode = null;
-        super.setDisplayMode(mode);    
+        super.setDisplayMode(mode);
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -755,8 +756,7 @@ public class FeatureTrack extends AbstractTrack {
                     String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
                     MessageUtils.showMessage(msg);
                     log.error(msg, e);
-                }
-                finally {
+                } finally {
                     featuresLoading = false;
                 }
             }

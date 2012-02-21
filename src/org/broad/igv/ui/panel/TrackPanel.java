@@ -281,7 +281,7 @@ public class TrackPanel extends IGVPanel {
     public void sortByRegionsScore(final RegionOfInterest region, final RegionScoreType type,
                                    final ReferenceFrame frame, List<String> sortedSamples) {
 
-        sortGroupsByRegionScore(trackGroups, region, type, frame);
+        sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
 
         for (TrackGroup group : trackGroups) {
             // If there is a non-null linking attribute
@@ -296,21 +296,24 @@ public class TrackPanel extends IGVPanel {
      * @param groups
      * @param region
      * @param type
+     * @param inzoom
+     * @param frameName
      */
     private void sortGroupsByRegionScore(List<TrackGroup> groups,
                                          final RegionOfInterest region,
                                          final RegionScoreType type,
-                                         final ReferenceFrame frame) {
+                                         int inzoom,
+                                         final String frameName) {
         if ((groups != null) && (region != null) && !groups.isEmpty()) {
-            final int zoom = Math.max(0, frame.getZoom());
+            final int zoom = Math.max(0, inzoom);
             final String chr = region.getChr();
             final int start = region.getStart();
             final int end = region.getEnd();
             Comparator<TrackGroup> c = new Comparator<TrackGroup>() {
 
                 public int compare(TrackGroup group1, TrackGroup group2) {
-                    float s1 = group1.getRegionScore(chr, start, end, zoom, type, frame);
-                    float s2 = group2.getRegionScore(chr, start, end, zoom, type, frame);
+                    float s1 = group1.getRegionScore(chr, start, end, zoom, type, frameName);
+                    float s2 = group2.getRegionScore(chr, start, end, zoom, type, frameName);
 
                     if (s1 < s2) {
                         return -1;

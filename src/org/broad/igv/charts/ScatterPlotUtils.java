@@ -78,7 +78,7 @@ public class ScatterPlotUtils {
                 // Classify sample by mutation count
                 SampleData sampleData = sampleDataMap.get(sample);
                 if (sampleData != null) {
-                    if(sample.equals("TCGA-02-0003")) {
+                    if (sample.equals("TCGA-02-0003")) {
                         System.out.println();
                     }
                     int mutCount = getMutationCount(chr, start, end, zoom, t);
@@ -231,7 +231,7 @@ public class ScatterPlotUtils {
 
     private static int getMutationCount(String chr, int start, int end, int zoom, Track track) {
 
-        return (int) track.getRegionScore(chr, start, end, zoom, RegionScoreType.MUTATION_COUNT, FrameManager.getDefaultFrame());
+        return (int) track.getRegionScore(chr, start, end, zoom, RegionScoreType.MUTATION_COUNT, FrameManager.getDefaultFrame().getName());
     }
 
 
