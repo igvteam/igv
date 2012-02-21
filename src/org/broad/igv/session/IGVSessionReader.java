@@ -46,7 +46,6 @@ import org.broad.igv.util.Utilities;
 import org.w3c.dom.*;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -322,7 +321,7 @@ public class IGVSessionReader implements SessionReader {
             } else {
                 String genomePath = genome;
                 if (!ParsingUtils.pathExists(genomePath)) {
-                    genomePath = getAbsolutePath(genome, session.getPath());
+                    genomePath = FileUtils.getAbsolutePath(genome, session.getPath());
                 }
                 if (ParsingUtils.pathExists(genomePath)) {
                     try {
@@ -612,13 +611,13 @@ public class IGVSessionReader implements SessionReader {
                 MessageUtils.showMessage("Unexpected error loading session: null session path");
                 return;
             }
-            absolutePath = getAbsolutePath(path, sessionPath);
+            absolutePath = FileUtils.getAbsolutePath(path, sessionPath);
             fullToRelPathMap.put(absolutePath, path);
             resourceLocator = new ResourceLocator(serverURL, absolutePath);
 
             // If the resourceLocator is relative, we assume coverage is as well
             if (coverage != null) {
-                String absoluteCoveragePath = getAbsolutePath(coverage, sessionPath);
+                String absoluteCoveragePath = FileUtils.getAbsolutePath(coverage, sessionPath);
                 resourceLocator.setCoverage(absoluteCoveragePath);
             }
         } else {
@@ -671,21 +670,6 @@ public class IGVSessionReader implements SessionReader {
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation);
 
-    }
-
-    // TODO -- move
-    public static String getAbsolutePath(String path, String sessionPath) {
-        String absolutePath;
-        if (FileUtils.isRemote(sessionPath)) {
-            int idx = sessionPath.lastIndexOf("/");
-            String basePath = sessionPath.substring(0, idx);
-            absolutePath = basePath + "/" + path;
-        } else {
-            File parent = new File(sessionPath).getParentFile();
-            File file = new File(parent, path);
-            absolutePath = file.getAbsolutePath();
-        }
-        return absolutePath;
     }
 
     private void processRegions(Session session, Element element, HashMap additionalInformation) {

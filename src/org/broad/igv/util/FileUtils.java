@@ -527,6 +527,21 @@ public class FileUtils {
         }
         return extension;
     }
+
+    // TODO -- move
+    public static String getAbsolutePath(String path, String sessionPath) {
+        String absolutePath;
+        if (isRemote(sessionPath)) {
+            int idx = sessionPath.lastIndexOf("/");
+            String basePath = sessionPath.substring(0, idx);
+            absolutePath = basePath + "/" + path;
+        } else {
+            File parent = new File(sessionPath).getParentFile();
+            File file = new File(parent, path);
+            absolutePath = file.getAbsolutePath();
+        }
+        return absolutePath;
+    }
 }
 
 
