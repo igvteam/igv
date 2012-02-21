@@ -22,6 +22,8 @@ import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
 //import org.broadinstitute.sting.utils.variantcontext.Allele;
+import org.broad.igv.variant.VariantTrack;
+import org.broadinstitute.sting.utils.exceptions.StingException;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import java.util.*;
@@ -37,7 +39,10 @@ public class VCFVariant implements Variant {
     private ZygosityCount zygosityCount;
     private boolean isIndel;
 
-    String chr;   // <= might override what's in file from chr alias table
+    String chr;
+    private double alleleFreq;
+    private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
+    private double coveredSampleFraction = Double.NaN;
 
     public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
@@ -46,13 +51,42 @@ public class VCFVariant implements Variant {
         init();
     }
 
-
     private void init() {
-            zygosityCount = new ZygosityCount();
+        zygosityCount = new ZygosityCount();
+        for (String sample : getSampleNames()) {
+            Genotype genotype = getGenotype(sample);
+            zygosityCount.incrementCount(genotype);
+        }
+        alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("AF", "-1"));
+        if (alleleFreq < 0) {
+            alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("GMAF", "-1"));
+        }
+
+
+
+    }
+
+    /**
+     * Compute the average methylation rate for those samples with data (i.e. with methylation rate recorded).
+     */
+    private void computeMethylationRate() {
+
+        double methTotal = 0;
+        int samplesWithData = 0;
+        final int size = getSampleNames().size();
+        if (size > 0) {
             for (String sample : getSampleNames()) {
                 Genotype genotype = getGenotype(sample);
-                zygosityCount.incrementCount(genotype);
+                double mr = genotype.getAttributeAsDouble("MR");
+                double goodBaseCount = genotype.getAttributeAsDouble("MR");
+                if (!Double.isNaN(mr) && !Double.isNaN(goodBaseCount) && goodBaseCount > VariantTrack.METHYLATION_MIN_BASE_COUNT) {
+                    methTotal += mr;
+                    samplesWithData++;
+                }
             }
+            methylationRate = samplesWithData == 0 ? 0 : methTotal / samplesWithData;
+            coveredSampleFraction = ((double) samplesWithData) / size;
+        }
     }
 
 
@@ -92,17 +126,13 @@ public class VCFVariant implements Variant {
     }
 
 
-    /**                         1503292
+    /**
+     * 1503292
      * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
      * no annotation (unknown allele frequency).
      */
     public double getAlleleFreq() {
-        double alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("AF", "-1"));
-        if (alleleFreq < 0) {
-            alleleFreq = Double.parseDouble(variantContext.getAttributeAsString("GMAF", "-1"));
-        }
         return alleleFreq;
-
     }
 
     /**
@@ -117,6 +147,23 @@ public class VCFVariant implements Variant {
         return total == 0 ? -1 : (((double) getHomVarCount() + ((double) getHetCount()) / 2) / total);
     }
 
+    /**
+     * Return the methylation rate as annoted with a MR attribute.  A value of -1 indicates
+     * no annotation (unknown methylation rate).  This option is only applicable for dna methylation data.
+     */
+    public double getMethlationRate() {
+        if (Double.isNaN(methylationRate)) {
+            computeMethylationRate();
+        }
+        return methylationRate;
+    }
+
+    public double getCoveredSampleFraction() {
+        if (Double.isNaN(coveredSampleFraction)) {
+            computeMethylationRate();
+        }
+        return coveredSampleFraction;
+    }
 
     public Collection<String> getSampleNames() {
         return variantContext.getSampleNames();
@@ -156,7 +203,7 @@ public class VCFVariant implements Variant {
     }
 
     public int getStart() {
-        return isIndel ? variantContext.getStart(): variantContext.getStart() - 1;
+        return isIndel ? variantContext.getStart() : variantContext.getStart() - 1;
     }
 
     public int getEnd() {
@@ -165,48 +212,48 @@ public class VCFVariant implements Variant {
 
     @Override
     public String toString() {
-        return String.format("VCFVariant[%s:%d-%d]",getChr(),getStart(),getEnd());
+        return String.format("VCFVariant[%s:%d-%d]", getChr(), getStart(), getEnd());
     }
 
     /**
-* @author Jim Robinson
-* @date Aug 1, 2011
-*/
-public static class ZygosityCount {
-    private int homVar = 0;
-    private int het = 0;
-    private int homRef = 0;
-    private int noCall = 0;
+     * @author Jim Robinson
+     * @date Aug 1, 2011
+     */
+    public static class ZygosityCount {
+        private int homVar = 0;
+        private int het = 0;
+        private int homRef = 0;
+        private int noCall = 0;
 
-    public void incrementCount(Genotype genotype) {
-        if (genotype != null) {
-            if (genotype.isHomVar()) {
-                homVar++;
-            } else if (genotype.isHet()) {
-                het++;
-            } else if (genotype.isHomRef()) {
-                homRef++;
-            } else {
-                noCall++;
+        public void incrementCount(Genotype genotype) {
+            if (genotype != null) {
+                if (genotype.isHomVar()) {
+                    homVar++;
+                } else if (genotype.isHet()) {
+                    het++;
+                } else if (genotype.isHomRef()) {
+                    homRef++;
+                } else {
+                    noCall++;
+                }
             }
         }
-    }
 
-    public int getHomVar() {
-        return homVar;
-    }
+        public int getHomVar() {
+            return homVar;
+        }
 
-    public int getHet() {
-        return het;
-    }
+        public int getHet() {
+            return het;
+        }
 
-    public int getHomRef() {
-        return homRef;
-    }
+        public int getHomRef() {
+            return homRef;
+        }
 
-    public int getNoCall() {
-        return noCall;
-    }
+        public int getNoCall() {
+            return noCall;
+        }
 
-}
+    }
 }

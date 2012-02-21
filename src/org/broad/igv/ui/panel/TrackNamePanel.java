@@ -277,12 +277,20 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         List<MouseableRegion> mouseableRegions = TrackNamePanel.this.getMouseRegions();
 
+        String text = null;
         for (MouseableRegion mouseableRegion : mouseableRegions) {
             if (mouseableRegion.containsPoint(x, y)) {
-                return mouseableRegion.getText();
+                Collection<Track> tracks = mouseableRegion.getTracks();
+                if (tracks != null && tracks.size() == 1) {
+                    Track track = tracks.iterator().next();
+                    text = track.getNameValueString(y);
+                } else {
+                    text = mouseableRegion.getText();
+                }
+                break;
             }
         }
-        return "";
+        return text;
     }
 
 

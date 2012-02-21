@@ -54,13 +54,13 @@ public interface Genotype {
     String getAttributeAsString(String key);
 
     /**
-     * Return the attribute as a Double,  or null if the attribute does not exist or cannot be converted to
-     * a Double.
+     * Return the attribute as a double,  or NaN if the attribute does not exist or cannot be converted to
+     * a double.
      *
      * @param key
      * @return attribute
      */
-    Double getAttributeAsDouble(String key);
+    double getAttributeAsDouble(String key);
 
     /**
      * @return the alleles for this genotype.  Cannot be null, return an empty list if no alleles.

@@ -37,6 +37,9 @@ public class VariantRenderer { //extends FeatureRenderer {
 
     private static Logger log = Logger.getLogger(VariantRenderer.class);
 
+    public static final int BOTTOM_MARGIN = 0;
+    public static final int TOP_MARGIN = 3;
+
     private static float alphaValue = 0.2f;
     public static Color colorHomRef = new Color(235, 235, 235);
     public static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef, alphaValue);
@@ -53,9 +56,7 @@ public class VariantRenderer { //extends FeatureRenderer {
     private static final Color blue = new Color(0, 0, 220);
     public static Color blueAlpha = ColorUtilities.getCompositeColor(blue, alphaValue);
 
-    private static int variantWidth = 3;
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
-    private static final Color DARK_GREEN = new Color(30, 120, 30);
 
     private VariantTrack track;
 
@@ -78,44 +79,58 @@ public class VariantRenderer { //extends FeatureRenderer {
         this.track = track;
     }
 
+    /**
+     * Render the site track (the top, summary view of the site).
+     *
+     * @param variant
+     * @param bandRectangle
+     * @param pX0
+     * @param dX
+     * @param context
+     */
+    public void renderSiteBand(Variant variant,
+                               Rectangle bandRectangle,
+                               int pX0, int dX,
+                               RenderContext context) {
 
-    public void renderVariantBand(Variant variant,
-                                  Rectangle bandRectangle,
-                                  int pX0, int dX,
-                                  RenderContext context,
-                                  boolean hideFiltered) {
-
-        final int bottomMargin = 0;
-        final int topMargin = 3;
-
-        final int bottomY = bandRectangle.y + bandRectangle.height - bottomMargin;
-
-        final int barHeight = bandRectangle.height - topMargin - bottomMargin;
 
         final boolean filtered = variant.isFiltered();
-        final Color alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand;
-
-        final double allelePercent = Math.min(1, track.getAllelePercent(variant));
-        final int alleleBarHeight;
-        final int remainderHeight;
-
+        final Color alleleColor;
         final Color refColor;
-        if (allelePercent <= 0) {
-            alleleBarHeight = 0;
-            remainderHeight = barHeight;
-            refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;
+        double percent;
+        if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
+            alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
+            percent = variant.getCoveredSampleFraction();
+            refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
         } else {
-            alleleBarHeight = (int) (allelePercent * barHeight);
-            remainderHeight = barHeight - alleleBarHeight;
+            alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand; // Red
+            double af = variant.getAlleleFraction();
+            if (af < 0) af = variant.getAlleleFreq();
+            percent = Math.min(1, af);
+            if (percent <= 0) {
+                percent = 0;
+                refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
+            } else {
+                refColor = filtered ? blueAlpha : blue;                      // Blue
+            }
 
-            refColor = filtered ? blueAlpha : blue;
         }
 
-        Graphics2D g = context.getGraphic2DForColor(alleleColor);
-        g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+        final int bottomY = bandRectangle.y + bandRectangle.height - BOTTOM_MARGIN;
+        final int barHeight = bandRectangle.height - TOP_MARGIN - BOTTOM_MARGIN;
+        final int alleleBarHeight = (int) (percent * barHeight);
+        final int remainderHeight = barHeight - alleleBarHeight;
 
-        g = context.getGraphic2DForColor(refColor);
-        g.fillRect(pX0, bottomY - alleleBarHeight - remainderHeight, dX, remainderHeight);
+        if (remainderHeight > 0) {
+            Graphics2D g = context.getGraphic2DForColor(refColor);
+            g.fillRect(pX0, bottomY - alleleBarHeight - remainderHeight, dX, remainderHeight);
+        }
+
+        if (alleleBarHeight > 0) {
+            Graphics2D g = context.getGraphic2DForColor(alleleColor);
+            g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+        }
+
 
     }
 
@@ -173,19 +188,17 @@ public class VariantRenderer { //extends FeatureRenderer {
                     break;
                 case METHYLATION_RATE:
 
-                    final Double goodBaseCount = genotype.getAttributeAsDouble("GB");
+                    final double goodBaseCount = genotype.getAttributeAsDouble("GB");
                     b1Color = colorNoCall;
                     b2Color = b1Color;
-                    final Double value = genotype.getAttributeAsDouble("MR");
-                    if (goodBaseCount != null && value != null) {
-                        if (goodBaseCount < 10 || value == null) {
+                    final double value = genotype.getAttributeAsDouble("MR");
+                    if (!Double.isNaN(goodBaseCount) && !Double.isNaN(value)) {
+                        if (goodBaseCount < VariantTrack.METHYLATION_MIN_BASE_COUNT || Double.isNaN(value)) {
                             b1Color = colorNoCall;
                             b2Color = b1Color;
 
                         } else {
-                            float mr = (float) value.doubleValue();
-
-                            //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
+                            float mr = (float) value;
                             mr /= 100f;
                             b1Color = convertMethylationRateToColor(mr);
                             b2Color = b1Color;

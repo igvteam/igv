@@ -44,6 +44,8 @@ import java.util.List;
 public interface Track extends Persistable {
     void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> names, List<MouseableRegion> mouseRegions);
 
+    String getNameValueString(int y);
+
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED
     }

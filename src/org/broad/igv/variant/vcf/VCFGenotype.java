@@ -88,7 +88,7 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
         return alleles;
     }
 
-    public Double getAttributeAsDouble(String s) {
+    public double getAttributeAsDouble(String s) {
         return vcfGenotype.getAttributeAsDouble(s, Double.NaN);
     }
 }

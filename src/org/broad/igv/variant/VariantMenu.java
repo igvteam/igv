@@ -30,6 +30,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Arc2D;
 import java.util.*;
 import java.util.List;
 
@@ -433,11 +434,11 @@ public class VariantMenu extends IGVPopupMenu {
         public int compare(String s1, String s2) {
 
 
-            Double readDepth1 = variant.getGenotype(s1).getAttributeAsDouble("DP");
-            Double readDepth2 = variant.getGenotype(s2).getAttributeAsDouble("DP");
+            double readDepth1 = variant.getGenotype(s1).getAttributeAsDouble("DP");
+            double readDepth2 = variant.getGenotype(s2).getAttributeAsDouble("DP");
 
-            double depth1 = readDepth1 == null ? -1 : readDepth1.doubleValue();
-            double depth2 = readDepth2 == null ? -1 : readDepth2.doubleValue();
+            double depth1 = Double.isNaN(readDepth1) ? -1 : readDepth1;
+            double depth2 = Double.isNaN(readDepth2) ? -1 : readDepth2;
             if (depth2 == depth1) {
                 return 0;
             } else if (depth2 < depth1) {

@@ -133,7 +133,7 @@ public class DensityUtil {
         for (int i = 0; i < nZooms; i++) {
 
             DensityCalculation calc = new DensityCalculation();
-            calc.fill(les);
+            calc.read(les);
             //   public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
 
             int gridSize = calc.getGridSize();

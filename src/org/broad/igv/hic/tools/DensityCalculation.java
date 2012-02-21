@@ -50,66 +50,6 @@ public class DensityCalculation {
     }
 
 
-    public void outputBinary(LittleEndianOutputStream os) throws IOException {
-
-        os.writeInt(gridSize);
-
-        int nonNullChrCount = 0;
-        for (Chromosome chr : chromosomes) {
-            if (chr != null) nonNullChrCount++;
-        }
-        os.writeInt(nonNullChrCount);
-
-        // Chromosome indeces
-        for (Chromosome chr : chromosomes) {
-            if (chr == null) continue;
-            os.writeInt(chr.getIndex());
-        }
-
-        // Normalization factors
-        for (Chromosome chr : chromosomes) {
-            if (chr == null) continue;
-            Integer idx = chr.getIndex();
-            Double normFactor = normalizationFactors.get(idx);
-            os.writeInt(idx);
-            os.writeDouble(normFactor == null ? 0 : normFactor.doubleValue());
-        }
-
-        // Expected value (densityAvg)
-        os.writeInt(densityAvg.length);
-        for (int i = 0; i < densityAvg.length; i++) {
-            os.writeDouble(densityAvg[i]);
-        }
-    }
-
-    public void fill(LittleEndianInputStream is) throws IOException {
-        gridSize = is.readInt();
-        int nChromosomes = is.readInt();
-
-        // Chromosome indexes
-        Integer[] chrIndexes = new Integer[nChromosomes];
-        for (int i = 0; i < nChromosomes; i++) {
-            chrIndexes[i] = is.readInt();
-        }
-
-        // Normalization factors
-        normalizationFactors = new LinkedHashMap(nChromosomes);
-        for (int i = 0; i < nChromosomes; i++) {
-            Integer chrIdx = is.readInt();
-            double normFactor = is.readDouble();
-            normalizationFactors.put(chrIdx, normFactor);
-        }
-
-        // Densities
-        int nDensities = is.readInt();
-        densityAvg = new double[nDensities];
-        for(int i=0; i<nDensities; i++) {
-            densityAvg[i] = is.readDouble();
-        }
-
-
-    }
-
     /**
      * Add an observed distance
      *
@@ -212,7 +152,7 @@ public class DensityCalculation {
 
             double observedCount = (double) chromosomeCounts.get(chr.getIndex());
 
-            double f =  expectedCount / observedCount;
+            double f = expectedCount / observedCount;
             System.out.println(chr.getName() + "\t" + f);
 
             normalizationFactors.put(chr.getIndex(), f);
@@ -253,6 +193,79 @@ public class DensityCalculation {
 
     public double[] getDensityAvg() {
         return densityAvg;
+    }
+
+
+    /**
+     * Output the density calculation to a binary file.
+     *
+     * @param os
+     * @throws IOException
+     */
+    public void outputBinary(LittleEndianOutputStream os) throws IOException {
+
+        os.writeInt(gridSize);
+
+        int nonNullChrCount = 0;
+        for (Chromosome chr : chromosomes) {
+            if (chr != null) nonNullChrCount++;
+        }
+        os.writeInt(nonNullChrCount);
+
+        // Chromosome indeces
+        for (Chromosome chr : chromosomes) {
+            if (chr == null) continue;
+            os.writeInt(chr.getIndex());
+        }
+
+        // Normalization factors
+        for (Chromosome chr : chromosomes) {
+            if (chr == null) continue;
+            Integer idx = chr.getIndex();
+            Double normFactor = normalizationFactors.get(idx);
+            os.writeInt(idx);
+            os.writeDouble(normFactor == null ? 0 : normFactor.doubleValue());
+        }
+
+        // Expected value (densityAvg)
+        os.writeInt(densityAvg.length);
+        for (int i = 0; i < densityAvg.length; i++) {
+            os.writeDouble(densityAvg[i]);
+        }
+    }
+
+    /**
+     * Read the contents of a previously saved calculation.
+     *
+     * @param is
+     * @throws IOException
+     */
+    public void read(LittleEndianInputStream is) throws IOException {
+        gridSize = is.readInt();
+        int nChromosomes = is.readInt();
+
+        // Chromosome indexes
+        Integer[] chrIndexes = new Integer[nChromosomes];
+        for (int i = 0; i < nChromosomes; i++) {
+            chrIndexes[i] = is.readInt();
+        }
+
+        // Normalization factors
+        normalizationFactors = new LinkedHashMap(nChromosomes);
+        for (int i = 0; i < nChromosomes; i++) {
+            Integer chrIdx = is.readInt();
+            double normFactor = is.readDouble();
+            normalizationFactors.put(chrIdx, normFactor);
+        }
+
+        // Densities
+        int nDensities = is.readInt();
+        densityAvg = new double[nDensities];
+        for (int i = 0; i < nDensities; i++) {
+            densityAvg[i] = is.readDouble();
+        }
+
+
     }
 
 

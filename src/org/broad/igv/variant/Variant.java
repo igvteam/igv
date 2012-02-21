@@ -138,4 +138,7 @@ public interface Variant extends Feature {
      */
     public int getNoCallCount();
 
+    double getMethlationRate();
+
+    double getCoveredSampleFraction();
 }

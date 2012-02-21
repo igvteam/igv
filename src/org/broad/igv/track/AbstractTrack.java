@@ -1002,6 +1002,10 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    public String getNameValueString(int y) {
+        return getName();
+    }
+
     /**
      * Return a value string for the tooltip window at the given location, or null to signal there is no value
      * at that location

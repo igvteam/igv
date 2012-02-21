@@ -40,6 +40,7 @@ import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Arc2D;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -66,6 +67,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final static int MAX_FILTER_LINES = 15;
 
+
+    // TODO -- this needs to be settable
+     public static  int METHYLATION_MIN_BASE_COUNT = 10;
 
     /**
      * The renderer.
@@ -429,7 +433,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     rect.y = top;
                     rect.height = variantBandHeight;
                     if (rect.intersects(visibleRectangle)) {
-                        renderer.renderVariantBand(variant, rect, x, w, context, hideFiltered);
+                        renderer.renderSiteBand(variant, rect, x, w, context);
                     }
 
                     if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
@@ -790,6 +794,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
 
+    public String getNameValueString(int y) {
+        if(y < top + variantBandHeight) {
+            return getName();
+        }
+        else {
+            String sample = getSampleAtPosition(y);
+            return sample;
+        }
+    }
+
     /**
      * Return popup text for the given position
      *
@@ -924,14 +938,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip.append("<br><b>Alleles:</b>");
         toolTip.append(getAlleleToolTip(variant));
 
-        double af = getAlleleFreq(variant);
+        double af = variant.getAlleleFreq();
         if (af < 0 && variant.getSampleNames().size() > 0) {
-            af = getAlleleFraction(variant);
+            af = variant.getAlleleFraction();
         }
         toolTip.append("<br>Allele Frequency: " + (af >= 0 ? numFormat.format(af) : "Unknown") + "<br>");
 
         if (variant.getSampleNames().size() > 0) {
-            double afrac = getAlleleFraction(variant);
+            double afrac = variant.getAlleleFraction();
             toolTip = toolTip.append("<br>Minor Allele Fraction: " + numFormat.format(afrac) + "<br>");
         }
 
@@ -1052,7 +1066,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     private String getSampleToolTip(String sample, Variant variant) {
-        if (isEnableMethylationRateSupport() && variant.getGenotype(sample).getAttributeAsDouble("GB") < 10) {
+        double goodBaseCount = variant.getGenotype(sample).getAttributeAsDouble("GB");
+        if(Double.isNaN(goodBaseCount)) goodBaseCount = 0;
+        if (isEnableMethylationRateSupport() &&  goodBaseCount < 10) {
             return sample;
         }
         String id = variant.getID();
@@ -1092,31 +1108,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         return toolTip;
-    }
-
-    /**
-     * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
-     * no annotation (unknown allele frequency).
-     */
-    public double getAlleleFreq(Variant variant) {
-        return variant.getAlleleFreq();
-    }
-
-    /**
-     * Return the allele fraction for this variant.  The allele fraction is similiar to allele frequency, but is based
-     * on the samples in this VCF as opposed to an AF or GMAF annotation.
-     * <p/>
-     * A value of -1 indicates unknown
-     */
-    public double getAlleleFraction(Variant variant) {
-        return variant.getAlleleFraction();
-    }
-
-    public double getAllelePercent(Variant variant) {
-
-        double af = getAlleleFraction(variant);
-        return af < 0 ? getAlleleFreq(variant) : af;
-
     }
 
     private String getAlleleToolTip(Variant counts) {
