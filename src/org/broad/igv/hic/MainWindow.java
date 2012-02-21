@@ -49,13 +49,6 @@ import javax.swing.plaf.basic.BasicSliderUI;
  */
 public class MainWindow extends JFrame {
 
-    public DisplayOption getDisplayOption() {
-        return displayOption;
-    }
-
-    public void setDisplayOption(DisplayOption displayOption) {
-        this.displayOption = displayOption;
-    }
 
     Map<Integer, DensityFunction> zoomToDensityMap = null;
 
@@ -223,18 +216,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-    class ZoomLabel {
-        String label;
-        int zoom;
+    public DisplayOption getDisplayOption() {
+        return displayOption;
+    }
 
-        ZoomLabel(String label, int zoom) {
-            this.label = label;
-            this.zoom = zoom;
-        }
-
-        public String toString() {
-            return label;
-        }
+    public void setDisplayOption(DisplayOption displayOption) {
+        this.displayOption = displayOption;
     }
 
     private void load(String file) throws IOException {
