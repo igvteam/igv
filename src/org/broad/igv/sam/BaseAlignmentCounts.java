@@ -1,8 +1,10 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -41,7 +43,10 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         this.end = end;
 
         // TODO -- experimental.  Needs to be done optional, and with the correct context.
-        bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, IGV.getInstance().getGenomeManager().getCurrentGenome());
+        if(!Globals.isHeadless()){
+            bisulfiteCounts = new BisulfiteCounts(bisulfiteContext,IGV.getInstance().getGenomeManager().getCurrentGenome());
+        }
+
     }
 
 
