@@ -147,6 +147,7 @@
     <target name="uitests" depends="compile">
         <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
+            <jvmarg value="-Djava.awt.headless=false"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">
