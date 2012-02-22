@@ -100,14 +100,22 @@ public class PeakParser {
             LittleEndianInputStream reader = null;
             SeekableStream ss = null;
             try {
-                ss = new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path));
-                ss.seek(chrPos);
 
-                reader = new LittleEndianInputStream(ss);
+                ss = SeekableStreamFactory.getStreamFor(path);
+                int bufferSize = 512000;
+                long contentLength = ss.length();
+                if(contentLength > 0) {
+                    bufferSize = (int) Math.min(contentLength, bufferSize);
+                }
+
+                SeekableBufferedStream bufferedStream = new SeekableBufferedStream(ss, bufferSize);
+                bufferedStream.seek(chrPos);
+
+                reader = new LittleEndianInputStream(bufferedStream);
                 int nBytes = reader.readInt();
 
                 byte[] compressedBytes = new byte[nBytes];
-                ss.readFully(compressedBytes);
+                bufferedStream.readFully(compressedBytes);
 
                 byte[] bytes = CompressionUtils.decompress(compressedBytes);
 
