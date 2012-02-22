@@ -1,5 +1,6 @@
 package org.broad.igv.gs.dm;
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +23,7 @@ public class DMUtilsTest {
 
     @Before
     public void setup() {
+        Globals.setTesting(true);
         HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 
@@ -48,14 +50,14 @@ public class DMUtilsTest {
                 assertEquals("Test file path", path, fileMetadata.getPath());
             }
         }
-        if(!found) {
+        if (!found) {
             fail("Test file not found: " + testFileName);
         }
     }
 
     @Test
     public void testGetDirectoryListing() throws Exception {
-         // TODO -- test for arbitrary directory
+        // TODO -- test for arbitrary directory
     }
 
     @Test
@@ -65,7 +67,7 @@ public class DMUtilsTest {
 
     @Test
     public void testCreateDirectory() throws Exception {
-          // TODO -- implementation
+        // TODO -- implementation
     }
 
 

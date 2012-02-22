@@ -18,6 +18,7 @@
 
 package org.broad.igv.gs.atm;
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 import org.junit.After;
@@ -43,6 +44,7 @@ public class ATMUtilsTest {
 
     @Before
     public void setup() {
+        Globals.setTesting(true);
         HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 
