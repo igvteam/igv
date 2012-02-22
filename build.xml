@@ -121,9 +121,10 @@
 
     <property name="test.reports" value="${basedir}/reports"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
-    <property name="testsfailed" value="0"/>
     <target name="alltests" depends="compile">
-        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
+        <fail message="Test failure detected, check test results." if="tests.failed"/>
+
+        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="tests.failed" maxmemory="512m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
@@ -145,6 +146,8 @@
     </target>
 
     <target name="uitests" depends="compile">
+        <fail message="Test failure detected, check test results." if="tests.failed"/>
+
         <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <!--jvmarg value="-Djava.awt.headless=false"/-->
@@ -165,6 +168,7 @@
             </fileset>
             <report todir="${test.reports}"/>
         </junitreport>
+
     </target>
 
 
