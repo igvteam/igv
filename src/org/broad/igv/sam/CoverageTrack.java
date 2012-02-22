@@ -283,7 +283,7 @@ public class CoverageTrack extends AbstractTrack {
             DataRange range = getDataRange();
             double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
 
-            int lastpX = -1;
+            int lastpX = Integer.MIN_VALUE;
             final double rectX = rect.getX();
             final double rectMaxX = rect.getMaxX();
             final double rectY = rect.getY();
@@ -339,7 +339,7 @@ public class CoverageTrack extends AbstractTrack {
                             if (idx >= 0 && idx < refBases.length) {
                                 ref = Character.toLowerCase((char) refBases[idx]);
                                 if (bisulfiteMode) {
-                                    mismatch = (bc != null);
+                                    mismatch = (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0);
                                 } else {
                                     mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
                                 }
@@ -347,78 +347,35 @@ public class CoverageTrack extends AbstractTrack {
                         }
 
 
-                        if (pX > lastpX || mismatch) {
+                        if (pX >= lastpX || mismatch) {
 
-                            boolean strandOption = false;
+                            int pY = (int) rectMaxY - 1;
 
-                            if (strandOption) {
+                            int totalCount = alignmentCounts.getTotalCount(pos);
 
-                                // Negative strand
-                                int pY = (int) (rectY + rectMaxY) / 2;
-                                int totalNegCount = alignmentCounts.getNegTotal(pos);
-                                int height = (int) (totalNegCount * rectHeight / colorScaleMax);
-                                height = Math.min(height, rect.height / 2 - 1);
-                                if (height > 0) {
-                                    if (pX > lastpX) negGraphics.fillRect(pX, pY, dX, height);
-                                    if (mismatch) {
-                                        drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX,
-                                                false, alignmentCounts);
-                                    }
+                            double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                            int height = (int) (tmp * rectHeight);
 
+                            height = Math.min(height, rect.height - 1);
+                            int topY = (pY - height);
+
+                            if (height > 0) {
+                                if (pX >= lastpX) {
+                                    graphics.fillRect(pX, topY, dX, height);
+                                    lastpX = pX + dX;
                                 }
-
-                                // Positive strand
-                                pY = (int) (rectY + rectMaxY) / 2;
-                                int totalPosCount = alignmentCounts.getPosTotal(pos);
-                                height = (int) (totalPosCount * rectHeight / colorScaleMax);
-                                height = Math.min(height, rect.height / 2 - 1);
-                                int topY = (pY - height);
-                                if (height > 0) {
-                                    if (pX > lastpX) posGraphics.fillRect(pX, topY, dX, height);
-                                    if (mismatch) {
-                                        drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX,
-                                                true, alignmentCounts);
-                                    }
-                                }
-
-
-                                // Center line
-                                pY = (int) (rectY + rectMaxY) / 2;
-                                Graphics2D blackGraphics = context.getGraphic2DForColor(lightBlue);
-                                blackGraphics.drawLine(0, pY, rect.width, pY);
-
-
-                            } else {
-
-                                int pY = (int) rectMaxY - 1;
-
-                                int totalCount = alignmentCounts.getTotalCount(pos);
-
-                                double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
-                                int height = (int) (tmp * rectHeight);
-
-                                height = Math.min(height, rect.height - 1);
-                                int topY = (pY - height);
-
-                                if (height > 0) {
-                                    if (pX > lastpX && !mismatch) {
-                                        graphics.fillRect(pX, topY, dX, height);
-                                        lastpX = pX + dX;
-                                    } else if (mismatch) {
-
-                                        if (bisulfiteMode) {
-                                            if (bc != null) {
-
-                                                drawBarBisulfite(context, pos, rect, totalCount, maxRange,
-                                                        pY, pX, dX, bc, range.isLog());
-                                            }
-                                        } else {
-                                            drawBar(context, pos, rect, totalCount, maxRange,
-                                                    pY, pX, dX, alignmentCounts, range.isLog());
+                                if (mismatch) {
+                                    if (bisulfiteMode) {
+                                        if (bc != null) {
+                                            lastpX = drawBarBisulfite(context, pos, rect, totalCount, maxRange,
+                                                    pY, pX, dX, bc, range.isLog());
                                         }
-                                        lastpX = pX + dX;
+                                    } else {
+                                        lastpX = drawBar(context, pos, rect, totalCount, maxRange,
+                                                pY, pX, dX, alignmentCounts, range.isLog());
                                     }
                                 }
+
                             }
                         }
                     }
@@ -442,16 +399,16 @@ public class CoverageTrack extends AbstractTrack {
      * @return
      */
 
-    void drawBar(RenderContext context,
-                 int pos,
-                 Rectangle rect,
-                 double totalCount,
-                 double max,
-                 int pY,
-                 int pX,
-                 int dX,
-                 AlignmentCounts interval,
-                 boolean isLog) {
+    int drawBar(RenderContext context,
+                int pos,
+                Rectangle rect,
+                double totalCount,
+                double max,
+                int pY,
+                int pX,
+                int dX,
+                AlignmentCounts interval,
+                boolean isLog) {
 
         for (char nucleotide : nucleotides) {
 
@@ -482,21 +439,23 @@ public class CoverageTrack extends AbstractTrack {
 
             pY = baseY;
         }
+        return pX + dX;
     }
 
-    void drawBarBisulfite(RenderContext context,
-                          int pos,
-                          Rectangle rect,
-                          double totalCount,
-                          double maxRange,
-                          int pY,
-                          int pX,
-                          int dX,
-                          BisulfiteCounts.Count count,
-                          boolean isLog) {
+    int drawBarBisulfite(RenderContext context,
+                         int pos,
+                         Rectangle rect,
+                         double totalCount,
+                         double maxRange,
+                         int pY,
+                         int pX0,
+                         int dX,
+                         BisulfiteCounts.Count count,
+                         boolean isLog) {
 
         // If bisulfite mode, we expand the rectangle to make it more visible.  This code is copied from
         // AlignmentRenderer
+        int pX = pX0;
         if (dX < 3) {
             int expansion = dX;
             pX -= expansion;
@@ -539,7 +498,9 @@ public class CoverageTrack extends AbstractTrack {
         baseY = pY - height;
         if (height > 0) {
             tGraphics.fillRect(pX, baseY, dX, height);
+
         }
+        return pX + dX;
     }
 
 
