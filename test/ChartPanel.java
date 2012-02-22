@@ -251,12 +251,12 @@ public class ChartPanel extends JPanel implements Serializable {
         }
 
         void rebuild() {
-            if (scatterPlot == null || scatterPlot.dataModel == null) return;
+            if (scatterPlot == null || scatterPlot.getDataModel() == null) return;
 
             removeAll();
 
 
-            String categoryName = scatterPlot.dataModel.categoryName;
+            String categoryName = scatterPlot.getDataModel().getCategoryName();
             if (categoryName == null || categoryName.equals("")) {
                 return;
             }
@@ -272,7 +272,7 @@ public class ChartPanel extends JPanel implements Serializable {
             Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
 
             // Sort series names
-            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.dataModel.getSeriesNames());
+            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.getDataModel().getSeriesNames());
 
             sortSeriesNames(seriesNames);
 
