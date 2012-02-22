@@ -556,38 +556,37 @@ public class ExpressionFileParser {
 
     private static String findSignalColumnHeading(String[] tokens) {
 
-        Set<String> columnHeaderSet = new HashSet<String>(Arrays.asList(tokens));
+        Set<String> columnHeaderSet = new HashSet<String>();
+        for (String tok : tokens) {
+            columnHeaderSet.add(tok.toLowerCase());
+        }
+
+        String[] signals = new String[]{"beta_value", "beta value", "log2 signal", "signal"};
+
+        for (String sig : signals) {
+            if (columnHeaderSet.contains(sig)) {
+                return sig;
+            }
+        }
 
         String qCol = null;
-        if (columnHeaderSet.contains("Beta_Value")) {
-            qCol = "Beta_Value";
-        } else if (columnHeaderSet.contains("Beta value")) {
-            qCol = "Beta value";
-        } else if (columnHeaderSet.contains("log2 Signal")) {
-            qCol = "log2 Signal";
-        } else if (columnHeaderSet.contains("Signal")) {
-            qCol = "Signal";
-        } else if (columnHeaderSet.contains("signal")) {
-            qCol = "signal";
+
+        HashSet<String> uniqueColumns = new HashSet<String>(Arrays.asList(tokens));
+        List<String> qColumns = new ArrayList<String>(uniqueColumns);
+        if (qColumns.size() == 1) {
+            qCol = qColumns.get(0);
         } else if (!Globals.isHeadless()) {
             // Let user choose the signal column
-            HashSet<String> uniqueColumns = new HashSet<String>(Arrays.asList(tokens));
-            List<String> qColumns = new ArrayList<String>(uniqueColumns);
-            if (qColumns.size() == 1) {
-                qCol = qColumns.get(0);
+            Collections.sort(qColumns);
+
+            MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), qColumns.toArray(new String[0]));
+            msDialog.setVisible(true);
+
+            if (!msDialog.isCanceled()) {
+                qCol = msDialog.getQuantitationColumn();
             } else {
-                Collections.sort(qColumns);
-
-                MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[]) qColumns.toArray(new String[0]));
-                msDialog.setVisible(true);
-
-                if (!msDialog.isCanceled()) {
-                    qCol = msDialog.getQuantitationColumn();
-                } else {
-                    throw new RuntimeException("Could not find any signal columns in the MAGE-TAB file");
-                }
+                throw new RuntimeException("Could not find any signal columns in the MAGE-TAB file");
             }
-
         }
         return qCol;
     }

@@ -178,6 +178,17 @@ public class IGVToolsTest {
         testTile(inputFile, 5000000, 6000000);
     }
 
+
+    @Test
+    public void testTileGCT() throws IOException {
+        String inputFile = TestUtils.DATA_DIR + "/gct/OV.transcriptome__agilentg4502.data.txt";
+        String outFilePath = TestUtils.DATA_DIR + "/out/testTileGCT.wig";
+        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+        String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, genome};
+        igvTools.run(args);
+    }
+
+
     private void testTile(String inputFile, int start, int end) throws IOException {
         String file1 = TestUtils.DATA_DIR + "/out/file1.tdf";
         String file2 = TestUtils.DATA_DIR + "/out/file2.tdf";

@@ -82,10 +82,10 @@ public class IgvTools {
     static final String CMD_HELP = "help";
 
     static Map<String, String> commandList = new HashMap<String, String>(9);
-    
-    public static String getVersionString(){
+
+    public static String getVersionString() {
         String out = "Version: " + version;
-        if(true || "test".equals(version)){
+        if (true || "test".equals(version)) {
             out += " Build: " + build;
         }
         return out;
@@ -107,15 +107,15 @@ public class IgvTools {
         String wsize = "-w, --windowSize [wz]\tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
         String ext = "-e, --extFactor [ef]\tThe read or feature is extended by the specified distance in bp prior to counting\n";
         String readstr = "--strands [arg] \t By default, counting is combined among both strands. " +
-                            " Setting outputs the count for each strand separately." +
-                            " Legal argument values are 'read' or 'first'." +
-                            " 'read' Separates count by 'read' strand, 'first' uses the first in pair strand\n";
+                " Setting outputs the count for each strand separately." +
+                " Legal argument values are 'read' or 'first'." +
+                " 'read' Separates count by 'read' strand, 'first' uses the first in pair strand\n";
         String bases = "--bases \t Count the occurrence of each base (A,G,C,T,N). Takes no arguments\n";
         String query = "--query [querystring] \t Only count a specific region. Query string has syntax " +
                 " <chr>:<start>-<end>. e.g. chr1:100-1000. Input file must be indexed.\n";
         String minMap = "--minMapQuality [mqual]\t Set the minimum mapping quality of reads to include. Default is 0.\n";
         String includeDups = "--includeDuplicates \t Include duplicate alignments in count. Default false." +
-                 " If this flag is included, duplicates are counted. Takes no arguments\n";
+                " If this flag is included, duplicates are counted. Takes no arguments\n";
         countstring += zoom + wfunc + wsize + ext + readstr + bases + query + minMap + includeDups;
         commandList.put(CMD_COUNT, countstring);
 
@@ -201,7 +201,7 @@ public class IgvTools {
     static String usageString() {
         StringBuffer buf = new StringBuffer();
 
-        buf.append("\nProgram: igvtools. "  + getVersionString() + "\n\n");
+        buf.append("\nProgram: igvtools. " + getVersionString() + "\n\n");
         buf.append("Usage: igvtools [command] [options] [input file/dir] [other arguments]\n\n");
         buf.append("Command:");
         for (String c : commandDocs) {
@@ -264,13 +264,13 @@ public class IgvTools {
     }
 
     void run(String[] argv) {
-        
-        if(argv.length == 0){
+
+        if (argv.length == 0) {
             System.out.println("Error: No arguments provided");
             System.out.println(usageString());
             return;
         }
-        
+
         String command = argv[0].toLowerCase();
 
         if (command.equals(CMD_HELP)) {
@@ -292,7 +292,6 @@ public class IgvTools {
             System.out.println(getVersionString());
             return;
         }
-
 
         CmdLineParser parser = initParser(command);
 
@@ -439,7 +438,7 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            }  else if (command.equals("sumwigs")) {
+            } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals("densitiestobedgraph")) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
@@ -456,7 +455,7 @@ public class IgvTools {
             }
         } catch (PreprocessingException e) {
             System.err.println(e.getMessage());
-            System.out.println(usageString());
+            System.out.println(usageString(command));
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
@@ -517,7 +516,7 @@ public class IgvTools {
             countFlags += CoverageCounter.STRANDS_BY_READ;
         } else if (strandopt.equals("first")) {
             countFlags += CoverageCounter.STRANDS_BY_FIRST_IN_PAIR;
-        }else if (strandopt.equals("second")) {
+        } else if (strandopt.equals("second")) {
             System.out.println("Warning: 'second' Option undocumented and may be removed in the future. BE WARNED!");
             countFlags += CoverageCounter.STRANDS_BY_SECOND_IN_PAIR;
         }
@@ -706,7 +705,7 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            }  else if (command.equals("sumwigs")) {
+            } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals("densitiestobedgraph")) {
                 validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
