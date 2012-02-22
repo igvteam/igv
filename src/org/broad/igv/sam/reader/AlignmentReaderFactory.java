@@ -94,7 +94,7 @@ public class AlignmentReaderFactory {
             } else {
                 reader = getBamListReader(locator.getPath(), requireIndex);
             }
-        } else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+        } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
                 reader = new GobyAlignmentQueryReader(locator.getPath());
             } catch (IOException e) {

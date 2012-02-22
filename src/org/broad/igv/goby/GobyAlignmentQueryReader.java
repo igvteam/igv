@@ -161,7 +161,7 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
      */
     public static boolean supportsFileType(String filename) {
         final boolean result = AlignmentReaderImpl.canRead(filename);
-        LOG.debug(String.format("supportsFileType %s result=%b", filename, result));
+        LOG.info(String.format("supportsFileType %s result=%b", filename, result));
         return result;
     }
 
