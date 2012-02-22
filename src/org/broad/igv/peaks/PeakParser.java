@@ -23,6 +23,7 @@ import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.util.LittleEndianInputStream;
+import org.broad.tribble.util.SeekableBufferedStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
@@ -99,7 +100,7 @@ public class PeakParser {
             LittleEndianInputStream reader = null;
             SeekableStream ss = null;
             try {
-                ss = SeekableStreamFactory.getStreamFor(path);
+                ss = new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path));
                 ss.seek(chrPos);
 
                 reader = new LittleEndianInputStream(ss);
