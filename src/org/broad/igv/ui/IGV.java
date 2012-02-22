@@ -2116,12 +2116,14 @@ public class IGV {
         return sortedSamples;
     }
 
-    private void sortByRegionScore(List<Track> tracks,
-                                   final RegionOfInterest region,
-                                   final RegionScoreType type,
-                                   final ReferenceFrame frame) {
+    static void sortByRegionScore(List<Track> tracks,
+                                  final RegionOfInterest region,
+                                  final RegionScoreType type,
+                                  ReferenceFrame frame) {
         if ((tracks != null) && (region != null) && !tracks.isEmpty()) {
-            final int zoom = Math.max(0, frame.getZoom());
+            final String frameName = frame != null ? frame.getName() : null;
+            int tmpzoom = frame != null ? frame.getZoom() : 0;
+            final int zoom = Math.max(0, tmpzoom);
             final String chr = region.getChr();
             final int start = region.getStart();
             final int end = region.getEnd();
@@ -2134,8 +2136,9 @@ public class IGV {
                         if (t1 == null) return 1;
                         if (t2 == null) return -1;
 
-                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame.getName());
-                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame.getName());
+
+                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frameName);
+                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frameName);
 
                         if (s1 < s2) {
                             return -1;

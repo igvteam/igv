@@ -69,6 +69,13 @@ public class TrackLoaderTest {
         assertTrue(found_ex);
     }
 
+    @Test
+    public void testLoadSIF() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "/sample/BRCA_sif.txt";
+        //Sample information file, shouldn't have tracks. Not a great test
+        tstLoadFi(filepath, 0);
+    }
+
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
         Genome genome = TestUtils.loadGenome();
         return tstLoadFi(filepath, expected_tracks, genome);
@@ -81,6 +88,10 @@ public class TrackLoaderTest {
         if (expected_tracks != null) {
             assertEquals(expected_tracks.intValue(), tracks.size());
         }
+        if (expected_tracks == 0) {
+            return tracks;
+        }
+
         Track track = tracks.get(0);
         assertEquals(locator, track.getResourceLocator());
 

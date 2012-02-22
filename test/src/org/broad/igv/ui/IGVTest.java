@@ -18,19 +18,27 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.util.Utilities;
 import org.junit.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -42,19 +50,22 @@ import static org.junit.Assert.assertTrue;
 public class IGVTest {
 
     private static IGV igv;
+    private static Genome genome;
 
     public IGVTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        igv = TestUtils.startGUI();
+        //igv = TestUtils.startGUI();
+        TestUtils.setUpHeadless();
+        genome = TestUtils.loadGenome();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        TestUtils.stopGUI();
-        igv = null;
+        //TestUtils.stopGUI();
+        //igv = null;
     }
 
     @Before
@@ -69,35 +80,38 @@ public class IGVTest {
     @Test
     public void testSorts() throws Exception {
         String sessionPath = TestUtils.DATA_DIR + "/sessions/BRCA_loh2.xml";
+        List<Track> tracks = new ArrayList<Track>();
+        InputStream cbioStream = ParsingUtils.openInputStream(sessionPath);
+        Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
+        NodeList nodeTracks = document.getElementsByTagName("Resource");
 
-        InputStream inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-        final SessionReader sessionReader = new IGVSessionReader(igv);
-        sessionReader.loadSession(inputStream, igv.getSession(), sessionPath);
+        TrackLoader loader = new TrackLoader();
+
+        for (int nt = 0; nt < nodeTracks.getLength(); nt++) {
+            Node node = nodeTracks.item(nt);
+            ResourceLocator locator = new ResourceLocator(node.getAttributes().getNamedItem("path").getTextContent());
+            tracks.addAll(loader.load(locator, genome));
+        }
 
         RegionScoreType[] types = RegionScoreType.values();
         int count = 0;
         for (RegionScoreType type : types) {
-            count += tstSort(type);
+            count += tstSort(tracks, type);
 
         }
         assertTrue("Did not check enough tracks", count > 2 * types.length);
     }
 
-    private int tstSort(RegionScoreType type) throws Exception {
+    private int tstSort(List<Track> tracks, RegionScoreType type) throws Exception {
         //Sort the "sortable" tracks
-        ReferenceFrame frame = FrameManager.getDefaultFrame();
-        final int zoom = Math.max(0, frame.getZoom());
-        final String chr = frame.getChrName();
-        final int start = (int) frame.getOrigin();
-        final int end = (int) frame.getEnd();
+        ReferenceFrame frame = null;
+        final int zoom = 0;
+        final String chr = "chr20";
+        final int start = Integer.parseInt("14104912");
+        final int end = Integer.parseInt("36031032");
+        RegionOfInterest roi = new RegionOfInterest(chr, start, end, "");
 
-        igv.sortByRegionScore(null, type, frame);
-
-        //Need to wait for GUI to repaint
-        Thread.sleep(500);
-
-        //Check sort
-        List<Track> tracks = igv.getAllTracks(false);
+        IGV.sortByRegionScore(tracks, roi, type, frame);
 
         Track lastTrack = null;
         int count = 0;
@@ -107,7 +121,6 @@ public class IGVTest {
                 String name = track.getName().toLowerCase();
                 if (name.contains("reference")
                         || name.contains("refseq")) {
-                    Thread.sleep(100);
                     continue;
                 }
                 count++;

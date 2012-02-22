@@ -24,6 +24,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.AbstractColorScale;
@@ -173,7 +174,8 @@ public class AttributeManager {
     /**
      * Return all attributes, except those that have been "hidden" in the attribute panel
      * TODO -- don't compute this every time (or at least profile to see if this is a problem).
-      * @return
+     *
+     * @return
      */
     public List<String> getVisibleAttributes() {
 
@@ -209,7 +211,7 @@ public class AttributeManager {
         }
 
         // Add the 3 "special" attributes to ensure they are the first columns
-        if(attributeNames.isEmpty()) {
+        if (attributeNames.isEmpty()) {
             addAttributeName("NAME");
             addAttributeName("DATA TYPE");
             addAttributeName("DATA FILE");
@@ -306,10 +308,10 @@ public class AttributeManager {
 
             loadedResources.add(locator);
 
-            //createCurrentAttributeFileString(files);
-            IGV.getInstance().resetOverlayTracks();
-
-            IGV.getInstance().doRefresh();
+            if (!Globals.isHeadless()) {
+                IGV.getInstance().resetOverlayTracks();
+                IGV.getInstance().doRefresh();
+            }
 
         } catch (IOException ex) {
             log.error("Error loading attribute file", ex);
@@ -326,17 +328,18 @@ public class AttributeManager {
 
     static Set<String> nonGroupable = new HashSet<String>(Arrays.asList("DATA FILE", "DATA TYPE",
             "VITALSTATUS", "VITAL STATUS", "KARNSCORE", "CENSURED"));
+
     public List<String> getGroupableAttributes() {
         List<String> seriesNames = new ArrayList<String>();
-         for (Map.Entry<String, Set<String>> entry : uniqueAttributeValues.entrySet()) {
-             int cnt = entry.getValue().size();
-             String att = entry.getKey();
-             if (cnt > 1 && cnt < 10 && !nonGroupable.contains(att)) {
-                 seriesNames.add(att);
-             }
-         }
+        for (Map.Entry<String, Set<String>> entry : uniqueAttributeValues.entrySet()) {
+            int cnt = entry.getValue().size();
+            String att = entry.getKey();
+            if (cnt > 1 && cnt < 10 && !nonGroupable.contains(att)) {
+                seriesNames.add(att);
+            }
+        }
 
-         return seriesNames;
+        return seriesNames;
 
     }
 
@@ -487,12 +490,12 @@ public class AttributeManager {
 
         if (trackSampleMappings.containsKey(track)) {
             return trackSampleMappings.get(track);
-        } else if(isTCGAName(track)) {
+        } else if (isTCGAName(track)) {
             String sample = track.substring(0, 12);
             addAttribute(track, "Sample", sample);
             trackSampleMappings.put(track, sample);
             return sample;
-        }  else {
+        } else {
             String key = PreferenceManager.getInstance().get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY);
             return key == null ? null : getAttribute(track, key);
         }
@@ -566,7 +569,7 @@ public class AttributeManager {
             // Measure of "information content" added by using color, very crude
             //boolean useColor = (metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() <= 0.5) &&
             //        !(attKey.equals("NAME") || attKey.equals("DATA FILE") || attKey.equals("DATA TYPE"));
-            boolean useColor=true;
+            boolean useColor = true;
             if (useColor) {
                 ColorTable ct = colorTables.get(attKey);
                 if (ct == null) {
