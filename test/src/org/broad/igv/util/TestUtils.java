@@ -28,6 +28,7 @@ import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -97,6 +98,11 @@ public class TestUtils {
      * @throws IOException
      */
     public static IGV startGUI(String genomeFile) throws IOException {
+        boolean headless = checkHeadlessEnvironment();
+        if (headless) {
+            System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
+        }
+        org.junit.Assume.assumeTrue(!headless);
         setUpTestEnvironment();
         IGV igv;
         //If IGV is already open, we get the instance.
@@ -115,6 +121,11 @@ public class TestUtils {
             igv.loadGenome(genomeFile, null);
         }
         return igv;
+    }
+
+    public static boolean checkHeadlessEnvironment() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        return ge.isHeadless();
     }
 
     /**

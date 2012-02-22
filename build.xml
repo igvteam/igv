@@ -123,7 +123,7 @@
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
     <property name="testsfailed" value="0"/>
     <target name="alltests" depends="compile">
-        <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
+        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
@@ -147,7 +147,7 @@
     <target name="uitests" depends="compile">
         <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
-            <jvmarg value="-Djava.awt.headless=false"/>
+            <!--jvmarg value="-Djava.awt.headless=false"/-->
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">

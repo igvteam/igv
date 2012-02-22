@@ -87,9 +87,9 @@ public class TrackLoaderTest {
         List<Track> tracks = trackLoader.load(locator, genome);
         if (expected_tracks != null) {
             assertEquals(expected_tracks.intValue(), tracks.size());
-        }
-        if (expected_tracks == 0) {
-            return tracks;
+            if (expected_tracks == 0) {
+                return tracks;
+            }
         }
 
         Track track = tracks.get(0);
