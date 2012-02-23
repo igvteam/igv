@@ -1,3 +1,25 @@
+<!--
+  ~ Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
+  ~ WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+  ~ WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+  ~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+  ~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
+  ~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
+  ~ OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+  ~ ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
+  ~ THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
+  ~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+  -->
+
+<!--This document is a template. The intention is to generate GraphML, generate a new file
+based on this template with the GraphML data in the appropriate location,
+and use javascript to automatically post it to cBio. This way, IGV directs a browser to
+post a large amount of data. For testing purposes, this document should be well-formed XML-->
 <html>
 <head>
     <script type="text/javascript">
@@ -6,20 +28,19 @@
         }
     </script>
 </head>
+
 <body onload="formSubmit()">
 
 <form id="gmlform" name="input" action="http://awabi.cbio.mskcc.org/public-portal/netviz.jsp"
       enctype="multipart/form-data" method="post">
     <textarea rows="10" cols="530" id="graphml" name="graphml">
         allthegraphmldatagoeshere
-    </textarea><br>
-    <input type="hidden" name="format" value="graphml.gz.base64">
-    <input type="submit" name="submit_button" value="Submit Data"/>
+    </textarea>
+    <input type="hidden" name="format" value="graphml.gz.base64"></input>
+    <input type="submit" name="submit_button" value="Submit Data"></input>
 </form>
 If you are not redirected, most likely you have javascript disabled.
-Click the "Submit Data" button above.
-</div>
-
-
+The cBio viewer requires javascript.
+Click the "Submit Data" button above to submit the data manually
 </body>
 </html>

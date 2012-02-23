@@ -18,6 +18,7 @@
 
 package org.broad.igv.cbio;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -323,10 +324,6 @@ public class NetworkAnnotator {
 //        return outNodes;
 //    }
 
-    boolean writeDocument(String outputFile) throws IOException {
-        return writeDocument(document, outputFile);
-    }
-
     public static String getString(Document document) {
         StreamResult streamResult;
         try {
@@ -346,6 +343,87 @@ public class NetworkAnnotator {
 
         return streamResult.getWriter().toString();
     }
+
+    /**
+     * Write the contents of this document into the specified outputStream.
+     * The document string is always gzipped.
+     * If base64encode is true, the contents are base64encoded as well.
+     *
+     * @param outputStream
+     * @param base64encode
+     * @return
+     * @throws IOException
+     */
+    public int writeDocumentGZ(OutputStream outputStream, boolean base64encode) throws IOException {
+
+        ByteArrayOutputStream gmlByteStream = new ByteArrayOutputStream();
+
+
+        String xmlString = getString(this.getDocument());
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
+        gzipOutputStream.write(xmlString.getBytes());
+        gzipOutputStream.finish();
+
+        int count = 0;
+        if (base64encode) {
+            char[] gmlData = Base64Coder.encode(gmlByteStream.toByteArray());
+            for (char c : gmlData) {
+                outputStream.write(c);
+                count++;
+            }
+        } else {
+            gmlByteStream.writeTo(outputStream);
+            gmlByteStream.flush();
+        }
+        outputStream.flush();
+        return count;
+
+    }
+
+    public String outputForcBioView() throws IOException {
+        String outPath = null;
+        BufferedReader reader = null;
+        OutputStream outputStream = null;
+        try {
+            File temp = File.createTempFile("cbio", ".html");
+            temp.deleteOnExit();
+            outPath = temp.getAbsolutePath();
+
+            InputStreamReader fReader = new InputStreamReader(NetworkAnnotator.class.getResourceAsStream("resources/post_stub.html"));
+            reader = new BufferedReader(fReader);
+
+            outputStream = new FileOutputStream(outPath);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().equals("allthegraphmldatagoeshere")) {
+                    this.writeDocumentGZ(outputStream, true);
+                } else {
+                    outputStream.write((line + "\n").getBytes());
+                    outputStream.flush();
+                }
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            logger.error("Error writing cBio stub form to " + outPath);
+            logger.error(e.getMessage());
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+            if (outputStream != null) {
+                outputStream.close();
+            }
+        }
+
+        return outPath;
+    }
+
+
+    boolean writeDocument(String outputFile) throws IOException {
+        return writeDocument(document, outputFile);
+    }
+
 
     /**
      * Write document to XML at outputFile. File is deleted if there

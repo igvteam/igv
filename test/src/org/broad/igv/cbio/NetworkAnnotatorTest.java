@@ -18,12 +18,14 @@
 
 package org.broad.igv.cbio;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.util.Utilities;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -32,14 +34,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
 
@@ -192,48 +193,24 @@ public class NetworkAnnotatorTest {
 
     @Test
     public void testOutputForcBioView() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "/tp53network.xml";
-        assertTrue(annotator.loadNetwork(networkPath));
-        String outPath = TestUtils.DATA_DIR + "/test_stub.html";
-
-        String xmlString = NetworkAnnotator.getString(annotator.getDocument());
-
-
-        ByteArrayOutputStream gmlByteStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
-        gzipOutputStream.write(xmlString.getBytes());
-        gzipOutputStream.finish();
-
-        BASE64Encoder encoder = new BASE64Encoder();
-        String gmlData = encoder.encode(gmlByteStream.toByteArray());
-
-        InputStreamReader fReader = new InputStreamReader(NetworkAnnotator.class.getResourceAsStream("resources/post_stub.html"));
-        BufferedReader reader = new BufferedReader(fReader);
-
-        OutputStream outputStream = new FileOutputStream(outPath);
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.equals("allthegraphmldatagoeshere")) {
-                outputStream.write(gmlData.getBytes());
-                outputStream.flush();
-            } else {
-                outputStream.write(line.getBytes());
-                outputStream.flush();
-            }
-        }
-        reader.close();
-
-        outputStream.flush();
-        outputStream.close();
-
+        assertTrue(annotator.loadNetwork(TestUtils.DATA_DIR + "/tp53network.xml"));
+        String outPath = annotator.outputForcBioView();
 
         //Now attempt to read back in
-//        GZIPInputStream inputStream = new GZIPInputStream(new FileInputStream(outPath + ".gzonly"));
-//        BufferedReader inStream = new BufferedReader(new InputStreamReader(inputStream));
-//        while((line = inStream.readLine()) != null){
-//            System.out.println(line);
-//        }
+        Document inDoc = Utilities.createDOMDocumentFromXmlStream(new FileInputStream(outPath));
+        String b64data = inDoc.getElementsByTagName("textarea").item(0).getTextContent().trim();
+        byte[] gzippedInput = Base64Coder.decode(b64data);
+        InputStream plainData = new GZIPInputStream(new ByteArrayInputStream(gzippedInput));
+        BufferedReader bufIn = new BufferedReader(new InputStreamReader(plainData));
+
+        int count = 0;
+        String[] outLines = NetworkAnnotator.getString(annotator.getDocument()).split("\n");
+        String line;
+        while ((line = bufIn.readLine()) != null) {
+            assertEquals(outLines[count], line);
+            count++;
+        }
+
 
     }
 
