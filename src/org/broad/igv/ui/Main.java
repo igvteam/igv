@@ -19,7 +19,6 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
 import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
