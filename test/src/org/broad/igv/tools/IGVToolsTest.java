@@ -185,6 +185,11 @@ public class IGVToolsTest {
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
         String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, genome};
         igvTools.run(args);
+
+        inputFile = TestUtils.DATA_DIR + "/gct/GBM.methylation__sampled.data.txt";
+        args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, genome};
+        igvTools.run(args);
+
     }
 
 

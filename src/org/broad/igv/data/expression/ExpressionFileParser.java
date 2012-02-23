@@ -507,7 +507,7 @@ public class ExpressionFileParser {
             System.arraycopy(secondHeaderRowTokens, dataStartColumn, dataHeaderColumns, 0, dataHeaderColumns.length);
             String qCol = findSignalColumnHeading(dataHeaderColumns);
             for (int i = 0; i < secondHeaderRowTokens.length; i++) {
-                String heading = secondHeaderRowTokens[i].replace('\"', ' ').trim();
+                String heading = secondHeaderRowTokens[i].replace('\"', ' ').trim().toLowerCase();
                 if (heading.contains(qCol)) {
                     dataHeadingList.add(firstHeaderRowTokens[i]);
                     dataColumnList.add(i);
