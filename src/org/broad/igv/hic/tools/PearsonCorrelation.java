@@ -17,38 +17,6 @@ import java.util.Set;
 public class PearsonCorrelation {
 
 
-    public static void main(String[] args) throws IOException {
-
-        testPearson();
-        // test1();
-
-    }
-
-    private static void test1() {
-        double[][] data = {{1, 2, 3}, {2.2, 4.1, 5.5}, {-1.5, -2.5, -2.5}};
-
-        RealMatrix rm = new OpenMapRealMatrix(3, 3);
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                rm.addToEntry(row, col, data[col][row]);
-            }
-        }
-
-        PearsonsCorrelation corr = (new PearsonsCorrelation());
-        System.out.println(getPearsonCorrelation(data[0], data[1]));
-        System.out.println(getPearsonCorrelation(data[0], data[2]));
-        System.out.println(getPearsonCorrelation(data[1], data[2]));
-
-        RealMatrix m = corr.computeCorrelationMatrix(rm);
-        for (int i = 0; i < m.getRowDimension(); i++) {
-            for (int j = 0; j < m.getColumnDimension(); j++) {
-                System.out.print(m.getEntry(i, j) + "\t\t");
-            }
-            System.out.println();
-
-        }
-    }
-
     public static double getPearsonCorrelation(double[] scores1, double[] scores2) {
         double result = 0;
         double sum_sq_x = 0;
