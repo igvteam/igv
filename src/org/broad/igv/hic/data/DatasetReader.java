@@ -5,10 +5,8 @@ import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
-import sun.security.provider.SystemSigner;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
