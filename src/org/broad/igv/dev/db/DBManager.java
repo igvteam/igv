@@ -10,6 +10,7 @@ import org.broad.igv.util.LoginDialog;
 import java.awt.*;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.Executor;
 
 /**
  * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
@@ -189,6 +190,26 @@ public class DBManager {
             return conn.createStruct(s, objects);
         }
 
+        public void setSchema(String schema) throws SQLException {
+            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+        }
+
+        public String getSchema() throws SQLException {
+            return null; //TODO
+        }
+
+        public void abort(Executor executor) throws SQLException {
+            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+        }
+
+        public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+        }
+
+        public int getNetworkTimeout() {
+            return -1;
+        }
+
         public boolean getAutoCommit() throws SQLException {
             return conn.getAutoCommit();
         }
@@ -332,6 +353,7 @@ public class DBManager {
         public <T> T unwrap(Class<T> tClass) throws SQLException {
             return conn.unwrap(tClass);
         }
+
     }
 
 
