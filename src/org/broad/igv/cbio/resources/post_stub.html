@@ -1,23 +1,23 @@
 <html>
 <head>
     <script type="text/javascript">
-        function doPost() {
-            document.getElementById["data"].submit();
+        function formSubmit() {
+            document.getElementById("gmlform").submit();
         }
     </script>
 </head>
+<body onload="formSubmit()">
 
-<body onload="doPost()">
-
-<div align="left">
-    <form id="data" type="hidden" name="input" action="http://awabi.cbio.mskcc.org/public-portal/netviz.jsp"
-          enctype="multipart/form-data" method="post">
-        <textarea rows="10" cols="530" id="graphml" name="graphml">
-            allthegraphmldatagoeshere
-        </textarea>
-        <input type="hidden" name="format" value="graphml.gz.base64">
-        <!--input id="submit" type="submit" name="submit" value="Submit" / -->
-    </form>
+<form id="gmlform" name="input" action="http://awabi.cbio.mskcc.org/public-portal/netviz.jsp"
+      enctype="multipart/form-data" method="post">
+    <textarea rows="10" cols="530" id="graphml" name="graphml">
+        allthegraphmldatagoeshere
+    </textarea><br>
+    <input type="hidden" name="format" value="graphml.gz.base64">
+    <input type="submit" name="submit_button" value="Submit Data"/>
+</form>
+If you are not redirected, most likely you have javascript disabled.
+Click the "Submit Data" button above.
 </div>
 
 
