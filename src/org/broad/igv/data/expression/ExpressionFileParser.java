@@ -507,8 +507,8 @@ public class ExpressionFileParser {
             System.arraycopy(secondHeaderRowTokens, dataStartColumn, dataHeaderColumns, 0, dataHeaderColumns.length);
             String qCol = findSignalColumnHeading(dataHeaderColumns);
             for (int i = 0; i < secondHeaderRowTokens.length; i++) {
-                String heading = secondHeaderRowTokens[i].replace('\"', ' ').trim().toLowerCase();
-                if (heading.contains(qCol)) {
+                String heading = secondHeaderRowTokens[i].replace('\"', ' ').trim();
+                if (heading.toLowerCase().contains(qCol.toLowerCase())) {
                     dataHeadingList.add(firstHeaderRowTokens[i]);
                     dataColumnList.add(i);
                 }
@@ -556,16 +556,18 @@ public class ExpressionFileParser {
 
     private static String findSignalColumnHeading(String[] tokens) {
 
-        Set<String> columnHeaderSet = new HashSet<String>();
+        //Use a map so comparisons are case insensitive,
+        //but returned column heading retains original case
+        Map<String, String> columnHeaderSet = new HashMap<String, String>();
         for (String tok : tokens) {
-            columnHeaderSet.add(tok.toLowerCase());
+            columnHeaderSet.put(tok.toLowerCase(), tok);
         }
 
         String[] signals = new String[]{"beta_value", "beta value", "log2 signal", "signal"};
 
         for (String sig : signals) {
-            if (columnHeaderSet.contains(sig)) {
-                return sig;
+            if (columnHeaderSet.containsKey(sig.toLowerCase())) {
+                return columnHeaderSet.get(sig.toLowerCase());
             }
         }
 
