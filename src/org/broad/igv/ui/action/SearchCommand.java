@@ -401,7 +401,9 @@ public class SearchCommand implements Command {
             for (int genomePos : genomePosList.keySet()) {
                 Feature feat = genomePosList.get(genomePos);
                 //Zoom in on mutation of interest
-                int[] locs = getStartEnd("" + genomePos);
+                //The +2 accounts for centering on the center of the amino acid, not beginning
+                //and converting from 0-based to 1-based (which getStartEnd expects)
+                int[] locs = getStartEnd("" + (genomePos + 2));
                 result = new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
                 results.add(result);
 
@@ -513,8 +515,8 @@ public class SearchCommand implements Command {
      * Return the start and end positions as a 2 element array for the input
      * position string.  UCSC conventions  are followed for coordinates,
      * specifically the internal representation is "zero" based (first base is
-     * numbered 0) but the display representation is "one" based (first base is
-     * numbered 1).   Consequently 1 is substracted from the parsed positions
+     * numbered 0) and end-exclusive, but the display representation is "one" based (first base is
+     * numbered 1) and end-inclusive.   Consequently 1 is subtracted from the parsed positions
      */
     private int[] getStartEnd(String posString) {
         try {
@@ -523,7 +525,6 @@ public class SearchCommand implements Command {
             int start = Math.max(0, Integer.parseInt(startString)) - 1;
 
             // Default value for end
-
             int end = start + 1;
             if (posTokens.length > 1) {
                 String endString = posTokens[1].replaceAll(",", "");
@@ -532,13 +533,9 @@ public class SearchCommand implements Command {
 
             if (posTokens.length == 1 || (end - start) < 10) {
                 int center = (start + end) / 2;
-                start = center - 20;
-                end = center + 20;
-            } else {
-                String endString = posTokens[1].replaceAll(",", "");
-
-                // Add 1 bp to end position t make it "inclusive"
-                end = Integer.parseInt(endString);
+                int widen = 20;
+                start = center - widen;
+                end = center + widen + 1;
             }
 
             return new int[]{Math.min(start, end), Math.max(start, end)};
