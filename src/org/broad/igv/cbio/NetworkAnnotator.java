@@ -42,11 +42,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Class for taking a network of genes and annotating them
@@ -246,17 +246,18 @@ public class NetworkAnnotator {
 
     /**
      * The the value of a child node by the key.
+     * If there are multiple matches, the first is returned.
      * Search is not recursive.
-     * So getNodeKeyData(node, "key", "label") returns "JUN".
-     * Note: This comment contains XML, it won't show
-     * up properly when rendered.
      * <p/>
-     * "<node id="3725"/>
-     * <data key="label">JUN</data>
-     * <data key="type">Protein</data>
-     * <data key="RELATIONSHIP_XREF">HGNC:JUN;Entrez Gene:3725</data>
-     * <data key="IN_QUERY">false</data>
-     * </node>"
+     * <p/>
+     * Example: Say that node has the following XML
+     * "&lt;node id="3725"/&gt;
+     * &lt;data key="label"&gt;JUN&lt;/data&gt;
+     * &lt;data key="type"&gt;Protein&lt;/data&gt;
+     * &lt;data key="RELATIONSHIP_XREF"&gt;HGNC:JUN;Entrez Gene:3725&lt;/data&gt;
+     * &lt;data key="IN_QUERY"&gt;false&lt;/data&gt;
+     * &lt;/node&gt;"
+     * So getNodeKeyData(node, "key", "label") returns "JUN".
      *
      * @param node
      * @param attrName
@@ -310,22 +311,24 @@ public class NetworkAnnotator {
         return count;
     }
 
+//    List<Node> findNodes(Predicate predicate) {
+//        NodeList nodeList = this.getNodes();
+//        List<Node> outNodes = new ArrayList<Node>();
+//        for (int nn = 0; nn < nodeList.getLength(); nn++) {
+//            Node node = nodeList.item(nn);
+//            if (predicate.evaluate(node)) {
+//                outNodes.add(node);
+//            }
+//        }
+//        return outNodes;
+//    }
+
     boolean writeDocument(String outputFile) throws IOException {
         return writeDocument(document, outputFile);
     }
 
-    /**
-     * Write document to XML at outputFile. File is deleted if there
-     * is an error writing out.
-     *
-     * @param document
-     * @param outputFile
-     * @return success
-     * @throws java.io.IOException
-     */
-    public static boolean writeDocument(Document document, String outputFile) throws IOException {
+    public static String getString(Document document) {
         StreamResult streamResult;
-        boolean success = false;
         try {
 
             TransformerFactory factory = TransformerFactory.newInstance();
@@ -338,13 +341,32 @@ public class NetworkAnnotator {
             DOMSource source = new DOMSource(document);
             transformer.transform(source, streamResult);
         } catch (TransformerException e) {
-            return false;
+            return null;
         }
 
-        String xmlString = streamResult.getWriter().toString();
-        //System.out.println(xmlString);
+        return streamResult.getWriter().toString();
+    }
 
-        FileWriter fileWriter = new FileWriter(outputFile);
+    /**
+     * Write document to XML at outputFile. File is deleted if there
+     * is an error writing out. If the outpuFile has a .gz extension,
+     * the output is gzipped.
+     *
+     * @param document
+     * @param outputFile
+     * @return success
+     * @throws java.io.IOException
+     */
+    public static boolean writeDocument(Document document, String outputFile) throws IOException {
+        boolean success = false;
+        boolean gzip = outputFile.endsWith(".gz");
+        String xmlString = getString(document);
+
+        OutputStream stream = new FileOutputStream(outputFile);
+        if (gzip) {
+            stream = new GZIPOutputStream(stream);
+        }
+        OutputStreamWriter fileWriter = new OutputStreamWriter(stream);
         try {
             fileWriter.write(xmlString);
             success = true;

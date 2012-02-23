@@ -22,22 +22,26 @@ import org.apache.commons.collections.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import sun.misc.BASE64Encoder;
 
+import java.io.*;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: jacob
@@ -98,6 +102,7 @@ public class NetworkAnnotatorTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testDownloadCBIO() throws Exception {
         String[] gene_list = new String[]{"egfr", "brca1", "jun"};
@@ -107,8 +112,6 @@ public class NetworkAnnotatorTest {
 
     @Test
     public void testAnnotateAll() throws Exception {
-        //TODO Run this test headless
-        //IGV igv = TestUtils.startGUI();
         TestUtils.setUpHeadless();
         Genome genome = TestUtils.loadGenome();
 
@@ -142,15 +145,96 @@ public class NetworkAnnotatorTest {
             assertNotNull(data);
         }
 
+    }
 
-        //Check valid XML
+    @Test
+    public void testOutputNoGzip() throws Exception {
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        assertTrue(annotator.loadNetwork(networkPath));
         String outPath = TestUtils.DATA_DIR + "/out/test.xml";
+        tstOutputNetwork(annotator, outPath);
+    }
+
+    @Test
+    public void testOutputGzip() throws Exception {
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        assertTrue(annotator.loadNetwork(networkPath));
+        String outPath = TestUtils.DATA_DIR + "/out/test.xml.gz";
+        tstOutputNetwork(annotator, outPath);
+    }
+
+
+    public void tstOutputNetwork(NetworkAnnotator annotator, String outPath) throws Exception {
+        NodeList nodes = annotator.getNodes();
+        Set<String> nodeNames = new HashSet<String>();
+
+        for (int nn = 0; nn < nodes.getLength(); nn++) {
+            Node node = nodes.item(nn);
+            nodeNames.add(NetworkAnnotator.getNodeKeyData(node, "label"));
+        }
+
         assertTrue(annotator.writeDocument(outPath));
+
+
         NetworkAnnotator at = new NetworkAnnotator();
         assertTrue(at.loadNetwork(outPath));
 
-        //TestUtils.stopGUI();
+        //Check that node set matches
+        NodeList outNodes = at.getNodes();
+        assertEquals("Output has a different number of nodes than input", nodes.getLength(), outNodes.getLength());
+        for (int nn = 0; nn < outNodes.getLength(); nn++) {
+            Node oNode = outNodes.item(nn);
+            String nodeName = NetworkAnnotator.getNodeKeyData(oNode, "label");
+            assertTrue(nodeNames.contains(nodeName));
+        }
+
     }
 
+    @Test
+    public void testOutputForcBioView() throws Exception {
+        String networkPath = TestUtils.DATA_DIR + "/tp53network.xml";
+        assertTrue(annotator.loadNetwork(networkPath));
+        String outPath = TestUtils.DATA_DIR + "/test_stub.html";
+
+        String xmlString = NetworkAnnotator.getString(annotator.getDocument());
+
+
+        ByteArrayOutputStream gmlByteStream = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
+        gzipOutputStream.write(xmlString.getBytes());
+        gzipOutputStream.finish();
+
+        BASE64Encoder encoder = new BASE64Encoder();
+        String gmlData = encoder.encode(gmlByteStream.toByteArray());
+
+        InputStreamReader fReader = new InputStreamReader(NetworkAnnotator.class.getResourceAsStream("resources/post_stub.html"));
+        BufferedReader reader = new BufferedReader(fReader);
+
+        OutputStream outputStream = new FileOutputStream(outPath);
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.equals("allthegraphmldatagoeshere")) {
+                outputStream.write(gmlData.getBytes());
+                outputStream.flush();
+            } else {
+                outputStream.write(line.getBytes());
+                outputStream.flush();
+            }
+        }
+        reader.close();
+
+        outputStream.flush();
+        outputStream.close();
+
+
+        //Now attempt to read back in
+//        GZIPInputStream inputStream = new GZIPInputStream(new FileInputStream(outPath + ".gzonly"));
+//        BufferedReader inStream = new BufferedReader(new InputStreamReader(inputStream));
+//        while((line = inStream.readLine()) != null){
+//            System.out.println(line);
+//        }
+
+    }
 
 }

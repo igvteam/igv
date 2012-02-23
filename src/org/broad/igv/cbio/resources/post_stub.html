@@ -1,0 +1,25 @@
+<html>
+<head>
+    <script type="text/javascript">
+        function doPost() {
+            document.getElementById["data"].submit();
+        }
+    </script>
+</head>
+
+<body onload="doPost()">
+
+<div align="left">
+    <form id="data" type="hidden" name="input" action="http://awabi.cbio.mskcc.org/public-portal/netviz.jsp"
+          enctype="multipart/form-data" method="post">
+        <textarea rows="10" cols="530" id="graphml" name="graphml">
+            allthegraphmldatagoeshere
+        </textarea>
+        <input type="hidden" name="format" value="graphml.gz.base64">
+        <!--input id="submit" type="submit" name="submit" value="Submit" / -->
+    </form>
+</div>
+
+
+</body>
+</html>
