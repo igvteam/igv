@@ -69,7 +69,7 @@ public class PEStats {
             } else if (po.charAt(0) == 'R') {
                 if (po.charAt(2) == 'F') {
                     rfCount++;
-                } else if (po.charAt(2) == 'F') {
+                } else if (po.charAt(2) == 'R') {
                     ffCount++;
                 }
             }
