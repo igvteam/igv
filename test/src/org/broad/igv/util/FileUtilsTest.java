@@ -36,9 +36,10 @@ public class FileUtilsTest {
 
     @Test
     public void testGetRelativePath() {
+        String sep = System.getProperty("file.separator");
         File basePath = new File("src");
-        File targetPath = new File("lib/vcf.jar");
-        String relPath = "../lib/vcf.jar";
+        File targetPath = new File("lib" + sep + "vcf.jar");
+        String relPath = ".." + sep + "lib" + sep + "vcf.jar";
         assertEquals(relPath, FileUtils.getRelativePath(basePath, targetPath));
     }
 
@@ -48,11 +49,11 @@ public class FileUtilsTest {
         String fn = "?[]/\\=+<>:;\"'*|";
         String legalFN = "_qm__fbr__rbr__fsl__bsl__eq__pl__lt__gt__co__sc__dq__sq__st__pp_";
 
-        System.out.println(fn);
+        //System.out.println(fn);
 
         String conFN = FileUtils.legalFileName(fn);
 
-        System.out.println(conFN);
+        //System.out.println(conFN);
 
         assertEquals(legalFN, conFN);
     }

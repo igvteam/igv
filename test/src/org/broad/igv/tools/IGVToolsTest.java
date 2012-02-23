@@ -109,7 +109,6 @@ public class IGVToolsTest {
         List<Block> blocks = idx.getBlocks("chr1", 100, 200);
         Block block = blocks.get(0);
         assertEquals("Unexpected start position ", 0, block.getStartPosition());
-        assertEquals("Unexpected block size", 100, block.getSize());
 
     }
 
