@@ -295,6 +295,46 @@ public class CoverageTrack extends AbstractTrack {
 
             boolean bisulfiteMode = dataManager.getExperimentType() == AlignmentTrack.ExperimentType.BISULFITE;
 
+
+            // First pass, coverage
+            for (AlignmentCounts alignmentCounts : countList) {
+                int pos;
+                AlignmentCounts.PositionIterator posIter = alignmentCounts.getPositionIterator();
+                while ((pos = posIter.nextPosition()) >= 0) {
+
+                    int pX = (int) (rectX + (pos - origin) / scale);
+                    int dX = Math.max(1, (int) (rectX + (pos + 1 - origin) / scale) - pX);
+                    if (dX > 3) {
+                        dX--; // Create a little space between bars when there is room.
+                    }
+
+                    if (pX > rectMaxX) {
+                        break; // We're done,  data is position sorted so we're beyond the right-side of the view
+                    }
+
+                    if (pX + dX >= 0) {
+
+                        if (pX >= lastpX) {
+                            int pY = (int) rectMaxY - 1;
+                            int totalCount = alignmentCounts.getTotalCount(pos);
+                            double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                            int height = (int) (tmp * rectHeight);
+
+                            height = Math.min(height, rect.height - 1);
+                            int topY = (pY - height);
+                            if (height > 0) {
+                                if (pX >= lastpX) {
+                                    graphics.fillRect(pX, topY, dX, height);
+                                    lastpX = pX + dX;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // Mark mismatches
             for (AlignmentCounts alignmentCounts : countList) {
 
                 BisulfiteCounts bisulfiteCounts = alignmentCounts.getBisulfiteCounts();
@@ -333,54 +373,47 @@ public class CoverageTrack extends AbstractTrack {
                         // has a quality weight > 20% of the total
                         // Skip this test if the position is in the list of known snps or if the reference is unknown
                         boolean mismatch = false;
-                        char ref = 0;
+
                         if (refBases != null) {
                             int idx = pos - intervalStart;
                             if (idx >= 0 && idx < refBases.length) {
-                                ref = Character.toLowerCase((char) refBases[idx]);
                                 if (bisulfiteMode) {
                                     mismatch = (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0);
                                 } else {
+                                    char ref = Character.toLowerCase((char) refBases[idx]);
                                     mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
                                 }
                             }
                         }
 
+                        if (!mismatch) {
+                            continue;
+                        }
 
-                        if (pX >= lastpX || mismatch) {
+                        int pY = (int) rectMaxY - 1;
 
-                            int pY = (int) rectMaxY - 1;
+                        int totalCount = alignmentCounts.getTotalCount(pos);
+                        double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                        int height = (int) (tmp * rectHeight);
 
-                            int totalCount = alignmentCounts.getTotalCount(pos);
+                        height = Math.min(height, rect.height - 1);
 
-                            double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
-                            int height = (int) (tmp * rectHeight);
-
-                            height = Math.min(height, rect.height - 1);
-                            int topY = (pY - height);
-
-                            if (height > 0) {
-                                if (pX >= lastpX) {
-                                    graphics.fillRect(pX, topY, dX, height);
-                                    lastpX = pX + dX;
+                        if (height > 0) {
+                            if (bisulfiteMode) {
+                                if (bc != null) {
+                                    drawBarBisulfite(context, pos, rect, totalCount, maxRange,
+                                            pY, pX, dX, bc, range.isLog());
                                 }
-                                if (mismatch) {
-                                    if (bisulfiteMode) {
-                                        if (bc != null) {
-                                            lastpX = drawBarBisulfite(context, pos, rect, totalCount, maxRange,
-                                                    pY, pX, dX, bc, range.isLog());
-                                        }
-                                    } else {
-                                        lastpX = drawBar(context, pos, rect, totalCount, maxRange,
-                                                pY, pX, dX, alignmentCounts, range.isLog());
-                                    }
-                                }
-
+                            } else {
+                                drawBar(context, pos, rect, totalCount, maxRange,
+                                        pY, pX, dX, alignmentCounts, range.isLog());
                             }
                         }
+
                     }
                 }
             }
+
         }
     }
 
@@ -417,13 +450,6 @@ public class CoverageTrack extends AbstractTrack {
             Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
-
-
-            //Not all reads at a position are informative,  color by % of informative reads
-            // double totalInformative = count.methylatedCount + count.unmethylatedCount;
-            // double mult = totalCount / totalInformative;
-            // nMethylated *= mult;
-            // unMethylated *= mult;
 
             double tmp = isLog ?
                     (count / totalCount) * Math.log10(totalCount) / max :
