@@ -191,7 +191,7 @@ public class DBManager {
         }
 
         public void setSchema(String schema) throws SQLException {
-            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+            throw new UnsupportedOperationException("Operation not supported for backwards compatibility to Java 6");
         }
 
         public String getSchema() throws SQLException {
@@ -199,11 +199,11 @@ public class DBManager {
         }
 
         public void abort(Executor executor) throws SQLException {
-            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+            throw new UnsupportedOperationException("Operation not supported for backwards compatibility to Java 6");
         }
 
         public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-            throw new SQLException("Operation not supported for backwards compatibility to Java 6");
+            throw new UnsupportedOperationException("Operation not supported for backwards compatibility to Java 6");
         }
 
         public int getNetworkTimeout() {
