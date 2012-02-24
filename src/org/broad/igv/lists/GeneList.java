@@ -37,25 +37,22 @@ public class GeneList {
     private String description;
     private List<String> loci;
     private boolean showName = true;
-    private static Comparator<String> POSITION_COMPARTOR;
+    private static Comparator<String> POSITION_COMPARATOR;
 
     public GeneList(String name, String description, String group, List<String> loci) {
         this.group = group;
         this.description = description;
         this.name = name;
+        //We do this to guarantee that certain operations will be supported
         this.loci = loci;
     }
 
     public GeneList(String name, List<String> loci) {
-        this.group = GeneListManager.USER_GROUP;
-        this.name = name;
-        this.loci = loci;
+        this(name, null, GeneListManager.USER_GROUP, loci);
     }
 
     public GeneList(String name, List<String> loci, boolean showName) {
-        this.group = GeneListManager.USER_GROUP;
-        this.name = name;
-        this.loci = loci;
+        this(name, null, GeneListManager.USER_GROUP, loci);
         this.showName = showName;
     }
 
@@ -81,9 +78,16 @@ public class GeneList {
     }
 
     public void add(String gene) {
-        // List might be immutable (Arrays.ArrayList)
-        loci = new ArrayList(loci);
-        loci.add(gene);
+        if (loci == null) {
+            loci = new ArrayList<String>(1);
+        }
+        try {
+            //Can't guarantee that list will support this operation
+            loci.add(gene);
+        } catch (Exception e) {
+            loci = new ArrayList<String>(loci);
+            loci.add(gene);
+        }
     }
 
     public GeneList copy() {
@@ -128,14 +132,14 @@ public class GeneList {
      * Sort loci by "position".  This only sorts loci of the form chr1:100-200.
      */
     public static void sortByPosition(List<String> loci) {
-        if (POSITION_COMPARTOR == null) initComparator();
+        if (POSITION_COMPARATOR == null) initComparator();
 
-        Collections.sort(loci, POSITION_COMPARTOR);
+        Collections.sort(loci, POSITION_COMPARATOR);
     }
 
 
     private static synchronized void initComparator() {
-        POSITION_COMPARTOR = new Comparator<String>() {
+        POSITION_COMPARATOR = new Comparator<String>() {
             public int compare(String s1, String s2) {
                 Locus l1 = new Locus(s1);
                 Locus l2 = new Locus(s2);

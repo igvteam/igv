@@ -23,6 +23,7 @@ import org.apache.commons.collections.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.Utilities;
@@ -50,7 +51,7 @@ import static org.junit.Assert.*;
  */
 public class NetworkAnnotatorTest {
 
-    private String localpath = TestUtils.DATA_DIR + "/tp53network.xml";
+    private static String testpath = TestUtils.DATA_DIR + "/tp53network.xml";
     private NetworkAnnotator annotator;
 
 //    //Copied on Feb 16, 2012, from "LoadFromServer" / Cancer Genome Atlas / GBM Subtypes
@@ -60,6 +61,18 @@ public class NetworkAnnotatorTest {
 //    "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/unifiedScaled.tab.gz",
 //    "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz"
 //    };
+
+    public static void main(String[] args) throws IOException {
+        String netpath = testpath;
+        if (args != null && args.length > 0) {
+            netpath = args[0];
+        }
+
+        NetworkAnnotator network = new NetworkAnnotator();
+        network.loadNetwork(netpath);
+        String viewPath = network.outputForcBioView();
+        BrowserLauncher.openURL("file://" + viewPath);
+    }
 
     @Before
     public void setUp() {
@@ -74,7 +87,7 @@ public class NetworkAnnotatorTest {
 
     @Test
     public void testLoadLocal() throws Exception {
-        assertTrue("Failed to load network", annotator.loadNetwork(localpath));
+        assertTrue("Failed to load network", annotator.loadNetwork(testpath));
     }
 
     @Test
@@ -92,7 +105,7 @@ public class NetworkAnnotatorTest {
             }
         };
 
-        annotator.loadNetwork(localpath);
+        annotator.loadNetwork(testpath);
         int removed = annotator.filterNodes(tPred);
         assertTrue(removed > 0);
     }
