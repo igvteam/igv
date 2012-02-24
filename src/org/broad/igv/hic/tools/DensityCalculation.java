@@ -2,7 +2,9 @@ package org.broad.igv.hic.tools;
 
 import org.apache.batik.util.DoublyLinkedList;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.apache.log4j.Level;
 import org.broad.igv.hic.MainWindow;
+import org.apache.log4j.Logger;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
@@ -28,25 +30,21 @@ import java.util.*;
  */
 public class DensityCalculation {
 
-
-    private long totalLen ;  // Total length of the genome (sum of all chromosome lengths)
     private int gridSize;
     private int numberOfBins;
     private double[] actualDistances;
     private double[] possibleDistances;
-    private double[] density;
     private double[] densityAvg;
     private Chromosome[] chromosomes;
+    private static Logger log = Logger.getLogger(DensityCalculation.class);
 
     int totalCounts;
-
     // Map of chromosome index -> total count for that chromosome
     Map<Integer, Integer> chromosomeCounts;
 
     // Map of chromosome index -> "normalization factor", essentially a fudge factor to make
     // the "expected total"  == observed total
     private LinkedHashMap<Integer, Double> normalizationFactors;
-
 
     /**
      * Instantiate a DensityCalculation.  This constructor is used to compute the "expected" density from pair data.
@@ -55,12 +53,14 @@ public class DensityCalculation {
      * @param gridSize
      */
     DensityCalculation(Chromosome[] chromosomes, int gridSize) {
-        this.gridSize = gridSize;
-        this.chromosomes = chromosomes;
 
-        totalLen = 0;
+        this.gridSize = gridSize;
+
+        this.chromosomes = chromosomes;
+        long totalLen = 0;
         for(Chromosome chromosome : chromosomes) {
-            totalLen += chromosome.getSize();
+            if (chromosome != null)
+                totalLen += chromosome.getSize();
         }
 
         numberOfBins = (int) (totalLen / gridSize) + 1;
@@ -68,7 +68,6 @@ public class DensityCalculation {
         Arrays.fill(actualDistances, 0);
         chromosomeCounts = new HashMap();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
-
     }
 
 
@@ -106,12 +105,14 @@ public class DensityCalculation {
         }
         int bin = dist / gridSize;
         actualDistances[bin]++;
+
     }
 
     /**
      * Compute the "density" -- port of python function getDensityControls()
      */
     public void computeDensity() {
+        double[] density;
 
         // Compute "possible distances" for each bin.  I'm not sure I'm buying this but that's what the Python does.
         possibleDistances = new double[numberOfBins];
@@ -122,8 +123,8 @@ public class DensityCalculation {
                 possibleDistances[i] += (nChrBins - i);
             }
         }
-
         // Compute the non-smoothed "density",  which is the actual count / possible count for each bin
+
         density = new double[numberOfBins];
         densityAvg = new double[numberOfBins];
         for (int i = 0; i < numberOfBins; i++) {
@@ -168,7 +169,6 @@ public class DensityCalculation {
         }
 
 
-
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
         for (Chromosome chr : chromosomes) {
 
@@ -183,7 +183,7 @@ public class DensityCalculation {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
                     // Skip.  Not sure why we should have these actually.
-
+                    // Neva: it's because sometimes possible dists is 0
                 } else {
                     expectedCount += (nGrids - n) * v;
                 }
@@ -200,8 +200,6 @@ public class DensityCalculation {
 
 
     private void printDensities(int chrIndex) {
-
-
         double norm = normalizationFactors.get(chrIndex);
 
         int center = gridSize / 2;
