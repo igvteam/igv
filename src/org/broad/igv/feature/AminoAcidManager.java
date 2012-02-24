@@ -112,6 +112,17 @@ public class AminoAcidManager {
         return aa;
     }
 
+    /**
+     * Given the 'name' of an amino acid, find a match. Lookups
+     * can be by full name, short form, or single letter. Note that
+     * in the case of multiple matches, the first is returned.
+     * This matters most for the stop codon, whose full name
+     * is ambiguous (ochre, amber, opal) if the the short form
+     * or single letter is used.
+     *
+     * @param name
+     * @return
+     */
     public static AminoAcid getAminoAcidByName(String name) {
         if (codonTable == null) {
             initTable();
@@ -163,7 +174,9 @@ public class AminoAcidManager {
         Set<String> SNPs = getAllSNPs(codon);
         for (String modCodon : SNPs) {
             //todo override equals?
-            if (codonTable.get(modCodon).equalsByName(mutAA.getFullName())) {
+            //We use short name because all 3 stop codon have different long names,
+            //and we don't care about the difference here.
+            if (codonTable.get(modCodon).equalsByName(mutAA.getShortName())) {
                 mapSNPs.add(modCodon);
             }
         }

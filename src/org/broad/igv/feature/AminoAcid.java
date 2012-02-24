@@ -55,6 +55,6 @@ public class AminoAcid {
 
     public boolean equalsByName(String mutAA) {
         return fullName.equals(mutAA) || abbrevName.equals(mutAA)
-                || mutAA.equals(String.valueOf(symbol));
+                || String.valueOf(symbol).equals(mutAA);
     }
 }

@@ -105,7 +105,7 @@ public class SearchCommandTest {
      */
     @Test
     public void testFeatureMuts() throws Exception {
-        String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r"};
+        String[] features = {"EGFR:M1I", "EGFR:G5R", "egfr:g5r", "egfr:r2*"};
         tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
 
         String egfr_seq = "atgcgaccctccgggacggccggggcagcgctcctggcgctgctggctgcgctc";
@@ -211,7 +211,7 @@ public class SearchCommandTest {
 
     @Test
     public void testError() throws Exception {
-        String[] tokens = {"ueth", "EGFRa", "BRCA56"};
+        String[] tokens = {"ueth", "EGFRa", "BRCA56", "EGFR:?1?"};
         tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
     }
 
