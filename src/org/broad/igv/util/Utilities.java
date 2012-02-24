@@ -27,6 +27,12 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -98,6 +104,26 @@ public class Utilities {
         Document xmlDocument = documentBuilder.parse(inStream);
 
         return xmlDocument;
+    }
+
+    public static String getString(Document document) {
+        StreamResult streamResult;
+        try {
+
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+            streamResult = new StreamResult(new StringWriter());
+            DOMSource source = new DOMSource(document);
+            transformer.transform(source, streamResult);
+        } catch (TransformerException e) {
+            return null;
+        }
+
+        return streamResult.getWriter().toString();
     }
 
     static public Comparator getNumericStringComparator() {

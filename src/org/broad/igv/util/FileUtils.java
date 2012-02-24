@@ -22,16 +22,21 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
-import java.net.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author jrobinso
  */
 public class FileUtils {
     final public static String separator = System.getProperties().getProperty("file.separator");
+    final public static String LINE_SEPARATOR = System.getProperty("line.separator");
+
     public static StringBuffer buffer = new StringBuffer();
     private static Logger log = Logger.getLogger(FileUtils.class);
 
@@ -56,7 +61,7 @@ public class FileUtils {
         illegalChar.put("_pp_", "\\|");
     }
 
-    static String [] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
+    static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
 
     /**
@@ -101,7 +106,7 @@ public class FileUtils {
     public static boolean resourceExists(String path) {
         try {
             boolean remoteFile = isRemote(path);
-             return (!remoteFile && (new File(path).exists())) ||
+            return (!remoteFile && (new File(path).exists())) ||
                     (remoteFile && HttpUtils.getInstance().resourceAvailable(new URL(path)));
         } catch (IOException e) {
             log.error("Malformed URL: " + path, e);
@@ -111,7 +116,7 @@ public class FileUtils {
 
 
     public static boolean isRemote(String path) {
-        if(path == null) {
+        if (path == null) {
             return false;
         }
         return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
@@ -471,8 +476,8 @@ public class FileUtils {
 
                 public boolean accept(File arg0) {
                     final String name = arg0.getName();
-                    for(String pre : igvJnlpPrefixes) {
-                        if(name.startsWith(pre) && name.endsWith(".jnlp")) {
+                    for (String pre : igvJnlpPrefixes) {
+                        if (name.startsWith(pre) && name.endsWith(".jnlp")) {
                             return true;
                         }
                     }
@@ -484,10 +489,9 @@ public class FileUtils {
             Arrays.sort(jnlpFiles, new Comparator<File>() {
 
                 public int compare(File file1, File file2) {
-                    if(org.apache.commons.io.FileUtils.isFileNewer(file1, file2)) {
+                    if (org.apache.commons.io.FileUtils.isFileNewer(file1, file2)) {
                         return 1;
-                    }
-                    else {
+                    } else {
                         return -1;
                     }
                 }

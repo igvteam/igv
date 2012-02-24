@@ -23,10 +23,7 @@ import org.apache.commons.collections.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
-import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.Utilities;
+import org.broad.igv.util.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -187,7 +184,7 @@ public class NetworkAnnotatorTest {
             nodeNames.add(NetworkAnnotator.getNodeKeyData(node, "label"));
         }
 
-        assertTrue(annotator.writeDocument(outPath));
+        assertTrue(annotator.writeDocument(outPath) > 0);
 
 
         NetworkAnnotator at = new NetworkAnnotator();
@@ -210,14 +207,22 @@ public class NetworkAnnotatorTest {
         String outPath = annotator.outputForcBioView();
 
         //Now attempt to read back in
+        //Note that this will not work if the output is in plaintext,
+        //because it contains the XML header in the middle of the document
         Document inDoc = Utilities.createDOMDocumentFromXmlStream(new FileInputStream(outPath));
         String b64data = inDoc.getElementsByTagName("textarea").item(0).getTextContent().trim();
         byte[] gzippedInput = Base64Coder.decode(b64data);
-        InputStream plainData = new GZIPInputStream(new ByteArrayInputStream(gzippedInput));
-        BufferedReader bufIn = new BufferedReader(new InputStreamReader(plainData));
+
+        BufferedReader bufIn = null;
+        try {
+            InputStream plainData = new GZIPInputStream(new ByteArrayInputStream(gzippedInput));
+            bufIn = new BufferedReader(new InputStreamReader(plainData));
+        } catch (IOException e) {
+            bufIn = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(gzippedInput)));
+        }
 
         int count = 0;
-        String[] outLines = NetworkAnnotator.getString(annotator.getDocument()).split("\n");
+        String[] outLines = annotator.getString().split(FileUtils.LINE_SEPARATOR);
         String line;
         while ((line = bufIn.readLine()) != null) {
             assertEquals(outLines[count], line);

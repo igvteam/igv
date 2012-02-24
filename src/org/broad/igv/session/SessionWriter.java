@@ -35,6 +35,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,12 +43,9 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -87,8 +85,7 @@ public class SessionWriter {
         try {
             fileWriter = new FileWriter(outputFile);
             fileWriter.write(xmlString);
-        }
-        finally {
+        } finally {
             if (fileWriter != null) {
                 fileWriter.close();
             }
@@ -129,7 +126,7 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
 
-            if(session.isRemoveEmptyPanels()) {
+            if (session.isRemoveEmptyPanels()) {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
 
@@ -155,7 +152,7 @@ public class SessionWriter {
             }
 
             // Hidden attributes
-            if(session.getHiddenAttributes() != null && session.getHiddenAttributes().size() > 0) {
+            if (session.getHiddenAttributes() != null && session.getHiddenAttributes().size() > 0) {
                 writeHiddenAttributes(session, globalElement, document);
             }
 
@@ -163,16 +160,7 @@ public class SessionWriter {
             document.appendChild(globalElement);
 
             // Transform document into XML
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
-            StreamResult streamResult = new StreamResult(new StringWriter());
-            DOMSource source = new DOMSource(document);
-            transformer.transform(source, streamResult);
-
-            xmlString = streamResult.getWriter().toString();
+            xmlString = Utilities.getString(document);
         } catch (Exception e) {
             String message = "An error has occurred while trying to create the session!";
             log.error(message, e);
@@ -252,13 +240,14 @@ public class SessionWriter {
     private void writeHiddenAttributes(Session session, Element globalElement, Document document) {
         Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES.getText());
         for (String attribute : session.getHiddenAttributes()) {
-             Element regionElement = document.createElement(SessionElement.ATTRIBUTE.getText());
-             regionElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), attribute);
-             hiddenAttributes.appendChild(regionElement);
-         }
-         globalElement.appendChild(hiddenAttributes);
+            Element regionElement = document.createElement(SessionElement.ATTRIBUTE.getText());
+            regionElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), attribute);
+            hiddenAttributes.appendChild(regionElement);
+        }
+        globalElement.appendChild(hiddenAttributes);
 
     }
+
     private void writeGeneList(Element globalElement, Document document) {
 
         GeneList geneList = session.getCurrentGeneList();

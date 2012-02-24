@@ -27,26 +27,13 @@ import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
-import org.broad.tribble.Feature;
+import org.broad.igv.util.*;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -65,6 +52,7 @@ public class NetworkAnnotator {
     public static final String NODE_TAG = "node";
     public static final String KEY = "key";
     public static final String LABEL = "label";
+
 
     /**
      * URL that cbio will use when service is released
@@ -97,8 +85,10 @@ public class NetworkAnnotator {
         attribute_map.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
     }
 
-    public static ScoreData collectScoreData(String name, List<Track> tracks, RegionScoreType type) {
-        int zoom;
+    public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
+
+    public static ScoreData collectScoreData(String name, List<Track> tracks, Iterable<RegionScoreType> types) {
+        int zoom = 0;
 
         List<NamedFeature> features = FeatureDB.getFeaturesList(name, Integer.MAX_VALUE);
 
@@ -106,25 +96,54 @@ public class NetworkAnnotator {
         if (numberSamples == 0) {
             return null;
         }
-        float totalScore = 0.0f;
-        float percentAltered;
-        int totalAltered = 0;
 
-        for (Feature feat : features) {
-            for (Track track : tracks) {
-                float score = track.getRegionScore(feat.getChr(), feat.getStart(), feat.getEnd(), zoom = -1,
-                        type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
-                //Note: Some methods return things like -Float.MAX_VALUE if they get confused
-                if (score > (-Float.MAX_VALUE + 1) && score > (Integer.MIN_VALUE + 1)) {
-                    totalScore += score;
+        ScoreData<RegionScoreType, Float> results = new ScoreData(RegionScoreType.values().length);
+
+        Set<String> anyAlteration = new HashSet<String>(numberSamples / 10);
+
+        /*Track percentage of tracks have ANY of the specified alterations
+        * Must account for the possibility of overlaps, can't double count
+        */
+        //int totalAnyAlteration = 0;
+
+        for (RegionScoreType type : types) {
+
+            //float totalScore = 0.0f;
+            float percentAltered;
+            int totalAltered = 0;
+
+            for (NamedFeature feat : features) {
+                int featStart = feat.getStart();
+                int featEnd = feat.getEnd();
+                for (Track track : tracks) {
+                    //int anyChangeHere = 0;
+                    float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
+                            type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
+                    //Note: Some methods return things like -Float.MAX_VALUE if they get confused
+                    if (score > (-Float.MAX_VALUE + 1) && score > (Integer.MIN_VALUE + 1)) {
+                        //totalScore += score;
+                    } else {
+                        continue;
+                    }
+                    totalAltered += score != 0.0 ? 1 : 0;
+                    //anyChangeHere |= score != 0 ? 1 : 0;
+                    if (score != 0.0) {
+                        //Each track/feature pair represents a sample.
+                        //All we require is a count of those altered
+                        anyAlteration.add(feat.toString() + track.getName());
+                    }
                 }
-                totalAltered += score != 0.0 ? 1 : 0;
+                //totalAnyAlteration += anyChangeHere;
             }
+
+            percentAltered = ((float) totalAltered) / numberSamples;
+            //float avgScore = totalScore / numberSamples;
+            results.put(type, percentAltered);
         }
 
-        percentAltered = totalAltered / numberSamples;
-        float avgScore = totalScore / numberSamples;
-        return new ScoreData(avgScore, percentAltered);
+        results.setPercentAltered(((float) anyAlteration.size()) / numberSamples);
+        return results;
+
     }
 
     public static NetworkAnnotator getFromCBIO(Iterable<String> geneList) {
@@ -219,27 +238,44 @@ public class NetworkAnnotator {
         NodeList nodes = getNodes();
         String name;
         Node node;
+        ArrayList<RegionScoreType> types = new ArrayList<RegionScoreType>();
+        for (String attr : node_attributes) {
+            types.add(attribute_map.get(attr));
+        }
+
         for (int nn = 0; nn < nodes.getLength(); nn++) {
             node = nodes.item(nn);
             name = getNodeKeyData(node, LABEL);
-            for (String attr : node_attributes) {
-                RegionScoreType type = attribute_map.get(attr);
-                ScoreData data = this.collectScoreData(name, tracks, type);
-                //If we don't have any data to look at
-                if (data == null) {
-                    continue;
-                }
-                float rel_data = data.getPercentAltered();
-                if (rel_data == 0 && !Globals.isTesting()) {
-                    continue;
-                }
 
+            ScoreData data = this.collectScoreData(name, tracks, types);
+
+
+            //If we don't have any data to look at
+            if (data != null) {
+                //System.out.println("name: " + name + " total: " + data.getAvgScore() + " altered: " + data.getPercentAltered());
+            } else {
+                //System.out.println("name: " + name + " no data");
+                continue;
+            }
+
+            float rel_data = data.getPercentAltered();
+            if (rel_data == 0 && !Globals.isTesting()) {
+                continue;
+            }
+
+            for (String attr : node_attributes) {
                 Element newData = this.document.createElement("data");
                 newData.setAttribute(KEY, attr);
-                newData.setTextContent("" + data.getPercentAltered());
-
+                newData.setTextContent("" + data.get(attribute_map.get(attr)));
                 node.appendChild(newData);
             }
+            //Set total
+            Element newData = this.document.createElement("data");
+            newData.setAttribute(KEY, PERCENT_ALTERED);
+            newData.setTextContent("" + data.getPercentAltered());
+
+            node.appendChild(newData);
+            addSchema(Arrays.asList(PERCENT_ALTERED), "float", "node");
         }
 
         addSchema(node_attributes, "float", "node");
@@ -324,60 +360,51 @@ public class NetworkAnnotator {
 //        return outNodes;
 //    }
 
-    public static String getString(Document document) {
-        StreamResult streamResult;
-        try {
-
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
-            streamResult = new StreamResult(new StringWriter());
-            DOMSource source = new DOMSource(document);
-            transformer.transform(source, streamResult);
-        } catch (TransformerException e) {
-            return null;
-        }
-
-        return streamResult.getWriter().toString();
+    public String getString() {
+        return Utilities.getString(this.document);
     }
+
 
     /**
      * Write the contents of this document into the specified outputStream.
-     * The document string is always gzipped.
-     * If base64encode is true, the contents are base64encoded as well.
+     * Output is optionally gzipped, then optionally base64 encoded.
      *
      * @param outputStream
-     * @param base64encode
+     * @param gzip         Whether to gzip  data
+     * @param base64encode Whether to base64 encode data
      * @return
      * @throws IOException
      */
-    public int writeDocumentGZ(OutputStream outputStream, boolean base64encode) throws IOException {
+    public static int writeEncodedString(String string, OutputStream outputStream, boolean gzip, boolean base64encode) throws IOException {
 
-        ByteArrayOutputStream gmlByteStream = new ByteArrayOutputStream();
+        byte[] byteData;
 
+        if (gzip) {
+            ByteArrayOutputStreamChild gmlByteStream = new ByteArrayOutputStreamChild(string.length() / 20);
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
+            gzipOutputStream.write(string.getBytes());
+            gzipOutputStream.finish();
+            byteData = gmlByteStream.getBuf();
+            gmlByteStream.close();
+        } else {
+            byteData = string.getBytes();
+        }
 
-        String xmlString = getString(this.getDocument());
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
-        gzipOutputStream.write(xmlString.getBytes());
-        gzipOutputStream.finish();
 
         int count = 0;
         if (base64encode) {
-            char[] gmlData = Base64Coder.encode(gmlByteStream.toByteArray());
+            char[] gmlData = Base64Coder.encode(byteData);
             for (char c : gmlData) {
                 outputStream.write(c);
                 count++;
             }
         } else {
-            gmlByteStream.writeTo(outputStream);
-            gmlByteStream.flush();
+            outputStream.write(byteData);
+            outputStream.flush();
+            count += byteData.length;
         }
         outputStream.flush();
         return count;
-
     }
 
     public String outputForcBioView() throws IOException {
@@ -386,7 +413,7 @@ public class NetworkAnnotator {
         OutputStream outputStream = null;
         try {
             File temp = File.createTempFile("cbio", ".html");
-            temp.deleteOnExit();
+            //temp.deleteOnExit();
             outPath = temp.getAbsolutePath();
 
             InputStreamReader fReader = new InputStreamReader(NetworkAnnotator.class.getResourceAsStream("resources/post_stub.html"));
@@ -397,9 +424,9 @@ public class NetworkAnnotator {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().equals("allthegraphmldatagoeshere")) {
-                    this.writeDocumentGZ(outputStream, true);
+                    writeEncodedString(this.getString(), outputStream, true, true);
                 } else {
-                    outputStream.write((line + "\n").getBytes());
+                    outputStream.write((line + FileUtils.LINE_SEPARATOR).getBytes());
                     outputStream.flush();
                 }
             }
@@ -420,14 +447,14 @@ public class NetworkAnnotator {
     }
 
 
-    boolean writeDocument(String outputFile) throws IOException {
+    public int writeDocument(String outputFile) throws IOException {
         return writeDocument(document, outputFile);
     }
 
 
     /**
      * Write document to XML at outputFile. File is deleted if there
-     * is an error writing out. If the outpuFile has a .gz extension,
+     * is an error writing out. If the outputFile has a .gz extension,
      * the output is gzipped.
      *
      * @param document
@@ -435,60 +462,67 @@ public class NetworkAnnotator {
      * @return success
      * @throws java.io.IOException
      */
-    public static boolean writeDocument(Document document, String outputFile) throws IOException {
-        boolean success = false;
+    public static int writeDocument(Document document, String outputFile) throws IOException {
         boolean gzip = outputFile.endsWith(".gz");
-        String xmlString = getString(document);
+
+        String xmlString = Utilities.getString(document);
 
         OutputStream stream = new FileOutputStream(outputFile);
-        if (gzip) {
-            stream = new GZIPOutputStream(stream);
-        }
-        OutputStreamWriter fileWriter = new OutputStreamWriter(stream);
-        try {
-            fileWriter.write(xmlString);
-            success = true;
-        } catch (IOException e) {
-            File outfile = new File(outputFile);
-            if (outfile.exists()) {
-                outfile.delete();
-            }
-        } finally {
-            if (fileWriter != null) {
-                fileWriter.close();
-            }
-        }
-        return success;
+        int count = writeEncodedString(xmlString, stream, gzip, false);
+
+        stream.flush();
+        stream.close();
+
+        return count;
     }
 
 
-    public static class ScoreData {
+    public static class ScoreData<K, V> extends HashMap<K, V> {
 
         /**
-         * The average of each score of a large number of tracks
-         * So for 0,1,2,3 -> avgScore = 6/4
-         */
-        private float avgScore;
-
-        /**
-         * Here we do not distinguish between any alteration value.
-         * So 0,1,2,3 -> percentAltered = 3/4.
+         * Here we do not distinguish between any alteration value
+         * or type. So 0,1,2,3 -> percentAltered = 3/4.
+         * <p/>
+         * Intended to represent the total fraction of samples with
+         * ANY kind of alteration. So a sample that's mutated, amplified,
+         * and upregulated would be counted once.
          */
         private float percentAltered;
 
-        public ScoreData(float avgScore, float percentAltered) {
-            this.avgScore = avgScore;
-            this.percentAltered = percentAltered;
+        public ScoreData() {
+        }
+
+        public ScoreData(int size) {
+            super(size);
         }
 
 
-        public float getAvgScore() {
-            return avgScore;
+        public void setPercentAltered(float percentAltered) {
+            this.percentAltered = percentAltered;
         }
 
         public float getPercentAltered() {
             return percentAltered;
         }
 
+    }
+
+    /**
+     * Child class created so we can access the raw byte buffer,
+     * and avoid making another copy.
+     */
+    private static class ByteArrayOutputStreamChild extends ByteArrayOutputStream {
+
+        public ByteArrayOutputStreamChild() {
+            super();
+        }
+
+        public ByteArrayOutputStreamChild(int size) {
+            super(size);
+        }
+
+        public byte[] getBuf() {
+            return this.buf;
+        }
     }
 }
