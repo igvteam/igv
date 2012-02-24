@@ -139,6 +139,14 @@ public class HiCTools {
         }
     }
 
+
+    /**
+     * Convert a BAM file containing paried-end tags to the ascii "pair" format used for HiC.
+     *
+     * @param inputBam
+     * @param outputFile
+     * @throws IOException
+     */
     public static void filterBam(String inputBam, String outputFile) throws IOException {
 
         CloseableIterator<Alignment> iter = null;
