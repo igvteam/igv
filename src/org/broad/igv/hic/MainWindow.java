@@ -69,7 +69,7 @@ public class MainWindow extends JFrame {
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000}; //, 5000, 2500, 1000};
     public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB"}; //, "5 KB", "2.5 KB", "1 KB"};
-    public static final int MAX_ZOOM = 10;
+    public static final int MAX_ZOOM = zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
     //private int len;
@@ -232,6 +232,8 @@ public class MainWindow extends JFrame {
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
 
+
+            // Load the expected density function, if it exists.
             String densityFile = file + ".densities";
             if (FileUtils.resourceExists(densityFile)) {
                 InputStream is = null;

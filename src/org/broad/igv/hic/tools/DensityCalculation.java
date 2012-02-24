@@ -7,19 +7,30 @@ import org.broad.igv.hic.data.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
+ * Computes an "expected" density vector.  Essentially there are 3 steps to using this class
+ *
+ * (1) instantiate it with a collection of Chromosomes (representing a genome) and a grid size
+ * (2) loop through the pair data,  calling addDistance for each pair, to accumlate all counts
+ * (3) when data loop is complete, call computeDensity to do the calculation
+ *
+ * Methods are provided to save the result of the calculation to a binary file, and restore it.  See the
+ * DensityUtil class for example usage.
+ *
  * @author Jim Robinson
  * @date 11/27/11
  */
 public class DensityCalculation {
 
 
-    private int totalLen = 300000000;
-    private int gridSize = 1000000;  // 1MB
+    private long totalLen ;  // Total length of the genome (sum of all chromosome lengths)
+    private int gridSize;
     private int numberOfBins;
     private double[] actualDistances;
     private double[] possibleDistances;
@@ -29,19 +40,30 @@ public class DensityCalculation {
 
     int totalCounts;
 
-    // chr -> count
+    // Map of chromosome index -> total count for that chromosome
     Map<Integer, Integer> chromosomeCounts;
 
-    // chr -> norm
+    // Map of chromosome index -> "normalization factor", essentially a fudge factor to make
+    // the "expected total"  == observed total
     private LinkedHashMap<Integer, Double> normalizationFactors;
 
-    public DensityCalculation() {
-    }
 
+    /**
+     * Instantiate a DensityCalculation.  This constructor is used to compute the "expected" density from pair data.
+     *
+     * @param chromosomes
+     * @param gridSize
+     */
     DensityCalculation(Chromosome[] chromosomes, int gridSize) {
         this.gridSize = gridSize;
         this.chromosomes = chromosomes;
-        numberOfBins = (totalLen / gridSize) + 1;
+
+        totalLen = 0;
+        for(Chromosome chromosome : chromosomes) {
+            totalLen += chromosome.getSize();
+        }
+
+        numberOfBins = (int) (totalLen / gridSize) + 1;
         actualDistances = new double[numberOfBins];
         Arrays.fill(actualDistances, 0);
         chromosomeCounts = new HashMap();
@@ -51,7 +73,23 @@ public class DensityCalculation {
 
 
     /**
-     * Add an observed distance
+     * Read a previously calculaed density calculation from an input stream.
+     *
+     * @param is
+     */
+    public DensityCalculation(InputStream is) {
+        LittleEndianInputStream les = new LittleEndianInputStream(new BufferedInputStream(is));
+        try {
+            read(les);
+        } catch (IOException e) {
+            System.err.println("Error reading density file");
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Add an observed distance.  This is called for each pair in the dataset
      *
      * @param chr
      * @param dist
@@ -75,7 +113,7 @@ public class DensityCalculation {
      */
     public void computeDensity() {
 
-        // Compute possible distances
+        // Compute "possible distances" for each bin.  I'm not sure I'm buying this but that's what the Python does.
         possibleDistances = new double[numberOfBins];
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
@@ -85,15 +123,20 @@ public class DensityCalculation {
             }
         }
 
+        // Compute the non-smoothed "density",  which is the actual count / possible count for each bin
         density = new double[numberOfBins];
         densityAvg = new double[numberOfBins];
         for (int i = 0; i < numberOfBins; i++) {
             density[i] = actualDistances[i] / possibleDistances[i];
-            densityAvg[i] = density[i];
+            densityAvg[i] = density[i];  // <= initial value only,  this is "smoothed" below
         }
 
+
+        // Smooth in 3 stages,  the window sizes are tuned to human.
+
         // Smooth (1)
-        int start = 15000000 / gridSize;
+        final int smoothingWidow1 = 15000000;
+        int start = smoothingWidow1 / gridSize;
         int window = 5 * (2000000 / gridSize);
         for (int i = start; i < numberOfBins; i++) {
             int kMin = i - window;
@@ -125,13 +168,8 @@ public class DensityCalculation {
         }
 
 
-        //4 3 2 1
-        //  4 3 2
-        //    4 3
-        //      4
-        // g0 = 4,  g1 = 3,  g2 = 2,  g3 = 1,  N=4
-        // total = N*g0 + (N-1)*g1 + (N-2)*g2 + (N-3)*g3
 
+        // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
         for (Chromosome chr : chromosomes) {
 
             if (chr == null || !chromosomeCounts.containsKey(chr.getIndex())) {
@@ -144,7 +182,8 @@ public class DensityCalculation {
             for (int n = 0; n < nGrids; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
-                    System.out.println(n);
+                    // Skip.  Not sure why we should have these actually.
+
                 } else {
                     expectedCount += (nGrids - n) * v;
                 }
@@ -273,6 +312,9 @@ public class DensityCalculation {
 
 
 /*
+
+--- Code above based on the following Python
+
 gridSize => grid (or bin) size  == 10^6
 actualDistances => array of actual distances,  each element represents a bin
 possibleDistances => array of possible distances, each element represents a bin

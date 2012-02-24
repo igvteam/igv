@@ -85,7 +85,8 @@ public class DensityUtil {
                     String chrName1 = pair.getChr1();
                     Integer index = chrIndexMap.get(chrName1);
 
-                    if (index != null) {
+
+                    if (index != null) {   // Make sure we know this chromosome
                         for (int z = 0; z < gridSizeArray.length; z++) {
                             calcs[z].addDistance(index, dist);
                         }
@@ -132,8 +133,7 @@ public class DensityUtil {
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
 
-            DensityCalculation calc = new DensityCalculation();
-            calc.read(les);
+            DensityCalculation calc = new DensityCalculation(is);
             //   public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
 
             int gridSize = calc.getGridSize();
