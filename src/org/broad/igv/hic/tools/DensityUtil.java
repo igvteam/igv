@@ -1,5 +1,7 @@
 package org.broad.igv.hic.tools;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.broad.igv.hic.MainWindow;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.DensityFunction;
@@ -16,11 +18,12 @@ import java.util.Map;
  * @date 1/1/12
  */
 public class DensityUtil {
-
+    private static Logger log = Logger.getLogger(DensityCalculation.class);
+    
     public static void main(String[] args) throws IOException {
          calculate();
         //read();
-        dumpDensities("/Users/jrobinso/IGV/hic/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
+        dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
 
     private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
@@ -45,8 +48,8 @@ public class DensityUtil {
 
     private static void calculate() throws IOException {
 //        String[] paths = {"/Users/jrobinso/IGV/hic/formattedalignment.txt.gz"};
-        String[] paths = {"/Users/jrobinso/IGV/hic/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt",
-                "/Users/jrobinso/IGV/hic/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
+        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
+//                "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 //        //chromosomes = HiCTools.b37Chromosomes;
         Chromosome[] chromosomes = HiCTools.hg18Chromosomes;
 //        Chromosome[] chromosomes = HiCTools.b37Chromosomes;
@@ -82,9 +85,10 @@ public class DensityUtil {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1().equals(pair.getChr2())) {
                     int dist = Math.abs(pair.getPos1() - pair.getPos2());
+
+
                     String chrName1 = pair.getChr1();
                     Integer index = chrIndexMap.get(chrName1);
-
 
                     if (index != null) {   // Make sure we know this chromosome
                         for (int z = 0; z < gridSizeArray.length; z++) {
@@ -98,7 +102,7 @@ public class DensityUtil {
             calcs[z].computeDensity();
         }
 
-        outputDensities(calcs, new File("test.hic.densities"));
+        outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/test.hic.densities"));
     }
 
 
