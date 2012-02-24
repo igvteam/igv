@@ -1959,7 +1959,12 @@ public class IGV {
         FeatureTrack geneFeatureTrack = null;
 
         if (reader != null) {
-            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
+            FeatureParser parser;
+            if (GFFParser.isGFF(geneFileName)) {
+                parser = new GFFParser(geneFileName);
+            } else {
+                parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
+            }
             if (parser == null) {
                 MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
                         "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
