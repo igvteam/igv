@@ -15,17 +15,17 @@ import java.util.List;
  */
 public class UCSCGeneTableCodec extends UCSCCodec {
 
-    private int cdEndColumn = 7;
-    private int cdStartColumn = 6;
-    private int chrColumn = 2;
-    private int endColumn = 5;
-    private int endsBufferColumn = 10;
-    private int exonCountColumn = 8;
-    private int idColumn = 1;
     private int nameColumn = 0;
-    private int startColumn = 4;
-    private int startsBufferColumn = 9;
+    private int idColumn = 1;
+    private int chrColumn = 2;
     private int strandColumn = 3;
+    private int startColumn = 4;
+    private int endColumn = 5;
+    private int cdStartColumn = 6;
+    private int cdEndColumn = 7;
+    private int exonCountColumn = 8;
+    private int startsBufferColumn = 9;
+    private int endsBufferColumn = 10;
 
     public enum Type {
 

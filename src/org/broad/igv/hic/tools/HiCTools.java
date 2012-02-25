@@ -93,7 +93,7 @@ public class HiCTools {
 
         //First assume this is an ID an
         try {
-            is = HiCTools.class.getResourceAsStream(idOrFile + ".chromSizes");
+            is = HiCTools.class.getResourceAsStream(idOrFile + ".chrom.sizes");
             if (is == null) {
                 // Not an ID,  see if its a file
                 File file = new File(idOrFile);
@@ -106,13 +106,13 @@ public class HiCTools {
             }
 
             List<Chromosome> chromosomes = new ArrayList();
-            int idx = 1;  // Index 0 reserved for "whole genome" psuedo-chromosome
-            chromosomes.add(0, null);   // Placeholder
+            chromosomes.add(0, null);   // Index 0 reserved for "whole genome" psuedo-chromosome
 
             Pattern pattern = Pattern.compile("\t");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String nextLine;
             long genomeLength = 0;
+            int idx = 1;
 
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = pattern.split(nextLine);

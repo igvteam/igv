@@ -141,6 +141,12 @@ public class FastaSequence implements Sequence {
 
     }
 
+
+    /**
+     * Read the bytes between file position posStart and posEnd
+     *
+     * @throws IOException
+     */
     private byte[] readBytes(long posStart, long posEnd) throws IOException {
 
         SeekableStream ss = null;
