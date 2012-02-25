@@ -129,10 +129,11 @@ public class IGVTest {
                     continue;
                 }
 
+                // Test sort order -- by default tracks should be sorted in descending value
                 float s2 = track.getRegionScore(chr, start, end, zoom, type, null);
                 float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, null);
-                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type,
-                        s2 >= s1);
+                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 +
+                        " out of order type " + type, s2 <= s1);
 
                 lastTrack = track;
             }

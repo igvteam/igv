@@ -363,6 +363,7 @@ public abstract class DataTrack extends AbstractTrack {
                     }
                 }
                 if (intervalSum <= 0) {
+                    // No scores in interval
                     return -Float.MAX_VALUE;
                 } else {
                     regionScore /= intervalSum;
