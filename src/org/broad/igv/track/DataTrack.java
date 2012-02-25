@@ -339,13 +339,14 @@ public abstract class DataTrack extends AbstractTrack {
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
+                // Sort by overlaid mutation count.
                 if (!Globals.isHeadless() && tracks == null) {
                     tracks = IGV.getInstance().getOverlayTracks(this);
                 }
                 float count = 0;
-                if (tracks != null && this.getSample() != null) {
+                if (tracks != null) {
                     for (Track t : tracks) {
-                        if (t.getTrackType() == TrackType.MUTATION && this.getSample().equals(t.getSample())) {
+                        if (t.getTrackType() == TrackType.MUTATION) {
                             count += t.getRegionScore(chr, start, end, zoom, type, frameName);
                         }
                     }

@@ -29,8 +29,7 @@ public class MutationTrack extends FeatureTrack {
 
     public MutationTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id, source);
-        setSortable(false);
-
+        setSortable(true);
     }
 
     /**
