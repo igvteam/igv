@@ -30,13 +30,14 @@ import java.util.*;
  */
 public class DensityCalculation {
 
+    private static Logger log = Logger.getLogger(DensityCalculation.class);
+
     private int gridSize;
     private int numberOfBins;
     private double[] actualDistances;
     private double[] possibleDistances;
     private double[] densityAvg;
-    private Chromosome[] chromosomes;
-    private static Logger log = Logger.getLogger(DensityCalculation.class);
+    private List<Chromosome>  chromosomes;
 
     int totalCounts;
     // Map of chromosome index -> total count for that chromosome
@@ -52,7 +53,7 @@ public class DensityCalculation {
      * @param chromosomes
      * @param gridSize
      */
-    DensityCalculation(Chromosome[] chromosomes, int gridSize) {
+    DensityCalculation(List<Chromosome> chromosomes, int gridSize) {
 
         this.gridSize = gridSize;
 
@@ -316,7 +317,6 @@ public class DensityCalculation {
 gridSize => grid (or bin) size  == 10^6
 actualDistances => array of actual distances,  each element represents a bin
 possibleDistances => array of possible distances, each element represents a bin
-locs => chromosome lengths
 jdists => outer distances between pairs
 
 for each jdist

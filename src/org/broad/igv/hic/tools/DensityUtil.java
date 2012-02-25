@@ -1,8 +1,7 @@
 package org.broad.igv.hic.tools;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.broad.igv.hic.MainWindow;
+import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.util.ParsingUtils;
@@ -11,6 +10,7 @@ import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,9 +19,12 @@ import java.util.Map;
  */
 public class DensityUtil {
     private static Logger log = Logger.getLogger(DensityCalculation.class);
-    
+
     public static void main(String[] args) throws IOException {
-         calculate();
+
+        String genomeID = "hg18";
+        List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
+        calculate(chromosomes);
         //read();
         dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
@@ -30,36 +33,22 @@ public class DensityUtil {
         InputStream is = ParsingUtils.openInputStream(path);
         Map<Integer, DensityFunction> d = readDensities(is);
         DensityFunction df = d.get(zoomNumber);
-        for(int b=0; b<250; b++) {
+        for (int b = 0; b < 250; b++) {
             System.out.println(df.getDensity(chr, b));
         }
-
-
         is.close();
 
     }
 
     private static Map<Integer, DensityFunction> read(String ifile) throws IOException {
-        //String ifile = "/Users/jrobinso/IGV/hic/test.hic.densitites";
         InputStream is = ParsingUtils.openInputStream(ifile);
         Map<Integer, DensityFunction> d = readDensities(is);
         return d;
     }
 
-    private static void calculate() throws IOException {
-//        String[] paths = {"/Users/jrobinso/IGV/hic/formattedalignment.txt.gz"};
+    private static void calculate(List<Chromosome> chromosomes) throws IOException {
         String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
-//                "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
-//        //chromosomes = HiCTools.b37Chromosomes;
-        Chromosome[] chromosomes = HiCTools.hg18Chromosomes;
-//        Chromosome[] chromosomes = HiCTools.b37Chromosomes;
-//        String[] paths = {
-//                "/Volumes/igv/data/broad/hic/human/GSM455133_30E0LAAXX.1.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455134_30E0LAAXX.2.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455135_30U85AAXX.2.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455136_30U85AAXX.3.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455137_30305AAXX.1.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455138_30305AAXX.2.maq.hic.summary.binned.txt.gz"};
+
 
         Map<String, Integer> chrIndexMap = new HashMap<String, Integer>();
         for (Chromosome chr : chromosomes) {
@@ -71,7 +60,7 @@ public class DensityUtil {
         // Limit calcs to 10KB
         int[] gridSizeArray = new int[8];
         for (int i = 0; i < 8; i++) {
-            gridSizeArray[i] = MainWindow.zoomBinSizes[i];
+            gridSizeArray[i] = HiCGlobals.zoomBinSizes[i];
         }
 
         DensityCalculation[] calcs = new DensityCalculation[gridSizeArray.length];
@@ -123,6 +112,7 @@ public class DensityUtil {
 
     /**
      * Return a map of zoom level -> DensityFunction
+     *
      * @param is
      * @return
      * @throws IOException

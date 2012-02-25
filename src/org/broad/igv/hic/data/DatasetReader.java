@@ -46,7 +46,7 @@ public class DatasetReader {
             }
             dataset.setChromosomes(chromosomes);
 
-            // Read attribute dictionary
+            // Read attribute dictionary.  This is currently not used
             int nAttributes = dis.readInt();
             for (int i = 0; i < nAttributes; i++) {
                 String key = dis.readString();

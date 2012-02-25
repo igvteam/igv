@@ -4,7 +4,6 @@
 
 package org.broad.igv.hic;
 
-import java.awt.List;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
@@ -15,21 +14,15 @@ import javax.swing.event.*;
 import com.jidesoft.swing.*;
 
 
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.MessageCollection;
-import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
@@ -42,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
  * @author James Robinson
@@ -67,9 +59,7 @@ public class MainWindow extends JFrame {
 
     public static Cursor fistCursor;
 
-    public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000}; //, 5000, 2500, 1000};
-    public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB"}; //, "5 KB", "2.5 KB", "1 KB"};
-    public static final int MAX_ZOOM = zoomBinSizes.length;
+    public static final int MAX_ZOOM = HiCGlobals.zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
     //private int len;
@@ -122,9 +112,9 @@ public class MainWindow extends JFrame {
         //resolutionSlider.setUI(new BasicSliderUI(resolutionSlider));
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
-        for (int i = 0; i < zoomLabels.length; i++) {
+        for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
             if (i % 2 == 0) {
-                final JLabel tickLabel = new JLabel(zoomLabels[i]);
+                final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
             }
@@ -330,9 +320,9 @@ public class MainWindow extends JFrame {
         } else {// Find right zoom level
             resolutionSlider.setEnabled(true);
             int bp_bin = len / maxNBins;
-            int initialZoom = zoomBinSizes.length - 1;
-            for (int z = 1; z < zoomBinSizes.length; z++) {
-                if (zoomBinSizes[z] < bp_bin) {
+            int initialZoom = HiCGlobals.zoomBinSizes.length - 1;
+            for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
+                if (HiCGlobals.zoomBinSizes[z] < bp_bin) {
                     initialZoom = z - 1;
                     break;
                 }
@@ -411,9 +401,9 @@ public class MainWindow extends JFrame {
     public void zoomTo(double xBP, double yBP, double scale) {
 
         // Find zoom level with resolution
-        int zoom = zoomBinSizes.length - 1;
-        for (int z = 1; z < zoomBinSizes.length; z++) {
-            if (zoomBinSizes[z] < scale) {
+        int zoom = HiCGlobals.zoomBinSizes.length - 1;
+        for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
+            if (HiCGlobals.zoomBinSizes[z] < scale) {
                 zoom = z - 1;
                 break;
             }
@@ -630,7 +620,7 @@ public class MainWindow extends JFrame {
 
     private void resolutionSliderStateChanged(ChangeEvent e) {
         int idx = resolutionSlider.getValue();
-        if (idx >= 0 && idx < zoomBinSizes.length) {
+        if (idx >= 0 && idx < HiCGlobals.zoomBinSizes.length) {
             setZoom(idx);
         }
     }
