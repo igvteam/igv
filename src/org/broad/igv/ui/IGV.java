@@ -2146,9 +2146,9 @@ public class IGV {
                         float s2 = t2.getRegionScore(chr, start, end, zoom, type, frameName);
 
                         if (s1 < s2) {
-                            return -1;
+                            return 1;
                         } else if (s1 > s2) {
-                            return +1;
+                            return -1;
                         } else {
                             return 0;
                         }
