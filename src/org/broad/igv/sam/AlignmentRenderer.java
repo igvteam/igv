@@ -47,6 +47,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
     public static Map<Character, Color> nucleotideColors;
+    public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
+
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
@@ -58,27 +60,26 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
     // Bisulfite constants
-    public static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
-    public static final Color bisulfiteColorRev1 = new Color(195, 210, 195);
-    public static final Color nomeseqColor = new Color(195, 195, 195);
+    private final Color bisulfiteColorFw1 = new Color(195, 195, 195);
+    private final Color bisulfiteColorRev1 = new Color(195, 210, 195);
+    private final Color nomeseqColor = new Color(195, 195, 195);
 
-    public static final Color negStrandColor = new Color(140, 140, 230);
-    public static final Color posStrandColor = new Color(230, 140, 140);
+    public static final Color negStrandColor = new Color(150, 150, 230);
+    public static final Color posStrandColor = new Color(230, 150, 150);
 
-    private static ColorTable readGroupColors;
-    private static ColorTable sampleColors;
-    private static ColorTable tagValueColors;
+    private ColorTable readGroupColors;
+    private ColorTable sampleColors;
+    private ColorTable tagValueColors;
 
-    private static final Color LR_COLOR = grey1; // "Normal" alignment color
-    private static final Color RL_COLOR = new Color(0, 150, 0);
-    private static final Color RR_COLOR = new Color(0, 0, 150);
-    private static final Color LL_COLOR = new Color(0, 150, 150);
-    private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
-    public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
+    private final Color LR_COLOR = grey1; // "Normal" alignment color
+    private final Color RL_COLOR = new Color(0, 150, 0);
+    private final Color RR_COLOR = new Color(0, 0, 150);
+    private final Color LL_COLOR = new Color(0, 150, 150);
+    private final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
-    private static Map<String, Color> frOrientationColors;
-    private static Map<String, Color> ffOrientationColors;
-    private static Map<String, Color> rfOrientationColors;
+    private Map<String, Color> frOrientationColors;
+    private Map<String, Color> ffOrientationColors;
+    private Map<String, Color> rfOrientationColors;
 
     PreferenceManager prefs;
 
@@ -363,7 +364,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     /**
-     * Draw a (possible) gapped alignment
+     * Draw a (possibly gapped) alignment
      *
      * @param alignment
      * @param rect
@@ -394,15 +395,22 @@ public class AlignmentRenderer implements FeatureRenderer {
             return;
         }
 
+
         // Get the terminal block (last block with respect to read direction).  This will have an "arrow" attached.
         AlignmentBlock terminalBlock = alignment.isNegativeStrand() ? blocks[0] : blocks[blocks.length - 1];
-
 
         int lastBlockEnd = Integer.MIN_VALUE;
 
         int blockNumber = -1;
         char[] gapTypes = alignment.getGapTypes();
         boolean highZoom = locScale < 0.1251;
+
+        // Get a graphics context for outlining reads
+        Graphics2D outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
+        Graphics2D terminalGrpahics = context.getGraphic2DForColor(Color.DARK_GRAY);
+
+        boolean isZeroQuality = alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments;
+
 
         for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
             blockNumber++;
@@ -411,12 +419,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
 
-
-            // Get a graphics context for outlining reads
-            Graphics2D outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
-
-            // Create polygon to represent the alignment.
-            boolean isZeroQuality = alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments;
 
             // If we're zoomed in and this is a large block clip a pixel off each end.  TODO - why?
             if (highZoom && w > 10) {
@@ -430,39 +432,51 @@ public class AlignmentRenderer implements FeatureRenderer {
                 Shape blockShape = null;
 
                 // If this is a terminal block draw the "arrow" to indicate strand position.  Otherwise draw a rectangle.
-                if ((aBlock == terminalBlock) && w > 10 && h > 10) {
+                if ((aBlock == terminalBlock) && w > 10)
+                    if (h > 10) {
 
-                    int arrowLength = Math.min(5, w / 6);
+                        int arrowLength = Math.min(5, w / 6);
 
-                    // Don't draw off edge of clipping rect
-                    if (x < rect.x && (x + w) > (rect.x + rect.width)) {
-                        x = rect.x;
-                        w = rect.width;
-                        arrowLength = 0;
-                    } else if (x < rect.x) {
-                        int delta = rect.x - x;
-                        x = rect.x;
-                        w -= delta;
+                        // Don't draw off edge of clipping rect
+                        if (x < rect.x && (x + w) > (rect.x + rect.width)) {
+                            x = rect.x;
+                            w = rect.width;
+                            arrowLength = 0;
+                        } else if (x < rect.x) {
+                            int delta = rect.x - x;
+                            x = rect.x;
+                            w -= delta;
+                            if (alignment.isNegativeStrand()) {
+                                arrowLength = 0;
+                            }
+                        } else if ((x + w) > (rect.x + rect.width)) {
+                            w -= ((x + w) - (rect.x + rect.width));
+                            if (!alignment.isNegativeStrand()) {
+                                arrowLength = 0;
+                            }
+                        }
+
+                        int[] xPoly;
+                        int[] yPoly = {y, y, y + h / 2, y + h, y + h};
+
                         if (alignment.isNegativeStrand()) {
-                            arrowLength = 0;
+                            xPoly = new int[]{x + w, x, x - arrowLength, x, x + w};
+                        } else {
+                            xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
                         }
-                    } else if ((x + w) > (rect.x + rect.width)) {
-                        w -= ((x + w) - (rect.x + rect.width));
-                        if (!alignment.isNegativeStrand()) {
-                            arrowLength = 0;
-                        }
-                    }
-
-                    int[] xPoly;
-                    int[] yPoly = {y, y, y + h / 2, y + h, y + h};
-
-                    if (alignment.isNegativeStrand()) {
-                        xPoly = new int[]{x + w, x, x - arrowLength, x, x + w};
+                        blockShape = new Polygon(xPoly, yPoly, xPoly.length);
                     } else {
-                        xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
+                        // Terminal block, but not enough height for arrow.  Indicate with a line
+                        int tH = Math.max(1, h - 1);
+                        if (alignment.isNegativeStrand()) {
+                            blockShape = new Rectangle(x, y, w, h);
+                            terminalGrpahics.drawLine(x, y, x, y + tH);
+                        } else {
+                            blockShape = new Rectangle(x, y, w, h);
+                            terminalGrpahics.drawLine(x + w + 1, y, x + w + 1, y + tH);
+                        }
                     }
-                    blockShape = new Polygon(xPoly, yPoly, xPoly.length);
-                } else {
+                else {
                     // Not a terminal block, or too small for arrow
                     blockShape = new Rectangle(x, y, w, h);
                 }

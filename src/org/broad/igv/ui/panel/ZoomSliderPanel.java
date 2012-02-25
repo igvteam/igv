@@ -172,12 +172,6 @@ public class ZoomSliderPanel extends JPanel {
         transGraphics.dispose();
     }
 
-    @Override
-    public void setEnabled(boolean isEnabled) {
-        super.setEnabled(isEnabled);
-        //setVisible(isEnabled);
-    }
-
     void setZoom(MouseEvent e) {
 
         if (zoomPlusRect.contains(e.getX(), e.getY())) {
