@@ -127,13 +127,13 @@ public class DensityUtil {
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
 
-            DensityCalculation calc = new DensityCalculation(is);
-            //   public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
-
-            int gridSize = calc.getGridSize();
-            double[] densities = calc.getDensityAvg();
-            Map<Integer, Double> normFactors = calc.getNormalizationFactors();
-            densityMap.put(i, new DensityFunction(gridSize, densities, normFactors));
+//            DensityCalculation calc = new DensityCalculation(is);
+//            //   public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
+//
+//            int gridSize = calc.getGridSize();
+//            double[] densities = calc.getDensityAvg();
+//            Map<Integer, Double> normFactors = calc.getNormalizationFactors();
+//            densityMap.put(i, new DensityFunction(gridSize, densities, normFactors));
         }
 
         return densityMap;

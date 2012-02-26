@@ -82,8 +82,7 @@ public class MainWindow extends JFrame {
         final MainWindow mainWindow = new MainWindow();
         mainWindow.setVisible(true);
         mainWindow.setSize(950, 700);
-
-
+        mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
 
@@ -136,12 +135,11 @@ public class MainWindow extends JFrame {
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
 
         pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         DropTarget target = new DropTarget(this, new FileDropTargetListener());
         setDropTarget(target);
 
-         colorRangeSlider.setUpperValue(1200);
+        colorRangeSlider.setUpperValue(1200);
 
     }
 
@@ -695,8 +693,7 @@ public class MainWindow extends JFrame {
                     if (HttpUtils.getInstance().isURL(obj)) {
                         load(obj);
                     }
-                }
-                catch (Exception e1) {
+                } catch (Exception e1) {
                 }
 
             }

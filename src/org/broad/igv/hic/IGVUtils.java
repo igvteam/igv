@@ -1,6 +1,7 @@
 package org.broad.igv.hic;
 
 import org.broad.igv.Globals;
+import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.util.LongRunningTask;
@@ -12,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 /**
@@ -41,11 +43,11 @@ public class IGVUtils {
             Socket socket = null;
             PrintWriter out = null;
             BufferedReader in = null;
-             try {
+            try {
                 socket = new Socket("127.0.0.1", 60151);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                 helper = new SocketHelper(in, out, socket);
+                helper = new SocketHelper(in, out, socket);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 helper = null;
@@ -54,22 +56,32 @@ public class IGVUtils {
         }
     }
 
-    public static void sendToIGV(final String locus1, final String locus2)  {
+    public static void sendToIGV(final String locus1, final String locus2) {
 
         Runnable runnable = new Runnable() {
             public void run() {
-                if (helper == null) createSocketHelper();
 
-                if (helper != null) {
-                    String cmd = "gotoimmediate " + locus1 + " " + locus2;
-                    helper.out.println(cmd);
-                    String response = null;
-                    try {
-                        response = helper.in.readLine();
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                // Same JVM?
+                if (IGV.hasInstance()) {
+                    GeneList geneList = new GeneList("HiC", Arrays.asList(locus1, locus2), false);
+                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                    IGV.getInstance().resetFrames();
+
+                } else {
+
+                    if (helper == null) createSocketHelper();
+
+                    if (helper != null) {
+                        String cmd = "gotoimmediate " + locus1 + " " + locus2;
+                        helper.out.println(cmd);
+                        String response = null;
+                        try {
+                            response = helper.in.readLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        }
+                        System.out.println(cmd + " " + response);
                     }
-                    System.out.println(cmd + " " + response);
                 }
             }
         };

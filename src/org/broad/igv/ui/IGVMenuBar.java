@@ -24,6 +24,7 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
+import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
@@ -484,17 +485,17 @@ public class IGVMenuBar extends JMenuBar {
 
         menuItems.add(new JSeparator());
 
-         // Export Regions
-         menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
-         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        // Export Regions
+        menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-         // Import Regions
-         menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGV.getInstance());
-         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
-         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        // Import Regions
+        menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGV.getInstance());
+        menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-         // Import Regions
+        // Import Regions
 //         menuAction = new ClearRegionsMenuAction("Clear Regions ...", IGV.getInstance());
 //         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
 //         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -704,14 +705,8 @@ public class IGVMenuBar extends JMenuBar {
                         if (lfName.equals(info.getName())) {
                             try {
                                 UIManager.setLookAndFeel(info.getClassName());
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (InstantiationException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (UnsupportedLookAndFeelException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                             break;
                         }
@@ -721,6 +716,29 @@ public class IGVMenuBar extends JMenuBar {
             lfMenu.add(cb);
         }
         menu.add(lfMenu);
+
+
+        menu.addSeparator();
+        JMenuItem hicMenuItem = new JMenuItem("Launch HiC Viewer");
+        hicMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        try {
+                            MainWindow mainWindow = new MainWindow();
+                            mainWindow.setVisible(true);
+                            mainWindow.setSize(780, 660);
+                            mainWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        } catch (IOException e) {
+                            log.error("Error launching HiC Window", e);
+                        }
+                    }
+                };
+                SwingUtilities.invokeLater(runnable);
+            }
+        });
+        menu.add(hicMenuItem);
+
 
         menu.setVisible(false);
 

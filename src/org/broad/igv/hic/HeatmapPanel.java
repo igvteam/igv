@@ -2,6 +2,7 @@ package org.broad.igv.hic;
 
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ObjectCache;
 
 import javax.swing.*;
@@ -357,22 +358,25 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
                     mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
                 } else {
-                    // If IGV is running open on loci
-//                    if (e.isShiftDown()) {
-//                        String chr1 = mainWindow.xContext.getChromosome().getName();
-//                        int leftX = (int) mainWindow.xContext.getChromosomePosition(0);
-//                        int wX = (int) (mainWindow.xContext.getScale() * getWidth());
-//                        int rightX = leftX + wX;
-//
-//                        String chr2 = mainWindow.yContext.getChromosome().getName();
-//                        int leftY = (int) mainWindow.yContext.getChromosomePosition(0);
-//                        int wY = (int) (mainWindow.xContext.getScale() * getHeight());
-//                        int rightY = leftY + wY;
-//
-//                        String locus1 = "chr" + chr1 + ":" + leftX + "-" + rightX;
-//                        String locus2 = "chr" + chr2 + ":" + leftY + "-" + rightY;
-//                        IGVUtils.sendToIGV(locus1, locus2);
-//                    }
+
+                    //If IGV is running open on loci
+                    if (e.isShiftDown()) {
+
+                        String chr1 = mainWindow.xContext.getChromosome().getName();
+                        int leftX = (int) mainWindow.xContext.getChromosomePosition(0);
+                        int wX = (int) (mainWindow.xContext.getScale() * getWidth());
+                        int rightX = leftX + wX;
+
+                        String chr2 = mainWindow.yContext.getChromosome().getName();
+                        int leftY = (int) mainWindow.yContext.getChromosomePosition(0);
+                        int wY = (int) (mainWindow.xContext.getScale() * getHeight());
+                        int rightY = leftY + wY;
+
+                        String locus1 = "chr" + chr1 + ":" + leftX + "-" + rightX;
+                        String locus2 = "chr" + chr2 + ":" + leftY + "-" + rightY;
+
+                        IGVUtils.sendToIGV(locus1, locus2);
+                    }
                 }
 
             }
