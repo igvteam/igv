@@ -23,7 +23,7 @@
 package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.cbio.NetworkAnnotator;
+import org.broad.igv.cbio.GeneNetwork;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -306,10 +306,10 @@ public class GeneListManagerUI extends JDialog {
     private void viewNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
-            NetworkAnnotator annotator = NetworkAnnotator.getFromCBIO(geneList.getLoci());
-            annotator.annotateAll(IGV.getInstance().getAllTracks(false));
+            GeneNetwork network = GeneNetwork.getFromCBIO(geneList.getLoci());
+            network.annotateAll(IGV.getInstance().getAllTracks(false));
             try {
-                String url = annotator.outputForcBioView();
+                String url = network.outputForcBioView();
                 url = "file://" + url;
                 BrowserLauncher.openURL(url);
             } catch (IOException err) {

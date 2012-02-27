@@ -18,25 +18,33 @@
 
 package org.broad.igv.cbio;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.jgrapht.Graph;
+import org.broad.igv.util.*;
+import org.jgrapht.EdgeFactory;
+import org.jgrapht.VertexFactory;
 import org.jgrapht.generate.WheelGraphGenerator;
-import org.jgrapht.graph.Pseudograph;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
+import javax.imageio.metadata.IIOMetadataNode;
+import java.io.*;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  * Test our GeneNetwork class, which implements jgraphT graph interface.
@@ -54,154 +62,194 @@ import static junit.framework.Assert.*;
  */
 public class GeneNetworkTest {
 
-
-    Genome genome;
-    Graph<Vertex, BaseElement> graph;
-    GraphMLExporter exporter;
+    private static String testpath = TestUtils.DATA_DIR + "/tp53network.xml";
+    private GeneNetwork network;
 
     @Before
     public void setUp() throws Exception {
         TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-        graph = new Pseudograph<Vertex, BaseElement>(BaseElement.class);
-        exporter = new GraphMLExporter();
+        network = new GeneNetwork();
     }
 
     @After
     public void tearDown() throws Exception {
-        graph = null;
-        exporter = null;
+        network = null;
+        TestUtils.clearOutputDir();
+    }
+
+    public static void main(String[] args) throws IOException {
+        String netpath = testpath;
+        if (args != null && args.length > 0) {
+            netpath = args[0];
+        }
+
+        GeneNetwork network = new GeneNetwork();
+        network.loadNetwork(netpath);
+        String viewPath = network.outputForcBioView();
+        BrowserLauncher.openURL("file://" + viewPath);
     }
 
     @Test
-    public void testExportGraph() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/out/test_cbio.graphml";
-        String[] gene_list = new String[]{"EGFR", "BRCA1"};
-
-        GeneNetwork geneNetwork = new GeneNetwork();
-        geneNetwork.loadCBioLines(gene_list);
-
-        exporter.exportGraph(filepath, geneNetwork, geneNetwork.factoryList);
+    public void testLoadLocal() throws Exception {
+        assertTrue("Failed to load network", network.loadNetwork(testpath) > 0);
     }
 
     @Test
-    public void testLoadMutations() throws Exception {
+    public void testFilter() throws Exception {
+        Predicate tPred = new Predicate() {
 
-        //String[] gene_list = new String[]{"TP53", "BRCA1", "KRAS"};
-        String filepath = "test/data/out/test_cbio.graphml";
-        String[] gene_list = new String[]{"EGFR", "BRCA1"};
+            public boolean evaluate(Object object) {
+                Node node = (Node) object;
+                NamedNodeMap map = node.getAttributes();
+                if (map == null) {
+                    return false;
+                }
+                int id = Integer.parseInt(map.getNamedItem("id").getTextContent());
+                return id % 2 == 0;
+            }
+        };
 
-        GeneNetwork geneNetwork = new GeneNetwork();
-        //TODO We have defined loadCBioLines to return the number of vertices added
-        //which is a bit arbitrary. may remove this later
-        int initSize = geneNetwork.loadCBioLines(gene_list);
+        network.loadNetwork(testpath);
+        boolean removed = network.filterNodes(tPred);
+        assertTrue(removed);
+    }
 
-        //Load some mutation data
-        String path = TestUtils.DATA_DIR + "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz";
-        ResourceLocator locator = new ResourceLocator(path);
+    /**
+     * Load some data from cbio.
+     * Checks that we are looking at the right urls
+     *
+     * @throws Exception
+     */
+    @Ignore
+    @Test
+    public void testDownloadCBIO() throws Exception {
+        String[] gene_list = new String[]{"egfr", "brca1", "jun"};
+        GeneNetwork anno = GeneNetwork.getFromCBIO(Arrays.asList(gene_list));
+        assertNotNull(anno);
+    }
 
-        //IGV igv = TestUtils.startGUI();
+    @Test
+    public void testOutputNoGzip() throws Exception {
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        //String networkPath = testpath;
+        assertTrue(network.loadNetwork(networkPath) > 0);
+        String outPath = TestUtils.DATA_DIR + "/out/test.xml";
+        tstOutputNetwork(network, outPath);
+    }
+
+    @Test
+    public void testOutputGzip() throws Exception {
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        assertTrue(network.loadNetwork(networkPath) > 0);
+        String outPath = TestUtils.DATA_DIR + "/out/test.xml.gz";
+        tstOutputNetwork(network, outPath);
+    }
+
+
+    public void tstOutputNetwork(GeneNetwork network, String outPath) throws Exception {
+        Set<Node> nodes = network.vertexSet();
+        Set<String> nodeNames = new HashSet<String>();
+
+        for (Node node : nodes) {
+            nodeNames.add(GeneNetwork.getNodeKeyData(node, "label"));
+        }
+
+        assertTrue(network.exportGraph(outPath) > 0);
+
+
+        GeneNetwork at = new GeneNetwork();
+        assertTrue(at.loadNetwork(outPath) > 0);
+
+        //Check that node set matches
+        Set<Node> outNodes = at.vertexSet();
+        assertEquals("Output has a different number of nodes than input", nodes.size(), outNodes.size());
+        for (Node oNode : outNodes) {
+            String nodeName = GeneNetwork.getNodeKeyData(oNode, "label");
+            assertTrue(nodeNames.contains(nodeName));
+        }
+
+    }
+
+
+    @Test
+    public void testAnnotateAll() throws Exception {
+        TestUtils.setUpHeadless();
+        Genome genome = TestUtils.loadGenome();
+
+        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        assertTrue(network.loadNetwork(networkPath) > 0);
+
+        //Load some tracks
+        String dataPath = TestUtils.DATA_DIR + "/seg/Broad.080528.subtypes.seg.gz";
+        ResourceLocator locator = new ResourceLocator(dataPath);
         List<Track> tracks = new TrackLoader().load(locator, genome);
+        network.annotateAll(tracks);
 
-        for (Vertex v : geneNetwork.vertexSet()) {
-            assertFalse(v.containsKey(GeneNetwork.PERCENT_MUTATED));
+        //Check data
+        Set<Node> nodes = network.vertexSet();
+        for (Node node : nodes) {
+            for (String key : GeneNetwork.attribute_map.keySet()) {
+                String data = GeneNetwork.getNodeKeyData(node, key);
+                String name = GeneNetwork.getNodeKeyData(node, GeneNetwork.LABEL);
+                if (!"CHMP3".equalsIgnoreCase(name)) {
+                    assertNotNull(data);
+                }
+            }
         }
 
-        geneNetwork.collectMutationData(tracks);
-
-        for (Vertex v : geneNetwork.vertexSet()) {
-            assertTrue(v.containsKey(GeneNetwork.PERCENT_MUTATED));
+        //Check schema
+        Document doc = network.createDocument();
+        Node gml = doc.getFirstChild();
+        for (String key : GeneNetwork.attribute_map.keySet()) {
+            String data = GeneNetwork.getNodeAttrValue(gml, "id", key);
+            assertNotNull(data);
         }
 
-        exporter.exportGraph(filepath, geneNetwork, geneNetwork.factoryList);
     }
 
     @Test
     public void testFilterGraph() throws Exception {
-        String filepath = "test/data/out/test_cbio.graphml";
-        String[] gene_list = new String[]{"EGFR", "BRCA1"};
-        final String key = GeneNetwork.COLUMN_NAMES[2];
-        final String badval = "NA";
-
         GeneNetwork geneNetwork = new GeneNetwork();
-        int initSize = geneNetwork.loadCBioLines(gene_list);
+        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "/egfr_brca1.xml.gz") > 0);
 
-        Predicate has_evidence = new Predicate<BaseElement>() {
-            public boolean evaluate(BaseElement object) {
-                return object.containsKey(key)
-                        && !badval.equals(object.get(key));
+        final String badname = "NA";
+
+        Predicate<Node> has_evidence = new Predicate<Node>() {
+            public boolean evaluate(Node object) {
+                String label = GeneNetwork.getNodeKeyData(object, "EXPERIMENTAL_TYPE");
+                return label != null && !label.equals(badname);
             }
         };
 
-
+        //Perform the filtering.
+        //This is true if any modifications are made.
         assertTrue(geneNetwork.filterEdges(has_evidence));
 
-        for (BaseElement e : geneNetwork.edgeSet()) {
-            assertFalse(badval.equals(e.get(key)));
+        for (Node e : geneNetwork.edgeSet()) {
+            assertTrue(has_evidence.evaluate(e));
         }
     }
 
-
-    /**
-     * Test that graph is consistent (no duplicate vertices or edges).
-     * Two vertices should be considered equal if their names are
-     * equal. We give them different attributes
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testGraphVertices() throws Exception {
-        KeyFactory factory = new KeyFactory("testGraphVertices");
-        Random random = new Random(132294492231L);
-
-        int numv = 20;
-        String[] vertex_labels = new String[numv];
-        String[] seed_attribs = new String[]{"attr1", "score", "squizzle", "thenadierwalzoftreachery"};
-        String[] test_attribs = seed_attribs.clone();
-
-        for (int ii = 0; ii < numv; ii++) {
-            vertex_labels[ii] = "v" + ii;
-            Vertex v = new Vertex(vertex_labels[ii], factory);
-            assertTrue(graph.addVertex(v));
-
-            for (String attr : seed_attribs) {
-                v.put(attr, random.nextDouble());
-            }
-        }
-
-        assertEquals(numv, graph.vertexSet().size());
-
-        for (String label : vertex_labels) {
-            Vertex v = new Vertex(label, factory);
-            for (String attr : test_attribs) {
-                v.put(attr, random.nextDouble());
-            }
-            assertFalse(graph.addVertex(v));
-        }
-        assertEquals(numv, graph.vertexSet().size());
-    }
 
     @Test
     public void testPruneGraph() throws Exception {
         int size = 10;
         int exp_edges = size - 1 + size - 1;
-        KeyFactory nodeKF = new KeyFactory("testPruneGraph");
-        KeyFactory edgeKF = new KeyFactory("testPruneGraphEdge");
-        GeneNetwork.SimpleVertexFactory vFactory = new GeneNetwork.SimpleVertexFactory(nodeKF);
-        GeneNetwork.SimpleEdgeFactory eFactory = new GeneNetwork.SimpleEdgeFactory(edgeKF);
+        SimpleVertexFactory vFactory = new SimpleVertexFactory();
+        SimpleEdgeFactory eFactory = new SimpleEdgeFactory();
         GeneNetwork graph = new GeneNetwork(eFactory);
 
 
         //Bicycle wheel. Hub node is connected to all elements, outer elements
         //conected in ring.
-        WheelGraphGenerator<Vertex, BaseElement> wgg = new WheelGraphGenerator<Vertex, BaseElement>(size);
+        WheelGraphGenerator<Node, Node> wgg = new WheelGraphGenerator<Node, Node>(size);
         wgg.generateGraph(graph, vFactory, null);
         assertEquals(size, graph.vertexSet().size());
         assertEquals(exp_edges, graph.edgeSet().size());
 
         //Find first spoke vertex, isolate it.
-        Vertex toRem = null;
-        for (Vertex v : graph.vertexSet()) {
+        Node toRem = null;
+        for (Node v : graph.vertexSet()) {
             if (graph.edgesOf(v).size() < size && graph.edgesOf(v).size() == 3) {
                 //Spoke vertex
                 toRem = v;
@@ -209,8 +257,8 @@ public class GeneNetworkTest {
             }
         }
 
-        Set<BaseElement> edges = new HashSet<BaseElement>();
-        for (BaseElement e : graph.edgesOf(toRem)) {
+        Set<Node> edges = new HashSet<Node>();
+        for (Node e : graph.edgesOf(toRem)) {
             edges.add(e);
         }
         assertTrue(graph.removeAllEdges(edges));
@@ -230,38 +278,63 @@ public class GeneNetworkTest {
 
     }
 
+    @Test
+    public void testOutputForcBioView() throws Exception {
+        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "/tp53network.xml") > 0);
+        String outPath = network.outputForcBioView();
 
-    /*
-    for(Vertex v: rejected){
-        assertTrue(geneNetwork.removeVertex(v));
-    }
-    //assertTrue(rejected.size() > 0);
-    assertEquals(initSize - rejected.size(), geneNetwork.vertexSet().size());
+        //Now attempt to read back in
+        //Note that this will not work if the output is in plaintext,
+        //because it contains the XML header in the middle of the document
+        Document inDoc = Utilities.createDOMDocumentFromXmlStream(new FileInputStream(outPath));
+        String b64data = inDoc.getElementsByTagName("textarea").item(0).getTextContent().trim();
+        byte[] gzippedInput = Base64Coder.decode(b64data);
 
+        BufferedReader bufIn = null;
+        try {
+            InputStream plainData = new GZIPInputStream(new ByteArrayInputStream(gzippedInput));
+            bufIn = new BufferedReader(new InputStreamReader(plainData));
+        } catch (IOException e) {
+            bufIn = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(gzippedInput)));
+        }
 
-
-    List<Track> tracks = IGV.getInstance().getAllTracks(false);
-    for(Track track: tracks){
-        if (track.getTrackType() == TrackType.MUTATION) {
-            track.getRegionScore()?
+        int count = 0;
+        String[] outLines = Utilities.getString(network.createDocument()).split(FileUtils.LINE_SEPARATOR);
+        String line;
+        while ((line = bufIn.readLine()) != null) {
+            assertEquals(outLines[count], line);
+            count++;
         }
     }
 
+    public static class SimpleVertexFactory implements VertexFactory<Node> {
+        private long vCounter = 0;
 
-    MutationParser parser = new MutationParser();
-    Map<String, List<org.broad.tribble.Feature>> mutations =  parser.loadMutations(locator, genome);
-    System.out.println(mutations.size());
-
-    for(String s: mutations.keySet()){
-        List<Feature> features = mutations.get(s);
-        for(Feature f: features){
-            System.out.println(f.getClass());
-            //This doesn't work for obvious reasons, but the flow should be clear.
-            //Load the list of features from FeatureDB
-            //FeatureUtils.getFeatureAt(f.getStart(), f.getEnd() - f.getStart(), graph.vertexSet());
+        public SimpleVertexFactory() {
         }
 
+        public Node createVertex() {
+            Element v = new IIOMetadataNode("v" + vCounter);
+            v.setAttribute("id", "" + vCounter);
+            vCounter++;
+            return v;
+        }
     }
-    */
+
+    public static class SimpleEdgeFactory implements EdgeFactory<Node, Node> {
+        private long eCounter = 0;
+
+        public SimpleEdgeFactory() {
+        }
+
+        public Node createEdge(Node sourceVertex, Node targetVertex) {
+            Element e = new IIOMetadataNode("e" + eCounter);
+            e.setAttribute("source", sourceVertex.getAttributes().getNamedItem("id").toString());
+            e.setAttribute("target", targetVertex.getAttributes().getNamedItem("id").toString());
+            eCounter++;
+            return e;
+        }
+    }
+
 
 }
