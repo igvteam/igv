@@ -69,6 +69,7 @@ public class HttpUtils {
      */
     static {
         synchronized (HttpUtils.class) {
+            org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
             instance = new HttpUtils();
             CookieHandler.setDefault(new CookieManager());
         }
@@ -99,10 +100,10 @@ public class HttpUtils {
      * URLencoding the {@code elements} along the way. {@code joiner}
      * is NOT URLEncoded
      * Example:
-     *  String[] parm_list = new String[]{"app les", "oranges", "bananas"};
-     *  String formatted = buildURLString(Arrays.asList(parm_list), "+");
-     *
-     *  formatted will be "app%20les+oranges+bananas"
+     * String[] parm_list = new String[]{"app les", "oranges", "bananas"};
+     * String formatted = buildURLString(Arrays.asList(parm_list), "+");
+     * <p/>
+     * formatted will be "app%20les+oranges+bananas"
      *
      * @param elements
      * @param joiner
@@ -295,13 +296,12 @@ public class HttpUtils {
      * @param file
      * @param url
      * @return true if the files are "the same", false if the remote file has been modified wrt the local one.
-     *
      * @throws IOException
      */
     public boolean compareResources(File file, URL url) throws IOException {
 
 
-        if(!file.exists()) {
+        if (!file.exists()) {
             return false;
         }
 

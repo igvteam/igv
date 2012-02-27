@@ -57,12 +57,6 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Object header;
     Class featureClass;
 
-    static {
-        // Register a helper class with tribble
-        org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
-    }
-
-
     public TribbleFeatureSource(String path, Genome genome) throws IOException {
 
         FeatureCodec codec = CodecFactory.getCodec(path, genome);
