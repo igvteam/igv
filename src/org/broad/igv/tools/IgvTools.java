@@ -45,6 +45,7 @@ import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.ReadmeParser;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -211,22 +212,17 @@ public class IgvTools {
     }
 
     /**
-     * Help on a specific command
+     * Help on a specific command.
+     * Parse the README file.
      *
      * @param command
      * @return
      */
     static String usageString(String command) {
         command = command.toLowerCase();
-        StringBuffer buf = new StringBuffer();
-        if (!commandList.containsKey(command)) {
-            buf.append("Command " + command + " not recognized\n");
-            buf.append(usageString());
-            return buf.toString();
-        } else {
-            buf.append(commandList.get(command));
-            return buf.toString();
-        }
+        ReadmeParser parser = new ReadmeParser();
+        String help = parser.getDocForCommand(command);
+        return help;
     }
 
     private static void initLogger() {
