@@ -321,7 +321,7 @@ public class CachingQueryReader {
                     continue;
                 }
 
-                // Range of tile indeces that this alignment contributes to.
+                // Range of tile indices that this alignment contributes to.
                 int aStart = record.getStart();
                 int aEnd = record.getEnd();
                 int idx0 = Math.max(0, (aStart - start) / tileSize);
@@ -516,7 +516,7 @@ public class CachingQueryReader {
      * A "bucket" is a virtual container holding all the alignments with identical start position.  The concept
      * is introduced to control the # of alignments we hold in memory for deep coverage regions.  In practice,
      * little or no information is added by displaying more than ~50X coverage.  For an average alignment length L
-     * and coverage deptgh D we do not need to store more than D/L alignments at any given start position.
+     * and coverage depth D we do not need to store more than D/L alignments at any given start position.
      */
 
     //
@@ -536,13 +536,13 @@ public class CachingQueryReader {
 
         int maxDepth;
         int maxBucketSize;
-        int e1 = -1;  // End position of current samplin bucket
+        int e1 = -1;  // End position of current sampling bucket
 
         //int depthCount;
 
         private Map<String, Alignment> currentBucket;
         private Map<String, Alignment> currentMates;
-        private List<Alignment> overflows;   // "Overflows"
+        private List<Alignment> overflows;
         private Set<String> pairedReadNames;
 
         private static final Random RAND = new Random(System.currentTimeMillis());

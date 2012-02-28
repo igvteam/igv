@@ -30,6 +30,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class CachingQueryReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Globals.setHeadless(true);
+        TestUtils.setUpHeadless();
     }
 
     @AfterClass
@@ -158,5 +159,42 @@ public class CachingQueryReaderTest {
 
 
         }
+    }
+
+    @Test
+    public void testQueryLargeFile() throws Exception{
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
+        String path = TestUtils.LARGE_DATA_DIR + "/ABCD_igvSample.bam";
+        ResourceLocator loc = new ResourceLocator(path);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        
+        String sequence = "chr12";
+        int start = 56815621;
+        int end = start + 2;
+        int expSize = 1066;
+        
+        tstSize(cachingReader, sequence,  start, end, Integer.MAX_VALUE / 100, expSize);
+
+        sequence = "chr12";
+        start = 56815634;
+        end = start + 2;
+        expSize = 165;
+
+        tstSize(cachingReader, sequence,  start, end, Integer.MAX_VALUE / 100, expSize);
+
+    }
+    
+    public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize){
+        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
+                new ArrayList(), maxDepth, null, null);
+        List<Alignment> result = new ArrayList();
+
+        while (cachingIter.hasNext()) {
+            result.add(cachingIter.next());
+        }
+        
+        assertEquals(expSize, result.size());
+        return result;
     }
 }

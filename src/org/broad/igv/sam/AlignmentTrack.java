@@ -1412,6 +1412,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 public void actionPerformed(ActionEvent aEvt) {
                     int maxLevels = dataManager.getMaxLevels();
                     String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
+                    //Cancel button return null
+                    if(val == null){
+                        return;
+                    }
                     try {
                         int newMaxLevels = Integer.parseInt(val);
                         if (newMaxLevels != maxLevels) {

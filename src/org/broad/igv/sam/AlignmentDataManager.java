@@ -131,7 +131,6 @@ public class AlignmentDataManager {
 
     public void setMaxLevels(int maxLevels) {
         clear();
-        reader.clearCache();
         this.maxLevels = maxLevels;
     }
 
