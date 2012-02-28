@@ -15,7 +15,7 @@ public class Dataset {
     //Chromosome lookup table
     public  Chromosome [] chromosomes;
 
-    Map<String, Matrix> matrices = new HashMap(25 * 25);
+    Map<String, Matrix> matrices = new HashMap<String, Matrix>(25 * 25);
 
     private DatasetReader reader;
 
