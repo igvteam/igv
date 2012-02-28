@@ -37,7 +37,7 @@ public class ReadmeParserTest{
     public void testGetBadCmd() throws Exception{
         String fake_cmd = "fake_cmd";
         String info = parser.getDocForCommand(fake_cmd);
-        assertEquals("Command " + fake_cmd + " not found", info.split("[\\n,\\r]")[0].trim());
+        assertTrue(info.contains("Command " + fake_cmd + " not found"));
     }
     
 
@@ -49,7 +49,7 @@ public class ReadmeParserTest{
     }
 
     }
-    
+
     public void tstGetCommand(String cmd) throws Exception{
         String info = parser.getDocForCommand(cmd);
         assertNotNull(info);

@@ -82,7 +82,7 @@ public class IgvTools {
     static final String CMD_GUI = "gui";
     static final String CMD_HELP = "help";
 
-    static Map<String, String> commandList = new HashMap<String, String>(9);
+    //static Map<String, String> commandList = new HashMap<String, String>(9);
 
     public static String getVersionString() {
         String out = "Version: " + version;
@@ -92,57 +92,7 @@ public class IgvTools {
         return out;
     }
 
-    static {
-        String typ_end = "[options] inputFile outputFile genome\n";
-
-        String tstring = "Usage: igvtools totdf " + typ_end;
-        String zoom = "-z, --maxZoom \tMaximum zoom levels to precompute. Default 7\n";
-        String wfunc = "-f, --windowFunctions \tComma-separated list of window functions. Possible values are min, mean, max\n";
-        String probFile = "-p, --probeFile \tSpecifies a \"bed\" file to be used to map probe identifiers to locations.\n";
-        tstring += zoom + wfunc + probFile;
-        commandList.put(CMD_TOTDF, tstring);
-        tstring = "Note: This command is deprecated and being renamed to totdf\n" + tstring;
-        commandList.put(CMD_TILE, tstring);
-
-        String countstring = "Usage: igvtools count " + typ_end;
-        String wsize = "-w, --windowSize [wz]\tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
-        String ext = "-e, --extFactor [ef]\tThe read or feature is extended by the specified distance in bp prior to counting\n";
-        String readstr = "--strands [arg] \t By default, counting is combined among both strands. " +
-                " Setting outputs the count for each strand separately." +
-                " Legal argument values are 'read' or 'first'." +
-                " 'read' Separates count by 'read' strand, 'first' uses the first in pair strand\n";
-        String bases = "--bases \t Count the occurrence of each base (A,G,C,T,N). Takes no arguments\n";
-        String query = "--query [querystring] \t Only count a specific region. Query string has syntax " +
-                " <chr>:<start>-<end>. e.g. chr1:100-1000. Input file must be indexed.\n";
-        String minMap = "--minMapQuality [mqual]\t Set the minimum mapping quality of reads to include. Default is 0.\n";
-        String includeDups = "--includeDuplicates \t Include duplicate alignments in count. Default false." +
-                " If this flag is included, duplicates are counted. Takes no arguments\n";
-        countstring += zoom + wfunc + wsize + ext + readstr + bases + query + minMap + includeDups;
-        commandList.put(CMD_COUNT, countstring);
-
-        String indexstring = "Usage: igvtools index inputFile\n";
-        indexstring += "Index an alignment file.\n";
-        indexstring += "Supported input file formats are: .sam, .aligned, .vcf, .psl, and .bed.\n";
-        commandList.put(CMD_INDEX, indexstring);
-
-
-        String sortstring = "Usage: igvtools sort [options] inputFile outputFile";
-        String tmpDir = "-t, --tmpdir \tSpecify a temporary working directory. Default is users temp directory\n";
-        String maxRec = "-m, --maxRecords \tThe maximum number of records to keep in memory during the sort\n";
-        sortstring += tmpDir + maxRec;
-        commandList.put(CMD_SORT, sortstring);
-
-        String fexpstring = "Usage: igvtools formatexp inputFile outputFile\n";
-        fexpstring += "Format GCT or RES files for display";
-        commandList.put(CMD_FORMATEXP, fexpstring);
-
-        commandList.put(CMD_VERSION, "Print igvtools version number");
-
-        commandList.put(CMD_GUI, "Start the IGVtools GUI");
-        commandList.put(CMD_HELP, "Usage: igvtools help [command]\n Displays a list of commands."
-                + " If [command] is provided, displays help on that command");
-    }
-
+    //TODO extract this from readme
     static String[] commandDocs = new String[]{
             "version print the version number",
             "sort    sort an alignment file by start position. ",
@@ -335,7 +285,7 @@ public class IgvTools {
 
             if (command.equals(CMD_COUNT) || command.equals(CMD_TILE) || command.equals(CMD_TOTDF)) {
                 // Parse out options common to both count and tile
-                validateArgsLength(nonOptionArgs, 4, commandList.get(command));
+                validateArgsLength(nonOptionArgs, 4, usageString(command));
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
                 String genomeId = nonOptionArgs[3];
@@ -369,7 +319,7 @@ public class IgvTools {
                 }
 
             } else if (command.equals(CMD_SORT)) {
-                validateArgsLength(nonOptionArgs, 3, commandList.get(command));
+                validateArgsLength(nonOptionArgs, 3, usageString(command));
                 String ofile = nonOptionArgs[2];
                 doSort(ifile, ofile, tmpDirName, maxRecords);
             } else if (command.equals(CMD_INDEX)) {
@@ -379,7 +329,7 @@ public class IgvTools {
                 String outputDir = (String) parser.getOptionValue(outputDirOption, null);
                 doIndex(ifile, outputDir, indexType, binSize);
             } else if (command.equals(CMD_FORMATEXP)) {
-                validateArgsLength(nonOptionArgs, 3, commandList.get(command));
+                validateArgsLength(nonOptionArgs, 3, usageString(command));
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);

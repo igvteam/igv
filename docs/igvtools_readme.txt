@@ -48,16 +48,6 @@ edit the scripts to reduce the amount of memory requested,  or use the java
 startup option.  The memory is set via a "-Xmx" parameter. For example
 -Xmx1500m  requests 1500 MB,  -Xmx1g requests 1 gigabyte.
 
-
----------------------------------------------------------------------------
-COMMANDS
----------------------------------------------------------------------------
-
-The recognized commands are tile, count, sort, and index.  Note that these
-utilities are for working with ascii file formats, including SAM, but
-do not work with BAM files.  For manipulating BAM files use samtools.
-
-
 ---------------------------------------------------------------------------
 Genome
 ---------------------------------------------------------------------------
@@ -67,6 +57,14 @@ a full path to an IGV .genome file.  The id for IGV supplied genomes are
 listed below.  Genome definitions corresponding to these files are in the
 "genomes" subdirectory of the igvtools install.  The id is derived by removing
 the .extension from the filename.
+
+---------------------------------------------------------------------------
+COMMANDS
+---------------------------------------------------------------------------
+
+The recognized commands are tile, count, sort, and index.  Note that these
+utilities are for working with ascii file formats, including SAM, but
+do not work with BAM files.  For manipulating BAM files use samtools.
 
 ---------------------------------------------------------------------------
 Command "tile"
@@ -95,7 +93,6 @@ Required arguments:
   genome       A genome id or filename. See details below. Default is hg18.
 
 Options:
-
 
   -z, --maxZoom num       Specifies the maximum zoom level to precompute. The default
                value is 7 and is sufficient for most files. To reduce file
@@ -273,7 +270,7 @@ Example:
  Command "version"
  ---------------------------------------------------------------------------
 
-  Prints the version to the console.
+  Prints the igvtools version number.
 
 
 
