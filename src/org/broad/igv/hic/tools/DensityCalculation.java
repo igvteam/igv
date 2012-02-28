@@ -67,7 +67,7 @@ public class DensityCalculation {
         numberOfBins = (int) (totalLen / gridSize) + 1;
         actualDistances = new double[numberOfBins];
         Arrays.fill(actualDistances, 0);
-        chromosomeCounts = new HashMap();
+        chromosomeCounts = new HashMap<Integer,Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
     }
 
@@ -75,10 +75,9 @@ public class DensityCalculation {
     /**
      * Read a previously calculaed density calculation from an input stream.
      *
-     * @param is
+     * @param les
      */
-    public DensityCalculation(InputStream is) {
-        LittleEndianInputStream les = new LittleEndianInputStream(new BufferedInputStream(is));
+    public DensityCalculation(LittleEndianInputStream les) {
         try {
             read(les);
         } catch (IOException e) {
@@ -289,7 +288,7 @@ public class DensityCalculation {
         }
 
         // Normalization factors
-        normalizationFactors = new LinkedHashMap(nChromosomes);
+        normalizationFactors = new LinkedHashMap<Integer,Double>(nChromosomes);
         for (int i = 0; i < nChromosomes; i++) {
             Integer chrIdx = is.readInt();
             double normFactor = is.readDouble();
