@@ -35,7 +35,7 @@ allocated
 
 To start with a gui the command is
 
-   java -Xmx1500m  -jar igvtools.jar -g
+   java -Xmx1500m  -jar igvtools.jar gui
    
 ---------------------------------------------------------------------------
 Memory settings
