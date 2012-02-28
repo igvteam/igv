@@ -1,5 +1,7 @@
 package org.broad.igv.hic.data;
 
+import org.broad.igv.hic.tools.DensityCalculation;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +29,10 @@ public class DensityFunction {
         this.normFactors = normFactors;
     }
 
+    public DensityFunction(DensityCalculation calculation) {
+        this(calculation.getGridSize(), calculation.getDensityAvg(), calculation.getNormalizationFactors());
+    }
+    
     public double getDensity(int chrIdx, int distance) {
 
         double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
@@ -38,31 +44,5 @@ public class DensityFunction {
             return density[grid] / normFactor;
         }
     }
-
-
-//    private void init() {
-//
-//        try {
-//            InputStream is = DensityFunction.class.getResourceAsStream(densityFile);
-//            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-//            nPoints = Integer.parseInt(br.readLine());
-//            gridSize = Integer.parseInt(br.readLine());
-//
-//            int idx = 0;
-//            positions = new int[nPoints];
-//            density = new double[nPoints];
-//            String nextLine;
-//            while ((nextLine = br.readLine()) != null && idx < nPoints) {
-//                String[] tokens = nextLine.split("\t");
-//                positions[idx] = Integer.parseInt(tokens[0]);
-//                density[idx] = Double.parseDouble(tokens[1]);
-//                idx++;
-//
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-//    }
-//
 
 }
