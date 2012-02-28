@@ -15,33 +15,37 @@ import java.util.*;
  */
 public class Preprocessor {
 
-    List<Chromosome> chromosomes;
+    private List<Chromosome>          chromosomes;
 
     // Map of name -> index
-    Map<String, Integer> chromosomeOrdinals;
+    private Map<String, Integer>      chromosomeOrdinals;
 
-    File outputFile;
-    LittleEndianOutputStream fos;
-    long bytesWritten = 0;
-    long totalCount = 0;
+    private File                      outputFile;
+    private LittleEndianOutputStream  fos;
+    private long                      bytesWritten;
 
-    long masterIndexPosition;
-    Map<String, IndexEntry> matrixPositions = new LinkedHashMap();
-    Map<String, Long> blockIndexPositions = new LinkedHashMap();
-    Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
+    private long                      masterIndexPosition;
+    private Map<String, IndexEntry>   matrixPositions;
+    private Map<String, Long>         blockIndexPositions;
+    private Map<String, IndexEntry[]> blockIndexMap;
 
-
-    private int countThreshold = 0;
-    private boolean diagonalsOnly = false;
-    private Set<String> includedChromosomes = null;
-
-    //static DensityCalculation densityCalculation;
+    private int                       countThreshold;
+    private boolean                   diagonalsOnly;
+    private boolean                   loadDensities;
+    private Set<String>               includedChromosomes;
 
     public Preprocessor(File outputFile, List<Chromosome> chromosomes) {
-        this.outputFile = outputFile;
-        this.chromosomes = chromosomes;
+        this.outputFile     = outputFile;
+        this.chromosomes    = chromosomes;
+        matrixPositions     = new LinkedHashMap<String, IndexEntry>();
+        blockIndexPositions = new LinkedHashMap<String, Long>();
+        blockIndexMap       = new LinkedHashMap<String, IndexEntry[]>();
 
-        chromosomeOrdinals = new Hashtable();
+        bytesWritten        = 0;
+        countThreshold      = 0;
+        diagonalsOnly       = false;
+        loadDensities       = false;
+        chromosomeOrdinals  = new Hashtable<String,Integer>();
         for (int i = 0; i < chromosomes.size(); i++) {
             chromosomeOrdinals.put(chromosomes.get(i).getName(), i);
         }
@@ -59,13 +63,20 @@ public class Preprocessor {
         this.includedChromosomes = includedChromosomes;
     }
 
+    public void setLoadDensities(boolean loadDensities) {
+        this.loadDensities = loadDensities;
+    }
+
     public void preprocess(List<String> inputFileList) throws IOException {
 
-
         try {
-            fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
-            //densityCalculation = new DensityCalculation(HiCTools.chromosomes);
+            if (loadDensities) {
+                File densitiesFile = new File(outputFile.getName()+".densities");
+                calculateDensities(inputFileList, densitiesFile);
+            }
+
+            fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
             // Placeholder for master index position, replace later
             writeLong(0l);
@@ -122,6 +133,51 @@ public class Preprocessor {
         updateIndexPositions();
     }
 
+    /**
+     *  Calculate observed/expected and write to a densities file that can be loaded later with
+     *  the Hi-C viewer.
+     *  @param paths Files to calculate densities on
+     *  @param densitiesFile Output file for densities
+     *  @throws IOException
+     */
+    private void calculateDensities(List<String> paths, File densitiesFile) throws IOException {
+        // Limit calcs to 10KB
+        int[] gridSizeArray = new int[8];
+        for (int i = 0; i < 8; i++) {
+            gridSizeArray[i] = HiCGlobals.zoomBinSizes[i];
+        }
+
+        DensityCalculation[] calcs = new DensityCalculation[gridSizeArray.length];
+        for (int z = 0; z < gridSizeArray.length; z++) {
+            calcs[z] = new DensityCalculation(chromosomes, gridSizeArray[z]);
+        }
+
+        for (String path : paths) {
+            AsciiPairIterator iter = new AsciiPairIterator(path);
+            while (iter.hasNext()) {
+                AlignmentPair pair = iter.next();
+                if (pair.getChr1().equals(pair.getChr2())) {
+                    int dist = Math.abs(pair.getPos1() - pair.getPos2());
+
+
+                    String chrName1 = pair.getChr1();
+                    Integer index = chromosomeOrdinals.get(chrName1);
+
+                    if (index != null) {   // Make sure we know this chromosome
+                        for (int z = 0; z < gridSizeArray.length; z++) {
+                            calcs[z].addDistance(index, dist);
+                        }
+                    }
+                }
+            }
+        }
+        for (int z = 0; z < gridSizeArray.length; z++) {
+            calcs[z].computeDensity();
+        }
+
+        outputDensities(calcs, densitiesFile);
+
+    }
 
     /**
      * Compute matrix for the given chromosome combination.  This resultes in full pass through the input files
@@ -165,7 +221,6 @@ public class Preprocessor {
                         pos1 = getGenomicPosition(chr1, pos1);
                         pos2 = getGenomicPosition(chr2, pos2);
                         incrementCount(matrix, c1, pos1, c2, pos2);
-                        totalCount++;
                     } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
                         incrementCount(matrix, chr1, pos1, chr2, pos2);
                     }
@@ -261,6 +316,22 @@ public class Preprocessor {
         writeInt(bytes.length);
         write(bytes);
     }
+
+    private void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
+
+        LittleEndianOutputStream os = null;
+        try {
+            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
+
+            os.writeInt(calcs.length);
+            for (int i = 0; i < calcs.length; i++) {
+                calcs[i].outputBinary(os);
+            }
+        } finally {
+            if (os != null) os.close();
+        }
+    }
+
 //
 //    private void writeExpectedValues(BufferedByteWriter buffer) throws IOException {
 //        buffer.putLong(totalCount);
@@ -649,7 +720,7 @@ public class Preprocessor {
 
             int nBinsX = chromosomes.get(chr1).getSize() / binSize + 1;
             blockBinCount = nBinsX / blockColumnCount + 1;
-            blocks = new LinkedHashMap(blockColumnCount * blockColumnCount);
+            blocks = new LinkedHashMap<Integer,Block>(blockColumnCount * blockColumnCount);
         }
 
 
