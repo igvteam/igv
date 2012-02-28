@@ -28,6 +28,8 @@
     <property name="version" value="v0.0"/>
     <property name="build-number" value="0.0"/>
 
+    <property name="docs.dir" value="${basedir}/docs"/>
+
     <target name="extract-classes">
         <unzip dest="${tmp.dir}">
             <patternset>
@@ -93,14 +95,26 @@
     </target>
 
     <target name="create-zips" depends="cleanup, compile, package-jar">
+
+        <!--Build doesn't work when referenced by refid, should figure out why-->
+        <!--<zipfileset id="zipfiles">-->
+            <!--<zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>-->
+            <!--<zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>-->
+            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>-->
+            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>-->
+            <!--<zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>-->
+            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>-->
+            <!--<zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>-->
+        <!--</zipfileset>-->
+
         <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
             <zipfileset dir="${genome.dir}" includes="genomes/*.genome" prefix="${title}"/>
         </zip>
         <zip destfile="${deploy.dir}/igvtools_nogenomes_${version}.zip" whenempty="fail" defaultexcludes="true">
@@ -110,7 +124,7 @@
             <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
             <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
         </zip>
     </target>
 
