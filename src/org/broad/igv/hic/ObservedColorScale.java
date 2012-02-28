@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
 
-    Map<Integer, Color> colorCache = new Hashtable();
+    Map<Integer, Color> colorCache = new Hashtable<Integer,Color>();
 
     private int minCount = 0;
     private int maxCount = 200;
