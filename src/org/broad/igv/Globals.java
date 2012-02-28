@@ -23,11 +23,11 @@ import org.broad.igv.exceptions.DataLoadException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
@@ -111,6 +111,7 @@ public class Globals {
     final public static String GENOME_CACHE_FOLDER_NAME = "genomes";
     // TODO -- move everything below to a utility class
     public static File cacheDirectory = null;
+    public static Map<Character, Color> nucleotideColors;
 
 
     static {
@@ -123,6 +124,19 @@ public class Globals {
         VERSION = properties.getProperty("version", "???");
         BUILD = properties.getProperty("build", "???");
         TIMESTAMP = properties.getProperty("timestamp", "???");
+
+        nucleotideColors = new HashMap();
+        nucleotideColors.put('A', Color.GREEN);
+        nucleotideColors.put('a', Color.GREEN);
+        nucleotideColors.put('C', Color.BLUE);
+        nucleotideColors.put('c', Color.BLUE);
+        nucleotideColors.put('T', Color.RED);
+        nucleotideColors.put('t', Color.RED);
+        nucleotideColors.put('G', new Color(209, 113, 5));
+        nucleotideColors.put('g', new Color(209, 113, 5));
+        nucleotideColors.put('N', Color.gray.brighter());
+        nucleotideColors.put('n', Color.gray.brighter());
+
     }
 
     public static void setHeadless(boolean bool) {

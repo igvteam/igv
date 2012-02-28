@@ -22,6 +22,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
@@ -153,7 +154,7 @@ public class EWigTrack extends AbstractTrack {
                     float count = ns.getScore() * totalCount;
 
                     //pY = drawBar(context, idx, rect, dataMax, pY, pX, dX, c, count);
-                    Graphics2D tGraphics = context.getGraphic2DForColor(AlignmentRenderer.nucleotideColors.get(c));
+                    Graphics2D tGraphics = context.getGraphic2DForColor(Globals.nucleotideColors.get(c));
 
                     int h = (int) Math.round(count * height / totalCount);
                     h = Math.min(pY - rect.y, h);

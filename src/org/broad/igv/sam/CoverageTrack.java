@@ -23,6 +23,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
@@ -447,7 +448,7 @@ public class CoverageTrack extends AbstractTrack {
 
             int count = interval.getCount(pos, (byte) nucleotide);
 
-            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+            Color c = Globals.nucleotideColors.get(nucleotide);
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
@@ -557,7 +558,7 @@ public class CoverageTrack extends AbstractTrack {
 
         for (char nucleotide : nucleotides) {
 
-            Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+            Color c = Globals.nucleotideColors.get(nucleotide);
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             int count = isPositive ? interval.getPosCount(pos, (byte) nucleotide) :

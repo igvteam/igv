@@ -18,6 +18,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -46,7 +47,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
-    public static Map<Character, Color> nucleotideColors;
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
 
@@ -104,17 +104,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         sampleColors = new PaletteColorTable(palette);
         tagValueColors = new PaletteColorTable(palette);
 
-        nucleotideColors = new HashMap();
-        nucleotideColors.put('A', Color.GREEN);
-        nucleotideColors.put('a', Color.GREEN);
-        nucleotideColors.put('C', Color.BLUE);
-        nucleotideColors.put('c', Color.BLUE);
-        nucleotideColors.put('T', Color.RED);
-        nucleotideColors.put('t', Color.RED);
-        nucleotideColors.put('G', new Color(209, 113, 5));
-        nucleotideColors.put('g', new Color(209, 113, 5));
-        nucleotideColors.put('N', Color.gray.brighter());
-        nucleotideColors.put('n', Color.gray.brighter());
 
         // fr Orienations (e.g. Illumina paired-end libraries)
         frOrientationColors = new HashMap();
@@ -640,7 +629,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
                     char c = (char) read[idx];
 
-                    Color color = nucleotideColors.get(c);
+                    Color color = Globals.nucleotideColors.get(c);
                     if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
                     if (color == null) {
                         color = Color.black;
