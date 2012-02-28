@@ -784,9 +784,7 @@ public class Preprocessor implements DataConsumer {
                 AffectiveLogParser parser = new AffectiveLogParser(iFile.getAbsolutePath(), this);
                 parser.parse();
             } else {
-                String extension = getExtension(iFile.getAbsolutePath());
-                out.println("Error: cannot 'tile' files of type " + extension);
-                out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");
+                out.println("Error: cannot files of type '" + tmp + "' to TDF format.");
             }
         }
     }
