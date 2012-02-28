@@ -47,7 +47,7 @@ public class MatrixZoomData {
         this.zoom = zoom;
         this.blockBinCount = blockBinCount;
         this.blockIndex = blockIndex;
-        blocks = new LinkedHashMap(blockIndex.size());
+        blocks = new LinkedHashMap<Integer,Block>(blockIndex.size());
         this.reader = reader;
     }
 
@@ -100,7 +100,7 @@ public class MatrixZoomData {
 
         int maxSize = (col2 - col1 + 1) * (row2 - row1 + 1);
 
-        List<Block> blockList = new ArrayList(maxSize);
+        List<Block> blockList = new ArrayList<Block>(maxSize);
         for (int r = row1; r <= row2; r++) {
             for (int c = col1; c <= col2; c++) {
                 int blockNumber = r * getBlockColumnCount() + c;
