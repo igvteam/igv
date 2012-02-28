@@ -1,5 +1,6 @@
 This package contains command line utilities for preprocessing, computing
 feature count density (coverage),  sorting, and indexing data files.
+See also http://www.broadinstitute.org/software/igv/igvtools_commandline.
 
 ---------------------------------------------------------------------------
 Starting with shell scripts
@@ -56,11 +57,27 @@ The recognized commands are tile, count, sort, and index.  Note that these
 utilities are for working with ascii file formats, including SAM, but
 do not work with BAM files.  For manipulating BAM files use samtools.
 
+
+---------------------------------------------------------------------------
+Genome
+---------------------------------------------------------------------------
+
+The genome argument in the tile and count command can be either an id, or
+a full path to an IGV .genome file.  The id for IGV supplied genomes are
+listed below.  Genome definitions corresponding to these files are in the
+"genomes" subdirectory of the igvtools install.  The id is derived by removing
+the .extension from the filename.
+
 ---------------------------------------------------------------------------
 Command "tile"
 ---------------------------------------------------------------------------
+This command is deprecated. Use "toTDF" instead.
 
-The "tile" command converts a sorted data input file to  a binary tiled
+---------------------------------------------------------------------------
+Command "toTDF"
+---------------------------------------------------------------------------
+
+The "toTDF" command converts a sorted data input file to  a binary tiled
 data (.tdf) file. Input file formats supported  are .wig, .cn, .igv,
 and .gct.
 
@@ -80,18 +97,18 @@ Required arguments:
 Options:
 
 
-  -z num       Specifies the maximum zoom level to precompute. The default
+  -z, --maxZoom num       Specifies the maximum zoom level to precompute. The default
                value is 7 and is sufficient for most files. To reduce file
                size at the expense of IGV performance this value can be
                reduced.
 
-  -f  list     A comma delimited list specifying window functions to use
+  -f, --windowFunctions  list     A comma delimited list specifying window functions to use
                when reducing the data to precomputed tiles.   Possible
                values are  min, max,  mean, median, p2, p10, p90, and p98.
                The "p" values represent percentile, so p2=2nd percentile,
                etc.
 
-  -p file      Specifies a "bed" file to be used to map probe identifiers
+  -p, --probeFile file      Specifies a "bed" file to be used to map probe identifiers
                to locations.  This option is useful when preprocessing gct
                files.  The bed file should contain 4 columns:
                   chr start end name
@@ -133,22 +150,32 @@ Required rguments:
 
 Options:
 
-  -z num       Specifies the maximum zoom level to precompute.
+  -z, --maxZoom num       Specifies the maximum zoom level to precompute.
 
-  -w num       The window size over which coverage is averaged. Defaults
+  -w, --windowSize num       The window size over which coverage is averaged. Defaults
                to 25 bp.
 
-  -e num       The read or feature is extended by the specified distance
+  -e, --extFactor num       The read or feature is extended by the specified distance
                in bp prior to counting. This option is useful for chip-seq
                and rna-seq applications. The value is generally set to the
                average fragment length of the library.
 
-  -f  list     A comma delimited list specifying window functions to use
+  -f, --windowFunctions  list     A comma delimited list specifying window functions to use
                when reducing the data to precomputed tiles.   Possible
                values are  min, max,  mean, median, p2, p10, p90, and p98.
                The "p" values represent percentile, so p2=2nd percentile,
                etc.
-
+  --strands [arg] By default, counting is combined among both strands.
+                This setting outputs the count for each strand separately.
+                Legal argument values are 'read' or 'first'.
+                'read' Separates count by 'read' strand, 'first' uses the first in pair strand"
+  --bases		Count the occurrence of each base (A,G,C,T,N). Takes no arguments
+  
+  --query [querystring]	Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000. Input file must be indexed.
+  
+  --minMapQuality [mqual]	Set the minimum mapping quality of reads to include. Default is 0.
+  --includeDuplicates 	 Include duplicate alignments in count. Default false.
+                If this flag is included, duplicates are counted. Takes no arguments				
 
 Notes:
 
@@ -159,17 +186,6 @@ command (see below).
 
 Example:
    igvtools count -z 5 -w 25 -e 250 alignments.bam  alignments.cov.tdf  hg18
-
----------------------------------------------------------------------------
-Genome
----------------------------------------------------------------------------
-
-The genome argument in the tile and count command can be either an id, or
-a full path to an IGV .genome file.  The id for IGV supplied genomes are
-listed below.  Genome definitions corresponding to these files are in the
-"genomes" subdirectory of the igvtools install.  The id is derived by removing
-the .extension from the filename.
-
 
 ---------------------------------------------------------------------------
 Command "sort"
@@ -189,11 +205,11 @@ Usage:
 
 Options:
 
-  -t tmpdir  Specify a temporary working directory.  For large input files
+  -t, --tmpDir tmpdir  Specify a temporary working directory.  For large input files
              this directory will be used to store intermediate results of
              the sort. The default is the users temp directory.
 
-  -m number  The maximum number of records to keep in memory during the
+  -m, --maxRecords number  The maximum number of records to keep in memory during the
              sort.  The default value is 500000.  Increase this number
              if you receive "too many open files" errors.   Decrease it
              if you experience "out of memory" errors.
@@ -222,6 +238,36 @@ Usage:
   igvtools index [inputFile]
 
 
+---------------------------------------------------------------------------
+Command "formatexp"
+---------------------------------------------------------------------------
+
+Format GCT or RES files for display
+
+Usage:
+	
+	igvtools formatexp [inputFile] [outputFile]
+	
+---------------------------------------------------------------------------
+Command "gui"
+---------------------------------------------------------------------------
+
+Start the igvtools gui
+
+Usage:
+	
+	igvtools gui
+	
+---------------------------------------------------------------------------
+Command "help"
+---------------------------------------------------------------------------
+
+"igvtools help" will display a list of available commands. "igvtools help [command]"
+displays help on a particular command.
+
+Example:
+	
+	igvtools help index
 
  ---------------------------------------------------------------------------
  Command "version"

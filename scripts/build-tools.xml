@@ -84,6 +84,7 @@
                 <rootfileset dir="${tmp.dir}" includes="org/broad/igv/itdf/*.class"/>
             </classfileset>
             <fileset dir="src" includes="resources/**, log4j.properties"/>
+            <fileset dir="." includes="docs/**"/>
             <manifest>
                 <attribute name="Implementation-Title" value="${title}"/>
                 <attribute name="Main-Class" value="${main-class}"/>
