@@ -480,7 +480,7 @@ public class IGVMenuBar extends JMenuBar {
                         (new GeneListManagerUI(IGV.getMainFrame())).setVisible(true);
                     }
                 };
-        menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
+        menuAction.setToolTipText("Open gene list manager");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
