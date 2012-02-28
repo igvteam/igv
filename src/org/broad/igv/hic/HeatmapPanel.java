@@ -20,7 +20,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
     private int imageTileWidth = 500;
-    ObjectCache<String, ImageTile> tileCache = new ObjectCache(100);
+    ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(100);
     private Rectangle zoomRectangle;
 
     HeatmapRenderer renderer;
