@@ -519,209 +519,6 @@ public class IgvTools {
         return countFlags;
     }
 
-    void run_old(String[] argv) {
-
-        CmdLineParser parser = new CmdLineParser();
-        CmdLineParser.Option helpOption = parser.addBooleanOption('h', "help");
-        CmdLineParser.Option guiOption = parser.addBooleanOption('g', "gui");
-
-        // general options
-        CmdLineParser.Option windowFunctions = parser.addStringOption('f', "windowFunctions");
-        CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
-        CmdLineParser.Option maxZoomOption = parser.addIntegerOption('z', "maxZoom");
-
-        // options for sort
-        CmdLineParser.Option maxRecordsOption = parser.addIntegerOption('m', "maxRecords");
-
-        // options for gct files
-        CmdLineParser.Option probeFileOption = parser.addStringOption('p', "probeFile");
-
-        // options for coverage
-        CmdLineParser.Option windowSizeOption = parser.addIntegerOption('w', "windowSize");
-        CmdLineParser.Option extFactorOption = parser.addIntegerOption('e', "extFactor");
-
-        // options for index
-        CmdLineParser.Option indexTypeOption = parser.addIntegerOption('i', "indexType");
-        CmdLineParser.Option binSizeOption = parser.addIntegerOption('b', "binSize");
-        CmdLineParser.Option outputDirOption = parser.addStringOption('o', "outputDir");
-
-        // extended options for coverage
-        //  q, t, .....
-        CmdLineParser.Option coverageOptions = parser.addStringOption('a', "coverageOptions");
-
-        // Trackline
-        CmdLineParser.Option colorOption = parser.addStringOption('c', "color");
-
-
-        // Parse optional arguments (switches, etc)
-        try {
-            parser.parse(argv);
-        } catch (CmdLineParser.OptionException e) {
-            System.err.println(e.getMessage());
-            return;
-        }
-
-        boolean help = ((Boolean) parser.getOptionValue(helpOption, false));
-        if (help) {
-            System.out.println(usageString());
-            return;
-        }
-
-
-        boolean gui = ((Boolean) parser.getOptionValue(guiOption, false));
-        if (gui) {
-            launchGUI();
-            Runtime.getRuntime().halt(0);
-        }
-
-
-        String tmpDirName = (String) parser.getOptionValue(tmpDirOption);
-
-
-        String[] nonOptionArgs = parser.getRemainingArgs();
-
-        try {
-            validateArgsLength(argv, 1, "Error: Must have at least 1 argument");
-            // The command
-            String command = nonOptionArgs[EXT_FACTOR].toLowerCase();
-            String basic_syntax = "Error in syntax. Expected: " + command + " [options] inputfile outputfile";
-
-            // Do "version" now, its the only command with no arguments
-            if (command.equals("version")) {
-                System.out.println("Version " + version);
-                return;
-            }
-
-            // All remaining commands require an input file, and most need the file extension.  Do that here.
-            validateArgsLength(nonOptionArgs, 2, "Error: No input file provided");
-            String ifile = nonOptionArgs[1];
-            String typeString = (String) parser.getOptionValue(typeOption);
-            if (typeString == null) {
-                typeString = Preprocessor.getExtension(ifile).toLowerCase();
-            } else {
-                typeString = typeString.toLowerCase();
-            }
-
-            boolean isList = ifile.indexOf(",") > 0;
-            if (!isList && !FileUtils.resourceExists(ifile)) {
-                throw new PreprocessingException("File not found: " + ifile);
-            }
-
-            int maxRecords = (Integer) parser.getOptionValue(maxRecordsOption, MAX_RECORDS_IN_RAM);
-
-            if (command.equals("count") || command.equals("totdf") || command.equals("tile")) {
-
-                // Parse out options common to both count and tile
-                validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
-                int windowSizeValue = (Integer) parser.getOptionValue(windowSizeOption, WINDOW_SIZE);
-                int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
-                String ofile = nonOptionArgs[2];
-                String genomeId = nonOptionArgs[3];
-                boolean isGCT = typeString.endsWith("gct") || typeString.equals("mage-tab");
-                String wfsString = (String) parser.getOptionValue(windowFunctions);
-                Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
-
-
-                String coverageOpt = (String) parser.getOptionValue(coverageOptions);
-
-                String trackLine = null;
-                String color = (String) parser.getOptionValue(colorOption);
-                if (color != null) {
-                    trackLine = "track color=\"" + color + "\"";
-                }
-
-                if (command.equals("count")) {
-                    int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
-
-                    //doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
-                    //coverageOpt, trackLine);
-                } else {
-                    String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                    toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
-                }
-            } else if (command.equals("sort")) {
-                validateArgsLength(nonOptionArgs, 3, basic_syntax);
-
-                String ofile = nonOptionArgs[2];
-                doSort(ifile, ofile, tmpDirName, maxRecords);
-            } else if (command.equals("index")) {
-                int indexType = (Integer) parser.getOptionValue(indexTypeOption, LINEAR_INDEX);
-                int defaultBinSize = indexType == LINEAR_INDEX ? LINEAR_BIN_SIZE : INTERVAL_SIZE;
-                int binSize = (Integer) parser.getOptionValue(binSizeOption, defaultBinSize);
-                String outputDir = (String) parser.getOptionValue(outputDirOption, null);
-                doIndex(ifile, outputDir, indexType, binSize);
-            } else if (command.equals("wibtowig")) {
-                validateArgsLength(nonOptionArgs, 4, "Error in syntax. Expected: " + command + " [options] txtfile wibfile wigfile");
-                File txtFile = new File(nonOptionArgs[1]);
-                File wibFile = new File(nonOptionArgs[2]);
-                File wigFile = new File(nonOptionArgs[3]);
-                String trackLine = nonOptionArgs.length > 4 ? nonOptionArgs[4] : null;
-                doWIBtoWIG(txtFile, wibFile, wigFile, trackLine);
-            } else if (command.equals("splitgff")) {
-                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
-                String outputDirectory = nonOptionArgs[2];
-                GFFParser.splitFileByType(ifile, outputDirectory);
-            } else if (command.toLowerCase().equals("gcttoigv")) {
-                validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
-                String ofile = nonOptionArgs[2];
-                // Output files must have .igv extension
-                if (!ofile.endsWith(".igv")) {
-                    ofile = ofile + ".igv";
-                }
-                String genomeId = nonOptionArgs[3];
-                Genome genome = loadGenome(genomeId, true);
-                if (genome == null) {
-                    throw new PreprocessingException("Genome could not be loaded: " + genomeId);
-                }
-                String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                doGCTtoIGV(typeString, ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
-            } else if (command.equals("formatexp")) {
-                validateArgsLength(nonOptionArgs, 3, basic_syntax);
-                File inputFile = new File(nonOptionArgs[1]);
-                File outputFile = new File(nonOptionArgs[2]);
-                (new ExpressionFormatter()).convert(inputFile, outputFile);
-            } else if (command.toLowerCase().equals("tdftobedgraph")) {
-                validateArgsLength(nonOptionArgs, 3, basic_syntax);
-                String ofile = nonOptionArgs[2];
-                TDFUtils.tdfToBedgraph(ifile, ofile);
-            } else if (command.equals("wigtobed")) {
-                validateArgsLength(nonOptionArgs, 2, "Error in syntax. Expected: " + command + " [options] inputfile");
-                String inputFile = nonOptionArgs[1];
-                float hetThreshold = 0.17f;
-                if (nonOptionArgs.length > 2) {
-                    hetThreshold = Float.parseFloat(nonOptionArgs[2]);
-                }
-                float homThreshold = 0.55f;
-                if (nonOptionArgs.length > 3) {
-                    homThreshold = Float.parseFloat(nonOptionArgs[3]);
-                }
-                WigToBed.run(inputFile, hetThreshold, homThreshold);
-            } else if (command.equals("vcftobed")) {
-                validateArgsLength(nonOptionArgs, 3, basic_syntax);
-                String inputFile = nonOptionArgs[1];
-                String outputFile = nonOptionArgs[2];
-                VCFtoBed.convert(inputFile, outputFile);
-            } else if (command.equals("sumwigs")) {
-                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            } else if (command.equals("densitiestobedgraph")) {
-                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
-                File inputDir = new File(nonOptionArgs[1]);
-                File outputDir = new File(nonOptionArgs[2]);
-                if (inputDir.isDirectory() && outputDir.isDirectory()) {
-                    DensitiesToBedGraph.convert(inputDir, outputDir);
-                } else if (inputDir.isFile() && outputDir.isFile()) {
-                    DensitiesToBedGraph.convert(inputDir, outputDir);
-                }
-
-            } else {
-                throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
-            }
-        } catch (PreprocessingException e) {
-            System.err.println(e.getMessage());
-        } catch (IOException e) {
-            throw new PreprocessingException("Unexpected IO error: ", e);
-        }
-    }
 
     private void sumWigs(String inputString, String outputString) throws IOException {
 
@@ -776,11 +573,12 @@ public class IgvTools {
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
-        File tmp = new File(ifile);
+        File inputFileOrDir = new File(ifile);
 
 
-        int nLines = tmp.isDirectory() ? ParsingUtils.estimateLineCount(tmp) : ParsingUtils.estimateLineCount(ifile);
+        int nLines = inputFileOrDir.isDirectory() ? ParsingUtils.estimateLineCount(inputFileOrDir) : ParsingUtils.estimateLineCount(ifile);
 
+        // TODO -- move this block of code out of here, this should be done before calling this method
         // Convert  gct files to igv format first
         File deleteme = null;
         if (isGCT(typeString)) {
@@ -802,27 +600,22 @@ public class IgvTools {
             igvFile.deleteOnExit();
             doGCTtoIGV(typeString, ifile, igvFile, probeFile, maxRecords, tmpDirName, genome);
 
-            tmp = igvFile;
+            inputFileOrDir = igvFile;
             deleteme = igvFile;
 
         }
 
-
+        // Convert to tdf
         File outputFile = new File(ofile);
         try {
             Preprocessor p = new Preprocessor(outputFile, genome, windowFunctions, nLines, null);
-            if (tmp.isDirectory()) {
-                File[] files = tmp.listFiles();
-                Arrays.sort(files, new Comparator<File>() {
-                    public int compare(File file, File file1) {
-                        return file.getName().compareTo(file1.getName());
-                    }
-                });
+            if (inputFileOrDir.isDirectory() || inputFileOrDir.getName().endsWith(".list")) {
+                List<File> files = getFilesFromDirOrList(inputFileOrDir);
                 for (File f : files) {
                     p.preprocess(f, maxZoomValue);
                 }
             } else {
-                p.preprocess(tmp, maxZoomValue);
+                p.preprocess(inputFileOrDir, maxZoomValue);
             }
             p.finish();
         } catch (IOException e) {
@@ -838,6 +631,67 @@ public class IgvTools {
         }
 
         System.out.flush();
+
+    }
+
+
+    /**
+     * Return either (a) the children files in a directory, or (b) files listed in the input, assuming inputFileOrDir
+     * is a text file with 1 file listing per line.
+     *
+     * @param inputFileOrDir
+     * @return
+     */
+    private List<File> getFilesFromDirOrList(File inputFileOrDir) {
+
+        if (inputFileOrDir.isDirectory()) {
+            File[] files = inputFileOrDir.listFiles();
+            Arrays.sort(files, new Comparator<File>() {
+                public int compare(File file, File file1) {
+                    return file.getName().compareTo(file1.getName());
+                }
+            });
+            return Arrays.asList(files);
+        } else {
+            // Must be a "list" file
+            BufferedReader br = null;
+            try {
+                ArrayList<File> files = new ArrayList<File>();
+                br = new BufferedReader(new FileReader(inputFileOrDir));
+                File parentDirectory = inputFileOrDir.getParentFile();
+                String nextLine;
+                while ((nextLine = br.readLine()) != null) {
+                    File f = new File(nextLine);
+                    if (f.exists()) {
+                        if(f.isDirectory()) {
+                            continue; // Skip directories
+                        }
+                        files.add(f);
+                    } else {
+                        // Might be relative path
+                        f = new File(parentDirectory, nextLine);
+                        if (f.exists()) {
+                            files.add(f);
+                        } else {
+                            System.out.println("File not found: " + nextLine);
+                        }
+                    }
+                }
+                return files;
+            } catch (Exception e) {
+                // todo -- someday create reasonable excpetion classes.  Althought, this one works
+                e.printStackTrace();
+                throw new RuntimeException("Error parsing input file: " + inputFileOrDir.getAbsolutePath() + " " +
+                        e.getMessage());
+            } finally {
+                if (br != null)
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+            }
+        }
 
     }
 
