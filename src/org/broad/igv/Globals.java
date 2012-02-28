@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 /**
@@ -183,7 +182,7 @@ public class Globals {
             // See if an override is stored in preferences.  Try to create a directory if it is.  If there is an
             // error (the log is likely not available yet) and try to use the standard directory
             try {
-                Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                PreferenceManager prefs = PreferenceManager.getInstance();
                 String userDir = prefs.get(IGV_DIR_USERPREF, null);
                 if (userDir != null) {
                     DEFAULT_IGV_DIRECTORY = new File(userDir);
@@ -193,7 +192,7 @@ public class Globals {
                     }
                 }
             } catch (Exception e) {
-                Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                PreferenceManager prefs = PreferenceManager.getInstance();
                 prefs.remove(IGV_DIR_USERPREF);
                 System.err.println("Error creating user directory");
                 e.printStackTrace();
@@ -244,7 +243,7 @@ public class Globals {
                         int retValue = fc.showOpenDialog(null);
                         if (retValue == JFileChooser.APPROVE_OPTION) {
                             DEFAULT_IGV_DIRECTORY = fc.getSelectedFile();
-                            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                            PreferenceManager prefs = PreferenceManager.getInstance();
                             prefs.put(IGV_DIR_USERPREF, DEFAULT_IGV_DIRECTORY.getAbsolutePath());
                         }
                     }
