@@ -227,7 +227,10 @@ public class MainWindow extends JFrame {
                 InputStream is = null;
                 try {
                     is = ParsingUtils.openInputStream(densityFile);
+
                     zoomToDensityMap = DensityUtil.readDensities(is);
+                    comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed", "OE"}));
+
                 } finally {
                     if (is != null) is.close();
                 }
@@ -550,7 +553,8 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
             zd = null;
-            load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
+         //   load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
+            load("/broad/aidenlab/hic_files/Hi-C_HindIII_Human_August.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -593,7 +597,14 @@ public class MainWindow extends JFrame {
             refreshChromosomes();
         }
     }
-
+    private void comboBox1ActionPerformed(ActionEvent e) {
+        if (comboBox1.getSelectedIndex() == 0) {
+            setDisplayOption(DisplayOption.OBSERVED);
+        }
+        else if (comboBox1.getSelectedIndex() == 1) {
+            setDisplayOption(DisplayOption.OE);
+        }
+    }
 
     private void zoomOutButtonActionPerformed(ActionEvent e) {
         int z = xContext.getZoom();
@@ -861,11 +872,23 @@ public class MainWindow extends JFrame {
                     {
                         panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
                         panel1.setLayout(new GridLayout(1, 0, 20, 0));
-
+                        if (zoomToDensityMap == null) {
                         //---- comboBox1 ----
-                        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                "Observed"
-                        }));
+                            comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                                "Observed"
+                                                }));
+                        }
+                        else {
+                            //---- comboBox1 ----
+                            comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                    "Observed", "OE"
+                            }));
+                        }
+                        comboBox1.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                comboBox1ActionPerformed(e);
+                            }
+                        });
                         panel1.add(comboBox1);
                     }
                     displayOptionPanel.add(panel1, BorderLayout.CENTER);
