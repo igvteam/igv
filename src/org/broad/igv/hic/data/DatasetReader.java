@@ -16,16 +16,18 @@ import java.util.Map;
  */
 public class DatasetReader {
 
-    SeekableStream stream;
+    private SeekableStream stream;
 
-    Map<String, Preprocessor.IndexEntry> masterIndex = new HashMap();
+    private Map<String, Preprocessor.IndexEntry> masterIndex;
     private long totalCount;
     private DensityFunction densityFunction;
-    Dataset dataset;
+    private Dataset dataset;
 
     public DatasetReader(SeekableStream stream) {
         this.stream = stream;
-        dataset = new Dataset(this);
+        masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
+        dataset     = new Dataset(this);
+
     }
 
     public Dataset read() throws FileNotFoundException {
