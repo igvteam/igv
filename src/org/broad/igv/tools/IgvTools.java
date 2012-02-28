@@ -552,6 +552,7 @@ public class IgvTools {
 
             inputFileOrDir = igvFile;
             deleteme = igvFile;
+            typeString = ".igv";
 
         }
 
