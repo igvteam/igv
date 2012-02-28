@@ -25,16 +25,18 @@ public class DensityUtil {
         String genomeID = "hg18";
         List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
         calculate(chromosomes);
-        //read();
-        dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
+        read("/xchip/igv/dev/hic/testFiles/test.hic.densities");
+       // dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
 
     private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
         InputStream is = ParsingUtils.openInputStream(path);
         Map<Integer, DensityFunction> d = readDensities(is);
         DensityFunction df = d.get(zoomNumber);
-        for (int b = 0; b < 250; b++) {
-            System.out.println(df.getDensity(chr, b));
+        if (df != null) {
+            for (int b = 0; b < 250; b++) {
+                System.out.println(df.getDensity(chr, b));
+            }
         }
         is.close();
 
@@ -42,12 +44,13 @@ public class DensityUtil {
 
     private static Map<Integer, DensityFunction> read(String ifile) throws IOException {
         InputStream is = ParsingUtils.openInputStream(ifile);
-        Map<Integer, DensityFunction> d = readDensities(is);
-        return d;
+        return readDensities(is);
     }
 
     private static void calculate(List<Chromosome> chromosomes) throws IOException {
-        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
+        String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
+
+//        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
 
 
         Map<String, Integer> chrIndexMap = new HashMap<String, Integer>();
@@ -91,7 +94,7 @@ public class DensityUtil {
             calcs[z].computeDensity();
         }
 
-        outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/test.hic.densities"));
+        outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/HindIII_Human_August.densities"));
     }
 
 
@@ -100,7 +103,6 @@ public class DensityUtil {
         LittleEndianOutputStream os = null;
         try {
             os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-
             os.writeInt(calcs.length);
             for (int i = 0; i < calcs.length; i++) {
                 calcs[i].outputBinary(os);
@@ -126,14 +128,8 @@ public class DensityUtil {
         // TODO -- Its assumed densities are in number order and indeces match resolutions.  This is fragile,
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
-
-//            DensityCalculation calc = new DensityCalculation(is);
-//            //   public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
-//
-//            int gridSize = calc.getGridSize();
-//            double[] densities = calc.getDensityAvg();
-//            Map<Integer, Double> normFactors = calc.getNormalizationFactors();
-//            densityMap.put(i, new DensityFunction(gridSize, densities, normFactors));
+            DensityCalculation calc = new DensityCalculation(les);
+            densityMap.put(i, new DensityFunction(calc));
         }
 
         return densityMap;
