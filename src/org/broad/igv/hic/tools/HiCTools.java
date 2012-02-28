@@ -42,6 +42,10 @@ public class HiCTools {
 
         if (argv.length < 4) {
             System.out.println("Usage: hictools pre <options> <inputFile> <outputFile> <genomeID>");
+            System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
+            System.out.println("           : -o calculate densities (observed/expected), write to file [false]");
+            System.out.println("           : -t <int> only write cells with count above threshold t [0]");
+            System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
             System.exit(0);
         }
 
@@ -66,41 +70,45 @@ public class HiCTools {
             chromosomes.set(0, new Chromosome(0, "All", (int) (genomeLength / 1000)));
 
             String[] tokens = args[1].split(",");
-            List<String> files = new ArrayList(tokens.length);
+            List<String> files = new ArrayList<String>(tokens.length);
+
             for (String f : tokens) {
                 files.add(f);
             }
 
             Preprocessor preprocessor = new Preprocessor(new File(args[2]), chromosomes);
 
-            preprocessor.setIncludedChromosomes(parser.getchromosomeOption());
+            preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
-
+            preprocessor.setLoadDensities(parser.getDensitiesOption());
             preprocessor.preprocess(files);
         }
     }
 
     /**
-     * Load chromosomes
+     * Load chromosomes from given ID or file name.
      *
-     * @param idOrFile
-     * @return
+     * @param idOrFile Genome ID or file name where chromosome lengths written
+     * @return Chromosome lengths
+     * @throws IOException if chromosome length file not found
      */
     public static List<Chromosome> loadChromosomes(String idOrFile) throws IOException {
 
         InputStream is = null;
 
-        //First assume this is an ID an
         try {
+            // Note: to get this to work, had to edit Intellij settings
+            // so that "?*.sizes" are considered sources to be copied to class path
             is = HiCTools.class.getResourceAsStream(idOrFile + ".chrom.sizes");
+
             if (is == null) {
                 // Not an ID,  see if its a file
                 File file = new File(idOrFile);
                 if (file.exists()) {
                     is = new FileInputStream(file);
                 } else {
-                    throw new FileNotFoundException("Could not find chrom sizes file for: " + idOrFile);
+                    throw new FileNotFoundException("Could not find chromosome sizes file for: " + idOrFile);
                 }
 
             }
@@ -192,14 +200,16 @@ public class HiCTools {
 
 
     static class CommandLineParser extends CmdLineParser {
-        private CmdLineParser.Option diagonalsOption = null;
-        private CmdLineParser.Option chromosomeOption = null;
-        private CmdLineParser.Option countThresholdOption = null;
+        private Option diagonalsOption      = null;
+        private Option chromosomeOption     = null;
+        private Option countThresholdOption = null;
+        private Option loadDensititesOption = null; 
 
         CommandLineParser() {
-            diagonalsOption = addBooleanOption('d', "diagonals");
-            chromosomeOption = addStringOption('c', "chromosomes");
+            diagonalsOption      = addBooleanOption('d', "diagonals");
+            chromosomeOption     = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('t', "countThreshold");
+            loadDensititesOption = addBooleanOption('o', "density");
         }
 
         boolean getDiagonalsOption() {
@@ -207,7 +217,12 @@ public class HiCTools {
             return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 
-        Set<String> getchromosomeOption() {
+        boolean getDensitiesOption() {
+            Object opt = getOptionValue(loadDensititesOption);
+            return opt == null ? false : ((Boolean) opt).booleanValue();
+        }
+
+        Set<String> getChromosomeOption() {
             Object opt = getOptionValue(chromosomeOption);
             if (opt != null) {
                 String[] tokens = opt.toString().split(",");
