@@ -22,6 +22,7 @@
     <property name="jar.name" value="igv.jar"/>
 
     <property name="scripts.dir" value="${basedir}/scripts"/>
+    <property name="docs.dir" value="${basedir}/docs"/>
 
     <property name="main-class" value="org.broad.igv.ui.Main"/>
     <property name="alias" value="Broad-alias"/>
@@ -203,7 +204,9 @@
                 <include name="igv.command"/>
                 <include name="igv.bat"/>
             </fileset>
-
+            <fileset dir="${docs.dir}/">
+                <include name="*.txt"/>
+            </fileset>
         </copy>
 
 
