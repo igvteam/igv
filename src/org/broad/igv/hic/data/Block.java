@@ -11,16 +11,16 @@ import java.util.Map;
  */
 public class Block {
 
-    int number;
+    private int number;
 
     // Temporary map used during parsing only TODO -- remove from this class
-    Map<Point, ContactRecord> contactRecordMap;
+    private Map<Point, ContactRecord> contactRecordMap;
 
     ContactRecord[] records;
 
     public Block(int number) {
         this.number = number;
-        contactRecordMap = new HashMap();
+        contactRecordMap = new HashMap<Point, ContactRecord>();
     }
 
     public Block(int number, ContactRecord[] records) {
