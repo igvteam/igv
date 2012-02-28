@@ -612,10 +612,10 @@ public class IgvTools {
             if (inputFileOrDir.isDirectory() || inputFileOrDir.getName().endsWith(".list")) {
                 List<File> files = getFilesFromDirOrList(inputFileOrDir);
                 for (File f : files) {
-                    p.preprocess(f, maxZoomValue);
+                    p.preprocess(f, maxZoomValue, typeString);
                 }
             } else {
-                p.preprocess(inputFileOrDir, maxZoomValue);
+                p.preprocess(inputFileOrDir, maxZoomValue, typeString);
             }
             p.finish();
         } catch (IOException e) {

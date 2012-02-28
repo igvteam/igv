@@ -764,12 +764,12 @@ public class Preprocessor implements DataConsumer {
         }
     }
 
-    public void preprocess(File iFile, int maxZoomValue) throws IOException {
+    public void preprocess(File iFile, int maxZoomValue, String typeString) throws IOException {
 
         setNZoom(maxZoomValue);
 
 
-        String tmp = iFile.getAbsolutePath().toLowerCase();
+        String tmp = (typeString == null ? iFile.getAbsolutePath() : typeString).toLowerCase();
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
         if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("cpg")) {
