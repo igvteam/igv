@@ -19,6 +19,7 @@
 
 <project name="igvtools" basedir="../." default="create-zips">
     <property name="scripts.dir" value="${basedir}/scripts"/>
+    <property name="docs.dir" value="${basedir}/docs"/>
     <property name="tmp.dir" value="tmp"/>
     <property name="main-class" value="org.broad.igv.tools.IgvTools"/>
     <property name="title" value="IGVTools"/>
@@ -28,7 +29,6 @@
     <property name="version" value="v0.0"/>
     <property name="build-number" value="0.0"/>
 
-    <property name="docs.dir" value="${basedir}/docs"/>
 
     <target name="extract-classes">
         <unzip dest="${tmp.dir}">
@@ -96,34 +96,25 @@
 
     <target name="create-zips" depends="cleanup, compile, package-jar">
 
-        <!--Build doesn't work when referenced by refid, should figure out why-->
-        <!--<zipfileset id="zipfiles">-->
-            <!--<zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>-->
-            <!--<zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>-->
-            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>-->
-            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>-->
-            <!--<zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>-->
-            <!--<zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>-->
-            <!--<zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>-->
-        <!--</zipfileset>-->
+
+        <fileset id="scripts" dir="${scripts.dir}">
+            <include name="igvtools"/>
+            <include name="igvtools_gui"/>
+            <include name="igvtools_gui.command"/>
+            <include name="igvtools.bat"/>
+            <include name="igvtools_gui.bat"/>
+        </fileset>
 
         <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset refid="scripts" prefix="${title}" filemode="755"/>
             <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
             <zipfileset dir="${genome.dir}" includes="genomes/*.genome" prefix="${title}"/>
         </zip>
+
         <zip destfile="${deploy.dir}/igvtools_nogenomes_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset refid="scripts" prefix="${title}" filemode="755"/>
             <zipfileset dir="${docs.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
         </zip>
     </target>
