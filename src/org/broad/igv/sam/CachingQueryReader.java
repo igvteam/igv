@@ -148,7 +148,7 @@ public class CachingQueryReader {
         int startTile = (start + 1) / getTileSize(sequence);
         int endTile = end / getTileSize(sequence);    // <= inclusive
 
-        // Be a bit conservative with maxReadDepth (get a few more reads than we think neccessary)
+        // Be a bit conservative with maxReadDepth (get a few more reads than we think necessary)
         int readDepthPlus = (int) (1.1 * maxReadDepth);
 
         List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats, bisulfiteContext);
@@ -235,8 +235,9 @@ public class CachingQueryReader {
     /**
      * Load alignments for the list of tiles
      *
-     * @param chr
+     * @param chr Only tiles on this chromosome will be loaded
      * @param tiles
+     * @param peStats
      * @return true if successful,  false if canceled.
      */
     private boolean loadTiles(String chr, List<AlignmentTile> tiles, Map<String, PEStats> peStats) {
@@ -285,7 +286,7 @@ public class CachingQueryReader {
 
                 Alignment record = iter.next();
 
-                // Set mate seqeunce of unmapped mates
+                // Set mate sequence of unmapped mates
                 // Put a limit on the total size of this collection.
                 String readName = record.getReadName();
                 if (record.isPaired()) {
@@ -362,7 +363,7 @@ public class CachingQueryReader {
 
             // Compute peStats
             if (peStats != null) {
-                // TODO -- something smareter re the percentiles.  For small samples these will revert to min and max
+                // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
                 double minPercentile = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
                 double maxPercentile = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
                 for (PEStats stats : peStats.values()) {
@@ -370,7 +371,7 @@ public class CachingQueryReader {
                 }
             }
 
-            // Clean up any remaining unmapped mate seqeunces
+            // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
                 Alignment mappedMate = mappedMates.get(mappedMateName);
                 Alignment mate = unmappedMates.get(mappedMate.getReadName());
@@ -429,6 +430,7 @@ public class CachingQueryReader {
     }
 
     /**
+     * @param chr Chromosome name
      * @return the tileSize
      */
     public int getTileSize(String chr) {
@@ -604,14 +606,13 @@ public class CachingQueryReader {
             this.start = start;
         }
 
+        int ignoredCount = 0;    // <= just for debugging
 
         /**
-         * Add an alignment record to this tile.  This record is not neccessarily retained after down-sampling.
+         * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.
          *
          * @param record
          */
-        int ignoredCount = 0;    // <= just for debugging
-
         public void addRecord(Alignment record) {
 
             if (record.getStart() > e1) {
@@ -665,7 +666,7 @@ public class CachingQueryReader {
         /**
          * Sample the current bucket of alignments to achieve the desired depth.
          *
-         * @return
+         * @return Sorted list of alignments to be retained
          */
         private List<Alignment> sampleCurrentBucket() {
 
