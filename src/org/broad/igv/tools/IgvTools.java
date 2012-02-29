@@ -525,8 +525,8 @@ public class IgvTools {
         }
         File inputFileOrDir = new File(ifile);
 
-
-        int nLines = inputFileOrDir.isDirectory() ? ParsingUtils.estimateLineCount(inputFileOrDir) : ParsingUtils.estimateLineCount(ifile);
+        // Estimae the total number of lines to be parsed, for progress updates
+        int nLines =  estimateLineCount(inputFileOrDir);
 
         // TODO -- move this block of code out of here, this should be done before calling this method
         // Convert  gct files to igv format first
@@ -614,7 +614,7 @@ public class IgvTools {
                 while ((nextLine = br.readLine()) != null) {
                     File f = new File(nextLine);
                     if (f.exists()) {
-                        if(f.isDirectory()) {
+                        if (f.isDirectory()) {
                             continue; // Skip directories
                         }
                         files.add(f);
@@ -971,6 +971,31 @@ public class IgvTools {
             }
             return funcs;
         }
+    }
+
+
+    /**
+     * Estimage the number of lines in the given file, or all files in the given directory, or all files
+     * referenced in a ".list" file.
+     *
+     * @param file a file or directory.
+     * @return
+     */
+    private int estimateLineCount(File file) {
+
+        int nLines = 0;
+        if (file.isDirectory() || file.getName().endsWith(".list")) {
+            List<File> files = getFilesFromDirOrList(file);
+            for (File f : files) {
+                if (!f.isDirectory()) {
+                    nLines += ParsingUtils.estimateLineCount(f.getAbsolutePath());
+                }
+            }
+        } else {
+            nLines = ParsingUtils.estimateLineCount(file.getAbsolutePath());
+        }
+        return nLines;
+
     }
 
 

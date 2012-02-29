@@ -137,28 +137,6 @@ public class ParsingUtils {
         return (int) Double.parseDouble(string);
     }
 
-    /**
-     * Estimage the number of lines in the given file, or all files in the given directory.
-     *
-     * @param file a file or directory.
-     * @return
-     */
-    public static int estimateLineCount(File file) {
-        if (file.isDirectory()) {
-            int lineCount = 0;
-            for (File f : file.listFiles()) {
-                // Don't recurse
-                if (!f.isDirectory()) {
-                    lineCount += estimateLineCount(f.getAbsolutePath());
-                }
-            }
-            return lineCount;
-
-        } else {
-            return estimateLineCount(file.getAbsolutePath());
-        }
-
-    }
 
     public static long getContentLength(String path) {
         try {
