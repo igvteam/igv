@@ -180,6 +180,9 @@ public class CachingQueryReader {
             }
         }
 
+        // Since we added in 2 passes we need to sort
+        Collections.sort(alignments, new AlignmentSorter());
+
         return new TiledIterator(start, end, alignments);
     }
 
@@ -452,6 +455,7 @@ public class CachingQueryReader {
         Iterator<Alignment> currentSamIterator;
         int end;
         Alignment nextRecord;
+        Alignment lastRecord;
         int start;
         List<Alignment> alignments;
 
@@ -497,7 +501,9 @@ public class CachingQueryReader {
 
         private void advance() {
             if (currentSamIterator.hasNext()) {
+                lastRecord = nextRecord;
                 nextRecord = currentSamIterator.next();
+
                 if (nextRecord.getStart() > end) {
                     nextRecord = null;
                 }
@@ -705,15 +711,10 @@ public class CachingQueryReader {
                 while (sampledList.size() < maxDepth && (overflows.size() > 0)) {
                     sampledList.add(overflows.remove(RAND.nextInt(overflows.size())));
                 }
-
-
-                // Since we added in 2 passes we need to sort
-                Collections.sort(sampledList, new Comparator<Alignment>() {
-                    public int compare(Alignment alignment, Alignment alignment1) {
-                        return alignment.getStart() - alignment1.getStart();
-                    }
-                });
             }
+            // Since we added in 2 passes we need to sort
+            Collections.sort(sampledList, new AlignmentSorter());
+
             return sampledList;
         }
 
@@ -772,6 +773,12 @@ public class CachingQueryReader {
 
         public List<SpliceJunctionFeature> getOverlappingSpliceJunctionFeatures() {
             return overlappingSpliceJunctionFeatures;
+        }
+    }
+
+    private static class AlignmentSorter implements Comparator<Alignment>{
+        public int compare(Alignment alignment, Alignment alignment1) {
+            return alignment.getStart() - alignment1.getStart();
         }
     }
 
