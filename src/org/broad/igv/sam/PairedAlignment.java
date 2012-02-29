@@ -178,11 +178,16 @@ public class PairedAlignment implements Alignment {
      */
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
+        if (secondAlignment != null) {
+            buf.append("<table><tr><td valign=\"top\">");
+        }
         buf.append("<b>Left alignment</b><br/>");
         buf.append(firstAlignment.getValueString(position, windowFunction));
         if (secondAlignment != null) {
-            buf.append("<br/><b>Right alignment</b><br/>");
+            buf.append("</td><td valign=\"top\">");
+            buf.append("<b>Right alignment</b><br/>");
             buf.append(secondAlignment.getValueString(position, windowFunction));
+            buf.append("</td></tr></table>");
         }
         return buf.toString();
     }
