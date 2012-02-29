@@ -77,7 +77,11 @@ Command "toTDF"
 
 The "toTDF" command converts a sorted data input file to  a binary tiled
 data (.tdf) file. Input file formats supported  are .wig, .cn, .igv,
-and .gct.
+and .gct, TCGA mage-tab files, and "list" files.  List files are text files
+containing a list of files in one of the supported formats, one file per line.
+When using a list file the format of the contained files must be specified explicitly
+with the "fileType" parameter.  List files must end with the extension ".list".
+File paths can be absolute or relative to the directory containing the list file.
 
 Usage:
 
@@ -86,7 +90,7 @@ Usage:
 
 Required arguments:
 
-  inputFile    The input file (see supported formats below).
+  inputFile    The input file (see supported formats above).
 
   outputFile   Binary output file.  Must end in ".tdf".
 
@@ -111,6 +115,10 @@ Options:
                   chr start end name
                where name is the probe name in the gct file.
 
+  --fileType   Optional parameter for specifying the file type for TCGA mage-tab and ".list" files.  Possible values
+               are mage-tab, .wig, .cn, .igv, and .gct.   Only mage-tab files downloaded from the TCGA data
+               center or related sights are supported at this time.
+
 
 Example:
 
@@ -131,17 +139,21 @@ Command "count"
 The "count" command computes average feature density over a specified
 window size across the genome. Common usages include computing coverage
 for alignment files and counting hits in Chip-seq experiments. Supported
-file formats are .sam,  .bam,  .aligned,  .sorted.txt,  and .bed.
+file formats are .sam,  .bam,  .aligned,  .sorted.txt,  and .bed, and
+.bam.list files.  The latter format is a plain text file containing a list
+of alignment or bed files, one file per line.
 
 Usage:
 
   igvtools count [options] [inputFile] [outputFile] [genome]
 
-Required rguments:
+Required arguments:
 
   inputFile    The input file (see supported formats above).
 
-  outputFile   Binary output file.  Must end in ".tdf".
+  outputFile   Either a binary tdf file, a text wig file, or both.  The output file type is determined
+               by file extension, for example "output.tdf".  To output both formats supply two file names
+               separated by a commas,  for example  "outputBinary.tdf,outputText.wig".
 
   genome       A genome id or filename. See details below. Default is hg18.
 
