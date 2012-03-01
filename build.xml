@@ -149,13 +149,13 @@
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
-            <batchtest fork="yes" todir="${test.reports}" unless="filesetid">
+            <batchtest fork="yes" todir="${test.reports}" if="filesetpattern">
                 <fileset dir="${testtmp.dir}">
                     <include name="**/${filesetpattern}.class"/>
                     <exclude name="**/*$*.class"/>
                 </fileset>
             </batchtest>
-            <batchtest fork="yes" todir="${test.reports}">
+            <batchtest fork="yes" todir="${test.reports}" unless="filesetpattern">
                 <fileset refid="${filesetid}"/>
             </batchtest>
         </junit>
