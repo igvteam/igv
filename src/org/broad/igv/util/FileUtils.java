@@ -532,16 +532,23 @@ public class FileUtils {
         return extension;
     }
 
-    // TODO -- move
-    public static String getAbsolutePath(String path, String sessionPath) {
+    /**
+     * Construct an absolute path from the inputPath, based on the "parent" of the reference path.  In other
+     * words treat inputPath as a sibling of referencePath.
+     *
+     * @param inputPath
+     * @param referencePath
+     * @return
+     */
+    public static String getAbsolutePath(String inputPath, String referencePath) {
         String absolutePath;
-        if (isRemote(sessionPath)) {
-            int idx = sessionPath.lastIndexOf("/");
-            String basePath = sessionPath.substring(0, idx);
-            absolutePath = basePath + "/" + path;
+        if (isRemote(referencePath)) {
+            int idx = referencePath.lastIndexOf("/");
+            String basePath = referencePath.substring(0, idx);
+            absolutePath = basePath + "/" + inputPath;
         } else {
-            File parent = new File(sessionPath).getParentFile();
-            File file = new File(parent, path);
+            File parent = new File(referencePath).getParentFile();
+            File file = new File(parent, inputPath);
             absolutePath = file.getAbsolutePath();
         }
         return absolutePath;
