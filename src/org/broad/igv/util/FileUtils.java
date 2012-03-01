@@ -532,22 +532,37 @@ public class FileUtils {
     }
 
     /**
-     * Construct an absolute path from the inputPath, based on the "parent" of the reference path.  In other
-     * words treat inputPath as a sibling of referencePath.
+     * Returns an absolute path from the parent directory
+     * of {@code sessionPath} to the sub-element {@code path}.
+     * Safe to use with URLs.
+     * If {@code path} is an absolute path, it is returned unaltered.
+     * <br/>
+     * e.g.<br/>
+     * String absPath = FileUtils.getAbsolutePath("test/mysession.xml", "/Users/bob/data/otherdata.xml");
+     * System.out.println(absPath);<br/>
+     * >>>> /Users/bob/data/test/mysession.xml
      *
-     * @param inputPath
-     * @param referencePath
+     * @param path        Relative path element
+     * @param sessionPath Absolute path root
      * @return
      */
-    public static String getAbsolutePath(String inputPath, String referencePath) {
+    public static String getAbsolutePath(String path, String sessionPath) {
         String absolutePath;
-        if (isRemote(referencePath)) {
-            int idx = referencePath.lastIndexOf("/");
-            String basePath = referencePath.substring(0, idx);
-            absolutePath = basePath + "/" + inputPath;
+
+        if (isRemote(sessionPath)) {
+            if (isRemote(path)) {
+                return path;
+            }
+            int idx = sessionPath.lastIndexOf("/");
+            String basePath = sessionPath.substring(0, idx);
+            absolutePath = basePath + "/" + path;
         } else {
-            File parent = new File(referencePath).getParentFile();
-            File file = new File(parent, inputPath);
+            File inPath = new File(path);
+            if (inPath.isAbsolute()) {
+                return inPath.getAbsolutePath();
+            }
+            File parent = new File(sessionPath).getParentFile();
+            File file = new File(parent, path);
             absolutePath = file.getAbsolutePath();
         }
         return absolutePath;

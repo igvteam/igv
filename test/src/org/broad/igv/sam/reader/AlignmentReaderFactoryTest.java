@@ -8,13 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: jacob
@@ -36,15 +32,15 @@ public class AlignmentReaderFactoryTest {
     @Test
     public void testGetMergedReader() throws Exception {
         String relfiname = "HG00171.hg18.bam";
-        String path = TestUtils.DATA_DIR + "/out/temprel.bam.list";
+        String path = TestUtils.LARGE_DATA_DIR + "/temprel.bam.list";
         String[] relnames = IGVToolsTest.generateRepLargebamsList(path, relfiname, 3, false);
-        for(String s: relnames){
+        for (String s : relnames) {
             assertFalse((new File(s)).isAbsolute());
         }
-        
-        String apath = TestUtils.DATA_DIR + "/out/tempabs.bam.list";
+
+        String apath = TestUtils.LARGE_DATA_DIR + "/tempabs.bam.list";
         String[] absnames = IGVToolsTest.generateRepLargebamsList(apath, relfiname, 3, true);
-        for(String s: absnames){
+        for (String s : absnames) {
             assertTrue((new File(s)).isAbsolute());
         }
 
@@ -53,7 +49,7 @@ public class AlignmentReaderFactoryTest {
         Iterator<Alignment> iter = relreader.iterator();
         Iterator<Alignment> absiter = absreader.iterator();
 
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             Alignment relA = iter.next();
             Alignment absA = absiter.next();
             //Only check 1 field for speed, these are long strings so unlikely to be equal by accident
@@ -61,7 +57,7 @@ public class AlignmentReaderFactoryTest {
         }
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         String path = "http://www.example.com";
         File fi = new File(path);
         System.out.println(fi.isAbsolute());

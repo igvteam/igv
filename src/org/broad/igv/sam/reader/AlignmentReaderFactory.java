@@ -21,6 +21,7 @@ import net.sf.samtools.SAMFileReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -29,7 +30,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -130,6 +134,8 @@ public class AlignmentReaderFactory {
                     for (Map.Entry<String, String> entry : replacements.entrySet()) {
                         f = f.replace(entry.getKey(), entry.getValue());
                     }
+
+                    f = FileUtils.getAbsolutePath(f, listFile);
                     readers.add(AlignmentReaderFactory.getReader(f, requireIndex));
                 }
             }

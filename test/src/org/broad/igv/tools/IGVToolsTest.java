@@ -30,6 +30,7 @@ import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.tools.sort.SorterTest;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -313,16 +314,21 @@ public class IGVToolsTest {
         return generateRepLargebamsList(listPath, bamFiName, reps, false);
     }
 
-    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps, boolean makeAbsolute) throws IOException {
+    /*
+    Generate a bam.list file, with rep entries, all having the same content bamPath.
+     If makeAbsolute is true and bamPath not absolute, the listPath parent directory is prepended.
+     The file is saved to listPath
+     */
+    public static String[] generateRepLargebamsList(String listPath, String bamPath, int reps, boolean makeAbsolute) throws IOException {
 
         File listFile = new File(listPath);
         listFile.delete();
         listFile.deleteOnExit();
-        File f = new File(TestUtils.LARGE_DATA_DIR, bamFiName);
+        File f = new File(bamPath);
         String eachPath = null;
-        if(makeAbsolute && !f.isAbsolute()){
-            eachPath = f.getAbsolutePath();    
-        }else{
+        if (makeAbsolute && !f.isAbsolute()) {
+            eachPath = FileUtils.getAbsolutePath(bamPath, listPath);
+        } else {
             eachPath = f.getPath();
         }
         //We generate the file on each test, because largedata dir can change
@@ -339,9 +345,19 @@ public class IGVToolsTest {
         return largebams.toArray(new String[0]);
     }
 
+    /**
+     * Test counting from a BAM.list file. Note that if the paths
+     * in the bam.list are relative, they are interpreted as relative to
+     * the location of the bam.list file, rather than the working directory.
+     * <p/>
+     * If paths are entered on the command line (option to be deprecated shortly)
+     * via comma separated list, they are interpreted relative to the current working directory.
+     *
+     * @throws Exception
+     */
     @Test
     public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        String listPath = TestUtils.LARGE_DATA_DIR + "/2largebams.bam.list";
         String bamFiName = "HG00171.hg18.bam";
         String[] largebams = generateRepLargebamsList(listPath, bamFiName, 2);
 
@@ -349,9 +365,10 @@ public class IGVToolsTest {
         tstCountBamList(listPath);
 
         //Test comma-separated list
-        String listArg = largebams[0];
+        //Note that on the command line
+        String listArg = TestUtils.LARGE_DATA_DIR + "/" + largebams[0];
         for (int ss = 1; ss < largebams.length; ss++) {
-            listArg += "," + largebams[ss];
+            listArg += "," + TestUtils.LARGE_DATA_DIR + "/" + largebams[ss];
         }
         tstCountBamList(listArg);
 

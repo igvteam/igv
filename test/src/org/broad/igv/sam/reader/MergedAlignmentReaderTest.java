@@ -23,12 +23,14 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.tools.IGVToolsTest;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,8 +59,8 @@ public class MergedAlignmentReaderTest {
     public void testSimpleRead() throws Exception {
         //This test file is 2 lines of the same file.
         //Check that we get the same results twice
-        String file = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
-        IGVToolsTest.generateRepLargebamsList(file, "HG00171.hg18.bam", 2);
+        String file = TestUtils.LARGE_DATA_DIR + File.separator + "2largebams.bam.list";
+        String[] actfiles = IGVToolsTest.generateRepLargebamsList(file, "HG00171.hg18.bam", 2);
         int start = 151667156;
         int end = start + 10000;
         int num_combined = 0;
@@ -82,6 +84,7 @@ public class MergedAlignmentReaderTest {
 
         BufferedReader in = new BufferedReader(new FileReader(file));
         String singfile = in.readLine();
+        singfile = FileUtils.getAbsolutePath(singfile, file);
         AlignmentReader singReader = AlignmentReaderFactory.getReader(singfile, false);
         SAMFileHeader singHeader = singReader.getHeader();
 
