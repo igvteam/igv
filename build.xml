@@ -121,55 +121,67 @@
 
     <property name="test.reports" value="${basedir}/reports"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
-    <target name="alltests" depends="compile">
-        <fail message="Test failure detected, check test results." if="tests.failed"/>
 
-        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="tests.failed" maxmemory="512m">
+    <fileset dir="${testtmp.dir}" id="allfileset">
+        <include name="**/*.class"/>
+        <exclude name="**/*$*.class"/>
+    </fileset>
+
+    <fileset dir="${testtmp.dir}" id="uifileset">
+        <include name="**/IGVTest.class"/>
+        <include name="**/TrackLoaderTest.class"/>
+        <exclude name="**/*$*.class"/>
+    </fileset>
+
+    <!-- This looks a bit complicated but there is logic to it. We define this target
+     to be run by any other test runners, after they define an appropriate fileset.
+     We define files of tests to be run above (allfileset and uifileset), one
+     can also define their own by setting the filesetpattern property.
+     e.g.
+     >ant -Dfilesetpattern *BED* tests
+     would run any test with BED in the file name.
+     >ant -Dfilesetpattern IGVToolsTest tests
+     would simply run IGVToolsTest.
+     -->
+    <target name="actruntests" depends="compile">
+        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="tests.failed" maxmemory="750m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
-            <batchtest fork="yes" todir="${test.reports}">
+            <batchtest fork="yes" todir="${test.reports}" unless="filesetid">
                 <fileset dir="${testtmp.dir}">
-                    <include name="**/*.class"/>
+                    <include name="**/${filesetpattern}.class"/>
                     <exclude name="**/*$*.class"/>
                 </fileset>
             </batchtest>
+            <batchtest fork="yes" todir="${test.reports}">
+                <fileset refid="${filesetid}"/>
+            </batchtest>
         </junit>
 
+    </target>
+
+    <target name="makereports" depends="actruntests">
         <junitreport todir="${test.reports}">
             <fileset dir="${test.reports}">
                 <include name="TEST-*.xml"/>
             </fileset>
             <report todir="${test.reports}"/>
         </junitreport>
+        <fail message="Test failure detected, check test results." if="tests.failed"/>
+    </target>
+
+    <target name="tests" depends="compile">
+        <antcall target="makereports">
+            <param name="filesetid" value="allfileset"/>
+        </antcall>
     </target>
 
     <target name="uitests" depends="compile">
-        <fail message="Test failure detected, check test results." if="tests.failed"/>
-
-        <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
-            <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
-            <!--jvmarg value="-Djava.awt.headless=false"/-->
-            <classpath refid="test.classpath"/>
-            <formatter type="xml" usefile="true"/>
-            <batchtest fork="yes" todir="${test.reports}">
-                <fileset dir="${testtmp.dir}">
-                    <include name="**/IGVTest.class"/>
-                    <include name="**/TrackLoaderTest.class"/>
-                    <exclude name="**/*$*.class"/>
-                </fileset>
-            </batchtest>
-        </junit>
-
-        <junitreport todir="${test.reports}">
-            <fileset dir="${test.reports}">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report todir="${test.reports}"/>
-        </junitreport>
-
+        <antcall target="makereports">
+            <param name="filesetid" value="uifileset"/>
+        </antcall>
     </target>
-
 
 </project>
