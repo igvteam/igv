@@ -310,14 +310,25 @@ public class IGVToolsTest {
     }
 
     public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
+        return generateRepLargebamsList(listPath, bamFiName, reps, false);
+    }
+
+    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps, boolean makeAbsolute) throws IOException {
 
         File listFile = new File(listPath);
         listFile.delete();
         listFile.deleteOnExit();
+        File f = new File(TestUtils.LARGE_DATA_DIR, bamFiName);
+        String eachPath = null;
+        if(makeAbsolute && !f.isAbsolute()){
+            eachPath = f.getAbsolutePath();    
+        }else{
+            eachPath = f.getPath();
+        }
         //We generate the file on each test, because largedata dir can change
         List<String> largebams = new ArrayList<String>(reps);
         for (int ii = 0; ii < reps; ii++) {
-            largebams.add(TestUtils.LARGE_DATA_DIR + "/" + bamFiName);
+            largebams.add(eachPath);
         }
         FileWriter writer = new FileWriter(listFile);
         for (String s : largebams) {
