@@ -138,6 +138,8 @@
      We define files of tests to be run above (allfileset and uifileset), one
      can also define their own by setting the filesetpattern property.
      e.g.
+     >ant tests
+     runs all tests
      >ant -Dfilesetpattern *BED* tests
      would run any test with BED in the file name.
      >ant -Dfilesetpattern IGVToolsTest tests
@@ -172,13 +174,13 @@
         <fail message="Test failure detected, check test results." if="tests.failed"/>
     </target>
 
-    <target name="tests" depends="compile">
+    <target name="tests">
         <antcall target="makereports">
             <param name="filesetid" value="allfileset"/>
         </antcall>
     </target>
 
-    <target name="uitests" depends="compile">
+    <target name="uitests">
         <antcall target="makereports">
             <param name="filesetid" value="uifileset"/>
         </antcall>
