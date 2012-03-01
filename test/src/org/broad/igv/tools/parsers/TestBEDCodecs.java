@@ -18,9 +18,13 @@
 
 package org.broad.igv.tools.parsers;
 
+import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
@@ -36,6 +40,7 @@ import java.util.Iterator;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * User: jacob
@@ -92,6 +97,33 @@ public class TestBEDCodecs {
         tstUnigeneBed(bedFile, new BEDCodec());
 
         tstUnigeneBed(bedFile, new IGVBEDCodec());
+    }
+
+    @Test
+    public void testGffTags() throws Exception {
+        String bedFile = TestUtils.DATA_DIR + "/bed/gene.bed";
+        Genome genome = TestUtils.loadGenome();
+
+        FeatureCodec<Feature> codec1 = CodecFactory.getCodec(bedFile, genome);
+        assertTrue(codec1 instanceof IGVBEDCodec);
+        IGVBEDCodec codec = (IGVBEDCodec) codec1;
+
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
+        FeatureFileHeader header = (FeatureFileHeader) bfr.getHeader();
+        Assert.assertNotNull(header);
+        assertTrue(codec.isGffTags());
+
+        Iterator<BasicFeature> iter = bfr.iterator();
+        while (iter.hasNext()) {
+            BasicFeature feat = iter.next();
+            //Note: These are not in general equal, but they are for this data file
+            assertEquals(feat.getName(), feat.getIdentifier());
+            assertNotNull("No ID found for feature", feat.getIdentifier());
+            assertNotNull("No description found for feature", feat.getDescription());
+            assertNotNull("Feature not in FeatureDB", FeatureDB.getFeature(feat.getIdentifier()));
+        }
+
+
     }
 
     public void intervalTestFile(FeatureCodec codec) throws Exception {
@@ -177,16 +209,16 @@ public class TestBEDCodecs {
         assertTrue("Start out of range", feat.getStart() >= start);
         assertTrue("end out of range", feat.getStart() <= end);
     }
-    
-    
+
+
     @Test
-    public void testLength1Feature() throws Exception{
+    public void testLength1Feature() throws Exception {
         String bedFile = TestUtils.DATA_DIR + "/bed/snp_calls.bed";
         TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
         FeatureCodec codec = CodecFactory.getCodec(bedFile, null);
 
         AbstractFeatureReader<Feature> bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
-        for(Feature feat: bfr.iterator()){
+        for (Feature feat : bfr.iterator()) {
             BasicFeature f = (BasicFeature) feat;
             assertEquals(1, f.getLength());
         }

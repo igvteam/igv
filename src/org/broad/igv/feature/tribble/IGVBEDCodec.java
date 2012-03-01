@@ -41,8 +41,6 @@ public class IGVBEDCodec extends UCSCCodec {
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
-    boolean gffTags = false;
-    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     Genome genome;
 
 
@@ -56,6 +54,10 @@ public class IGVBEDCodec extends UCSCCodec {
 
     public void setGffTags(boolean gffTags) {
         this.gffTags = gffTags;
+    }
+
+    public boolean isGffTags() {
+        return this.gffTags;
     }
 
     public BasicFeature decode(String nextLine) {
@@ -258,8 +260,8 @@ public class IGVBEDCodec extends UCSCCodec {
                 String[] attrs = BR_PATTERN.split(feature.getDescription());
                 buffer.append("\"");
                 for (String att : attrs) {
-                    String [] kv = EQ_PATTERN.split(att,2);
-                    if(kv.length > 1) {
+                    String[] kv = EQ_PATTERN.split(att, 2);
+                    if (kv.length > 1) {
                         buffer.append(kv[0].trim());
                         buffer.append("=");
                         String value = kv[1].trim();

@@ -19,8 +19,8 @@
 package org.broad.igv.feature.tribble;
 
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.GFFParser;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
@@ -37,23 +37,25 @@ import java.io.IOException;
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
     protected String[] tokens = new String[50];
+
+    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;
+
     FeatureFileHeader header;
 
 
-    /** @deprecated should always be 0
-     * The startBase of the FILE. This can only be 0 or 1.
-     * If this value is 1, then we assume the file is 1-based, and inclusive of start and end
-     * If this value is 0, then we assume the file is 0-based, inclusive of start, exclusive of end
-     * So the start positions need to have 1 subtracted in the case of startBase == 1.
+    /**
+     * @deprecated should always be 0
+     *             The startBase of the FILE. This can only be 0 or 1.
+     *             If this value is 1, then we assume the file is 1-based, and inclusive of start and end
+     *             If this value is 0, then we assume the file is 0-based, inclusive of start, exclusive of end
+     *             So the start positions need to have 1 subtracted in the case of startBase == 1.
      */
     @Deprecated
     protected final int startOffsetValue = 0;
 
 
     /**
-     * Because the
-     *
      * @param reader
      * @return
      */
@@ -98,7 +100,7 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
             ParsingUtils.parseTrackLine(line, tp);
             header.setTrackProperties(tp);
             gffTags = tp.isGffTags();
-        } else if (line.startsWith("#gffTags") || line.startsWith("##gffTags")) {
+        } else if (line.toLowerCase().contains("#gfftags")) {
             gffTags = true;
         } else {
             return false;
