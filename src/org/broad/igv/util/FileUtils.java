@@ -34,7 +34,6 @@ import java.util.Map;
  * @author jrobinso
  */
 public class FileUtils {
-    final public static String separator = System.getProperties().getProperty("file.separator");
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public static StringBuffer buffer = new StringBuffer();
@@ -176,7 +175,7 @@ public class FileUtils {
         String path = "???";
         boolean isUsingRelativePath = true;
         boolean isMoreTargetPath = true;
-        String delimeter = separator.equals("\\") ? "\\\\" : separator;
+        String delimeter = File.separator.equals("\\") ? "\\\\" : File.separator;
         String path1 = baseFile.getAbsolutePath();
         String path2 = target.getAbsolutePath();
 
@@ -206,7 +205,7 @@ public class FileUtils {
                         isUsingRelativePath = false;
                         break;// use default absolute path
                     } else {
-                        path = "." + separator; // set a default path for same drive
+                        path = "." + File.separator; // set a default path for same drive
                     }
                     continue;
                 }
@@ -229,7 +228,7 @@ public class FileUtils {
                 }
             }
         } else {
-            path = "." + separator;
+            path = "." + File.separator;
         }
 
         if (isTargetAFile) {
@@ -265,12 +264,12 @@ public class FileUtils {
         buffer.delete(0, buffer.length());
         for (int j = 0; j < levelsBack; j++) {
             buffer.append("..");
-            buffer.append(separator);
+            buffer.append(File.separator);
         }
 
         for (int k = startingIndexForTarget; k < targetPath.length; k++) {
             buffer.append(targetPath[k]);
-            buffer.append(separator);
+            buffer.append(File.separator);
         }
         return buffer.toString();
     }
