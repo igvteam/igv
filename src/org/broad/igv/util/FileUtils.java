@@ -533,40 +533,38 @@ public class FileUtils {
 
     /**
      * Returns an absolute path from the parent directory
-     * of {@code sessionPath} to the sub-element {@code path}.
+     * of {@code referencePath} to the sub-element {@code inputPath}.
      * Safe to use with URLs.
-     * If {@code path} is an absolute path, it is returned unaltered.
+     * If {@code inputPath} is an absolute path, it is returned unaltered.
      * <br/>
      * e.g.<br/>
      * String absPath = FileUtils.getAbsolutePath("test/mysession.xml", "/Users/bob/data/otherdata.xml");
      * System.out.println(absPath);<br/>
      * >>>> /Users/bob/data/test/mysession.xml
      *
-     * @param path        Relative path element
-     * @param sessionPath Absolute path root
+     * @param inputPath     Relative path element
+     * @param referencePath Absolute path root
      * @return
      */
-    public static String getAbsolutePath(String path, String sessionPath) {
+    public static String getAbsolutePath(String inputPath, String referencePath) {
         String absolutePath;
 
-        if (isRemote(sessionPath)) {
-            if (isRemote(path)) {
-                return path;
+        if (isRemote(referencePath)) {
+            if (isRemote(inputPath)) {
+                return inputPath;
             }
-            int idx = sessionPath.lastIndexOf("/");
-            String basePath = sessionPath.substring(0, idx);
-            absolutePath = basePath + "/" + path;
+            int idx = referencePath.lastIndexOf("/");
+            String basePath = referencePath.substring(0, idx);
+            absolutePath = basePath + "/" + inputPath;
         } else {
-            File inPath = new File(path);
-            if (inPath.isAbsolute()) {
-                return inPath.getAbsolutePath();
+            File inFile = new File(inputPath);
+            if (inFile.isAbsolute()) {
+                return inFile.getAbsolutePath();
             }
-            File parent = new File(sessionPath).getParentFile();
-            File file = new File(parent, path);
+            File parent = new File(referencePath).getParentFile();
+            File file = new File(parent, inputPath);
             absolutePath = file.getAbsolutePath();
         }
         return absolutePath;
     }
 }
-
-
