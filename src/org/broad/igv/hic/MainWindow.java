@@ -553,8 +553,8 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
             zd = null;
-         //   load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
-            load("/broad/aidenlab/hic_files/Hi-C_HindIII_Human_August.hic");
+            load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
+          
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
