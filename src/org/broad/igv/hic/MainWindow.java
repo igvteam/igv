@@ -559,6 +559,19 @@ public class MainWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
+    private void loadFebActionPerformed(ActionEvent e) {
+        try {
+            observedColorScale.setMaxCount(20);
+            colorRangeSlider.setMaximum(2000);
+            colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setUpperValue(1500);
+            zd = null;
+            load("http://iwww.broadinstitute.org/igvdata/hic/HiSeqFeb/intra_all.hic");
+
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
 
 
     private void loadCoolAidActionPerformed(ActionEvent e) {
@@ -768,6 +781,7 @@ public class MainWindow extends JFrame {
         loadGM = new JMenuItem();
         load562 = new JMenuItem();
         loadHindIII = new JMenuItem();
+        loadFeb = new JMenuItem();
         loadCoolAid = new JMenuItem();
         loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
@@ -1127,6 +1141,15 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadHindIII);
 
+                //---- loadFeb ----
+                loadFeb.setText("HiSeq February Intra (human)");
+                loadFeb.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadFebActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadFeb);
+
                 //---- loadCoolAid ----
                 loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
                 loadCoolAid.addActionListener(new ActionListener() {
@@ -1203,6 +1226,7 @@ public class MainWindow extends JFrame {
     private JMenuItem loadGM;
     private JMenuItem load562;
     private JMenuItem loadHindIII;
+    private JMenuItem loadFeb;
     private JMenuItem loadCoolAid;
     private JMenuItem loadDmelDataset;
     private JMenuItem exit;
