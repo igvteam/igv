@@ -22,7 +22,7 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.util.*;
+import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableStream;
 import org.apache.log4j.Logger;
@@ -30,15 +30,18 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.igv.util.stream.SeekablePicardStream;
 import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -69,7 +72,7 @@ public class BAMHttpReader implements AlignmentReader {
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
             //SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
-            SeekableStream ss =getSeekableStream(url);
+            SeekableStream ss = getSeekableStream(url);
             reader = new SAMFileReader(ss, indexFile, false);
         } else {
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
@@ -163,14 +166,33 @@ public class BAMHttpReader implements AlignmentReader {
         return is;
     }
 
+    /**
+     * Delete temporary files which are older than timeLimit.
+     *
+     * @param timeLimit Minimum age to delete. If null, default is 1 day
+     * @throws IOException
+     */
+    void cleanTempDir(Long timeLimit) throws IOException {
+        if (timeLimit == null) {
+            timeLimit = oneDay;
+        }
+        File dir = Globals.getBamIndexCacheDirectory();
+        File[] files = dir.listFiles();
 
-    // TODO -- revisit caching scehme,  do something for ftp loads
+        long time = System.currentTimeMillis() - indexFile.lastModified();
+        for (File f : files) {
+            long age = time - f.lastModified();
+            if (age > timeLimit) {
+                f.delete();
+            }
+        }
+    }
 
+
+    // TODO -- revisit caching scheme,  do something for ftp loads
     File getIndexFile(URL url, String indexPath) throws IOException {
 
         String urlString = url.toString();
-
-        // Create a filename unique for this url;
         indexFile = getTmpIndexFile(urlString);
 
         // Crude staleness check -- if more than a day old discard
@@ -179,7 +201,7 @@ public class BAMHttpReader implements AlignmentReader {
             indexFile.delete();
         }
 
-        if (!indexFile.exists()) {
+        if (!indexFile.exists() || indexFile.length() < 1) {
             loadIndexFile(urlString, indexPath, indexFile);
             indexFile.deleteOnExit();
         }
@@ -188,13 +210,11 @@ public class BAMHttpReader implements AlignmentReader {
 
     }
 
-    private File getTmpIndexFile(String bamURL) {
+    private File getTmpIndexFile(String bamURL) throws IOException {
         File indexFile = indexFileCache.get(bamURL);
         if (indexFile == null) {
-            int tmp = bamURL.lastIndexOf("/");
-            String prefix = tmp > 0 ? bamURL.substring(tmp + 1) : "index_";
-            String indexName = prefix + System.currentTimeMillis() + ".bai";
-            indexFile = new File(Globals.getBamIndexCacheDirectory(), indexName);
+            indexFile = File.createTempFile("index_", ".bai", Globals.getBamIndexCacheDirectory());
+            indexFile.deleteOnExit();
             indexFileCache.put(bamURL, indexFile);
         }
         return indexFile;

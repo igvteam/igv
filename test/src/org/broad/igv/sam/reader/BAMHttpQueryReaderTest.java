@@ -31,6 +31,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -43,12 +44,10 @@ public class BAMHttpQueryReaderTest {
     //private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/test/index_test.bam";
     private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
 
-    AlignmentReader reader;
+    BAMHttpReader reader;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        //CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true));
-        //System.out.println("Index loaded");
         TestUtils.setUpHeadless();
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
     }
@@ -115,6 +114,31 @@ public class BAMHttpQueryReaderTest {
         iter.close();
 
         assertEquals(expected_count, counted);
+    }
+
+    @Test
+    public void testDeleteIndex() throws Exception {
+        File indexFile = reader.indexFile;
+
+        assertTrue(indexFile.exists());
+
+        CloseableIterator<Alignment> iter = reader.query("Y", 10000000, 10004000, false);
+        int max = 100;
+        int counted = 0;
+        while (iter.hasNext()) {
+            Alignment a = iter.next();
+            counted++;
+            assertNotNull(a);
+            if (counted > max) {
+                break;
+            }
+        }
+
+        //Not closing the iterator on purpose
+
+        assertTrue(indexFile.exists());
+
+        assertTrue(indexFile.canWrite());
     }
 
 }
