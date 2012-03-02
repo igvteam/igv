@@ -174,6 +174,7 @@ public class CachingQueryReaderTest {
         }
     }
 
+    @Ignore
     @Test
     public void testQueryLargeFile() throws Exception{
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
