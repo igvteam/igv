@@ -28,6 +28,9 @@ public class BisulfiteCounts {
 
     public void incrementCounts(Alignment baseAlignment) {
 
+        // Only works with block formats
+        if(baseAlignment.getAlignmentBlocks() == null) return;
+
         String chrname = genome.getChromosomeAlias(baseAlignment.getChr());
 
         boolean flipRead;

@@ -56,7 +56,7 @@ public class SpliceJunctionHelper {
     public void addAlignment(Alignment alignment) {
 
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-        if (blocks.length < 2) {
+        if (blocks == null || blocks.length < 2) {
             return;
         }
 

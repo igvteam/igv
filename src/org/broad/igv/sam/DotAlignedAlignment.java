@@ -39,6 +39,7 @@ public class DotAlignedAlignment implements Alignment {
     private int end;
     boolean negativeStrand;
 
+
     public DotAlignedAlignment(String chromosome, int start, int end, boolean isNegative, String name) {
         this.negativeStrand = isNegative;
         this.readName = name;

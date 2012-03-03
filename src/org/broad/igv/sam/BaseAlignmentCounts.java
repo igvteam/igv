@@ -42,8 +42,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         this.start = start;
         this.end = end;
 
-        // TODO -- experimental.  Needs to be done optional, and with the correct context.
-        if(!Globals.isHeadless()){
+        if(!Globals.isHeadless() && bisulfiteContext != null){
             bisulfiteCounts = new BisulfiteCounts(bisulfiteContext,IGV.getInstance().getGenomeManager().getCurrentGenome());
         }
 
