@@ -77,11 +77,13 @@ Command "toTDF"
 
 The "toTDF" command converts a sorted data input file to  a binary tiled
 data (.tdf) file. Input file formats supported  are .wig, .cn, .igv,
-and .gct, TCGA mage-tab files, and "list" files.  List files are text files
-containing a list of files in one of the supported formats, one file per line.
-When using a list file the format of the contained files must be specified explicitly
-with the "fileType" parameter.  List files must end with the extension ".list".
-File paths can be absolute or relative to the directory containing the list file.
+and .gct, TCGA mage-tab files, and "list" files.
+
+List files are text files containing a list of files in one of the supported formats,
+one file per line. When using a list file the format of the contained files must be
+specified explicitly with the "fileType" parameter.  List files must end with the
+extension ".list".  File paths can be absolute or relative to the directory containing
+the list file.
 
 Usage:
 
@@ -115,9 +117,9 @@ Options:
                   chr start end name
                where name is the probe name in the gct file.
 
-  --fileType   Optional parameter for specifying the file type for TCGA mage-tab and ".list" files.  Possible values
-               are mage-tab, .wig, .cn, .igv, and .gct.   Only mage-tab files downloaded from the TCGA data
-               center or related sights are supported at this time.
+  --fileType   Explicitly specify the file type.  This is a required parameter  for TCGA mage-tab and ".list" files.
+               Possible values are mage-tab, .wig, .cn, .igv, and .gct.   Only mage-tab files downloaded from the
+               TCGA data center or related sights are supported at this time.
 
 
 Example:
