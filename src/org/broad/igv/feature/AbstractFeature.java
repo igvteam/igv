@@ -111,7 +111,7 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
      * Return true if the feature is completely contained within the bounds of this
      * feature. amd is on the same strand..
      * <p/>
-      *
+     *
      * @param feature
      * @return
      */
@@ -209,7 +209,15 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         this.chromosome = chromosome;
     }
 
+    /**
+     * Get human readable locus string.
+     * It is assumed that this.start and this.end are 0-based
+     * and end-exclusive, and the returned string is 1-based
+     * and end-inclusive. So basically we just add 1 to the start.
+     *
+     * @return
+     */
     public String getLocusString() {
-        return getChr() + ":" + getStart() + "-" + getEnd();
+        return getChr() + ":" + (getStart() + 1) + "-" + getEnd();
     }
 }

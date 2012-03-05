@@ -27,12 +27,12 @@ import org.broad.igv.track.WindowFunction;
 /**
  * @author jrobinso
  */
-public interface LocusScore  extends org.broad.tribble.Feature {
+public interface LocusScore extends org.broad.tribble.Feature {
 
     //public int getStart();
 
-   // public int getEnd();
-    
+    // public int getEnd();
+
     public void setStart(int start);
 
     public void setEnd(int end);
@@ -44,6 +44,7 @@ public interface LocusScore  extends org.broad.tribble.Feature {
      * in so it can be used t annotate the value.  The LocusScore object itself
      * does not "know" from what window function it was derived
      *
+     * @param position       Zero-based genome position
      * @param windowFunction
      * @return
      */

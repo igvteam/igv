@@ -110,11 +110,7 @@ public class BasicFeature extends AbstractFeature {
 
 
     /**
-     * Return a string for popup text, and related uses.  The default just
-     * returns the feature name.  Its expected that this method will be
-     * overriden in subclasses.
-     *
-     * @position -- 1 based coordinates
+     * Defined in interface {@linkplain LocusScore}
      */
     public String getValueString(double position, WindowFunction ignored) {
         StringBuffer valueString = new StringBuffer();
@@ -139,7 +135,7 @@ public class BasicFeature extends AbstractFeature {
         valueString.append("<br>" + getLocusString());
 
         // Get exon number, if over an exon
-        int posZero = (int) position - 1;
+        int posZero = (int) position;
         if (this.exons != null) {
             for (Exon exon : exons) {
                 if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
