@@ -163,10 +163,7 @@
                 <include name="docs/*"/>
                 <exclude name="**/*hic*"/>
             </fileset>
-            <fileset dir="${basedir}">
-                <include name="scripts/*"/>
-                <exclude name="**/*hic*"/>
-            </fileset>
+            <fileset refid="scripts"/>
         </copy>
 
         <!-- Src and lib directory -->
