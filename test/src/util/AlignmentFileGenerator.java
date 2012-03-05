@@ -1,5 +1,7 @@
 package util;
 
+import org.junit.Ignore;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,6 +12,7 @@ import java.io.PrintWriter;
  * @author Jim Robinson
  * @date 3/2/12
  */
+@Ignore
 public class AlignmentFileGenerator {
 
     public static void main(String[] args) throws IOException {
@@ -28,10 +31,10 @@ public class AlignmentFileGenerator {
             int averageReadsPerPosition = averageDepth / readSize;
 
             int startPosition = 100; // arbitrary
-            for(int pos = startPosition; pos < startPosition + interval; pos++) {
+            for (int pos = startPosition; pos < startPosition + interval; pos++) {
 
                 int readCount = (int) (averageReadsPerPosition * 2 * Math.random());
-                while(readCount-- > 0) {
+                while (readCount-- > 0) {
                     pw.println(chr + "\t" + pos + "\t" + (pos + readSize) + "\t+");
                 }
 
