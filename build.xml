@@ -18,8 +18,8 @@
 
 <project name="IGV" default="all" basedir=".">
 
-    <!-- Properties-->
     <property name="jar.name" value="igv.jar"/>
+    <property name="main-class" value="org.broad.igv.ui.Main"/>
 
     <!-- Source and lib directories -->
     <property name="src.dir" value="${basedir}/src/"/>
@@ -33,12 +33,18 @@
     <property name="resource.dir" value="${tmp.dir}resources/"/>
 
     <!-- Distribution directory.  Binary distribution is placed here -->
-    <property name="jar.path" value="${tmp.dir}${jar.name}"/>
+    <property name="dist.dir" value="${basedir}/dist/"/>
+    <property name="jar.path" value="${dist.dir}${jar.name}"/>
+    <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
-    <!-- build specific properties.  -->
+    <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
     <property name="build-number" value="0"/>
     <property name="version" value="${build-number}"/>
     <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt"/>
+
+
+    <property name="scripts.dir" value="${basedir}/scripts"/>
+    <property name="docs.dir" value="${basedir}/docs"/>
 
     <!-- Create class path for manifest -->
     <path id="@jars">
@@ -50,18 +56,17 @@
     <!-- Clean all generated artifacts -->
     <target name="clean">
         <delete dir="${tmp.dir}"/>
-
         <delete dir="${testtmp.dir}"/>
         <delete dir="${test.reports}"/>
     </target>
 
 
     <target name="init" depends="clean">
-
         <mkdir dir="${tmp.dir}"/>
-
         <mkdir dir="${testtmp.dir}"/>
         <mkdir dir="${test.reports}"/>
+
+        <mkdir dir="${ant.project.name}-dist"/>
 
         <!-- Copy resource files to the tmp directory -->
         <copy todir="${tmp.dir}" overwrite="true">
@@ -73,13 +78,22 @@
             </fileset>
         </copy>
 
-        <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
-            <map from="${lib.dir}" to="lib/"/>
-        </pathconvert>
+        <!-- Unzip jars to the tmp directory -->
+        <unzip dest="${tmp.dir}">
+            <patternset>
+                <include name="**/*"/>
+                <exclude name="META-INF/**"/>
+            </patternset>
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+                <exclude name="**/batik-codec.jar"/>
+            </fileset>
+        </unzip>
 
         <tstamp>
             <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
         </tstamp>
+
         <echo message="Resource ${resource.dir}"/>
         <echo message="Version ${version}"/>
         <replace file="${resource.dir}about.properties" token="@VERSION" value="${version}"/>
@@ -90,24 +104,34 @@
 
     </target>
 
+    <!-- We compile IGV and the tests separately, because we only want
+    to include the main classes in the JAR and so it's easier to run
+    tests later.. -->
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" includeantruntime="true">
-            <classpath refid="@jars"/>
+        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
+            <classpath>
+                <pathelement path="${tmp.dir}"/>
+                <pathelement path="${lib.dir}goby-io.jar"/>
+            </classpath>
         </javac>
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true">
             <classpath refid="test.classpath"/>
         </javac>
     </target>
 
+    <!-- build the IGV jar -->
     <target name="build" depends="compile">
-        <jar destfile="${basedir}/${jar.name}" basedir="${tmp.dir}">
-
+        <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
+            <classfileset dir="${tmp.dir}">
+                <root classname="${main-class}"/>
+            </classfileset>
             <manifest>
-                <attribute name="Class-Path" value="${class-path}"/>
+                <attribute name="Class-Path" value="batik-codec.jar"/>
                 <attribute name="Built-By" value="${user.name}"/>
-                <attribute name="Main-Class" value="org.broad.igv.ui.Main"/>
+                <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
         </jar>
+        <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
     </target>
 
     <target name="all" depends="build, clean"/>

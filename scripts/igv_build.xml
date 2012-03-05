@@ -17,40 +17,14 @@
   -->
 
 <project name="IGV" default="build" basedir="../.">
+    <import file="../build.xml"/>
 
-    <!-- Properties-->
-    <property name="jar.name" value="igv.jar"/>
-
-    <property name="scripts.dir" value="${basedir}/scripts"/>
-    <property name="docs.dir" value="${basedir}/docs"/>
-
-    <property name="main-class" value="org.broad.igv.ui.Main"/>
     <property name="alias" value="Broad-alias"/>
     <property name="key-password" value="Broad-keypass"/>
     <property name="store-password" value="Broad-storepass"/>
 
-
-    <!-- Source and lib directories -->
-    <property name="src.dir" value="${basedir}/src/"/>
-    <property name="lib.dir" value="${basedir}/lib/"/>
-
-
-    <!-- Temp directory.  Sources are compiled here prior to archiving -->
-    <property name="tmp.dir" value="${basedir}/tmp/"/>
-    <property name="resource.dir" value="${tmp.dir}resources/"/>
-
-    <!-- Distribution directory.  Binary distribution is placed here -->
-    <property name="dist.dir" value="${basedir}/dist/"/>
-    <property name="jar.path" value="${dist.dir}${jar.name}"/>
-    <property name="dist.lib.dir" value="${dist.dir}lib/"/>
-
-    <!-- The deployment folder for the JWS distribution .It is expected that this property will be overridden -->
+    <!-- The deployment folder for the JWS distribution. It is expected that this property will be overridden -->
     <property name="deploy.dir" value="${basedir}/deploy/"/>
-
-    <!-- build specific properties. These are normally set by Hudson during the build process -->
-    <property name="build-number" value="0.0"/>
-    <property name="version" value="v0.0"/>
-    <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt"/>
 
     <!-- Src/binary archive file settings -->
     <property name="src.archive.name" value="IGVDistribution_${version}"/>
@@ -60,10 +34,7 @@
     <property name="bin.archive.name" value="IGV_${version}"/>
     <property name="bin.archive.zip" value="${bin.archive.name}.zip"/>
 
-
-    <target name="init" depends="clean">
-
-        <delete dir="${tmp.dir}"/>
+    <target name="init_old" depends="clean">
         <delete dir="${dist.dir}"/>
 
         <mkdir dir="${tmp.dir}"/>
@@ -107,33 +78,6 @@
 
     </target>
 
-
-    <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
-            <classpath>
-                <pathelement path="${tmp.dir}"/>
-                <pathelement path="${lib.dir}goby-io.jar"/>
-            </classpath>
-        </javac>
-    </target>
-
-
-    <!-- build the IGV jar -->
-    <target name="build" depends="compile">
-        <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
-            <classfileset dir="${tmp.dir}">
-                <root classname="${main-class}"/>
-            </classfileset>
-            <manifest>
-                <attribute name="Class-Path" value="batik-codec.jar"/>
-                <attribute name="Built-By" value="${user.name}"/>
-                <attribute name="Main-Class" value="${main-class}"/>
-            </manifest>
-        </jar>
-    </target>
-
-
-
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
@@ -147,44 +91,64 @@
         <antcall target="sign-jars"/>
     </target>
 
-    <!--Create binary archive -->
-    <target name="publishBin" depends="build">
+    <fileset id="scripts" dir="${scripts.dir}">
+        <include name="igv.sh"/>
+        <include name="igv.command"/>
+        <include name="igv.bat"/>
+    </fileset>
 
-        <!-- Clean -->
-        <delete dir="${tmp.dir}"/>
-        <mkdir dir="${tmp.dir}"/>
-        <mkdir dir="${tmp.dir}/${bin.archive.name}"/>
+    <!-- Deploy the application -->
+    <target name="deploy">
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="${dist.dir}">
+                <include name="lib/**"/>
+            </fileset>
+            <fileset file="${dist.dir}${jar.name}"/>
+            <fileset file="${dist.dir}batik-codec.jar"/>
+        </copy>
+    </target>
 
 
-        <copy todir="${tmp.dir}/${bin.archive.name}" file="${basedir}/dist/igv.jar"/>
-        <copy todir="${tmp.dir}/${bin.archive.name}" file="${basedir}/dist/batik-codec.jar"/>
+    <macrodef name="archive">
+        <attribute name="bin.dir"/>
+        <attribute name="zip.dest"/>
 
-        <!-- Base directory -->
-        <copy todir="${tmp.dir}/${bin.archive.name}">
+        <sequential>
+
+        <mkdir dir="@{bin.dir}"/>
+
+        <!-- Copy files to directory -->
+        <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
+        <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
+
+
+        <copy todir="@{bin.dir}">
             <fileset dir="${scripts.dir}/">
                 <include name="readme.txt"/>
-                <include name="igv.sh"/>
-                <include name="igv.command"/>
-                <include name="igv.bat"/>
             </fileset>
+            <fileset refid="scripts"/>
         </copy>
 
-        <delete file="${bin.archive.zip}"/>
-        <zip destfile="${bin.archive.zip}">
-            <zipfileset dir="${tmp.dir}" filemode="755">
+        <delete file="@{zip.dest}"/>
+        <zip destfile="@{zip.dest}">
+            <zipfileset dir="@{bin.dir}" filemode="755">
                 <include name="igv.sh"/>
                 <include name="igv.command"/>
                 <include name="igv.bat"/>
             </zipfileset>
-            <zipfileset dir="${tmp.dir}">
+            <zipfileset dir="@{bin.dir}">
                 <exclude name="igv.sh"/>
                 <exclude name="igv.command"/>
                 <exclude name="igv.bat"/>
             </zipfileset>
         </zip>
+        </sequential>
+    </macrodef>
 
+    <target name="publishBin" depends="build">
+    <!--Create binary archive -->
+        <archive bin.dir="${tmp.dir}/${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
     </target>
-
     <!--Create a src/binary archive -->
     <target name="publish" depends="build">
 
@@ -210,8 +174,7 @@
         </copy>
 
 
-        <!-- Src and lib directory
-        <mkdir dir="${tmp.dir}/${src.archive.name}/src" />  -->
+        <!-- Src and lib directory -->
         <copy todir="${tmp.dir}/${src.archive.name}/src">
             <fileset dir="${src.dir}"/>
         </copy>
@@ -243,22 +206,6 @@
         </zip>
     </target>
 
-    <!-- Deploy the application -->
-    <target name="deploy">
-        <copy todir="${deploy.dir}" overwrite="true">
-            <fileset dir="${dist.dir}">
-                <include name="lib/**"/>
-            </fileset>
-            <fileset file="${dist.dir}${jar.name}"/>
-            <fileset file="${dist.dir}batik-codec.jar"/>
-        </copy>
-    </target>
-
-    <!-- Clean all generated artifacts -->
-    <target name="clean">
-        <delete dir="${tmp.dir}"/>
-        <delete dir="${dist.dir}"/>
-    </target>
 
     <target name="all" depends="clean, init, build-jws, deploy, publish, publishBin"/>
 

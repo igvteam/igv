@@ -69,9 +69,6 @@ import java.util.*;
  */
 public class IgvTools {
 
-    static String version = "@VERSION";
-    static String build = "@BUILD";
-
     static final String CMD_TILE = "tile";
     static final String CMD_TOTDF = "totdf";
     static final String CMD_COUNT = "count";
@@ -85,11 +82,7 @@ public class IgvTools {
     //static Map<String, String> commandList = new HashMap<String, String>(9);
 
     public static String getVersionString() {
-        String out = "Version: " + version;
-        if (true || "test".equals(version)) {
-            out += " Build: " + build;
-        }
-        return out;
+        return Globals.applicationString();
     }
 
     //TODO extract this from readme
