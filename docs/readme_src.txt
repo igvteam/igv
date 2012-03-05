@@ -12,6 +12,7 @@ Prerequisites:
 
 Java J2SE 6.0 or greater (http://java.sun.com/javase/download)
 Ant 1.7.0 or greater (http://ant.apache.org/)
+Optional: BCEL (http://commons.apache.org/bcel/)
 
 
 1.  Download and unzip the source distribution file.  
@@ -22,6 +23,28 @@ Ant 1.7.0 or greater (http://ant.apache.org/)
 
 The above script will build "igv.jar" in the root directory of the distribution.
 
+Possible problems:
+
+Some ant distributions do not come with the optional library needed
+needed to use BCEL. BCEL is used only in certain build tasks, and is
+not needed for the default build. It is used when publishing the jar,
+to remove unnecessary files for minimal file size.
+
+When this library is absent, you may get an error
+message like this:
+Unable to load dependency analyzer:
+org.apache.tools.ant.util.depend.bcel.FullAnalyzer
+
+To solve this issue, download the latest version of ant from Apache, and make sure
+it includes ant-apache-bcel.jar.
+
+========================
+TESTING IGV
+========================
+
+Prerequisites:
+In addition to those needed for building IGV, additional test
+data must be downloaded. See test/README.txt for details and instructions.
 
 ===========================
 RUNNING
@@ -46,4 +69,5 @@ to start IGV with 1 gigabyte of memory  change the value
 to
 
    -Xmx1000m
+
 
