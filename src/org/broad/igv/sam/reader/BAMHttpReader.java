@@ -55,7 +55,7 @@ public class BAMHttpReader implements AlignmentReader {
     static Logger log = Logger.getLogger(BAMHttpReader.class);
 
     // Length of day in milliseconds
-    static final long oneDay = 24 * 60 * 60 * 1000;
+    public static final long oneDay = 24 * 60 * 60 * 1000;
 
     static Hashtable<String, File> indexFileCache = new Hashtable<String, File>();
 
@@ -172,14 +172,14 @@ public class BAMHttpReader implements AlignmentReader {
      * @param timeLimit Minimum age to delete. If null, default is 1 day
      * @throws IOException
      */
-    void cleanTempDir(Long timeLimit) throws IOException {
+    public static void cleanTempDir(Long timeLimit) throws IOException {
         if (timeLimit == null) {
             timeLimit = oneDay;
         }
         File dir = Globals.getBamIndexCacheDirectory();
         File[] files = dir.listFiles();
 
-        long time = System.currentTimeMillis() - indexFile.lastModified();
+        long time = System.currentTimeMillis();
         for (File f : files) {
             long age = time - f.lastModified();
             if (age > timeLimit) {

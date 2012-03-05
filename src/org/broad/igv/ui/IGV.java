@@ -44,6 +44,7 @@ import org.broad.igv.lists.Preloader;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -283,6 +284,13 @@ public class IGV {
             applicationBounds = new Rectangle(0, 0, width, height);
         }
         mainFrame.setBounds(applicationBounds);
+
+        //Delete temp files
+        try {
+            BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
+        } catch (IOException e) {
+            //Do nothing, we'll get them next time
+        }
 
     }
 
