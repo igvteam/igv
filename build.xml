@@ -66,6 +66,7 @@
         <mkdir dir="${tmp.dir}"/>
         <mkdir dir="${testtmp.dir}"/>
         <mkdir dir="${test.reports}"/>
+        <mkdir dir="${dist.dir}"/>
 
         <!-- Copy resource files to the tmp directory -->
         <copy todir="${tmp.dir}" overwrite="true">
