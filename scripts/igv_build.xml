@@ -86,11 +86,6 @@
                  storepass="${store-password}" keystore="${keystore}"/>
     </target>
 
-
-    <target name="build-jws" depends="build">
-        <antcall target="sign-jars"/>
-    </target>
-
     <fileset id="scripts" dir="${scripts.dir}">
         <include name="igv.sh"/>
         <include name="igv.command"/>
@@ -112,6 +107,7 @@
     <macrodef name="archive">
         <attribute name="bin.dir"/>
         <attribute name="zip.dest"/>
+        <attribute name="update" default="no"/>
 
         <sequential>
 
@@ -121,58 +117,56 @@
         <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
         <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
 
-
-        <copy todir="@{bin.dir}">
-            <fileset dir="${scripts.dir}/">
-                <include name="readme.txt"/>
-            </fileset>
-            <fileset refid="scripts"/>
-        </copy>
-
-        <delete file="@{zip.dest}"/>
-        <zip destfile="@{zip.dest}">
+        <zip destfile="@{zip.dest}" update="@{update}">
             <zipfileset dir="@{bin.dir}" filemode="755">
-                <include name="igv.sh"/>
-                <include name="igv.command"/>
-                <include name="igv.bat"/>
+                <include name="**/igv.sh"/>
+                <include name="**/igv.command"/>
+                <include name="**/igv.bat"/>
             </zipfileset>
             <zipfileset dir="@{bin.dir}">
-                <exclude name="igv.sh"/>
-                <exclude name="igv.command"/>
-                <exclude name="igv.bat"/>
+                <exclude name="**/igv.sh"/>
+                <exclude name="**/igv.command"/>
+                <exclude name="**/igv.bat"/>
             </zipfileset>
         </zip>
         </sequential>
     </macrodef>
 
-    <target name="publishBin" depends="build">
     <!--Create binary archive -->
+    <target name="publishBin" depends="build">
+        <delete file="${bin.archive.zip}"/>
+
+        <mkdir dir="@{bin.dir}"/>
+        <copy todir="@{bin.dir}">
+            <fileset dir="${docs.dir}/">
+                <include name="readme.txt"/>
+            </fileset>
+            <fileset refid="scripts"/>
+        </copy>
+
         <archive bin.dir="${tmp.dir}/${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
     </target>
+
+
     <!--Create a src/binary archive -->
     <target name="publish" depends="build">
 
         <!-- Clean -->
         <delete dir="${tmp.dir}"/>
-        <mkdir dir="${tmp.dir}"/>
-        <mkdir dir="${tmp.dir}/${src.archive.name}"/>
+        <delete file="${src.archive.zip}"/>
 
-        <!-- Base directory -->
+        <!-- Copy scripts and docs -->
         <copy todir="${tmp.dir}/${src.archive.name}">
-             <fileset dir="${basedir}/">
-                <include name="build.xml"/>
+            <fileset file="build.xml"/>
+            <fileset dir="${basedir}">
+                <include name="docs/*"/>
+                <exclude name="**/*hic*"/>
             </fileset>
-            <fileset dir="${scripts.dir}/">
-                <include name="readme_src.txt"/>
-                <include name="igv.sh"/>
-                <include name="igv.command"/>
-                <include name="igv.bat"/>
-            </fileset>
-            <fileset dir="${docs.dir}/">
-                <include name="*.txt"/>
+            <fileset dir="${basedir}">
+                <include name="scripts/*"/>
+                <exclude name="**/*hic*"/>
             </fileset>
         </copy>
-
 
         <!-- Src and lib directory -->
         <copy todir="${tmp.dir}/${src.archive.name}/src">
@@ -191,21 +185,15 @@
             <fileset dir="${lib.dir}"/>
         </copy>
 
-        <delete file="${src.archive.zip}"/>
-        <zip destfile="${src.archive.zip}">
-            <zipfileset dir="${tmp.dir}" filemode="755">
-                <include name="igv.sh"/>
-                <include name="igv.command"/>
-                <include name="igv.bat"/>
-            </zipfileset>
-            <zipfileset dir="${tmp.dir}">
-                <exclude name="igv.sh"/>
-                <exclude name="igv.command"/>
-                <exclude name="igv.bat"/>
-            </zipfileset>
-        </zip>
+
+        <archive bin.dir="${tmp.dir}/${src.archive.name}" zip.dest="${src.archive.zip}"/>
     </target>
 
+
+
+    <target name="build-jws" depends="build">
+        <antcall target="sign-jars"/>
+    </target>
 
     <target name="all" depends="clean, init, build-jws, deploy, publish, publishBin"/>
 

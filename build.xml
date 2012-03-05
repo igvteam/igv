@@ -33,7 +33,7 @@
     <property name="resource.dir" value="${tmp.dir}resources/"/>
 
     <!-- Distribution directory.  Binary distribution is placed here -->
-    <property name="dist.dir" value="${basedir}/dist/"/>
+    <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
@@ -58,6 +58,7 @@
         <delete dir="${tmp.dir}"/>
         <delete dir="${testtmp.dir}"/>
         <delete dir="${test.reports}"/>
+        <delete dir="${dist.dir}"/>
     </target>
 
 
@@ -65,8 +66,6 @@
         <mkdir dir="${tmp.dir}"/>
         <mkdir dir="${testtmp.dir}"/>
         <mkdir dir="${test.reports}"/>
-
-        <mkdir dir="${ant.project.name}-dist"/>
 
         <!-- Copy resource files to the tmp directory -->
         <copy todir="${tmp.dir}" overwrite="true">
