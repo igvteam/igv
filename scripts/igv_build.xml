@@ -103,7 +103,7 @@
         </copy>
     </target>
 
-
+    <!--Macro for creating zipped archive, used by bin and src/bin-->
     <macrodef name="archive">
         <attribute name="bin.dir"/>
         <attribute name="zip.dest"/>
@@ -135,9 +135,10 @@
     <!--Create binary archive -->
     <target name="publishBin" depends="build">
         <delete file="${bin.archive.zip}"/>
+        <delete dir="${tmp.dir}"/>
 
-        <mkdir dir="@{bin.dir}"/>
-        <copy todir="@{bin.dir}">
+        <mkdir dir="${tmp.dir}/${bin.archive.name}"/>
+        <copy todir="${tmp.dir}/${bin.archive.name}">
             <fileset dir="${docs.dir}/">
                 <include name="readme.txt"/>
             </fileset>
@@ -186,7 +187,7 @@
         </copy>
 
 
-        <archive bin.dir="${tmp.dir}/${src.archive.name}" zip.dest="${src.archive.zip}"/>
+        <archive bin.dir="${tmp.dir}/${src.archive.name}" zip.dest="${src.archive.zip}" update="yes"/>
     </target>
 
 
@@ -196,5 +197,6 @@
     </target>
 
     <target name="all" depends="clean, init, build-jws, deploy, publish, publishBin"/>
+    <target name="publishBoth" depends="publish, publishBin" />
 
 </project>
