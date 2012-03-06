@@ -43,6 +43,19 @@ public interface AlignmentReader {
 
     CloseableIterator<Alignment> iterator();
 
+    /**
+     * Query alignments over a given range. Be careful about start/end,
+     * SAMTools uses 1-based, but IGV uses 0-based.
+     * This function requires hasIndex() == true.
+     *
+     *
+     * @param sequence
+     * @param start 0-based start location
+     * @param end 0-based, exclusive-end coordinate
+     * @param contained
+     * @return
+     * @throws IOException
+     */
     CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) throws IOException;
 
     boolean hasIndex();

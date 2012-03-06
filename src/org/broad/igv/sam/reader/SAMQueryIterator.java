@@ -14,6 +14,9 @@ class SAMQueryIterator implements CloseableIterator<Alignment> {
     int start;
     int end;
     boolean contained;
+    /**
+     * SAMRecord is 1-based, SamAlignment is 0-based
+     */
     SAMRecord currentRecord;
     CloseableIterator<SAMRecord> wrappedIterator;
 
@@ -23,6 +26,14 @@ class SAMQueryIterator implements CloseableIterator<Alignment> {
         currentRecord = wrappedIterator.next();
     }
 
+    /**
+     *
+     * @param sequence
+     * @param start 0-based, inclusive-start
+     * @param end 0-based, exclusive-end
+     * @param contained
+     * @param wrappedIterator
+     */
     public SAMQueryIterator(String sequence, int start, int end, boolean contained,
                             CloseableIterator<SAMRecord> wrappedIterator) {
         this.chr = sequence;
@@ -38,8 +49,10 @@ class SAMQueryIterator implements CloseableIterator<Alignment> {
             currentRecord = wrappedIterator.next();
             if (!currentRecord.getReferenceName().equals(chr)) {
                 break;
-            } else if ((contained && currentRecord.getAlignmentStart() >= start) ||
-                    (!contained && currentRecord.getAlignmentEnd() >= start)) {
+            //currentRecord is 1-based, end-inclusive.
+            //start/end are 0-based, end-exclusive
+            } else if ((contained && currentRecord.getAlignmentStart()-1 >= start) ||
+                    (!contained && currentRecord.getAlignmentEnd()-1 >= start)) {
                 break;
             }
         }
