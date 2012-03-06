@@ -235,7 +235,7 @@ public class CachingQueryReader {
     /**
      * Load alignments for the list of tiles
      *
-     * @param chr Only tiles on this chromosome will be loaded
+     * @param chr     Only tiles on this chromosome will be loaded
      * @param tiles
      * @param peStats
      * @return true if successful,  false if canceled.
@@ -457,7 +457,6 @@ public class CachingQueryReader {
         Iterator<Alignment> currentSamIterator;
         int end;
         Alignment nextRecord;
-        Alignment lastRecord;
         int start;
         List<Alignment> alignments;
 
@@ -496,17 +495,17 @@ public class CachingQueryReader {
         private void advanceToNextRecord() {
             advance();
 
-            while ((nextRecord != null) && (nextRecord.getEnd() < start)) {
+            //We use exclusive end
+            while ((nextRecord != null) && (nextRecord.getEnd() <= start)) {
                 advance();
             }
         }
 
         private void advance() {
             if (currentSamIterator.hasNext()) {
-                lastRecord = nextRecord;
                 nextRecord = currentSamIterator.next();
 
-                if (nextRecord.getStart() > end) {
+                if (nextRecord.getStart() >= end) {
                     nextRecord = null;
                 }
             } else {
@@ -615,7 +614,7 @@ public class CachingQueryReader {
          */
         public void addRecord(Alignment record) {
 
-            if (record.getStart() > e1) {
+            if (record.getStart() >= e1) {
                 emptyBucket();
                 e1 = record.getEnd();
                 ignoredCount = 0;
@@ -653,7 +652,7 @@ public class CachingQueryReader {
                 int aEnd = alignment.getEnd();
                 if ((aStart >= start) && (aStart < end)) {
                     containedRecords.add(alignment);
-                } else if ((aEnd >= start) && (aStart < start)) {
+                } else if ((aEnd > start) && (aStart < start)) {
                     overlappingRecords.add(alignment);
                 }
             }
@@ -777,7 +776,7 @@ public class CachingQueryReader {
         }
     }
 
-    private static class AlignmentSorter implements Comparator<Alignment>{
+    private static class AlignmentSorter implements Comparator<Alignment> {
         public int compare(Alignment alignment, Alignment alignment1) {
             return alignment.getStart() - alignment1.getStart();
         }

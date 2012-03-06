@@ -22,8 +22,11 @@
  */
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.*;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
+import net.sf.samtools.SAMRecordIterator;
+import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
@@ -93,7 +96,7 @@ public class BAMFileReader implements AlignmentReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
         SAMRecordIterator query = null;
         try {
-            query = reader.query(sequence, start, end, contained);
+            query = reader.query(sequence, start + 1, end, contained);
             return new WrappedIterator(query);
         } catch (ArrayIndexOutOfBoundsException e) {
             log.error("Error querying BAM file ", e);

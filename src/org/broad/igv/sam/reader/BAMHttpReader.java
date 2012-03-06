@@ -135,7 +135,7 @@ public class BAMHttpReader implements AlignmentReader {
                 SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
                 reader = new SAMFileReader(ss, indexFile, false);
             }
-            CloseableIterator<SAMRecord> iter = reader.query(sequence, start, end, contained);
+            CloseableIterator<SAMRecord> iter = reader.query(sequence, start + 1, end, contained);
             return new WrappedIterator(iter);
         } catch (IOException e) {
             log.error("Error opening SAM reader", e);
