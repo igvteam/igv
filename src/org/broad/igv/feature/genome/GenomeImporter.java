@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream;
  * @author jrobinso
  */
 public class GenomeImporter {
-    public static final int MAX_CONTIGS = 1000000;
+    public static final int MAX_CONTIGS = 1500000;
 
     static Logger log = Logger.getLogger(GenomeImporter.class);
     public static final Pattern SEQUENCE_NAME_SPLITTER = Pattern.compile("\\s+");
