@@ -97,9 +97,9 @@ public class BAMHttpQueryReaderTest {
     @Test
     public void testQuery() throws Exception {
 
-        checkNumber("Y", 10000000, 10004000, 6890);
-        checkNumber("Y", 100000000, 100040000, 0);
-        checkNumber("1", 1, 100000000, 0);
+        checkNumber("Y", 10000000 - 1, 10004000, 6890);
+        checkNumber("Y", 100000000 - 1, 100040000, 0);
+        checkNumber("1", 1 - 1, 100000000, 0);
 
     }
 

@@ -82,7 +82,6 @@ public class CoverageCounter {
 
     /**
      * Output strand data separately by second-in-pair
-     *
      */
     static final int STRANDS_BY_SECOND_IN_PAIR = 0x04;
 
@@ -204,7 +203,7 @@ public class CoverageCounter {
         firstInPair = (countFlags & STRANDS_BY_FIRST_IN_PAIR) > 0;
         secondInPair = (countFlags & STRANDS_BY_SECOND_IN_PAIR) > 0;
         outputSeparate |= firstInPair || secondInPair;
-        if(firstInPair && secondInPair){
+        if (firstInPair && secondInPair) {
             throw new IllegalArgumentException("Can't set both first and second in pair");
         }
         outputBases = (countFlags & BASES) > 0;
@@ -253,7 +252,7 @@ public class CoverageCounter {
                 iter = reader.iterator();
             } else {
                 reader = getReader(alignmentFile, true);
-                iter = reader.query(interval.getChr(), interval.getStart(), interval.getEnd(), false);
+                iter = reader.query(interval.getChr(), interval.getStart() - 1, interval.getEnd(), false);
             }
 
             while (iter != null && iter.hasNext()) {
@@ -265,9 +264,9 @@ public class CoverageCounter {
                     Strand strand;
                     if (firstInPair) {
                         strand = alignment.getFirstOfPairStrand();
-                    }else if (secondInPair){
+                    } else if (secondInPair) {
                         strand = alignment.getSecondOfPairStrand();
-                    }else {
+                    } else {
                         strand = alignment.getReadStrand();
                     }
                     if (strand.equals(Strand.NONE)) {
