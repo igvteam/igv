@@ -128,6 +128,22 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return this.removeAllVertices(rejected);
     }
 
+    public boolean filterNodesRange(final String key, final float min, final float max) {
+        Predicate<Node> pred = new Predicate<Node>() {
+            @Override
+            public boolean evaluate(Node object) {
+                String sval = getNodeKeyData(object, key);
+                if (sval != null) {
+                    float fval = Float.parseFloat(sval);
+                    return fval >= min && fval <= max;
+                }
+                return false;
+            }
+        };
+
+        return this.filterNodes(pred);
+    }
+
     public boolean filterEdges(Predicate predicate) {
         Set<Node> rejected = new HashSet<Node>(this.edgeSet().size());
         for (Node e : this.edgeSet()) {
@@ -139,12 +155,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     }
 
     public boolean pruneGraph() {
-        Predicate unconnected = new Predicate<Node>() {
+        Predicate min_connections = new Predicate<Node>() {
             public boolean evaluate(Node object) {
-                return edgesOf(object).size() > 0;
+                return edgesOf(object).size() >= 1;
             }
         };
-        return this.filterNodes(unconnected);
+        return this.filterNodes(min_connections);
     }
 
     public static GeneNetwork getFromCBIO(Iterable<String> geneList) {
@@ -293,7 +309,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
      * Gets the value of a child node with "key" attribute
      * equal to {@code key} parameter.
      * Equal to getNodeAttrValue(node, NetworkAnnotator.KEY, key);
-     * {@see getNodeAttrValue}
+     * See getNodeAttrValue
      *
      * @param node Node to search
      * @param key  Key to search for
