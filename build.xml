@@ -39,8 +39,9 @@
 
     <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
     <property name="build-number" value="0"/>
-    <property name="version" value="${build-number}"/>
-    <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt"/>
+    <property name="version" value="user"/>
+    <!--Note: $$ translates to $, because $ is a special character-->
+    <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$$$_dataServerRegistry.txt"/>
 
 
     <property name="scripts.dir" value="${basedir}/scripts"/>
@@ -71,7 +72,7 @@
     </condition-->
 
     <!-- Unzip jars to the tmp directory -->
-    <target name="prepare-bcel" if="use.bcel">
+    <target name="prepare" if="use.bcel">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -82,16 +83,7 @@
                 <exclude name="**/batik-codec.jar"/>
             </fileset>
         </unzip>
-        <property name="class-path" value="batic-codec.jar"/>
     </target>
-
-    <target name="prepare-nobcel" unless="use.bcel">
-        <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
-            <map from="${lib.dir}" to="lib/"/>
-        </pathconvert>
-    </target>
-
-    <target name="prepare" depends="prepare-bcel, prepare-nobcel"/>
 
     <target name="init" depends="clean">
         <mkdir dir="${tmp.dir}"/>
@@ -166,14 +158,23 @@
 
     <target name="build-all" depends="compile" unless="use.bcel" description="Build the IGV JAR, without using bcel">
         <fileset dir="${tmp.dir}" id="files"/>
+
+        <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
+            <map from="${lib.dir}" to="lib/"/>
+        </pathconvert>
+
         <build includedFileset="files"/>
     </target>
 
     <target name="build-small" depends="compile" if="use.bcel"
             description="Build the IGV JAR using BCEL to take only required classes">
+
         <classfileset dir="${tmp.dir}" id="files">
             <root classname="${main-class}"/>
         </classfileset>
+
+        <property name="class-path" value="batic-codec.jar"/>
+
         <build includedFileset="files"/>
     </target>
 
