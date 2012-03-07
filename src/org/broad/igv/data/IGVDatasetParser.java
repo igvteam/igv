@@ -568,6 +568,7 @@ public class IGVDatasetParser {
 
     private void parseColumnLine(String tmp) {
         String[] tokens = tmp.split("\\s+");
+        String neg_colnum = "Error parsing column line: " + tmp + "<br>Column numbers must be > 0";
         if (tokens.length > 1) {
             for (int i = 1; i < tokens.length; i++) {
                 String[] kv = tokens[i].split("=");
@@ -575,14 +576,14 @@ public class IGVDatasetParser {
                     if (kv[0].toLowerCase().equals("chr")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage(neg_colnum);
                         } else {
                             chrColumn = c - 1;
                         }
                     } else if (kv[0].toLowerCase().equals("start")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage(neg_colnum);
                         } else {
                             startColumn = c - 1;
                         }
@@ -591,7 +592,7 @@ public class IGVDatasetParser {
                     } else if (kv[0].toLowerCase().equals("end")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage(neg_colnum);
                         } else {
                             endColumn = c - 1;
                             hasEndLocations = true;
@@ -601,7 +602,7 @@ public class IGVDatasetParser {
                     } else if (kv[0].toLowerCase().equals("probe")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage(neg_colnum);
                         } else {
                             probeColumn = c - 1;
                         }
@@ -612,7 +613,7 @@ public class IGVDatasetParser {
                         String[] se = kv[1].split("-");
                         int c = Integer.parseInt(se[0]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage(neg_colnum);
                         } else {
                             this.firstDataColumn = c - 1;
                         }
@@ -620,7 +621,7 @@ public class IGVDatasetParser {
 
                             c = Integer.parseInt(se[1]);
                             if (c < 1) {
-                                MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
+                                MessageUtils.showMessage(neg_colnum);
                             } else {
                                 this.lastDataColumn = c - 1;
                             }
