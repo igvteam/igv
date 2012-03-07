@@ -33,7 +33,7 @@
     <property name="resource.dir" value="${tmp.dir}resources/"/>
 
     <!-- Distribution directory.  Binary distribution is placed here -->
-    <property name="dist.dir" value="${basedir}"/>
+    <property name="dist.dir" value="${basedir}/"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
@@ -60,8 +60,18 @@
         <delete dir="${test.reports}"/>
     </target>
 
+
+    <!--We could use this to check for availability, and use BCEL by default.
+        Going to leave it up to the user though -->
+    <!--condition property="usebcel">
+        <and>
+            <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
+            <not><isset property="nobcel"/></not>
+        </and>
+    </condition-->
+
     <!-- Unzip jars to the tmp directory -->
-    <target name="unziplibs" if="usebcel">
+    <target name="prepare-bcel" if="usebcel">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -72,15 +82,16 @@
                 <exclude name="**/batik-codec.jar"/>
             </fileset>
         </unzip>
+        <property name="class-path" value="batic-codec.jar"/>
     </target>
 
-    <target name="rewritelibpath" unless="usebcel">
+    <target name="prepare-nobcel" unless="usebcel">
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
             <map from="${lib.dir}" to="lib/"/>
         </pathconvert>
     </target>
 
-    <target name="prepare-libs" depends="unziplibs, rewritelibpath"/>
+    <target name="prepare" depends="prepare-bcel, prepare-nobcel"/>
 
     <target name="init" depends="clean">
         <mkdir dir="${tmp.dir}"/>
@@ -98,15 +109,7 @@
             </fileset>
         </copy>
 
-        <!--We could use this to check for availability, and use BCEL by default.
-        Going to leave it up to the user though -->
-        <!--condition property="usebcel">
-            <and>
-                <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
-                <not><isset property="nobcel"/></not>
-            </and>
-        </condition-->
-        <antcall target="prepare-libs"/>
+        <antcall target="prepare"/>
 
         <tstamp>
             <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
@@ -135,10 +138,7 @@
     tests later.. -->
     <target name="compile" depends="init" description="Compile main source files to temp directory">
         <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
-            <classpath>
-                <pathelement path="${tmp.dir}"/>
-                <pathelement path="${lib.dir}goby-io.jar"/>
-            </classpath>
+            <classpath refid="@jars"/>
         </javac>
     </target>
 
@@ -148,26 +148,36 @@
         </javac>
     </target>
 
-    <fileset dir="${tmp.dir}" id="requiredClasses"/>
-    <target name="determineInclude" if="usebcel" description="Determine which classes to include.
-    If usbcel property is set, this uses BCEL to determine the minimum set of required classes.">
-        <classfileset dir="${tmp.dir}" id="requiredClasses">
-            <root classname="${main-class}"/>
-        </classfileset>
+    <macrodef name="build">
+        <attribute name="includedFileset"/>
+
+        <sequential>
+            <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
+                <fileset refid="@{includedFileset}"/>
+                <manifest>
+                    <attribute name="Class-Path" value="${class-path}"/>
+                    <attribute name="Built-By" value="${user.name}"/>
+                    <attribute name="Main-Class" value="${main-class}"/>
+                </manifest>
+            </jar>
+            <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
+        </sequential>
+    </macrodef>
+
+    <target name="build-all" depends="compile" unless="usebcel" description="Build the IGV JAR, without using bcel">
+        <fileset dir="${tmp.dir}" id="files"/>
+        <build includedFileset="files"/>
     </target>
 
-    <target name="build" depends="compile, determineInclude"
-            description="Build the IGV JAR">
-        <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
-            <fileset refid="requiredClasses"/>
-            <manifest>
-                <attribute name="Class-Path" value="batik-codec.jar"/>
-                <attribute name="Built-By" value="${user.name}"/>
-                <attribute name="Main-Class" value="${main-class}"/>
-            </manifest>
-        </jar>
-        <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
+    <target name="build-small" depends="compile" if="usebcel"
+            description="Build the IGV JAR using BCEL to take only required classes">
+        <classfileset dir="${tmp.dir}" id="files">
+            <root classname="${main-class}"/>
+        </classfileset>
+        <build includedFileset="files"/>
     </target>
+
+    <target name="build" depends="build-small,build-all"/>
 
     <target name="all" depends="build, clean"/>
 
