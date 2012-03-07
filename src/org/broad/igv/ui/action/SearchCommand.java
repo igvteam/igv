@@ -535,6 +535,7 @@ public class SearchCommand implements Command {
                 int center = (start + end) / 2;
                 int widen = 20;
                 start = center - widen;
+                start = Math.max(0, start);
                 end = center + widen + 1;
             }
 
