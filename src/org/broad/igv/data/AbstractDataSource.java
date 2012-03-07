@@ -261,18 +261,19 @@ public abstract class AbstractDataSource implements DataSource {
                 // Loop through and bin scores for this interval.
                 for (int i = 0; i < size; i++) {
 
+                    int true_end = ends == null ? starts[i] + 1 : ends[i];
+
+                    float v = values[i] * normalizationFactor;
                     if (starts[i] >= endLocation) {
                         break;  // We're beyond the end of the requested interval
+                    } else if (true_end <= startLocation | Float.isNaN(v)) {
+                        //Not yet to interval, or not a number
+                        continue;
                     }
 
                     // Bound feature at interval, other "piece" will be in another tile.
                     int s = Math.max(startLocation, starts[i]);
-                    int e = ends == null ? s + 1 : Math.min(endLocation, ends[i]);
-                    float v = values[i] * normalizationFactor;
-
-                    if (e < startLocation || Float.isNaN(v)) {
-                        continue;    // Not yet to interval, or not a number
-                    }
+                    int e = Math.min(endLocation, true_end);
 
                     String probeName = features == null ? null : features[i];
 

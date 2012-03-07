@@ -19,7 +19,10 @@
 package org.broad.igv.data;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,12 +44,11 @@ public class AbstractDataSourceTest {
 
     @Before
     public void setUp() {
-// Add your code here
+        TestUtils.setUpHeadless();
     }
 
     @After
     public void tearDown() {
-// Add your code here
     }
 
     /**
@@ -101,6 +103,33 @@ public class AbstractDataSourceTest {
         }
         double mean = sum / totPoints;
         assertEquals(10.0, mean, 1.0e-2);
+    }
+
+    @Test
+    public void testGetSummaryScoresForSNPs() throws Exception {
+
+        ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "/cn/multi_snp.cn");
+        Genome genome = TestUtils.loadGenome();
+        IGVDataset ds = new IGVDataset(locator, genome, null);
+        DatasetDataSource dataSource = new DatasetDataSource("Sample1", ds, genome);
+        String chr = "chr10";
+
+        dataSource.cacheSummaryTiles = false;
+        int zreq = 22;
+        int half_width = 20;
+        int[] starts = {72644150, 72698871, 72729621, 89614266, 89614367, 89614406, 89614478};
+        for (int start : starts) {
+            int end = start + 1 + half_width;
+            start -= half_width;
+            List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, start, end, zreq);
+            assertEquals(1, scores.size());
+        }
+        int start = starts[0] - 100;
+        int end = starts[starts.length - 1] + 100;
+        List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, start, end, 22);
+        //The last few get combined into 1 tile
+        assertEquals(4, scores.size());
+
     }
 
 
