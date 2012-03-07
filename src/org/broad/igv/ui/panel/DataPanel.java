@@ -33,13 +33,18 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.*;
+import org.broad.igv.ui.AbstractDataPanelTool;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -387,7 +392,6 @@ public class DataPanel extends JComponent implements Paintable {
     public void updateTooltipText(int x, int y) {
 
         double position = frame.getChromosomePosition(x);
-        //double displayLocation = location + 1;
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();

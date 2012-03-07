@@ -504,7 +504,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        Alignment feature = getAlignmentAt(position + 1, y, frame);
+        Alignment feature = getAlignmentAt(position, y, frame);
         if (feature == null) {
             return null;
         }
@@ -596,8 +596,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private void selectAlignment(MouseEvent e, ReferenceFrame frame) {
         double location = frame.getChromosomePosition(e.getX());
-        double displayLocation = location + 1;
-        Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), frame);
+        Alignment alignment = this.getAlignmentAt(location, e.getY(), frame);
         if (alignment != null) {
             if (selectedReadNames.containsKey(alignment.getReadName())) {
                 selectedReadNames.remove(alignment.getReadName());
@@ -1275,8 +1274,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 item.setEnabled(false);
             } else {
                 final double location = frame.getChromosomePosition(me.getX());
-                double displayLocation = location + 1;
-                final Alignment alignment = getAlignmentAt(displayLocation, me.getY(), frame);
+                final Alignment alignment = getAlignmentAt(location, me.getY(), frame);
 
                 // Change track height by attribute
                 item.addActionListener(new ActionListener() {
@@ -1317,9 +1315,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 item.setEnabled(false);
             } else {
                 double location = frame.getChromosomePosition(e.getX());
-
-                double displayLocation = location + 1;
-                final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), frame);
+                final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
                         gotoMate(te, alignment);
@@ -1343,8 +1339,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 item.setEnabled(false);
             } else {
                 double location = frame.getChromosomePosition(e.getX());
-                double displayLocation = location + 1;
-                final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), frame);
+                final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
 
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
@@ -1413,7 +1408,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     int maxLevels = dataManager.getMaxLevels();
                     String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
                     //Cancel button return null
-                    if(val == null){
+                    if (val == null) {
                         return;
                     }
                     try {

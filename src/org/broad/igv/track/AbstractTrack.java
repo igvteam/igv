@@ -21,11 +21,9 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.*;
-import org.broad.igv.session.RendererFactory;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -471,19 +469,9 @@ public abstract class AbstractTrack implements Track {
         return (def == null) ? defaultRendererClass : def;
     }
 
-    // Assumes features are sorted by start position
-
-    protected Feature getFeatureAt(double position, int buffer, List<? extends LocusScore> features) {
-
-        return FeatureUtils.getFeatureAt(position, buffer, features);
-    }
-
-
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return new ArrayList();
-
     }
-
 
     public boolean handleDataClick(TrackClickEvent e) {
         return false;

@@ -19,14 +19,20 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.renderer.*;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
@@ -517,8 +523,7 @@ public class FeatureTrack extends AbstractTrack {
         final ReferenceFrame referenceFrame = te.getFrame();
         if (referenceFrame != null) {
             double location = referenceFrame.getChromosomePosition(e.getX());
-            double displayLocation = location + 1;
-            Feature f = getFeatureAt(referenceFrame.getChrName(), displayLocation, e.getY(), referenceFrame);
+            Feature f = getFeatureAt(referenceFrame.getChrName(), location, e.getY(), referenceFrame);
             return f;
         } else {
             return null;

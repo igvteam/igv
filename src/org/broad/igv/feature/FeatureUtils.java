@@ -104,14 +104,13 @@ public class FeatureUtils {
     /**
      * Return a feature from the supplied list at the given position.
      *
-     * @param position
-     * @param buffer
+     * @param position 0-based genomic position to which to search for feature
+     * @param buffer   search region. The first feature which contains the start position, (expanded by buffer, inclusive)
+     *                 will be accepted.
      * @param features
      * @return
      */
     public static Feature getFeatureAt(double position, int buffer, List<? extends Feature> features) {
-
-        position--;
 
         int startIdx = 0;
         int endIdx = features.size();
