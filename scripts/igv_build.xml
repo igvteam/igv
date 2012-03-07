@@ -23,6 +23,10 @@
     <property name="key-password" value="Broad-keypass"/>
     <property name="store-password" value="Broad-storepass"/>
 
+    <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
+    <property name="jar.path" value="${dist.dir}${jar.name}"/>
+    <property name="dist.lib.dir" value="${dist.dir}lib/"/>
+
     <!-- The deployment folder for the JWS distribution. It is expected that this property will be overridden -->
     <property name="deploy.dir" value="${basedir}/deploy/"/>
 
@@ -33,50 +37,6 @@
 
     <property name="bin.archive.name" value="IGV_${version}"/>
     <property name="bin.archive.zip" value="${bin.archive.name}.zip"/>
-
-    <target name="init_old" depends="clean">
-        <delete dir="${dist.dir}"/>
-
-        <mkdir dir="${tmp.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-
-        <!-- Copy resource files to the tmp directory -->
-        <copy todir="${tmp.dir}" overwrite="true">
-            <fileset dir="${src.dir}">
-                <exclude name="**/*.form"/>
-                <exclude name="**/*.java"/>
-                <exclude name="**/*.svn"/>
-                <exclude name="**/manifest.mf"/>
-            </fileset>
-        </copy>
-
-        <!-- Unzip jars to the tmp directory -->
-        <unzip dest="${tmp.dir}">
-            <patternset>
-                <include name="**/*"/>
-                <exclude name="META-INF/**"/>
-            </patternset>
-            <fileset dir="${lib.dir}">
-                <include name="**/*.jar"/>
-                <exclude name="**/batik-codec.jar"/>
-            </fileset>
-        </unzip>
-
-        <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
-
-        <tstamp>
-            <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
-        </tstamp>
-
-        <echo message="Resource ${resource.dir}"/>
-        <echo message="Version ${version}"/>
-        <replace file="${resource.dir}about.properties" token="@VERSION" value="${version}"/>
-        <replace file="${resource.dir}about.properties" token="@BUILD" value="${build-number}"/>
-        <replace file="${resource.dir}about.properties" token="@TIMESTAMP" value="${timestamp}"/>
-        <replace file="${resource.dir}about.properties" token="@DEFAULT_MASTER_RESOURCE_URL"
-                 value="${data-server-url}"/>
-
-    </target>
 
     <!-- Sign all jars if a keystore is defined -->
     <target name="sign-jars" if="keystore">

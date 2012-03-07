@@ -33,7 +33,7 @@
     <property name="resource.dir" value="${tmp.dir}resources/"/>
 
     <!-- Distribution directory.  Binary distribution is placed here -->
-    <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
+    <property name="dist.dir" value="${basedir}"/>
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
@@ -58,9 +58,29 @@
         <delete dir="${tmp.dir}"/>
         <delete dir="${testtmp.dir}"/>
         <delete dir="${test.reports}"/>
-        <delete dir="${dist.dir}"/>
     </target>
 
+    <!-- Unzip jars to the tmp directory -->
+    <target name="unziplibs" if="usebcel">
+        <unzip dest="${tmp.dir}">
+            <patternset>
+                <include name="**/*"/>
+                <exclude name="META-INF/**"/>
+            </patternset>
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+                <exclude name="**/batik-codec.jar"/>
+            </fileset>
+        </unzip>
+    </target>
+
+    <target name="rewritelibpath" unless="usebcel">
+        <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
+            <map from="${lib.dir}" to="lib/"/>
+        </pathconvert>
+    </target>
+
+    <target name="prepare-libs" depends="unziplibs, rewritelibpath"/>
 
     <target name="init" depends="clean">
         <mkdir dir="${tmp.dir}"/>
@@ -78,17 +98,15 @@
             </fileset>
         </copy>
 
-        <!-- Unzip jars to the tmp directory -->
-        <unzip dest="${tmp.dir}">
-            <patternset>
-                <include name="**/*"/>
-                <exclude name="META-INF/**"/>
-            </patternset>
-            <fileset dir="${lib.dir}">
-                <include name="**/*.jar"/>
-                <exclude name="**/batik-codec.jar"/>
-            </fileset>
-        </unzip>
+        <!--We could use this to check for availability, and use BCEL by default.
+        Going to leave it up to the user though -->
+        <!--condition property="usebcel">
+            <and>
+                <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
+                <not><isset property="nobcel"/></not>
+            </and>
+        </condition-->
+        <antcall target="prepare-libs"/>
 
         <tstamp>
             <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
@@ -102,29 +120,46 @@
         <replace file="${resource.dir}about.properties" token="@DEFAULT_MASTER_RESOURCE_URL"
                  value="${data-server-url}"/>
 
+        <condition property="compile.tests">
+            <and>
+                <not>
+                    <isset property="notests"/>
+                </not>
+                <available file="${testsrc.dir}" type="dir"/>
+            </and>
+        </condition>
     </target>
 
     <!-- We compile IGV and the tests separately, because we only want
     to include the main classes in the JAR and so it's easier to run
     tests later.. -->
-    <target name="compile" depends="init">
+    <target name="compile" depends="init" description="Compile main source files to temp directory">
         <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
             <classpath>
                 <pathelement path="${tmp.dir}"/>
                 <pathelement path="${lib.dir}goby-io.jar"/>
             </classpath>
         </javac>
+    </target>
+
+    <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true">
             <classpath refid="test.classpath"/>
         </javac>
     </target>
 
-    <!-- build the IGV jar -->
-    <target name="build" depends="compile">
+    <fileset dir="${tmp.dir}" id="requiredClasses"/>
+    <target name="determineInclude" if="usebcel" description="Determine which classes to include.
+    If usbcel property is set, this uses BCEL to determine the minimum set of required classes.">
+        <classfileset dir="${tmp.dir}" id="requiredClasses">
+            <root classname="${main-class}"/>
+        </classfileset>
+    </target>
+
+    <target name="build" depends="compile, determineInclude"
+            description="Build the IGV JAR">
         <jar destfile="${jar.path}" basedir="${tmp.dir}" compress="true" duplicate="preserve">
-            <classfileset dir="${tmp.dir}">
-                <root classname="${main-class}"/>
-            </classfileset>
+            <fileset refid="requiredClasses"/>
             <manifest>
                 <attribute name="Class-Path" value="batik-codec.jar"/>
                 <attribute name="Built-By" value="${user.name}"/>
@@ -169,7 +204,7 @@
      >ant -Dfilesetpattern IGVToolsTest tests
      would simply run IGVToolsTest.
      -->
-    <target name="actruntests" depends="compile">
+    <target name="actruntests" depends="compile, compileTests">
         <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="tests.failed" maxmemory="750m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
