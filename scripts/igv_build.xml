@@ -17,15 +17,19 @@
   -->
 
 <project name="IGV" default="build" basedir="../.">
+
+    <property name="jar.name" value="igv.jar"/>
+    <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
+    <property name="jar.path" value="${dist.dir}${jar.name}"/>
+    <property name="dist.lib.dir" value="${dist.dir}lib/"/>
+
+    <property name="use.bcel" value="true"/>
+
     <import file="../build.xml"/>
 
     <property name="alias" value="Broad-alias"/>
     <property name="key-password" value="Broad-keypass"/>
     <property name="store-password" value="Broad-storepass"/>
-
-    <property name="dist.dir" value="${basedir}/${ant.project.name}-dist/"/>
-    <property name="jar.path" value="${dist.dir}${jar.name}"/>
-    <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
     <!-- The deployment folder for the JWS distribution. It is expected that this property will be overridden -->
     <property name="deploy.dir" value="${basedir}/deploy/"/>
@@ -71,24 +75,24 @@
 
         <sequential>
 
-        <mkdir dir="@{bin.dir}"/>
+            <mkdir dir="@{bin.dir}"/>
 
-        <!-- Copy files to directory -->
-        <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
-        <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
+            <!-- Copy files to directory -->
+            <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
+            <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
 
-        <zip destfile="@{zip.dest}" update="@{update}">
-            <zipfileset dir="@{bin.dir}" filemode="755">
-                <include name="**/igv.sh"/>
-                <include name="**/igv.command"/>
-                <include name="**/igv.bat"/>
-            </zipfileset>
-            <zipfileset dir="@{bin.dir}">
-                <exclude name="**/igv.sh"/>
-                <exclude name="**/igv.command"/>
-                <exclude name="**/igv.bat"/>
-            </zipfileset>
-        </zip>
+            <zip destfile="@{zip.dest}" update="@{update}">
+                <zipfileset dir="@{bin.dir}" filemode="755">
+                    <include name="**/igv.sh"/>
+                    <include name="**/igv.command"/>
+                    <include name="**/igv.bat"/>
+                </zipfileset>
+                <zipfileset dir="@{bin.dir}">
+                    <exclude name="**/igv.sh"/>
+                    <exclude name="**/igv.command"/>
+                    <exclude name="**/igv.bat"/>
+                </zipfileset>
+            </zip>
         </sequential>
     </macrodef>
 
@@ -121,6 +125,9 @@
             <fileset file="build.xml"/>
             <fileset dir="${basedir}">
                 <include name="docs/*"/>
+                <!--include name="test/src/**/*"/>
+                <include name="test/data/**/*"/>
+                <include name="test/lib/**/*"/-->
                 <exclude name="**/*hic*"/>
             </fileset>
             <fileset refid="scripts"/>
@@ -148,12 +155,11 @@
     </target>
 
 
-
     <target name="build-jws" depends="build">
         <antcall target="sign-jars"/>
     </target>
 
     <target name="all" depends="clean, init, build-jws, deploy, publish, publishBin"/>
-    <target name="publishBoth" depends="publish, publishBin" />
+    <target name="publishBoth" depends="publish, publishBin"/>
 
 </project>

@@ -63,7 +63,7 @@
 
     <!--We could use this to check for availability, and use BCEL by default.
         Going to leave it up to the user though -->
-    <!--condition property="usebcel">
+    <!--condition property="use.bcel">
         <and>
             <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
             <not><isset property="nobcel"/></not>
@@ -71,7 +71,7 @@
     </condition-->
 
     <!-- Unzip jars to the tmp directory -->
-    <target name="prepare-bcel" if="usebcel">
+    <target name="prepare-bcel" if="use.bcel">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -85,7 +85,7 @@
         <property name="class-path" value="batic-codec.jar"/>
     </target>
 
-    <target name="prepare-nobcel" unless="usebcel">
+    <target name="prepare-nobcel" unless="use.bcel">
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
             <map from="${lib.dir}" to="lib/"/>
         </pathconvert>
@@ -164,12 +164,12 @@
         </sequential>
     </macrodef>
 
-    <target name="build-all" depends="compile" unless="usebcel" description="Build the IGV JAR, without using bcel">
+    <target name="build-all" depends="compile" unless="use.bcel" description="Build the IGV JAR, without using bcel">
         <fileset dir="${tmp.dir}" id="files"/>
         <build includedFileset="files"/>
     </target>
 
-    <target name="build-small" depends="compile" if="usebcel"
+    <target name="build-small" depends="compile" if="use.bcel"
             description="Build the IGV JAR using BCEL to take only required classes">
         <classfileset dir="${tmp.dir}" id="files">
             <root classname="${main-class}"/>
