@@ -28,7 +28,6 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
@@ -170,7 +169,7 @@ public class SearchCommand implements Command {
 
         if (results.size() == 1) {
             result = results.get(0);
-            if (result.type != ResultType.ERROR && FrameManager.isGeneListMode()) {
+            if (result.type != ResultType.ERROR) {//FrameManager.isGeneListMode()) {
                 IGV.getInstance().getSession().setCurrentGeneList(null);
                 IGV.getInstance().resetFrames();
             }

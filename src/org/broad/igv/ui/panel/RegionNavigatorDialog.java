@@ -18,8 +18,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import javax.swing.border.*;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
@@ -27,15 +25,22 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
 
 /**
  * @author Damon May
@@ -354,16 +359,17 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                     if (selectedChrs.size() > 1)
                         return;
 
-                    if (checkBoxZoomWhenNav.isSelected()) {
-                        // Option (1), zoom and center on group of selected regions, with an interval equal to
-                        // 20% of the length of the end regions on either side for context (dhmay reduced from 100%)
-                        int start = firstStartRegion.getStart() - (int) (0.2 * firstStartRegion.getLength());
-                        int end = lastEndRegion.getEnd() + (int) (0.2 * lastEndRegion.getLength());
-                        FrameManager.getDefaultFrame().jumpTo(selectedChrs.iterator().next(), start, end);
-                    } else {
-                        // Option (2), center on the FIRST selected region without changing resolution
-                        FrameManager.getDefaultFrame().centerOnLocation(firstStartRegion.getCenter());
-                    }
+
+//                    if (checkBoxZoomWhenNav.isSelected()) {
+//                        // Option (1), zoom and center on group of selected regions, with an interval equal to
+//                        // 20% of the length of the end regions on either side for context (dhmay reduced from 100%)
+//                        int start = firstStartRegion.getStart() - (int) (0.2 * firstStartRegion.getLength());
+//                        int end = lastEndRegion.getEnd() + (int) (0.2 * lastEndRegion.getLength());
+//                        FrameManager.getDefaultFrame().jumpTo(selectedChrs.iterator().next(), start, end);
+//                    } else {
+//                        // Option (2), center on the FIRST selected region without changing resolution
+//                        FrameManager.getDefaultFrame().centerOnLocation(firstStartRegion.getCenter());
+//                    }
 
                 }
             }
@@ -457,23 +463,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                        new Object[][] {
-                            {null, null, null, null},
-                        },
-                        new String[] {
-                            "Chr", "Start", "End", "Description"
-                        }
+                            new Object[][]{
+                                    {null, null, null, null},
+                            },
+                            new String[]{
+                                    "Chr", "Start", "End", "Description"
+                            }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[] {
-                            String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[]{
+                                String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[] {
-                            false, true, true, true
+                        boolean[] columnEditable = new boolean[]{
+                                false, true, true, true
                         };
+
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
+
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -660,14 +668,23 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             int[] selectedRows = regionTable.getSelectedRows();
             if (selectedRows != null && selectedRows.length > 0) {
                 List<RegionOfInterest> selectedRegions = getSelectedRegions(selectedRows);
-                // Create an "on-the-fly" gene list
-                // TODO -- this is ineffecient (converting regions -> strings then back again)
-                List<String> loci = new ArrayList<String>(selectedRegions.size());
-                for(RegionOfInterest roi : selectedRegions) {
-                    loci.add(roi.getLocusString());
+
+                if (selectedRegions.size() > 1) {
+                    // Create an "on-the-fly" gene list
+                    // TODO -- this is ineffecient (converting regions -> strings then back again)
+                    List<String> loci = new ArrayList<String>(selectedRegions.size());
+                    for (RegionOfInterest roi : selectedRegions) {
+                        loci.add(roi.getLocusString());
+                    }
+                    GeneList geneList = new GeneList("Regions of Interest", loci, false);
+                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                } else {
+                    //TODO This is all a hack. Setting a geneList with only 1 element
+                    //makes the system behave oddly.
+                    RegionOfInterest roi = selectedRegions.get(0);
+                    IGV.getInstance().getSession().setCurrentGeneList(null);
+                    FrameManager.getDefaultFrame().jumpTo(roi.getChr(), roi.getStart(), roi.getEnd());
                 }
-                GeneList geneList = new GeneList("Regions of Interest", loci, false);
-                IGV.getInstance().getSession().setCurrentGeneList(geneList);
                 IGV.getInstance().resetFrames();
 
             }
