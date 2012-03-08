@@ -130,7 +130,7 @@ public class SearchCommand implements Command {
      *         List<SearchResult> describing the results of the search. Will never
      *         be null, field type will equal ResultType.ERROR if something went wrong.
      */
-    List<SearchResult> runSearch(String searchString) {
+    public List<SearchResult> runSearch(String searchString) {
 
         List<SearchResult> results = new ArrayList<SearchResult>();
 
@@ -546,7 +546,7 @@ public class SearchCommand implements Command {
 
     }
 
-    enum ResultType {
+    public enum ResultType {
         FEATURE,
         FEATURE_MUT_AA,
         FEATURE_MUT_NT,
@@ -640,11 +640,26 @@ public class SearchCommand implements Command {
             }
         }
 
+        public ResultType getType() {
+            return type;
+        }
+
+        public String getChr() {
+            return chr;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public int getEnd() {
+            return end;
+        }
     }
 
     /**
      * Get a list of search results from the provided objects,
-     * which must be loci strings or NamedFeature objects.
+     * which must be NamedFeature objects.
      *
      * @param objects
      * @return

@@ -26,6 +26,7 @@ import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
@@ -127,6 +128,40 @@ public class FrameManager {
         return getLocus(name, flankingRegion);
     }
 
+    /**
+     * This will actually result in a double call when used from search box,
+     * because that calls to here as well. Not inifinite, won't overflow, just
+     * a waste of time.
+     *
+     * @param searchString
+     * @param flankingRegion
+     * @return
+     */
+    public static Locus getLocusNew(String searchString, int flankingRegion) {
+        SearchCommand cmd = new SearchCommand(getDefaultFrame(), searchString);
+        List<SearchCommand.SearchResult> results = cmd.runSearch(searchString);
+        Locus locus = null;
+        for (SearchCommand.SearchResult result : results) {
+            if (result.getType() != SearchCommand.ResultType.ERROR) {
+                locus = new Locus(
+                        result.getChr(),
+                        result.getStart() - flankingRegion,
+                        result.getEnd() + flankingRegion);
+                //We just take the first result
+                break;
+            }
+        }
+        return locus;
+    }
+
+
+    /**
+     * TODO This duplicates functionality in SearchCommand. Should merge these
+     *
+     * @param searchString
+     * @param flankingRegion
+     * @return
+     */
     public static Locus getLocus(String searchString, int flankingRegion) {
 
         Locus locus = null;
@@ -142,12 +177,14 @@ public class FrameManager {
             if (chr != null) {
                 return locus;
             } else {
+                locus = null;
                 if (IGV.hasInstance()) {
                     Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                     if (genome != null) {
                         Chromosome chromsome = genome.getChromosome(searchString);
-                        locus = new Locus(chromsome.getName(), 0, chromsome.getLength());
-
+                        if (chromsome != null) {
+                            locus = new Locus(chromsome.getName(), 0, chromsome.getLength());
+                        }
                     }
                 }
             }
