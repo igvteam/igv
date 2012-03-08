@@ -788,7 +788,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         locationPanel.add(chromosomeComboBox, JideBoxLayout.FIX);
         locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
-        searchTextField = new SearchTextField();
+        searchTextField = new JTextField();
         searchTextField.setToolTipText("Enter a gene of locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
         searchTextField.setMaximumSize(new java.awt.Dimension(250, 15));
         searchTextField.setMinimumSize(new java.awt.Dimension(100, 28));
@@ -1086,23 +1086,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         } else {
             IGV.getInstance().endROI();
         }
-    }
-
-    static class SearchTextField extends javax.swing.JTextField {
-
-        /**
-         * Method description
-         *
-         * @param arg0
-         * @param arg1
-         * @param arg2
-         * @param arg3
-         */
-        @Override
-        public void reshape(int arg0, int arg1, int arg2, int arg3) {
-            super.reshape(arg0, arg1, arg2, getPreferredSize().height);
-        }
-
     }
 
     private class SearchHints extends ListDataIntelliHints<String> {
