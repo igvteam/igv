@@ -70,6 +70,11 @@ public class UCSCGeneTableCodec extends UCSCCodec {
      *         a comment)
      */
     public Feature decode(String line) {
+        if (line.startsWith("#")) {
+            //Header line
+            readHeaderLine(line);
+            return null;
+        }
 
         line = line.replaceAll("\"", "");
         int tokenCount = ParsingUtils.split(line, tokens, '\t');
