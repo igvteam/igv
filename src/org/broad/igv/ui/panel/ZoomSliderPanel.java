@@ -26,7 +26,6 @@
  */
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -218,12 +217,17 @@ public class ZoomSliderPanel extends JPanel {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                if (!isEnabled()) {
+                    return;
+                }
                 toolZoom = Math.max(0, getViewContext().getAdjustedZoom());
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-
+                if (!isEnabled()) {
+                    return;
+                }
                 setZoom(e);
                 repaint();
 
