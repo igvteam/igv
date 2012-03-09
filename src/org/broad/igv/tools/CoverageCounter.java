@@ -689,7 +689,7 @@ public class CoverageCounter {
 
             if (chr == null || !chr.equals(lastChr) || dataSpan != span) {
                 span = dataSpan;
-                outputStepLine(chr, start + 1);
+                outputHeader(chr, start + 1);
             }
 
             pw.print(start + 1);
@@ -708,13 +708,14 @@ public class CoverageCounter {
 
         }
 
-        private void outputStepLine(String chr, int start) {
+        private void outputHeader(String chr, int start) {
             //Write label column
             String labels = "Pos";
             for (String s : getTrackNames("")) {
                 labels += "," + s;
             }
-            pw.println("variableStep chrom=" + chr + " span=" + span + " labels: " + labels);
+            pw.println("#Columns: " + labels);
+            pw.println("variableStep chrom=" + chr + " span=" + span);
         }
 
     }

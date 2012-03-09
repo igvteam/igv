@@ -23,7 +23,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.tools.CoverageCounter.*;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,7 +54,7 @@ public class CoverageCounterTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
-        TestUtils.clearOutputDir();
+        //TestUtils.clearOutputDir();
     }
 
     @Before
@@ -71,8 +70,8 @@ public class CoverageCounterTest {
         String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String queryString = "1:16731624-16731624";
         int minMapQuality = 30;
-        File wigFile = null;
-        Genome genome = null;
+        File wigFile = new File(TestUtils.DATA_DIR + "/out/testMapQual.wig");
+        Genome genome = TestUtils.loadGenome();
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
@@ -103,9 +102,9 @@ public class CoverageCounterTest {
 
 
         int[] countFlags = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR,
-                                    CoverageCounter.BASES,
-                                    CoverageCounter.INCLUDE_DUPS, CoverageCounter.BASES + CoverageCounter.STRANDS_BY_READ,
-                                    CoverageCounter.BASES + CoverageCounter.STRANDS_BY_FIRST_IN_PAIR};
+                CoverageCounter.BASES,
+                CoverageCounter.INCLUDE_DUPS, CoverageCounter.BASES + CoverageCounter.STRANDS_BY_READ,
+                CoverageCounter.BASES + CoverageCounter.STRANDS_BY_FIRST_IN_PAIR};
         //We specifically do not test this, because it's unreliable. Some alignments default to assuming they
         //are the first in pair, but let secondinpair be none
         //countFlags = new int[]{CoverageCounter.STRANDS_BY_SECOND_IN_PAIR};
