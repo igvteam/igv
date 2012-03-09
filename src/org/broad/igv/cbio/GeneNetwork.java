@@ -309,11 +309,11 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
      * Gets the value of a child node with "key" attribute
      * equal to {@code key} parameter.
      * Equal to getNodeAttrValue(node, NetworkAnnotator.KEY, key);
-     * See getNodeAttrValue
      *
      * @param node Node to search
      * @param key  Key to search for
      * @return String value of key found. null if not found
+     * @see #getNodeAttrValue
      */
     public static String getNodeKeyData(Node node, String key) {
         return getNodeAttrValue(node, KEY, key);

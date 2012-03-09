@@ -778,10 +778,6 @@
              <string>text</string> 
              <string>View Network</string> 
             </void> 
-            <void method="setProperty"> 
-             <string>visible</string> 
-             <boolean>false</boolean> 
-            </void> 
             <void property="name"> 
              <string>viewNetworkButton</string> 
             </void> 

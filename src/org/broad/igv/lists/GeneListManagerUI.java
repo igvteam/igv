@@ -725,7 +725,6 @@ public class GeneListManagerUI extends JDialog {
 
                 //---- viewNetworkButton ----
                 viewNetworkButton.setText("View Network");
-                viewNetworkButton.setVisible(false);
                 viewNetworkButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {

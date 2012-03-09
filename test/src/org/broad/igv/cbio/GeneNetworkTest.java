@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 
 /**
  * Test our GeneNetwork class, which implements jgraphT graph interface.
- * {@see http://www.jgrapht.org/}.
+ * See  http://www.jgrapht.org.
  * <p/>
  * Notes:
  * Modification methods tend to return true for any modification,
