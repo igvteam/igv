@@ -19,20 +19,19 @@
 
 package org.broad.igv.goby;
 
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.reader.AlignmentReader;
-import org.apache.log4j.Logger;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.util.CloseableIterator;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.reader.AlignmentReader;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Query reader to parse <a href="http://goby.campagnelab.org">Goby</a> alignment files.
@@ -78,13 +77,12 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
         // reader = null;
 
         targetSequenceNames = new HashSet();
-        for(MutableString ms : identifiers.keySet()) {
+        for (MutableString ms : identifiers.keySet()) {
             targetSequenceNames.add(ms.toString());
         }
 
 
     }
-
 
 
     /**
@@ -93,11 +91,11 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
      * @throws IOException
      */
     public void close() throws IOException {
-       if (reader!=null) {
+        if (reader != null) {
 
-           reader.close();
-           reader=null;
-       }
+            reader.close();
+            reader = null;
+        }
     }
 
     public Set<String> getSequenceNames() {
@@ -129,11 +127,14 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
      * @return An alignment iterator restricted to the sequence [start end] interval.
      */
     public final CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
-
         LOG.debug(String.format("query %s %d %d %b%n", sequence, start, end, contained));
 
-        int referenceIndex = targetIdentifiers.getIndex(new MutableString(sequence).replace("chr", ""));
-
+        final MutableString id = new MutableString(sequence);
+        int referenceIndex = targetIdentifiers.getIndex(id);
+        if (referenceIndex == -1) {
+            // try again removing a chr prefix:
+            referenceIndex = targetIdentifiers.getIndex(id.replace("chr", ""));
+        }
         try {
             return new GobyAlignmentIterator(getNewLocalReader(), targetIdentifiers, referenceIndex, sequence, start, end);
         } catch (IOException e) {
@@ -156,6 +157,7 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
     /**
      * Determines whether filename can be loaded by this QueryReader.
      * <p/>
+     *
      * @param filename Name of a file component or alignment basename.
      * @return True if this implementation can load the alignment corresponding to this filename.
      */
