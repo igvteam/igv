@@ -86,10 +86,30 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
     static Map<String, RegionScoreType> attribute_map = new HashMap();
 
+    /**
+     * For each score type, we are only interested in the fraction of samples which are
+     * modified in some way. We set thresholds here, in the form of [min max]
+     */
+    private static Map<String, Float[]> bounds = new HashMap<String, Float[]>(8);
+
+    private Set<Node> rejectedNodes = new HashSet<Node>();
+    private Set<Node> rejectedEdges = new HashSet<Node>();
+    private boolean filtersFinalized;
+
     static {
         attribute_map.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
         attribute_map.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
         attribute_map.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
+        attribute_map.put("PERCENT_MRNA_WAY_UP", RegionScoreType.EXPRESSION);
+        attribute_map.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
+    }
+
+    static {
+        bounds.put("PERCENT_MUTATED", new Float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_CNA_AMPLIFIED", new Float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new Float[]{-Float.MAX_VALUE, -01f});
+        bounds.put("PERCENT_MRNA_WAY_UP", new Float[]{-Float.MAX_VALUE, -0.1f});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{0.1f, Float.MAX_VALUE});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -118,17 +138,34 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 //        return this.factoryList;
 //    }
 
-    public boolean filterNodes(Predicate predicate) {
-        Set<Node> rejected = new HashSet<Node>(this.vertexSet().size());
-        for (Node v : this.vertexSet()) {
+    /**
+     * Applies {@code predicate} to every element in {@code object}, and adds
+     * any which return false to {@code rejectSet}. Intended for soft filtering.
+     *
+     * @param predicate
+     * @param objects
+     * @param rejectSet
+     * @return
+     * @throws IllegalStateException If the filters have been finalized.
+     */
+    private int filter(Predicate predicate, Iterable objects, Set rejectSet) {
+        if (filtersFinalized) {
+            throw new IllegalStateException("Cannot filter after filtering has been finalized");
+        }
+        int filtered = 0;
+        for (Object v : objects) {
             if (!predicate.evaluate(v)) {
-                rejected.add(v);
+                filtered += rejectSet.add(v) ? 1 : 0;
             }
         }
-        return this.removeAllVertices(rejected);
+        return filtered;
     }
 
-    public boolean filterNodesRange(final String key, final float min, final float max) {
+    public int filterNodes(Predicate predicate) {
+        return this.filter(predicate, this.vertexSet(), rejectedNodes);
+    }
+
+    public int filterNodesRange(final String key, final float min, final float max) {
         Predicate<Node> pred = new Predicate<Node>() {
             @Override
             public boolean evaluate(Node object) {
@@ -144,14 +181,49 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return this.filterNodes(pred);
     }
 
-    public boolean filterEdges(Predicate predicate) {
-        Set<Node> rejected = new HashSet<Node>(this.edgeSet().size());
-        for (Node e : this.edgeSet()) {
-            if (!predicate.evaluate(e)) {
-                rejected.add(e);
-            }
+    public int filterEdges(Predicate predicate) {
+        return this.filter(predicate, this.edgeSet(), rejectedEdges);
+    }
+
+    /**
+     * Actually apply filters irrevocably, removing edges
+     * and nodes from the graph
+     *
+     * @return True iff anything was removed due to filtering.
+     *         Filters only get finalized if this call has an effect. So if
+     *         this returns true, it means at least 1 node or edge has been removed,
+     *         and the filters are finalized. If it returns false, nothing was removed
+     *         and the graph is not finalized.
+     */
+    private boolean finalizeFilters() {
+        if (filtersFinalized) {
+            throw new IllegalStateException("Cannot finalize filters twice");
         }
-        return this.removeAllEdges(rejected);
+        boolean rejected = this.removeAllVertices(rejectedNodes);
+        rejected |= this.removeAllEdges(rejectedEdges);
+        this.clearAllFilters();
+        this.filtersFinalized = rejected;
+        return rejected;
+    }
+
+
+    public void clearNodeFilters() {
+        if (filtersFinalized) {
+            throw new IllegalStateException("Cannot clear filters after they have been finalized");
+        }
+        this.rejectedNodes.clear();
+    }
+
+    public void clearEdgeFilters() {
+        if (filtersFinalized) {
+            throw new IllegalStateException("Cannot clear filters after they have been finalized");
+        }
+        this.rejectedEdges.clear();
+    }
+
+    public void clearAllFilters() {
+        this.clearNodeFilters();
+        this.clearEdgeFilters();
     }
 
     public boolean pruneGraph() {
@@ -160,7 +232,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
                 return edgesOf(object).size() >= 1;
             }
         };
-        return this.filterNodes(min_connections);
+        return this.filterNodes(min_connections) > 0;
     }
 
     public static GeneNetwork getFromCBIO(Iterable<String> geneList) {
@@ -319,7 +391,16 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return getNodeAttrValue(node, KEY, key);
     }
 
+    /**
+     * Get the GraphML from this document. Filters will be finalized when this is called,
+     * if they aren't already.
+     *
+     * @return
+     */
     public Document createDocument() {
+        if (!filtersFinalized) {
+            this.finalizeFilters();
+        }
         try {
             // Create a DOM document
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -466,16 +547,11 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
         Set<Node> nodes = this.vertexSet();
         String name;
-        ArrayList<RegionScoreType> types = new ArrayList<RegionScoreType>();
-        for (String attr : node_attributes) {
-            types.add(attribute_map.get(attr));
-        }
 
         for (Node node : nodes) {
             name = getNodeKeyData(node, LABEL);
 
-            ScoreData data = this.collectScoreData(name, tracks, types);
-
+            ScoreData data = this.collectScoreData(name, tracks, node_attributes);
 
             //If we don't have any data to look at
             if (data != null) {
@@ -493,7 +569,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             for (String attr : node_attributes) {
                 Element newData = node.getOwnerDocument().createElement("data");
                 newData.setAttribute(KEY, attr);
-                newData.setTextContent("" + data.get(attribute_map.get(attr)));
+                newData.setTextContent("" + data.get(attr));
                 node.appendChild(newData);
             }
 
@@ -509,28 +585,28 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         addSchema(node_attributes, "float", "node");
     }
 
-    public static ScoreData collectScoreData(String name, List<Track> tracks, Iterable<RegionScoreType> types) {
+    public ScoreData collectScoreData(String name, List<Track> tracks, Iterable<String> attributes) {
         int zoom = 0;
 
-        List<NamedFeature> features = FeatureDB.getFeaturesList(name, Integer.MAX_VALUE);
+        List<NamedFeature> features = FeatureDB.getFeaturesList(name, 1);//Integer.MAX_VALUE);
 
-        int numberSamples = features.size() * tracks.size();
+        int numberSamples = tracks.size() * features.size();
         if (numberSamples == 0) {
             return null;
         }
 
-        ScoreData<RegionScoreType, Float> results = new ScoreData(RegionScoreType.values().length);
+        ScoreData<String, Float> results = new ScoreData(RegionScoreType.values().length);
 
         Set<String> anyAlteration = new HashSet<String>(numberSamples / 10);
 
-        /*Track percentage of tracks have ANY of the specified alterations
-        * Must account for the possibility of overlaps, can't double count
-        */
-        //int totalAnyAlteration = 0;
+        for (String attr : attributes) {
+            if (!bounds.containsKey(attr)) {
+                throw new IllegalArgumentException("Have no bounds for " + attr);
+            }
 
-        for (RegionScoreType type : types) {
+            RegionScoreType type = attribute_map.get(attr);
+            Float[] curBounds = bounds.get(attr);
 
-            //float totalScore = 0.0f;
             float percentAltered;
             int totalAltered = 0;
 
@@ -538,29 +614,21 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
-                    //int anyChangeHere = 0;
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
                             type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
-                    //Note: Some methods return things like -Float.MAX_VALUE if they get confused
-                    if (score > (-Float.MAX_VALUE + 1) && score > (Integer.MIN_VALUE + 1)) {
-                        //totalScore += score;
-                    } else {
-                        continue;
-                    }
-                    totalAltered += score != 0.0 ? 1 : 0;
-                    //anyChangeHere |= score != 0 ? 1 : 0;
-                    if (score != 0.0) {
-                        //Each track/feature pair represents a sample.
+
+                    if (score >= curBounds[0] && score <= curBounds[1]) {
+                        totalAltered += 1;
+                        //Each track/feature pair represents a region of a sample.
                         //All we require is a count of those altered
-                        anyAlteration.add(feat.toString() + track.getName());
+                        anyAlteration.add(name + track.getName());
+
                     }
                 }
-                //totalAnyAlteration += anyChangeHere;
             }
 
             percentAltered = ((float) totalAltered) / numberSamples;
-            //float avgScore = totalScore / numberSamples;
-            results.put(type, percentAltered);
+            results.put(attr, percentAltered);
         }
 
         results.setPercentAltered(((float) anyAlteration.size()) / numberSamples);

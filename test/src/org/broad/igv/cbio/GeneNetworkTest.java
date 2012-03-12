@@ -110,7 +110,7 @@ public class GeneNetworkTest {
         };
 
         network.loadNetwork(testpath);
-        boolean removed = network.filterNodes(tPred);
+        boolean removed = network.filterNodes(tPred) > 0;
         assertTrue(removed);
     }
 
@@ -223,7 +223,7 @@ public class GeneNetworkTest {
 
         //Perform the filtering.
         //This is true if any modifications are made.
-        assertTrue(geneNetwork.filterEdges(has_evidence));
+        assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
 
         for (Node e : geneNetwork.edgeSet()) {
             assertTrue(has_evidence.evaluate(e));
