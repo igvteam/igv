@@ -153,7 +153,7 @@ public class AlignmentInterval extends Locus {
                 public int compare(AlignmentInterval.Row arg0, AlignmentInterval.Row arg1) {
                     if (arg0.getScore() > arg1.getScore()) {
                         return 1;
-                    } else if (arg0.getScore() > arg1.getScore()) {
+                    } else if (arg0.getScore() < arg1.getScore()) {
                         return -1;
                     }
                     return 0;
