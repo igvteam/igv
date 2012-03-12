@@ -172,7 +172,7 @@ public class BAMHttpReader implements AlignmentReader {
      * @param timeLimit Minimum age to delete. If null, default is 1 day
      * @throws IOException
      */
-    public static void cleanTempDir(Long timeLimit) throws IOException {
+    public static void cleanTempDir(Long timeLimit) {
         if (timeLimit == null) {
             timeLimit = oneDay;
         }

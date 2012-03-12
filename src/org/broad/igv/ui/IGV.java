@@ -285,13 +285,7 @@ public class IGV {
         }
         mainFrame.setBounds(applicationBounds);
 
-        //Delete temp files
-        try {
-            BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
-        } catch (IOException e) {
-            //Do nothing, we'll get them next time
-        }
-
+        BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
     }
 
 
