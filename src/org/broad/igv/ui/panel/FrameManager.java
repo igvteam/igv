@@ -83,18 +83,28 @@ public class FrameManager {
 
         if (gl == null) {
             frames.add(defaultFrame);
-
         } else {
             int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
             List<String> lociNotFound = new ArrayList();
-            for (String searchString : gl.getLoci()) {
-                Locus locus = getLocus(searchString, flankingRegion);
+            List<String> loci = gl.getLoci();
+            if (loci.size() == 1) {
+                Locus locus = getLocus(loci.get(0), flankingRegion);
                 if (locus == null) {
-                    lociNotFound.add(searchString);
+                    lociNotFound.add(loci.get(0));
                 } else {
-                    ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
-                    referenceFrame.setInterval(locus);
-                    frames.add(referenceFrame);
+                    IGV.getInstance().getSession().setCurrentGeneList(null);
+                    defaultFrame.jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
+                }
+            } else {
+                for (String searchString : gl.getLoci()) {
+                    Locus locus = getLocus(searchString, flankingRegion);
+                    if (locus == null) {
+                        lociNotFound.add(searchString);
+                    } else {
+                        ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
+                        referenceFrame.setInterval(locus);
+                        frames.add(referenceFrame);
+                    }
                 }
             }
 

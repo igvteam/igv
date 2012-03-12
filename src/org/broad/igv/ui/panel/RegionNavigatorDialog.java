@@ -669,22 +669,15 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             if (selectedRows != null && selectedRows.length > 0) {
                 List<RegionOfInterest> selectedRegions = getSelectedRegions(selectedRows);
 
-                if (selectedRegions.size() > 1) {
-                    // Create an "on-the-fly" gene list
-                    // TODO -- this is ineffecient (converting regions -> strings then back again)
-                    List<String> loci = new ArrayList<String>(selectedRegions.size());
-                    for (RegionOfInterest roi : selectedRegions) {
-                        loci.add(roi.getLocusString());
-                    }
-                    GeneList geneList = new GeneList("Regions of Interest", loci, false);
-                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
-                } else {
-                    //TODO This is all a hack. Setting a geneList with only 1 element
-                    //makes the system behave oddly.
-                    RegionOfInterest roi = selectedRegions.get(0);
-                    IGV.getInstance().getSession().setCurrentGeneList(null);
-                    FrameManager.getDefaultFrame().jumpTo(roi.getChr(), roi.getStart(), roi.getEnd());
+                // Create an "on-the-fly" gene list
+                // TODO -- this is ineffecient (converting regions -> strings then back again)
+                List<String> loci = new ArrayList<String>(selectedRegions.size());
+                for (RegionOfInterest roi : selectedRegions) {
+                    loci.add(roi.getLocusString());
                 }
+                GeneList geneList = new GeneList("Regions of Interest", loci, false);
+                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+
                 IGV.getInstance().resetFrames();
 
             }
