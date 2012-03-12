@@ -171,7 +171,6 @@ public class SearchCommand implements Command {
             result = results.get(0);
             if (result.type != ResultType.ERROR) {//FrameManager.isGeneListMode()) {
                 IGV.getInstance().getSession().setCurrentGeneList(null);
-                IGV.getInstance().resetFrames();
             }
 
             switch (result.type) {
@@ -192,7 +191,6 @@ public class SearchCommand implements Command {
                     success = false;
                     showMessage = true;
                 }
-
             }
         } else {
             List<String> loci = new ArrayList<String>(results.size());
@@ -207,9 +205,9 @@ public class SearchCommand implements Command {
             }
             GeneList geneList = new GeneList("", loci, false);
             IGV.getInstance().getSession().setCurrentGeneList(geneList);
-            IGV.getInstance().resetFrames();
-
         }
+
+        IGV.getInstance().resetFrames();
 
 
         if (success && recordHistory) {

@@ -95,7 +95,9 @@ public class DataPanelLayout implements LayoutManager {
             int h = container.getHeight();
 
             try {
-                for (int i = 0; i < children.length; i++) {
+                //Sometimes the number of children is not the same as the number of frames.
+                //Not entirely sure why - Jacob S
+                for (int i = 0; i < Math.min(children.length, frames.size()); i++) {
 
                     Component c = children[i];
                     ReferenceFrame frame = frames.get(i);
@@ -105,8 +107,8 @@ public class DataPanelLayout implements LayoutManager {
                         if (frame.getWidthInPixels() > 5) {
                             ((JComponent) c).setBorder(panelBorder);
                         } else {
-                             ((JComponent) c).setBorder(null);
-                         }
+                            ((JComponent) c).setBorder(null);
+                        }
                     }
 
                     log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
