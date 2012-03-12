@@ -108,8 +108,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         bounds.put("PERCENT_MUTATED", new Float[]{0.1f, Float.MAX_VALUE});
         bounds.put("PERCENT_CNA_AMPLIFIED", new Float[]{0.1f, Float.MAX_VALUE});
         bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new Float[]{-Float.MAX_VALUE, -01f});
-        bounds.put("PERCENT_MRNA_WAY_UP", new Float[]{-Float.MAX_VALUE, -0.1f});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_MRNA_WAY_UP", new Float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{-Float.MAX_VALUE, 0.1f});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -141,6 +141,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     /**
      * Applies {@code predicate} to every element in {@code object}, and adds
      * any which return false to {@code rejectSet}. Intended for soft filtering.
+     * There is an override here, where we never filter out a Node which
+     * is marked as being part of the query
      *
      * @param predicate
      * @param objects
@@ -148,12 +150,16 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
      * @return
      * @throws IllegalStateException If the filters have been finalized.
      */
-    private int filter(Predicate predicate, Iterable objects, Set rejectSet) {
+    private int filter(Predicate predicate, Iterable<Node> objects, Set rejectSet) {
         if (filtersFinalized) {
             throw new IllegalStateException("Cannot filter after filtering has been finalized");
         }
         int filtered = 0;
-        for (Object v : objects) {
+        for (Node v : objects) {
+            String in_query = getNodeAttrValue(v, KEY, "IN_QUERY");
+            if (Boolean.parseBoolean(in_query)) {
+                continue;
+            }
             if (!predicate.evaluate(v)) {
                 filtered += rejectSet.add(v) ? 1 : 0;
             }
@@ -183,6 +189,17 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
     public int filterEdges(Predicate predicate) {
         return this.filter(predicate, this.edgeSet(), rejectedEdges);
+    }
+
+    /**
+     * Returns a set of nodes which have not been rejected by the filter
+     *
+     * @return
+     */
+    public Set<Node> vertexSetFiltered() {
+        Set<Node> filteredSet = new HashSet<Node>(this.vertexSet());
+        filteredSet.removeAll(rejectedNodes);
+        return filteredSet;
     }
 
     /**

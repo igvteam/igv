@@ -8,6 +8,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.BrowserLauncher;
+import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,7 +17,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Dialog for letting the user filter a GeneNetwork from
@@ -28,20 +31,30 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private GeneList geneList;
     private List<AttributeFilter> filterRows = new ArrayList<AttributeFilter>(1);
+    GeneNetwork network;
+
+    private GraphListModel listModel;
 
     public FilterGeneNetworkUI(Frame owner, GeneList geneList) {
         super(owner);
         this.geneList = geneList;
         initComponents();
-        initComponentData();
+        initComponentData(geneList.getLoci());
     }
 
     /**
      * Load relevant data from IGV to initialize
      * displayed components.
      */
-    private void initComponentData() {
+    private void initComponentData(List<String> geneLoci) {
         add();
+
+        network = GeneNetwork.getFromCBIO(geneLoci);
+        network.annotateAll(IGV.getInstance().getAllTracks(false));
+        listModel = new GraphListModel();
+        keptGenes.setModel(listModel);
+        applySoftFilters();
+
     }
 
     private void add() {
@@ -64,15 +77,8 @@ public class FilterGeneNetworkUI extends JDialog {
         setVisible(false);
     }
 
-    /**
-     * TODO This should run on a separate thread
-     *
-     * @param geneLoci
-     */
-    private void showNetwork(List<String> geneLoci) {
-        GeneNetwork network = GeneNetwork.getFromCBIO(geneLoci);
-
-        network.annotateAll(IGV.getInstance().getAllTracks(false));
+    private void applySoftFilters() {
+        network.clearAllFilters();
 
         //TODO This is only AND, should also include OR
         for (AttributeFilter filter : this.filterRows) {
@@ -87,6 +93,14 @@ public class FilterGeneNetworkUI extends JDialog {
             network.pruneGraph();
         }
 
+        this.listModel.markDirty();
+    }
+
+    /**
+     * TODO This should run on a separate thread
+     */
+    private void showNetwork() {
+
         try {
             String url = network.outputForcBioView();
             url = "file://" + url;
@@ -97,13 +111,17 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
-        List<String> geneLoci = geneList.getLoci();
         setVisible(false);
-        showNetwork(geneLoci);
+        showNetwork();
     }
 
     private void addRowActionPerformed(ActionEvent e) {
         add();
+    }
+
+    private void refFilterActionPerformed(ActionEvent e) {
+        this.applySoftFilters();
+        this.repaint();
     }
 
 
@@ -116,8 +134,11 @@ public class FilterGeneNetworkUI extends JDialog {
         addRow = new JButton();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
+        refFilter = new JButton();
         cancelButton = new JButton();
         helpButton = new JButton();
+        scrollPane1 = new JScrollPane();
+        keptGenes = new JList();
 
         //======== this ========
         setMinimumSize(new Dimension(550, 22));
@@ -161,19 +182,31 @@ public class FilterGeneNetworkUI extends JDialog {
 
                 //---- keepIsolated ----
                 keepIsolated.setText("Keep Isolated Genes");
-                buttonBar.add(keepIsolated, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                buttonBar.add(keepIsolated, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 5), 0, 0));
 
                 //---- okButton ----
-                okButton.setText("OK");
+                okButton.setText("View");
                 okButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         okButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(okButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                buttonBar.add(okButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                //---- refFilter ----
+                refFilter.setText("Refresh Filter");
+                refFilter.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        refFilterActionPerformed(e);
+                    }
+                });
+                buttonBar.add(refFilter, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
 
@@ -197,6 +230,12 @@ public class FilterGeneNetworkUI extends JDialog {
                         new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
+
+            //======== scrollPane1 ========
+            {
+                scrollPane1.setViewportView(keptGenes);
+            }
+            dialogPane.add(scrollPane1, BorderLayout.CENTER);
         }
         contentPane2.add(dialogPane, BorderLayout.CENTER);
         pack();
@@ -212,7 +251,45 @@ public class FilterGeneNetworkUI extends JDialog {
     private JButton addRow;
     private JCheckBox keepIsolated;
     private JButton okButton;
+    private JButton refFilter;
     private JButton cancelButton;
     private JButton helpButton;
+    private JScrollPane scrollPane1;
+    private JList keptGenes;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+
+    private class GraphListModel extends AbstractListModel {
+
+        private List<String> vertexNames = null;
+
+        @Override
+        public int getSize() {
+            if (vertexNames == null) {
+                getVertexNames();
+            }
+            return vertexNames.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            if (vertexNames == null) {
+                getVertexNames();
+            }
+            return vertexNames.get(index);
+        }
+
+        private void getVertexNames() {
+            Set<Node> nodes = network.vertexSetFiltered();
+            vertexNames = new ArrayList<String>(nodes.size());
+            for (Node n : nodes) {
+                vertexNames.add(GeneNetwork.getNodeKeyData(n, "label"));
+            }
+            Collections.sort(vertexNames);
+        }
+
+        public void markDirty() {
+            this.vertexNames = null;
+        }
+    }
 }
