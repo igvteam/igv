@@ -441,14 +441,15 @@ public class IGVToolsTest {
     /**
      * Test count when using a custom alias file.
      * Should supply a file using normal chromosome names, and aliases
-     * which are defined in the genome file. These files are expected to
-     * match exactly
+     * which are defined in the genome file.
      */
     public void tstCountAliased(String normfile, String aliasedfile) throws Exception {
         String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
         String outfile = TestUtils.DATA_DIR + "/out/tmpcount1.wig";
         File outFi = new File(outfile);
         outFi.delete();
+        outFi.deleteOnExit();
+
         //Count aliased file
         String command = "count " + normfile + " " + outfile + " " + genfile;
         igvTools.run(command.split("\\s+"));
@@ -470,6 +471,11 @@ public class IGVToolsTest {
         line2 = reader2.readLine();
         while ((line1 = reader1.readLine()) != null) {
             line2 = reader2.readLine();
+            //Header lines don't need to match
+            if (line1.startsWith("#") || line1.startsWith("variableStep")
+                    || line1.startsWith("fixedStep")) {
+                continue;
+            }
             assertEquals(line1, line2);
         }
 
