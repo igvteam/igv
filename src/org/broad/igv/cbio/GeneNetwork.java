@@ -107,9 +107,9 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     static {
         bounds.put("PERCENT_MUTATED", new Float[]{0.1f, Float.MAX_VALUE});
         bounds.put("PERCENT_CNA_AMPLIFIED", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new Float[]{-Float.MAX_VALUE, -01f});
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new Float[]{0.1f, Float.MAX_VALUE});
         bounds.put("PERCENT_MRNA_WAY_UP", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{-Float.MAX_VALUE, 0.1f});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{-Float.MAX_VALUE, -0.1f});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -626,11 +626,17 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
             float percentAltered;
             int totalAltered = 0;
+            int numberSamplesPerAttr = 0;
 
             for (NamedFeature feat : features) {
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
+                    if (!track.isRegionScoreType(type)) {
+                        continue;
+                    }
+
+                    numberSamplesPerAttr++;
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
                             type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
 
@@ -644,7 +650,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
                 }
             }
 
-            percentAltered = ((float) totalAltered) / numberSamples;
+            percentAltered = ((float) totalAltered) / numberSamplesPerAttr;
             results.put(attr, percentAltered);
         }
 

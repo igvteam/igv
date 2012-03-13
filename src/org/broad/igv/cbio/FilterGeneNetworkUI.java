@@ -121,7 +121,9 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private void refFilterActionPerformed(ActionEvent e) {
         this.applySoftFilters();
-        this.repaint();
+        listModel.markDirty();
+        this.validateTree();
+
     }
 
 
@@ -273,6 +275,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
         public void markDirty() {
             this.vertices = null;
+            this.fireTableStructureChanged();
         }
 
         @Override
