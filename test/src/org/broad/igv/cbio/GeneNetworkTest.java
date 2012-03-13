@@ -225,6 +225,7 @@ public class GeneNetworkTest {
         //This is true if any modifications are made.
         assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
 
+        geneNetwork.finalizeFilters();
         for (Node e : geneNetwork.edgeSet()) {
             assertTrue(has_evidence.evaluate(e));
         }
@@ -266,16 +267,11 @@ public class GeneNetworkTest {
         //At this point, toRem should be isolated
         assertEquals(0, graph.edgesOf(toRem).size());
         assertTrue(graph.pruneGraph());
+        graph.finalizeFilters();
 
         assertEquals(size - 1, graph.vertexSet().size());
         assertEquals(exp_edges - 3, graph.edgeSet().size());
         assertFalse(graph.containsVertex(toRem));
-
-        int trials = 10;
-        for (int ii = 0; ii < trials; ii++) {
-            assertFalse(graph.pruneGraph());
-        }
-
     }
 
     @Test

@@ -212,7 +212,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
      *         and the filters are finalized. If it returns false, nothing was removed
      *         and the graph is not finalized.
      */
-    private boolean finalizeFilters() {
+    boolean finalizeFilters() {
         if (filtersFinalized) {
             throw new IllegalStateException("Cannot finalize filters twice");
         }
