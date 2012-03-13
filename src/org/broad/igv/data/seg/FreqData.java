@@ -20,8 +20,8 @@ package org.broad.igv.data.seg;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
@@ -35,14 +35,13 @@ import java.util.Map;
  */
 public class FreqData {
 
-    private static final float AMP_THRESHOLD = 0.1f;
-    private static final float DEL_THRESHOLD = -0.1f;
+    public static final float AMP_THRESHOLD = 0.1f;
+    public static final float DEL_THRESHOLD = -0.1f;
 
     private int numberOfSamples;
     boolean logNormalized;
     Map<String, List<LocusScore>> amp;
     Map<String, List<LocusScore>> del;
-
 
 
     public FreqData(SegmentedDataSet ds, Genome genome) {
@@ -67,6 +66,7 @@ public class FreqData {
         amp = new HashMap();
         del = new HashMap();
 
+        //Chromosome bins
         for (String chr : genome.getChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
             int len = c.getLength();
@@ -74,10 +74,10 @@ public class FreqData {
             List<LocusScore> ampBins = new ArrayList(nBins);
             List<LocusScore> delBins = new ArrayList(nBins);
             for (int i = 0; i < nBins; i++) {
-                int s = i * binSize;
-                int e = s + binSize;
-                ampBins.add(new Bin(chr, s, e));
-                delBins.add(new Bin(chr, s, e));
+                int start = i * binSize;
+                int end = start + binSize;
+                ampBins.add(new Bin(chr, start, end));
+                delBins.add(new Bin(chr, start, end));
             }
             amp.put(chr, ampBins);
             del.put(chr, delBins);
@@ -87,10 +87,10 @@ public class FreqData {
         List<LocusScore> ampBins = new ArrayList(wgBinCount);
         List<LocusScore> delBins = new ArrayList(wgBinCount);
         for (int i = 0; i < wgBinCount; i++) {
-            int s = i * wgBinSize;
-            int e = s + wgBinSize;
-            ampBins.add(new Bin(Globals.CHR_ALL, s, e));
-            delBins.add(new Bin(Globals.CHR_ALL, s, e));
+            int start = i * wgBinSize;
+            int end = start + wgBinSize;
+            ampBins.add(new Bin(Globals.CHR_ALL, start, end));
+            delBins.add(new Bin(Globals.CHR_ALL, start, end));
         }
         amp.put(Globals.CHR_ALL, ampBins);
         del.put(Globals.CHR_ALL, delBins);
@@ -196,7 +196,7 @@ public class FreqData {
     }
 
 
-    public  class Bin implements LocusScore {
+    public class Bin implements LocusScore {
         String chr;
         int start;
         int end;
@@ -255,7 +255,7 @@ public class FreqData {
 
         public String getValueString(double position, WindowFunction windowFunction) {
             int cnt = Math.abs(Math.round(count));
-            int percent =  ((cnt * 100) / numberOfSamples);
+            int percent = ((cnt * 100) / numberOfSamples);
             return cnt + " (" + percent + "%)";
         }
 

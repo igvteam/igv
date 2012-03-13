@@ -20,6 +20,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
@@ -931,7 +932,7 @@ public abstract class AbstractTrack implements Track {
         if (norm == 0) {
             return Float.NaN;
         } else {
-            return (float) (Math.log(Math.max(Float.MIN_VALUE, value) / norm) / DataSourceTrack.log2);
+            return (float) (Math.log(Math.max(Float.MIN_VALUE, value) / norm) / Globals.log2);
         }
     }
 

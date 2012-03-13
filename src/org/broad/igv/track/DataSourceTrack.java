@@ -43,7 +43,6 @@ public class DataSourceTrack extends DataTrack {
     private static Logger log = Logger.getLogger(DataSourceTrack.class);
 
     private DataSource dataSource;
-    public static double log2 = Math.log(2);
     boolean normalize = false;
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource, Genome genome) {
