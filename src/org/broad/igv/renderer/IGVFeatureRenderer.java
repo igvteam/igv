@@ -20,6 +20,7 @@ package org.broad.igv.renderer;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureTrack;
@@ -33,6 +34,9 @@ import org.broad.igv.ui.color.ColorUtilities;
 import java.awt.*;
 import java.awt.font.LineMetrics;
 import java.util.List;
+import java.util.Map;
+
+// Added by Solomon
 
 /**
  * Renderer for the full "IGV" feature interface (classes implementing
@@ -168,7 +172,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         lastPixelEnd = pixelEnd;
                     }
 
-                    Color color =  getFeatureColor(feature, track);
+                    Color color = getFeatureColor(feature, track);
 
                     Graphics2D g2D = context.getGraphic2DForColor(color);
 
@@ -334,10 +338,31 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         Graphics2D fontGraphics = context.getGraphic2DForColor(Color.WHITE);
 
-         boolean  colorToggle = true;
+        boolean colorToggle = true;
 
 
         for (Exon exon : gene.getExons()) {
+
+            // Parse expression from tags, if available
+            //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
+            Float exprValue = null;
+
+            Map<String, String> attributes = exon.getAttributes();
+            if (attributes != null && attributes.containsKey("expr")) {
+                try {
+                    exprValue = new Float(attributes.get("expr"));
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing expression tag " + attributes.get("expr"), e);
+                }
+            }
+
+            if (exprValue != null) {
+                ContinuousColorScale colorScale = PreferenceManager.getInstance().getColorScale(TrackType.GENE_EXPRESSION);
+                Color chartColor = colorScale.getColor(exprValue);
+                g2D = context.getGraphic2DForColor(chartColor);
+            }
+
+            // Added by Solomon - End
 
             Graphics2D blockGraphics = g2D;
             if (alternateExonColor) {
