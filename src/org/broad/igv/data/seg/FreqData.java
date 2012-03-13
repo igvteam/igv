@@ -35,36 +35,50 @@ import java.util.Map;
  */
 public class FreqData {
 
-    public static final float AMP_THRESHOLD = 0.1f;
-    public static final float DEL_THRESHOLD = -0.1f;
+    public static float DEFAULT_AMP_THRESHOLD = 0.1f;
+    public static float DEFAULT_DEL_THRESHOLD = -0.1f;
+    public static int DEFAULT_BIN_SIZE = 200000;
 
+    private float ampThreshold = DEFAULT_AMP_THRESHOLD;
+    private float delThreshold = DEFAULT_DEL_THRESHOLD;
+    private int binSize = DEFAULT_BIN_SIZE;    // 200 kb bin size;
+
+    private SegmentedDataSet dataset;
     private int numberOfSamples;
-    boolean logNormalized;
-    Map<String, List<LocusScore>> amp;
-    Map<String, List<LocusScore>> del;
-
+    // private boolean logNormalized;
+    private Map<String, List<LocusScore>> amp;
+    private Map<String, List<LocusScore>> del;
+    private List<String> sampleNames;
+    Genome genome;
 
     public FreqData(SegmentedDataSet ds, Genome genome) {
-        compute(ds, genome);
+
+        this.dataset = ds;
+        this.sampleNames = ds.getSampleNames();
+        numberOfSamples = sampleNames.size();
+        amp = new HashMap();
+        del = new HashMap();
+        this.genome = genome;
+        compute();
 
     }
 
 
-    void compute(SegmentedDataSet ds, Genome genome) {
+    public void setParameters(int binSize, float delThreshold, float ampThreshold) {
+        this.binSize = binSize;
+        this.delThreshold = delThreshold;
+        this.ampThreshold = ampThreshold;
+        compute();
+    }
 
-        this.logNormalized = ds.isLogNormalized();
+    void compute() {
 
+        amp.clear();
+        del.clear();
 
-        // 200 kb bin size
-        int binSize = 200000;
         int sizeInKB = (int) (genome.getLength() / 1000);
         int wgBinSize = sizeInKB / 700;
         int wgBinCount = sizeInKB / wgBinSize + 1;
-
-        numberOfSamples = ds.getSampleNames().size();
-
-        amp = new HashMap();
-        del = new HashMap();
 
         //Chromosome bins
         for (String chr : genome.getChromosomeNames()) {
@@ -95,18 +109,17 @@ public class FreqData {
         amp.put(Globals.CHR_ALL, ampBins);
         del.put(Globals.CHR_ALL, delBins);
 
-
-        for (String sample : ds.getSampleNames()) {
+        final boolean logNormalized = dataset.isLogNormalized();
+        for (String sample : sampleNames) {
             for (String chr : genome.getChromosomeNames()) {
-                List<LocusScore> segments = ds.getSegments(sample, chr);
+                List<LocusScore> segments = dataset.getSegments(sample, chr);
                 if (segments != null) {
 
                     for (LocusScore seg : segments) {
                         final float segScore = logNormalized ? seg.getScore() :
                                 (float) (Math.log(seg.getScore() / 2) / Globals.log2);
 
-                        if (segScore > AMP_THRESHOLD || segScore < DEL_THRESHOLD) {
-
+                        if (segScore > ampThreshold || segScore < delThreshold) {
 
                             int startBin = seg.getStart() / binSize;
                             int endBin = seg.getEnd() / binSize;
@@ -151,12 +164,12 @@ public class FreqData {
         }
 
 
-        if (segScore > AMP_THRESHOLD) {
+        if (segScore > ampThreshold) {
             Bin bin = (Bin) amp.get(chr).get(b);
             bin.increment(weight, weight * segScore);
         }
 
-        if (segScore < DEL_THRESHOLD) {
+        if (segScore < delThreshold) {
             Bin bin = (Bin) del.get(chr).get(b);
             bin.increment(-weight, weight * segScore);
         }
