@@ -58,7 +58,6 @@
     <target name="clean">
         <delete dir="${tmp.dir}"/>
         <delete dir="${testtmp.dir}"/>
-        <delete dir="${test.reports}"/>
     </target>
 
 
@@ -88,7 +87,6 @@
     <target name="init" depends="clean">
         <mkdir dir="${tmp.dir}"/>
         <mkdir dir="${testtmp.dir}"/>
-        <mkdir dir="${test.reports}"/>
         <mkdir dir="${dist.dir}"/>
 
         <!-- Copy resource files to the tmp directory -->
@@ -235,6 +233,10 @@
     </target>
 
     <target name="makereports" depends="actruntests">
+
+        <delete dir="${test.reports}"/>
+        <mkdir dir="${test.reports}"/>
+
         <junitreport todir="${test.reports}">
             <fileset dir="${test.reports}">
                 <include name="TEST-*.xml"/>
