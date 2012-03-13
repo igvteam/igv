@@ -310,9 +310,9 @@
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JList</string> 
+            <string>javax.swing.JTable</string> 
             <void property="name"> 
-             <string>keptGenes</string> 
+             <string>geneTable</string> 
             </void> 
            </object> 
           </void> 

@@ -12,12 +12,13 @@ import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -52,9 +53,8 @@ public class FilterGeneNetworkUI extends JDialog {
         network = GeneNetwork.getFromCBIO(geneLoci);
         network.annotateAll(IGV.getInstance().getAllTracks(false));
         listModel = new GraphListModel();
-        keptGenes.setModel(listModel);
+        geneTable.setModel(listModel);
         applySoftFilters();
-
     }
 
     private void add() {
@@ -138,7 +138,7 @@ public class FilterGeneNetworkUI extends JDialog {
         cancelButton = new JButton();
         helpButton = new JButton();
         scrollPane1 = new JScrollPane();
-        keptGenes = new JList();
+        geneTable = new JTable();
 
         //======== this ========
         setMinimumSize(new Dimension(550, 22));
@@ -233,7 +233,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
             //======== scrollPane1 ========
             {
-                scrollPane1.setViewportView(keptGenes);
+                scrollPane1.setViewportView(geneTable);
             }
             dialogPane.add(scrollPane1, BorderLayout.CENTER);
         }
@@ -255,41 +255,64 @@ public class FilterGeneNetworkUI extends JDialog {
     private JButton cancelButton;
     private JButton helpButton;
     private JScrollPane scrollPane1;
-    private JList keptGenes;
+    private JTable geneTable;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-    private class GraphListModel extends AbstractListModel {
+    private class GraphListModel extends AbstractTableModel {
 
-        private List<String> vertexNames = null;
+        private List<Node> vertices = null;
+        private final String[] columnNames = {"Gene label", "# of interactions"};
 
-        @Override
-        public int getSize() {
-            if (vertexNames == null) {
-                getVertexNames();
-            }
-            return vertexNames.size();
-        }
-
-        @Override
-        public Object getElementAt(int index) {
-            if (vertexNames == null) {
-                getVertexNames();
-            }
-            return vertexNames.get(index);
-        }
-
-        private void getVertexNames() {
+        private void getVertices() {
             Set<Node> nodes = network.vertexSetFiltered();
-            vertexNames = new ArrayList<String>(nodes.size());
-            for (Node n : nodes) {
-                vertexNames.add(GeneNetwork.getNodeKeyData(n, "label"));
-            }
-            Collections.sort(vertexNames);
+            vertices = Arrays.asList(nodes.toArray(new Node[0]));
+
+            //Collections.sort(vertexNames);
         }
 
         public void markDirty() {
-            this.vertexNames = null;
+            this.vertices = null;
+        }
+
+        @Override
+        public int getRowCount() {
+            if (vertices == null) {
+                getVertices();
+            }
+            return vertices.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        public String getColumnName(int col) {
+            return columnNames[col].toString();
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (vertices == null) {
+                getVertices();
+            }
+
+            Node n = vertices.get(rowIndex);
+            String nm = GeneNetwork.getNodeKeyData(vertices.get(rowIndex), "label");
+            switch (columnIndex) {
+                case 0:
+                    return nm;
+                case 1:
+                    return network.edgesOf(n).size();
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return false;
         }
     }
 }
