@@ -545,7 +545,7 @@ public class CachingQueryReader {
         int maxBucketSize;
         int e1 = -1;  // End position of current sampling bucket
         int minStart = -1; //Start location where the reads go deeper than maxDepth
-        int numAtStart = -1; //To capture the number of alignments which pile up at a given start location
+        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
         private int lastStart;
         //int depthCount;
 
@@ -630,8 +630,8 @@ public class CachingQueryReader {
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.addAlignment(record);
             }
-            
-            if (currentBucket.size() >= maxDepth && minStart < 0){
+
+            if (currentBucket.size() >= maxDepth && minStart < 0) {
                 minStart = record.getStart();
             }
 
@@ -640,10 +640,10 @@ public class CachingQueryReader {
                 return;
             }
 
-            if(record.getStart() == lastStart){
-                numAtStart++;
-            }else{
-                numAtStart = 1;
+            if (minStart >= 0 || record.getStart() == lastStart) {
+                numAfterMinStart++;
+            } else {
+                numAfterMinStart = 1;
             }
             lastStart = record.getStart();
 
@@ -665,9 +665,9 @@ public class CachingQueryReader {
             for (Alignment alignment : sampledRecords) {
                 int aStart = alignment.getStart();
                 int aEnd = alignment.getEnd();
-                if ((aStart >= start) && (aStart <= end)) {
+                if ((aStart >= start) && (aStart < end)) {
                     containedRecords.add(alignment);
-                } else if ((aEnd >= start) && (aStart <= start)) {
+                } else if ((aEnd > start) && (aStart < start)) {
                     overlappingRecords.add(alignment);
                 }
             }
@@ -676,6 +676,7 @@ public class CachingQueryReader {
             overflows.clear();
             lastStart = -1;
             minStart = -1;
+            numAfterMinStart = 0;
         }
 
 
@@ -705,9 +706,10 @@ public class CachingQueryReader {
                 pairedReadNames.removeAll(added);
 
                 List<String> keys = new LinkedList(currentBucket.keySet());
+                int total_size = keys.size() + overflows.size();
                 //Fraction of the alignments in the excessive coverage region to keep
-                float frac_keep = (float) numAtStart / (numAtStart + keys.size() - maxDepth);
-                frac_keep = frac_keep > 0.0f ? frac_keep : 1.0f;
+                float frac_keep = (float) (numAfterMinStart + maxDepth - total_size) / (numAfterMinStart);
+                frac_keep = frac_keep > 0.0f ? frac_keep : 2.0f;
                 while (sampledList.size() < maxDepth && keys.size() > 0) {
                     String key = keys.remove(0);
                     Alignment a = currentBucket.remove(key);
@@ -715,8 +717,8 @@ public class CachingQueryReader {
                     //If the alignment starts outside a region of excessive coverage,
                     //we include it. Otherwise, we sample.
                     boolean keep = a.getStart() < minStart;
-                    keep |= RAND.nextFloat() < frac_keep;
-                    if(keep){
+                    keep |= (frac_keep >= 1) || RAND.nextFloat() < frac_keep;
+                    if (keep) {
                         sampledList.add(a);
 
                         // If this alignment is paired,  add its mate to the list, or if its mate is not present
@@ -733,6 +735,7 @@ public class CachingQueryReader {
                 }
 
                 //If there's still room,  sample the "overflows"
+                //TODO Probably the wrong order in which to do this
                 while (sampledList.size() < maxDepth && (overflows.size() > 0)) {
                     sampledList.add(overflows.remove(RAND.nextInt(overflows.size())));
                 }
