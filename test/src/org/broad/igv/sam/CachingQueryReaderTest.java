@@ -156,16 +156,21 @@ public class CachingQueryReaderTest {
         assertEquals(expectedResult.size(), result.size());
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
-            assertTrue(rec.getStart() >= start);
-            assertTrue(rec.getEnd() < end);
+
+            if(contained){
+                assertTrue(rec.getStart() >= start);
+            }else{
+                //All we require is some overlap
+                boolean overlap = rec.getStart() >= start && rec.getStart() <= end;
+                overlap |= start >= rec.getStart() && start <= rec.getEnd();
+                assertTrue(overlap);
+            }
             assertEquals(sequence, rec.getChr());
 
             assertTrue(expectedResult.containsKey(rec.getReadName()));
             Alignment exp = expectedResult.get(rec.getReadName());
             assertEquals(exp.getAlignmentStart(), rec.getAlignmentStart());
             assertEquals(exp.getAlignmentEnd(), rec.getAlignmentEnd());
-
-
         }
     }
 
