@@ -90,7 +90,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
      * For each score type, we are only interested in the fraction of samples which are
      * modified in some way. We set thresholds here, in the form of [min max]
      */
-    private static Map<String, Float[]> bounds = new HashMap<String, Float[]>(8);
+    private static Map<String, float[]> bounds = new HashMap<String, float[]>(8);
 
     private Set<Node> rejectedNodes = new HashSet<Node>();
     private Set<Node> rejectedEdges = new HashSet<Node>();
@@ -105,11 +105,11 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     }
 
     static {
-        bounds.put("PERCENT_MUTATED", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_CNA_AMPLIFIED", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_MRNA_WAY_UP", new Float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new Float[]{-Float.MAX_VALUE, -0.1f});
+        bounds.put("PERCENT_MUTATED", new float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{0.1f, Float.MAX_VALUE});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-Float.MAX_VALUE, -0.1f});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -622,7 +622,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             }
 
             RegionScoreType type = attribute_map.get(attr);
-            Float[] curBounds = bounds.get(attr);
+            float[] curBounds = bounds.get(attr);
 
             float percentAltered;
             int totalAltered = 0;
