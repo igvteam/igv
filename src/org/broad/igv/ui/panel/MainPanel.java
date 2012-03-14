@@ -18,6 +18,7 @@
 
 package org.broad.igv.ui.panel;
 
+import com.jidesoft.action.CommandBar;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
@@ -174,7 +175,7 @@ public class MainPanel extends JPanel implements Paintable {
         nameHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        nameHeaderPanel.setLayout(null);
+        nameHeaderPanel.setLayout(new BorderLayout());
 
         attributeHeaderPanel = new AttributeHeaderPanel();
         attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -500,6 +501,10 @@ public class MainPanel extends JPanel implements Paintable {
 
     public JideSplitPane getCenterSplitPane() {
         return centerSplitPane;
+    }
+
+    public NameHeaderPanel getNameHeaderPanel() {
+        return nameHeaderPanel;
     }
 
 
