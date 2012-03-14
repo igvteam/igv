@@ -145,4 +145,8 @@ public class IGVContentPane extends JPanel {
 
         return statusBar;
     }
+
+    public void addToNameHeaderPanel(JComponent component) {
+        mainPanel.getNameHeaderPanel().add(component);
+    }
 }
