@@ -38,6 +38,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeBuilderDialog;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.hic.ThumbnailPanel;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
@@ -1325,9 +1326,10 @@ public class IGV {
     }
 
     public void showLoadedTrackCount() {
+
+        final int visibleTrackCount = getVisibleTrackCount();
         contentPane.getStatusBar().setMessage("" +
-                getVisibleTrackCount() +
-                " track(s) currently loaded");
+                visibleTrackCount + (visibleTrackCount == 1 ? " track" : " tracks") + " currently loaded");
     }
 
     private void closeWindow(final ProgressBar progressBar) {
@@ -1344,8 +1346,29 @@ public class IGV {
      * @param locus
      */
     public void goToLocus(String locus) {
-
         contentPane.getCommandBar().searchByLocus(locus, false);
+    }
+
+    /**
+     * To to multiple loci,  creating a new gene list if required.  This method is provided to support control of
+     * multiple panels from a command or external program.
+     *
+     * @param loci
+     */
+    public void goToLociList(List<String> loci) {
+
+        List<ReferenceFrame> frames = FrameManager.getFrames();
+        if (frames.size() == loci.size()) {
+            for (int i = 0; i < loci.size(); i++) {
+                frames.get(i).setInterval(new Locus(loci.get(i)));
+            }
+            repaint();
+        } else {
+            GeneList geneList = new GeneList("", loci, false);
+            getSession().setCurrentGeneList(geneList);
+            resetFrames();
+        }
+
     }
 
     public void tweakPanelDivider() {
@@ -2256,6 +2279,11 @@ public class IGV {
         return startupComplete;
     }
 
+    public void addToNameHeaderPanel(JComponent component) {
+
+        contentPane.addToNameHeaderPanel(component);
+    }
+
     /**
      * Swing worker class to startup IGV
      */
@@ -2342,9 +2370,6 @@ public class IGV {
                         List<ResourceLocator> locators = new ArrayList();
                         int idx = 0;
                         for (String p : tokens) {
-                            if (FileUtils.isRemote(p)) {
-                                p = URLDecoder.decode(p, "UTF-8");
-                            }
                             ResourceLocator rl = new ResourceLocator(p);
                             if (names != null && idx < names.length) {
                                 rl.setName(names[idx]);
