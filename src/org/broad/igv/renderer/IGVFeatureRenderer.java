@@ -350,7 +350,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             Map<String, String> attributes = exon.getAttributes();
             if (attributes != null && attributes.containsKey("expr")) {
                 try {
-                    exprValue = new Float(attributes.get("expr"));
+                    exprValue = Float.parseFloat(attributes.get("expr"));
                 } catch (NumberFormatException e) {
                     log.error("Error parsing expression tag " + attributes.get("expr"), e);
                 }
