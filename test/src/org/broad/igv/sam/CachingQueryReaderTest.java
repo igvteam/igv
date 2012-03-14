@@ -182,7 +182,7 @@ public class CachingQueryReaderTest {
         }
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void testQueryLargeFile() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
@@ -271,7 +271,6 @@ public class CachingQueryReaderTest {
 
         tstSize(cachingReader, sequence, start, end, coverageLim, expSize);
 
-        //This doesn't work on our .aligned file, the query returns improper results
         tstQuery(path, sequence, start, end, false, coverageLim);
 
     }
@@ -306,7 +305,7 @@ public class CachingQueryReaderTest {
         String sequence = "MT";
         int start = 1000;
         int end = 3000;
-        int maxDepth = 1000;
+        int maxDepth = 500;
 
         CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
                 new ArrayList(), maxDepth, null, null);
