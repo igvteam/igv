@@ -707,8 +707,7 @@ public class CachingQueryReader {
                 List<String> keys = new LinkedList(currentBucket.keySet());
                 //Fraction of the alignments in the excessive coverage region to keep
                 float frac_keep = (float) numAtStart / (numAtStart + keys.size() - maxDepth);
-                int tstcounttotal = 0;
-                int tstcountkept = 0;
+                frac_keep = frac_keep > 0.0f ? frac_keep : 1.0f;
                 while (sampledList.size() < maxDepth && keys.size() > 0) {
                     String key = keys.remove(0);
                     Alignment a = currentBucket.remove(key);
@@ -717,16 +716,8 @@ public class CachingQueryReader {
                     //we include it. Otherwise, we sample.
                     boolean keep = a.getStart() < minStart;
                     keep |= RAND.nextFloat() < frac_keep;
-                    int tstloc = 56815634;
-                    if(a.getStart() == tstloc){
-                        tstcounttotal++;
-                    }
                     if(keep){
                         sampledList.add(a);
-                        if(a.getStart() == tstloc){
-                            tstcountkept++;
-                        }
-
 
                         // If this alignment is paired,  add its mate to the list, or if its mate is not present
                         // in this bucket record the read name.

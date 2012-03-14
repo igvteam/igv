@@ -172,6 +172,7 @@ public class CachingQueryReaderTest {
         }
     }
 
+    //@Ignore
     @Test
     public void testQueryLargeFile() throws Exception{
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
@@ -181,21 +182,84 @@ public class CachingQueryReaderTest {
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
 
+        //Edge location
         String sequence = "chr12";
         int start = 56815621;
-        int end = start + 2;
+        int end = start+1;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 2, expSize);
+        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
 
+        //Edge location
         sequence = "chr12";
-        start = 56815634;
-        end = start + 2;
+        start = 56815635;
+        end = start+1;
         expSize = 165;
 
-        tstQuery(path, sequence,  start, end, false, expSize * 10);
+        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 2, expSize);
+        //Center location
+        sequence = "chr12";
+        start = 56815674;
+        end = start + 1;
+        expSize = 3078;
+
+        //tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+        tstQuery(path, sequence,  start, end, false, 10000);
+
+
+    }
+
+    @Test
+    public void testQueryPiledUp() throws Exception{
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
+        String path = TestUtils.DATA_DIR + "/aligned/pileup.sorted.aligned";
+
+        ResourceLocator loc = new ResourceLocator(path);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+
+        //Edge location
+        String sequence = "chr1";
+        int start = 141;
+        int end = start+1;
+        int expSize = 42;
+
+        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+
+        loc = new ResourceLocator(path);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+        tstSize(cachingReader, sequence,  start, end, expSize * 100, expSize);
+        tstQuery(path, sequence,  start, end, false, 10000);
+
+        //Center, deep coverage region
+        sequence = "chr1";
+        start = 430;
+        end = start + 1;
+        int coverageLim = 1000;
+        expSize = 1408;
+
+        loc = new ResourceLocator(path);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+
+        //tstSize(cachingReader, sequence,  start, end, coverageLim, expSize);
+
+        coverageLim = 10000;
+        expSize = 1408;
+
+        loc = new ResourceLocator(path);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+
+        tstSize(cachingReader, sequence,  start, end, coverageLim, expSize);
+
+        //This doesn't work on .aligned files, the query returns improper results
+        //tstQuery(path, sequence,  start, end, false, 10000);
 
     }
     
