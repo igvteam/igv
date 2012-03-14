@@ -1,5 +1,6 @@
 package util;
 
+import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 
 import java.io.FileWriter;
@@ -20,15 +21,15 @@ public class AlignmentFileGenerator {
 
     public static void main(String[] args) throws IOException {
 
-        String outputFile = "test.aligned";
+        String outputFile = TestUtils.DATA_DIR + "/aligned/short_spread.aligned";
         String chr = "chr1";
         int averageDepth = 1000;
-        int avgReadSize = 50;
+        int avgReadSize = 100;
         int readSigma = 5;
-        int interval = 200;
+        int interval = 1000;
         boolean append = false;
 
-        int startPosition = 800; // arbitrary
+        int startPosition = 100; // arbitrary
 
         PrintWriter pw = null;
 
