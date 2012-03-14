@@ -135,6 +135,9 @@ public class StringUtils {
      * @return
      */
     public static String decodeURL(String s) {
+        if(s == null) {
+            return null;
+        }
         try {
             return URLDecoder.decode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {

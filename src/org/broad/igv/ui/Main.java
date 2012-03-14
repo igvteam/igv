@@ -41,17 +41,15 @@ import java.io.File;
 /**
  * Utility class for launching IGV.  Provides a "main" method and an "open"  method for opening IGV in a supplied Frame.
  * <p/>
- * Note: The "open" methods must be executed on the event thread.  See the example below.
- * <p/>
+ * Note: The "open" methods must be executed on the event thread, for example
+ *
  * public static void main(String[] args) {
- * <p/>
- * EventQueue.invokeLater(new Runnable() {
- * <p/>
- * public void run() {
- * Frame frame = new Frame();
- * org.broad.igv.ui.Main.open(frame);
- * }
- * );
+ *   EventQueue.invokeLater(new Runnable() {
+ *     public void run() {
+ *       Frame frame = new Frame();
+ *       org.broad.igv.ui.Main.open(frame);
+ *     }
+ *   );
  * }
  *
  * @author jrobinso
@@ -192,21 +190,6 @@ public class Main {
         com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
-        // Set look and feel.  Use Nimbus for all platforms except Mac
-        /*if (!Globals.IS_MAC) {
-            try {
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
-                        UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
-            }
-            catch (Exception e) {
-                log.error("Error installing look and feel", e);
-            }
-        }
-        */
         try {
             String lnf = UIManager.getSystemLookAndFeelClassName();
             UIManager.setLookAndFeel(lnf);
@@ -333,16 +316,14 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                String firstArg = nonOptionArgs[0];
-                if (!firstArg.equals("ignore")) {
+                String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
+                if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
                             || firstArg.endsWith(".session")) {
-                        sessionFile = StringUtils.decodeURL(firstArg);
-                        log.info(sessionFile);
+                        sessionFile = firstArg;
                     } else {
-                        dataFileString = StringUtils.decodeURL(firstArg);
-                        log.info(dataFileString);
+                        dataFileString = firstArg;
                     }
                 }
                 if (nonOptionArgs.length > 1) {
