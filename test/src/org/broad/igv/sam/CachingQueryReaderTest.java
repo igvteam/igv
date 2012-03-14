@@ -24,7 +24,6 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -39,8 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author jrobinso
@@ -212,6 +210,38 @@ public class CachingQueryReaderTest {
         
         assertEquals(expSize, result.size());
         return result;
+    }
+
+    /**
+     * The main purpose of this test is to see if we get a
+     * heap space error.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testQueryLargeFile2() throws Exception{
+        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.454.bam";
+
+        ResourceLocator loc = new ResourceLocator(path);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+
+        String sequence = "MT";
+        int start = 1000;
+        int end = 3000;
+        int maxDepth = 1000;
+
+        CloseableIterator<Alignment> iter = cachingReader.query(sequence,  start, end, new ArrayList(),
+                new ArrayList(), maxDepth, null, null);
+        int count=0;
+        while(iter.hasNext()){
+            assertNotNull(iter.next());
+            count++;
+        }
+        
+        assertTrue(count > 0);
+
+
     }
 
 }
