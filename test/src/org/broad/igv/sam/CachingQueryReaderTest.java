@@ -102,7 +102,7 @@ public class CachingQueryReaderTest {
      * Test of query method, of class CachingQueryReader.  The test compares
      * the results of CachingQueryReader non-caching reader which
      * is assumed to be correct.
-     *
+     * <p/>
      * Note that SAMFileReader (which is the non-caching reader) is 1-based
      * and inclusive-end. CachingQueryReader is 0-based and exclusive end.
      */
@@ -110,7 +110,7 @@ public class CachingQueryReaderTest {
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        CloseableIterator<Alignment> iter = reader.query(sequence, start+1, end, contained);
+        CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
 
         Map<String, Alignment> expectedResult = new HashMap();
         while (iter.hasNext()) {
@@ -129,9 +129,9 @@ public class CachingQueryReaderTest {
             }
 
             expectedResult.put(rec.getReadName(), rec);
-            if(contained){
+            if (contained) {
                 assertTrue(rec.getStart() >= start);
-            }else{
+            } else {
                 //All we require is some overlap
                 boolean overlap = rec.getStart() >= start && rec.getStart() < end;
                 overlap |= (rec.getEnd() >= start) && (rec.getStart() < start);
@@ -158,9 +158,9 @@ public class CachingQueryReaderTest {
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
 
-            if(contained){
+            if (contained) {
                 assertTrue(rec.getStart() >= start);
-            }else{
+            } else {
                 //All we require is some overlap
                 boolean overlap = rec.getStart() >= start && rec.getStart() <= end;
                 overlap |= start >= rec.getStart() && start <= rec.getEnd();
@@ -177,7 +177,7 @@ public class CachingQueryReaderTest {
 
     //@Ignore
     @Test
-    public void testQueryLargeFile() throws Exception{
+    public void testQueryLargeFile() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
         String path = TestUtils.LARGE_DATA_DIR + "/ABCD_igvSample.bam";
 
@@ -187,37 +187,37 @@ public class CachingQueryReaderTest {
 
         //Edge location
         String sequence = "chr12";
-        int start = 56815621-1;
-        int end = start+1;
+        int start = 56815621 - 1;
+        int end = start + 1;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
-        tstQuery(path, sequence,  start, end, false, 10000);
+        tstSize(cachingReader, sequence, start, end, expSize * 5, expSize);
+        tstQuery(path, sequence, start, end, false, 10000);
 
         //Edge location
         sequence = "chr12";
-        start = 56815644-1;
-        end = start;
+        start = 56815644 - 1;
+        end = start + 1;
         expSize = 271;
 
         //tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
-        tstQuery(path, sequence,  start, end, false, 10000);
+        tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
         sequence = "chr12";
         start = 56815674;
-        end = start+1;
+        end = start + 1;
 
         expSize = 3288;
 
         //tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
-        tstQuery(path, sequence,  start, end, false, 10000);
+        tstQuery(path, sequence, start, end, false, 10000);
 
 
     }
 
     @Test
-    public void testQueryPiledUp() throws Exception{
+    public void testQueryPiledUp() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
         String path = TestUtils.DATA_DIR + "/aligned/pileup.sorted.aligned";
 
@@ -228,22 +228,22 @@ public class CachingQueryReaderTest {
         //Edge location
         String sequence = "chr1";
         int start = 141;
-        int end = start+1;
+        int end = start + 1;
         int expSize = 40;
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+        tstSize(cachingReader, sequence, start, end, expSize * 5, expSize);
 
         loc = new ResourceLocator(path);
         reader = AlignmentReaderFactory.getReader(loc);
         cachingReader = new CachingQueryReader(reader);
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 100, expSize);
-        tstQuery(path, sequence,  start, end, false, 10000);
+        tstSize(cachingReader, sequence, start, end, expSize * 100, expSize);
+        tstQuery(path, sequence, start, end, false, 10000);
 
         //Center, deep coverage region
         sequence = "chr1";
         start = 429;
-        end = start+1;
+        end = start + 1;
         int coverageLim = 1000;
         expSize = 1408;
 
@@ -265,11 +265,11 @@ public class CachingQueryReaderTest {
         //tstSize(cachingReader, sequence,  start, end, coverageLim, expSize);
 
         //This doesn't work on .aligned files, the query returns improper results
-        tstQuery(path, sequence,  start, end, false, coverageLim);
+        tstQuery(path, sequence, start, end, false, coverageLim);
 
     }
-    
-    public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize){
+
+    public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize) {
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
                 new ArrayList(), maxDepth, null, null);
         List<Alignment> result = new ArrayList();
@@ -277,7 +277,7 @@ public class CachingQueryReaderTest {
         while (cachingIter.hasNext()) {
             result.add(cachingIter.next());
         }
-        
+
         assertEquals(expSize, result.size());
         return result;
     }
@@ -289,7 +289,7 @@ public class CachingQueryReaderTest {
      * @throws Exception
      */
     @Test
-    public void testQueryLargeFile2() throws Exception{
+    public void testQueryLargeFile2() throws Exception {
         String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.454.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
@@ -301,14 +301,14 @@ public class CachingQueryReaderTest {
         int end = 3000;
         int maxDepth = 1000;
 
-        CloseableIterator<Alignment> iter = cachingReader.query(sequence,  start, end, new ArrayList(),
+        CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
                 new ArrayList(), maxDepth, null, null);
-        int count=0;
-        while(iter.hasNext()){
+        int count = 0;
+        while (iter.hasNext()) {
             assertNotNull(iter.next());
             count++;
         }
-        
+
         assertTrue(count > 0);
 
 
