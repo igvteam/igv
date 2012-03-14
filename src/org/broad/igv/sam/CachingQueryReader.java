@@ -716,7 +716,8 @@ public class CachingQueryReader {
 
                     //If the alignment starts outside a region of excessive coverage,
                     //we include it. Otherwise, we sample.
-                    boolean keep = a.getStart() < minStart;
+                    //boolean keep = a.getStart() < minStart;
+                    boolean keep = !(counts.getTotalCount(a.getStart()) > maxDepth || counts.getTotalCount(a.getEnd()) > maxDepth);
                     keep |= (frac_keep >= 1) || RAND.nextFloat() < frac_keep;
                     if (keep) {
                         sampledList.add(a);
