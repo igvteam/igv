@@ -1,32 +1,27 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
- */
+* Copyright (c) 2007-2012 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+*
+* This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+* Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+*
+* THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
+* WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+* WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+* PURPOSE, NON-INFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+* OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
+* TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
+* OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+* ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
+* THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
+* SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+*/
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMFileHeader;
-import org.broad.igv.exceptions.DataLoadException;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -50,10 +45,8 @@ public class GeraldReader implements AlignmentReader {
     FeatureIndex featureIndex;
     FileInputStream is;
     AlignmentParser parser;
-    Genome genome;
 
     public GeraldReader(String alignmentFile, boolean requireIndex) {
-        this.genome = genome;
         this.alignmentFile = alignmentFile;
         parser = getParserFor(alignmentFile);
         try {
@@ -68,8 +61,6 @@ public class GeraldReader implements AlignmentReader {
             }
         }
     }
-
-    // 
 
     private static AlignmentParser getParserFor(String fn) {
         if (fn.endsWith(".aligned") || (fn.endsWith(".aligned.txt"))) {
@@ -117,17 +108,12 @@ public class GeraldReader implements AlignmentReader {
             return EmptyAlignmentIterator.getInstance();
         }
 
-        // If contained == false (include overlaps) we need to adjust the start to
-        // ensure we get features that extend into this segment.
-        int startAdjustment = contained ? 0 : featureIndex.getLongestFeature(sequence);
-        return new GeraldQueryIterator(sequence, start - startAdjustment, end, contained);
+        return new GeraldQueryIterator(sequence, start, end, contained);
 
     }
 
-    // TODO -- implementation
-
     public boolean hasIndex() {
-        return true;  //To change body of implemented methods use File | Settings | File Templates.
+        return getIndex() != null;
     }
 
     public void close() throws IOException {
@@ -137,26 +123,75 @@ public class GeraldReader implements AlignmentReader {
     }
 
     public CloseableIterator<Alignment> iterator() {
-        return new GeraldQueryIterator();
+        return new GeraldIterator();
     }
 
     /**
-     *
+     * Class which doesn't support any querying, just iterates
+     * over all records.
      */
-    class GeraldQueryIterator implements CloseableIterator<Alignment> {
+    class GeraldIterator implements CloseableIterator<Alignment> {
 
         String chr;
         int start;
         int end;
         boolean contained;
-        Alignment currentRecord;
+        Alignment nextRecord;
         AsciiLineReader reader;
 
-        public GeraldQueryIterator() {
+        public GeraldIterator() {
             this.chr = null;
             reader = new AsciiLineReader(is);
             readNextRecord();
         }
+
+        protected Alignment parseNextRecord() {
+            Alignment next;
+            try {
+                next = parser.readNextRecord(reader);
+            } catch (IOException e) {
+                log.error("Error reading Gerald record", e);
+                return null;
+            }
+            return next;
+        }
+
+        protected Alignment readNextRecord() {
+            nextRecord = parseNextRecord();
+            return nextRecord;
+        }
+
+        public void close() {
+            try {
+                is.close();
+            } catch (IOException ex) {
+                log.error("Error closing alignment file", ex);
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextRecord != null;
+        }
+
+        @Override
+        public Alignment next() {
+            Alignment ret = nextRecord;
+            readNextRecord();
+            return ret;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+
+    /**
+     * Iterator for querying.
+     * author Jacob Silterra
+     */
+    class GeraldQueryIterator extends GeraldIterator {
 
         public GeraldQueryIterator(String sequence, int start, int end, boolean contained) {
             this.chr = sequence;
@@ -168,60 +203,62 @@ public class GeraldReader implements AlignmentReader {
             advanceToFirstRecord();
         }
 
-        private Alignment readNextRecord() {
-            try {
-                currentRecord = parser.readNextRecord(reader);
-            } catch (IOException e) {
-                log.error("Error reading Gerald record", e);
-                return null;
+        private boolean withinBounds(Alignment alignment) {
+            boolean within = alignment.getEnd() <= end && alignment.getStart() >= start;
+            if (contained) {
+                return within;
             }
-            return currentRecord;
+            within |= alignment.getStart() <= start && alignment.getEnd() > start;
+            within |= alignment.getStart() >= start && alignment.getStart() < end;
+            return within;
         }
 
         private void advanceToFirstRecord() {
-            while ((readNextRecord()) != null) {
-                if (!currentRecord.getChr().equals(chr)) {
+            nextRecord = parseNextRecord();
+            while (nextRecord != null) {
+                if (!nextRecord.getChr().equals(chr)) {
                     break;
-                } else if ((contained && currentRecord.getStart() >= start) ||
-                        (!contained && currentRecord.getEnd() >= start)) {
+                } else if (withinBounds(nextRecord)) {
                     break;
                 }
+                readNextRecord();
             }
         }
 
-        public void close() {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                log.error("Error closing alignment file", ex);
+        @Override
+        protected Alignment readNextRecord() {
+            advance();
+            //We use exclusive end
+            while ((nextRecord != null) && !withinBounds(nextRecord)) {
+                advance();
+            }
+            return nextRecord;
+        }
+
+        private void advance() {
+            if (hasNext()) {
+                nextRecord = parseNextRecord();
+                if (nextRecord == null) {
+                    return;
+                }
+
+                if (nextRecord.getStart() >= end) {
+                    nextRecord = null;
+                }
+            } else {
+                nextRecord = null;
             }
         }
 
+        @Override
         public boolean hasNext() {
-
-            // TODO chr == null implies an iterator, not query.  Fix this
-            if (chr == null) {
-                return currentRecord != null;
-            }
-
-            if (currentRecord == null ||
-                    !chr.equals(currentRecord.getChr())) {
+            if (nextRecord == null ||
+                    !chr.equals(nextRecord.getChr())) {
                 return false;
             } else {
-                return contained ? currentRecord.getEnd() <= end
-                        : currentRecord.getStart() <= end;
+                return contained ? nextRecord.getEnd() <= end
+                        : nextRecord.getStart() < end;
             }
-        }
-
-        public Alignment next() {
-            Alignment ret = currentRecord;
-            readNextRecord();
-            return ret;
-
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         private void seekToStart() {
@@ -232,7 +269,7 @@ public class GeraldReader implements AlignmentReader {
 
             // If contained == false (include overlaps) we need to adjust the start to
             // ensure we get features that extend into this segment.
-            int startAdjustment = contained ? 0 : MAX_READ_LENGTH; //featureIndex.getLongestFeature(chr);
+            int startAdjustment = contained ? 0 : featureIndex.getLongestFeature(chr);
             int startTileNumber = Math.max(0, (start - startAdjustment)) / featureIndex.getTileWidth();
 
             FeatureIndex.TileDef seekPos = featureIndex.getTileDef(chr, startTileNumber);

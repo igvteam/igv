@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+ * PURPOSE, NON-INFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
  * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
  * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
@@ -34,9 +34,9 @@ import org.junit.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -112,7 +112,7 @@ public class CachingQueryReaderTest {
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
         CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
 
-        Map<String, Alignment> expectedResult = new HashMap();
+        List<Alignment> expectedResult = new ArrayList<Alignment>();
         while (iter.hasNext()) {
             Alignment rec = iter.next();
 
@@ -128,15 +128,15 @@ public class CachingQueryReaderTest {
                 continue;
             }
 
-            expectedResult.put(rec.getReadName(), rec);
-            System.out.println("strt: " + rec.getStart() + " end: " + rec.getEnd());
+            expectedResult.add(rec);
+            //System.out.println("name: " + rec.getReadName() + "strt: " + rec.getStart() + " end: " + rec.getEnd());
             if (contained) {
                 assertTrue(rec.getStart() >= start);
             } else {
                 //All we require is some overlap
                 boolean overlap = rec.getStart() >= start && rec.getStart() < end;
                 overlap |= (rec.getEnd() >= start) && (rec.getStart() < start);
-                //assertTrue(overlap);
+                assertTrue(overlap);
             }
             assertEquals(sequence, rec.getChr());
         }
@@ -156,6 +156,11 @@ public class CachingQueryReaderTest {
 
         assertTrue(expectedResult.size() > 0);
         assertEquals(expectedResult.size(), result.size());
+
+        //Reads sorted by start position, apparently there is some wiggle room in the exact order
+        //We sort each first by start position, then end position
+        Collections.sort(expectedResult, new StartEndSorter());
+        Collections.sort(result, new StartEndSorter());
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
 
@@ -169,10 +174,11 @@ public class CachingQueryReaderTest {
             }
             assertEquals(sequence, rec.getChr());
 
-            assertTrue(expectedResult.containsKey(rec.getReadName()));
-            Alignment exp = expectedResult.get(rec.getReadName());
-            assertEquals(exp.getAlignmentStart(), rec.getAlignmentStart());
-            assertEquals(exp.getAlignmentEnd(), rec.getAlignmentEnd());
+            Alignment exp = expectedResult.get(i);
+            assertEquals("Start mismatch at position " + i + " read name " + exp.getReadName(), exp.getStart(), rec.getStart());
+
+            assertEquals(exp.getReadName(), rec.getReadName());
+            assertEquals("End mismatch at position " + i + " read name " + rec.getReadName(), exp.getEnd(), rec.getEnd());
         }
     }
 
@@ -266,7 +272,7 @@ public class CachingQueryReaderTest {
         tstSize(cachingReader, sequence, start, end, coverageLim, expSize);
 
         //This doesn't work on our .aligned file, the query returns improper results
-        //tstQuery(path, sequence, start, end, false, coverageLim);
+        tstQuery(path, sequence, start, end, false, coverageLim);
 
     }
 
@@ -313,6 +319,34 @@ public class CachingQueryReaderTest {
         assertTrue(count > 0);
 
 
+    }
+
+    private class StartEndSorter implements Comparator<Alignment> {
+
+        @Override
+        public int compare(Alignment o1, Alignment o2) {
+            Alignment al1 = (Alignment) o1;
+            Alignment al2 = (Alignment) o2;
+
+            int cStarts = compareInts(al1.getStart(), al2.getStart());
+            if (cStarts != 0) {
+                return cStarts;
+            }
+
+            int cEnds = compareInts(al1.getEnd(), al2.getEnd());
+            return cEnds;
+        }
+
+        private int compareInts(int i1, int i2) {
+            if (i1 < i2) {
+                return -1;
+            } else if (i1 > i2) {
+                return +1;
+            } else {
+                return 0;
+            }
+
+        }
     }
 
 }
