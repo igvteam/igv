@@ -544,7 +544,9 @@ public class CachingQueryReader {
         int maxDepth;
         int maxBucketSize;
         int e1 = -1;  // End position of current sampling bucket
-
+        int minStart = -1; //Start location where the reads go deeper than maxDepth
+        int numAtStart = -1; //To capture the number of alignments which pile up at a given start location
+        private int lastStart;
         //int depthCount;
 
         private Map<String, Alignment> currentBucket;
@@ -553,6 +555,7 @@ public class CachingQueryReader {
         private Set<String> pairedReadNames;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
+
 
         AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.tileNumber = tileNumber;
@@ -627,11 +630,23 @@ public class CachingQueryReader {
             if (spliceJunctionHelper != null) {
                 spliceJunctionHelper.addAlignment(record);
             }
+            
+            if (currentBucket.size() >= maxDepth && minStart < 0){
+                minStart = record.getStart();
+            }
 
             if (currentBucket.size() > maxBucketSize) {
                 ignoredCount++;
                 return;
             }
+
+            if(record.getStart() == lastStart){
+                numAtStart++;
+            }else{
+                numAtStart = 1;
+            }
+            lastStart = record.getStart();
+
             final String readName = record.getReadName();
             if (!currentBucket.containsKey(readName)) {
                 currentBucket.put(readName, record);
@@ -659,6 +674,8 @@ public class CachingQueryReader {
             currentBucket.clear();
             currentMates.clear();
             overflows.clear();
+            lastStart = -1;
+            minStart = -1;
         }
 
 
@@ -688,21 +705,38 @@ public class CachingQueryReader {
                 pairedReadNames.removeAll(added);
 
                 List<String> keys = new LinkedList(currentBucket.keySet());
+                //Fraction of the alignments in the excessive coverage region to keep
+                float frac_keep = (float) numAtStart / (numAtStart + keys.size() - maxDepth);
+                int tstcounttotal = 0;
+                int tstcountkept = 0;
                 while (sampledList.size() < maxDepth && keys.size() > 0) {
-
-                    // Remove a random alignment from the bucket.
-                    String key = keys.remove(RAND.nextInt(keys.size()));
+                    String key = keys.remove(0);
                     Alignment a = currentBucket.remove(key);
-                    sampledList.add(a);
 
-                    // If this alignment is paired,  add its mate to the list, or if its mate is not present
-                    // in this bucket record the read name.
-                    if (a.isPaired() && a.getMate().isMapped()) {
-                        Alignment m = currentMates.remove(key);
-                        if (m != null) {
-                            sampledList.add(m);
-                        } else {
-                            pairedReadNames.add(key);
+                    //If the alignment starts outside a region of excessive coverage,
+                    //we include it. Otherwise, we sample.
+                    boolean keep = a.getStart() < minStart;
+                    keep |= RAND.nextFloat() < frac_keep;
+                    int tstloc = 56815634;
+                    if(a.getStart() == tstloc){
+                        tstcounttotal++;
+                    }
+                    if(keep){
+                        sampledList.add(a);
+                        if(a.getStart() == tstloc){
+                            tstcountkept++;
+                        }
+
+
+                        // If this alignment is paired,  add its mate to the list, or if its mate is not present
+                        // in this bucket record the read name.
+                        if (a.isPaired() && a.getMate().isMapped()) {
+                            Alignment m = currentMates.remove(key);
+                            if (m != null) {
+                                sampledList.add(m);
+                            } else {
+                                pairedReadNames.add(key);
+                            }
                         }
                     }
                 }

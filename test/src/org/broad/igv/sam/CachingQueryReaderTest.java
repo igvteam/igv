@@ -186,14 +186,14 @@ public class CachingQueryReaderTest {
         int end = start + 2;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence,  start, end, expSize*2, expSize);
+        tstSize(cachingReader, sequence,  start, end, expSize * 2, expSize);
 
         sequence = "chr12";
         start = 56815634;
         end = start + 2;
         expSize = 165;
 
-        tstQuery(path, sequence,  start, end, false, expSize * 2);
+        tstQuery(path, sequence,  start, end, false, expSize * 10);
 
         tstSize(cachingReader, sequence,  start, end, expSize * 2, expSize);
 
