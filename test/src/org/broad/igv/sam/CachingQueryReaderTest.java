@@ -97,7 +97,7 @@ public class CachingQueryReaderTest {
 
     @Test
     public void testQuery() throws IOException {
-        tstQuery(testFile, sequence, start, end, contained);
+        tstQuery(testFile, sequence, start, end, contained, Integer.MAX_VALUE / 1000);
     }
 
     /**
@@ -105,7 +105,7 @@ public class CachingQueryReaderTest {
      * the results of CachingQueryReader non-caching reader which
      * is assumed to be correct.
      */
-    public void tstQuery(String testFile, String sequence, int start, int end, boolean contained) throws IOException {
+    public void tstQuery(String testFile, String sequence, int start, int end, boolean contained, int maxDepth) throws IOException {
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
@@ -133,7 +133,7 @@ public class CachingQueryReaderTest {
             }else{
                 //All we require is some overlap
                 boolean overlap = rec.getStart() >= start && rec.getStart() <= end;
-                overlap |= rec.getEnd() >= start && rec.getEnd() <= end; 
+                overlap |= start >= rec.getStart() && start <= rec.getEnd();
                 assertTrue(overlap);
             }
             assertEquals(sequence, rec.getChr());
@@ -143,7 +143,7 @@ public class CachingQueryReaderTest {
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), Integer.MAX_VALUE / 1000, null, null);
+                new ArrayList(), maxDepth, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -179,19 +179,25 @@ public class CachingQueryReaderTest {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
         String path = TestUtils.LARGE_DATA_DIR + "/ABCD_igvSample.bam";
 
+        ResourceLocator loc = new ResourceLocator(path);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+
         String sequence = "chr12";
         int start = 56815621;
         int end = start + 2;
         int expSize = 1066;
-        
-        //tstSize(cachingReader, sequence,  start, end, Integer.MAX_VALUE / 100, expSize);
+
+        tstSize(cachingReader, sequence,  start, end, expSize*2, expSize);
 
         sequence = "chr12";
         start = 56815634;
         end = start + 2;
         expSize = 165;
 
-        tstQuery(path, sequence,  start, end, false);
+        tstQuery(path, sequence,  start, end, false, expSize * 2);
+
+        tstSize(cachingReader, sequence,  start, end, expSize * 2, expSize);
 
     }
     
@@ -207,4 +213,5 @@ public class CachingQueryReaderTest {
         assertEquals(expSize, result.size());
         return result;
     }
+
 }
