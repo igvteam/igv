@@ -665,9 +665,9 @@ public class CachingQueryReader {
             for (Alignment alignment : sampledRecords) {
                 int aStart = alignment.getStart();
                 int aEnd = alignment.getEnd();
-                if ((aStart >= start) && (aStart < end)) {
+                if ((aStart >= start) && (aStart <= end)) {
                     containedRecords.add(alignment);
-                } else if ((aEnd > start) && (aStart < start)) {
+                } else if ((aEnd >= start) && (aStart <= start)) {
                     overlappingRecords.add(alignment);
                 }
             }

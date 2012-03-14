@@ -102,12 +102,15 @@ public class CachingQueryReaderTest {
      * Test of query method, of class CachingQueryReader.  The test compares
      * the results of CachingQueryReader non-caching reader which
      * is assumed to be correct.
+     *
+     * Note that SAMFileReader (which is the non-caching reader) is 1-based
+     * and inclusive-end. CachingQueryReader is 0-based and exclusive end.
      */
     public void tstQuery(String testFile, String sequence, int start, int end, boolean contained, int maxDepth) throws IOException {
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
+        CloseableIterator<Alignment> iter = reader.query(sequence, start+1, end, contained);
 
         Map<String, Alignment> expectedResult = new HashMap();
         while (iter.hasNext()) {
@@ -130,8 +133,8 @@ public class CachingQueryReaderTest {
                 assertTrue(rec.getStart() >= start);
             }else{
                 //All we require is some overlap
-                boolean overlap = rec.getStart() >= start && rec.getStart() <= end;
-                overlap |= start >= rec.getStart() && start <= rec.getEnd();
+                boolean overlap = rec.getStart() >= start && rec.getStart() < end;
+                overlap |= (rec.getEnd() >= start) && (rec.getStart() < start);
                 assertTrue(overlap);
             }
             assertEquals(sequence, rec.getChr());
@@ -184,25 +187,28 @@ public class CachingQueryReaderTest {
 
         //Edge location
         String sequence = "chr12";
-        int start = 56815621;
+        int start = 56815621-1;
         int end = start+1;
         int expSize = 1066;
 
         tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+        tstQuery(path, sequence,  start, end, false, 10000);
 
         //Edge location
         sequence = "chr12";
-        start = 56815635;
-        end = start+1;
-        expSize = 165;
+        start = 56815644-1;
+        end = start;
+        expSize = 271;
 
-        tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+        //tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
+        tstQuery(path, sequence,  start, end, false, 10000);
 
         //Center location
         sequence = "chr12";
         start = 56815674;
-        end = start + 1;
-        expSize = 3078;
+        end = start+1;
+
+        expSize = 3288;
 
         //tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
         tstQuery(path, sequence,  start, end, false, 10000);
@@ -223,7 +229,7 @@ public class CachingQueryReaderTest {
         String sequence = "chr1";
         int start = 141;
         int end = start+1;
-        int expSize = 42;
+        int expSize = 40;
 
         tstSize(cachingReader, sequence,  start, end, expSize * 5, expSize);
 
@@ -236,8 +242,8 @@ public class CachingQueryReaderTest {
 
         //Center, deep coverage region
         sequence = "chr1";
-        start = 430;
-        end = start + 1;
+        start = 429;
+        end = start+1;
         int coverageLim = 1000;
         expSize = 1408;
 
@@ -256,10 +262,10 @@ public class CachingQueryReaderTest {
         cachingReader = new CachingQueryReader(reader);
 
 
-        tstSize(cachingReader, sequence,  start, end, coverageLim, expSize);
+        //tstSize(cachingReader, sequence,  start, end, coverageLim, expSize);
 
         //This doesn't work on .aligned files, the query returns improper results
-        //tstQuery(path, sequence,  start, end, false, 10000);
+        tstQuery(path, sequence,  start, end, false, coverageLim);
 
     }
     
