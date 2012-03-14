@@ -15,30 +15,34 @@ import java.util.Random;
  */
 @Ignore
 public class AlignmentFileGenerator {
-    
+
     static Random RAND = new Random();
 
     public static void main(String[] args) throws IOException {
 
-        String outputFile = "wide_spread.aligned";
+        String outputFile = "test.aligned";
         String chr = "chr1";
-        int averageDepth = 2000;
-        int avgReadSize = 100;
-        int readSigma = 20;
-        int interval = 1000;
+        int averageDepth = 1000;
+        int avgReadSize = 50;
+        int readSigma = 5;
+        int interval = 200;
+        boolean append = false;
+
+        int startPosition = 800; // arbitrary
 
         PrintWriter pw = null;
 
         try {
-            pw = new PrintWriter(new FileWriter(outputFile));
+            pw = new PrintWriter(new FileWriter(outputFile, append));
 
-            int averageReadsPerPosition = averageDepth / avgReadSize;
+            float averageReadsPerPosition = (float) averageDepth / avgReadSize;
 
-            int startPosition = 100; // arbitrary
             for (int pos = startPosition; pos < startPosition + interval; pos++) {
-                
+
                 int readSize = avgReadSize + (int) (readSigma * RAND.nextGaussian());
-                int readCount = RAND.nextInt(2*averageReadsPerPosition);
+                float avgReadCount = 2 * averageReadsPerPosition * RAND.nextFloat();
+                int readCount = (int) avgReadCount;
+                readCount += avgReadCount - readCount < RAND.nextFloat() ? 1 : 0;
                 while (readCount-- > 0) {
                     pw.println(chr + "\t" + pos + "\t" + (pos + readSize) + "\t+");
                 }
