@@ -323,6 +323,13 @@ public class CachingQueryReaderTest {
             Alignment al1 = (Alignment) o1;
             Alignment al2 = (Alignment) o2;
 
+            String n1 = al1.getReadName();
+            n1 = n1 != null ? n1 : "";
+            int nStart = n1.compareTo(al2.getReadName());
+            if (nStart != 0) {
+                return nStart;
+            }
+
             int cStarts = compareInts(al1.getStart(), al2.getStart());
             if (cStarts != 0) {
                 return cStarts;
