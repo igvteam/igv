@@ -36,8 +36,8 @@ public class GeneListManager {
 
     private static Logger log = Logger.getLogger(GeneListManager.class);
 
-    public static final String[] DEFAULT_GENE_LISTS = {
-            /*"biocarta_cancer_cp.gmt",*/  "examples.gmt", "reactome_cp.gmt", "kegg_cancer_cp.gmt"};
+    public static final List<String> DEFAULT_GENE_LISTS = Arrays.asList(
+            /*"biocarta_cancer_cp.gmt",*/  "examples.gmt", "reactome_cp.gmt", "kegg_cancer_cp.gmt");
 
     public static final String USER_GROUP = "My lists";
 
@@ -119,6 +119,7 @@ public class GeneListManager {
                         importGMTFile(f);
                     } else {
                         GeneList geneList = loadGRPFile(f);
+                        geneList.setEditable(true);
                         geneList.setGroup(USER_GROUP);
                         if (geneList != null) {
                             addGeneList(geneList);
@@ -199,6 +200,7 @@ public class GeneListManager {
         return null;
     }
 
+    // TODO -- why are there 2 of these methods?
     public void importGMTFile(File gmtFile) throws IOException {
 
         File f = gmtFile;
@@ -215,7 +217,7 @@ public class GeneListManager {
             importedFiles.put(group, f);
             List<GeneList> lists = loadGMT(group, reader);
             for (GeneList gl : lists) {
-                gl.setEditable(false);
+                gl.setEditable(true);
                 addGeneList(gl);
             }
         } finally {
@@ -229,6 +231,8 @@ public class GeneListManager {
         }
     }
 
+
+    // TODO -- why are there 2 of these methods?
     public List<GeneList> importGMTFile(String path) throws IOException {
 
         BufferedReader reader = null;
@@ -242,8 +246,7 @@ public class GeneListManager {
             }
             return lists;
 
-        }
-        finally {
+        } finally {
             if (reader != null) reader.close();
         }
 
@@ -276,6 +279,51 @@ public class GeneListManager {
         return lists;
     }
 
+    /**
+     * #name=Example gene lists
+     * Proneural dev genes	Proneural dev genes	SOX1    SOX2	SOX3	SOX21	DCX	DLL3	ASCL1	TCF4
+     *
+     * @param group
+     * @param outputFile
+     */
+    void exportGMT(String group, File outputFile) throws IOException {
+
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+
+            List<GeneList> lists = getListsForGroup(group);
+            if (lists.isEmpty()) {
+                MessageUtils.showMessage("Nothing to export.");
+                return;
+            }
+
+            pw.println("#name=" + group);
+            for (GeneList gl : lists) {
+                pw.print(gl.getName());
+                for (String gene : gl.getLoci()) {
+                    pw.print("\t");
+                    pw.print(gene);
+                }
+                pw.println();
+            }
+        } finally {
+            if (pw != null) pw.close();
+        }
+
+    }
+
+    // TODO -- this is really ineffecient, redesign
+    private List<GeneList> getListsForGroup(String group) {
+        List<GeneList> list = new ArrayList<GeneList>();
+        for (GeneList gl : geneLists.values()) {
+            if (gl.getGroup().equals(group)) {
+                list.add(gl);
+            }
+        }
+        return list;
+    }
+
     public void saveGeneList(GeneList geneList) {
 
         File file = null;
@@ -302,8 +350,7 @@ public class GeneListManager {
                 MessageUtils.showMessage("Error writing gene list file: " + file.getAbsolutePath() + " " + e.getMessage());
             }
             log.error("Error saving gene list", e);
-        }
-        finally {
+        } finally {
             if (pw != null) {
                 pw.close();
             }
