@@ -193,6 +193,7 @@ public class SegmentFileParser implements SegFileParser {
             }
         }
 
+        dataset.sortLists();
         return dataset;
     }
 
