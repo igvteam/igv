@@ -32,9 +32,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
-import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -469,6 +468,7 @@ public class RulerPanel extends JPanel {
                     e = c + 20;
                 }
 
+                s = Math.max(0.0, s);
                 String chr = null;
                 if (isWholeGenomeView()) {
                     Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
