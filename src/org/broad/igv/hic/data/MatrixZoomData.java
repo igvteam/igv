@@ -20,7 +20,10 @@ public class MatrixZoomData {
     private int blockBinCount;   // block size in bins
     private int blockColumnCount;     // number of block columns
 
+    // TODO -- isnt this a memory leak?  Should these be stored?
     private LinkedHashMap<Integer, Block> blocks;
+
+
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
 
@@ -117,19 +120,45 @@ public class MatrixZoomData {
         Block b = blocks.get(blockNumber);
         if (b == null) {
             if (reader != null && blockIndex != null) {
-                Preprocessor.IndexEntry idx = blockIndex.get(blockNumber);
-                if (idx != null) {
-                    try {
-                        b = reader.readBlock(blockNumber, idx);
-                        blocks.put(blockNumber, b);
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
+                b = readBlock(blockNumber);
+                blocks.put(blockNumber, b);
+            }
+        }
+        return b;
+    }
+
+    private Block readBlock(int blockNumber) {
+        Preprocessor.IndexEntry idx = blockIndex.get(blockNumber);
+        Block b = null;
+        if (idx != null) {
+            try {
+                b = reader.readBlock(blockNumber, idx);
+
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
         return b;
     }
 
 
+    // Dump the contents to standard out
+    public void dump(Chromosome[] chromosomes) {
+
+        // Get the block index keys, and sort
+        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+        Collections.sort(blockNumbers);
+
+        System.out.println("# " + chromosomes[chr1].getName() + " - " + chromosomes[chr2].getName());
+
+        for(int blockNumber : blockNumbers) {
+            Block b = readBlock(blockNumber);
+            if(b != null) {
+                for(ContactRecord rec : b.getContactRecords()) {
+                     System.out.println(rec.getX()*binSize + "\t" + rec.getY()*binSize + "\t" + rec.getCounts());
+                }
+            }
+        }
+
+    }
 }

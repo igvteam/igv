@@ -21,11 +21,14 @@ package org.broad.igv.hic.tools;
 import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.hic.HiCGlobals;
+import org.broad.igv.hic.data.*;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;
 import java.util.*;
@@ -57,6 +60,23 @@ public class HiCTools {
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
+        } else if (args[0].equals("printmatrix")) {
+            if (args.length < 5) {
+                System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize");
+            }
+            String file = args[1];
+            String chr1 = args[2];
+            String chr2 = args[3];
+            String binSizeSt = args[4];
+            int binSize = 0;
+            try {
+                binSize = Integer.parseInt(binSizeSt);
+            } catch (NumberFormatException e) {
+                System.err.println("Integer expected.  Found: " + binSizeSt);
+            }
+            dumpMatrix(file, chr1, chr2, binSize);
+
+
         } else if (args[0].equals("pre")) {
 
             String genomeId = args[3];
@@ -199,15 +219,59 @@ public class HiCTools {
     }
 
 
+    static void dumpMatrix(String file, String chr1, String chr2, int binsize) throws IOException {
+
+        if (!file.endsWith("hic")) {
+            System.err.println("Only 'hic' files are supported");
+            System.exit(-1);
+
+        }
+        SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
+        Dataset dataset = (new DatasetReader(ss)).read();
+        Chromosome[] tmp = dataset.getChromosomes();
+
+        Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
+        for (Chromosome c : tmp) {
+            chromosomeMap.put(c.getName(), c);
+        }
+
+        if (!chromosomeMap.containsKey(chr1)) {
+            System.err.println("Unknown chromosome: " + chr1);
+            System.exit(-1);
+        } else if (!chromosomeMap.containsKey(chr2)) {
+            System.err.println("Unknown chromosome: " + chr2);
+            System.exit(-1);
+        }
+
+        int zoomIdx = 0;
+        boolean found = false;
+        for (; zoomIdx < HiCGlobals.zoomBinSizes.length; zoomIdx++) {
+            if (HiCGlobals.zoomBinSizes[zoomIdx] == binsize) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            System.err.println("Unknown bin size: " + binsize);
+        }
+
+        Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
+        MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
+
+        zd.dump(tmp);
+    }
+
+
     static class CommandLineParser extends CmdLineParser {
-        private Option diagonalsOption      = null;
-        private Option chromosomeOption     = null;
+        private Option diagonalsOption = null;
+        private Option chromosomeOption = null;
         private Option countThresholdOption = null;
-        private Option loadDensititesOption = null; 
+        private Option loadDensititesOption = null;
 
         CommandLineParser() {
-            diagonalsOption      = addBooleanOption('d', "diagonals");
-            chromosomeOption     = addStringOption('c', "chromosomes");
+            diagonalsOption = addBooleanOption('d', "diagonals");
+            chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('t', "countThreshold");
             loadDensititesOption = addBooleanOption('o', "density");
         }
