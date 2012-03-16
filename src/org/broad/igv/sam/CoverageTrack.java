@@ -27,15 +27,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.FileDialogUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
@@ -46,15 +41,22 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -231,14 +233,12 @@ public class CoverageTrack extends AbstractTrack {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
-            if (frame.getScale() < minVisibleScale) {
-                AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-                if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-                    final int pos = (int) position; // - 1;
-                    AlignmentCounts counts = interval.getAlignmentCounts(pos);
-                    if (counts != null) {
-                        return counts.getValueStringAt(pos);
-                    }
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+            if (interval != null && interval.contains(chr, (int) position, (int) position)) {
+                final int pos = (int) position; // - 1;
+                AlignmentCounts counts = interval.getAlignmentCounts(pos);
+                if (counts != null) {
+                    return counts.getValueStringAt(pos);
                 }
             }
         } else {
