@@ -953,7 +953,7 @@ public class IgvTools {
             List<WindowFunction> funcs = new ArrayList(tokens.length);
             for (int i = EXT_FACTOR; i < tokens.length; i++) {
                 String wf = tokens[i];
-                if (wf.startsWith("p")) {
+                if (wf.matches("p\\d{1,2}")) {
                     wf = wf.replaceFirst("p", "percentile");
                 }
                 try {

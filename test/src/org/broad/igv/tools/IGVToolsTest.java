@@ -631,4 +631,35 @@ public class IGVToolsTest {
 
     }
 
+    @Test
+    public void testCountAllWF() throws Exception {
+        String[] exclude = {"none", "density", "stddev", "count"};
+        List<WindowFunction> wfList = new ArrayList<WindowFunction>();
+        wfList.addAll(Arrays.asList(WindowFunction.values()));
+        for (String s : exclude) {
+            wfList.remove(WindowFunction.valueOf(s));
+        }
+        String inputFile = TestUtils.DATA_DIR + "/bam/NA12878.SLX.sample.bam";
+        testCountWindowFunctions(inputFile, "All", wfList);
+    }
+
+    public void testCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
+        String outputFile = TestUtils.DATA_DIR + "/out/testCountWindowFunctions.tdf";
+
+
+        String wfs = "";
+        for (WindowFunction wf : windowFunctions) {
+            wfs += wf.name() + ",";
+        }
+        wfs = wfs.substring(0, wfs.lastIndexOf(","));
+        String[] cmd = {"count", "--windowFunctions", wfs, inputFile, outputFile, hg18id};
+        igvTools.run(cmd);
+
+        TDFReader reader = new TDFReader(new ResourceLocator(outputFile));
+        for (WindowFunction wf : windowFunctions) {
+            TDFDataset ds = reader.getDataset(chr, 0, wf);
+            assertNotNull(ds);
+        }
+    }
+
 }
