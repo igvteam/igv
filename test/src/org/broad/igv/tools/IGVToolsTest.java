@@ -18,18 +18,20 @@
 
 package org.broad.igv.tools;
 
-import org.broad.igv.Globals;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
+import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.tools.sort.SorterTest;
+import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -54,9 +56,11 @@ public class IGVToolsTest {
 
     IgvTools igvTools;
 
+    private static final String hg18id = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+
     @Before
     public void setUp() throws Exception {
-        Globals.setHeadless(true);
+        TestUtils.setUpHeadless();
         igvTools = new IgvTools();
     }
 
@@ -184,11 +188,11 @@ public class IGVToolsTest {
         String inputFile = TestUtils.DATA_DIR + "/gct/OV.transcriptome__agilentg4502.data.txt";
         String outFilePath = TestUtils.DATA_DIR + "/out/testTileGCT.wig";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
-        String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, genome};
+        String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
         inputFile = TestUtils.DATA_DIR + "/gct/GBM.methylation__sampled.data.txt";
-        args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, genome};
+        args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
     }
@@ -197,14 +201,12 @@ public class IGVToolsTest {
     private void testTile(String inputFile, int start, int end) throws IOException {
         String file1 = TestUtils.DATA_DIR + "/out/file1.tdf";
         String file2 = TestUtils.DATA_DIR + "/out/file2.tdf";
-        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
-
 
         //todo Compare 2 outputs more meaningfully
-        String[] args = {"tile", "-z", "1", "--windowFunctions", "min", inputFile, file1, genome};
+        String[] args = {"tile", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
         igvTools.run(args);
 
-        args = new String[]{"tile", "-z", "2", "--windowFunctions", "max", inputFile, file2, genome};
+        args = new String[]{"tile", "-z", "2", "--windowFunctions", "max", inputFile, file2, hg18id};
         (new IgvTools()).run(args);
 
 
@@ -260,7 +262,6 @@ public class IGVToolsTest {
     public void tstCount(String inputFile, String outputBase, String outputExt,
                          String chr, int start, int end) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
-        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
 
@@ -273,7 +274,7 @@ public class IGVToolsTest {
             }
 
             String fullout = outputFile + ind + "." + outputExt;
-            String input = "count " + opt + " " + inputFile + " " + fullout + " " + genome;
+            String input = "count " + opt + " " + inputFile + " " + fullout + " " + hg18id;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
@@ -286,6 +287,7 @@ public class IGVToolsTest {
                         List<TDFTile> tiles = ds.getTiles();
                         for (TDFTile tile : tiles) {
                             assertTrue(tile.getTileStart() >= start);
+                            assertTrue(tile.getTileStart() < end);
                         }
                     }
                 }
@@ -295,7 +297,7 @@ public class IGVToolsTest {
                 assertTrue(outFile.canRead());
 
                 ResourceLocator locator = new ResourceLocator(fullout);
-                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(genome, true))).parse();
+                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id, true))).parse();
 
                 if (query) {
                     assertEquals(1, ds.getChromosomes().length);
@@ -376,14 +378,13 @@ public class IGVToolsTest {
 
     private void tstCountBamList(String listArg) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/file_";
-        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
         String[] opts = new String[]{"--strands=read", "--strands=first", ""};
 
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             String fullout = outputFile + ind + ".tdf";
-            String input = "count " + opt + " " + listArg + " " + fullout + " " + genome;
+            String input = "count " + opt + " " + listArg + " " + fullout + " " + hg18id;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
@@ -429,6 +430,48 @@ public class IGVToolsTest {
         Dataset ds = parser.createDataset();
         assertEquals(10, ds.getChromosomes().length);
 
+    }
+
+    @Test
+    public void testCountDups() throws Exception {
+        String inputFiname = "test_5duplicates";
+        String ext = ".sam";
+        String inputFile = TestUtils.DATA_DIR + "/sam/" + inputFiname + ext;
+        String outputFileND = TestUtils.DATA_DIR + "/sam/" + inputFiname + "_nodups" + ".tdf";
+        String outputFileWithDup = TestUtils.DATA_DIR + "/sam/" + inputFiname + "_withdups" + ".tdf";
+
+        String chr = "1";
+        int pos = 9718611;
+        String queryStr = chr + ":" + (pos - 500) + "-" + (pos + 500) + " ";
+        String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
+        igvTools.run(cmd_nodups.split("\\s+"));
+
+        String cmd_withdups = "count --includeDuplicates -z 7 --windowSize 1 --query " + queryStr + inputFile + " " + outputFileWithDup + " " + hg18id;
+        igvTools.run(cmd_withdups.split("\\s+"));
+
+        assertTrue((new File(outputFileND).exists()));
+        assertTrue((new File(outputFileWithDup).exists()));
+
+        Genome genome = TestUtils.loadGenome();
+        int noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
+        int dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+
+        assertEquals(noDupCount + 4, dupCount);
+
+        //No dups at this location
+        pos += 80;
+        noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
+        dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+        assertEquals(noDupCount, dupCount);
+
+    }
+
+    private float getCount(String filename, String chr, int zoom, int pos, Genome genome) {
+        TDFReader reader = TDFReader.getReader(filename);
+        TDFDataset ds = reader.getDataset(chr, zoom, WindowFunction.mean);
+        TDFDataSource dataSource = new TDFDataSource(reader, 0, "test", genome);
+        List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, pos - 1, pos + 1, zoom);
+        return scores.get(0).getScore();
     }
 
     @Test

@@ -25,14 +25,15 @@ package org.broad.igv.tdf;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.*;
-import org.broad.igv.dev.affective.AffectiveGenome;
+import org.broad.igv.data.BasicScore;
+import org.broad.igv.data.CompositeScore;
+import org.broad.igv.data.CoverageDataSource;
+import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
 
@@ -255,7 +256,6 @@ public class TDFDataSource implements CoverageDataSource {
 
 
     public int getChrLength(String chr) {
-        final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (chr.equals(Globals.CHR_ALL)) {
             return (int) (genome.getLength() / 1000);
         } else {
@@ -383,16 +383,6 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
-
-    /*
-    *
-   Chromosome chromosome = IGV.getInstance().getGenomeManager().getGenome().getChr(chr);
-   if(chromosome == null) {
-   return null;
-   }
-   double tileWidth = chromosome.getLength() / (Math.pow(2.0, zoom));
-    */
-
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         Chromosome chromosome = genome.getChromosome(chr);
@@ -401,7 +391,7 @@ public class TDFDataSource implements CoverageDataSource {
         String querySeq = tmp == null ? chr : tmp;
 
         // If we are in gene list view bypass caching.
-        if (FrameManager.isGeneListMode()) {
+        if (Globals.isHeadless() || FrameManager.isGeneListMode()) {
 
             return getSummaryScores(querySeq, startLocation, endLocation, zoom);
 
