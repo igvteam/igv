@@ -24,6 +24,7 @@ import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
 import org.broad.igv.tdf.TDFDataSource;
@@ -36,6 +37,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
+import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
@@ -46,9 +48,7 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.Assert.*;
 
@@ -57,6 +57,7 @@ public class IGVToolsTest {
     IgvTools igvTools;
 
     private static final String hg18id = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+    private static final int MAX_LINES_CHECK = 200;
 
     @Before
     public void setUp() throws Exception {
@@ -203,10 +204,10 @@ public class IGVToolsTest {
         String file2 = TestUtils.DATA_DIR + "/out/file2.tdf";
 
         //todo Compare 2 outputs more meaningfully
-        String[] args = {"tile", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
+        String[] args = {"toTDF", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
         igvTools.run(args);
 
-        args = new String[]{"tile", "-z", "2", "--windowFunctions", "max", inputFile, file2, hg18id};
+        args = new String[]{"toTDF", "-z", "2", "--windowFunctions", "max", inputFile, file2, hg18id};
         (new IgvTools()).run(args);
 
 
@@ -265,12 +266,20 @@ public class IGVToolsTest {
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
 
+
         String[] opts = new String[]{"", "--bases", "--strands=read", "--strands=first", "--strands=read --bases"};
+        Map<String, float[]> rowTotals = new HashMap<String, float[]>(opts.length);
+        String refOpt = null;
+
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             int winsize = 5;
             if (query) {
                 opt += " --windowSize " + winsize + " --query " + chr + ":" + start + "-" + end;
+            }
+
+            if (ind == 0) {
+                refOpt = opt;
             }
 
             String fullout = outputFile + ind + "." + outputExt;
@@ -299,6 +308,13 @@ public class IGVToolsTest {
                 ResourceLocator locator = new ResourceLocator(fullout);
                 WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id, true))).parse();
 
+                //We miss a few alignments with this option sometimes,
+                //so it doesn't total up the same
+                if (!opt.contains("strands=first")) {
+                    float[] linetotals = getLineTotals(fullout);
+                    rowTotals.put(opt, linetotals);
+                }
+
                 if (query) {
                     assertEquals(1, ds.getChromosomes().length);
                     assertEquals(chr, ds.getChromosomes()[0]);
@@ -310,6 +326,63 @@ public class IGVToolsTest {
                 }
             }
         }
+
+        //Compare row totals
+        //They should all add up the same
+        float[] refTotals = rowTotals.get(refOpt);
+        for (String opt : rowTotals.keySet()) {
+            if (opt.equals(refOpt)) {
+                continue;
+            }
+            float[] testTotals = rowTotals.get(opt);
+            assertEquals(refTotals.length, testTotals.length);
+            for (int rw = 0; rw < refTotals.length; rw++) {
+                float diff = refTotals[rw] - testTotals[rw];
+                String msg = "Difference between " + refTotals[rw] + " and " + testTotals[rw] + " too high. ";
+                msg += "Row " + rw + ". Test option " + opt;
+                //This can get pretty high, we only use 2 digits of precision
+                //Also test this in CoverageCounterTest
+                assertTrue(msg, Math.abs(diff) <= 0.1);
+            }
+        }
+    }
+
+    /**
+     * Calculates the sum of each row, excluding the first column.
+     * Skips non-numeric rows
+     *
+     * @param filename
+     * @return
+     */
+    private float[] getLineTotals(String filename) throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        String line = "";
+
+        float tmpsum;
+        List<Float> sums = new ArrayList<Float>();
+        while ((line = reader.readLine()) != null && sums.size() < MAX_LINES_CHECK) {
+            try {
+                String[] tokens = line.split("\\t");
+                tmpsum = 0;
+                for (int ii = 1; ii < tokens.length; ii++) {
+                    tmpsum += Float.parseFloat(tokens[ii]);
+                }
+                sums.add(tmpsum);
+            } catch (NumberFormatException e) {
+                continue;
+            }
+
+        }
+
+        reader.close();
+
+        float[] toret = new float[sums.size()];
+        for (int ii = 0; ii < sums.size(); ii++) {
+            toret[ii] = sums.get(ii);
+        }
+
+        return toret;
+
     }
 
     public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
@@ -429,7 +502,6 @@ public class IGVToolsTest {
         ExpressionFileParser parser = new ExpressionFileParser(new ResourceLocator(outputFile), null, genome);
         Dataset ds = parser.createDataset();
         assertEquals(10, ds.getChromosomes().length);
-
     }
 
     @Test
@@ -437,8 +509,8 @@ public class IGVToolsTest {
         String inputFiname = "test_5duplicates";
         String ext = ".sam";
         String inputFile = TestUtils.DATA_DIR + "/sam/" + inputFiname + ext;
-        String outputFileND = TestUtils.DATA_DIR + "/sam/" + inputFiname + "_nodups" + ".tdf";
-        String outputFileWithDup = TestUtils.DATA_DIR + "/sam/" + inputFiname + "_withdups" + ".tdf";
+        String outputFileND = TestUtils.DATA_DIR + "/out/" + inputFiname + "_nodups" + ".tdf";
+        String outputFileWithDup = TestUtils.DATA_DIR + "/out/" + inputFiname + "_withdups" + ".tdf";
 
         String chr = "1";
         int pos = 9718611;
@@ -544,6 +616,19 @@ public class IGVToolsTest {
         File idxFi = new File(indexFile);
         assertTrue(idxFi.exists());
         idxFi.deleteOnExit();
+
+        Genome genome = IgvTools.loadGenome(fasta_file, true);
+        FeatureCodec codec = CodecFactory.getCodec(infile, genome);
+        AbstractFeatureReader<Feature> reader = AbstractFeatureReader.getFeatureReader(infile, codec, true);
+        String chr = "NC_000913_bb";
+        Iterator<Feature> features = reader.query(chr, 5085, 5091);
+        int count = 0;
+        while (features.hasNext()) {
+            assertEquals(chr, features.next().getChr());
+            count++;
+        }
+        assertEquals(3, count);
+
     }
 
 }

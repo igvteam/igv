@@ -133,9 +133,9 @@ public class CoverageCounterTest {
         Genome genome = this.genome;
         //Test that when we run the process twice, with separate and totalled strands, the results add
         //up properly
-        int[] strandOptions = new int[]{0, CoverageCounter.STRANDS_BY_READ};
-        int[] expected_cols = new int[]{1, 2};
-        TestDataConsumer[] tdcs = new TestDataConsumer[2];
+        int[] strandOptions = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR, CoverageCounter.BASES};
+        int[] expected_cols = new int[]{1, 2, 2, 5};
+        TestDataConsumer[] tdcs = new TestDataConsumer[expected_cols.length];
 
         for (int ii = 0; ii < windowSizes.length; ii++) {
             for (int so = 0; so < strandOptions.length; so++) {
@@ -152,9 +152,16 @@ public class CoverageCounterTest {
 
             TestDataConsumer total_dc = tdcs[0];
             assertEquals(total_dc.testDatas.size(), tdcs[1].testDatas.size());
-            for (int row = 0; row < total_dc.testDatas.size(); row++) {
-                TestData td = tdcs[1].testDatas.get(row);
-                assertEquals(total_dc.testDatas.get(row).data[0], td.data[0] + td.data[1], 1e-2);
+            for (int opts = 1; opts < strandOptions.length; opts++) {
+                TestDataConsumer tdc = tdcs[opts];
+                for (int row = 0; row < total_dc.testDatas.size(); row++) {
+                    TestData td = tdc.testDatas.get(row);
+                    float act_sum = 0;
+                    for (float f : td.data) {
+                        act_sum += f;
+                    }
+                    assertEquals(total_dc.testDatas.get(row).data[0], act_sum, 1e-2);
+                }
             }
         }
     }
