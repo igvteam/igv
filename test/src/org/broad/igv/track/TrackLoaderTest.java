@@ -2,6 +2,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -74,6 +75,24 @@ public class TrackLoaderTest {
         String filepath = TestUtils.DATA_DIR + "/sample/BRCA_sif.txt";
         //Sample information file, shouldn't have tracks. Not a great test
         tstLoadFi(filepath, 0);
+    }
+
+    @Test
+    public void testLoadGFF() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "/gff/simfeatures.gff3";
+        TrackLoader loader = new TrackLoader();
+        List<Track> tracks = loader.load(new ResourceLocator(filepath), TestUtils.loadGenome());
+        assertEquals(1, tracks.size());
+        FeatureTrack track = (FeatureTrack) tracks.get(0);
+        List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
+        assertEquals(2, features.size());
+        IGVFeature feat0 = (IGVFeature) features.get(0);
+        IGVFeature feat1 = (IGVFeature) features.get(1);
+
+        assertEquals(707 - 1, feat0.getStart());
+        assertEquals(943, feat0.getEnd());
+        assertEquals(7563 - 1, feat1.getStart());
+        assertEquals(7938, feat1.getEnd());
     }
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {

@@ -341,6 +341,25 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
+     * Get all features this track contains.
+     * Intended for testing
+     *
+     * @return
+     */
+    List<Feature> getFeatures(String chr, int start, int end) {
+        List<Feature> features = new ArrayList<Feature>();
+        try {
+            Iterator<Feature> iter = source.getFeatures(chr, start, end);
+            while (iter.hasNext()) {
+                features.add(iter.next());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return features;
+    }
+
+    /**
      * @param position in genomic coordinates
      * @param y        pixel location in panel coordinates.  // TODO offset by track origin before getting here?
      * @param frame

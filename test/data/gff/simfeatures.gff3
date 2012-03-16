@@ -1,0 +1,3 @@
+##gff3
+chr1	liftover	exon	7563	7938	1	-	.	coords=sim4db;fName=ENSTGUT00000013717
+chr1	liftover	exon	707	943	1	-	.	coords=sim4db;fName=ENSTGUT00000013717
