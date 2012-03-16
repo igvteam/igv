@@ -594,6 +594,9 @@ public class IGVToolsTest {
             assertEquals(line1, line2);
         }
 
+        reader1.close();
+        reader2.close();
+
 
     }
 
@@ -640,10 +643,10 @@ public class IGVToolsTest {
             wfList.remove(WindowFunction.valueOf(s));
         }
         String inputFile = TestUtils.DATA_DIR + "/bam/NA12878.SLX.sample.bam";
-        testCountWindowFunctions(inputFile, "All", wfList);
+        tstCountWindowFunctions(inputFile, "All", wfList);
     }
 
-    public void testCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
+    private void tstCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/testCountWindowFunctions.tdf";
 
 
