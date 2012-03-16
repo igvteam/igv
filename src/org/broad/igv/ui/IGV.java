@@ -2398,10 +2398,6 @@ public class IGV {
                 closeWindow(bar2);
             }
 
-            if (igvArgs.getLocusString() != null) {
-                goToLocus(igvArgs.getLocusString());
-            }
-
             session.recordHistory();
 
             // Start up a port listener.  Port # can be overriden with "-p" command line switch
@@ -2422,6 +2418,10 @@ public class IGV {
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
+                    if (igvArgs.getLocusString() != null) {
+                        goToLocus(igvArgs.getLocusString());
+                    }
+
                 }
             });
 
