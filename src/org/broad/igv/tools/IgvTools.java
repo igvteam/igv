@@ -425,7 +425,7 @@ public class IgvTools {
                 strandOption = parser.addStringOption("strands");
                 queryStringOpt = parser.addStringOption("query");
                 minMapQualityOpt = parser.addStringOption("minMapQuality");
-                includeDupsOpt = parser.addStringOption("includeDuplicates");
+                includeDupsOpt = parser.addBooleanOption("includeDuplicates");
 
                 // Trackline
                 colorOption = parser.addStringOption("color");
@@ -519,7 +519,7 @@ public class IgvTools {
         File inputFileOrDir = new File(ifile);
 
         // Estimae the total number of lines to be parsed, for progress updates
-        int nLines =  estimateLineCount(inputFileOrDir);
+        int nLines = estimateLineCount(inputFileOrDir);
 
         // TODO -- move this block of code out of here, this should be done before calling this method
         // Convert  gct files to igv format first
