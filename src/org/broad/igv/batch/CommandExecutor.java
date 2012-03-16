@@ -122,10 +122,13 @@ public class CommandExecutor {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equals("tofront")) {
                     return bringToFront();
-                } else if (cmd.equalsIgnoreCase("viewaspairs")){
+                } else if (cmd.equalsIgnoreCase("viewaspairs")) {
                     //TODO Allow user to name a specific track
-                     return setViewAsPairs(param1);
-                } else if (cmd.equals("exit")) {
+                    return setViewAsPairs(param1);
+                } else if (cmd.equalsIgnoreCase("maxdepth")) {
+                    //TODO Allow user to name a specific track
+                    return this.setMaxCoverageDepth(param1);
+                }else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
                     log.error("UNKOWN COMMAND: " + command);
@@ -156,11 +159,29 @@ public class CommandExecutor {
     private String setViewAsPairs(String param1) {
         List<Track> tracks = igv.getAllTracks(false);
         boolean vAP = "false".equalsIgnoreCase(param1) ? false : true;
-        for(Track track: tracks){
-            if(track instanceof AlignmentTrack){
+        for (Track track : tracks) {
+            if (track instanceof AlignmentTrack) {
                 AlignmentTrack atrack = (AlignmentTrack) track;
                 atrack.setViewAsPairs(vAP);
             }
+        }
+        return "OK";
+    }
+
+    private String setMaxCoverageDepth(String param1) {
+        List<Track> tracks = igv.getAllTracks(false);
+        try {
+            Integer maxDepth = Integer.parseInt(param1);
+            for (Track track : tracks) {
+                if (track instanceof AlignmentTrack) {
+                    AlignmentTrack atrack = (AlignmentTrack) track;
+                    atrack.setMaxDepth (maxDepth);
+                }
+            }
+        } catch (NumberFormatException e) {
+            final String msg = "Error parsing maxDepth value: " + param1 + ". Command ignored";
+            log.error(msg);
+            return msg;
         }
         return "OK";
     }

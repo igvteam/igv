@@ -668,6 +668,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
 
+    public void setMaxDepth(int newMaxLevels) {
+        dataManager.setMaxLevels(newMaxLevels);
+        //dataManager.reload();
+        refresh();
+    }
+
     public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
         if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {
@@ -1414,9 +1420,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     try {
                         int newMaxLevels = Integer.parseInt(val);
                         if (newMaxLevels != maxLevels) {
-                            dataManager.setMaxLevels(newMaxLevels);
-                            //dataManager.reload();
-                            refresh();
+                            setMaxDepth(newMaxLevels);
                         }
                     } catch (NumberFormatException ex) {
                         MessageUtils.showMessage("Insert size must be an integer value: " + val);
@@ -1426,6 +1430,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             });
             add(item);
         }
+
 
         public void addInsertSizeMenuItem() {
             // Change track height by attribute
