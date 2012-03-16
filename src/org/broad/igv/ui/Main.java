@@ -42,14 +42,14 @@ import java.io.File;
  * Utility class for launching IGV.  Provides a "main" method and an "open"  method for opening IGV in a supplied Frame.
  * <p/>
  * Note: The "open" methods must be executed on the event thread, for example
- *
+ * <p/>
  * public static void main(String[] args) {
- *   EventQueue.invokeLater(new Runnable() {
- *     public void run() {
- *       Frame frame = new Frame();
- *       org.broad.igv.ui.Main.open(frame);
- *     }
- *   );
+ * EventQueue.invokeLater(new Runnable() {
+ * public void run() {
+ * Frame frame = new Frame();
+ * org.broad.igv.ui.Main.open(frame);
+ * }
+ * );
  * }
  *
  * @author jrobinso
@@ -70,25 +70,10 @@ public class Main {
 
         initApplication();
 
-        EventQueue.invokeLater(new Runnable() {
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        open(frame, args);
 
-            public void run() {
-                try {
-
-                    JFrame frame = new JFrame();
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    open(frame, args);
-
-                } catch (Exception e) {
-
-                    log.error("Fatal application error!", e);
-                    MessageUtils.showMessage("<html>A fatal error was encountered on startup: <br>" +
-                            e.toString() + "<br>" +
-                            "Please contact igv-help@broadinstitute.org");
-                    System.exit(-1);
-                }
-            }
-        });
     }
 
     private static void initApplication() {
