@@ -37,18 +37,19 @@ public class ProgressBar extends JPanel
     private Window progressParentWindow;
     private ProgressMonitor monitor;
 
-    public ProgressBar(int minimumProgress, int maximumProgress) {
-        this(null, minimumProgress, maximumProgress, false, null);
-    }
-
     public ProgressBar(Window progressParentWindow, int minimumProgress, int maximumProgress, boolean closeOnCompletion, ProgressMonitor monitor) {
         this.progressParentWindow = progressParentWindow;
         this.closeOnCompletion = closeOnCompletion;
         this.monitor = monitor;
         setLayout(new BorderLayout());
         progressBar = new JProgressBar(minimumProgress, maximumProgress);
+        progressBar.setIndeterminate(true); // Indeterminate by default
         this.add(progressBar);
         setReady(true);
+    }
+
+    public void setIndeterminate(boolean value) {
+        progressBar.setIndeterminate(value);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

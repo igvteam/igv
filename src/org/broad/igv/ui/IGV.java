@@ -2307,6 +2307,7 @@ public class IGV {
 
             final ProgressMonitor monitor = new ProgressMonitor();
             final ProgressBar progressBar = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
+            progressBar.setIndeterminate(true);
             monitor.fireProgressChange(20);
 
             try {
