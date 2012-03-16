@@ -623,7 +623,7 @@ public class IGVToolsTest {
         String chr = "NC_000913_bb";
         Iterator<Feature> features = reader.query(chr, 5085, 5091);
         int count = 0;
-        while (features.hasNext()) {
+        while (features.hasNext() && count < 100) {
             assertEquals(chr, features.next().getChr());
             count++;
         }
