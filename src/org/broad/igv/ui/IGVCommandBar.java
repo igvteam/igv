@@ -50,6 +50,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
@@ -820,10 +821,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
         toolPanel = new javax.swing.JPanel();
         toolPanel.setAlignmentX(RIGHT_ALIGNMENT);
         toolPanel.setLayout(new JideBoxLayout(toolPanel, JideBoxLayout.X_AXIS));
+        //final Border toolButtonBorder = BorderFactory.createLineBorder(Color.gray, 1);
 
         homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
-        homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        // homeButton.setBorder(toolButtonBorder);
         homeButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/navigation/Home24.gif")));
         homeButton.setMaximumSize(new java.awt.Dimension(32, 32));
@@ -841,9 +844,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         // toolPanel.setBorder(
         // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         backButton = new JideButton();
-        backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        backButton.setIcon(new javax.swing.ImageIcon(
-                getClass().getResource("/images/left-arrow.gif")));
+        //backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //backButton.setBorder(toolButtonBorder);
+        backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/left-arrow.gif")));
         backButton.setToolTipText("Go back");
         backButton.setMaximumSize(new java.awt.Dimension(32, 32));
         backButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -858,9 +861,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         toolPanel.add(backButton, JideBoxLayout.FIX);
 
         forwardButton = new JideButton();
-        forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        forwardButton.setIcon(new javax.swing.ImageIcon(
-                getClass().getResource("/images/right-arrow.gif")));    // NOI18N
+        //forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //forwardButton.setBorder(toolButtonBorder);
+        forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/right-arrow.gif")));
         forwardButton.setToolTipText("Go forward");
         forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
         forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -874,7 +877,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
 
         refreshButton = new com.jidesoft.swing.JideButton();
-        refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //refreshButton.setBorder(toolButtonBorder);
         refreshButton.setAlignmentX(RIGHT_ALIGNMENT);
         refreshButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));    // NOI18N
@@ -894,7 +898,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 IconFactory.getInstance().getIcon(IconFactory.IconID.REGION_OF_INTEREST);
 
         roiToggleButton = new JideToggleButton(regionOfInterestIcon);
-        roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //roiToggleButton.setBorder(toolButtonBorder);
         roiToggleButton.setAlignmentX(RIGHT_ALIGNMENT);
         roiToggleButton.setToolTipText("Define a region of interest.");
         roiToggleButton.setMaximumSize(new java.awt.Dimension(32, 32));
@@ -910,7 +915,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
         fitToWindowButton = new JideButton();
-        fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //fitToWindowButton.setBorder(toolButtonBorder);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
         fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/collapseall.gif")));
         fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
@@ -930,7 +936,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         final Icon tooltipIcon =
                 IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
         supressTooltipButton = new JideButton(noTooltipIcon);
-        supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //supressTooltipButton.setBorder(toolButtonBorder);
         supressTooltipButton.setAlignmentX(RIGHT_ALIGNMENT);
         supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
         supressTooltipButton.setMaximumSize(new java.awt.Dimension(32, 32));

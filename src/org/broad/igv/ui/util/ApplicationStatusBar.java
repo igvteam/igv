@@ -19,18 +19,14 @@
 
 package org.broad.igv.ui.util;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-
-//import com.jidesoft.status.LabelStatusBarItem;
-//import com.jidesoft.status.MemoryStatusBarItem;
-//import com.jidesoft.status.StatusBar;
-//import com.jidesoft.swing.JideBoxLayout;
+import com.jidesoft.swing.JideBoxLayout;
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
+import java.text.NumberFormat;
 import java.awt.*;
-import java.text.DecimalFormat;
+import java.util.TimerTask;
 
 
 /**
@@ -39,8 +35,11 @@ import java.text.DecimalFormat;
 public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     static Logger log = Logger.getLogger(ApplicationStatusBar.class);
-    //private LabelStatusBarItem messageBox;
-    //private LabelStatusBarItem messageBox2;
+    private JTextField messageBox;
+    private JTextField messageBox2;
+    private JTextField messageBox3;
+    private MemoryStatus memoryStatus;
+    private Font font;
     //private LabelStatusBarItem messageBox3;
     //private MemoryStatusBarItem memoryBox;
 
@@ -50,42 +49,97 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     private void initialize() {
 
-//        messageBox = new LabelStatusBarItem("Line");
-//        messageBox.setAlignment(JLabel.LEFT);
-//        messageBox.setMinimumSize(new Dimension(165, 10));
-//        add(messageBox, JideBoxLayout.FLEXIBLE);
-//
-//        messageBox2 = new LabelStatusBarItem("Line");
-//        messageBox2.setAlignment(JLabel.LEFT);
-//        messageBox2.setMinimumSize(new Dimension(165, 10));
-//        add(messageBox2, JideBoxLayout.FLEXIBLE);
-//
-//        messageBox3 = new LabelStatusBarItem("Line");
-//        messageBox3.setHorizontalAlignment(SwingConstants.RIGHT);
-//        add(messageBox3, JideBoxLayout.VARY);
-//
-//        memoryBox = new MemoryStatusBarItem();
-//
-//        add(memoryBox, JideBoxLayout.FLEXIBLE);
+        Color bg = new Color(250, 250, 250);
+        font = FontManager.getFont(10);
+
+        setMinimumSize(new Dimension(200, 25));
+
+        // setPreferredSize(new Dimension(800, 32));
+
+        JideBoxLayout layout = new JideBoxLayout(this, JideBoxLayout.X_AXIS);
+        layout.setGap(1);
+        setLayout(layout);
+
+        messageBox = new JTextField();
+        messageBox.setMinimumSize(new Dimension(165, 10));
+        messageBox.setPreferredSize(new Dimension(165, 20));
+        messageBox.setEditable(false);
+        messageBox.setFont(font);
+        messageBox.setBackground(bg);
+        add(messageBox, JideBoxLayout.FIX);
+
+        messageBox2 = new JTextField();
+        messageBox2.setMinimumSize(new Dimension(150, 10));
+        messageBox2.setPreferredSize(new Dimension(150, 20));
+        messageBox2.setEditable(false);
+        messageBox2.setBackground(bg);
+        messageBox2.setFont(font);
+        add(messageBox2, JideBoxLayout.FIX);
+
+        messageBox3 = new JTextField();
+        messageBox3.setMinimumSize(new Dimension(165, 10));
+        messageBox3.setPreferredSize(new Dimension(165, 20));
+        messageBox3.setEditable(false);
+        messageBox3.setBackground(bg);
+        messageBox3.setFont(font);
+        add(messageBox3, JideBoxLayout.VARY);
+
+        memoryStatus = new MemoryStatus();
+        memoryStatus.setPreferredSize(new Dimension(100, 20));
+        memoryStatus.setMinimumSize(new Dimension(100, 10));
+        memoryStatus.setBackground(bg);
+        add(memoryStatus, JideBoxLayout.FIX);
+
     }
 
     public void setMessage(final String message) {
- //       UIUtilities.invokeOnEventThread(new Runnable() {
- //
-//            public void run() {
-//                messageBox.setText(message);
-//                messageBox.paintImmediately(messageBox.getBounds());
-//            }
- //       });
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            public void run() {
+                messageBox.setText(message);
+                messageBox.paintImmediately(messageBox.getBounds());
+            }
+        });
     }
 
     public void setMessage2(final String message) {
-//        UIUtilities.invokeOnEventThread(new Runnable() {
-//
-//            public void run() {
-//                messageBox2.setText(message);
-//                messageBox2.paintImmediately(messageBox2.getBounds());
-//            }
-//        });
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            public void run() {
+                messageBox2.setText(message);
+                messageBox2.paintImmediately(messageBox2.getBounds());
+            }
+        });
+    }
+
+
+    class MemoryStatus extends JTextField {
+
+        NumberFormat format;
+        java.util.Timer timer;
+
+        public MemoryStatus() {
+
+            setFont(font);
+            setEditable(false);
+            format = NumberFormat.getIntegerInstance();
+
+            TimerTask updateTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Runtime runtime = Runtime.getRuntime();
+                    int freeMemory = (int) (runtime.freeMemory() / 1000000);
+                    int totalMemory = (int) (runtime.totalMemory() / 1000000);
+                    int usedMemory = (totalMemory - freeMemory);
+                    String um = format.format(usedMemory);
+                    String tm = format.format(totalMemory);
+                    setText(um + "M of " + tm + "M");
+                }
+            };
+
+            timer = new java.util.Timer();
+            timer.schedule(updateTask, 0, 1000);
+
+
+        }
+
     }
 }

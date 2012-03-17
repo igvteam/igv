@@ -1329,7 +1329,7 @@ public class IGV {
 
         final int visibleTrackCount = getVisibleTrackCount();
         contentPane.getStatusBar().setMessage("" +
-                visibleTrackCount + (visibleTrackCount == 1 ? " track" : " tracks") + " currently loaded");
+                visibleTrackCount + (visibleTrackCount == 1 ? " track" : " tracks"));
     }
 
     private void closeWindow(final ProgressBar progressBar) {
