@@ -27,7 +27,6 @@ package org.broad.igv.ui;
 import java.awt.*;
 import java.awt.Component;
 import java.awt.event.*;
-import com.jidesoft.combobox.*;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 
 import javax.swing.*;
@@ -79,7 +78,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        genomeComboBox = new ListComboBox();
+        genomeComboBox = new JComboBox();
         genomeComboBoxLabel = new JLabel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -175,7 +174,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private ListComboBox genomeComboBox;
+    private JComboBox genomeComboBox;
     private JLabel genomeComboBoxLabel;
     private JButton okButton;
     private JButton cancelButton;

@@ -24,6 +24,8 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.ui.color.ColorChooserPanel;
+
 /**
  * @author jrobinso
  */
@@ -69,11 +71,11 @@ public class TrackConfigurationDialog extends javax.swing.JDialog {
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
         jTextField4 = new javax.swing.JTextField();
-        colorComboBox1 = new com.jidesoft.combobox.ColorComboBox();
-        colorComboBox2 = new com.jidesoft.combobox.ColorComboBox();
-        colorComboBox3 = new com.jidesoft.combobox.ColorComboBox();
-        colorComboBox4 = new com.jidesoft.combobox.ColorComboBox();
-        colorComboBox6 = new com.jidesoft.combobox.ColorComboBox();
+        colorComboBox1 = new ColorChooserPanel();
+        colorComboBox2 = new ColorChooserPanel();
+        colorComboBox3 = new ColorChooserPanel();
+        colorComboBox4 = new ColorChooserPanel();
+        colorComboBox6 = new ColorChooserPanel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jCheckBox1 = new javax.swing.JCheckBox();
@@ -401,11 +403,11 @@ public class TrackConfigurationDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private com.jidesoft.combobox.ColorComboBox colorComboBox1;
-    private com.jidesoft.combobox.ColorComboBox colorComboBox2;
-    private com.jidesoft.combobox.ColorComboBox colorComboBox3;
-    private com.jidesoft.combobox.ColorComboBox colorComboBox4;
-    private com.jidesoft.combobox.ColorComboBox colorComboBox6;
+    private ColorChooserPanel colorComboBox1;
+    private ColorChooserPanel colorComboBox2;
+    private ColorChooserPanel colorComboBox3;
+    private ColorChooserPanel colorComboBox4;
+    private ColorChooserPanel colorComboBox6;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

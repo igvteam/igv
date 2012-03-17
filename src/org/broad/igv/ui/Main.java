@@ -172,8 +172,6 @@ public class Main {
     }
 
     private static void initializeLookAndFeel() {
-        com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
-                "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
         try {
             String lnf = UIManager.getSystemLookAndFeelClassName();
@@ -301,6 +299,7 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
+                //String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
                 String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
@@ -315,7 +314,6 @@ public class Main {
                     locusString = nonOptionArgs[1];
                 }
             }
-
         }
 
         public String getBatchFile() {

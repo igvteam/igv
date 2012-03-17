@@ -71,7 +71,7 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        comboBox = new com.jidesoft.combobox.ListComboBox();
+        comboBox = new JComboBox();
         genomeComboBoxLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -109,11 +109,11 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
                                 .add(comboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 318, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
                         .add(layout.createSequentialGroup()
-                        .add(145, 145, 145)
-                        .add(okButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cancelButton)
-                        .addContainerGap(183, Short.MAX_VALUE))
+                                .add(145, 145, 145)
+                                .add(okButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(cancelButton)
+                                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[]{cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -121,15 +121,15 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(layout.createSequentialGroup()
-                        .add(50, 50, 50)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(genomeComboBoxLabel)
-                                .add(comboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(okButton)
-                                .add(cancelButton))
-                        .addContainerGap())
+                                .add(50, 50, 50)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                        .add(genomeComboBoxLabel)
+                                        .add(comboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(18, 18, 18)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(okButton)
+                                        .add(cancelButton))
+                                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[]{cancelButton, okButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -162,7 +162,7 @@ public class AttributeSelectionDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private com.jidesoft.combobox.ListComboBox comboBox;
+    JComboBox comboBox;
     private javax.swing.JLabel genomeComboBoxLabel;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables

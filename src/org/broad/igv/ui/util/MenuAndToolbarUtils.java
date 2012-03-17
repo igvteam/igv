@@ -27,12 +27,9 @@
 
 package org.broad.igv.ui.util;
 
-import com.jidesoft.action.CommandBar;
 import org.broad.igv.ui.action.MenuAction;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicBorders;
-import java.awt.*;
 import java.util.List;
 
 /**

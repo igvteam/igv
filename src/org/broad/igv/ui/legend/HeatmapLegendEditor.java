@@ -27,10 +27,10 @@ import java.awt.Component;
 import java.awt.event.*;
 import javax.swing.*;
 
-import com.jidesoft.combobox.*;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.color.ColorChooserPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 
@@ -143,9 +143,9 @@ public class HeatmapLegendEditor extends JDialog {
         midColorLabel = new JLabel();
         jLabel3 = new JLabel();
         minColorLabel = new JLabel();
-        minColor = new ColorComboBox();
-        midColor = new ColorComboBox();
-        maxColor = new ColorComboBox();
+        minColor = new ColorChooserPanel();
+        midColor = new ColorChooserPanel();
+        maxColor = new ColorChooserPanel();
         okButton = new JButton();
         cancelButton = new JButton();
         negRangePanel = new JPanel();
@@ -177,14 +177,6 @@ public class HeatmapLegendEditor extends JDialog {
             //---- minColorLabel ----
             minColorLabel.setText("Minimum Color");
 
-            //---- minColor ----
-            minColor.setColorValueVisible(false);
-
-            //---- midColor ----
-            midColor.setColorValueVisible(false);
-
-            //---- maxColor ----
-            maxColor.setColorValueVisible(false);
 
             GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
             jPanel1.setLayout(jPanel1Layout);
@@ -393,9 +385,9 @@ public class HeatmapLegendEditor extends JDialog {
     private JLabel midColorLabel;
     private JLabel jLabel3;
     private JLabel minColorLabel;
-    private ColorComboBox minColor;
-    private ColorComboBox midColor;
-    private ColorComboBox maxColor;
+    private ColorChooserPanel minColor;
+    private ColorChooserPanel midColor;
+    private ColorChooserPanel maxColor;
     private JButton okButton;
     private JButton cancelButton;
     private JPanel negRangePanel;

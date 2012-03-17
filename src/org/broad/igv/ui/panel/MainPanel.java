@@ -18,7 +18,6 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.action.CommandBar;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;

@@ -29,10 +29,10 @@
 
 package org.broad.igv.ui;
 
-import com.jidesoft.combobox.ColorComboBox;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.color.ColorChooserPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 
@@ -98,9 +98,9 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
         maxField = new JTextField();
         neutralFromField = new JTextField();
         neutralToField = new JTextField();
-        negColor = new ColorComboBox();
-        posColor = new ColorComboBox();
-        midColor = new ColorComboBox();
+        negColor = new ColorChooserPanel();
+        posColor = new ColorChooserPanel();
+        midColor = new ColorChooserPanel();
         legendPanel = new LegendPanel();
         panel3 = new JPanel();
         jPanel3 = new JPanel();
@@ -171,7 +171,6 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
             });
 
             //---- negColor ----
-            negColor.setColorValueVisible(false);
             negColor.setPreferredSize(new Dimension(60, 28));
             negColor.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -180,7 +179,6 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
             });
 
             //---- posColor ----
-            posColor.setColorValueVisible(false);
             posColor.setPreferredSize(new Dimension(60, 28));
             posColor.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -189,7 +187,6 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
             });
 
             //---- midColor ----
-            midColor.setColorValueVisible(false);
             midColor.setPreferredSize(new Dimension(60, 28));
             midColor.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -472,9 +469,9 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
     private JTextField maxField;
     private JTextField neutralFromField;
     private JTextField neutralToField;
-    private ColorComboBox negColor;
-    private ColorComboBox posColor;
-    private ColorComboBox midColor;
+    private ColorChooserPanel negColor;
+    private ColorChooserPanel posColor;
+    private ColorChooserPanel midColor;
     private JPanel legendPanel;
     private JPanel panel3;
     private JPanel jPanel3;
