@@ -255,12 +255,12 @@ public class GobyAlignment implements Alignment {
                     leftScores = leftScores.subList(0, deletionPosition);
                     rightScores = rightScores.subList(deletionPosition, rightScores.size());
 
-                    AlignmentBlock left = new AlignmentBlock(block.getStart(),
+                    AlignmentBlock left = AlignmentBlock.getInstance(block.getStart(),
                             leftBases.toByteArray(new byte[leftBases.size()]),
                             leftScores.toByteArray(new byte[leftScores.size()]),
                             this);
 
-                    AlignmentBlock right = new AlignmentBlock(block.getStart() + leftBases.size()
+                    AlignmentBlock right = AlignmentBlock.getInstance(block.getStart() + leftBases.size()
                             + var.getFrom().length(),
                             rightBases.toByteArray(new byte[rightBases.size()]),
                             rightScores.toByteArray(new byte[rightScores.size()]),
@@ -285,7 +285,7 @@ public class GobyAlignment implements Alignment {
     private int addBlock(ObjectArrayList<AlignmentBlock> blocks, int start, ByteArrayList bases,
                          ByteArrayList scores) {
 
-        blocks.add(new AlignmentBlock(start,
+        blocks.add(AlignmentBlock.getInstance(start,
                 bases.toByteArray(new byte[bases.size()]),
                 scores.toByteArray(new byte[scores.size()]),
                 this));

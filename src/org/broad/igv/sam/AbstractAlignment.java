@@ -121,8 +121,40 @@ public abstract class AbstractAlignment implements Alignment {
         }
         return 0;
     }
+    private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
+        if (block.hasFlowSignals()) {
+            // flow signals
+            int i, j, n = 0;
+            short[][] flowSignalContext = block.getFlowSignalContext(offset);
+            if (null != flowSignalContext) {
+                buf.append("FZ = ");
+                for (i=0;i<flowSignalContext.length;i++) {
+                    if (null != flowSignalContext[i] && 0 < flowSignalContext[i].length) {
+                        if (1 == i) {
+                            if (0 < n) {
+                                buf.append(",");
+                            }
+                            buf.append("[");
+                        }
+                        for (j=0;j<flowSignalContext[i].length;j++) {
+                            if (1 != i && 0 < n) {
+                                buf.append(",");
+                            }
+                            buf.append(flowSignalContext[i][j]);
+                            n++;
+                        }
+                        if (1 == i) {
+                            buf.append("]");
+                        }
+                    }
+                }
+                buf.append("<br>");
+            }
+        }
+    }
 
     public String getValueString(double position, WindowFunction windowFunction) {
+        StringBuffer buf = null;
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
@@ -130,12 +162,34 @@ public abstract class AbstractAlignment implements Alignment {
                 double insertionLeft = block.getStart() - .25;
                 double insertionRight = block.getStart() + .25;
                 if (position > insertionLeft && position < insertionRight) {
-                    return "Insertion: " + new String(block.getBases());
+                    if (block.hasFlowSignals()) {
+                        int offset;
+                        buf = new StringBuffer();
+                        buf.append("Insertion: " + new String(block.getBases()) + "<br>");
+                        buf.append("Base phred quality = ");
+                        for (offset=0;offset<block.getBases().length;offset++) {
+                            byte quality = block.getQuality(offset);
+                            if (0 < offset) {
+                                buf.append(",");
+                            }
+                            buf.append(quality);
+                        }
+                        buf.append("<br>");
+                        for (offset=0;offset<block.getBases().length;offset++) {
+                            byte base = block.getBase(offset);
+                            buf.append((char)base + ": ");
+                            bufAppendFlowSignals(block, buf, offset); // TODO: add in all blocks
+                        }
+                        buf.append("----------------------"); // NB: no <br> required
+                        return buf.toString();
+                    } else {
+                        return "Insertion: " + new String(block.getBases());
+                    }
                 }
             }
         }
-
-        StringBuffer buf = new StringBuffer();
+        
+        buf = new StringBuffer();
 
         String sample = getSample();
         if (sample != null) {
@@ -158,10 +212,14 @@ public abstract class AbstractAlignment implements Alignment {
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
-                byte base = block.getBases()[offset];
+                byte base = block.getBase(offset);
                 byte quality = block.getQuality(offset);
                 buf.append("Base = " + (char) base + "<br>");
                 buf.append("Base phred quality = " + quality + "<br>");
+                // flow signals
+                if (block.hasFlowSignals()) {
+                    bufAppendFlowSignals(block, buf, offset);
+                }
             }
         }
 

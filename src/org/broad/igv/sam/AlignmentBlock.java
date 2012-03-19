@@ -32,7 +32,16 @@ public class AlignmentBlock {
     private boolean softClipped = false;
     private Alignment baseAlignment = null;
 
-    public AlignmentBlock(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
+    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
+
+        return new AlignmentBlock(start, bases, qualities, baseAlignment);
+    }
+
+    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, short[][][] flowSignals, Alignment baseAlignment) {
+        return new AlignmentBlockFS(start, bases, qualities, flowSignals, baseAlignment);
+    }
+
+    protected AlignmentBlock(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
         this.start = start;
         this.bases = bases;
         this.baseAlignment = baseAlignment;
@@ -45,16 +54,20 @@ public class AlignmentBlock {
     }
 
     public Alignment getBaseAlignment() {
-		return baseAlignment;
-	}
+        return baseAlignment;
+    }
 
-	public boolean contains(int position) {
+    public boolean contains(int position) {
         int offset = position - start;
         return offset >= 0 && offset < bases.length;
     }
 
     public byte[] getBases() {
         return bases;
+    }
+
+    public byte getBase(int offset) {
+        return bases[offset];
     }
 
     public int getStart() {
@@ -83,5 +96,14 @@ public class AlignmentBlock {
 
     public void setSoftClipped(boolean softClipped) {
         this.softClipped = softClipped;
+    }
+
+    public boolean hasFlowSignals() {
+        return false;
+    }
+
+    // Default implementation -- to be overriden
+    public short[][] getFlowSignalContext(int offset) {
+        return null;
     }
 }
