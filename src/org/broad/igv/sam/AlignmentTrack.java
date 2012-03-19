@@ -400,6 +400,46 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
     }
+    
+    /**
+     * Copy the contents of the popup text to the system clipboard.
+     */
+    public void copyFlowSignalDistribution(final TrackClickEvent e, double location) {
+        TreeMap <Short , Integer> map = new TreeMap<Short, Integer>();
+        for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
+            Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
+            while (alignmentIterator.hasNext()) {
+                Alignment alignment = alignmentIterator.next();
+                if (!alignment.contains(location)) {
+                    continue;
+                }
+                AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+                for (int i = 0; i < blocks.length; i++) {
+                    AlignmentBlock block = blocks[i];
+                    if (!block.contains((int)location) || !block.hasFlowSignals()) {
+                        continue;
+                    }
+                    short flowSignal = block.getFlowSignalContext((int)location- block.getStart())[1][0];
+                    if (map.containsKey(flowSignal)) {
+                        // increment
+                        map.put(flowSignal, map.get(flowSignal) + 1);
+                    } else {
+                        // insert
+                        map.put(flowSignal, 1);
+                    }
+                }
+            }
+        }
+        StringBuffer buf = new StringBuffer();
+        buf.append("{\n");
+        for (Short key : map.keySet()) {
+            buf.append("    \"" + key + "\" : \"" + map.get(key) + "\"\n"); 
+        }
+        buf.append("}\n");
+        StringSelection stringSelection = new StringSelection(buf.toString());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    }
 
     /**
      * Jump to the mate region
@@ -959,6 +999,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
+            addCopyFlowSignalDistributionToClipboardItem(e);
 
             addSeparator();
             addGroupMenuItem();
@@ -1300,6 +1341,27 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 if (alignment == null) {
                     item.setEnabled(false);
                 }
+            }
+
+            add(item);
+        }
+
+        public void addCopyFlowSignalDistributionToClipboardItem(final TrackClickEvent te) {
+            final MouseEvent me = te.getMouseEvent();
+            JMenuItem item = new JMenuItem("Copy the flow signal distrubtion for this base to the clipboard");
+            final ReferenceFrame frame = te.getFrame();
+            if (frame == null) {
+                item.setEnabled(false);
+            } else {
+                final double location = frame.getChromosomePosition(me.getX());
+
+                // Change track height by attribute
+                item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+                        copyFlowSignalDistribution(te, location);
+                    }
+                });
             }
 
             add(item);
