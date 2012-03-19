@@ -25,7 +25,6 @@ package org.broad.igv.tdf;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,6 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * File file, TrackType trackType, String trackLine, String[] trackNames
@@ -116,24 +117,23 @@ public class TDFReadWriteTest {
      */
     @Test
     public void testWriteTile() throws IOException {
-         writeTile("test3.tdf", false);
+        writeTile("test3.tdf", false);
     }
 
 
-        /**
+    /**
      * Test of writeTile method, of class IBFWriter.
      */
     @Test
     public void testWriteCompressedTile() throws IOException {
-         writeTile("test4.tdf", true);
+        writeTile("test4.tdf", true);
     }
-
 
 
     public void writeTile(String file, boolean gzipped) throws IOException {
 
         File testFile = new File(file);
-        //testFile.deleteOnExit();
+        testFile.deleteOnExit();
 
         String dsName = "/chr1/zoom1/medians";
         int tileNumber = 0;
@@ -175,7 +175,6 @@ public class TDFReadWriteTest {
         }
         reader.close();
     }
-
 
 
     public static void main(String[] args) {

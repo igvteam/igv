@@ -514,7 +514,7 @@ public class IGVToolsTest {
 
         String chr = "1";
         int pos = 9718611;
-        String queryStr = chr + ":" + (pos - 500) + "-" + (pos + 500) + " ";
+        String queryStr = chr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
         String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
         igvTools.run(cmd_nodups.split("\\s+"));
 
