@@ -107,11 +107,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
     static {
         float max_val = 2 << 10;
-        bounds.put("PERCENT_MUTATED", new float[]{0.1f, max_val});
-        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{0.1f, max_val});
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{0.1f, max_val});
-        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{0.1f, max_val});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{max_val, -0.1f});
+        float[] typ_bounds = new float[]{0.1f, max_val};
+        bounds.put("PERCENT_MUTATED", typ_bounds);
+        bounds.put("PERCENT_CNA_AMPLIFIED", typ_bounds);
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", typ_bounds);
+        bounds.put("PERCENT_MRNA_WAY_UP", typ_bounds);
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -0.1f});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -631,6 +632,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         //We store whether that sample has been altered in ANY way
         Set<String> anyAlteration = new HashSet<String>(initCapacity);
 
+
+        //Set of samples which have data for this type
+        Set<String> samplesForType = new HashSet<String>(initCapacity);
+        //Set of samples which have been altered, using this type.
+        Set<String> alteredSamplesForType = new HashSet<String>(initCapacity);
+
         for (String attr : attributes) {
             if (!bounds.containsKey(attr)) {
                 throw new IllegalArgumentException("Have no bounds for " + attr);
@@ -639,12 +646,14 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             RegionScoreType type = attributeMap.get(attr);
             float[] curBounds = bounds.get(attr);
 
-            //Set of samples which have data for this type
-            Set<String> samplesForType = new HashSet<String>(initCapacity);
-            //Set of samples which have been altered, using this type.
-            Set<String> alteredSamplesForType = new HashSet<String>(initCapacity);
+            samplesForType.clear();
+            alteredSamplesForType.clear();
+
 
             for (NamedFeature feat : features) {
+                if (!name.equalsIgnoreCase(feat.getName())) {
+                    continue;
+                }
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
@@ -659,9 +668,18 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
                     samplesForType.add(sample);
 
+                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
+                        System.out.println(sample);
+                    }
 
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
                             type, frame.getName(), tracks);
+
+
+                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
+                        System.out.println(score);
+                    }
+
 
                     if (score >= curBounds[0] && score <= curBounds[1] && !Float.isNaN(score)) {
                         alteredSamplesForType.add(sample);

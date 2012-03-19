@@ -215,10 +215,27 @@ public class FeatureDB {
         return treeMap.subMap(nm, nm + Character.MAX_VALUE);
     }
 
+    /**
+     * Shortcut to getFeaturesList(name, limit, true)
+     *
+     * @param name
+     * @param limit
+     * @return
+     * @see #getFeaturesList(String, int, boolean)
+     */
     public static List<NamedFeature> getFeaturesList(String name, int limit) {
         return getFeaturesList(name, limit, true);
     }
 
+    /**
+     * Get a list of features which start with the provided name.
+     * Note that matches can be inexact
+     *
+     * @param name
+     * @param limit
+     * @param longestOnly Whether to take only the longest feature for each name
+     * @return
+     */
     public static List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
 
         //Note: We are iterating over submap, this needs
@@ -352,7 +369,6 @@ public class FeatureDB {
 
     /**
      * Doubleton class. Can sort forward or descending, at most 2 instances.
-     *
      */
     private static class FeatureComparator implements Comparator<Feature> {
         private boolean descending;
@@ -386,7 +402,7 @@ public class FeatureDB {
             // e.g.  chr1_gl000191_random
             int nameLen1 = feat1.getChr().length();
             int nameLen2 = feat2.getChr().length();
-            if(nameLen1 != nameLen2) {
+            if (nameLen1 != nameLen2) {
                 return nameLen1 - nameLen2;
             }
 
