@@ -2450,17 +2450,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (samShadeMismatchedBaseCB.isSelected()) {
             updatedPreferenceMap.put(
                     PreferenceManager.SAM_SHADE_BASES,
-                    String.valueOf(ShadeBasesOption.QUALITY));
+                    ShadeBasesOption.QUALITY.toString());
                     samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
                     samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
-        } else if (ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(updatedPreferenceMap.get(PreferenceManager.SAM_SHADE_BASES))) {
-            updatedPreferenceMap.put(
-                    PreferenceManager.SAM_SHADE_BASES,
-                    String.valueOf(ShadeBasesOption.NONE));
-                    samMinBaseQualityField.setEnabled(false);
-                    samMaxBaseQualityField.setEnabled(false);
+        } else {
+            PreferenceManager prefMgr = PreferenceManager.getInstance();
+            if (ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(prefMgr.get(PreferenceManager.SAM_SHADE_BASES))) {
+                updatedPreferenceMap.put(
+                        PreferenceManager.SAM_SHADE_BASES,
+                        ShadeBasesOption.NONE.toString());
+                samMinBaseQualityField.setEnabled(false);
+                samMaxBaseQualityField.setEnabled(false);
+            }
         }
-
     }
 
     private void showCenterLineCBActionPerformed(ActionEvent e) {

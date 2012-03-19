@@ -936,7 +936,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_REF_SEQ, "false");
         defaultValues.put(SAM_SHOW_CENTER_LINE, "true");
         defaultValues.put(SAM_SHOW_COV_TRACK, "true");
-        defaultValues.put(SAM_SHADE_BASES, String.valueOf(ShadeBasesOption.QUALITY));
+        defaultValues.put(SAM_SHADE_BASES, ShadeBasesOption.QUALITY.toString());
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
         defaultValues.put(SAM_MAX_LEVELS, "100");
