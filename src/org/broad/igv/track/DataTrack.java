@@ -28,13 +28,15 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -344,9 +346,10 @@ public abstract class DataTrack extends AbstractTrack {
                     tracks = IGV.getInstance().getOverlayTracks(this);
                 }
                 float count = 0;
-                if (tracks != null) {
+                String tSamp = this.getSample();
+                if (tracks != null && tSamp != null) {
                     for (Track t : tracks) {
-                        if (t.getTrackType() == TrackType.MUTATION) {
+                        if (t.getTrackType() == TrackType.MUTATION && tSamp.equals(t.getSample())) {
                             count += t.getRegionScore(chr, start, end, zoom, type, frameName);
                         }
                     }

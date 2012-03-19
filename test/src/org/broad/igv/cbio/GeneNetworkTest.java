@@ -188,7 +188,7 @@ public class GeneNetworkTest {
         //Check data
         Set<Node> nodes = network.vertexSet();
         for (Node node : nodes) {
-            for (String key : GeneNetwork.attribute_map.keySet()) {
+            for (String key : GeneNetwork.attributeMap.keySet()) {
                 String data = GeneNetwork.getNodeKeyData(node, key);
                 String name = GeneNetwork.getNodeKeyData(node, GeneNetwork.LABEL);
                 if (!"CHMP3".equalsIgnoreCase(name)) {
@@ -200,7 +200,7 @@ public class GeneNetworkTest {
         //Check schema
         Document doc = network.createDocument();
         Node gml = doc.getFirstChild();
-        for (String key : GeneNetwork.attribute_map.keySet()) {
+        for (String key : GeneNetwork.attributeMap.keySet()) {
             String data = GeneNetwork.getNodeAttrValue(gml, "id", key);
             assertNotNull(data);
         }

@@ -27,6 +27,7 @@ import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.*;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.Pseudograph;
@@ -84,7 +85,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     private Document origDocument;
 
 
-    static Map<String, RegionScoreType> attribute_map = new HashMap();
+    static Map<String, RegionScoreType> attributeMap = new HashMap();
 
     /**
      * For each score type, we are only interested in the fraction of samples which are
@@ -97,19 +98,20 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     private boolean filtersFinalized;
 
     static {
-        attribute_map.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
-        attribute_map.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
-        attribute_map.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
-        attribute_map.put("PERCENT_MRNA_WAY_UP", RegionScoreType.EXPRESSION);
-        attribute_map.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
+        attributeMap.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
+        attributeMap.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
+        attributeMap.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
+        attributeMap.put("PERCENT_MRNA_WAY_UP", RegionScoreType.EXPRESSION);
+        attributeMap.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
     }
 
     static {
-        bounds.put("PERCENT_MUTATED", new float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{0.1f, Float.MAX_VALUE});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-Float.MAX_VALUE, -0.1f});
+        float max_val = 2 << 10;
+        bounds.put("PERCENT_MUTATED", new float[]{0.1f, max_val});
+        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{0.1f, max_val});
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{0.1f, max_val});
+        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{0.1f, max_val});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{max_val, -0.1f});
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
@@ -605,62 +607,82 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     public ScoreData collectScoreData(String name, List<Track> tracks, Iterable<String> attributes) {
         int zoom = 0;
 
-        List<NamedFeature> features = FeatureDB.getFeaturesList(name, 1);//Integer.MAX_VALUE);
+        List<NamedFeature> features = FeatureDB.getFeaturesList(name, Integer.MAX_VALUE);
 
-        int numberSamples = tracks.size() * features.size();
-        if (numberSamples == 0) {
-            return null;
+        //If we are viewing a gene list, use the frame
+        List<ReferenceFrame> frames = Globals.isHeadless() ? null : FrameManager.getFrames();
+        ReferenceFrame frame = Globals.isHeadless() ? null : FrameManager.getDefaultFrame();
+        if (frames != null) {
+            for (ReferenceFrame frm : frames) {
+                if (frm.getName().equalsIgnoreCase(name)) {
+                    frame = frm;
+                }
+            }
         }
 
         ScoreData<String, Float> results = new ScoreData(RegionScoreType.values().length);
 
-        Set<String> anyAlteration = new HashSet<String>(numberSamples / 10);
+        int initCapacity = tracks.size() / 10;
+
+        //The names of all samples these tracks cover
+        Set<String> allSamples = new HashSet<String>(initCapacity);
+
+        //Each track/feature pair represents a region of a sample.
+        //We store whether that sample has been altered in ANY way
+        Set<String> anyAlteration = new HashSet<String>(initCapacity);
 
         for (String attr : attributes) {
             if (!bounds.containsKey(attr)) {
                 throw new IllegalArgumentException("Have no bounds for " + attr);
             }
 
-            RegionScoreType type = attribute_map.get(attr);
+            RegionScoreType type = attributeMap.get(attr);
             float[] curBounds = bounds.get(attr);
 
-            float percentAltered;
-            int totalAltered = 0;
-            int numberSamplesPerAttr = 0;
+            //Set of samples which have data for this type
+            Set<String> samplesForType = new HashSet<String>(initCapacity);
+            //Set of samples which have been altered, using this type.
+            Set<String> alteredSamplesForType = new HashSet<String>(initCapacity);
 
             for (NamedFeature feat : features) {
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
-                    if (!track.isRegionScoreType(type)) {
+                    String sample = track.getSample();
+
+                    //If track is wrong type, or if sample has already been marked altered,
+                    //no further information can be gained
+                    if (!track.isRegionScoreType(type) || alteredSamplesForType.contains(sample)) {
+                        //if(alteredSamplesForType.contains(sample)) assert samplesForType.contains(sample);
                         continue;
                     }
 
-                    numberSamplesPerAttr++;
+                    samplesForType.add(sample);
+
+
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
-                            type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame().getName(), tracks);
+                            type, frame.getName(), tracks);
 
-                    if (score >= curBounds[0] && score <= curBounds[1]) {
-                        totalAltered += 1;
-                        //Each track/feature pair represents a region of a sample.
-                        //All we require is a count of those altered
-                        anyAlteration.add(name + track.getName());
-
+                    if (score >= curBounds[0] && score <= curBounds[1] && !Float.isNaN(score)) {
+                        alteredSamplesForType.add(sample);
                     }
                 }
             }
 
-            percentAltered = ((float) totalAltered) / numberSamplesPerAttr;
+            allSamples.addAll(samplesForType);
+            anyAlteration.addAll(alteredSamplesForType);
+
+            float percentAltered = ((float) alteredSamplesForType.size()) / samplesForType.size();
             results.put(attr, percentAltered);
         }
 
-        results.setPercentAltered(((float) anyAlteration.size()) / numberSamples);
+        results.setPercentAltered(((float) anyAlteration.size()) / allSamples.size());
         return results;
 
     }
 
     public void annotateAll(List<Track> tracks) {
-        this.annotate(tracks, attribute_map.keySet());
+        this.annotate(tracks, attributeMap.keySet());
     }
 
 

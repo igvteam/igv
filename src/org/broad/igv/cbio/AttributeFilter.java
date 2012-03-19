@@ -14,7 +14,7 @@ public class AttributeFilter {
 
     public AttributeFilter() {
         initComponents();
-        attrName.setModel(new DefaultComboBoxModel(GeneNetwork.attribute_map.keySet().toArray()));
+        attrName.setModel(new DefaultComboBoxModel(GeneNetwork.attributeMap.keySet().toArray()));
         attrName.addItem(GeneNetwork.PERCENT_ALTERED);
     }
 

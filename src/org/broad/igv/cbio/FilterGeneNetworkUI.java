@@ -64,6 +64,7 @@ public class FilterGeneNetworkUI extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 contentPane.remove(row.getComponent());
+                filterRows.remove(row);
                 validateTree();
             }
         });
@@ -83,7 +84,7 @@ public class FilterGeneNetworkUI extends JDialog {
         //TODO This is only AND, should also include OR
         for (AttributeFilter filter : this.filterRows) {
             String filt_el = (String) filter.attrName.getSelectedItem();
-            if (GeneNetwork.attribute_map.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
+            if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
                 float min = Float.parseFloat(filter.minVal.getText());
                 float max = Float.parseFloat(filter.maxVal.getText());
                 network.filterNodesRange(filt_el, min / 100, max / 100);
