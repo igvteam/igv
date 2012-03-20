@@ -47,7 +47,7 @@ public class ExpressionFormatter {
     FileType type;
     int dataStartColumn;
     int probeColumn;
-    int descriptionColumn;
+    int descriptionColumn = -1;
     int nPts;
 
     /**
@@ -56,8 +56,13 @@ public class ExpressionFormatter {
      * @return
      */
     public void convert(File inputFile, File outputFile) throws IOException {
+        convert(inputFile, outputFile, getType(inputFile));
+    }
 
-        setType(inputFile);
+
+    void convert(File inputFile, File outputFile, FileType type) throws IOException {
+
+        setType(type);
 
         BufferedReader reader = null;
         PrintWriter writer = null;
@@ -227,30 +232,43 @@ public class ExpressionFormatter {
         }
     }
 
-
-    private void setType(File inputFile) {
+    private FileType getType(File inputFile) {
         String fn = inputFile.getName().toLowerCase();
         if (fn.endsWith(".txt") || fn.endsWith(".tab") || fn.endsWith(".xls") || fn.endsWith(".gz")) {
             fn = fn.substring(0, fn.lastIndexOf("."));
         }
-        descriptionColumn = -1;    // Default - no description column
         if (fn.endsWith("res")) {
-            type = FileType.RES;
-            dataStartColumn = 2;
-            probeColumn = 1;
-            descriptionColumn = 0;
+            return FileType.RES;
         } else if (fn.endsWith("gct")) {
-            type = FileType.GCT;
-            dataStartColumn = 2;
-            probeColumn = 0;
-            descriptionColumn = 1;
+            return FileType.GCT;
         } else if (fn.endsWith("tab")) {
-            type = FileType.TAB;
-            dataStartColumn = 1;
-            probeColumn = 0;
+            return FileType.TAB;
         } else {
             throw new RuntimeException("Unknown file type: " + inputFile);
         }
+    }
+
+
+    private void setType(FileType type) {
+        this.type = type;
+        descriptionColumn = -1;    // Default - no description column
+        switch (type) {
+            case RES:
+                dataStartColumn = 2;
+                probeColumn = 1;
+                descriptionColumn = 0;
+                break;
+            case GCT:
+                dataStartColumn = 2;
+                probeColumn = 0;
+                descriptionColumn = 1;
+                break;
+            case TAB:
+                dataStartColumn = 1;
+                probeColumn = 0;
+                break;
+        }
+
     }
 
 
