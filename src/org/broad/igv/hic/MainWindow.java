@@ -19,6 +19,7 @@ import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -149,7 +150,7 @@ public class MainWindow extends JFrame {
         observedColorScale.setMaxCount(initialMaxCount);
         observedColorScale.setBackground(Color.white);
 
-        oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.white, Color.red);
+        oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.black, Color.red);
 
         pearsonColorScale = new ContinuousColorScale(-1, 0, 1, Color.blue, Color.white, Color.red);
     }
