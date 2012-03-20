@@ -19,8 +19,9 @@
 package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.panel.*;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.panel.MainPanel;
+import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.ui.util.ApplicationStatusBar;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -146,7 +147,4 @@ public class IGVContentPane extends JPanel {
         return statusBar;
     }
 
-    public void addToNameHeaderPanel(JComponent component) {
-        mainPanel.getNameHeaderPanel().add(component);
-    }
 }

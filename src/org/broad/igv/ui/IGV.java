@@ -38,7 +38,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeBuilderDialog;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.hic.ThumbnailPanel;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
@@ -71,7 +70,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.net.NoRouteToHostException;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 
@@ -2277,11 +2275,6 @@ public class IGV {
 
     public boolean isStartupComplete() {
         return startupComplete;
-    }
-
-    public void addToNameHeaderPanel(JComponent component) {
-
-        contentPane.addToNameHeaderPanel(component);
     }
 
     /**
