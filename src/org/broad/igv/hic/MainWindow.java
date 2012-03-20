@@ -586,7 +586,19 @@ public class MainWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
-
+    private void loadMar2ActionPerformed(ActionEvent e) {
+        try {
+            observedColorScale.setMaxCount(1);
+            colorRangeSlider.setMaximum(5);
+            colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setUpperValue(1);
+            colorRangeSlider.setMajorTickSpacing(1);
+            zd = null;
+            load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120316.hic");
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
 
     private void loadCoolAidActionPerformed(ActionEvent e) {
         try {
@@ -797,6 +809,7 @@ public class MainWindow extends JFrame {
         loadHindIII = new JMenuItem();
         loadFeb = new JMenuItem();
         loadMar1 = new JMenuItem();
+        loadMar2 = new JMenuItem();
         loadCoolAid = new JMenuItem();
         loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
@@ -1165,6 +1178,7 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadFeb);
 
+                fileMenu.addSeparator();
                 //---- loadMar1 ----
                 loadMar1.setText("Hi-C Elena Human (03/13/2012)");
                 loadMar1.addActionListener(new ActionListener() {
@@ -1173,7 +1187,15 @@ public class MainWindow extends JFrame {
                     }
                 });
                 fileMenu.add(loadMar1);
-                fileMenu.addSeparator();
+
+                //---- loadMar2 ----
+                loadMar2.setText("Hi-C Elena Human (03/16/2012)");
+                loadMar2.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadMar2ActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadMar2);
 
                 //---- loadCoolAid ----
                 loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
@@ -1253,6 +1275,7 @@ public class MainWindow extends JFrame {
     private JMenuItem loadHindIII;
     private JMenuItem loadFeb;
     private JMenuItem loadMar1;
+    private JMenuItem loadMar2;
     private JMenuItem loadCoolAid;
     private JMenuItem loadDmelDataset;
     private JMenuItem exit;
