@@ -26,6 +26,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -2446,11 +2447,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }//GEN-LAST:event_samMaxLevelFieldActionPerformed
 
     private void samShadeMismatchedBaseCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(
-                PreferenceManager.SAM_SHADE_BASE_QUALITY,
-                String.valueOf(samShadeMismatchedBaseCB.isSelected()));
-        samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
-        samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
+        if (samShadeMismatchedBaseCB.isSelected()) {
+            updatedPreferenceMap.put(
+                    PreferenceManager.SAM_SHADE_BASES,
+                    String.valueOf(ShadeBasesOption.QUALITY));
+                    samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
+                    samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
+        } else if (ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(updatedPreferenceMap.get(PreferenceManager.SAM_SHADE_BASES))) {
+            updatedPreferenceMap.put(
+                    PreferenceManager.SAM_SHADE_BASES,
+                    String.valueOf(ShadeBasesOption.NONE));
+                    samMinBaseQualityField.setEnabled(false);
+                    samMaxBaseQualityField.setEnabled(false);
+        }
 
     }
 
@@ -3131,7 +3140,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
         samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
         showCenterLineCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE));
-        samShadeMismatchedBaseCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY));
+        samShadeMismatchedBaseCB.setSelected(ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(prefMgr.get(PreferenceManager.SAM_SHADE_BASES)));
         samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN))));
         samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX))));
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());

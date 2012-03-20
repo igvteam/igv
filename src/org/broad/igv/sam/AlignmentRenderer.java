@@ -23,6 +23,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
@@ -542,7 +543,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     /**
      * Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
-     * that is proportional to the base quality score.
+     * that is proportional to the base quality score, or flow signal deviation, whichever is selected.
      *
      * @param context
      * @param rect
@@ -557,7 +558,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                            RenderOptions renderOptions) {
 
 
-        boolean shadeBases = renderOptions.shadeBases;
+        ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
         ColorOption colorOption = renderOptions.getColorOption();
 
         // Disable showAllBases in bisulfite mode
@@ -635,10 +636,64 @@ public class AlignmentRenderer implements FeatureRenderer {
                         color = Color.black;
                     }
 
-                    if (shadeBases) {
+                    if (ShadeBasesOption.QUALITY == shadeBasesOption) {
                         byte qual = block.qualities[loc - start];
                         color = getShadedColor(qual, color, alignmentColor, prefs);
-                    }
+                    } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
+                        if (block.hasFlowSignals()) {
+                            int flowSignal = (int)block.getFlowSignalContext(loc - start)[1][0];
+                            int expectedFlowSignal;
+                            if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
+                                expectedFlowSignal = 100 * (short)((flowSignal + 50.0) / 100.0);
+                            } else {
+                                // NB: this may estimate the reference homopolymer length incrrect in some cases, especially when we have
+                                // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
+                                // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
+                                if (!misMatch) {
+                                    final byte readbase = read[idx];
+                                    byte refbase = reference[idx];
+                                    int pos; // zero based
+                                    expectedFlowSignal = 100;
+
+                                    // Count HP length
+                                    pos = start + idx - 1; 
+                                    while (0 <= pos && genome.getReference(chr, pos) == refbase) {
+                                        pos--;
+                                        expectedFlowSignal += 100;
+                                    }
+                                    pos = start + idx + 1;
+                                    while (pos < genome.getChromosome(chr).getLength() && genome.getReference(chr, pos) == refbase) {
+                                        pos++;
+                                        expectedFlowSignal += 100;
+                                    }
+                                } else {
+                                    expectedFlowSignal = 0;
+                                }
+                            }
+                            int flowSignalDiff = (expectedFlowSignal < flowSignal) ? (flowSignal - expectedFlowSignal) : (expectedFlowSignal - flowSignal);
+                            // NB: this next section is some mangling to use the base quality color preferences...
+                            if (flowSignalDiff <= 0) {
+                                flowSignalDiff = 0;
+                            } else if (50 < flowSignalDiff) { 
+                                flowSignalDiff = 50;
+                            }
+                            flowSignalDiff = 50 - flowSignalDiff; // higher is better
+                            int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
+                            int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
+                            flowSignalDiff = flowSignalDiff * (maxQ - minQ) / 50;
+                            byte qual;
+                            int pos = start + idx;
+                            if (Byte.MAX_VALUE < flowSignalDiff) {
+                                qual = Byte.MAX_VALUE;
+                            } else if (flowSignalDiff < Byte.MIN_VALUE) {
+                                qual = Byte.MIN_VALUE;
+                            } else {
+                                qual = (byte)flowSignalDiff;
+                            }
+                            // Finally, get the color
+                            color = getShadedColor(qual, color, alignmentColor, prefs);
+                        }
+                    } 
 
                     double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
 

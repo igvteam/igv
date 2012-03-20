@@ -211,7 +211,7 @@ public class IGVSessionReader implements SessionReader {
 
         //TODO Add the following into the Attributes
         /*
-        boolean shadeBases;
+        ShadeBasesOption shadeBases;
         boolean shadeCenters;
         boolean flagUnmappedPairs;
         boolean showAllBases;

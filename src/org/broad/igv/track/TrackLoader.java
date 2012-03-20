@@ -287,6 +287,7 @@ public class TrackLoader {
             throw dle;
         } catch (Exception e) {
             log.error(e);
+            e.printStackTrace();
             throw new DataLoadException(e.getMessage(), path);
         }
 
