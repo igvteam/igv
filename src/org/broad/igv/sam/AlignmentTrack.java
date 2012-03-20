@@ -1007,9 +1007,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addColorByMenuItem();
 
             addSeparator();
-            addShadeBaseByQualityMenuItem();
-            addShadeBaseByFlowDeviationReadMenuItem();
-            addShadeBaseByFlowDeviationReferenceMenuItem();
+            addShadeBaseByMenuItem();
             addShowMismatchesMenuItem();
             addShowAllBasesMenuItem();
 
@@ -1530,81 +1528,52 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
+        
+        private JCheckBoxMenuItem getShadeBasesMenuItem(String label, final ShadeBasesOption option) {
+            final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
+            mi.setSelected(renderOptions.shadeBasesOption == option);
 
-
-        public void addShadeBaseByQualityMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
-            item.setSelected(ShadeBasesOption.QUALITY == renderOptions.shadeBasesOption);
-            item.addActionListener(new ActionListener() {
+            if (option == ShadeBasesOption.NONE) {
+                mi.setSelected(renderOptions.shadeBasesOption == null || renderOptions.shadeBasesOption == option);
+            }
+            mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
                     UIUtilities.invokeOnEventThread(new Runnable() {
 
                         public void run() {
-                            if (item.isSelected()) {
-                                renderOptions.shadeBasesOption = ShadeBasesOption.QUALITY;
-                                refresh();
+                            if (mi.isSelected()) {
+                                renderOptions.shadeBasesOption = option;
                             } else {
                                 renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
-                                refresh();
                             }
+                            refresh();
                         }
                     });
+
                 }
             });
 
-            add(item);
+            return mi;
         }
         
-        public void addShadeBaseByFlowDeviationReadMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Shade base by read flow signal deviation");
-            item.setSelected(ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == renderOptions.shadeBasesOption);
-            item.addActionListener(new ActionListener() {
+        public void addShadeBaseByMenuItem() {
+            JMenu groupMenu = new JMenu("Shade bases by...");
+            ButtonGroup group = new ButtonGroup();
 
-                public void actionPerformed(ActionEvent aEvt) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
+            Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
+            mappings.put("none", ShadeBasesOption.NONE);
+            mappings.put("quality", ShadeBasesOption.QUALITY);
+            mappings.put("read flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ);
+            mappings.put("reference flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE);
 
-                        public void run() {
-                            if (item.isSelected()) {
-                                renderOptions.shadeBasesOption = ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ;
-                                refresh();
-                            } else {
-                                renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
-                                refresh();
-                            }
-                        }
-                    });
-                }
-            });
+            for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
+                JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());
+                groupMenu.add(mi);
+                group.add(mi);
+            }
 
-            add(item);
-        }
-        
-        public void addShadeBaseByFlowDeviationReferenceMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Shade base by reference flow signal deviation");
-            item.setSelected(ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == renderOptions.shadeBasesOption);
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-                            if (item.isSelected()) {
-                                renderOptions.shadeBasesOption = ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE;
-                                refresh();
-                            } else {
-                                renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
-                                refresh();
-                            }
-                        }
-                    });
-                }
-            });
-
-            add(item);
+            add(groupMenu);
         }
 
         public void addShowCoverageItem() {
