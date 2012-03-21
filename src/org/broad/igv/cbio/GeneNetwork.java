@@ -620,6 +620,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
                 }
             }
         }
+        String frameName = frame != null ? frame.getName() : null;
 
         ScoreData<String, Float> results = new ScoreData(RegionScoreType.values().length);
 
@@ -668,18 +669,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
                     samplesForType.add(sample);
 
-                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
-                        System.out.println(sample);
-                    }
-
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
-                            type, frame.getName(), tracks);
-
-
-                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
-                        System.out.println(score);
-                    }
-
+                            type, frameName, tracks);
 
                     if (score >= curBounds[0] && score <= curBounds[1] && !Float.isNaN(score)) {
                         alteredSamplesForType.add(sample);
