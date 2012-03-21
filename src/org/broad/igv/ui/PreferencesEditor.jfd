@@ -5007,7 +5007,7 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>IGV Directory ...</string> 
+             <string>Move...</string> 
             </void> 
             <void property="name"> 
              <string>igvDirectoryButton</string> 
@@ -5025,20 +5025,30 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>40</int> 
+             <int>610</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>310</int> 
+             <int>345</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>100</int> 
             </void> 
            </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JTextField</string> 
+            <string>javax.swing.JLabel</string> 
             <void method="setProperty"> 
-             <string>editable</string> 
-             <boolean>false</boolean> 
+             <string>border</string> 
+             <object class="javax.swing.border.BevelBorder"> 
+              <int>1</int> 
+              <null/> 
+              <null/> 
+              <null/> 
+              <null/> 
+             </object> 
             </void> 
             <void property="name"> 
              <string>igvDirectoryField</string> 
@@ -5048,7 +5058,7 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>40</int> 
+             <int>55</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
@@ -5056,7 +5066,11 @@
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>680</int> 
+             <int>550</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>25</int> 
             </void> 
            </object> 
           </void> 
@@ -5065,7 +5079,7 @@
             <string>javax.swing.JLabel</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>&lt;html&gt;&lt;i&gt;Click to change the location of the IGV directory.</string> 
+             <string>IGV Directory: </string> 
             </void> 
             <void property="name"> 
              <string>label21</string> 
@@ -5075,15 +5089,15 @@
             <class>com.jformdesigner.runtime.NullConstraints</class> 
             <void method="setProperty"> 
              <string>x</string> 
-             <int>195</int> 
+             <int>45</int> 
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>316</int> 
+             <int>310</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>440</int> 
+             <int>105</int> 
             </void> 
            </object> 
           </void> 
