@@ -606,7 +606,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
                 }
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                log.error("Error processing CIGAR string", e);
             }
             prevOp = op.operator;
         }

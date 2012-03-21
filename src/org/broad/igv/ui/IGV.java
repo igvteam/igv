@@ -28,6 +28,7 @@ package org.broad.igv.ui;
 
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
@@ -537,7 +538,7 @@ public class IGV {
         try {
             File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
             if (importDirectory == null) {
-                PreferenceManager.getInstance().setLastGenomeImportDirectory(Globals.getUserDirectory());
+                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
             }
 
             // Display the dialog

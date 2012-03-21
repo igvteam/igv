@@ -23,13 +23,12 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.RegionNavigatorDialog;
-import org.broad.igv.ui.util.FileChooser;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -74,7 +73,7 @@ public class ExportRegionsMenuAction extends MenuAction {
 
         File exportRegionDirectory = PreferenceManager.getInstance().getLastExportedRegionDirectory();
         if (exportRegionDirectory == null) {
-            exportRegionDirectory = Globals.getUserDirectory();
+            exportRegionDirectory = DirectoryManager.getUserDirectory();
         }
 
         String title = "Export Regions of Interest ...";

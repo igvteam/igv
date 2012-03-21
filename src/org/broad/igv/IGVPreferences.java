@@ -47,9 +47,16 @@ public class IGVPreferences {
 
     static Hashtable<String, String> userPreferences = null;
 
-    public static final String DEFAULT_PREF_NAME = "prefs.properties";
-    private static String pref_name = DEFAULT_PREF_NAME;
+    private File prefFile;
 
+
+    public IGVPreferences() {
+        this.prefFile = null;
+    }
+
+    public IGVPreferences(File prefFile) {
+        this.prefFile = prefFile;
+    }
 
     public void put(String key, String value) {
 
@@ -101,12 +108,9 @@ public class IGVPreferences {
 
     synchronized void loadUserPreferences() {
         userPreferences = new Hashtable();
-        File rootDir = Globals.getIgvDirectory();
-        if (!rootDir.exists()) {
-            rootDir.mkdir();
+        if (prefFile == null) {
+            prefFile = DirectoryManager.getPreferencesFile();
         }
-        File prefFile = new File(rootDir, DEFAULT_PREF_NAME);
-
         if (prefFile.exists()) {
             String prefFileName = prefFile.getAbsolutePath();
             load(prefFileName, false);
@@ -183,20 +187,12 @@ public class IGVPreferences {
         }
     }
 
-    private synchronized void storePreferences() {
-        storePreferences(pref_name);
-    }
 
-    private synchronized void storePreferences(String filename) {
+    private synchronized void storePreferences() {
 
         if (userPreferences != null) {
             PrintWriter pw = null;
             try {
-                File rootDir = Globals.getIgvDirectory();
-                if (!rootDir.exists()) {
-                    rootDir.mkdir();
-                }
-                File prefFile = new File(rootDir, filename);
                 pw = new PrintWriter(new BufferedWriter(new FileWriter(prefFile)));
                 for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
                     pw.print(entry.getKey());
@@ -214,7 +210,5 @@ public class IGVPreferences {
         }
     }
 
-    void setPrefFileName(String s) {
-        this.pref_name = s;
-    }
+
 }

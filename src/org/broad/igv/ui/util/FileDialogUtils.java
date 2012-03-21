@@ -18,6 +18,7 @@
 
 package org.broad.igv.ui.util;
 
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 
@@ -43,7 +44,7 @@ public class FileDialogUtils {
 
 
     public static File chooseFile(String title) {
-        return chooseFile(title, Globals.getUserDirectory(), null, FileDialog.LOAD);
+        return chooseFile(title, DirectoryManager.getUserDirectory(), null, FileDialog.LOAD);
     }
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {

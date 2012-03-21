@@ -665,4 +665,19 @@ public class IGVToolsTest {
         }
     }
 
+    @Test
+    //tile -z 1 --fileType mage-tab
+    public void testTileMageTab() throws Exception {
+        String mageTabFile = TestUtils.DATA_DIR + "/mage-tab/test.data.txt";
+        String outputFile = TestUtils.DATA_DIR + "/mage-tab/test.data.tdf";
+        String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
+        String command = "tile -z 1 --fileType mage-tab "  + mageTabFile + " " + outputFile + " " + genfile;
+
+        igvTools.run(command.split("\\s+"));
+
+
+
+
+    }
+
 }

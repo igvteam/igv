@@ -20,6 +20,7 @@ package org.broad.igv.ui;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.db.DBManager;
@@ -53,7 +54,7 @@ public class ShutdownThread extends Thread {
     }
 
     private static void cleanupBamIndexCache() {
-        File dir = Globals.getBamIndexCacheDirectory();
+        File dir = DirectoryManager.getBamIndexCacheDirectory();
         for(File f : dir.listFiles()) {
             f.delete();
         }

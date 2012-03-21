@@ -20,14 +20,11 @@ package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import jargs.gnu.CmdLineParser;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+import org.apache.log4j.*;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
 
@@ -36,6 +33,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 
 
 /**
@@ -79,7 +77,7 @@ public class Main {
     private static void initApplication() {
         initializeLog();
         log.info("Startup  " + Globals.applicationString());
-        log.info("Default User Directory: " + Globals.getUserDirectory());
+        log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
@@ -203,46 +201,27 @@ public class Main {
         layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
 
         // Create a log file that is ready to have text appended to it
-        RollingFileAppender appender = new RollingFileAppender();
-        appender.setName("IGV_ROLLING_APPENDER");
-        appender.setFile(getLogFilePath());
-        appender.setThreshold(Level.ALL);
-        appender.setMaxFileSize("1000KB");
-        appender.setMaxBackupIndex(1);
-        appender.setLayout(layout);
-        appender.setAppend(true);
-        appender.activateOptions();
-        logger.addAppender(appender);
-
-    }
-
-
-    static public String getLogFilePath() {
-
-        // Build the log file path
-        StringBuffer logFilePath = new StringBuffer();
-        logFilePath.append(Globals.getIgvDirectory());
-        logFilePath.append(System.getProperties().getProperty("file.separator"));
-        logFilePath.append("igv.log");
-
-        // Added for Linux which does notr automatically create the log file
-        File logFile = null;
         try {
-            logFile = new File(logFilePath.toString().trim());
-            if (!logFile.getParentFile().exists()) {
-                logFile.getParentFile().mkdir();
-            }
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-        } catch (Exception e) {
-            System.out.println("Error creating log file: " + logFile.getAbsolutePath());
-            e.printStackTrace();
+            File logFile = DirectoryManager.getLogFile();
+            RollingFileAppender appender = new RollingFileAppender();
+            appender.setName("IGV_ROLLING_APPENDER");
+            appender.setFile(logFile.getAbsolutePath());
+            appender.setThreshold(Level.ALL);
+            appender.setMaxFileSize("1000KB");
+            appender.setMaxBackupIndex(1);
+            appender.setLayout(layout);
+            appender.setAppend(true);
+            appender.activateOptions();
+            logger.addAppender(appender);
         }
-
-        return logFilePath.toString().trim();
+        catch (IOException e) {
+           // Can't create log file, just log to console
+            System.err.println("Error creating log file");
+            e.printStackTrace();
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            logger.addAppender(consoleAppender);
+        }
     }
-
 
     /**
      * Class to encapsulate IGV command line arguments.

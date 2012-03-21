@@ -29,6 +29,7 @@ package org.broad.igv.feature.genome;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.ui.util.MessageUtils;
@@ -100,7 +101,7 @@ public class GenomeImpl implements Genome {
 
     public void loadUserDefinedAliases() {
 
-        File aliasFile = new File(Globals.getGenomeCacheDirectory(), id + "_alias.tab");
+        File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
 
         if (aliasFile.exists()) {
             if (chrAliasTable == null) chrAliasTable = new HashMap();

@@ -79,7 +79,7 @@ function timeoutHandler() {
 //        hostname += (":" + port);
 //    }
     // note: context_path is set in stylesAndScripts.jsp
-    var webstart_url = "http://www.broadinstitute.org/igv/projects/dev/igv.php";
+    var webstart_url = "http://www.broadinstitute.org/igv/projects/current/igv_gs_prod.jnlp";
 
     if (sessionURL) {
         webstart_url += "?sessionURL=" + sessionURL;
@@ -166,7 +166,7 @@ function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) 
         oldScript.parentNode.removeChild(oldScript);
     }
 
-    var localURL = "http://127.0.0.1:" + port + "/load?file=" + dataUrl + "&callback=callBack();";
+    var localURL = "http://127.0.0.1:" + port + "/load?callback=callBack();";
 
     sessionURL = dataUrl;
     genome = genomeID;
@@ -174,7 +174,9 @@ function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) 
     merge = mergeFlag;
     name = trackName;
 
-
+    if(dataURL) {
+        localURL += "&file=" + dataUrl;
+    }
     if (genomeID) {
         localURL += "&genome=" + genomeID;
     }

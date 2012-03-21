@@ -19,7 +19,7 @@
 package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -111,7 +111,7 @@ public class GeneListManager {
     }
 
     private void loadUserLists() {
-        File dir = Globals.getGeneListDirectory();
+        File dir = DirectoryManager.getGeneListDirectory();
         if (dir.exists()) {
             for (File f : dir.listFiles()) {
                 try {
@@ -144,7 +144,7 @@ public class GeneListManager {
 
         // First copy file to gene list directory
         File f = grpFile;
-        File dir = Globals.getGeneListDirectory();
+        File dir = DirectoryManager.getGeneListDirectory();
         if (!dir.equals(grpFile.getParentFile())) {
             f = new File(dir, grpFile.getName());
             FileUtils.copyFile(grpFile, f);
@@ -204,7 +204,7 @@ public class GeneListManager {
     public void importGMTFile(File gmtFile) throws IOException {
 
         File f = gmtFile;
-        File dir = Globals.getGeneListDirectory();
+        File dir = DirectoryManager.getGeneListDirectory();
         if (!dir.equals(gmtFile.getParentFile())) {
             f = new File(dir, gmtFile.getName());
             FileUtils.copyFile(gmtFile, f);
@@ -334,7 +334,7 @@ public class GeneListManager {
             List<String> genes = geneList.getLoci();
 
             if (listName != null && genes != null) {
-                file = new File(Globals.getGeneListDirectory(), getLegalFilename(listName) + ".grp");
+                file = new File(DirectoryManager.getGeneListDirectory(), getLegalFilename(listName) + ".grp");
                 pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
                 pw.println("#name=" + listName);
                 if (description != null) pw.println("#description=" + description);

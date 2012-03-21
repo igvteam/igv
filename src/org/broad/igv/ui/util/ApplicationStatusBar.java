@@ -35,13 +35,12 @@ import java.util.TimerTask;
 public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     static Logger log = Logger.getLogger(ApplicationStatusBar.class);
-    private JTextField messageBox;
-    private JTextField messageBox2;
-    private JTextField messageBox3;
-    private MemoryStatus memoryStatus;
-    private Font font;
-    //private LabelStatusBarItem messageBox3;
-    //private MemoryStatusBarItem memoryBox;
+    private JLabel messageBox;
+    private JLabel messageBox2;
+    private JLabel messageBox3;
+    private JLabel memoryStatus;
+
+    java.util.Timer timer;
 
     public ApplicationStatusBar() {
         initialize();
@@ -49,46 +48,42 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
 
     private void initialize() {
 
-        Color bg = new Color(250, 250, 250);
-        font = FontManager.getFont(10);
+        setBackground(new Color(240, 240, 240));
+        Color messageBG = new Color(230, 230, 230);
+        Font messageFont = FontManager.getFont(11);
 
-        setMinimumSize(new Dimension(200, 25));
-
-        // setPreferredSize(new Dimension(800, 32));
+        setMinimumSize(new Dimension(200, 20));
+        setPreferredSize(new Dimension(800, 20));
 
         JideBoxLayout layout = new JideBoxLayout(this, JideBoxLayout.X_AXIS);
-        layout.setGap(1);
+        layout.setGap(3);
         setLayout(layout);
 
-        messageBox = new JTextField();
+        messageBox = createMessageField(messageBG, messageFont);
         messageBox.setMinimumSize(new Dimension(165, 10));
         messageBox.setPreferredSize(new Dimension(165, 20));
-        messageBox.setEditable(false);
-        messageBox.setFont(font);
-        messageBox.setBackground(bg);
         add(messageBox, JideBoxLayout.FIX);
 
-        messageBox2 = new JTextField();
+        messageBox2 = createMessageField(messageBG, messageFont);
         messageBox2.setMinimumSize(new Dimension(150, 10));
         messageBox2.setPreferredSize(new Dimension(150, 20));
-        messageBox2.setEditable(false);
-        messageBox2.setBackground(bg);
-        messageBox2.setFont(font);
         add(messageBox2, JideBoxLayout.FIX);
 
-        messageBox3 = new JTextField();
+        messageBox3 = createMessageField(messageBG, messageFont);
         messageBox3.setMinimumSize(new Dimension(165, 10));
         messageBox3.setPreferredSize(new Dimension(165, 20));
-        messageBox3.setEditable(false);
-        messageBox3.setBackground(bg);
-        messageBox3.setFont(font);
         add(messageBox3, JideBoxLayout.VARY);
 
-        memoryStatus = new MemoryStatus();
+        memoryStatus = createMessageField(messageBG, messageFont);
         memoryStatus.setPreferredSize(new Dimension(100, 20));
         memoryStatus.setMinimumSize(new Dimension(100, 10));
-        memoryStatus.setBackground(bg);
+        memoryStatus.setBackground(messageBG);
         add(memoryStatus, JideBoxLayout.FIX);
+
+        MemoryUpdateTask updateTask = new MemoryUpdateTask(memoryStatus);
+        timer = new java.util.Timer();
+        timer.schedule(updateTask, 0, 1000);
+
 
     }
 
@@ -111,34 +106,35 @@ public class ApplicationStatusBar extends JPanel { //StatusBar {
     }
 
 
-    class MemoryStatus extends JTextField {
+    private JLabel createMessageField(Color bg, Font font) {
+        JLabel messageField = new JLabel();
+        messageField.setBackground(bg);
+        messageField.setFont(font);
+        messageField.setBorder(BorderFactory.createLineBorder(Color.black));
+        return messageField;
 
+    }
+
+
+    class MemoryUpdateTask extends TimerTask {
+
+        JLabel textField;
         NumberFormat format;
-        java.util.Timer timer;
 
-        public MemoryStatus() {
-
-            setFont(font);
-            setEditable(false);
+        public MemoryUpdateTask(JLabel textField) {
+            this.textField = textField;
             format = NumberFormat.getIntegerInstance();
+        }
 
-            TimerTask updateTask = new TimerTask() {
-                @Override
-                public void run() {
-                    Runtime runtime = Runtime.getRuntime();
-                    int freeMemory = (int) (runtime.freeMemory() / 1000000);
-                    int totalMemory = (int) (runtime.totalMemory() / 1000000);
-                    int usedMemory = (totalMemory - freeMemory);
-                    String um = format.format(usedMemory);
-                    String tm = format.format(totalMemory);
-                    setText(um + "M of " + tm + "M");
-                }
-            };
-
-            timer = new java.util.Timer();
-            timer.schedule(updateTask, 0, 1000);
-
-
+        @Override
+        public void run() {
+            Runtime runtime = Runtime.getRuntime();
+            int freeMemory = (int) (runtime.freeMemory() / 1000000);
+            int totalMemory = (int) (runtime.totalMemory() / 1000000);
+            int usedMemory = (totalMemory - freeMemory);
+            String um = format.format(usedMemory);
+            String tm = format.format(totalMemory);
+            textField.setText(um + "M of " + tm + "M");
         }
 
     }

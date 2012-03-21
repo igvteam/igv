@@ -26,6 +26,7 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
@@ -113,10 +114,10 @@ public class GenomeManager {
                     URL genomeArchiveURL = new URL(genomePath);
                     String cachedFilename = Utilities.getFileNameFromURL(
                             URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8"));
-                    if (!Globals.getGenomeCacheDirectory().exists()) {
-                        Globals.getGenomeCacheDirectory().mkdir();
+                    if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                        DirectoryManager.getGenomeCacheDirectory().mkdir();
                     }
-                    archiveFile = new File(Globals.getGenomeCacheDirectory(), cachedFilename);
+                    archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
                     refreshCache(archiveFile, genomeArchiveURL);
                 } else {
                     archiveFile = new File(genomePath);
@@ -594,7 +595,7 @@ public class GenomeManager {
 
             userDefinedGenomeArchiveList = new LinkedList();
 
-            File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
             BufferedReader reader = null;
 
@@ -644,7 +645,7 @@ public class GenomeManager {
      */
     public void clearGenomeCache() {
 
-        File[] files = Globals.getGenomeCacheDirectory().listFiles();
+        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
         for (File file : files) {
             if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
                 file.delete();
@@ -667,11 +668,11 @@ public class GenomeManager {
         if (cachedGenomeArchiveList == null) {
             cachedGenomeArchiveList = new LinkedList();
 
-            if (!Globals.getGenomeCacheDirectory().exists()) {
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 return cachedGenomeArchiveList;
             }
 
-            File[] files = Globals.getGenomeCacheDirectory().listFiles();
+            File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
             for (File file : files) {
 
                 if (file.isDirectory()) {
@@ -765,7 +766,7 @@ public class GenomeManager {
             return;
         }
 
-        File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");

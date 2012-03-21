@@ -24,7 +24,7 @@ package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.sam.GeraldAlignment;
@@ -188,7 +188,7 @@ public class GeraldParser implements AlignmentParser {
 
     static synchronized void loadChrMap() {
         seqChrMap = new HashMap();
-        File samDir = new File(Globals.getIgvDirectory(), "sam");
+        File samDir = DirectoryManager.getSamDirectory();
         if (samDir.exists()) {
             File mapFile = new File(samDir, "sequence.map");
             if (!mapFile.exists()) {

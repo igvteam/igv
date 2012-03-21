@@ -26,7 +26,7 @@ import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
@@ -176,7 +176,7 @@ public class BAMHttpReader implements AlignmentReader {
         if (timeLimit == null) {
             timeLimit = oneDay;
         }
-        File dir = Globals.getBamIndexCacheDirectory();
+        File dir = DirectoryManager.getBamIndexCacheDirectory();
         File[] files = dir.listFiles();
 
         long time = System.currentTimeMillis();
@@ -213,7 +213,7 @@ public class BAMHttpReader implements AlignmentReader {
     private File getTmpIndexFile(String bamURL) throws IOException {
         File indexFile = indexFileCache.get(bamURL);
         if (indexFile == null) {
-            indexFile = File.createTempFile("index_", ".bai", Globals.getBamIndexCacheDirectory());
+            indexFile = File.createTempFile("index_", ".bai", DirectoryManager.getBamIndexCacheDirectory());
             indexFile.deleteOnExit();
             indexFileCache.put(bamURL, indexFile);
         }

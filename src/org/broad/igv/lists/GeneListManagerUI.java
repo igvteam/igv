@@ -23,7 +23,7 @@
 package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -282,7 +282,7 @@ public class GeneListManagerUI extends JDialog {
      */
     private void exportButtonActionPerformed(ActionEvent e) {
         if (selectedGroup != null) {
-            File userDir = Globals.getUserDirectory();
+            File userDir = DirectoryManager.getUserDirectory();
             File initFile = new File(selectedGroup + ".gmt");
             File glFile = FileDialogUtils.chooseFile("Save gene lists", userDir, initFile, FileDialogUtils.SAVE);
             if (glFile != null) {

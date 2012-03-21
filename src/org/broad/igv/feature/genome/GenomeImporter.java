@@ -23,6 +23,7 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 
 import org.broad.igv.feature.MaximumContigGenomeException;
@@ -90,7 +91,7 @@ public class GenomeImporter {
 
 
         // Create a tmp directory for genome files
-        File tmpdir = new File(Globals.getGenomeCacheDirectory(), genomeFileName + "_tmp");
+        File tmpdir = new File(DirectoryManager.getGenomeCacheDirectory(), genomeFileName + "_tmp");
         if(tmpdir.exists()) {
             tmpdir.delete();
         }
