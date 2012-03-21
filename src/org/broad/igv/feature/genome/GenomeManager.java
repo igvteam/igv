@@ -40,6 +40,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -108,20 +109,7 @@ public class GenomeManager {
 
             if (genomePath.endsWith(".genome")) {
 
-                File archiveFile;
-                if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
-                    // We need a local copy, as there is no http zip file reader
-                    URL genomeArchiveURL = new URL(genomePath);
-                    String cachedFilename = Utilities.getFileNameFromURL(
-                            URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8"));
-                    if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
-                        DirectoryManager.getGenomeCacheDirectory().mkdir();
-                    }
-                    archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-                    refreshCache(archiveFile, genomeArchiveURL);
-                } else {
-                    archiveFile = new File(genomePath);
-                }
+                File archiveFile = getArchiveFile(genomePath);
 
                 genomeDescriptor = parseGenomeArchiveFile(archiveFile);
                 LinkedHashMap<String, Chromosome> chromMap = loadCytobandFile(genomeDescriptor);
@@ -150,40 +138,24 @@ public class GenomeManager {
                     fastaPath = genomePath;
                     fastaIndexPath = genomePath + ".fai";
                 }
+
                 if (!FileUtils.resourceExists(fastaIndexPath)) {
-                    throw new RuntimeException("<html>No index found, fasta files must be indexed.<br>" +
-                            "Indexes can be created with samtools (http://samtools.sourceforge.net/)<br>" +
-                            "or Picard(http://picard.sourceforge.net/).");
+                    //Have to make sure we have a local copy of the fasta file
+                    //to index it
+                    File archiveFile = getArchiveFile(fastaPath);
+                    fastaPath = archiveFile.getAbsolutePath();
+                    fastaIndexPath = fastaPath + ".fai";
+
+                    FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
                 }
+
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
+                if (HttpUtils.isURL(fastaPath)) {
+                    name = Utilities.getFileNameFromURL(fastaPath);
+                }
 
                 currentGenome = new GenomeImpl(id, name, fastaPath, true);
-
-                // Hack for illumina demo -- load the cytoband file
-//                File fastaFile = new File(fastaIndexPath);
-//                File cytobandFile = new File(fastaFile.getParent(), "b37_cytoband.txt");
-//                if (cytobandFile.exists()) {
-//
-//                    BufferedReader reader = new BufferedReader(new FileReader(cytobandFile));
-//                    LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
-//                    currentGenome.setChromosomeMap(chromMap, true);
-//                    reader.close();
-//                }
-//                File aliasFile = new File(fastaFile.getParent(), "b37_alias.tab");
-//                if(aliasFile.exists()) {
-//                    Map<String, String> aliases = loadAliasFile(genomeDescriptor);
-//                    if (aliases != null) currentGenome.addChrAliases(aliases);
-//                }
-//
-//                File geneFile = new File(fastaFile.getParent(), "refGene.txt");
-//                if (geneFile.exists()) {
-//                    AsciiLineReader reader = new AsciiLineReader(new FileInputStream(geneFile));
-//                    IGV.getInstance().createGeneTrack(currentGenome, reader,
-//                            geneFile.getAbsolutePath(), "Refseq genes", null);
-//                    reader.close();
-//                }
-//
 
                 log.info("Genome loaded.  id= " + id);
                 if (!Globals.isHeadless()) {
@@ -200,14 +172,38 @@ public class GenomeManager {
 
             return currentGenome;
 
-        } catch (
-                SocketException e
-                )
-
-        {
+        } catch (SocketException e) {
             throw new GenomeServerException("Server connection error", e);
         }
 
+    }
+
+    /**
+     * Returns a File of the provided genomePath.
+     * If the genomePath is a URL, it will be downloaded
+     * and saved in the genome cache directory.
+     *
+     * @param genomePath
+     * @return
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
+    private File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
+        File archiveFile;
+        if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
+            // We need a local copy, as there is no http zip file reader
+            URL genomeArchiveURL = new URL(genomePath);
+            String cachedFilename = Utilities.getFileNameFromURL(
+                    URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8"));
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                DirectoryManager.getGenomeCacheDirectory().mkdir();
+            }
+            archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
+            refreshCache(archiveFile, genomeArchiveURL);
+        } else {
+            archiveFile = new File(genomePath);
+        }
+        return archiveFile;
     }
 
     private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {

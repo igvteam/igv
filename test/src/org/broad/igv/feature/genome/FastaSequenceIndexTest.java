@@ -44,7 +44,9 @@ public class FastaSequenceIndexTest {
     private FastaSequenceIndex index;
 
     @Before
-    public void setup() throws IOException {
+    public void setUp() throws IOException {
+        TestUtils.setUpHeadless();
+
         index = new FastaSequenceIndex(indexPath);
     }
 
@@ -80,8 +82,7 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
-        assertTrue(success);
+        FastaSequenceIndex.createIndexFile(inPath, outPath);
 
         FastaSequenceIndex index = new FastaSequenceIndex(outPath);
         assertEquals(1, index.getContigs().size());
@@ -97,8 +98,7 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
-        assertTrue(success);
+        FastaSequenceIndex.createIndexFile(inPath, outPath);
 
         FastaSequenceIndex index = new FastaSequenceIndex(outPath);
         assertEquals(2, index.getContigs().size());
@@ -113,17 +113,19 @@ public class FastaSequenceIndexTest {
         assertEquals(58, entry.getBasesPerLine());
         assertEquals(59, entry.getBytesPerLine());
         assertEquals(10, entry.getPosition());
-        int tAsize = 7 * 59 + 30;
-        assertEquals(7 * 59 + 30, entry.getSize());
+        int tAsize = 7 * 58 + 29;
+        assertEquals(tAsize, entry.getSize());
         assertEquals(tA, entry.getContig());
 
         entry = index.getIndexEntry(tG);
         assertEquals(56, entry.getBasesPerLine());
         assertEquals(57, entry.getBytesPerLine());
         //Starting position is from tA start + tA length + length of header line
-        long tGpos = tAsize + index.getIndexEntry(tA).getPosition() + 10;
+        //Since "size" is number of bases, and "position" is bytes, this
+        //may look weird
+        long tGpos = tAsize + 8 + index.getIndexEntry(tA).getPosition() + 10;
         assertEquals(tGpos, entry.getPosition());
-        assertEquals(5 * 57 + 27, entry.getSize());
+        assertEquals(5 * 56 + 26, entry.getSize());
         assertEquals(tG, entry.getContig());
     }
 
@@ -135,7 +137,24 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
+        FastaSequenceIndex.createIndexFile(inPath, outPath);
 
+    }
+
+    @Test
+    public void testCreateIndexEcoli() throws Exception {
+        String inPath = TestUtils.LARGE_DATA_DIR + "/ecoli.fasta";
+        String outPath = inPath + ".fai";
+        File outFile = new File(outPath);
+
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        GenomeManager manager = new GenomeManager();
+        Genome genome = manager.loadGenome(inPath, null);
+        String chr = "gi|110640213|ref|NC_008253.1|";
+        assertNotNull(genome.getChromosome(chr));
+        //See http://www.ncbi.nlm.nih.gov/nuccore/110640213
+        assertEquals(4938920, genome.getLength());
     }
 }
