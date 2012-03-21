@@ -22,10 +22,8 @@ public class DirectoryManager {
     public static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
     public static File IGV_DIRECTORY;     // The IGV application directory
     public static File GENOME_CACHE_DIRECTORY;
-    final public static String GENOME_CACHE_FOLDER_NAME = "genomes";
-    public static File cacheDirectory = null;
     private static File GENE_LIST_DIRECTORY;
-    private static final String GENE_LIST_FOLDER_NAME = "lists";
+    public static File BAM_CACHE_DIRECTORY;
     final public static String IGV_DIR_USERPREF = "igvDir";
 
 
@@ -54,7 +52,7 @@ public class DirectoryManager {
         if (GENOME_CACHE_DIRECTORY == null) {
 
             //Create the Genome Cache
-            GENOME_CACHE_DIRECTORY = new File(getIgvDirectory(), GENOME_CACHE_FOLDER_NAME);
+            GENOME_CACHE_DIRECTORY = new File(getIgvDirectory(), "genomes");
             if (!GENOME_CACHE_DIRECTORY.exists()) {
                 GENOME_CACHE_DIRECTORY.mkdir();
             }
@@ -69,7 +67,7 @@ public class DirectoryManager {
 
     public static File getGeneListDirectory() {
         if (GENE_LIST_DIRECTORY == null) {
-            GENE_LIST_DIRECTORY = new File(getIgvDirectory(), GENE_LIST_FOLDER_NAME);
+            GENE_LIST_DIRECTORY = new File(getIgvDirectory(), "lists");
             if (!GENE_LIST_DIRECTORY.exists()) {
                 GENE_LIST_DIRECTORY.mkdir();
             }
@@ -83,16 +81,16 @@ public class DirectoryManager {
     }
 
     public static synchronized File getBamIndexCacheDirectory() {
-        if (cacheDirectory == null) {
+        if (BAM_CACHE_DIRECTORY == null) {
             File defaultDir = getIgvDirectory();
             if (defaultDir.exists()) {
-                cacheDirectory = new File(defaultDir, "bam");
-                if (!cacheDirectory.exists()) {
-                    cacheDirectory.mkdir();
+                BAM_CACHE_DIRECTORY = new File(defaultDir, "bam");
+                if (!BAM_CACHE_DIRECTORY.exists()) {
+                    BAM_CACHE_DIRECTORY.mkdir();
                 }
             }
         }
-        return cacheDirectory;
+        return BAM_CACHE_DIRECTORY;
     }
 
     public static synchronized File getSamDirectory() {
@@ -159,12 +157,22 @@ public class DirectoryManager {
      */
 
     public static void moveIGVDirectory(File newDirectory) throws IOException {
+
+        if(newDirectory.equals(IGV_DIRECTORY)) {
+            return; // Nothing to do
+        }
+
         if (IGV_DIRECTORY != null && IGV_DIRECTORY.exists()) {
             FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
+            FileUtils.deleteDirectory(IGV_DIRECTORY);
         } else {
             newDirectory.mkdir();
         }
         IGV_DIRECTORY = newDirectory;
+        GENOME_CACHE_DIRECTORY  = null;
+        GENE_LIST_DIRECTORY  = null;
+        BAM_CACHE_DIRECTORY  = null;
+        PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
         Preferences prefs = Preferences.userNodeForPackage(Globals.class);
         prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
 
@@ -215,7 +223,7 @@ public class DirectoryManager {
     }
 
 
-    private static File getIgvDirectory() {
+    public static File getIgvDirectory() {
 
         if (IGV_DIRECTORY == null) {
 

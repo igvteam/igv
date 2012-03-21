@@ -73,6 +73,7 @@ import java.lang.ref.SoftReference;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
@@ -1121,6 +1122,8 @@ public class IGV {
             PreferenceManager.getInstance().clear();
             boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);
             doShowAttributeDisplay(isShow);
+            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+            prefs.remove(DirectoryManager.IGV_DIR_USERPREF);
             doRefresh();
 
         } catch (Exception e) {

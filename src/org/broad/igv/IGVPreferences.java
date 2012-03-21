@@ -49,12 +49,15 @@ public class IGVPreferences {
 
     private File prefFile;
 
-
     public IGVPreferences() {
         this.prefFile = null;
     }
 
     public IGVPreferences(File prefFile) {
+        this.prefFile = prefFile;
+    }
+
+    public void setPrefFile(File prefFile) {
         this.prefFile = prefFile;
     }
 

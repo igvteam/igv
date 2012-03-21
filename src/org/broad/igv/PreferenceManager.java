@@ -1037,6 +1037,11 @@ public class PreferenceManager implements PropertyManager {
      * @param s
      */
     public void setPrefsFile(String s) {
-        this.preferences = new IGVPreferences(new File(s));
+        if(preferences == null) {
+            preferences = new IGVPreferences(new File(s));
+        }
+        else {
+            preferences.setPrefFile(new File(s));
+        }
     }
 }
