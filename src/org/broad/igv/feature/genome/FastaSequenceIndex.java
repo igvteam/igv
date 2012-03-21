@@ -18,27 +18,32 @@
 
 package org.broad.igv.feature.genome;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard.
- *
+ * <p/>
  * author: jrobinso
  * Date: 8/7/11
  */
 public class FastaSequenceIndex {
 
+    static Logger log = Logger.getLogger(FastaSequenceIndex.class);
+
     /**
      * Store the entries.  Use a LinkedHashMap for consistent iteration in insertion order.
      */
     private final LinkedHashMap<String, FastaSequenceIndexEntry> sequenceEntries = new LinkedHashMap<String, FastaSequenceIndexEntry>();
-
 
     public FastaSequenceIndex(String indexPath) throws IOException {
         parseIndexFile(indexPath);
@@ -53,11 +58,120 @@ public class FastaSequenceIndex {
     }
 
 
-    public int getContigSize(String contig)  {
+    public int getContigSize(String contig) {
         FastaSequenceIndexEntry entry = sequenceEntries.get(contig);
         return entry == null ? -1 : (int) entry.getSize();
     }
 
+    /**
+     * Creates an index for the provided fasta file
+     * inputPath can be a URL, outputPath must point to a file.
+     *
+     * @param inputPath
+     * @param outputPath
+     * @return
+     * @throws DataLoadException If the fasta file cannot be indexed, for instance
+     *                           because the lines are of an uneven length
+     */
+    public static boolean createIndexFile(String inputPath, String outputPath) throws DataLoadException {
+        boolean success = false;
+        AsciiLineReader reader = null;
+        FileWriter writer = null;
+        try {
+            reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
+            writer = new FileWriter(outputPath);
+            String line = null;
+            String curContig = null;
+            int basesPerLine = -1, bytesPerLine = -1;
+            long location = 0, size = 0, lastPosition = 0;
+
+            int basesThisLine, bytesThisLine;
+            int numInconsistentLines = -1;
+            boolean haveTasks = true;
+
+
+            //We loop through, generating a new FastaSequenceIndexEntry
+            //every time we see a new header line, or when the file ends.
+            while (haveTasks) {
+                line = reader.readLine();
+                //Treat empty line as end of file
+                //This can come up for trailing newline
+                if (line == null || line.trim().length() == 0) {
+                    line = null;
+                }
+                if (line == null || line.startsWith(">")) {
+                    //The last line can have a different number of bases/bytes
+                    if (numInconsistentLines >= 2) {
+                        throw new DataLoadException("Fasta file has uneven line lengths in contig " + curContig, inputPath);
+                    }
+
+                    //Done with old contig
+                    if (curContig != null) {
+                        writeLine(writer, curContig, size, location, basesPerLine, bytesPerLine);
+                    }
+
+                    if (line == null) {
+                        haveTasks = false;
+                        break;
+                    }
+
+                    //Header line
+                    curContig = line.split("\\s")[0];
+                    curContig = curContig.substring(1);
+                    //Should be starting position of next line
+                    location = reader.getPosition();
+                    size = 0;
+                    basesPerLine = -1;
+                    bytesPerLine = -1;
+                    numInconsistentLines = -1;
+                } else {
+                    basesThisLine = line.length();
+                    bytesThisLine = (int) (reader.getPosition() - lastPosition);
+
+                    //Calculate stats per line if first line, otherwise
+                    //check for consistency
+                    if (numInconsistentLines < 0) {
+                        basesPerLine = basesThisLine;
+                        bytesPerLine = bytesThisLine;
+                        numInconsistentLines = 0;
+                    } else {
+                        if (basesPerLine != basesThisLine || bytesPerLine != bytesThisLine) {
+                            numInconsistentLines++;
+                        }
+                    }
+
+                    size = reader.getPosition() - location;
+                }
+                lastPosition = reader.getPosition();
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            File outFile = new File(outputPath);
+            //Delete corrupt output file
+            if (outFile.delete()) {
+                log.error("Deleted output fasta index file " + outputPath);
+            }
+            success = false;
+        } finally {
+            if (reader != null) reader.close();
+            try {
+                writer.close();
+                success = true;
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+
+        return success;
+    }
+
+    private static void writeLine(FileWriter writer, String contig, long size, long location, int basesPerLine, int bytesPerLine) throws IOException {
+        String delim = "\t";
+        String newline = "\n";
+        String line = contig + delim + size + delim + location + delim + basesPerLine + delim + bytesPerLine;
+        writer.write(line + newline);
+    }
 
     /**
      * Parse the contents of an index file
@@ -78,7 +192,6 @@ public class FastaSequenceIndex {
         try {
             reader = ParsingUtils.openBufferedReader(indexFile);
 
-            int sequenceIndex = 0;
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
 
@@ -96,7 +209,7 @@ public class FastaSequenceIndex {
                 int bytesPerLine = Integer.parseInt(tokens[4]);
 
                 // Build sequence structure
-                add(new FastaSequenceIndexEntry(contig, location, size, basesPerLine, bytesPerLine, sequenceIndex++));
+                add(new FastaSequenceIndexEntry(contig, location, size, basesPerLine, bytesPerLine));
             }
         } finally {
             if (reader != null) {
@@ -122,7 +235,6 @@ public class FastaSequenceIndex {
         private long size;
         private int basesPerLine;
         private int bytesPerLine;
-        private final int sequenceIndex;
 
 
         /**
@@ -138,14 +250,12 @@ public class FastaSequenceIndex {
                                        long position,
                                        long size,
                                        int basesPerLine,
-                                       int bytesPerLine,
-                                       int sequenceIndex) {
+                                       int bytesPerLine) {
             this.contig = contig;
             this.position = position;
             this.size = size;
             this.basesPerLine = basesPerLine;
             this.bytesPerLine = bytesPerLine;
-            this.sequenceIndex = sequenceIndex;
         }
 
         /**

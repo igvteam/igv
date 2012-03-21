@@ -18,16 +18,18 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,9 +53,9 @@ public class FastaSequenceIndexTest {
 
         List expectedContigs = Arrays.asList("chr01p", "chr02q", "chr03q");
 
-        Set<String> contigs =  index.getContigs();
+        Set<String> contigs = index.getContigs();
         assertEquals(expectedContigs.size(), contigs.size());
-        for(Object exp : expectedContigs) {
+        for (Object exp : expectedContigs) {
             assertTrue(contigs.contains(exp));
         }
 
@@ -67,6 +69,73 @@ public class FastaSequenceIndexTest {
         assertEquals("Position", 14565324, entry.getPosition());
         assertEquals("basesPerLine", 50, entry.getBasesPerLine());
         assertEquals("bytesPerLine", 51, entry.getBytesPerLine());
+    }
+
+
+    @Test
+    public void testCreateIndex_01() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/fasta/ecoli_out.padded2.fasta";
+        String outPath = TestUtils.DATA_DIR + "/out/ecoli_out.padded2.fasta.fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
+        assertTrue(success);
+
+        FastaSequenceIndex index = new FastaSequenceIndex(outPath);
+        assertEquals(1, index.getContigs().size());
+        String contig = "NC_000913_bb";
+        assertNotNull(index.getIndexEntry(contig));
+    }
+
+    @Test
+    public void testCreateIndex_02() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_2contigs.fa";
+        String outPath = TestUtils.DATA_DIR + "/out/tmp.fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
+        assertTrue(success);
+
+        FastaSequenceIndex index = new FastaSequenceIndex(outPath);
+        assertEquals(2, index.getContigs().size());
+        String tA = "my:testA";
+        String tG = "my:testG";
+        String[] contigs = {tA, tG};
+        for (String contig : contigs) {
+            assertNotNull(index.getIndexEntry(contig));
+        }
+
+        FastaSequenceIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
+        assertEquals(58, entry.getBasesPerLine());
+        assertEquals(59, entry.getBytesPerLine());
+        assertEquals(10, entry.getPosition());
+        int tAsize = 7 * 59 + 30;
+        assertEquals(7 * 59 + 30, entry.getSize());
+        assertEquals(tA, entry.getContig());
+
+        entry = index.getIndexEntry(tG);
+        assertEquals(56, entry.getBasesPerLine());
+        assertEquals(57, entry.getBytesPerLine());
+        //Starting position is from tA start + tA length + length of header line
+        long tGpos = tAsize + index.getIndexEntry(tA).getPosition() + 10;
+        assertEquals(tGpos, entry.getPosition());
+        assertEquals(5 * 57 + 27, entry.getSize());
+        assertEquals(tG, entry.getContig());
+    }
+
+    @Test(expected = DataLoadException.class)
+    public void testCreateIndexUneven() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_uneven.fa";
+        String outPath = TestUtils.DATA_DIR + "/out/tmp.fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        boolean success = FastaSequenceIndex.createIndexFile(inPath, outPath);
 
     }
 }
