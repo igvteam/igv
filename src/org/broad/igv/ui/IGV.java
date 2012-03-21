@@ -1220,9 +1220,9 @@ public class IGV {
     }
 
 
-    final public void doRestoreSession(final String sessionPath,
-                                       final String locus,
-                                       final boolean merge) {
+    final public SwingWorker doRestoreSession(final String sessionPath,
+                                              final String locus,
+                                              final boolean merge) {
 
         SwingWorker worker = new SwingWorker() {
 
@@ -1306,8 +1306,7 @@ public class IGV {
         };
 
         worker.execute();
-
-
+        return worker;
     }
 
     /**

@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -121,6 +122,22 @@ public class TestUtils {
             igv.loadGenome(genomeFile, null);
         }
         return igv;
+    }
+
+    /**
+     * Loads the session into IGV. This blocks until the session
+     * is loaded.
+     *
+     * @param igv
+     * @param sessionPath
+     * @throws InterruptedException
+     */
+    public static void loadSession(IGV igv, String sessionPath) throws InterruptedException {
+        Future worker = igv.doRestoreSession(sessionPath, null, false);
+
+        while (!worker.isDone()) {
+            Thread.sleep(100);
+        }
     }
 
     public static boolean checkHeadlessEnvironment() {

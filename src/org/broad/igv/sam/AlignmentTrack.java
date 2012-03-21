@@ -667,6 +667,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
+    public int getMaxDepth() {
+        return dataManager.getMaxLevels();
+    }
 
     public void setMaxDepth(int newMaxLevels) {
         dataManager.setMaxLevels(newMaxLevels);

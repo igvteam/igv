@@ -123,12 +123,10 @@ public class CommandExecutor {
                 } else if (cmd.equals("tofront")) {
                     return bringToFront();
                 } else if (cmd.equalsIgnoreCase("viewaspairs")) {
-                    //TODO Allow user to name a specific track
-                    return setViewAsPairs(param1);
+                    return setViewAsPairs(param1, param2);
                 } else if (cmd.equalsIgnoreCase("maxdepth")) {
-                    //TODO Allow user to name a specific track
-                    return this.setMaxCoverageDepth(param1);
-                }else if (cmd.equals("exit")) {
+                    return this.setMaxCoverageDepth(param1, param2);
+                } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
                     log.error("UNKOWN COMMAND: " + command);
@@ -156,30 +154,34 @@ public class CommandExecutor {
         return result;
     }
 
-    private String setViewAsPairs(String param1) {
+    private String setViewAsPairs(String vAPString, String trackName) {
         List<Track> tracks = igv.getAllTracks(false);
-        boolean vAP = "false".equalsIgnoreCase(param1) ? false : true;
+        boolean vAP = "false".equalsIgnoreCase(vAPString) ? false : true;
         for (Track track : tracks) {
             if (track instanceof AlignmentTrack) {
-                AlignmentTrack atrack = (AlignmentTrack) track;
-                atrack.setViewAsPairs(vAP);
+                if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                    AlignmentTrack atrack = (AlignmentTrack) track;
+                    atrack.setViewAsPairs(vAP);
+                }
             }
         }
         return "OK";
     }
 
-    private String setMaxCoverageDepth(String param1) {
+    private String setMaxCoverageDepth(String maxCovDepth, String trackName) {
         List<Track> tracks = igv.getAllTracks(false);
         try {
-            Integer maxDepth = Integer.parseInt(param1);
+            Integer maxDepth = Integer.parseInt(maxCovDepth);
             for (Track track : tracks) {
                 if (track instanceof AlignmentTrack) {
-                    AlignmentTrack atrack = (AlignmentTrack) track;
-                    atrack.setMaxDepth (maxDepth);
+                    if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                        AlignmentTrack atrack = (AlignmentTrack) track;
+                        atrack.setMaxDepth(maxDepth);
+                    }
                 }
             }
         } catch (NumberFormatException e) {
-            final String msg = "Error parsing maxDepth value: " + param1 + ". Command ignored";
+            final String msg = "Error parsing maxDepth value: " + maxCovDepth + ". Command ignored";
             log.error(msg);
             return msg;
         }
@@ -513,44 +515,38 @@ public class CommandExecutor {
         }
     }
 
-
-    //START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP
-    // START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP,
-    //     INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR, TAG
-
     private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
-        String option = str.toLowerCase();
-        if (option.equals("start") || option.equals("position")) {
+        str = str == null ? "base" : str;
+        if (str.equalsIgnoreCase("start") || str.equalsIgnoreCase("position")) {
             return AlignmentTrack.SortOption.START;
-        } else if (option.equals("strand")) {
+        } else if (str.equalsIgnoreCase("strand")) {
             return AlignmentTrack.SortOption.STRAND;
-        } else if (str == null || option.equals("base")) {
+        } else if (str.equalsIgnoreCase("base")) {
             return AlignmentTrack.SortOption.NUCELOTIDE;
-        } else if (option.equals("quality")) {
+        } else if (str.equalsIgnoreCase("quality")) {
             return AlignmentTrack.SortOption.QUALITY;
-        } else if (option.equals("sample")) {
+        } else if (str.equalsIgnoreCase("sample")) {
             return AlignmentTrack.SortOption.SAMPLE;
-        } else if (option.equals("readGroup") || option.equals("read_group")) {
+        } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.SortOption.READ_GROUP;
-        } else if (option.equals("insertSize") || option.equals("insert_size")) {
+        } else if (str.equalsIgnoreCase("insertSize") || str.equalsIgnoreCase("insert_size")) {
             return AlignmentTrack.SortOption.INSERT_SIZE;
-        } else if (option.equals("firstOfPairStrand")) {
+        } else if (str.equalsIgnoreCase("firstOfPairStrand")) {
             return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
-        } else if (option.equals("mateChr")) {
+        } else if (str.equalsIgnoreCase("mateChr")) {
             return AlignmentTrack.SortOption.MATE_CHR;
         }
         return AlignmentTrack.SortOption.NUCELOTIDE;
     }
 
     private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {
-        String option = str.toLowerCase();
-        if (option.equals("strand")) {
+        if (str.equalsIgnoreCase("strand")) {
             return AlignmentTrack.GroupOption.STRAND;
 
-        } else if (option.equals("sample")) {
+        } else if (str.equalsIgnoreCase("sample")) {
             return AlignmentTrack.GroupOption.SAMPLE;
 
-        } else if (option.equals("readGroup") || option.equals("read_group")) {
+        } else if (str.equalsIgnoreCase("readGroup") || str.equalsIgnoreCase("read_group")) {
             return AlignmentTrack.GroupOption.READ_GROUP;
         }
         return AlignmentTrack.GroupOption.NONE;
