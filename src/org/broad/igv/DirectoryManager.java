@@ -33,16 +33,18 @@ public class DirectoryManager {
      */
     public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
+            System.out.print("Fetching user directory... ");
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
+            System.out.println(USER_DIRECTORY.getAbsolutePath());
 
             // Hack for known Java/Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
             // TODO -- retest with Java 7 when its released
-            if (Globals.IS_WINDOWS) {
-                try {
-                    Runtime.getRuntime().exec("attrib -r \"" + USER_DIRECTORY.getAbsolutePath() + "\"");
-                } catch (Exception e) {
-                }
-            }
+//            if (Globals.IS_WINDOWS) {
+//                try {
+//                    Runtime.getRuntime().exec("attrib -r \"" + USER_DIRECTORY.getAbsolutePath() + "\"");
+//                } catch (Exception e) {
+//                }
+//            }
         }
         return USER_DIRECTORY;
     }
@@ -122,9 +124,9 @@ public class DirectoryManager {
     public static synchronized File getPreferencesFile() {
 
         File igvDirectoy = getIgvDirectory();
-        File igvPropertyFile = new File(igvDirectoy, "igv.properties");
+        File igvPropertyFile = new File(igvDirectoy, "prefs.properties");
 
-        // If the property file doesn't exist, try the "legacy" location
+        // If the property file doesn't exist, try the "legacy" location.  This should only make a difference for Macs
         if (!igvPropertyFile.exists()) {
             File oldFile = getLegacyPreferencesFile();
             if (oldFile.exists()) {
@@ -212,12 +214,12 @@ public class DirectoryManager {
 
             // Hack for known Java/Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
             // TODO -- retest with Java 7 when its released
-            if (Globals.IS_WINDOWS) {
-                try {
-                    Runtime.getRuntime().exec("attrib -r \"" + USER_HOME.getAbsolutePath() + "\"");
-                } catch (Exception e) {
-                }
-            }
+//            if (Globals.IS_WINDOWS) {
+//                try {
+//                    Runtime.getRuntime().exec("attrib -r \"" + USER_HOME.getAbsolutePath() + "\"");
+//                } catch (Exception e) {
+//                }
+//            }
         }
         return USER_HOME;
     }
