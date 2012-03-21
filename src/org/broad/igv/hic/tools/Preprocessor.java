@@ -72,8 +72,9 @@ public class Preprocessor {
         try {
 
             if (loadDensities) {
-                File densitiesFile = new File(outputFile.getName()+".densities");
+                File densitiesFile = new File(outputFile.getPath()+".densities");
                 calculateDensities(inputFileList, densitiesFile);
+                return;
             }
 
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
@@ -127,7 +128,8 @@ public class Preprocessor {
 
 
         } finally {
-            fos.close();
+            if (fos != null)
+                fos.close();
         }
 
         updateIndexPositions();

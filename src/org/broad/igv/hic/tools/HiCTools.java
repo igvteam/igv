@@ -78,8 +78,14 @@ public class HiCTools {
 
 
         } else if (args[0].equals("pre")) {
-
-            String genomeId = args[3];
+            String genomeId = "";
+            try {
+                genomeId = args[3];
+            }
+            catch (ArrayIndexOutOfBoundsException e) {
+                System.err.println("No genome ID given");
+                System.exit(0);
+            }
             List<Chromosome> chromosomes = loadChromosomes(genomeId);
 
             long genomeLength = 0;
