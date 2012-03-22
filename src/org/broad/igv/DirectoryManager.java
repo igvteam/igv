@@ -35,6 +35,10 @@ public class DirectoryManager {
         if (USER_DIRECTORY == null) {
             System.out.print("Fetching user directory... ");
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
+            //Mostly for testing, in some environments USER_DIRECTORY can be null
+            if (USER_DIRECTORY == null) {
+                USER_DIRECTORY = getUserHome();
+            }
             System.out.println(USER_DIRECTORY.getAbsolutePath());
 
             // Hack for known Java/Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
@@ -160,7 +164,7 @@ public class DirectoryManager {
 
     public static void moveIGVDirectory(File newDirectory) throws IOException {
 
-        if(newDirectory.equals(IGV_DIRECTORY)) {
+        if (newDirectory.equals(IGV_DIRECTORY)) {
             return; // Nothing to do
         }
 
@@ -171,9 +175,9 @@ public class DirectoryManager {
             newDirectory.mkdir();
         }
         IGV_DIRECTORY = newDirectory;
-        GENOME_CACHE_DIRECTORY  = null;
-        GENE_LIST_DIRECTORY  = null;
-        BAM_CACHE_DIRECTORY  = null;
+        GENOME_CACHE_DIRECTORY = null;
+        GENE_LIST_DIRECTORY = null;
+        BAM_CACHE_DIRECTORY = null;
         PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
         Preferences prefs = Preferences.userNodeForPackage(Globals.class);
         prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
