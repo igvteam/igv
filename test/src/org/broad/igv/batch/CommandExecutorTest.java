@@ -20,8 +20,11 @@ package org.broad.igv.batch;
 
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVTest;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
@@ -40,7 +43,6 @@ import static junit.framework.Assert.*;
  */
 public class CommandExecutorTest {
     static IGV igv;
-    static String gbmSession = TestUtils.DATA_DIR + "/sessions/gbm_subtypes.xml";
     CommandExecutor exec = new CommandExecutor();
 
     @BeforeClass
@@ -140,6 +142,35 @@ public class CommandExecutorTest {
         }
 
         return out;
+    }
+
+    @Test
+    public void testSortByRegionScoreType() throws Exception {
+        String sessionPath = TestUtils.DATA_DIR + "/sessions/BRCA_loh2.xml";
+        TestUtils.loadSession(igv, sessionPath);
+        Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
+
+        //assertEquals(1, rois.size());
+
+        List<Track> tracks;
+        int count = 0;
+        for (RegionOfInterest roi : rois) {
+            for (RegionScoreType type : RegionScoreType.values()) {
+                igv.sortAllTracksByAttributes(new String[]{"NAME"}, new boolean[]{false});
+                String typeStr = type.toString().toUpperCase();
+                if (count % 2 == 0) {
+                    typeStr = typeStr.toLowerCase();
+                }
+                String resp = exec.execute("sort " + typeStr + " " + roi.getLocusString());
+                assertEquals("OK", resp);
+
+                tracks = igv.getAllTracks(false);
+                IGVTest.checkIsSorted(tracks, roi, type, FrameManager.getDefaultFrame().getZoom());
+                count++;
+            }
+        }
+
+
     }
 
 }
