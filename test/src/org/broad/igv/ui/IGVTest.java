@@ -20,12 +20,9 @@ package org.broad.igv.ui;
 
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -36,7 +33,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +108,14 @@ public class IGVTest {
         RegionOfInterest roi = new RegionOfInterest(chr, start, end, "");
 
         IGV.sortByRegionScore(tracks, roi, type, frame);
+        return checkIsSorted(tracks, roi, type, zoom);
+    }
+
+    public static int checkIsSorted(List<Track> tracks, RegionOfInterest roi, RegionScoreType type, int zoom) {
+
+        String chr = roi.getChr();
+        int start = roi.getStart();
+        int end = roi.getEnd();
 
         Track lastTrack = null;
         int count = 0;

@@ -78,17 +78,6 @@ public class CommandExecutorTest {
         assertEquals(49, region.getStart());
         assertEquals(1000, region.getEnd());
 
-//        String sortType = "readGroup";
-//        exec.execute("sort " + sortType);
-//
-//
-//        List<Track> tracks = igv.getAllTracks(false);
-//        System.out.println(tracks.size());
-//        for(Track track: tracks){
-//            if(track instanceof AlignmentTrack){
-//                ((AlignmentTrack) track).sortRows();
-//            }
-//        }
     }
 
     @Test
