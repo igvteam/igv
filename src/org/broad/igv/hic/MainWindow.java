@@ -230,7 +230,7 @@ public class MainWindow extends JFrame {
                     is = ParsingUtils.openInputStream(densityFile);
 
                     zoomToDensityMap = DensityUtil.readDensities(is);
-                    comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed", "OE"}));
+                    comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed", "OE", "Pearson"}));
 
                 } finally {
                     if (is != null) is.close();
@@ -322,13 +322,15 @@ public class MainWindow extends JFrame {
         } else {// Find right zoom level
             resolutionSlider.setEnabled(true);
             int bp_bin = len / maxNBins;
-            int initialZoom = HiCGlobals.zoomBinSizes.length - 1;
-            for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
-                if (HiCGlobals.zoomBinSizes[z] < bp_bin) {
-                    initialZoom = z - 1;
-                    break;
-                }
-            }
+            int initialZoom = 1;
+
+//            int initalZoom = HiCGlobals.zoomBinSizes.length - 1;
+//            for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
+//                if (HiCGlobals.zoomBinSizes[z] < bp_bin) {
+//                    initialZoom = z - 1;
+//                    break;
+//                }
+//            }
             resolutionSlider.setValue(initialZoom);
             setZoom(initialZoom, -1, -1);
         }
@@ -643,6 +645,8 @@ public class MainWindow extends JFrame {
         }
         else if (comboBox1.getSelectedIndex() == 1) {
             setDisplayOption(DisplayOption.OE);
+        }  else {
+            setDisplayOption(DisplayOption.PEARSON);
         }
     }
 

@@ -136,26 +136,12 @@ public class DatasetReader {
         int c2 = dis.readInt();
         int nZooms = dis.readInt();
 
+        Chromosome chr1 = dataset.getChromosomes()[c1];
+        Chromosome chr2 = dataset.getChromosomes()[c2];
 
         MatrixZoomData[] zd = new MatrixZoomData[nZooms];
         for (int i = 0; i < nZooms; i++) {
-            int zoom = dis.readInt();
-            int binSize = dis.readInt();
-            int blockSize = dis.readInt();
-            int blockColumnCount = dis.readInt();
-
-
-            int nBlocks = dis.readInt();
-            Map<Integer, Preprocessor.IndexEntry> blockIndex = new HashMap(nBlocks);
-
-            for (int b = 0; b < nBlocks; b++) {
-                int blockNumber = dis.readInt();
-                long filePosition = dis.readLong();
-                int blockSizeInBytes = dis.readInt();
-                blockIndex.put(blockNumber, new Preprocessor.IndexEntry(filePosition, blockSizeInBytes));
-            }
-
-            zd[i] = new MatrixZoomData(c1, c2, binSize, blockSize, blockColumnCount, zoom, blockIndex, this);
+            zd[i] = new MatrixZoomData(chr1, chr2, this, dis);
 
         }
 

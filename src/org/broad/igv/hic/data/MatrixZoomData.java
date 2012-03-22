@@ -1,9 +1,15 @@
 package org.broad.igv.hic.data;
 
+import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.RealMatrix;
+import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.broad.igv.hic.tools.HiCTools;
 import org.broad.igv.hic.tools.Preprocessor;
+import org.broad.tribble.util.LittleEndianInputStream;
 
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -12,8 +18,8 @@ import java.util.*;
  */
 public class MatrixZoomData {
 
-    private int chr1;  // Redundant, but convenient    BinDatasetReader
-    private int chr2;  // Redundant, but convenient
+    private Chromosome chr1;  // Redundant, but convenient
+    private Chromosome chr2;  // Redundant, but convenient
 
     private int zoom;
     private int binSize;         // bin size in bp
@@ -26,33 +32,42 @@ public class MatrixZoomData {
 
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
+    private RealMatrix pearsons;
 
 
     /**
-     * Constructor used by the binary data reader.
+     * Construct from a binary stream.
      *
      * @param chr1
      * @param chr2
-     * @param binSize  in bp
-     * @param blockBinCount  block size in bins
-     * @param blockColumnCount
-     * @param zoom
-     * @param blockIndex
      * @param reader
+     * @param dis
+     * @throws IOException
      */
-    public MatrixZoomData(int chr1, int chr2, int binSize, int blockBinCount, int blockColumnCount, int zoom,
-                          Map<Integer, Preprocessor.IndexEntry> blockIndex, DatasetReader reader) {
+    public MatrixZoomData(Chromosome chr1, Chromosome chr2, DatasetReader reader, LittleEndianInputStream dis) throws IOException {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
-        this.binSize = binSize;
-        this.blockColumnCount = blockColumnCount;
-        this.zoom = zoom;
-        this.blockBinCount = blockBinCount;
-        this.blockIndex = blockIndex;
-        blocks = new LinkedHashMap<Integer,Block>(blockIndex.size());
+        this.zoom = dis.readInt();
+        this.binSize = dis.readInt();
+        this.blockBinCount = dis.readInt();
+        this.blockColumnCount = dis.readInt();
+
+        int nBlocks = dis.readInt();
+        this.blockIndex = new HashMap(nBlocks);
+
+        for (int b = 0; b < nBlocks; b++) {
+            int blockNumber = dis.readInt();
+            long filePosition = dis.readLong();
+            int blockSizeInBytes = dis.readInt();
+            blockIndex.put(blockNumber, new Preprocessor.IndexEntry(filePosition, blockSizeInBytes));
+        }
+
+        blocks = new LinkedHashMap<Integer, Block>(nBlocks);
         this.reader = reader;
+
     }
+
 
     public int getBinSize() {
         return binSize;
@@ -60,37 +75,30 @@ public class MatrixZoomData {
 
 
     public int getChr1() {
-        return chr1;
+        return chr1.getIndex();
     }
 
 
     public int getChr2() {
-        return chr2;
+        return chr2.getIndex();
     }
 
     public int getZoom() {
         return zoom;
     }
 
-    public int getBlockBinCount() {
-        return blockBinCount;
-    }
-
     public int getBlockColumnCount() {
         return blockColumnCount;
     }
 
-    public Map<Integer, Block> getBlocks() {
-        return blocks;
-    }
 
     /**
      * Return the blocks overlapping the rectangular region specified.  The units are "bins"
      *
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
+     * @param x1 leftmost position in "bins"
+     * @param y1 top position in "bins"
+     * @param x2 rightmost position in "bins"
+     * @param y2 bottom position in "bins"
      * @return
      */
     public List<Block> getBlocksOverlapping(int x1, int y1, int x2, int y2) {
@@ -142,23 +150,65 @@ public class MatrixZoomData {
     }
 
 
+    public RealMatrix getPearsons(DensityFunction df) {
+        if(pearsons == null) {
+            pearsons = computePearsons(df);
+        }
+        return pearsons;
+    }
+
+    public RealMatrix computePearsons(DensityFunction df) {
+
+        if (chr1 != chr2) {
+            throw new RuntimeException("Cannot yet compute pearsons for different chromosomes");
+        }
+
+        int nBins = chr1.getSize() / binSize + 1;
+        RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
+
+        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+        for (int blockNumber : blockNumbers) {
+            Block b = readBlock(blockNumber);
+            if (b != null) {
+                for (ContactRecord rec : b.getContactRecords()) {
+                    int x = rec.getX();// * binSize;
+                    int y = rec.getY();// * binSize;
+                    int dist = Math.abs(x - y);
+                    double expected = df.getDensity(chr1.getIndex(), dist);
+                    double normCounts = Math.log10(rec.getCounts() / expected);
+
+                    rm.addToEntry(x, y, normCounts);
+                    if (x != y) {
+                        rm.addToEntry(y, x, normCounts);
+                    }
+                }
+            }
+        }
+
+        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
+
+        return pearsons;
+    }
+
+
     // Dump the contents to standard out
-    public void dump(Chromosome[] chromosomes) {
+
+    public void dump() {
 
         // Get the block index keys, and sort
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         Collections.sort(blockNumbers);
 
-        System.out.println("# " + chromosomes[chr1].getName() + " - " + chromosomes[chr2].getName());
+        System.out.println("# " + chr1.getName() + " - " + chr2.getName());
 
-        for(int blockNumber : blockNumbers) {
+        for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
-            if(b != null) {
-                for(ContactRecord rec : b.getContactRecords()) {
-                     System.out.println(rec.getX()*binSize + "\t" + rec.getY()*binSize + "\t" + rec.getCounts());
+            if (b != null) {
+                for (ContactRecord rec : b.getContactRecords()) {
+                    System.out.println(rec.getX() * binSize + "\t" + rec.getY() * binSize + "\t" + rec.getCounts());
                 }
             }
         }
-
     }
+
 }

@@ -265,7 +265,7 @@ public class HiCTools {
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
 
-        zd.dump(tmp);
+        zd.dump();
     }
 
 
