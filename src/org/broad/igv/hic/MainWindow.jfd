@@ -16,6 +16,10 @@
        <string>$sizePolicy</string> 
        <int>2</int> 
       </void> 
+      <void method="setProperty"> 
+       <string>$locationPolicy</string> 
+       <int>2</int> 
+      </void> 
       <void method="addEvent"> 
        <object class="com.jformdesigner.model.FormEvent"> 
         <string>java.awt.event.ComponentListener</string> 
@@ -657,6 +661,10 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>minorTickSpacing</string> 
+                 <int>1</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>minimum</string> 
                  <int>1</int> 
                 </void> 
                 <void property="name"> 

@@ -113,7 +113,7 @@ public class MainWindow extends JFrame {
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
         for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
-            if (i % 2 == 0) {
+            if ((i+1) % 2 == 0) {
                 final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
@@ -812,9 +812,6 @@ public class MainWindow extends JFrame {
         loadGM = new JMenuItem();
         load562 = new JMenuItem();
         loadHindIII = new JMenuItem();
-        loadFeb = new JMenuItem();
-        loadMar1 = new JMenuItem();
-        loadMar2 = new JMenuItem();
         loadCoolAid = new JMenuItem();
         loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
@@ -863,8 +860,8 @@ public class MainWindow extends JFrame {
                         panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
                         //---- chrBox1 ----
-                        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                "All"
+                        chrBox1.setModel(new DefaultComboBoxModel(new String[] {
+                            "All"
                         }));
                         chrBox1.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -874,8 +871,8 @@ public class MainWindow extends JFrame {
                         panel9.add(chrBox1);
 
                         //---- chrBox2 ----
-                        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
-                                "All"
+                        chrBox2.setModel(new DefaultComboBoxModel(new String[] {
+                            "All"
                         }));
                         chrBox2.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -919,23 +916,11 @@ public class MainWindow extends JFrame {
                     {
                         panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
                         panel1.setLayout(new GridLayout(1, 0, 20, 0));
-                        if (zoomToDensityMap == null) {
+
                         //---- comboBox1 ----
-                            comboBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                                "Observed"
-                                                }));
-                        }
-                        else {
-                            //---- comboBox1 ----
-                            comboBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                    "Observed", "OE"
-                            }));
-                        }
-                        comboBox1.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                comboBox1ActionPerformed(e);
-                            }
-                        });
+                        comboBox1.setModel(new DefaultComboBoxModel(new String[] {
+                            "Observed"
+                        }));
                         panel1.add(comboBox1);
                     }
                     displayOptionPanel.add(panel1, BorderLayout.CENTER);
@@ -965,7 +950,6 @@ public class MainWindow extends JFrame {
                             public void mousePressed(MouseEvent e) {
                                 colorRangeLabelMousePressed(e);
                             }
-
                             @Override
                             public void mouseClicked(MouseEvent e) {
                                 colorRangeLabelMouseClicked(e);
@@ -1024,6 +1008,7 @@ public class MainWindow extends JFrame {
                         resolutionSlider.setSnapToTicks(true);
                         resolutionSlider.setPaintLabels(true);
                         resolutionSlider.setMinorTickSpacing(1);
+                        resolutionSlider.setMinimum(1);
                         resolutionSlider.addChangeListener(new ChangeListener() {
                             public void stateChanged(ChangeEvent e) {
                                 resolutionSliderStateChanged(e);
@@ -1039,7 +1024,7 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new HiCLayout());
+                panel3.setLayout(new BorderLayout());
 
                 //---- rulerPanel2 ----
                 rulerPanel2.setMaximumSize(new Dimension(4000, 50));
@@ -1101,7 +1086,7 @@ public class MainWindow extends JFrame {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel8.getComponentCount(); i++) {
+                        for(int i = 0; i < panel8.getComponentCount(); i++) {
                             Rectangle bounds = panel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1174,34 +1159,6 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadHindIII);
 
-                //---- loadFeb ----
-                loadFeb.setText("HiSeq February (human)");
-                loadFeb.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadFebActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadFeb);
-
-                fileMenu.addSeparator();
-                //---- loadMar1 ----
-                loadMar1.setText("Hi-C Elena Human (03/13/2012)");
-                loadMar1.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadMar1ActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadMar1);
-
-                //---- loadMar2 ----
-                loadMar2.setText("Hi-C Elena Human (03/16/2012)");
-                loadMar2.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadMar2ActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadMar2);
-
                 //---- loadCoolAid ----
                 loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
                 loadCoolAid.addActionListener(new ActionListener() {
@@ -1234,7 +1191,6 @@ public class MainWindow extends JFrame {
             menuBar1.add(fileMenu);
         }
         contentPane.add(menuBar1, BorderLayout.NORTH);
-        setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -1278,9 +1234,6 @@ public class MainWindow extends JFrame {
     private JMenuItem loadGM;
     private JMenuItem load562;
     private JMenuItem loadHindIII;
-    private JMenuItem loadFeb;
-    private JMenuItem loadMar1;
-    private JMenuItem loadMar2;
     private JMenuItem loadCoolAid;
     private JMenuItem loadDmelDataset;
     private JMenuItem exit;
