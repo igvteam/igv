@@ -226,6 +226,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public int getHeight() {
+
+        if (parent != null && parent.getFrame().getScale() > minVisibleScale) {
+            return minHeight;
+        }
         // TODO -- what is the 20 for? JTR
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN +
