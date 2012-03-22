@@ -352,6 +352,14 @@
                 <void property="name"> 
                  <string>comboBox1</string> 
                 </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>comboBox1ActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
              </object> 

@@ -211,6 +211,7 @@ public class MainWindow extends JFrame {
 
     public void setDisplayOption(DisplayOption displayOption) {
         this.displayOption = displayOption;
+        refreshChromosomes();
     }
 
     private void load(String file) throws IOException {
@@ -220,6 +221,7 @@ public class MainWindow extends JFrame {
             setChromosomes(dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
+
 
 
             // Load the expected density function, if it exists.
@@ -236,8 +238,10 @@ public class MainWindow extends JFrame {
                     if (is != null) is.close();
                 }
             } else {
+                comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed"}));
                 zoomToDensityMap = null;
             }
+            comboBox1.setSelectedIndex(0);
         } else {
             // error -- unknown file type
         }
@@ -529,6 +533,7 @@ public class MainWindow extends JFrame {
             observedColorScale.setMaxCount(100);
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
             load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
@@ -541,6 +546,7 @@ public class MainWindow extends JFrame {
             observedColorScale.setMaxCount(100);
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
             load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
@@ -553,6 +559,7 @@ public class MainWindow extends JFrame {
         try {
             observedColorScale.setMaxCount(20);
             colorRangeSlider.setMaximum(50);
+            colorRangeSlider.setMajorTickSpacing(10);
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
             zd = null;
@@ -567,6 +574,7 @@ public class MainWindow extends JFrame {
             observedColorScale.setMaxCount(20);
             colorRangeSlider.setMaximum(2000);
             colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setMajorTickSpacing(100);
             colorRangeSlider.setUpperValue(1500);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all.hic");
@@ -812,6 +820,9 @@ public class MainWindow extends JFrame {
         loadGM = new JMenuItem();
         load562 = new JMenuItem();
         loadHindIII = new JMenuItem();
+        loadFeb = new JMenuItem();
+        loadMar1 = new JMenuItem();
+        loadMar2 = new JMenuItem();
         loadCoolAid = new JMenuItem();
         loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
@@ -921,6 +932,11 @@ public class MainWindow extends JFrame {
                         comboBox1.setModel(new DefaultComboBoxModel(new String[] {
                             "Observed"
                         }));
+                        comboBox1.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                comboBox1ActionPerformed(e);
+                            }
+                        });
                         panel1.add(comboBox1);
                     }
                     displayOptionPanel.add(panel1, BorderLayout.CENTER);
@@ -1024,7 +1040,7 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new BorderLayout());
+                panel3.setLayout(new HiCLayout());
 
                 //---- rulerPanel2 ----
                 rulerPanel2.setMaximumSize(new Dimension(4000, 50));
@@ -1159,7 +1175,35 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadHindIII);
 
-                //---- loadCoolAid ----
+               //---- loadFeb ----
+                loadFeb.setText("HiSeq February (human)");
+                loadFeb.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadFebActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadFeb);
+
+                fileMenu.addSeparator();
+                //---- loadMar1 ----
+                loadMar1.setText("Hi-C Elena Human (03/13/2012)");
+                loadMar1.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadMar1ActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadMar1);
+
+                //---- loadMar2 ----
+                loadMar2.setText("Hi-C Elena Human (03/16/2012)");
+                loadMar2.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadMar2ActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadMar2);
+
+                 //---- loadCoolAid ----
                 loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
                 loadCoolAid.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -1234,6 +1278,9 @@ public class MainWindow extends JFrame {
     private JMenuItem loadGM;
     private JMenuItem load562;
     private JMenuItem loadHindIII;
+    private JMenuItem loadFeb;
+    private JMenuItem loadMar1;
+    private JMenuItem loadMar2;
     private JMenuItem loadCoolAid;
     private JMenuItem loadDmelDataset;
     private JMenuItem exit;
