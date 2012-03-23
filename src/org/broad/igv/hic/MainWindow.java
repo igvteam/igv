@@ -278,15 +278,18 @@ public class MainWindow extends JFrame {
                     chr1 = tmp;
                 }
 
-                xContext = new Context(chr2);
-                yContext = new Context(chr1);
-                rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
-                rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+                if (chr2.getName().equals("All") ||  chr2 != xContext.getChromosome() || chr1 != yContext.getChromosome()) {
 
-                Matrix m = dataset.getMatrix(chr1, chr2);
-                if (m == null) {
-                } else {
-                    setInitialZoom();
+                    xContext = new Context(chr2);
+                    yContext = new Context(chr1);
+                    rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
+                    rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+
+                    Matrix m = dataset.getMatrix(chr1, chr2);
+                    if (m == null) {
+                    } else {
+                        setInitialZoom();
+                    }
                 }
 
 
@@ -304,6 +307,7 @@ public class MainWindow extends JFrame {
     private void refresh() {
         getHeatmapPanel().clearTileCache();
         if (zd != null) {
+            //MatrixZoomData.ScaleParameters scaleParameters = zd.computeScaleParameters();
             Image thumbnail = heatmapPanel.getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
             thumbnailPanel.setImage(thumbnail);
         }
@@ -860,8 +864,8 @@ public class MainWindow extends JFrame {
                         panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
                         //---- chrBox1 ----
-                        chrBox1.setModel(new DefaultComboBoxModel(new String[] {
-                            "All"
+                        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                "All"
                         }));
                         chrBox1.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -871,8 +875,8 @@ public class MainWindow extends JFrame {
                         panel9.add(chrBox1);
 
                         //---- chrBox2 ----
-                        chrBox2.setModel(new DefaultComboBoxModel(new String[] {
-                            "All"
+                        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
+                                "All"
                         }));
                         chrBox2.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -918,8 +922,8 @@ public class MainWindow extends JFrame {
                         panel1.setLayout(new GridLayout(1, 0, 20, 0));
 
                         //---- comboBox1 ----
-                        comboBox1.setModel(new DefaultComboBoxModel(new String[] {
-                            "Observed"
+                        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                                "Observed"
                         }));
                         comboBox1.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
@@ -955,6 +959,7 @@ public class MainWindow extends JFrame {
                             public void mousePressed(MouseEvent e) {
                                 colorRangeLabelMousePressed(e);
                             }
+
                             @Override
                             public void mouseClicked(MouseEvent e) {
                                 colorRangeLabelMouseClicked(e);
@@ -1090,7 +1095,7 @@ public class MainWindow extends JFrame {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel8.getComponentCount(); i++) {
+                        for (int i = 0; i < panel8.getComponentCount(); i++) {
                             Rectangle bounds = panel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);

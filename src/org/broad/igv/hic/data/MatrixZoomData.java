@@ -2,7 +2,9 @@ package org.broad.igv.hic.data;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
 import org.apache.commons.math.linear.RealMatrix;
+import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math.stat.descriptive.StatisticalSummary;
 import org.broad.igv.hic.tools.HiCTools;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
@@ -33,6 +35,17 @@ public class MatrixZoomData {
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
     private RealMatrix pearsons;
+
+
+    public class ScaleParameters {
+        double percentile90;
+        double mean;
+
+        ScaleParameters(double mean, double percentile90) {
+            this.mean = mean;
+            this.percentile90 = percentile90;
+        }
+    }
 
 
     /**
@@ -151,7 +164,7 @@ public class MatrixZoomData {
 
 
     public RealMatrix getPearsons(DensityFunction df) {
-        if(pearsons == null) {
+        if (pearsons == null) {
             pearsons = computePearsons(df);
         }
         return pearsons;
@@ -188,6 +201,32 @@ public class MatrixZoomData {
         pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
 
         return pearsons;
+    }
+
+    /**
+     * Compute scale parameters by from the first block of data
+     *
+     * @return
+     */
+    public ScaleParameters computeScaleParameters() {
+        double binSizeMB = binSize / 1000000.0;
+        double binSizeMB2 = binSizeMB * binSizeMB;
+        Block b = readBlock(0);
+        if (b != null) {
+            ContactRecord[] records = b.getContactRecords();
+            double[] scores = new double[records.length];
+            double sum = 0;
+            for (int i = 0; i < scores.length; i++) {
+                scores[i] = records[i].getCounts();
+                sum += records[i].getCounts();
+            }
+            double percentile90 = StatUtils.percentile(scores, 90) / binSizeMB2;
+            double mean = (sum / scores.length) / binSizeMB2;
+            return new ScaleParameters(mean, percentile90);
+        } else {
+            return null;
+        }
+
     }
 
 
