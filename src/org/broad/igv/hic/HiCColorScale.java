@@ -26,10 +26,16 @@ import java.awt.*;
  * @author Neva Cherniavsky
  * @date 3/22/12
  */
-public class OEColorScale implements org.broad.igv.renderer.ColorScale {
+public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
     private int maxval = 5; // equivalent to maxdiv = 5 in Erez's Python code
     private int minval = 0;
     private int scheme = 1;
+
+    public HiCColorScale(int scheme, int minval, int maxval) {
+        this.maxval = maxval;
+        this.minval = minval;
+        this.scheme = scheme;
+    }
 
     public Color getColor(float score) {
         int red, green, blue;
@@ -56,7 +62,24 @@ public class OEColorScale implements org.broad.igv.renderer.ColorScale {
             if (B > 255) B = 255;
             return new Color(R,G,B);
         }
-        else return new Color(0,0,0) ;
+        else if (scheme == -1) {
+            if(score > 0) {
+
+                int R = (int) ( 255 * Math.min(score/(maxval),1));
+                int G = 0;
+                int B = 0;
+                return new Color(R,G,B);
+            } else if(score < 0) {
+
+                int R = 0;
+                int B = 0;
+                int G = (int) (255 * Math.min(((-1)*score)/(maxval),1));
+                return new Color(R,G,B);
+            } else {
+                return Color.black;
+            }
+        }
+        else return Color.black;
     }
 
     public Color getColor(String symbol) {
