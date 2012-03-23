@@ -147,12 +147,6 @@ public class FastaSequenceIndexTest {
         tstCreateIndex_02(inPath);
     }
 
-    @Test
-    public void testCreateIndexGzip() throws Exception {
-        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_2contigs.fa.gz";
-        tstCreateIndex_02(inPath);
-    }
-
     @Test(expected = DataLoadException.class)
     public void testCreateIndexUneven() throws Exception {
         String inPath = TestUtils.DATA_DIR + "/fasta/fasta_uneven.fa";
