@@ -83,6 +83,9 @@ public class GeneListManagerUI extends JDialog {
         manager = GeneListManager.getInstance();
         initComponents();
         initLists();
+
+        boolean showViewNetwork = Boolean.parseBoolean(System.getProperty("showViewNetwork", "false"));
+        viewNetworkButton.setVisible(showViewNetwork);
     }
 
     private void initLists() {
