@@ -195,7 +195,10 @@ public class TestUtils {
         if (outputDir.isDirectory()) {
             File[] listFiles = outputDir.listFiles();
             for (File fi : listFiles) {
-                fi.delete();
+                //Keep hidden files and directories
+                if (!fi.getName().startsWith(".")) {
+                    fi.delete();
+                }
             }
         }
     }
