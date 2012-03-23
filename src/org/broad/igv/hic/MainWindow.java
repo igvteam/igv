@@ -150,6 +150,7 @@ public class MainWindow extends JFrame {
         observedColorScale.setMaxCount(initialMaxCount);
         observedColorScale.setBackground(Color.white);
 
+      //  oeColorScale = new OEColorScale();
         oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.black, Color.red);
 
         pearsonColorScale = new ContinuousColorScale(-1, 0, 1, Color.blue, Color.white, Color.red);
