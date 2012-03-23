@@ -59,8 +59,6 @@ public class GenomeManager {
 
     final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
 
-    private static GenomeDescriptor DEFAULT_GENOME;
-
     private Genome currentGenome;
 
     private List<GenomeListItem> userDefinedGenomeArchiveList;
@@ -411,6 +409,16 @@ public class GenomeManager {
                         }
                     }
 
+                    boolean fasta = false;
+                    String fastaString = properties.getProperty("fasta");
+                    if (fastaString != null) {
+                        try {
+                            fasta = Boolean.parseBoolean(fastaString);
+                        } catch (Exception e) {
+                            log.error("Error parsing version string: " + versionString);
+                        }
+                    }
+
                     boolean chromosomesAreOrdered = false;
                     String tmp = properties.getProperty(Globals.GENOME_ORDERED_KEY);
                     if (tmp != null) {
@@ -437,7 +445,8 @@ public class GenomeManager {
                             sequenceLocation,
                             zipFile,
                             zipEntries,
-                            chromosomesAreOrdered);
+                            chromosomesAreOrdered,
+                            fasta);
 
                     if (url != null) {
                         genomeDescriptor.setUrl(url);

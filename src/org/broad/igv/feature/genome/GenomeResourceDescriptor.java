@@ -33,7 +33,7 @@ public class GenomeResourceDescriptor extends GenomeDescriptor {
                                     String sequenceLocation,
                                     boolean chromosomesAreOrdered) {
         super(name, version, false, id, cytoBandFileName, geneFileName, chrAliasFileName,
-                geneTrackName, sequenceLocation, chromosomesAreOrdered);
+                geneTrackName, sequenceLocation, chromosomesAreOrdered, false);
     }
 
     public InputStream getCytoBandStream() throws IOException {

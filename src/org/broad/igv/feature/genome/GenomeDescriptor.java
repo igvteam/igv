@@ -57,7 +57,8 @@ public abstract class GenomeDescriptor {
                             String chrAliasFileName,
                             String geneTrackName,
                             String sequenceLocation,
-                            boolean chromosomesAreOrdered) {
+                            boolean chromosomesAreOrdered,
+                            boolean fasta) {
         this.version = version;
         this.chrNamesAltered = chrNamesAltered;
         this.name = name;
@@ -68,6 +69,7 @@ public abstract class GenomeDescriptor {
         this.geneTrackName = geneTrackName;
         this.sequenceLocation = sequenceLocation;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
+        this.fasta = fasta;
 
         // Fix for legacy .genome files
         if (sequenceLocation != null && sequenceLocation.startsWith("/")) {
