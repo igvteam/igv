@@ -57,11 +57,11 @@ public class CommandExecutorTest {
 
     @Before
     public void setUp() throws Exception {
-
     }
 
     @After
     public void tearDown() throws Exception {
+        igv.removeTracks(igv.getAllTracks(false));
     }
 
     @Test
