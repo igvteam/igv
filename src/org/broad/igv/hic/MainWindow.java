@@ -19,7 +19,6 @@ import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -81,6 +80,7 @@ public class MainWindow extends JFrame {
     public static void main(String[] args) throws IOException {
 
         final MainWindow mainWindow = new MainWindow();
+        mainWindow.addLoadItems();
         mainWindow.setVisible(true);
         mainWindow.setSize(950, 700);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -113,7 +113,7 @@ public class MainWindow extends JFrame {
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
         for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
-            if ((i+1) % 2 == 0) {
+            if ((i + 1) % 2 == 0) {
                 final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
@@ -211,7 +211,8 @@ public class MainWindow extends JFrame {
 
     public void setDisplayOption(DisplayOption displayOption) {
         this.displayOption = displayOption;
-        refreshChromosomes();
+        refresh();
+        repaint();
     }
 
     private void load(String file) throws IOException {
@@ -221,7 +222,6 @@ public class MainWindow extends JFrame {
             setChromosomes(dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
-
 
 
             // Load the expected density function, if it exists.
@@ -269,10 +269,6 @@ public class MainWindow extends JFrame {
                 Chromosome chr1 = (Chromosome) chrBox1.getSelectedItem();
                 Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
 
-                //zoomComboBox.setEnabled(chr1.getIndex() != 0);
-                //zoomInButton.setEnabled(chr1.getIndex() != 0);
-                //zoomOutButton.setEnabled(chr1.getIndex() != 0);
-
                 int t1 = chr1.getIndex();
                 int t2 = chr2.getIndex();
 
@@ -281,12 +277,6 @@ public class MainWindow extends JFrame {
                     chr2 = chr1;
                     chr1 = tmp;
                 }
-
-                getHeatmapPanel().clearTileCache();
-                //if ((xContext != null && xContext.getChromosome().getIndex() == chr2.getIndex()) &&
-                //        (yContext != null && yContext.getChromosome().getIndex() == chr1.getIndex())) {
-                //    repaint();
-                //} else {
 
                 xContext = new Context(chr2);
                 yContext = new Context(chr1);
@@ -300,9 +290,7 @@ public class MainWindow extends JFrame {
                 }
 
 
-                Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
-                thumbnailPanel.setImage(thumbnail);
-                //}
+                refresh();
 
                 return null;
             }
@@ -311,6 +299,14 @@ public class MainWindow extends JFrame {
 
         worker.execute();
 
+    }
+
+    private void refresh() {
+        getHeatmapPanel().clearTileCache();
+        if (zd != null) {
+            Image thumbnail = heatmapPanel.getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
+            thumbnailPanel.setImage(thumbnail);
+        }
     }
 
     private void setInitialZoom() {
@@ -421,10 +417,10 @@ public class MainWindow extends JFrame {
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
 
+
+        resolutionSlider.setValue(zoom);
         xContext.setZoom(zoom, scale);
         yContext.setZoom(zoom, scale);
-
-        //zoomComboBox.setSelectedIndex(zoom);
 
         xContext.setOrigin((int) xBP);
         yContext.setOrigin((int) yBP);
@@ -564,11 +560,12 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(20);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
-          
+
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
+
     private void loadFebActionPerformed(ActionEvent e) {
         try {
             observedColorScale.setMaxCount(20);
@@ -583,7 +580,7 @@ public class MainWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
-    
+
     private void loadMar1ActionPerformed(ActionEvent e) {
         try {
             observedColorScale.setMaxCount(1);
@@ -597,6 +594,7 @@ public class MainWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
+
     private void loadMar2ActionPerformed(ActionEvent e) {
         try {
             observedColorScale.setMaxCount(1);
@@ -647,13 +645,13 @@ public class MainWindow extends JFrame {
             refreshChromosomes();
         }
     }
+
     private void comboBox1ActionPerformed(ActionEvent e) {
         if (comboBox1.getSelectedIndex() == 0) {
             setDisplayOption(DisplayOption.OBSERVED);
-        }
-        else if (comboBox1.getSelectedIndex() == 1) {
+        } else if (comboBox1.getSelectedIndex() == 1) {
             setDisplayOption(DisplayOption.OE);
-        }  else {
+        } else {
             setDisplayOption(DisplayOption.PEARSON);
         }
     }
@@ -817,15 +815,6 @@ public class MainWindow extends JFrame {
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
         loadFromURL = new JMenuItem();
-        loadGM = new JMenuItem();
-        load562 = new JMenuItem();
-        loadHindIII = new JMenuItem();
-        loadFeb = new JMenuItem();
-        loadMar1 = new JMenuItem();
-        loadMar2 = new JMenuItem();
-        loadCoolAid = new JMenuItem();
-        loadDmelDataset = new JMenuItem();
-        exit = new JMenuItem();
 
         //======== this ========
         addComponentListener(new ComponentAdapter() {
@@ -1024,7 +1013,6 @@ public class MainWindow extends JFrame {
                         resolutionSlider.setSnapToTicks(true);
                         resolutionSlider.setPaintLabels(true);
                         resolutionSlider.setMinorTickSpacing(1);
-                        resolutionSlider.setMinimum(1);
                         resolutionSlider.addChangeListener(new ChangeListener() {
                             public void stateChanged(ChangeEvent e) {
                                 resolutionSliderStateChanged(e);
@@ -1146,96 +1134,101 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadFromURL);
                 fileMenu.addSeparator();
-
-                //---- loadGM ----
-                loadGM.setText("GM cell line (human)");
-                loadGM.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadGMActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadGM);
-
-                //---- load562 ----
-                load562.setText("K562 cell line (human)");
-                load562.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        load562ActionPerformed(e);
-                    }
-                });
-                fileMenu.add(load562);
-                fileMenu.addSeparator();
-
-                //---- loadHindIII ----
-                loadHindIII.setText("HindIII August (human)");
-                loadHindIII.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadHindIIIActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadHindIII);
-
-               //---- loadFeb ----
-                loadFeb.setText("HiSeq February (human)");
-                loadFeb.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadFebActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadFeb);
-
-                fileMenu.addSeparator();
-                //---- loadMar1 ----
-                loadMar1.setText("Hi-C Elena Human (03/13/2012)");
-                loadMar1.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadMar1ActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadMar1);
-
-                //---- loadMar2 ----
-                loadMar2.setText("Hi-C Elena Human (03/16/2012)");
-                loadMar2.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadMar2ActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadMar2);
-
-                 //---- loadCoolAid ----
-                loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
-                loadCoolAid.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadCoolAidActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadCoolAid);
-                fileMenu.addSeparator();
-
-                //---- loadDmelDataset ----
-                loadDmelDataset.setText("Fly");
-                loadDmelDataset.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadDmelDatasetActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadDmelDataset);
-                fileMenu.addSeparator();
-
-                //---- exit ----
-                exit.setText("Exit");
-                exit.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        exitActionPerformed(e);
-                    }
-                });
-                fileMenu.add(exit);
             }
             menuBar1.add(fileMenu);
         }
         contentPane.add(menuBar1, BorderLayout.NORTH);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    private void addLoadItems() {
+        //---- loadGM ----
+        JMenuItem loadGM = new JMenuItem("GM cell line (human)");
+        loadGM.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadGMActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadGM);
+
+        //---- load562 ----
+        JMenuItem load562 = new JMenuItem("K562 cell line (human)");
+        load562.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                load562ActionPerformed(e);
+            }
+        });
+        fileMenu.add(load562);
+        fileMenu.addSeparator();
+
+        //---- loadHindIII ----
+        JMenuItem loadHindIII = new JMenuItem("HindIII August (human)");
+        loadHindIII.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadHindIIIActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadHindIII);
+
+        //---- loadFeb ----
+        JMenuItem loadFeb = new JMenuItem("HiSeq February (human)");
+        loadFeb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadFebActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadFeb);
+
+        fileMenu.addSeparator();
+
+        //---- loadMar1 ----
+        JMenuItem loadMar1 = new JMenuItem("Hi-C Elena Human (03/13/2012)");
+        loadMar1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadMar1ActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadMar1);
+
+        //---- loadMar2 ----
+        JMenuItem loadMar2 = new JMenuItem("Hi-C Elena Human (03/16/2012)");
+        loadMar2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadMar2ActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadMar2);
+
+        //---- loadCoolAid ----
+        JMenuItem loadCoolAid = new JMenuItem("COOL-AID Elena Mouse (12/2011)");
+        loadCoolAid.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadCoolAidActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadCoolAid);
+        fileMenu.addSeparator();
+
+        //---- loadDmelDataset ----
+        JMenuItem loadDmelDataset = new JMenuItem("Fly");
+        loadDmelDataset.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadDmelDatasetActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadDmelDataset);
+        fileMenu.addSeparator();
+
+        //---- exit ----
+        JMenuItem exit = new JMenuItem();
+        exit.setText("Exit");
+        exit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                exitActionPerformed(e);
+            }
+        });
+        fileMenu.add(exit);
+
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -1275,15 +1268,6 @@ public class MainWindow extends JFrame {
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
-    private JMenuItem loadGM;
-    private JMenuItem load562;
-    private JMenuItem loadHindIII;
-    private JMenuItem loadFeb;
-    private JMenuItem loadMar1;
-    private JMenuItem loadMar2;
-    private JMenuItem loadCoolAid;
-    private JMenuItem loadDmelDataset;
-    private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
