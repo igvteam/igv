@@ -1690,21 +1690,16 @@ public class IGV {
 
 
     public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        for (Track t : getAllTracks(false)) {
-            if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    double center = frame.getCenter();
-                    ((AlignmentTrack) t).sortRows(option, frame, center, tag);
-                }
-            }
-        }
+        sortAlignmentTracks(option, null, tag);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, double location, String tag) {
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
+        double actloc;
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
                 for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).sortRows(option, frame, location, tag);
+                    actloc = location != null ? location : frame.getCenter();
+                    ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
                 }
             }
         }
