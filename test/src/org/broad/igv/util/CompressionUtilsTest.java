@@ -76,8 +76,21 @@ public class CompressionUtilsTest {
     }
 
     @Test
-    public void testUngzipFile() throws Exception {
+    public void testUngzipFile_01() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/largegzdata.gz";
+        int expSize = 23743;
+        tstUngzipFile(inPath, expSize);
+    }
+
+    @Test
+    public void testUngzipFile_02() throws Exception {
         String inPath = TestUtils.DATA_DIR + "/testgzip.fasta.gz";
+        int expSize = 775;
+        tstUngzipFile(inPath, expSize);
+    }
+
+    private void tstUngzipFile(String inPath, int expSize) throws Exception {
+
         String outPath = inPath.substring(0, inPath.length() - 3);
         File outFile = new File(outPath);
         outFile.delete();
@@ -87,7 +100,8 @@ public class CompressionUtilsTest {
         CompressionUtils.ungzipFile(inPath, outPath);
         assertTrue(outFile.exists());
 
-        assertEquals(775, outFile.length());
+        assertEquals(expSize, outFile.length());
+
     }
 
 }
