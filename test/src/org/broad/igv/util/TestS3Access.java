@@ -19,25 +19,36 @@
 
 package org.broad.igv.util;
 
+import org.broad.tribble.readers.BufferedLineReader;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Timing test for S3 storage files
  */
+@Ignore //Not sure about URLs
 public class TestS3Access {
 
     public static void main(String[] args) {
         try {
-            testAsciiDownload();
+            testAsciiDownloadStatic();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
-    static void testAsciiDownload() throws IOException {
+    @Test
+    public void testAsciiDownload() throws Exception{
+        testAsciiDownloadStatic();
+    }
+    public static void testAsciiDownloadStatic() throws IOException {
 
         String broadURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/refGene.txt";
         String s3URL = "http://s3.amazonaws.com/genomespace-igv/refGene.txt";
@@ -48,41 +59,19 @@ public class TestS3Access {
             for (int i = 0; i < 10; i++) {
                 for (String url : Arrays.asList(broadURL, s3URL)) {
 
-                    BufferedReader reader = openBufferedReader(url);
+                    InputStream inputStream = HttpUtils.getInstance().openConnectionStream(new URL(url));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     int nLines = 0;
                     long t0 = System.currentTimeMillis();
                     while (reader.readLine() != null) {
                         nLines++;
                     }
-                    System.out.println(url + " read " + nLines + " in " + (System.currentTimeMillis() - t0) + " ms ");
+                    //System.out.println(url + " read " + nLines + " in " + (System.currentTimeMillis() - t0) + " ms ");
                     reader.close();
+                    assertTrue(nLines > 0);
                 }
             }
         } finally {
         }
     }
-
-    public static BufferedReader openBufferedReader(String pathOrUrl) throws IOException {
-
-        BufferedReader reader = null;
-
-        if (HttpUtils.getInstance().isURL(pathOrUrl)) {
-            URL url = new URL(pathOrUrl);
-            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
-            reader = new BufferedReader(new InputStreamReader(is));
-        } else {
-            File file = new File(pathOrUrl);
-
-            FileInputStream fileInput = new FileInputStream(file);
-            if (file.getName().endsWith("gz")) {
-                GZIPInputStream in = new GZIPInputStream(fileInput);
-                reader = new BufferedReader(new InputStreamReader(in));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(fileInput));
-            }
-        }
-
-        return reader;
-    }
-
 }

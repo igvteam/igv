@@ -23,9 +23,12 @@
 
 package org.broad.igv.util;
 
+import org.junit.Ignore;
+
 /**
  * @author jrobinso
  */
+@Ignore
 public class TestThreadTiming {
 
     static class Compute implements Runnable {

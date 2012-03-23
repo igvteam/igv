@@ -28,6 +28,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,9 +49,7 @@ public class AlignmentPackerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Globals.setHeadless(true);
-        Globals.READ_TIMEOUT = 2 * 60 * 1000;
-        Globals.CONNECT_TIMEOUT = 2 * 60 * 1000;
+        TestUtils.setUpHeadless();
     }
 
     @AfterClass
