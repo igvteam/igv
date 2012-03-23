@@ -35,6 +35,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
@@ -125,7 +126,31 @@ public class GenomeManager {
                 }
 
 
+            } else if (genomePath.endsWith(Globals.FASTA_GZIP_FILE_EXTENSION)) {
+                //Assume we are dealing with a gzipped file
+                boolean unzip = true;
+                if (Globals.isHeadless()) {
+                    log.info("Ungzipping file " + genomePath);
+                } else {
+                    unzip = MessageUtils.confirm("IGV cannot read gzipped fasta files directly. Would you like to un-gzip this file?");
+                }
+
+                if (!unzip) {
+                    if (monitor != null) {
+                        monitor.fireProgressChange(100);
+                    }
+                    log.info("Loading cancelled: " + genomePath);
+                    return null;
+                } else {
+                    //This ensures we have a local copy
+                    File archiveFile = getArchiveFile(genomePath);
+                    String outfile = CompressionUtils.ungzipFile(archiveFile.getAbsolutePath(), null);
+                    monitor.fireProgressChange(-25);
+                    return loadGenome(outfile, monitor);
+                }
+
             } else {
+
                 // Assume its a fasta
                 String fastaPath = null;
                 String fastaIndexPath = null;
@@ -144,7 +169,9 @@ public class GenomeManager {
                     fastaPath = archiveFile.getAbsolutePath();
                     fastaIndexPath = fastaPath + ".fai";
 
+                    log.info("Creating index file at " + fastaIndexPath);
                     FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
+
                 }
 
                 String id = fastaPath;

@@ -20,7 +20,9 @@ package org.broad.igv.util;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.io.File;
+
+import static org.junit.Assert.*;
 
 /**
  * User: jrobinso
@@ -71,6 +73,21 @@ public class CompressionUtilsTest {
         for (int i = 0; i < result.length; i++) {
             assertEquals(uncompressedBytes[i], result[i]);
         }
+    }
+
+    @Test
+    public void testUngzipFile() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/testgzip.fasta.gz";
+        String outPath = inPath.substring(0, inPath.length() - 3);
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+        assertFalse(outFile.exists());
+
+        CompressionUtils.ungzipFile(inPath, outPath);
+        assertTrue(outFile.exists());
+
+        assertEquals(775, outFile.length());
     }
 
 }

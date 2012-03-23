@@ -31,7 +31,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -50,7 +53,6 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
@@ -198,12 +200,18 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                             Genome genome;
 
-                            if(genomeListItem == AffectiveUtils.GENOME_DESCRIPTOR) {
-                                genome =  AffectiveUtils.getGenome();
+                            if (genomeListItem == AffectiveUtils.GENOME_DESCRIPTOR) {
+                                genome = AffectiveUtils.getGenome();
                                 igv.getGenomeManager().setCurrentGenome(genome);
-                            }
-                            else {
-                                genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+                            } else {
+                                //If this is the same as currently loaded genome, no need to
+                                //do anything. Mainly to prevent double calling
+                                if (genomeListItem.getId().equalsIgnoreCase(igv.getGenomeManager().getGenomeId())) {
+                                    genome = igv.getGenomeManager().getCurrentGenome();
+                                } else {
+                                    genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+
+                                }
                             }
 
                             updateGenome(genome);

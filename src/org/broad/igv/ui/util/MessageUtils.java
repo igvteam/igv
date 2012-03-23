@@ -88,6 +88,13 @@ public class MessageUtils {
         return confirm(parent, message);
     }
 
+    /**
+     * Show a yes/no confirmation dialog.
+     *
+     * @param component
+     * @param message
+     * @return
+     */
     public static synchronized boolean confirm(final Component component, final String message) {
 
 

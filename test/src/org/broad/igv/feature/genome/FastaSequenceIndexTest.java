@@ -90,10 +90,8 @@ public class FastaSequenceIndexTest {
         assertNotNull(index.getIndexEntry(contig));
     }
 
-    @Test
-    public void testCreateIndex_02() throws Exception {
-        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_2contigs.fa";
-        String outPath = TestUtils.DATA_DIR + "/out/tmp.fai";
+    public void tstCreateIndex_02(String inPath) throws Exception {
+        String outPath = inPath + ".fai";
         File outFile = new File(outPath);
         outFile.delete();
         outFile.deleteOnExit();
@@ -125,8 +123,34 @@ public class FastaSequenceIndexTest {
         //may look weird
         long tGpos = tAsize + 8 + index.getIndexEntry(tA).getPosition() + 10;
         assertEquals(tGpos, entry.getPosition());
-        assertEquals(5 * 56 + 26, entry.getSize());
+        int tGsize = 5 * 56 + 26;
+        assertEquals(tGsize, entry.getSize());
         assertEquals(tG, entry.getContig());
+
+        GenomeManager manager = new GenomeManager();
+        Genome genome = manager.loadGenome(inPath, null);
+        String tAseq = new String(genome.getSequence(tA, 0, tAsize));
+        assertEquals(tAsize, tAseq.length());
+        String remmed = tAseq.replaceAll("A", "");
+        assertEquals(0, remmed.length());
+
+        String tGseq = new String(genome.getSequence(tG, 0, tGsize));
+        assertEquals(tGsize, tGseq.length());
+        remmed = tGseq.replaceAll("G", "");
+        assertEquals(0, remmed.length());
+    }
+
+
+    @Test
+    public void testCreateIndexUncompressed() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_2contigs.fa";
+        tstCreateIndex_02(inPath);
+    }
+
+    @Test
+    public void testCreateIndexGzip() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "/fasta/fasta_2contigs.fa.gz";
+        tstCreateIndex_02(inPath);
     }
 
     @Test(expected = DataLoadException.class)
@@ -138,7 +162,6 @@ public class FastaSequenceIndexTest {
         outFile.deleteOnExit();
 
         FastaSequenceIndex.createIndexFile(inPath, outPath);
-
     }
 
     @Test
@@ -156,5 +179,14 @@ public class FastaSequenceIndexTest {
         assertNotNull(genome.getChromosome(chr));
         //See http://www.ncbi.nlm.nih.gov/nuccore/110640213
         assertEquals(4938920, genome.getLength());
+
+        String beg = "ATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAG";
+        int begloc = 30 - 1;
+        int endloc = begloc + beg.length();
+
+        byte[] seq = genome.getSequence(chr, begloc, endloc);
+        String sseq = new String(seq);
+        assertEquals(beg, sseq);
     }
+
 }

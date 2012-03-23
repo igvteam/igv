@@ -579,6 +579,8 @@ public class IGV {
         }
 
         Genome genome = getGenomeManager().loadGenome(path, monitor);
+        //If genome loading cancelled
+        if (genome == null) return;
         final String name = genome.getDisplayName();
         final String id = genome.getId();
 
