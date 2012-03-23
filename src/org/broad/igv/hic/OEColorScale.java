@@ -40,19 +40,9 @@ public class OEColorScale implements org.broad.igv.renderer.ColorScale {
                 return new Color(0,0,0);
             }
 
-         //   if (score < 0) {
-         //       score = score*-1;
-         //       red =  (int)(255*Math.min((Math.pow(score,-1))/(maxval),1));
-         //       green = 0;
-         //       blue = (int)(255*Math.min((score)/(maxval),1));
-         //   }
-         //   else {
-
-                red = (int)(255*Math.min((score)/(maxval),1));
-                green = 0;
-                blue = (int)(255*Math.min((Math.pow(score,-1))/(maxval),1));
-         //   }
-            System.out.println(score + " " + red+" " + green + " " + blue );
+            red = (int)(255*Math.min((score)/(maxval),1));
+            green = 0;
+            blue = (int)(255*Math.min((Math.pow(score,-1))/(maxval),1));
 
             return new Color(red,green,blue);
         }
@@ -60,7 +50,6 @@ public class OEColorScale implements org.broad.igv.renderer.ColorScale {
             int R = 255;
             int G = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
             int B = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
-            System.out.println(score + " " + R+" " + G+ " " + B );
             if (G < 0) G = 0;
             if (B < 0) B = 0;
             if (G > 255) G = 255;
