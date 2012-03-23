@@ -18,8 +18,9 @@
 
 package org.broad.igv.util;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: jrobinso
@@ -71,6 +72,5 @@ public class CompressionUtilsTest {
             assertEquals(uncompressedBytes[i], result[i]);
         }
     }
-
 
 }

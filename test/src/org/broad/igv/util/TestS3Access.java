@@ -58,8 +58,7 @@ public class TestS3Access {
                     reader.close();
                 }
             }
-        }
-        finally {
+        } finally {
         }
     }
 
