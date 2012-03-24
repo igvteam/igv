@@ -171,7 +171,9 @@ public class DirectoryManager {
 
 
             try {
+                System.out.println("Moving directory");
                 FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
+                System.out.println("Setting preference");
                 PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
                 Preferences prefs = Preferences.userNodeForPackage(Globals.class);
                 prefs.put(IGV_DIR_USERPREF, newDirectory.getAbsolutePath());
@@ -182,13 +184,18 @@ public class DirectoryManager {
                 return false;
             }
 
+            System.out.println("Shutting down log");
             // Restart the log
             LogManager.shutdown();
+
+            System.out.println("Starting log");
             initializeLog();
 
             // Try to delete the old directory
             try {
+                System.out.println("Deleting directory");
                 FileUtils.deleteDirectory(oldDirectory);
+                System.out.println("Done");
             } catch (IOException e) {
                 log.error("An error was encountered deleting the previous IGV directory", e);
                 MessageUtils.showMessage("<html>An error was encountered deleting the previous IGV directory (" +

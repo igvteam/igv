@@ -2201,13 +2201,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
             @Override
             protected Boolean doInBackground() throws Exception {
                 try {
-                    getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    getGlassPane().setVisible(true);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     return DirectoryManager.moveIGVDirectory(newIGVDirectory);
                 } finally {
-                    getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    getGlassPane().setVisible(false);
-
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             }
 
