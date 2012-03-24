@@ -174,29 +174,28 @@ public class DirectoryManager {
             try {
                 System.out.println("Moving directory");
                 FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
-                System.out.println("Setting preference");
-                PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
+                IGV_DIRECTORY = newDirectory;
+
+                // Store location of new directory in Java preferences node (not pref.properties)
                 Preferences prefs = Preferences.userNodeForPackage(Globals.class);
                 prefs.put(IGV_DIR_USERPREF, newDirectory.getAbsolutePath());
-                IGV_DIRECTORY = newDirectory;
+
+                // Update preference manager with new file location
+                PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
+
             } catch (IOException e) {
                 log.error("Error copying IGV directory", e);
                 MessageUtils.showMessage("<html>Error moving IGV directory:<br/>&nbsp;nbsp;" + e.getMessage());
                 return false;
             }
 
-            System.out.println("Shutting down log");
             // Restart the log
             LogManager.shutdown();
-
-            System.out.println("Starting log");
             initializeLog();
 
             // Try to delete the old directory
             try {
-                System.out.println("Deleting directory");
                 deleteDirectory(oldDirectory);
-                System.out.println("Done");
             } catch (IOException e) {
                 log.error("An error was encountered deleting the previous IGV directory", e);
                 MessageUtils.showMessage("<html>An error was encountered deleting the previous IGV directory (" +
@@ -204,13 +203,8 @@ public class DirectoryManager {
                         "<br>Remaining files should be manually deleted.");
             }
 
-        } else {
-            newDirectory.mkdir();
-            IGV_DIRECTORY = newDirectory;
-            PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
-            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-            prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
         }
+
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
@@ -225,10 +219,12 @@ public class DirectoryManager {
      * @throws IOException
      */
     private static void deleteDirectory(File oldDirectory) throws IOException {
-        if (Globals.IS_LINUX) {
-            System.out.println("Deleting: " + oldDirectory);
+        if (Globals.IS_LINUX || Globals.IS_MAC) {
+            //System.out.println("Deleting: " + oldDirectory);
             String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath());
-            System.out.println(result);
+            if(result != null && result.trim().length() > 0) {
+                 log.info("Response from 'rm -rf': " + result);
+            }
         } else {
             FileUtils.deleteDirectory(oldDirectory);
         }

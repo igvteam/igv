@@ -364,8 +364,6 @@ public class GenomeManager {
             throws IOException {
 
 
-        String zipFilePath = f.getAbsolutePath();
-
         if (!f.exists()) {
             log.error("Genome file: " + f.getAbsolutePath() + " does not exist.");
             return null;
@@ -374,7 +372,7 @@ public class GenomeManager {
 
         GenomeDescriptor genomeDescriptor = null;
         Map<String, ZipEntry> zipEntries = new HashMap();
-        ZipFile zipFile = new ZipFile(zipFilePath);
+        ZipFile zipFile = new ZipFile(f);
 
         FileInputStream fileInputStream = null;
         try {
@@ -407,8 +405,7 @@ public class GenomeManager {
                         if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
                             sequenceFolder = new File(sequenceLocation);
                         } else {
-                            File tempZipFile = new File(zipFilePath);
-                            sequenceFolder = new File(tempZipFile.getParent(), sequenceLocation);
+                            sequenceFolder = new File(f.getParent(), sequenceLocation);
 
                         }
                         sequenceLocation = sequenceFolder.getCanonicalPath();

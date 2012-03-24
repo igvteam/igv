@@ -194,9 +194,10 @@ public class IGVPreferences {
     private synchronized void storePreferences() {
 
         if (userPreferences != null) {
-            PrintWriter pw = null;
+            FileWriter fileWriter  = null;
             try {
-                pw = new PrintWriter(new BufferedWriter(new FileWriter(prefFile)));
+                fileWriter = new FileWriter(prefFile);
+                PrintWriter pw = new PrintWriter(new BufferedWriter(fileWriter));
                 for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
                     pw.print(entry.getKey());
                     pw.print("=");
@@ -205,8 +206,12 @@ public class IGVPreferences {
             } catch (IOException e) {
                 log.error("Error loading preferences", e);
             } finally {
-                if (pw != null) {
-                    pw.close();
+                if (fileWriter != null) {
+                    try {
+                        fileWriter.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
                 }
             }
 

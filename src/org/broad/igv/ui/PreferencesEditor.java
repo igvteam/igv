@@ -2196,6 +2196,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void moveIGVDirectory() {
 
         // DO this in a swing worker, so we can invoke a wait cursor.  This might take some time.
+        File currentDirecotry = DirectoryManager.getIgvDirectory();
 
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
@@ -2216,6 +2217,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             if (success == Boolean.TRUE) {
                 MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " +
                         newIGVDirectory.getAbsolutePath() +
+                        "<br>Some files might need to be manually removed from the previous directory." +
                         "<br/><b><i>It is recommended that you restart IGV.");
             }
 
@@ -2273,7 +2275,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void igvDirectoryButtonActionPerformed(ActionEvent e) {
         final File igvDirectory = DirectoryManager.getIgvDirectory();
-        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", igvDirectory);
+        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDirectory());
         if (newDirectory != null && !newDirectory.equals(igvDirectory.getParentFile())) {
             newIGVDirectory = new File(newDirectory, "igv");
             igvDirectoryField.setText(newIGVDirectory.getAbsolutePath());
