@@ -351,7 +351,7 @@ public class GenomeManager {
         } catch (Exception e) {
             log.error("Error refreshing genome cache. ", e);
             MessageUtils.showMessage(("An error was encountered refreshing the genome cache: " + e.getMessage() +
-                    "<br> If this problem persists please contact igv-help@broadinstitute.org"));
+                    "<br> If this problem persists please contact igv-team@broadinstitute.org"));
         }
 
     }

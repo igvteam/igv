@@ -2200,16 +2200,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                getGlassPane().setVisible(true);
-                return DirectoryManager.moveIGVDirectory(newIGVDirectory);
+                try {
+                    getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    getGlassPane().setVisible(true);
+                    return DirectoryManager.moveIGVDirectory(newIGVDirectory);
+                } finally {
+                    getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    getGlassPane().setVisible(false);
+
+                }
             }
 
-            @Override
-            protected void done() {
-                getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                getGlassPane().setVisible(false);
-            }
         };
 
         worker.execute();
