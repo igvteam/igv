@@ -376,10 +376,10 @@ public class GenomeManager {
         Map<String, ZipEntry> zipEntries = new HashMap();
         ZipFile zipFile = new ZipFile(zipFilePath);
 
-
-        ZipInputStream zipInputStream = null;
+        FileInputStream fileInputStream = null;
         try {
-            zipInputStream = new ZipInputStream(new FileInputStream(f));
+            fileInputStream = new FileInputStream(f);
+            ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
             ZipEntry zipEntry = zipInputStream.getNextEntry();
 
             while (zipEntry != null) {
@@ -484,8 +484,8 @@ public class GenomeManager {
             }
         } finally {
             try {
-                if (zipInputStream != null) {
-                    zipInputStream.close();
+                if (fileInputStream != null) {
+                    fileInputStream.close();
                 }
             } catch (IOException ex) {
                 log.warn("Error closing imported genome zip stream!", ex);
