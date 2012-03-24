@@ -22,6 +22,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.concurrent.*;
 
@@ -70,6 +71,7 @@ public class LongRunningTask implements Callable {
             runnable.run();
             return null;
         } catch (Exception e) {
+            MessageUtils.showMessage("<html>Unexpected error: " + e.getMessage() + ".<br>See igv.log for more details");
             log.error("Exception running task", e);
             return null;
         } finally {

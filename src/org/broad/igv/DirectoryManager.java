@@ -6,11 +6,13 @@ import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
 /**
@@ -149,37 +151,36 @@ public class DirectoryManager {
 
 
     /**
-     * Move the "igv" directory to a new location, copying all contents
+     * Move the "igv" directory to a new location, copying all contents.  Returns True if the directory
+     * is successfully moved, irrespective of any errors that might occur later (e.g. when attempting to
+     * remove the old directory).
      *
      * @param newDirectory
-     * @throws IOException
+     * @return True if the directory is successfully moved, false otherwise
      */
 
-    public static void moveIGVDirectory(File newDirectory) {
+    public static Boolean moveIGVDirectory(final File newDirectory) {
 
         if (newDirectory.equals(IGV_DIRECTORY)) {
-            return; // Nothing to do
+            return false; // Nothing to do
         }
 
         if (IGV_DIRECTORY != null && IGV_DIRECTORY.exists()) {
 
             File oldDirectory = IGV_DIRECTORY;
 
+
             try {
                 FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
                 PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
                 Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-                prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
-
+                prefs.put(IGV_DIR_USERPREF, newDirectory.getAbsolutePath());
                 IGV_DIRECTORY = newDirectory;
-                MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " + newDirectory.getAbsolutePath() +
-                        "<br/><b><i>It is recommended that you restart IGV.");
             } catch (IOException e) {
                 log.error("Error copying IGV directory", e);
                 MessageUtils.showMessage("<html>Error moving IGV directory:<br/>&nbsp;nbsp;" + e.getMessage());
-                return;
+                return false;
             }
-
 
             // Restart the log
             LogManager.shutdown();
@@ -193,7 +194,7 @@ public class DirectoryManager {
                 MessageUtils.showMessage("<html>An error was encountered deleting the previous IGV directory (" +
                         e.getMessage() + "):<br>&nbsp;nbsp;nbsp;" + oldDirectory.getAbsolutePath() +
                         "<br>Remaining files should be manually deleted.");
-             }
+            }
 
         } else {
             newDirectory.mkdir();
@@ -205,6 +206,7 @@ public class DirectoryManager {
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
+        return true;
 
     }
 

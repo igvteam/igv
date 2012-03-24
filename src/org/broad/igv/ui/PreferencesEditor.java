@@ -22,6 +22,7 @@ import java.awt.event.*;
 import javax.swing.border.*;
 
 import com.jidesoft.dialog.*;
+import org.apache.batik.css.engine.value.css2.CursorManager;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
@@ -43,6 +44,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
@@ -2176,7 +2178,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             // IGV directory
             if (newIGVDirectory != null) {
-                DirectoryManager.moveIGVDirectory(newIGVDirectory);
+                moveIGVDirectory();
 
             }
 
@@ -2185,6 +2187,45 @@ public class PreferencesEditor extends javax.swing.JDialog {
             setVisible(false);
         } else {
             resetValidation();
+        }
+    }
+
+    /**
+     * Move the IGV directory to a new location.
+     */
+    private void moveIGVDirectory() {
+
+        // DO this in a swing worker, so we can invoke a wait cursor.  This might take some time.
+
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                getGlassPane().setVisible(true);
+                return DirectoryManager.moveIGVDirectory(newIGVDirectory);
+            }
+
+            @Override
+            protected void done() {
+                getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                getGlassPane().setVisible(false);
+            }
+        };
+
+        worker.execute();
+        try {
+            Boolean success = worker.get();
+            if (success == Boolean.TRUE) {
+                MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " +
+                        newIGVDirectory.getAbsolutePath() +
+                        "<br/><b><i>It is recommended that you restart IGV.");
+            }
+
+        } catch (Exception ex) {
+            MessageUtils.showMessage("<html>Unexpected error occurred while moving IGV directory:  " +
+                    newIGVDirectory.getAbsolutePath() +
+                    "<br/><b><i>It is recommended that you restart IGV.");
+
         }
     }
 
