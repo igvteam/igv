@@ -203,9 +203,12 @@ public class IGVPreferences {
                     pw.print("=");
                     pw.println(entry.getValue());
                 }
+                pw.flush();
+                pw.close();
             } catch (IOException e) {
                 log.error("Error loading preferences", e);
             } finally {
+
                 if (fileWriter != null) {
                     try {
                         fileWriter.close();

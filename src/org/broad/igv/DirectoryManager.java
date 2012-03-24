@@ -117,7 +117,7 @@ public class DirectoryManager {
 
 
     /**
-     * Return the user preferences property file  ("~/.igv.properties").
+     * Return the user preferences property file  ("~/igv/prefs.properties").
      *
      * @return
      */
