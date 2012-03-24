@@ -32,8 +32,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
 
 
 /**
@@ -75,7 +73,7 @@ public class Main {
     }
 
     private static void initApplication() {
-        initializeLog();
+        DirectoryManager.initializeLog();
         log.info("Startup  " + Globals.applicationString());
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
         System.setProperty("http.agent", Globals.applicationString());
@@ -191,36 +189,6 @@ public class Main {
         }
         // Todo -- what does this do?
         LookAndFeelFactory.installJideExtension();
-    }
-
-    public static void initializeLog() {
-
-        Logger logger = Logger.getRootLogger();
-
-        PatternLayout layout = new PatternLayout();
-        layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-
-        // Create a log file that is ready to have text appended to it
-        try {
-            File logFile = DirectoryManager.getLogFile();
-            RollingFileAppender appender = new RollingFileAppender();
-            appender.setName("IGV_ROLLING_APPENDER");
-            appender.setFile(logFile.getAbsolutePath());
-            appender.setThreshold(Level.ALL);
-            appender.setMaxFileSize("1000KB");
-            appender.setMaxBackupIndex(1);
-            appender.setLayout(layout);
-            appender.setAppend(true);
-            appender.activateOptions();
-            logger.addAppender(appender);
-        }
-        catch (IOException e) {
-           // Can't create log file, just log to console
-            System.err.println("Error creating log file");
-            e.printStackTrace();
-            ConsoleAppender consoleAppender = new ConsoleAppender();
-            logger.addAppender(consoleAppender);
-        }
     }
 
     /**

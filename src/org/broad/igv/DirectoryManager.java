@@ -1,8 +1,11 @@
 package org.broad.igv;
 
+import org.apache.batik.css.engine.value.css2.CursorManager;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -39,16 +42,6 @@ public class DirectoryManager {
             if (USER_DIRECTORY == null) {
                 USER_DIRECTORY = getUserHome();
             }
-            System.out.println(USER_DIRECTORY.getAbsolutePath());
-
-            // Hack for known Java/Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
-            // TODO -- retest with Java 7 when its released
-//            if (Globals.IS_WINDOWS) {
-//                try {
-//                    Runtime.getRuntime().exec("attrib -r \"" + USER_DIRECTORY.getAbsolutePath() + "\"");
-//                } catch (Exception e) {
-//                }
-//            }
         }
         return USER_DIRECTORY;
     }
@@ -162,25 +155,56 @@ public class DirectoryManager {
      * @throws IOException
      */
 
-    public static void moveIGVDirectory(File newDirectory) throws IOException {
+    public static void moveIGVDirectory(File newDirectory) {
 
         if (newDirectory.equals(IGV_DIRECTORY)) {
             return; // Nothing to do
         }
 
         if (IGV_DIRECTORY != null && IGV_DIRECTORY.exists()) {
-            FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
-            FileUtils.deleteDirectory(IGV_DIRECTORY);
+
+            File oldDirectory = IGV_DIRECTORY;
+
+            try {
+                FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
+                PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
+                Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
+
+                IGV_DIRECTORY = newDirectory;
+                MessageUtils.showMessage("<html>The IGV directory has been successfully moved to: " + newDirectory.getAbsolutePath() +
+                        "<br/><b><i>It is recommended that you restart IGV.");
+            } catch (IOException e) {
+                log.error("Error copying IGV directory", e);
+                MessageUtils.showMessage("<html>Error moving IGV directory:<br/>&nbsp;nbsp;" + e.getMessage());
+                return;
+            }
+
+
+            // Restart the log
+            LogManager.shutdown();
+            initializeLog();
+
+            // Try to delete the old directory
+            try {
+                FileUtils.deleteDirectory(oldDirectory);
+            } catch (IOException e) {
+                log.error("An error was encountered deleting the previous IGV directory", e);
+                MessageUtils.showMessage("<html>An error was encountered deleting the previous IGV directory (" +
+                        e.getMessage() + "):<br>&nbsp;nbsp;nbsp;" + oldDirectory.getAbsolutePath() +
+                        "<br>Remaining files should be manually deleted.");
+             }
+
         } else {
             newDirectory.mkdir();
+            IGV_DIRECTORY = newDirectory;
+            PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
+            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+            prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
         }
-        IGV_DIRECTORY = newDirectory;
         GENOME_CACHE_DIRECTORY = null;
         GENE_LIST_DIRECTORY = null;
         BAM_CACHE_DIRECTORY = null;
-        PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
-        Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-        prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
 
     }
 
@@ -353,4 +377,33 @@ public class DirectoryManager {
 
     }
 
+    public static void initializeLog() {
+
+        Logger logger = Logger.getRootLogger();
+
+        PatternLayout layout = new PatternLayout();
+        layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
+
+        // Create a log file that is ready to have text appended to it
+        try {
+            File logFile = getLogFile();
+            RollingFileAppender appender = new RollingFileAppender();
+            appender.setName("IGV_ROLLING_APPENDER");
+            appender.setFile(logFile.getAbsolutePath());
+            appender.setThreshold(Level.ALL);
+            appender.setMaxFileSize("1000KB");
+            appender.setMaxBackupIndex(1);
+            appender.setLayout(layout);
+            appender.setAppend(true);
+            appender.activateOptions();
+            logger.addAppender(appender);
+
+        } catch (IOException e) {
+            // Can't create log file, just log to console
+            System.err.println("Error creating log file");
+            e.printStackTrace();
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            logger.addAppender(consoleAppender);
+        }
+    }
 }
