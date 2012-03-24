@@ -68,8 +68,8 @@ public class RuntimeUtils {
     }
 
 
-    public static String executeShellCommand(String command) throws IOException {
-        String cmd = "ls -al";
+    public static String executeShellCommand(String cmd) throws IOException {
+
         Runtime run = Runtime.getRuntime();
         Process pr = null;
         try {
