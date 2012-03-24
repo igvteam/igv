@@ -99,7 +99,7 @@ public class ParsingUtils {
                 log.error("Error with gzip stream", ex);
                 throw new RuntimeException(
                         "There was a server error loading file: " + locator.getTrackName() +
-                                ". Please report to igv-help@broadinstitute.org");
+                                ". Please report to igv-team@broadinstitute.org");
 
             }
 

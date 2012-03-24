@@ -194,7 +194,7 @@ public class DirectoryManager {
             // Try to delete the old directory
             try {
                 System.out.println("Deleting directory");
-                FileUtils.deleteDirectory(oldDirectory);
+                deleteDirectory(oldDirectory);
                 System.out.println("Done");
             } catch (IOException e) {
                 log.error("An error was encountered deleting the previous IGV directory", e);
@@ -215,6 +215,20 @@ public class DirectoryManager {
         BAM_CACHE_DIRECTORY = null;
         return true;
 
+    }
+
+    /**
+     * Delete the directory and all contents recursively.  The apache FileUtils is hanging on Linux.
+     *
+     * @param oldDirectory
+     * @throws IOException
+     */
+    private static void deleteDirectory(File oldDirectory) throws IOException {
+        if (Globals.IS_LINUX) {
+            Runtime.getRuntime().exec("rm -rf " + oldDirectory.getAbsolutePath());
+        } else {
+            FileUtils.deleteDirectory(oldDirectory);
+        }
     }
 
 
