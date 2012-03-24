@@ -7,6 +7,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.util.RuntimeUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -225,7 +226,9 @@ public class DirectoryManager {
      */
     private static void deleteDirectory(File oldDirectory) throws IOException {
         if (Globals.IS_LINUX) {
-            Runtime.getRuntime().exec("rm -rf " + oldDirectory.getAbsolutePath());
+            System.out.println("Deleting: " + oldDirectory);
+            String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath());
+            System.out.println(result);
         } else {
             FileUtils.deleteDirectory(oldDirectory);
         }

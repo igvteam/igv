@@ -22,6 +22,7 @@
  */
 package org.broad.igv.util;
 
+import java.io.*;
 import java.lang.instrument.Instrumentation;
 
 /**
@@ -65,5 +66,42 @@ public class RuntimeUtils {
         }
         return instrumentation.getObjectSize(o);
     }
+
+
+    public static String executeShellCommand(String command) throws IOException {
+        String cmd = "ls -al";
+        Runtime run = Runtime.getRuntime();
+        Process pr = null;
+        try {
+            pr = run.exec(cmd);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            pr.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        InputStream inputStream = null;
+        String line = "";
+        try {
+            inputStream = pr.getInputStream();
+            BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            while ((line = buf.readLine()) != null) {
+                pw.println(line);
+            }
+            pw.close();
+            return writer.toString();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+
+            }
+        }
+    }
+
 
 }
