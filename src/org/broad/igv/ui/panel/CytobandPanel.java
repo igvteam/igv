@@ -40,6 +40,8 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -55,6 +57,7 @@ public class CytobandPanel extends JPanel {
     ReferenceFrame frame;
     private Rectangle currentRegionRect;
     private CytobandRenderer cytobandRenderer;
+    private List<Cytoband> currentCytobands;
 
     public CytobandPanel(ReferenceFrame frame) {
         this(frame, true);
@@ -95,12 +98,12 @@ public class CytobandPanel extends JPanel {
         if (chromosome == null) {
             return;
         }
-        java.util.List<Cytoband> cytobands = chromosome.getCytobands();
-        if (cytobands == null) {
+        currentCytobands = chromosome.getCytobands();
+        if (currentCytobands == null) {
             return;
         }
 
-        cytobandRenderer.draw(cytobands, g, cytoRect, frame);
+        cytobandRenderer.draw(currentCytobands, g, cytoRect, frame);
 
         int chromosomeLength = getReferenceFrame().getChromosomeLength();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;
@@ -134,7 +137,7 @@ public class CytobandPanel extends JPanel {
 
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.setToolTipText(
-                "<html>Click anywhere on the cytoband <p>to center view at that location.");
+                "<html>Click anywhere on the chromosome<br/>to center view at that location.");
 
 
         MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
@@ -142,6 +145,8 @@ public class CytobandPanel extends JPanel {
             int lastMousePressX;
 
             public void mouseClicked(MouseEvent e) {
+                if(currentCytobands == null) return;
+
                 final int mouseX = e.getX();
                 final int clickCount = e.getClickCount();
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
@@ -167,6 +172,8 @@ public class CytobandPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if(currentCytobands == null) return;
+
                 if (isDragging) {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     try {
@@ -181,6 +188,9 @@ public class CytobandPanel extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+
+                if(currentCytobands == null) return;
+
                 if (!isDragging && (currentRegionRect != null && currentRegionRect.contains(e.getPoint()))) {
                     isDragging = true;
                     viewOrigin = getReferenceFrame().getOrigin();

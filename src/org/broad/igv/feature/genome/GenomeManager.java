@@ -31,6 +31,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
+import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -111,22 +112,34 @@ public class GenomeManager {
                 File archiveFile = getArchiveFile(genomePath);
 
                 genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-                LinkedHashMap<String, Chromosome> chromMap = loadCytobandFile(genomeDescriptor);
                 Map<String, String> aliases = loadAliasFile(genomeDescriptor);
 
                 final String id = genomeDescriptor.getId();
                 final String displayName = genomeDescriptor.getName();
+
                 boolean isFasta = genomeDescriptor.isFasta();
-                currentGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
+                String[] fastaFiles = genomeDescriptor.getFastaFileNames();
+
+                GenomeImpl genome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta, fastaFiles);
+                currentGenome = genome;
                 log.info("Genome loaded.  id= " + id);
-                currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
-                if (aliases != null) currentGenome.addChrAliases(aliases);
+
+                if (genomeDescriptor.hasCytobands()) {
+                    LinkedHashMap<String, List<Cytoband>> cytobandMap = loadCytobandFile(genomeDescriptor);
+                    if (!isFasta) {
+                        genome.generateChromosomeMap(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
+                    }
+                    genome.setCytobands(cytobandMap);
+                }
+
+
+                if (aliases != null) genome.addChrAliases(aliases);
                 if (!Globals.isHeadless()) {
                     updateGeneTrack(genomeDescriptor);
                 }
 
 
-            } else if (genomePath.endsWith(Globals.FASTA_GZIP_FILE_EXTENSION)) {
+            } else if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
                 //Assume we are dealing with a gzipped file
                 boolean unzip = true;
                 if (Globals.isHeadless()) {
@@ -180,7 +193,8 @@ public class GenomeManager {
                     name = Utilities.getFileNameFromURL(fastaPath);
                 }
 
-                currentGenome = new GenomeImpl(id, name, fastaPath, true);
+
+                currentGenome = new GenomeImpl(id, name, fastaPath, true, null);
 
                 log.info("Genome loaded.  id= " + id);
                 if (!Globals.isHeadless()) {
@@ -193,7 +207,9 @@ public class GenomeManager {
             }
 
             // Do this last so that user defined aliases have preference.
-            currentGenome.loadUserDefinedAliases();
+            if (currentGenome instanceof GenomeImpl) {
+                ((GenomeImpl) currentGenome).loadUserDefinedAliases();
+            }
 
             return currentGenome;
 
@@ -246,14 +262,12 @@ public class GenomeManager {
     }
 
     /**
-     * Load the cytoband file specified in the genome descriptor and return an ordered hash map of
-     * chromsome name -> chromosome.   This is a legacy method, kept for backward compatibiltiy of
-     * .genome files in which the chromosome lengths are specified in a cytoband file.
+     * Load the cytoband file specified in the genome descriptor.
      *
      * @param genomeDescriptor
-     * @return
+     * @return  Cytobands as a map keyed by chromosome
      */
-    private LinkedHashMap<String, Chromosome> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
+    private LinkedHashMap<String, List<Cytoband>> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
         InputStream is = null;
         try {
 
@@ -443,6 +457,17 @@ public class GenomeManager {
                         }
                     }
 
+
+                    boolean fastaDirectory = false;
+                    String fastaDirectoryString = properties.getProperty("fastaDirectory");
+                    if (fastaDirectoryString != null) {
+                        try {
+                            fastaDirectory = Boolean.parseBoolean(fastaString);
+                        } catch (Exception e) {
+                            log.error("Error parsing version string: " + versionString);
+                        }
+                    }
+
                     boolean chromosomesAreOrdered = false;
                     String tmp = properties.getProperty(Globals.GENOME_ORDERED_KEY);
                     if (tmp != null) {
@@ -452,6 +477,8 @@ public class GenomeManager {
                             log.error("Error parsing ordered string: " + tmp);
                         }
                     }
+
+                    String fastaFileNameString = properties.getProperty("fastaFiles");
 
                     String url = properties.getProperty(Globals.GENOME_URL_KEY);
 
@@ -470,7 +497,9 @@ public class GenomeManager {
                             zipFile,
                             zipEntries,
                             chromosomesAreOrdered,
-                            fasta);
+                            fasta,
+                            fastaDirectory,
+                            fastaFileNameString);
 
                     if (url != null) {
                         genomeDescriptor.setUrl(url);
@@ -875,7 +904,6 @@ public class GenomeManager {
         File refFlatFile = null;
         File cytobandFile = null;
         File chrAliasFile = null;
-        File sequenceLocation;
 
         if ((genomeZipLocation != null) && (genomeZipLocation.trim().length() != 0)) {
             zipFileLocation = new File(genomeZipLocation);
@@ -896,14 +924,6 @@ public class GenomeManager {
 
         if ((fastaFileName != null) && (fastaFileName.trim().length() != 0)) {
             fastaInputFile = new File(fastaFileName);
-
-            // The sequence info only matters if we have FASTA
-            if ((relativeSequenceLocation != null) && (relativeSequenceLocation.trim().length() != 0)) {
-                sequenceLocation = new File(genomeZipLocation, relativeSequenceLocation);
-                if (!sequenceLocation.exists()) {
-                    sequenceLocation.mkdir();
-                }
-            }
         }
 
         if (monitor != null) monitor.fireProgressChange(25);
