@@ -55,7 +55,7 @@ public class FastaSequenceIndexTest {
 
         List expectedContigs = Arrays.asList("chr01p", "chr02q", "chr03q");
 
-        Set<String> contigs = index.getContigs();
+        Set<String> contigs = index.getSequenceNames();
         assertEquals(expectedContigs.size(), contigs.size());
         for (Object exp : expectedContigs) {
             assertTrue(contigs.contains(exp));
@@ -85,7 +85,7 @@ public class FastaSequenceIndexTest {
         FastaSequenceIndex.createIndexFile(inPath, outPath);
 
         FastaSequenceIndex index = new FastaSequenceIndex(outPath);
-        assertEquals(1, index.getContigs().size());
+        assertEquals(1, index.getSequenceNames().size());
         String contig = "NC_000913_bb";
         assertNotNull(index.getIndexEntry(contig));
     }
@@ -99,7 +99,7 @@ public class FastaSequenceIndexTest {
         FastaSequenceIndex.createIndexFile(inPath, outPath);
 
         FastaSequenceIndex index = new FastaSequenceIndex(outPath);
-        assertEquals(2, index.getContigs().size());
+        assertEquals(2, index.getSequenceNames().size());
         String tA = "my:testA";
         String tG = "my:testG";
         String[] contigs = {tA, tG};

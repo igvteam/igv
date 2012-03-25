@@ -165,10 +165,10 @@ public class FastaSequence implements Sequence {
     }
 
     public Set<String> getChromosomeNames() {
-        return index.getContigs();
+        return index.getSequenceNames();
     }
 
     public int getChromosomeLength(String chrname) {
-        return index.getContigSize(chrname);
+        return index.getSequenceSize(chrname);
     }
 }

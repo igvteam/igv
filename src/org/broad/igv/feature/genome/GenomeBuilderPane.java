@@ -216,217 +216,231 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
         jPanel1 = new JPanel();
+        vSpacer3 = new JPanel(null);
+        panel2 = new JPanel();
+        genomeDisplayNameLabel2 = new JLabel();
+        idField = new JTextField();
+        genomeDisplayNameLabel = new JLabel();
+        genomeDisplayNameTextField = new JTextField();
+        fastaFileLabel = new JLabel();
+        fastaFileTextField = new JTextField();
+        fastaFileButton = new JButton();
+        vSpacer1 = new JPanel(null);
+        panel1 = new JPanel();
+        cytobandFileLabel = new JLabel();
         cytobandFileTextField = new JTextField();
         cytobandFileButton = new JButton();
         refFlatFileLabel = new JLabel();
-        refFlatFileButton = new JButton();
-        genomeDisplayNameTextField = new JTextField();
-        fastaFileLabel = new JLabel();
-        fastaFileButton = new JButton();
-        cytobandFileLabel = new JLabel();
-        fastaFileTextField = new JTextField();
         refFlatFileTextField = new JTextField();
-        genomeDisplayNameLabel = new JLabel();
+        refFlatFileButton = new JButton();
         refFlatFileLabel2 = new JLabel();
         chrAliasField = new JTextField();
         chrAliasButton = new JButton();
-        idField = new JTextField();
-        genomeDisplayNameLabel2 = new JLabel();
-        label1 = new JLabel();
-        sequenceDirectoryCB = new JCheckBox();
+        vSpacer2 = new JPanel(null);
         label2 = new JLabel();
         label3 = new JLabel();
         sequenceURLField = new JTextField();
-        jLabel1 = new JLabel();
 
         //======== this ========
         setFont(new Font("Tahoma", Font.ITALIC, 12));
         setMaximumSize(new Dimension(900, 500));
         setMinimumSize(new Dimension(400, 300));
         setPreferredSize(new Dimension(700, 400));
-        setLayout(null);
+        setLayout(new BorderLayout());
 
         //======== jPanel1 ========
         {
             jPanel1.setBorder(null);
-            jPanel1.setLayout(null);
+            jPanel1.setLayout(new GridBagLayout());
+            ((GridBagLayout)jPanel1.getLayout()).columnWidths = new int[] {15, 0, 0, 578, 83, 0};
+            ((GridBagLayout)jPanel1.getLayout()).rowHeights = new int[] {15, 0, 25, 0, 0, 25, 0};
+            ((GridBagLayout)jPanel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+            jPanel1.add(vSpacer3, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
-            //---- cytobandFileTextField ----
-            cytobandFileTextField.setToolTipText("A cytoband data file");
-            cytobandFileTextField.setPreferredSize(new Dimension(400, 28));
-            cytobandFileTextField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(cytobandFileTextField);
-            cytobandFileTextField.setBounds(105, 135, 608, 29);
+            //======== panel2 ========
+            {
+                panel2.setBorder(new TitledBorder(null, "Required", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION,
+                    new Font("Lucida Grande", Font.BOLD, 13)));
+                panel2.setLayout(new GridBagLayout());
+                ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 578, 83, 0};
+                ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
-            //---- cytobandFileButton ----
-            cytobandFileButton.setLabel("...");
-            cytobandFileButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    cytobandFileButtonActionPerformed(e);
-                }
-            });
-            jPanel1.add(cytobandFileButton);
-            cytobandFileButton.setBounds(725, 130, 50, cytobandFileButton.getPreferredSize().height);
+                //---- genomeDisplayNameLabel2 ----
+                genomeDisplayNameLabel2.setText("ID");
+                genomeDisplayNameLabel2.setToolTipText("Unique identifier (e.g. hg18)");
+                genomeDisplayNameLabel2.setMaximumSize(new Dimension(84, 16));
+                genomeDisplayNameLabel2.setMinimumSize(new Dimension(84, 16));
+                genomeDisplayNameLabel2.setPreferredSize(new Dimension(84, 16));
+                panel2.add(genomeDisplayNameLabel2, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
 
-            //---- refFlatFileLabel ----
-            refFlatFileLabel.setText("Gene file");
-            jPanel1.add(refFlatFileLabel);
-            refFlatFileLabel.setBounds(15, 170, 87, 29);
+                //---- idField ----
+                idField.setToolTipText("A uniqe identifier for the genome");
+                panel2.add(idField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
 
-            //---- refFlatFileButton ----
-            refFlatFileButton.setLabel("...");
-            refFlatFileButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    refFlatFileButtonActionPerformed(e);
-                }
-            });
-            jPanel1.add(refFlatFileButton);
-            refFlatFileButton.setBounds(725, 165, 50, refFlatFileButton.getPreferredSize().height);
+                //---- genomeDisplayNameLabel ----
+                genomeDisplayNameLabel.setText("Name");
+                panel2.add(genomeDisplayNameLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
 
-            //---- genomeDisplayNameTextField ----
-            genomeDisplayNameTextField.setToolTipText("The user-readable name of the genome");
-            genomeDisplayNameTextField.setPreferredSize(new Dimension(400, 28));
-            genomeDisplayNameTextField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(genomeDisplayNameTextField);
-            genomeDisplayNameTextField.setBounds(105, 40, 288, genomeDisplayNameTextField.getPreferredSize().height);
+                //---- genomeDisplayNameTextField ----
+                genomeDisplayNameTextField.setToolTipText("The user-readable name of the genome");
+                genomeDisplayNameTextField.setPreferredSize(new Dimension(400, 28));
+                genomeDisplayNameTextField.setMinimumSize(new Dimension(25, 28));
+                panel2.add(genomeDisplayNameTextField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
 
-            //---- fastaFileLabel ----
-            fastaFileLabel.setText("Fasta file *");
-            jPanel1.add(fastaFileLabel);
-            fastaFileLabel.setBounds(15, 100, 87, 29);
+                //---- fastaFileLabel ----
+                fastaFileLabel.setText("Fasta file");
+                panel2.add(fastaFileLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
-            //---- fastaFileButton ----
-            fastaFileButton.setLabel("...");
-            fastaFileButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fastaFileButtonActionPerformed(e);
-                }
-            });
-            jPanel1.add(fastaFileButton);
-            fastaFileButton.setBounds(725, 95, 50, fastaFileButton.getPreferredSize().height);
+                //---- fastaFileTextField ----
+                fastaFileTextField.setToolTipText("A FASTA data file");
+                fastaFileTextField.setPreferredSize(new Dimension(400, 28));
+                fastaFileTextField.setMinimumSize(new Dimension(25, 28));
+                panel2.add(fastaFileTextField, new GridBagConstraints(1, 2, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
-            //---- cytobandFileLabel ----
-            cytobandFileLabel.setText("Cytoband file");
-            jPanel1.add(cytobandFileLabel);
-            cytobandFileLabel.setBounds(15, 135, 87, 29);
-
-            //---- fastaFileTextField ----
-            fastaFileTextField.setToolTipText("A FASTA data file");
-            fastaFileTextField.setPreferredSize(new Dimension(400, 28));
-            fastaFileTextField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(fastaFileTextField);
-            fastaFileTextField.setBounds(105, 100, 608, 29);
-
-            //---- refFlatFileTextField ----
-            refFlatFileTextField.setToolTipText("An annotation file");
-            refFlatFileTextField.setPreferredSize(new Dimension(400, 28));
-            refFlatFileTextField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(refFlatFileTextField);
-            refFlatFileTextField.setBounds(105, 170, 608, 29);
-
-            //---- genomeDisplayNameLabel ----
-            genomeDisplayNameLabel.setText("Name *");
-            jPanel1.add(genomeDisplayNameLabel);
-            genomeDisplayNameLabel.setBounds(15, 40, 87, 28);
-
-            //---- refFlatFileLabel2 ----
-            refFlatFileLabel2.setText("Alias file");
-            jPanel1.add(refFlatFileLabel2);
-            refFlatFileLabel2.setBounds(15, 220, 87, 29);
-
-            //---- chrAliasField ----
-            chrAliasField.setPreferredSize(new Dimension(400, 28));
-            chrAliasField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(chrAliasField);
-            chrAliasField.setBounds(105, 220, 608, 29);
-
-            //---- chrAliasButton ----
-            chrAliasButton.setLabel("...");
-            chrAliasButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    chrAliasButtonActionPerformed(e);
-                }
-            });
-            jPanel1.add(chrAliasButton);
-            chrAliasButton.setBounds(725, 220, 50, chrAliasButton.getPreferredSize().height);
-
-            //---- idField ----
-            idField.setToolTipText("A uniqe identifier for the genome");
-            jPanel1.add(idField);
-            idField.setBounds(105, 5, 148, idField.getPreferredSize().height);
-
-            //---- genomeDisplayNameLabel2 ----
-            genomeDisplayNameLabel2.setText("ID *");
-            jPanel1.add(genomeDisplayNameLabel2);
-            genomeDisplayNameLabel2.setBounds(15, 5, 87, 28);
-
-            //---- label1 ----
-            label1.setText("(unique id, e.g. hg18)");
-            jPanel1.add(label1);
-            label1.setBounds(270, 5, 166, 28);
-
-            //---- sequenceDirectoryCB ----
-            sequenceDirectoryCB.setText("Fasta file is a directory");
-            sequenceDirectoryCB.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-            jPanel1.add(sequenceDirectoryCB);
-            sequenceDirectoryCB.setBounds(105, 75, 546, sequenceDirectoryCB.getPreferredSize().height);
-
-            //---- label2 ----
-            label2.setText("Supply a sequence URL if defining a web-hosted genome (optional, not common).  See user guide for more details. ");
-            label2.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-            jPanel1.add(label2);
-            label2.setBounds(new Rectangle(new Point(15, 275), label2.getPreferredSize()));
-
-            //---- label3 ----
-            label3.setText("Sequence URL");
-            jPanel1.add(label3);
-            label3.setBounds(15, 295, label3.getPreferredSize().width, 28);
-
-            //---- sequenceURLField ----
-            sequenceURLField.setToolTipText("A refFlat gene file");
-            sequenceURLField.setPreferredSize(new Dimension(400, 28));
-            sequenceURLField.setMinimumSize(new Dimension(25, 28));
-            jPanel1.add(sequenceURLField);
-            sequenceURLField.setBounds(110, 295, 608, sequenceURLField.getPreferredSize().height);
-
-            { // compute preferred size
-                Dimension preferredSize = new Dimension();
-                for(int i = 0; i < jPanel1.getComponentCount(); i++) {
-                    Rectangle bounds = jPanel1.getComponent(i).getBounds();
-                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                }
-                Insets insets = jPanel1.getInsets();
-                preferredSize.width += insets.right;
-                preferredSize.height += insets.bottom;
-                jPanel1.setMinimumSize(preferredSize);
-                jPanel1.setPreferredSize(preferredSize);
+                //---- fastaFileButton ----
+                fastaFileButton.setLabel("...");
+                fastaFileButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        fastaFileButtonActionPerformed(e);
+                    }
+                });
+                panel2.add(fastaFileButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
-        }
-        add(jPanel1);
-        jPanel1.setBounds(10, 0, 810, jPanel1.getPreferredSize().height);
+            jPanel1.add(panel2, new GridBagConstraints(1, 1, 4, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
+            jPanel1.add(vSpacer1, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
 
-        //---- jLabel1 ----
-        jLabel1.setFont(new Font("Lucida Sans Unicode", Font.ITALIC, 12));
-        jLabel1.setText("<html>* required.  <br>The sequence file (required) can be a FASTA file, a directory of FASTA files, or a zip of FASTA files. Optionally, specify a cytoband file to display the chromosome ideogram and an annotation file to display the gene track. See the documentation for descriptions of supported annotation formats.");
-        jLabel1.setVerticalAlignment(SwingConstants.TOP);
-        jLabel1.setBorder(new EmptyBorder(5, 25, 25, 5));
-        add(jLabel1);
-        jLabel1.setBounds(5, 340, 785, 150);
+            //======== panel1 ========
+            {
+                panel1.setBorder(new TitledBorder(null, "Optional", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION,
+                    new Font("Lucida Grande", Font.BOLD, 13)));
+                panel1.setLayout(new GridBagLayout());
+                ((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {0, 0, 578, 83, 0};
+                ((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {0, 0, 0, 25, 0, 0};
+                ((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
-        { // compute preferred size
-            Dimension preferredSize = new Dimension();
-            for(int i = 0; i < getComponentCount(); i++) {
-                Rectangle bounds = getComponent(i).getBounds();
-                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                //---- cytobandFileLabel ----
+                cytobandFileLabel.setText("Cytoband file");
+                panel1.add(cytobandFileLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- cytobandFileTextField ----
+                cytobandFileTextField.setToolTipText("A cytoband data file");
+                cytobandFileTextField.setPreferredSize(new Dimension(400, 28));
+                cytobandFileTextField.setMinimumSize(new Dimension(25, 28));
+                panel1.add(cytobandFileTextField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- cytobandFileButton ----
+                cytobandFileButton.setLabel("...");
+                cytobandFileButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        cytobandFileButtonActionPerformed(e);
+                    }
+                });
+                panel1.add(cytobandFileButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+                //---- refFlatFileLabel ----
+                refFlatFileLabel.setText("Gene file");
+                panel1.add(refFlatFileLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- refFlatFileTextField ----
+                refFlatFileTextField.setToolTipText("An annotation file");
+                refFlatFileTextField.setPreferredSize(new Dimension(400, 28));
+                refFlatFileTextField.setMinimumSize(new Dimension(25, 28));
+                panel1.add(refFlatFileTextField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- refFlatFileButton ----
+                refFlatFileButton.setLabel("...");
+                refFlatFileButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        refFlatFileButtonActionPerformed(e);
+                    }
+                });
+                panel1.add(refFlatFileButton, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+                //---- refFlatFileLabel2 ----
+                refFlatFileLabel2.setText("Alias file");
+                panel1.add(refFlatFileLabel2, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- chrAliasField ----
+                chrAliasField.setPreferredSize(new Dimension(400, 28));
+                chrAliasField.setMinimumSize(new Dimension(25, 28));
+                panel1.add(chrAliasField, new GridBagConstraints(1, 2, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- chrAliasButton ----
+                chrAliasButton.setLabel("...");
+                chrAliasButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        chrAliasButtonActionPerformed(e);
+                    }
+                });
+                panel1.add(chrAliasButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+                panel1.add(vSpacer2, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 5), 0, 0));
+
+                //---- label2 ----
+                label2.setText("Supply a fasta URL if defining a web-hosted genome (optional, not common).");
+                label2.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
+                panel1.add(label2, new GridBagConstraints(0, 4, 4, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+                //---- label3 ----
+                label3.setText("Fasta URL");
+                panel1.add(label3, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
+
+                //---- sequenceURLField ----
+                sequenceURLField.setToolTipText("A refFlat gene file");
+                sequenceURLField.setPreferredSize(new Dimension(400, 28));
+                sequenceURLField.setMinimumSize(new Dimension(25, 28));
+                panel1.add(sequenceURLField, new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
             }
-            Insets insets = getInsets();
-            preferredSize.width += insets.right;
-            preferredSize.height += insets.bottom;
-            setMinimumSize(preferredSize);
-            setPreferredSize(preferredSize);
+            jPanel1.add(panel1, new GridBagConstraints(1, 3, 4, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
         }
+        add(jPanel1, BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void chrAliasButtonActionPerformed(ActionEvent e) {
@@ -458,10 +472,8 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     }
 
     private void fastaFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        boolean chooseDir = sequenceDirectoryCB.isSelected();
         File directory = PreferenceManager.getInstance().getDefineGenomeInputDirectory();
-        File file = chooseDir ? FileDialogUtils.chooseDirectory("Select Fasta Directory", directory) :
-                FileDialogUtils.chooseFile("Select Fasta File", directory, FileDialogUtils.LOAD);
+        File file = FileDialogUtils.chooseFile("Select Fasta File", directory, FileDialogUtils.LOAD);
         if (file != null) {
             fastaFileTextField.setText(file.getAbsolutePath());
             PreferenceManager.getInstance().setDefineGenomeInputDirectory(file.getParentFile());
@@ -471,28 +483,30 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel jPanel1;
+    private JPanel vSpacer3;
+    private JPanel panel2;
+    private JLabel genomeDisplayNameLabel2;
+    private JTextField idField;
+    private JLabel genomeDisplayNameLabel;
+    private JTextField genomeDisplayNameTextField;
+    private JLabel fastaFileLabel;
+    private JTextField fastaFileTextField;
+    private JButton fastaFileButton;
+    private JPanel vSpacer1;
+    private JPanel panel1;
+    private JLabel cytobandFileLabel;
     private JTextField cytobandFileTextField;
     private JButton cytobandFileButton;
     private JLabel refFlatFileLabel;
-    private JButton refFlatFileButton;
-    private JTextField genomeDisplayNameTextField;
-    private JLabel fastaFileLabel;
-    private JButton fastaFileButton;
-    private JLabel cytobandFileLabel;
-    private JTextField fastaFileTextField;
     private JTextField refFlatFileTextField;
-    private JLabel genomeDisplayNameLabel;
+    private JButton refFlatFileButton;
     private JLabel refFlatFileLabel2;
     private JTextField chrAliasField;
     private JButton chrAliasButton;
-    private JTextField idField;
-    private JLabel genomeDisplayNameLabel2;
-    private JLabel label1;
-    private JCheckBox sequenceDirectoryCB;
+    private JPanel vSpacer2;
     private JLabel label2;
     private JLabel label3;
     private JTextField sequenceURLField;
-    private JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
 }

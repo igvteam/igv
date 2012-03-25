@@ -48,17 +48,17 @@ public class FastaSequenceIndex {
         parseIndexFile(indexPath);
     }
 
-    public Set<String> getContigs() {
+    public Set<String> getSequenceNames() {
         return sequenceEntries.keySet();
     }
 
-    public FastaSequenceIndexEntry getIndexEntry(String contig) {
-        return sequenceEntries.get(contig);
+    public FastaSequenceIndexEntry getIndexEntry(String name) {
+        return sequenceEntries.get(name);
     }
 
 
-    public int getContigSize(String contig) {
-        FastaSequenceIndexEntry entry = sequenceEntries.get(contig);
+    public int getSequenceSize(String name) {
+        FastaSequenceIndexEntry entry = sequenceEntries.get(name);
         return entry == null ? -1 : (int) entry.getSize();
     }
 

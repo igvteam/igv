@@ -35,10 +35,7 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeBuilderDialog;
-import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
@@ -458,15 +455,15 @@ public class IGV {
             String refFlatFileName = genomeBuilderDialog.getRefFlatFileName();
             String fastaFileName = genomeBuilderDialog.getFastaFileName();
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
-            String relativeSequenceLocation = genomeBuilderDialog.getSequenceLocation();
+            String sequenceLocation = genomeBuilderDialog.getSequenceLocation();
             String seqLocationOverride = genomeBuilderDialog.getSequenceLocationOverride();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
             String genomeFileName = genomeBuilderDialog.getArchiveFileName();
 
-            GenomeListItem genomeListItem = IGV.getInstance().getGenomeManager().defineGenome(
+            GenomeListItem genomeListItem = getGenomeManager().defineGenome(
                     genomeZipLocation, cytobandFileName, refFlatFileName,
-                    fastaFileName, chrAliasFile, relativeSequenceLocation, genomeDisplayName,
+                    fastaFileName, chrAliasFile, sequenceLocation, genomeDisplayName,
                     genomeId, genomeFileName, monitor, seqLocationOverride);
 
             if (genomeListItem != null) {
@@ -490,6 +487,9 @@ public class IGV {
 
             JOptionPane.showMessageDialog(mainFrame, "Failed to define the current genome " +
                     genomePath + "\n" + e.getMessage());
+        } catch (GenomeException e) {
+            log.error("Failed to define genome.",e);
+            MessageUtils.showMessage(e.getMessage());
         } catch (Exception e) {
             String genomePath = "";
             if (archiveFile != null) {
@@ -497,7 +497,7 @@ public class IGV {
             }
 
             log.error("Failed to define genome: " + genomePath, e);
-            MessageUtils.showMessage("Unexpected while importing a genome: " + e.getMessage());
+            MessageUtils.showMessage("Unexpected error while importing a genome: " + e.getMessage());
         } finally {
             if (bar != null) {
                 bar.close();
