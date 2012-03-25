@@ -28,6 +28,7 @@ and open the template in the editor.
 package org.broad.igv.feature;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,13 +41,17 @@ public class ChromosomeImpl implements Chromosome {
     private int length = 0;
     private List<Cytoband> cytobands;
 
-    public ChromosomeImpl(String name) {
-        this.name = name;
-    }
-
     public ChromosomeImpl(String name, int length) {
         this.name = name;
         this.length = length;
+
+        // Create a single "cytoband" to represent the entire chromosome.  This can be overriden explicitly
+        // if a cytoband file is loaded
+        final Cytoband cytoband = new Cytoband(name);
+        cytoband.setStart(0);
+        cytoband.setEnd(length);
+        cytobands = Arrays.asList(cytoband);
+
     }
 
 
