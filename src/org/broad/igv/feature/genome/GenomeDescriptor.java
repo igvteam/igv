@@ -29,6 +29,7 @@ package org.broad.igv.feature.genome;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author eflakes
@@ -47,6 +48,8 @@ public abstract class GenomeDescriptor {
     private String sequenceLocation;
     private boolean chromosomesAreOrdered = false;
     private boolean fasta = false;
+    private boolean fastaDirectory = false;
+    private String [] fastaFileNames;
 
     public GenomeDescriptor(String name,
                             int version,
@@ -58,7 +61,9 @@ public abstract class GenomeDescriptor {
                             String geneTrackName,
                             String sequenceLocation,
                             boolean chromosomesAreOrdered,
-                            boolean fasta) {
+                            boolean fasta,
+                            boolean fastaDirectory,
+                            String fastaFileNameString) {
         this.version = version;
         this.chrNamesAltered = chrNamesAltered;
         this.name = name;
@@ -70,6 +75,11 @@ public abstract class GenomeDescriptor {
         this.sequenceLocation = sequenceLocation;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
         this.fasta = fasta;
+        this.fastaDirectory = fastaDirectory;
+
+        if(fastaFileNameString != null) {
+            fastaFileNames = fastaFileNameString.split(",");
+        }
 
         // Fix for legacy .genome files
         if (sequenceLocation != null && sequenceLocation.startsWith("/")) {
@@ -98,6 +108,10 @@ public abstract class GenomeDescriptor {
 
     public String getGeneTrackName() {
         return geneTrackName;
+    }
+
+    public String[] getFastaFileNames() {
+        return fastaFileNames;
     }
 
     public abstract InputStream getCytoBandStream() throws IOException;
@@ -169,5 +183,9 @@ public abstract class GenomeDescriptor {
 
     public boolean isFasta() {
         return fasta;
+    }
+
+    public boolean hasCytobands() {
+        return cytoBandFileName != null && cytoBandFileName.length() > 0;
     }
 }

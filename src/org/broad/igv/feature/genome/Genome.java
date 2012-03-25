@@ -1,6 +1,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.Cytoband;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -59,9 +60,5 @@ public interface Genome {
 
     byte getReference(String chr, int pos);
 
-    void addChrAliases(Map<String,String> aliases);
 
-    void setChromosomeMap(LinkedHashMap<String,Chromosome> chromMap, boolean chromosomesAreOrdered);
-
-    void loadUserDefinedAliases();
 }
