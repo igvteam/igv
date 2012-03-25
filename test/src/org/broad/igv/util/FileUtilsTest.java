@@ -21,6 +21,7 @@ package org.broad.igv.util;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,12 +36,66 @@ public class FileUtilsTest {
 
 
     @Test
-    public void testGetRelativePath() {
+    public void testFindRelativePath() throws IOException {
         String sep = System.getProperty("file.separator");
         File basePath = new File("src");
         File targetPath = new File("lib" + sep + "vcf.jar");
-        String relPath = ".." + sep + "lib" + sep + "vcf.jar";
-        assertEquals(relPath, FileUtils.getRelativePath(basePath, targetPath));
+        String relPath = FileUtils.getRelativePath(basePath.getAbsolutePath(), targetPath.getAbsolutePath(), sep);
+        assertEquals( ".." + sep + "lib" + sep + "vcf.jar", relPath);
+    }
+
+    @Test
+    public void testGetRelativePathsUnix() {
+        assertEquals("stuff/xyz.dat", FileUtils.getRelativePath("/var/data/", "/var/data/stuff/xyz.dat",  "/"));
+        assertEquals("../../b/c", FileUtils.getRelativePath( "/a/x/y/","/a/b/c", "/"));
+        assertEquals("../../b/c", FileUtils.getRelativePath( "/m/n/o/a/x/y/", "/m/n/o/a/b/c", "/"));
+    }
+
+    @Test
+    public void testGetRelativePathWindows() {
+        String base = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
+        String target = "C:\\Windows\\Speech\\Common\\sapisvr.exe";
+
+        String relPath = FileUtils.getRelativePath(target, base, "\\");
+        assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
+    }
+
+    @Test
+    public void testGetRelativePathDirectoryToFile() {
+        String base = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
+        String target = "C:\\Windows\\Speech\\Common\\";
+
+        String relPath = FileUtils.getRelativePath(target, base, "\\");
+        assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
+    }
+
+    @Test
+    public void testGetRelativePathFileToDirectory() {
+        String base = "C:\\Windows\\Boot\\Fonts";
+        String target = "C:\\Windows\\Speech\\Common\\foo.txt";
+
+        String relPath = FileUtils.getRelativePath(target, base, "\\");
+        assertEquals("..\\..\\Boot\\Fonts", relPath);
+    }
+
+    @Test
+    public void testGetRelativePathDirectoryToDirectory() {
+        String base = "C:\\Windows\\Boot\\";
+        String target = "C:\\Windows\\Speech\\Common\\";
+        String expected = "..\\..\\Boot";
+
+        String relPath = FileUtils.getRelativePath(target, base, "\\");
+        assertEquals(expected, relPath);
+    }
+
+    @Test
+    public void testGetRelativePathDifferentDriveLetters() {
+        String base = "D:\\sources\\recovery\\RecEnv.exe";
+        String target = "C:\\Java\\workspace\\AcceptanceTests\\Standard test data\\geo\\";
+        String expected = target;
+
+        String relPath = FileUtils.getRelativePath(base, target, "\\");
+        assertEquals(expected, relPath);
     }
 
 

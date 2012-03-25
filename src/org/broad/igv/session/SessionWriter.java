@@ -283,7 +283,7 @@ public class SessionWriter {
         }
     }
 
-    private void writeResources(File outputFile, Element globalElement, Document document) {
+    private void writeResources(File outputFile, Element globalElement, Document document) throws IOException {
 
         Collection<ResourceLocator> resourceLocators = getResourceLocatorSet();
 
@@ -299,16 +299,6 @@ public class SessionWriter {
                     //RESOURCE ELEMENT
                     Element dataFileElement =
                             document.createElement(SessionElement.RESOURCE.getText());
-
-                    //TODO Decide whether to keep this in here.. Not really necessary.
-                    if (resourceLocator.isLocal()) {
-                        filepath = FileUtils.getRelativePath(outputFile.getParentFile(),
-                                resourceLocator.getPath());
-                        if (!(filepath.equals(resourceLocator.getPath()))) {
-                            dataFileElement.setAttribute(SessionAttribute.RELATIVE_PATH.getText(),
-                                    isRelativeDataFile);
-                        }
-                    }
 
                     //REQUIRED ATTRIBUTES - Cannot be null
                     dataFileElement.setAttribute(SessionAttribute.PATH.getText(), resourceLocator.getPath());

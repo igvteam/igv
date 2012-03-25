@@ -75,7 +75,8 @@ public class ZipUtils {
                     FileInputStream fis = new FileInputStream(f);
 
                     //create a  new zipentry.  Use a relative path
-                    String relativePath = FileUtils.getRelativePath(zipDir, f);
+                    String relativePath = FileUtils.getRelativePath(zipDir.getAbsolutePath(), f.getAbsolutePath(),
+                            System.getProperty("file.separator"));
                     String piPath = FileUtils.getPlatformIndependentPath(relativePath);
                     if (piPath.startsWith("./")) {
                         piPath = piPath.substring(2);
