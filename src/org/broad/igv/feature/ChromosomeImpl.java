@@ -57,16 +57,13 @@ public class ChromosomeImpl implements Chromosome {
         return cytobands;
     }
 
-    /**
-     * Add a cytoband, and adjust length if required.
-     */
-    public void addCytoband(Cytoband band) {
-        if (cytobands == null) cytobands = new ArrayList<Cytoband>();
-        cytobands.add(band);
-        length = Math.max(length, band.getEnd());
+
+    public void setCytobands(List<Cytoband> cytobands) {
+        this.cytobands = cytobands;
     }
 
     /**
+     * /**
      * Return the length of the chromosome, which is the end of the last cytoband
      */
     public int getLength() {

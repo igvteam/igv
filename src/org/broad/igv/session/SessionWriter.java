@@ -290,15 +290,12 @@ public class SessionWriter {
         if ((resourceLocators != null) && !resourceLocators.isEmpty()) {
 
             Element filesElement = document.createElement(SessionElement.RESOURCES.getText());
-            String isRelativeDataFile = "false";
-            String filepath = null;
 
             for (ResourceLocator resourceLocator : resourceLocators) {
                 if (resourceLocator.exists() || !(resourceLocator.getPath() == null)) {
 
                     //RESOURCE ELEMENT
-                    Element dataFileElement =
-                            document.createElement(SessionElement.RESOURCE.getText());
+                    Element dataFileElement = document.createElement(SessionElement.RESOURCE.getText());
 
                     //REQUIRED ATTRIBUTES - Cannot be null
                     dataFileElement.setAttribute(SessionAttribute.PATH.getText(), resourceLocator.getPath());

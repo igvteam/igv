@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Implementation of Sequence backed by an index fasta file
+ * Implementation of Sequence backed by an indexed fasta file
  *
  * @author jrobinso
  * @date 8/7/11

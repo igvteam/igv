@@ -222,6 +222,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
         idField = new JTextField();
         genomeDisplayNameLabel = new JLabel();
         genomeDisplayNameTextField = new JTextField();
+        sequenceDirectoryCB = new JCheckBox();
         fastaFileLabel = new JLabel();
         fastaFileTextField = new JTextField();
         fastaFileButton = new JButton();
@@ -251,65 +252,58 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
         //======== jPanel1 ========
         {
             jPanel1.setBorder(null);
-            jPanel1.setLayout(new GridBagLayout());
-            ((GridBagLayout)jPanel1.getLayout()).columnWidths = new int[] {15, 0, 0, 578, 83, 0};
-            ((GridBagLayout)jPanel1.getLayout()).rowHeights = new int[] {15, 0, 25, 0, 0, 25, 0};
-            ((GridBagLayout)jPanel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-            jPanel1.add(vSpacer3, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 5), 0, 0));
+            jPanel1.setLayout(null);
+            jPanel1.add(vSpacer3);
+            vSpacer3.setBounds(0, 22, 5, vSpacer3.getPreferredSize().height);
 
             //======== panel2 ========
             {
                 panel2.setBorder(new TitledBorder(null, "Required", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION,
                     new Font("Lucida Grande", Font.BOLD, 13)));
-                panel2.setLayout(new GridBagLayout());
-                ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 578, 83, 0};
-                ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                panel2.setLayout(null);
 
                 //---- genomeDisplayNameLabel2 ----
                 genomeDisplayNameLabel2.setText("ID");
                 genomeDisplayNameLabel2.setToolTipText("Unique identifier (e.g. hg18)");
                 genomeDisplayNameLabel2.setMaximumSize(new Dimension(84, 16));
                 genomeDisplayNameLabel2.setMinimumSize(new Dimension(84, 16));
-                genomeDisplayNameLabel2.setPreferredSize(new Dimension(84, 16));
-                panel2.add(genomeDisplayNameLabel2, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                genomeDisplayNameLabel2.setPreferredSize(new Dimension(14, 16));
+                panel2.add(genomeDisplayNameLabel2);
+                genomeDisplayNameLabel2.setBounds(15, 25, 93, 28);
 
                 //---- idField ----
                 idField.setToolTipText("A uniqe identifier for the genome");
-                panel2.add(idField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel2.add(idField);
+                idField.setBounds(130, 22, 555, idField.getPreferredSize().height);
 
                 //---- genomeDisplayNameLabel ----
                 genomeDisplayNameLabel.setText("Name");
-                panel2.add(genomeDisplayNameLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel2.add(genomeDisplayNameLabel);
+                genomeDisplayNameLabel.setBounds(15, 55, 175, 28);
 
                 //---- genomeDisplayNameTextField ----
                 genomeDisplayNameTextField.setToolTipText("The user-readable name of the genome");
                 genomeDisplayNameTextField.setPreferredSize(new Dimension(400, 28));
                 genomeDisplayNameTextField.setMinimumSize(new Dimension(25, 28));
-                panel2.add(genomeDisplayNameTextField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel2.add(genomeDisplayNameTextField);
+                genomeDisplayNameTextField.setBounds(130, 55, 555, genomeDisplayNameTextField.getPreferredSize().height);
+
+                //---- sequenceDirectoryCB ----
+                sequenceDirectoryCB.setText("Fasta file is a directory");
+                panel2.add(sequenceDirectoryCB);
+                sequenceDirectoryCB.setBounds(10, 90, 223, sequenceDirectoryCB.getPreferredSize().height);
 
                 //---- fastaFileLabel ----
                 fastaFileLabel.setText("Fasta file");
-                panel2.add(fastaFileLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                panel2.add(fastaFileLabel);
+                fastaFileLabel.setBounds(15, 115, 175, 29);
 
                 //---- fastaFileTextField ----
                 fastaFileTextField.setToolTipText("A FASTA data file");
                 fastaFileTextField.setPreferredSize(new Dimension(400, 28));
                 fastaFileTextField.setMinimumSize(new Dimension(25, 28));
-                panel2.add(fastaFileTextField, new GridBagConstraints(1, 2, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                panel2.add(fastaFileTextField);
+                fastaFileTextField.setBounds(130, 116, 555, 29);
 
                 //---- fastaFileButton ----
                 fastaFileButton.setLabel("...");
@@ -318,39 +312,45 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                         fastaFileButtonActionPerformed(e);
                     }
                 });
-                panel2.add(fastaFileButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                panel2.add(fastaFileButton);
+                fastaFileButton.setBounds(690, 115, 83, fastaFileButton.getPreferredSize().height);
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for(int i = 0; i < panel2.getComponentCount(); i++) {
+                        Rectangle bounds = panel2.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = panel2.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    panel2.setMinimumSize(preferredSize);
+                    panel2.setPreferredSize(preferredSize);
+                }
             }
-            jPanel1.add(panel2, new GridBagConstraints(1, 1, 4, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 0), 0, 0));
-            jPanel1.add(vSpacer1, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 5), 0, 0));
+            jPanel1.add(panel2);
+            panel2.setBounds(15, 40, 815, panel2.getPreferredSize().height);
+            jPanel1.add(vSpacer1);
+            vSpacer1.setBounds(0, 193, 5, 20);
 
             //======== panel1 ========
             {
                 panel1.setBorder(new TitledBorder(null, "Optional", TitledBorder.LEADING, TitledBorder.DEFAULT_POSITION,
                     new Font("Lucida Grande", Font.BOLD, 13)));
-                panel1.setLayout(new GridBagLayout());
-                ((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {0, 0, 578, 83, 0};
-                ((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {0, 0, 0, 25, 0, 0};
-                ((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+                panel1.setLayout(null);
 
                 //---- cytobandFileLabel ----
                 cytobandFileLabel.setText("Cytoband file");
-                panel1.add(cytobandFileLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(cytobandFileLabel);
+                cytobandFileLabel.setBounds(15, 25, 105, 29);
 
                 //---- cytobandFileTextField ----
                 cytobandFileTextField.setToolTipText("A cytoband data file");
                 cytobandFileTextField.setPreferredSize(new Dimension(400, 28));
                 cytobandFileTextField.setMinimumSize(new Dimension(25, 28));
-                panel1.add(cytobandFileTextField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(cytobandFileTextField);
+                cytobandFileTextField.setBounds(125, 22, 565, 29);
 
                 //---- cytobandFileButton ----
                 cytobandFileButton.setLabel("...");
@@ -359,23 +359,20 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                         cytobandFileButtonActionPerformed(e);
                     }
                 });
-                panel1.add(cytobandFileButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                panel1.add(cytobandFileButton);
+                cytobandFileButton.setBounds(698, 22, 83, cytobandFileButton.getPreferredSize().height);
 
                 //---- refFlatFileLabel ----
                 refFlatFileLabel.setText("Gene file");
-                panel1.add(refFlatFileLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(refFlatFileLabel);
+                refFlatFileLabel.setBounds(15, 55, 84, 29);
 
                 //---- refFlatFileTextField ----
                 refFlatFileTextField.setToolTipText("An annotation file");
                 refFlatFileTextField.setPreferredSize(new Dimension(400, 28));
                 refFlatFileTextField.setMinimumSize(new Dimension(25, 28));
-                panel1.add(refFlatFileTextField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(refFlatFileTextField);
+                refFlatFileTextField.setBounds(125, 56, 568, 29);
 
                 //---- refFlatFileButton ----
                 refFlatFileButton.setLabel("...");
@@ -384,22 +381,19 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                         refFlatFileButtonActionPerformed(e);
                     }
                 });
-                panel1.add(refFlatFileButton, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                panel1.add(refFlatFileButton);
+                refFlatFileButton.setBounds(698, 56, 83, refFlatFileButton.getPreferredSize().height);
 
                 //---- refFlatFileLabel2 ----
                 refFlatFileLabel2.setText("Alias file");
-                panel1.add(refFlatFileLabel2, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(refFlatFileLabel2);
+                refFlatFileLabel2.setBounds(15, 90, 84, 29);
 
                 //---- chrAliasField ----
                 chrAliasField.setPreferredSize(new Dimension(400, 28));
                 chrAliasField.setMinimumSize(new Dimension(25, 28));
-                panel1.add(chrAliasField, new GridBagConstraints(1, 2, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(chrAliasField);
+                chrAliasField.setBounds(125, 90, 568, 29);
 
                 //---- chrAliasButton ----
                 chrAliasButton.setLabel("...");
@@ -408,37 +402,59 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                         chrAliasButtonActionPerformed(e);
                     }
                 });
-                panel1.add(chrAliasButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
-                panel1.add(vSpacer2, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 5), 0, 0));
+                panel1.add(chrAliasButton);
+                chrAliasButton.setBounds(698, 90, 83, chrAliasButton.getPreferredSize().height);
+                panel1.add(vSpacer2);
+                vSpacer2.setBounds(6, 124, 84, 20);
 
                 //---- label2 ----
                 label2.setText("Supply a fasta URL if defining a web-hosted genome (optional, not common).");
                 label2.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                panel1.add(label2, new GridBagConstraints(0, 4, 4, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 5, 0), 0, 0));
+                panel1.add(label2);
+                label2.setBounds(15, 150, 775, label2.getPreferredSize().height);
 
                 //---- label3 ----
                 label3.setText("Fasta URL");
-                panel1.add(label3, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                panel1.add(label3);
+                label3.setBounds(15, 170, 84, 28);
 
                 //---- sequenceURLField ----
                 sequenceURLField.setToolTipText("A refFlat gene file");
                 sequenceURLField.setPreferredSize(new Dimension(400, 28));
                 sequenceURLField.setMinimumSize(new Dimension(25, 28));
-                panel1.add(sequenceURLField, new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                panel1.add(sequenceURLField);
+                sequenceURLField.setBounds(130, 170, 563, sequenceURLField.getPreferredSize().height);
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for(int i = 0; i < panel1.getComponentCount(); i++) {
+                        Rectangle bounds = panel1.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = panel1.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    panel1.setMinimumSize(preferredSize);
+                    panel1.setPreferredSize(preferredSize);
+                }
             }
-            jPanel1.add(panel1, new GridBagConstraints(1, 3, 4, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 0), 0, 0));
+            jPanel1.add(panel1);
+            panel1.setBounds(15, 220, 820, panel1.getPreferredSize().height);
+
+            { // compute preferred size
+                Dimension preferredSize = new Dimension();
+                for(int i = 0; i < jPanel1.getComponentCount(); i++) {
+                    Rectangle bounds = jPanel1.getComponent(i).getBounds();
+                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                }
+                Insets insets = jPanel1.getInsets();
+                preferredSize.width += insets.right;
+                preferredSize.height += insets.bottom;
+                jPanel1.setMinimumSize(preferredSize);
+                jPanel1.setPreferredSize(preferredSize);
+            }
         }
         add(jPanel1, BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -472,8 +488,10 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     }
 
     private void fastaFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        boolean chooseDir = sequenceDirectoryCB.isSelected();
         File directory = PreferenceManager.getInstance().getDefineGenomeInputDirectory();
-        File file = FileDialogUtils.chooseFile("Select Fasta File", directory, FileDialogUtils.LOAD);
+        File file = chooseDir ? FileDialogUtils.chooseDirectory("Select Fasta Directory", directory) :
+                FileDialogUtils.chooseFile("Select Fasta File", directory, FileDialogUtils.LOAD);
         if (file != null) {
             fastaFileTextField.setText(file.getAbsolutePath());
             PreferenceManager.getInstance().setDefineGenomeInputDirectory(file.getParentFile());
@@ -489,6 +507,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     private JTextField idField;
     private JLabel genomeDisplayNameLabel;
     private JTextField genomeDisplayNameTextField;
+    private JCheckBox sequenceDirectoryCB;
     private JLabel fastaFileLabel;
     private JTextField fastaFileTextField;
     private JButton fastaFileButton;

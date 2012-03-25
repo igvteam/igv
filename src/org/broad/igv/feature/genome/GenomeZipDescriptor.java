@@ -42,9 +42,11 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
                                ZipFile genomeZipFile,
                                Map<String, ZipEntry> zipEntries,
                                boolean chromosomesAreOrdered,
-                               boolean fasta) {
+                               boolean fasta,
+                               boolean fastaDirectory,
+                               String fastaFileNameString) {
         super(name, version, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
-                sequenceLocation, chromosomesAreOrdered, fasta);
+                sequenceLocation, chromosomesAreOrdered, fasta, fastaDirectory, fastaFileNameString);
         this.zipEntries = zipEntries;
         this.genomeZipFile = genomeZipFile;
 

@@ -461,6 +461,8 @@ public class IGV {
             String genomeId = genomeBuilderDialog.getGenomeId();
             String genomeFileName = genomeBuilderDialog.getArchiveFileName();
 
+
+
             GenomeListItem genomeListItem = getGenomeManager().defineGenome(
                     genomeZipLocation, cytobandFileName, refFlatFileName,
                     fastaFileName, chrAliasFile, sequenceLocation, genomeDisplayName,

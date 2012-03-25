@@ -64,6 +64,8 @@ public class FileUtils {
 
     static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
+    static final String FILE_SEP = System.getProperty("file.separator");
+
 
     /**
      * Replace all occurences of str1 with str2 in all files in inputDirectory.  Write the modified files
@@ -157,8 +159,8 @@ public class FileUtils {
      * If one of the provided resources does not exist, it is assumed to be a file unless it ends with '/' or
      * '\'.
      *
-     * @param targetPath targetPath is calculated to this file
-     * @param basePath basePath is calculated from this file
+     * @param targetPath    targetPath is calculated to this file
+     * @param basePath      basePath is calculated from this file
      * @param pathSeparator directory separator. The platform default is not assumed so that we can test Unix behaviour when running on Windows (for example)
      * @return
      */
@@ -238,6 +240,12 @@ public class FileUtils {
 
     static public String getPlatformIndependentPath(String path) {
         return path.replace('\\', '/');
+    }
+
+
+    // Convenience method
+    public static String getRelativePath(String basePath, String targetPath) {
+        return getRelativePath(basePath, targetPath, FILE_SEP);
     }
 
     /**

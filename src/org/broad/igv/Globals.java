@@ -55,7 +55,7 @@ public class Globals {
      */
     final public static String GENOME_FILE_EXTENSION = ".genome";
     final public static String ZIP_EXTENSION = ".zip";
-    final public static String FASTA_GZIP_FILE_EXTENSION = ".gz";
+    final public static String GZIP_FILE_EXTENSION = ".gz";
     final public static String GENOME_ARCHIVE_PROPERTY_FILE_NAME = "property.txt";
     final public static String GENOME_ARCHIVE_ID_KEY = "id";
     final public static String GENOME_ARCHIVE_NAME_KEY = "name";

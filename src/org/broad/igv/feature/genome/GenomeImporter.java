@@ -22,20 +22,16 @@
  */
 package org.broad.igv.feature.genome;
 
-import org.apache.commons.io.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 
-import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 /**
  * /**
@@ -103,23 +99,46 @@ public class GenomeImporter {
         File archive = null;
         FileWriter propertyFileWriter = null;
         try {
+            boolean fastaDirectory = false;
+            List<String> fastaFileNames = new ArrayList<String>();
 
-            String fastaPath = sequenceInputFile.getAbsolutePath();
-            String fastaIndexPath = fastaPath + ".fai";
             if (sequenceInputFile != null) {
 
-                if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.ZIP_EXTENSION)) {
+                List<String> fastaIndexPathList = new ArrayList<String>();
+
+                if (sequenceInputFile.isDirectory()) {
+                    fastaDirectory = true;
+                    List<File> files = getSequenceFiles(sequenceInputFile);
+                    for (File file : files) {
+                        if (file.getName().toLowerCase().endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                            String msg = "<html>Error.  One or more fasta files are gzipped: " + file.getName() +
+                                    "<br>All fasta files must be gunzipped prior to importing.";
+                            throw new GenomeException(msg);
+                        }
+                        String fastaPath = file.getAbsolutePath();
+                        String fastaIndexPath = fastaPath + ".fai";
+                        File indexFile = new File(fastaIndexPath);
+                        if (!indexFile.exists()) {
+                            FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
+                        }
+                        fastaIndexPathList.add(fastaIndexPath);
+                        fastaFileNames.add(file.getName());
+                    }
+                } else if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.ZIP_EXTENSION)) {
                     String msg = "Error.  Zip archives are not supported.  Please select a fasta file.";
                     throw new GenomeException(msg);
-                 } else if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.FASTA_GZIP_FILE_EXTENSION)) {
+                } else if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.GZIP_FILE_EXTENSION)) {
                     String msg = "Error.  GZipped files are not supported.  Please select a non-gzipped fasta file.";
                     throw new GenomeException(msg);
                 } else {
                     // Single fasta -- index
+                    String fastaPath = sequenceInputFile.getAbsolutePath();
+                    String fastaIndexPath = fastaPath + ".fai";
                     File indexFile = new File(fastaIndexPath);
                     if (!indexFile.exists()) {
                         FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
                     }
+                    fastaIndexPathList.add(fastaIndexPath);
                 }
 
                 // Create "cytoband" file.  This file is created to maintain compatibility with early versions of
@@ -128,17 +147,20 @@ public class GenomeImporter {
                     String cytobandFileName = genomeId + "_cytoband.txt";
                     cytobandFile = new File(tmpdir, cytobandFileName);
                     cytobandFile.deleteOnExit();
-                    generateCytobandFile(fastaIndexPath, cytobandFile);
+                    generateCytobandFile(fastaIndexPathList, cytobandFile);
                 }
             }
 
             // Create Property File for genome archive
             if (sequenceOutputLocationOverride != null && sequenceOutputLocationOverride.length() > 0) {
                 sequenceLocation = sequenceOutputLocationOverride;
+            } else {
+                sequenceLocation = FileUtils.getRelativePath(archiveOutputLocation.getAbsolutePath(), sequenceLocation);
             }
-            propertyFile = createGenomePropertyFile(genomeId, genomeDisplayName,
-                    sequenceLocation, refFlatFile, cytobandFile,
-                    chrAliasFile, tmpdir);
+
+
+            propertyFile = createGenomePropertyFile(genomeId, genomeDisplayName, sequenceLocation, refFlatFile,
+                    cytobandFile, chrAliasFile, fastaDirectory, fastaFileNames, tmpdir);
             archive = new File(archiveOutputLocation, genomeFileName);
             File[] inputFiles = {refFlatFile, cytobandFile, propertyFile, chrAliasFile};
             Utilities.createZipFile(archive, inputFiles);
@@ -159,16 +181,52 @@ public class GenomeImporter {
                 }
             }
 
-            if(propertyFile != null) propertyFile.delete();
-            if(cytobandFile != null) cytobandFile.delete();
+            if (propertyFile != null) propertyFile.delete();
+            if (cytobandFile != null) cytobandFile.delete();
             org.apache.commons.io.FileUtils.deleteDirectory(tmpdir);
         }
         return archive;
     }
 
-    private void generateCytobandFile(String fastaIndexPath, File cytobandFile) throws IOException {
 
-        FastaSequenceIndex fai = new FastaSequenceIndex(fastaIndexPath);
+    private List<File> getSequenceFiles(File sequenceDir) {
+        ArrayList<File> files = new ArrayList();
+        for (File f : sequenceDir.listFiles()) {
+            if (f.getName().startsWith(".") || f.isDirectory() || f.getName().endsWith(".fai")) {
+                continue;
+            } else {
+                files.add(f);
+            }
+        }
+
+        return files;
+    }
+
+
+    /**
+     * Generate a "cytoband" file.  Purpose is to maintain compatibility with earlier versions of IGV which use this
+     * file to determine chromosome lengths.
+     *
+     * @param fastaIndexPathList
+     * @param cytobandFile
+     * @throws IOException
+     */
+    private void generateCytobandFile(List<String> fastaIndexPathList, File cytobandFile) throws IOException {
+
+        // Build a chrom name -> size map
+        Map<String, Integer> chromSizes = new HashMap<String, Integer>();
+        List<String> chromNames = new ArrayList();
+        for (String fastaIndexPath : fastaIndexPathList) {
+            FastaSequenceIndex fai = new FastaSequenceIndex(fastaIndexPath);
+            final Set<String> sequenceNames = fai.getSequenceNames();
+            chromNames.addAll(sequenceNames);
+            for(String chr : sequenceNames) {
+                chromSizes.put(chr, fai.getSequenceSize(chr));
+            }
+        }
+        if (fastaIndexPathList.size() > 1) {
+            Collections.sort(chromNames, new GenomeImpl.ChromosomeComparator());
+        }
 
         PrintWriter cytobandFileWriter = null;
         try {
@@ -178,11 +236,9 @@ public class GenomeImporter {
             cytobandFileWriter = new PrintWriter(new FileWriter(cytobandFile, true));
 
 
-            Collection<String> chrNames = fai.getSequenceNames();
-
             // Generate a single cytoband per chromosome.  Length == chromosome length
-            for (String chrName : chrNames) {
-                int chrLength = fai.getSequenceSize(chrName);
+            for (String chrName : chromNames) {
+                int chrLength = chromSizes.get(chrName);
                 cytobandFileWriter.println(chrName + "\t0\t" + chrLength);
             }
         } finally {
@@ -203,6 +259,7 @@ public class GenomeImporter {
      * @param relativeSequenceLocation
      * @param refFlatFile
      * @param cytobandFile
+     * @param fastaFileNames
      * @return
      */
     public File createGenomePropertyFile(String genomeId,
@@ -211,6 +268,8 @@ public class GenomeImporter {
                                          File refFlatFile,
                                          File cytobandFile,
                                          File chrAliasFile,
+                                         boolean fastaDirectory,
+                                         List<String> fastaFileNames,
                                          File tmpdir) throws IOException {
 
         PrintWriter propertyFileWriter = null;
@@ -222,7 +281,19 @@ public class GenomeImporter {
             // Add the new property file to the archive
             propertyFileWriter = new PrintWriter(new FileWriter(propertyFile));
 
-            propertyFileWriter.println("ordered=true");  // For backward compatibility
+            propertyFileWriter.println("fasta=true"); // Fasta is the only format supported now
+
+            propertyFileWriter.println("fastaDirectory=" + fastaDirectory);
+
+            if (fastaDirectory) {
+                propertyFileWriter.print("fastaFiles=");
+                for (String fif : fastaFileNames) {
+                    propertyFileWriter.print(fif + ",");
+                }
+                propertyFileWriter.println();
+            }
+
+            propertyFileWriter.println("ordered=" + !fastaDirectory);
             if (genomeId != null) {
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_ID_KEY + "=" + genomeId);
             }
@@ -254,6 +325,5 @@ public class GenomeImporter {
         }
 
     }
-
 
 }

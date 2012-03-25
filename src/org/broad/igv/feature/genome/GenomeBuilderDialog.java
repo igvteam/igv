@@ -45,8 +45,8 @@ public class GenomeBuilderDialog extends OkCancelDialog {
         setSize(800, 500);
 
         JPanel contentPane = getDialogPanel();
-        contentPane.add(builderPane);
-        setResizable(false);
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(builderPane, BorderLayout.CENTER);
         setLocationRelativeTo(igv.getMainFrame());
         setOkButtonText(" Save ");
     }
@@ -84,13 +84,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
     }
 
     public String getSequenceLocation() {
-
-        String name = getFastaFileName();
-        if (name != null && !name.trim().equals("")) {
-            return getGenomeId() ;
-        } else {
-            return null;
-        }
+        return getFastaFileName();
     }
 
     public String getSequenceLocationOverride() {

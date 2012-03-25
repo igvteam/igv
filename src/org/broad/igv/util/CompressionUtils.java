@@ -155,8 +155,8 @@ public class CompressionUtils {
         InputStream inputStream = null;
         OutputStream outputStream = null;
         if (destPath == null) {
-            if (srcPath.endsWith(Globals.FASTA_GZIP_FILE_EXTENSION)) {
-                destPath = srcPath.substring(0, srcPath.length() - Globals.FASTA_GZIP_FILE_EXTENSION.length());
+            if (srcPath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                destPath = srcPath.substring(0, srcPath.length() - Globals.GZIP_FILE_EXTENSION.length());
             } else {
                 throw new IllegalArgumentException(srcPath + " does not have a gzip extension and destPath is null. Don't know where to write out");
             }
