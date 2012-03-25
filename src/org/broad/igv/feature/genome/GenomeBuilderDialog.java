@@ -43,6 +43,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
         setTitle("Import Genome");
 
         setSize(800, 500);
+        setResizable(false);
 
         JPanel contentPane = getDialogPanel();
         contentPane.setLayout(new BorderLayout());
@@ -89,7 +90,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
 
     public String getSequenceLocationOverride() {
         String seqLocation = builderPane.getSequenceURL();
-        if(seqLocation == null && seqLocation.trim().length() == 0) {
+        if (seqLocation == null && seqLocation.trim().length() == 0) {
             return null;
         }
         return seqLocation;
@@ -108,12 +109,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
 
         // Passed validation now get genome location and check it
         if (isOk) {
-
-            if (Globals.IS_MAC) {
-                genomeArchiveFile = builderPane.showGenomeArchiveDirectoryChooser();
-            } else {
-                genomeArchiveFile = builderPane.showGenomeArchiveDirectoryChooser();
-            }
+            genomeArchiveFile = builderPane.showGenomeArchiveDirectoryChooser();
             if (genomeArchiveFile == null) {
                 isOk = false;
             }

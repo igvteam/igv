@@ -94,7 +94,6 @@ abstract public class OkCancelDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         contentPanel = new javax.swing.JPanel();
-        javax.swing.JPanel buttonPanel = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
@@ -106,6 +105,8 @@ abstract public class OkCancelDialog extends javax.swing.JDialog {
         contentPanel.setLayout(new java.awt.BorderLayout(10, 10));
         getContentPane().add(contentPanel, java.awt.BorderLayout.CENTER);
 
+        JPanel buttonPanel = new javax.swing.JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setFocusCycleRoot(true);
 
         okButton.setText("  Ok  ");
@@ -117,6 +118,7 @@ abstract public class OkCancelDialog extends javax.swing.JDialog {
                 okButtonActionPerformed(evt);
             }
         });
+        okButton.setAlignmentX(1);
         buttonPanel.add(okButton);
 
         cancelButton.setText("Cancel");
@@ -130,6 +132,7 @@ abstract public class OkCancelDialog extends javax.swing.JDialog {
                 cancelButtonActionPerformed(evt);
             }
         });
+        cancelButton.setAlignmentX(1);
         buttonPanel.add(cancelButton);
 
         getContentPane().add(buttonPanel, java.awt.BorderLayout.PAGE_END);
