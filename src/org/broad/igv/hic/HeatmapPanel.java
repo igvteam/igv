@@ -151,21 +151,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
     }
-    public BufferedImage getImage(MatrixZoomData zd) {
-
-        int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-        int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-
-        int wh = Math.max(maxBinCountX, maxBinCountY);
-
-        BufferedImage image = (BufferedImage) createImage(wh, wh);
-        Graphics g = image.createGraphics();
-
-        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
-
-        return image;
-
-    }
 
     /**
      * Return the specified image tile, scaled by scaleFactor

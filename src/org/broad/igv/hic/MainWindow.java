@@ -689,20 +689,10 @@ public class MainWindow extends JFrame {
 
     private void saveImageActionPerformed(ActionEvent e) {
         if (zd != null) {
-            //MatrixZoomData.ScaleParameters scaleParameters = zd.computeScaleParameters();
             BufferedImage image = (BufferedImage) createImage(1000,1000);
             Graphics g = image.createGraphics();
-           // BufferedImage img = heatmapPanel.getImage(zd);
             panel3.paint(g);
-             //   int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-             //   int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
 
-
-               // renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
-
-               // return image;
-
-            //}
             JFileChooser fc = new JFileChooser();
             fc.showSaveDialog(this);
             File file = fc.getSelectedFile();
@@ -717,7 +707,7 @@ public class MainWindow extends JFrame {
                         if (ext.equals(aStr))
                             fmt = ext;
                 }
-                ImageIO.write(image, fmt, file);
+                ImageIO.write(image.getSubimage(0,0,600,600), fmt, file);
             }
             catch (IOException ie) {
                 System.err.println("Unable to write "+file + ": " +ie);
