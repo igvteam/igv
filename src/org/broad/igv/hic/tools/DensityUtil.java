@@ -22,7 +22,7 @@ public class DensityUtil {
 
     public static void main(String[] args) throws IOException {
 
-        String genomeID = "hg18";
+        String genomeID = "b37";
         List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
         calculate(chromosomes);
         read("/xchip/igv/dev/hic/testFiles/test.hic.densities");

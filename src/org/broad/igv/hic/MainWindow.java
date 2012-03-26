@@ -8,6 +8,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.*;
+import javax.imageio.ImageIO;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
@@ -381,7 +382,7 @@ public class MainWindow extends JFrame {
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-
+        saveToImage.setEnabled(true);
         int newBinSize = zd.getBinSize();
 
         // Scale in basepairs per screen pixel
@@ -421,7 +422,7 @@ public class MainWindow extends JFrame {
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
-
+        saveToImage.setEnabled(true);
 
         resolutionSlider.setValue(zoom);
         xContext.setZoom(zoom, scale);
@@ -522,6 +523,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMaximum(20000);
             colorRangeSlider.setMinimum(0);
             zd = null;
+            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
 
         } catch (IOException e1) {
@@ -536,6 +538,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
+            saveToImage.setEnabled(false);
             load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -549,6 +552,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
+            saveToImage.setEnabled(false);
             load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -564,6 +568,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
             zd = null;
+            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
 
         } catch (IOException e1) {
@@ -579,6 +584,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMajorTickSpacing(100);
             colorRangeSlider.setUpperValue(1500);
             zd = null;
+            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all.hic");
 
         } catch (IOException e1) {
@@ -594,6 +600,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
+            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120313.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -608,6 +615,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
+            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120316.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -622,6 +630,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
+            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/COOL-AID_Elena_Mouse_December11.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -675,6 +684,33 @@ public class MainWindow extends JFrame {
         repaint();
     }
 
+    private void saveImageActionPerformed(ActionEvent e) {
+        if (zd != null) {
+            //MatrixZoomData.ScaleParameters scaleParameters = zd.computeScaleParameters();
+            BufferedImage img = heatmapPanel.getImage(zd);
+
+            JFileChooser fc = new JFileChooser();
+            fc.showSaveDialog(this);
+            File file = fc.getSelectedFile();
+            try {
+                // default if they give no format or invalid format
+                String fmt = "jpg";
+                int ind = file.getName().indexOf(".");
+                if (ind != -1) {
+                    String ext = file.getName().substring(ind+1);
+                    String[] strs = ImageIO.getWriterFormatNames();
+                    for (String aStr : strs)
+                        if (ext.equals(aStr))
+                            fmt = ext;
+                }
+                ImageIO.write(img, fmt, file);
+            }
+            catch (IOException ie) {
+                System.err.println("Unable to write "+file + ": " +ie);
+            }
+        }
+    }
+    
     private void mainWindowResized(ComponentEvent e) {
         // TODO add your code here
     }
@@ -1224,7 +1260,15 @@ public class MainWindow extends JFrame {
         });
         fileMenu.add(loadDmelDataset);
         fileMenu.addSeparator();
-
+        saveToImage = new JMenuItem();
+        saveToImage.setText("Save to image");
+        saveToImage.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveImageActionPerformed(e);
+            }
+        });
+        saveToImage.setEnabled(false);
+        fileMenu.add(saveToImage);
         //---- exit ----
         JMenuItem exit = new JMenuItem();
         exit.setText("Exit");
@@ -1274,6 +1318,7 @@ public class MainWindow extends JFrame {
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
+    private JMenuItem saveToImage;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
