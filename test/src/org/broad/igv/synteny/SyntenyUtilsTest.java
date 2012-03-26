@@ -21,6 +21,7 @@ package org.broad.igv.synteny;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class SyntenyUtilsTest {
     String testMappings = TestUtils.DATA_DIR + "/igv/hg18_to_mm8.regions";
 
     @Test
-    public void testLoadMappings() {
+    public void testLoadMappings() throws IOException {
 
         //region R:chr2:chr2:D10 chr2 139839284 176464687 + chr2 39414197 74293149 +
 
@@ -47,8 +48,8 @@ public class SyntenyUtilsTest {
         String mouseChr = "chr2";
         int mousePosition = 39414197;
 
-        Map<String, List<SyntenyMapping>> mappings = SyntenyUtils.loadMappings(testMappings, false);
-        SyntenyMapping mapping = SyntenyUtils.getMappingContaining(mappings.get(humanChr), humanPosition);
+        Map<String, List<Mapping>> mappings = SyntenyUtils.loadMappings(testMappings, false);
+        Mapping mapping = SyntenyUtils.getMappingContaining(mappings.get(humanChr), humanPosition);
         assertNotNull(mapping);
 
         double toPosition = mapping.mapPosition(humanPosition);
