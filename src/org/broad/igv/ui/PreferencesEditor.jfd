@@ -5007,7 +5007,7 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Browse...</string> 
+             <string>Move...</string> 
             </void> 
             <void property="name"> 
              <string>igvDirectoryButton</string> 
