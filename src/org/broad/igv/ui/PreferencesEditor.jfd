@@ -5007,7 +5007,7 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Move...</string> 
+             <string>Browse...</string> 
             </void> 
             <void property="name"> 
              <string>igvDirectoryButton</string> 
@@ -5029,7 +5029,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>345</int> 
+             <int>343</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 

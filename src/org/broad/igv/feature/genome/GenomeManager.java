@@ -101,7 +101,6 @@ public class GenomeManager {
 
         try {
             log.info("Loading genome: " + genomePath);
-            GenomeDescriptor genomeDescriptor = null;
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
@@ -111,7 +110,7 @@ public class GenomeManager {
 
                 File archiveFile = getArchiveFile(genomePath);
 
-                genomeDescriptor = parseGenomeArchiveFile(archiveFile);
+                GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
                 Map<String, String> aliases = loadAliasFile(genomeDescriptor);
 
                 final String id = genomeDescriptor.getId();
@@ -137,6 +136,8 @@ public class GenomeManager {
                 if (!Globals.isHeadless()) {
                     updateGeneTrack(genomeDescriptor);
                 }
+
+                genomeDescriptor.close();
 
 
             } else if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
@@ -265,7 +266,7 @@ public class GenomeManager {
      * Load the cytoband file specified in the genome descriptor.
      *
      * @param genomeDescriptor
-     * @return  Cytobands as a map keyed by chromosome
+     * @return Cytobands as a map keyed by chromosome
      */
     private LinkedHashMap<String, List<Cytoband>> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
         InputStream is = null;
@@ -383,7 +384,6 @@ public class GenomeManager {
             return null;
         }
 
-
         GenomeDescriptor genomeDescriptor = null;
         Map<String, ZipEntry> zipEntries = new HashMap();
         ZipFile zipFile = new ZipFile(f);
@@ -403,14 +403,9 @@ public class GenomeManager {
                     Properties properties = new Properties();
                     properties.load(inputStream);
 
-                    // Cytoband
                     String cytobandZipEntryName = properties.getProperty(Globals.GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
-
-                    // RefFlat
                     String geneFileName = properties.getProperty(Globals.GENOME_ARCHIVE_GENE_FILE_KEY);
-
                     String chrAliasFileName = properties.getProperty(Globals.GENOME_CHR_ALIAS_FILE_KEY);
-
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
                     if ((sequenceLocation != null) && !HttpUtils.getInstance().isURL(sequenceLocation)) {
@@ -426,24 +421,13 @@ public class GenomeManager {
                         sequenceLocation.replace('\\', '/');
                     }
 
-
-                    int version = 0;
-                    String versionString = properties.getProperty(Globals.GENOME_ARCHIVE_VERSION_KEY);
-                    if (versionString != null) {
-                        try {
-                            version = Integer.parseInt(versionString);
-                        } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
-                        }
-                    }
-
                     boolean chrNamesAltered = false;
                     String chrNamesAlteredString = properties.getProperty("filenamesAltered");
                     if (chrNamesAlteredString != null) {
                         try {
                             chrNamesAltered = Boolean.parseBoolean(chrNamesAlteredString);
                         } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
+                            log.error("Error parsing chrNamesAlteredString string: " + chrNamesAlteredString);
                         }
                     }
 
@@ -453,7 +437,7 @@ public class GenomeManager {
                         try {
                             fasta = Boolean.parseBoolean(fastaString);
                         } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
+                            log.error("Error parsing fastaString string: " + fastaString);
                         }
                     }
 
@@ -464,7 +448,7 @@ public class GenomeManager {
                         try {
                             fastaDirectory = Boolean.parseBoolean(fastaString);
                         } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
+                            log.error("Error parsing fastaDirectoryString string: " + fastaDirectoryString);
                         }
                     }
 
@@ -486,7 +470,6 @@ public class GenomeManager {
                     // The new descriptor
                     genomeDescriptor = new GenomeZipDescriptor(
                             properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
-                            version,
                             chrNamesAltered,
                             properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
                             cytobandZipEntryName,
@@ -568,7 +551,6 @@ public class GenomeManager {
                         genomeRecord = genomeRecord.trim();
 
                         String[] fields = genomeRecord.split("\t");
-
                         if ((fields != null) && (fields.length >= 3)) {
 
                             // Throw away records we don't want to see
@@ -577,41 +559,18 @@ public class GenomeManager {
                                     continue;
                                 }
                             }
-                            int version = 0;
-                            if (fields.length > 3) {
-                                try {
-                                    version = Integer.parseInt(fields[3]);
-                                } catch (Exception e) {
-                                    log.error("Error parsing genome version: " + fields[0], e);
-                                }
+
+                            try {
+                                String name = fields[0];
+                                String url = fields[1];
+                                String id = fields[2];
+                                GenomeListItem item = new GenomeListItem(name, url, id, false);
+                                serverGenomeArchiveList.add(item);
+                            } catch (Exception e) {
+                                log.error("Error reading a line from server genome list" + " line was: [" +
+                                        genomeRecord + "]", e);
                             }
 
-                            //String displayableName, String url, String id, int version, boolean isUserDefined
-                            String name = fields[0];
-                            String url = fields[1];
-                            String id = fields[2];
-
-                            boolean valid = true;
-                            if (url.length() == 0) {
-                                log.error("Genome entry : " + name + " has an empty URL string.  Check for extra tabs in the definition file: " +
-                                        PreferenceManager.getInstance().getGenomeListURL());
-                                valid = false;
-                            }
-                            // TODO -- more validation
-
-
-                            if (valid) {
-
-
-                                try {
-                                    GenomeListItem item = new GenomeListItem(fields[0], fields[1], fields[2], false);
-                                    serverGenomeArchiveList.add(item);
-                                } catch (Exception e) {
-                                    log.error(
-                                            "Error reading a line from server genome list" + " line was: [" + genomeRecord + "]",
-                                            e);
-                                }
-                            }
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
                         }

@@ -18,6 +18,8 @@
 
 package org.broad.igv.feature.genome;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -27,11 +29,13 @@ import java.util.zip.ZipFile;
 
 
 public class GenomeZipDescriptor extends GenomeDescriptor {
+
+    private static Logger log = Logger.getLogger(GenomeZipDescriptor.class);
+
     private Map<String, ZipEntry> zipEntries;
     private ZipFile genomeZipFile;
 
     public GenomeZipDescriptor(String name,
-                               int version,
                                boolean chrNamesAltered,
                                String id,
                                String cytoBandFileName,
@@ -45,7 +49,7 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
                                boolean fasta,
                                boolean fastaDirectory,
                                String fastaFileNameString) {
-        super(name, version, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
+        super(name, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
                 sequenceLocation, chromosomesAreOrdered, fasta, fastaDirectory, fastaFileNameString);
         this.zipEntries = zipEntries;
         this.genomeZipFile = genomeZipFile;
@@ -82,6 +86,15 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
             return null;
         }
         return genomeZipFile.getInputStream(zipEntries.get(fileName));
+    }
+
+
+    public void close() {
+        try {
+            genomeZipFile.close();
+        } catch (IOException e) {
+            log.error("Error closing genomeZipFile", e);
+        }
     }
 
 }

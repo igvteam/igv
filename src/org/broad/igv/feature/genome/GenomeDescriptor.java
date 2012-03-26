@@ -37,7 +37,7 @@ import java.util.List;
 public abstract class GenomeDescriptor {
 
     private String name;
-    private int version;
+    //private int version;
     private boolean chrNamesAltered;
     private String id;
     protected String cytoBandFileName;
@@ -52,7 +52,6 @@ public abstract class GenomeDescriptor {
     private String [] fastaFileNames;
 
     public GenomeDescriptor(String name,
-                            int version,
                             boolean chrNamesAltered,
                             String id,
                             String cytoBandFileName,
@@ -64,7 +63,6 @@ public abstract class GenomeDescriptor {
                             boolean fasta,
                             boolean fastaDirectory,
                             String fastaFileNameString) {
-        this.version = version;
         this.chrNamesAltered = chrNamesAltered;
         this.name = name;
         this.id = id;
@@ -151,19 +149,6 @@ public abstract class GenomeDescriptor {
         }
     }
 
-    /**
-     * @return the version
-     */
-    public int getVersion() {
-        return version;
-    }
-
-    /**
-     * @param version the version to set
-     */
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public boolean isChromosomesAreOrdered() {
         return chromosomesAreOrdered;
@@ -188,4 +173,6 @@ public abstract class GenomeDescriptor {
     public boolean hasCytobands() {
         return cytoBandFileName != null && cytoBandFileName.length() > 0;
     }
+
+    public abstract void close();
 }

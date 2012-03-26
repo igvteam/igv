@@ -226,7 +226,8 @@ public class DirectoryManager {
                  log.info("Response from 'rm -rf': " + result);
             }
         } else {
-            FileUtils.deleteDirectory(oldDirectory);
+            // The apache commons FileUtils is not working reliably
+            org.broad.igv.util.FileUtils.deleteDir(oldDirectory);
         }
     }
 
