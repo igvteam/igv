@@ -44,7 +44,7 @@ public class Globals {
     private static boolean suppressMessages = false;
     private static boolean batch = false;
     private static boolean testing = false;
-    public static int CONNECT_TIMEOUT = 10000;        // 10 seconds
+    public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
     /**
      * Field description
