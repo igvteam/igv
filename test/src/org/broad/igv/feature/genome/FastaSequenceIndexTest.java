@@ -108,22 +108,29 @@ public class FastaSequenceIndexTest {
         }
 
         FastaSequenceIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
-        assertEquals(58, entry.getBasesPerLine());
-        assertEquals(59, entry.getBytesPerLine());
+        int tAbasesPL = 58;
+
+        int tAbytesPL = tAbasesPL + 1;
+
+        assertEquals(tAbasesPL, entry.getBasesPerLine());
+        assertEquals(tAbytesPL, entry.getBytesPerLine());
         assertEquals(10, entry.getPosition());
-        int tAsize = 7 * 58 + 29;
+        int tAsize = 7 * tAbasesPL + 29;
         assertEquals(tAsize, entry.getSize());
         assertEquals(tA, entry.getContig());
 
         entry = index.getIndexEntry(tG);
-        assertEquals(56, entry.getBasesPerLine());
-        assertEquals(57, entry.getBytesPerLine());
+
+        int tGbasesPL = 56;
+        int tGbytesPL = tGbasesPL + 1;
+        assertEquals(tGbasesPL, entry.getBasesPerLine());
+        assertEquals(tGbytesPL, entry.getBytesPerLine());
         //Starting position is from tA start + tA length + length of header line
         //Since "size" is number of bases, and "position" is bytes, this
         //may look weird
         long tGpos = tAsize + 8 + index.getIndexEntry(tA).getPosition() + 10;
         assertEquals(tGpos, entry.getPosition());
-        int tGsize = 5 * 56 + 26;
+        int tGsize = 5 * tGbasesPL + 26;
         assertEquals(tGsize, entry.getSize());
         assertEquals(tG, entry.getContig());
 

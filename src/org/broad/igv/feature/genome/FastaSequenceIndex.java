@@ -23,9 +23,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
-import java.io.BufferedReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -75,10 +73,10 @@ public class FastaSequenceIndex {
     public static void createIndexFile(String inputPath, String outputPath) throws DataLoadException, IOException {
 
         AsciiLineReader reader = null;
-        FileWriter writer = null;
+        BufferedWriter writer = null;
 
         reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
-        writer = new FileWriter(outputPath);
+        writer = new BufferedWriter(new FileWriter(outputPath));
         String line = null;
         String curContig = null;
         int basesPerLine = -1, bytesPerLine = -1;
@@ -148,11 +146,17 @@ public class FastaSequenceIndex {
         writer.close();
     }
 
-    private static void writeLine(FileWriter writer, String contig, long size, long location, int basesPerLine, int bytesPerLine) throws IOException {
+    private static void writeLine(Writer writer, String contig, long size, long location, int basesPerLine, int bytesPerLine) throws IOException {
         String delim = "\t";
-        String newline = "\n";
         String line = contig + delim + size + delim + location + delim + basesPerLine + delim + bytesPerLine;
-        writer.write(line + newline);
+        writer.write(line);
+        //We infer the newline character based on bytesPerLine - basesPerLine
+        //Fasta file may not have been created on this platform, want to keep the index and fasta file consistent
+        String newline = "\n";
+        if (bytesPerLine - basesPerLine == 2) {
+            newline = "\r\n";
+        }
+        writer.write(newline);
     }
 
     /**
