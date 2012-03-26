@@ -15,6 +15,8 @@ import javax.swing.event.*;
 import com.jidesoft.swing.*;
 
 
+import org.apache.commons.math.linear.InvalidMatrixException;
+import org.apache.commons.math.linear.RealVector;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
@@ -63,7 +65,7 @@ public class MainWindow extends JFrame {
     public static final int MAX_ZOOM = HiCGlobals.zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
-    //private int len;
+    //private int len;                             
     public Context xContext;
     public Context yContext;
     Dataset dataset;
@@ -711,6 +713,28 @@ public class MainWindow extends JFrame {
         }
     }
     
+    private void getEigenvectorActionPerformed(ActionEvent e) {
+        if (zd != null) {
+            DensityFunction df = getDensityFunction(zd.getZoom());
+            if (df != null) {
+                double[] rv;
+                try {
+                    rv = zd.getPrincipalEigenvector(df).toArray();
+                    System.out.println();
+                   for (double entry: rv) {
+                        System.out.println(entry);
+                    }
+                }
+                catch (InvalidMatrixException error) {
+                    System.err.println("Unable to calculate eigenvectors after 30 iterations");
+                }
+            }
+            else 
+                System.err.println("No densities available for this file.");
+        }
+        
+    }
+
     private void mainWindowResized(ComponentEvent e) {
         // TODO add your code here
     }
@@ -1269,6 +1293,13 @@ public class MainWindow extends JFrame {
         });
         saveToImage.setEnabled(false);
         fileMenu.add(saveToImage);
+        getEigenvector = new JMenuItem("Get principal eigenvector");
+        getEigenvector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getEigenvectorActionPerformed(e);
+            }
+        });
+        fileMenu.add(getEigenvector);
         //---- exit ----
         JMenuItem exit = new JMenuItem();
         exit.setText("Exit");
@@ -1319,6 +1350,7 @@ public class MainWindow extends JFrame {
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
     private JMenuItem saveToImage;
+    private JMenuItem getEigenvector;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 

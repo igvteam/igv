@@ -1,7 +1,10 @@
 package org.broad.igv.hic.data;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.EigenDecomposition;
+import org.apache.commons.math.linear.EigenDecompositionImpl;
 import org.apache.commons.math.linear.RealMatrix;
+import org.apache.commons.math.linear.RealVector;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math.stat.descriptive.StatisticalSummary;
@@ -162,10 +165,17 @@ public class MatrixZoomData {
         return b;
     }
 
+    public RealVector getPrincipalEigenvector(DensityFunction df)    {
+        if (pearsons == null) {
+            pearsons = computePearsons(df);
+        }
+        return (new EigenDecompositionImpl(pearsons, 0)).getEigenvector(0);
+    }
 
     public RealMatrix getPearsons(DensityFunction df) {
         if (pearsons == null) {
-            pearsons = computePearsons(df);
+            RealMatrix rm = computePearsons(df);
+            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
         }
         return pearsons;
     }
@@ -197,10 +207,7 @@ public class MatrixZoomData {
                 }
             }
         }
-
-        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
-
-        return pearsons;
+        return rm;
     }
 
     /**
