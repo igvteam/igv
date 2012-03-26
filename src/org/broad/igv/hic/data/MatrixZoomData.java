@@ -38,6 +38,7 @@ public class MatrixZoomData {
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
     private RealMatrix pearsons;
+    private RealMatrix oe;
 
 
     public class ScaleParameters {
@@ -166,21 +167,22 @@ public class MatrixZoomData {
     }
 
     public RealVector getPrincipalEigenvector(DensityFunction df)    {
-        if (pearsons == null) {
-            pearsons = computePearsons(df);
+        if (oe == null) {
+            oe = computeOE(df);
         }
-        return (new EigenDecompositionImpl(pearsons, 0)).getEigenvector(0);
+        return (new EigenDecompositionImpl(oe, 0)).getEigenvector(0);
     }
 
     public RealMatrix getPearsons(DensityFunction df) {
         if (pearsons == null) {
-            RealMatrix rm = computePearsons(df);
-            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
+            if (oe == null)
+                oe = computeOE(df);
+            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
         }
         return pearsons;
     }
 
-    public RealMatrix computePearsons(DensityFunction df) {
+    public RealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute pearsons for different chromosomes");

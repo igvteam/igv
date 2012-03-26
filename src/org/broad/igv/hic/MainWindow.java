@@ -154,11 +154,10 @@ public class MainWindow extends JFrame {
         observedColorScale.setBackground(Color.white);
 
         oeColorScale = new HiCColorScale(HiCColorScale.Scheme.ONE, 0, 5);
+        pearsonColorScale = new HiCColorScale(HiCColorScale.Scheme.MINUS_ONE,0,1);
+       //oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.black, Color.red);
 
-     //   oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.black, Color.red);
-
-    //    pearsonColorScale = new HiCColorScale(HiCColorScale.Scheme.MINUS_ONE, 0, 1);
-        pearsonColorScale = new ContinuousColorScale(-1, 0, 1, Color.blue, Color.white, Color.red);
+        //pearsonColorScale = new ContinuousColorScale(-1, 0, 1, Color.blue, Color.white, Color.red);
     }
 
     public HeatmapPanel getHeatmapPanel() {
@@ -720,12 +719,23 @@ public class MainWindow extends JFrame {
             DensityFunction df = getDensityFunction(zd.getZoom());
             if (df != null) {
                 double[] rv;
-                try {
+                
+                try {         
                     rv = zd.getPrincipalEigenvector(df).toArray();
-                    System.out.println();
-                   for (double entry: rv) {
-                        System.out.println(entry);
+                    String str = "";
+                   for (int i=0; i<rv.length; i++)  {
+                       str += rv[i] + "\n";
+
                     }
+                    JTextArea textArea = new JTextArea(str, 20, 20);
+                    textArea.setEditable(false);
+                    textArea.selectAll();
+                    JScrollPane pane = new JScrollPane(textArea);
+                    JFrame frame = new JFrame("Principal Eigenvector");
+                    frame.getContentPane().add(pane);
+                    frame.pack();
+                    frame.setVisible(true);
+                //    JOptionPane.showMessageDialog(this, str);
                 }
                 catch (InvalidMatrixException error) {
                     System.err.println("Unable to calculate eigenvectors after 30 iterations");

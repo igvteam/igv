@@ -14,8 +14,6 @@ import java.util.Map;
  */
 public class DensityFunction {
 
-
-    //String densityFile = "HumanAugust.densities.txt";
     int[] positions;
     double[] density;
     int gridSize;

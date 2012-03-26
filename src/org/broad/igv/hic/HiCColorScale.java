@@ -18,6 +18,8 @@
 
 package org.broad.igv.hic;
 
+import org.broad.igv.renderer.ContinuousColorScale;
+
 import java.awt.*;
 
 /**
@@ -34,13 +36,6 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
     private int maxval = 5; // equivalent to maxdiv = 5 in Erez's Python code
     private int minval = 0;
     private Scheme scheme = Scheme.ONE;
-    private Color noDataColor = Color.BLACK;
-
-    // Create a cache to limit the number of distinct colors created.  This is particularly important for performance
-    // on linux/unix machines running X-Windows.
-    private int nColors = 100;
-    private float step;
-    Color[] cachedColors;
 
     public HiCColorScale(Scheme scheme, int minval, int maxval) {
         this.maxval = maxval;
@@ -48,70 +43,49 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
         this.scheme = scheme;
     }
 
-
-    private void initColors() {
-        cachedColors = new Color[nColors];
-        step = ((float) (maxval - minval)) / (nColors - 1);
-        for (int i = 0; i < nColors; i++) {
-            float score = minval + i*step;
-            cachedColors[i] = computeColor(score);
-        }
-
-    }
-
     public Color getColor(float score) {
-        if (cachedColors == null) {
-            initColors();
-        }
-        int idx = (int) ((score - minval) / step);
-        if (idx < 0) {
-            return cachedColors[0];
-        } else if (idx >= cachedColors.length) {
-            return cachedColors[cachedColors.length - 1];
-        } else return cachedColors[idx];
-    }
-
-    private Color computeColor(float score) {
         int red, green, blue;
-
-        if(Float.isNaN(score)) {
-            return noDataColor;
-        }
-
         if (scheme == Scheme.ONE) {
-            if (score <= 0) {
-                return Color.BLACK;
+
+            // why would score ever be < 0 or Nan??
+            if (score < 0 || Float.isNaN(score)) {
+                return new Color(0,0,0);
             }
-            red = (int) (255 * Math.min(score / maxval, 1));
+
+            red = (int)(255*Math.min((score)/(maxval),1));
             green = 0;
-            blue = (int) (255 * Math.min(Math.pow(score, -1) / maxval, 1));
-            return new Color(red, green, blue);
+            blue = (int)(255*Math.min((Math.pow(score,-1))/(maxval),1));
 
-        } else if (scheme == Scheme.ZERO) {
-            red = 255;
-            green = (int) (Math.max(0, 255 - 255 * (score - minval) / (maxval - minval)));
-            blue = (int) (Math.max(0, 255 - 255 * (score - minval) / (maxval - minval)));
-            if (green < 0) green = 0;
-            if (blue < 0) blue = 0;
-            if (green > 255) green = 255;
-            if (blue > 255) blue = 255;
-            return new Color(red, green, blue);
+            return new Color(red,green,blue);
+        }
+        else if (scheme == Scheme.ZERO) {
+            int R = 255;
+            int G = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
+            int B = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
+            if (G < 0) G = 0;
+            if (B < 0) B = 0;
+            if (G > 255) G = 255;
+            if (B > 255) B = 255;
+            return new Color(R,G,B);
+        }
+        else if (scheme == Scheme.MINUS_ONE) {
+            if(score > 0) {
 
-        } else if (scheme == Scheme.MINUS_ONE) {
-            if (score > 0) {
-                red = (int) (255 * Math.min(score / (maxval), 1));
-                green = 0;
-                blue = 0;
-                return new Color(red, green, blue);
-            } else if (score < 0) {
-                red = 0;
-                green = 0;
-                blue = (int) (255 * Math.min(((-1) * score) / (maxval), 1));
-                return new Color(red, green, blue);
+                int R = (int) ( 255 * Math.min(score/(maxval),1));
+                int G = 0;
+                int B = 0;
+                return new Color(R,G,B);
+            } else if(score < 0) {
+
+                int R = 0;
+                int G = 0;
+                int B = (int) (255 * Math.min(((-1)*score)/(maxval),1));
+                return new Color(R,G,B);
             } else {
                 return Color.black;
             }
-        } else return Color.black;
+        }
+        else return Color.black;
     }
 
     public Color getColor(String symbol) {
@@ -120,7 +94,7 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
 
 
     public Color getNoDataColor() {
-        return noDataColor;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String asString() {
