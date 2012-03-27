@@ -33,11 +33,11 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
         ZERO, ONE, MINUS_ONE
     }
 
-    private int maxval = 5; // equivalent to maxdiv = 5 in Erez's Python code
-    private int minval = 0;
+    private float maxval = 5; // equivalent to maxdiv = 5 in Erez's Python code
+    private float minval = 0;
     private Scheme scheme = Scheme.ONE;
 
-    public HiCColorScale(Scheme scheme, int minval, int maxval) {
+    public HiCColorScale(Scheme scheme, float minval, float maxval) {
         this.maxval = maxval;
         this.minval = minval;
         this.scheme = scheme;
@@ -45,12 +45,14 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
 
     public Color getColor(float score) {
         int red, green, blue;
+
         if (scheme == Scheme.ONE) {
 
             // why would score ever be < 0 or Nan??
-            if (score < 0 || Float.isNaN(score)) {
+          /*  if (score < 0 || Float.isNaN(score)) {
                 return new Color(0,0,0);
             }
+            */
 
             red = (int)(255*Math.min((score)/(maxval),1));
             green = 0;

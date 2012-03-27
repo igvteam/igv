@@ -720,12 +720,13 @@ public class MainWindow extends JFrame {
             DensityFunction df = getDensityFunction(zd.getZoom());
             if (df != null) {
                 double[] rv;
-                
-                try {         
-                    rv = zd.getPrincipalEigenvector(df).toArray();
+                try {
+                    String number = JOptionPane.showInputDialog("Which eigenvector do you want to see?");
+                    int num = Integer.parseInt(number) - 1;
+                    rv = zd.getEigenvector(df, num).toArray();
                     String str = "";
-                   for (int i=0; i<rv.length; i++)  {
-                       str += rv[i] + "\n";
+                    for (int i=0; i<rv.length; i++)  {
+                        str += rv[i] + "\n";
 
                     }
                     JTextArea textArea = new JTextArea(str, 20, 20);
@@ -736,11 +737,16 @@ public class MainWindow extends JFrame {
                     frame.getContentPane().add(pane);
                     frame.pack();
                     frame.setVisible(true);
-                //    JOptionPane.showMessageDialog(this, str);
                 }
                 catch (InvalidMatrixException error) {
-                    System.err.println("Unable to calculate eigenvectors after 30 iterations");
+                    JOptionPane.showMessageDialog(this, "Unable to calculate eigenvectors after 30 iterations",
+                            "Eigenvector error", JOptionPane.ERROR_MESSAGE);
                 }
+                catch (NumberFormatException error) {
+                    JOptionPane.showMessageDialog(this, "You must enter a valid number.\n"+error.getMessage(),
+                            "Eigenvector error", JOptionPane.ERROR_MESSAGE);
+                }
+                
             }
             else 
                 System.err.println("No densities available for this file.");

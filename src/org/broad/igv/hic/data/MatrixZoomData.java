@@ -71,7 +71,7 @@ public class MatrixZoomData {
         this.blockColumnCount = dis.readInt();
 
         int nBlocks = dis.readInt();
-        this.blockIndex = new HashMap(nBlocks);
+        this.blockIndex = new HashMap<Integer,Preprocessor.IndexEntry>(nBlocks);
 
         for (int b = 0; b < nBlocks; b++) {
             int blockNumber = dis.readInt();
@@ -166,11 +166,27 @@ public class MatrixZoomData {
         return b;
     }
 
-    public RealVector getPrincipalEigenvector(DensityFunction df)    {
+    public RealVector getEigenvector(DensityFunction df, int which)    {
         if (oe == null) {
             oe = computeOE(df);
         }
-        return (new EigenDecompositionImpl(oe, 0)).getEigenvector(0);
+        pearsons = getPearsons(df);
+        int size = pearsons.getColumnDimension();
+        LinkedList<Integer> goodCols = new LinkedList<Integer>();
+
+        for (int i=0; i<size; i++) {
+            if (!isZeros(oe.getColumn(i)))
+                // include it...
+                goodCols.add(new Integer(i));
+        }
+        int[] cols = new int[goodCols.size()];
+        int i=0;
+        for (Integer goodCol : goodCols) cols[i++] = goodCol;
+
+        RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+        if (which >= subMatrix.getColumnDimension() || which < 0)
+            throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+        return (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
     }
 
     public RealMatrix getPearsons(DensityFunction df) {
@@ -178,10 +194,30 @@ public class MatrixZoomData {
             if (oe == null)
                 oe = computeOE(df);
             pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+            double[][] array = pearsons.getData();
+            double min = 0;
+            double max = 0;
+            for (int i=0; i<array.length; i++)      {
+                for (int j=0; j<array[0].length; j++) {
+                    if (array[i][j] < min) 
+                        min = array[i][j];
+                    if (array[i][j] > max && i != j)
+                        max = array[i][j];
+                   
+                    //System.out.print(array[i][j] + " ");
+                }
+                //System.out.println();
+            }
+            System.out.println(min + " "+max);
         }
         return pearsons;
     }
-
+    private boolean isZeros(double[] array) {
+        for (double anArray : array)
+            if (anArray != 0)
+                return false;
+        return true;
+    }
     public RealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
@@ -192,6 +228,7 @@ public class MatrixZoomData {
         RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+        ArrayList<Double> percentiles = new ArrayList<Double>();
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
@@ -201,14 +238,19 @@ public class MatrixZoomData {
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
                     double normCounts = Math.log10(rec.getCounts() / expected);
+                    //double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
+                        percentiles.add(Math.abs(normCounts));
                         rm.addToEntry(y, x, normCounts);
                     }
                 }
             }
         }
+        Collections.sort(percentiles);
+        int location = (int) (percentiles.size()*0.8);
+        System.out.println(percentiles.get(location));
         return rm;
     }
 
