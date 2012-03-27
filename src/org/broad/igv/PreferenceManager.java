@@ -192,6 +192,10 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
 
+    public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
+    public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
+    public static final String CBIO_EXPRESSION_THRESHOLD = "CBIO_EXPRESSION_THRESHOLD";
+
 
     public static final String DB_ENABLED = "DB_ENABLED";
     public static final String DB_HOST = "DB_HOST";
@@ -1037,11 +1041,11 @@ public class PreferenceManager implements PropertyManager {
      * @param s
      */
     public void setPrefsFile(String s) {
-        if(preferences == null) {
+        if (preferences == null) {
             preferences = new IGVPreferences(new File(s));
-        }
-        else {
+        } else {
             preferences.setPrefFile(new File(s));
         }
     }
+
 }

@@ -22,6 +22,7 @@ import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.RegionScoreType;
@@ -107,12 +108,21 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
     static {
         float max_val = 2 << 10;
-        float[] typ_bounds = new float[]{0.1f, max_val};
-        bounds.put("PERCENT_MUTATED", typ_bounds);
-        bounds.put("PERCENT_CNA_AMPLIFIED", typ_bounds);
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", typ_bounds);
-        bounds.put("PERCENT_MRNA_WAY_UP", typ_bounds);
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -0.1f});
+        float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD, "" + 0.1));
+        bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
+
+        //See GISTIC supplement, page 20
+        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.1));
+        float[] ampbounds = new float[]{amp, max_val};
+        bounds.put("PERCENT_CNA_AMPLIFIED", ampbounds);
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", ampbounds);
+
+        //See GISTIC supplement, page 5, just gives greater than or less than 0
+        float exp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_THRESHOLD, "" + 0.1));
+        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{exp, max_val});
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -exp});
+
+
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
