@@ -35,7 +35,9 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 
 /**
@@ -176,7 +178,7 @@ public class RegionOfInterestPanel extends JPanel {
                         Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                         byte[] seqBytes = genome.getSequence(roi.getChr(), roi.getStart(), roi.getEnd());
                         if (seqBytes == null) {
-                            MessageUtils.showMessage("Sequence not available");
+                            MessageUtils.showMessage("Sequence not available. Try enabling http byte-range requests");
                         } else {
                             String sequence = new String(seqBytes);
                             StringSelection stringSelection = new StringSelection(sequence);
@@ -280,7 +282,7 @@ public class RegionOfInterestPanel extends JPanel {
      * A convenience method for returning the regions of interest for the current frame.
      */
 
-    private  Collection<RegionOfInterest> getRegions() {
+    private Collection<RegionOfInterest> getRegions() {
         return IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
     }
 }

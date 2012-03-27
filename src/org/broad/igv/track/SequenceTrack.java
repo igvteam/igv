@@ -25,12 +25,14 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -76,7 +78,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
-        Font font= FontManager.getFont(fontSize);
+        Font font = FontManager.getFont(fontSize);
         if (sequenceVisible) {
             graphics.setFont(font);
             graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);
@@ -105,7 +107,7 @@ public class SequenceTrack extends AbstractTrack {
         // Are we zoomed in far enough to show the sequence?  Scale is
         // in BP / pixel,  need at least 1 pixel  per bp in order to show sequence.
 
-        int resolutionThreshold =  PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
         // TODO -- this should be calculated from a "rescale" event
         boolean visible = FrameManager.getMinimumScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
@@ -209,6 +211,14 @@ public class SequenceTrack extends AbstractTrack {
 
     public Renderer getRenderer() {
         return null;
+    }
+
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+        if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
+            return "Sequence info not found. Try enabling byte-range requests in preferences";
+        } else {
+            return null;
+        }
     }
 
 
