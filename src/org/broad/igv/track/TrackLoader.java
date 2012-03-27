@@ -1080,7 +1080,8 @@ public class TrackLoader {
         TrackProperties props = ds.getTrackProperties();
 
         // The "freq" track.  TODO - make this optional
-        if (ds.getSampleNames().size() > 1) {
+        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                ds.getSampleNames().size() > 4) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
@@ -1114,7 +1115,8 @@ public class TrackLoader {
             TrackProperties props = ds.getTrackProperties();
 
             // The "freq" track.  TODO - make this optional
-            if (ds.getSampleNames().size() > 1) {
+            if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                    ds.getSampleNames().size() > 4) {
                 FreqData fd = new FreqData(ds, genome);
                 String freqTrackId = path;
                 String freqTrackName = "CNV Summary";
@@ -1147,12 +1149,14 @@ public class TrackLoader {
         String path = locator.getPath();
 
         // The "freq" track.  Make this optional?
-        FreqData fd = new FreqData(ds, genome);
-        String freqTrackId = path;
-        String freqTrackName = "CNV Summary";
-        CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-        newTracks.add(freqTrack);
-
+        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                 ds.getSampleNames().size() > 4) {
+            FreqData fd = new FreqData(ds, genome);
+            String freqTrackId = path;
+            String freqTrackName = "CNV Summary";
+            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            newTracks.add(freqTrack);
+        }
 
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;

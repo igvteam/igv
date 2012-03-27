@@ -24,10 +24,13 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,7 +44,7 @@ public class CNFreqTrack extends AbstractTrack {
     BarChartRenderer renderer;
 
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
-        super(rl, id, "CNV Summary");
+        super(rl, id, name);
         data = fd;
 
         float nSamples = data.getNumberOfSamples();
@@ -113,5 +116,23 @@ public class CNFreqTrack extends AbstractTrack {
         return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
+    @Override
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
+        IGVPopupMenu menu = new IGVPopupMenu();
+
+        List<Track> selfAsList = Arrays.asList((Track) this);
+        TrackMenuUtils.addSharedItems(menu, selfAsList, false);
+
+        menu.addSeparator();
+        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
+
+
+        return menu;
+    }
 }
