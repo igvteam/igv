@@ -24,14 +24,25 @@ public class DirectoryManager {
 
     private static Logger log = Logger.getLogger(DirectoryManager.class);
 
-    public static File USER_HOME;
-    public static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
-    public static File IGV_DIRECTORY;     // The IGV application directory
-    public static File GENOME_CACHE_DIRECTORY;
-    private static File GENE_LIST_DIRECTORY;
-    public static File BAM_CACHE_DIRECTORY;
+    private static File USER_HOME;
+    private  static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
+    private  static File IGV_DIRECTORY;     // The IGV application directory
+    private  static File GENOME_CACHE_DIRECTORY;
+    private  static File GENE_LIST_DIRECTORY;
+    private  static File BAM_CACHE_DIRECTORY;
     final public static String IGV_DIR_USERPREF = "igvDir";
 
+
+
+
+
+    private static File getUserHome() {
+        if (USER_HOME == null) {
+            String userHomeString = System.getProperty("user.home");
+            USER_HOME = new File(userHomeString);
+        }
+        return USER_HOME;
+    }
 
     /**
      * The user directory.  On Mac and Linux this should be the user home directory.  On Windows platforms this
@@ -47,6 +58,106 @@ public class DirectoryManager {
             }
         }
         return USER_DIRECTORY;
+    }
+
+
+
+    public static File getIgvDirectory() {
+
+        if (IGV_DIRECTORY == null) {
+
+            IGV_DIRECTORY = getIgvDirectoryOverride();
+
+            // If still null, try the default place
+            if (IGV_DIRECTORY == null) {
+                File rootDir = getUserHome();
+                IGV_DIRECTORY = new File(rootDir, "igv");
+
+                if (!IGV_DIRECTORY.exists()) {
+                    // See if a pre-2.1 release directory exists, if so copy it
+                    File legacyDirectory = null;
+                    try {
+                        legacyDirectory = getLegacyIGVDirectory();
+                        if (legacyDirectory.exists()) {
+                            log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
+                            FileUtils.copyDirectory(legacyDirectory, IGV_DIRECTORY);
+                        }
+                    } catch (IOException e) {
+                        log.error("Error copying igv directory " + legacyDirectory + " => " + IGV_DIRECTORY, e);
+                    }
+                }
+
+                if (!IGV_DIRECTORY.exists()) {
+                    try {
+                        boolean wasSuccessful = IGV_DIRECTORY.mkdir();
+                        if (!wasSuccessful) {
+                            System.err.println("Failed to create user directory!");
+                            IGV_DIRECTORY = null;
+                        }
+                    } catch (Exception e) {
+                        log.error("Error creating igv directory", e);
+                    }
+                }
+            }
+
+
+            // The IGV directory either doesn't exist or isn't writeable.  This situation can arise with Windows Vista
+            // and Windows 7 due to a Java bug (http://bugs.sun.com/view_bug.do?bug_id=4787931)
+            if (!(IGV_DIRECTORY.exists() && canWrite(IGV_DIRECTORY))) {
+                if (Globals.isHeadless() || Globals.isSuppressMessages()) {
+                    System.err.println("Cannot write to igv directory: " + IGV_DIRECTORY.getAbsolutePath());
+                    IGV_DIRECTORY = (new File(".")).getParentFile();
+                } else {
+                    int option = JOptionPane.showConfirmDialog(null,
+                            "<html>The default IGV directory (" + IGV_DIRECTORY + ") " +
+                                    "cannot be accessed.  Click Yes to choose a new folder or No to exit.<br>" +
+                                    "This folder will be used to store user preferences and cached genomes.",
+                            "IGV Directory Error", JOptionPane.YES_NO_OPTION);
+
+                    if (option == JOptionPane.YES_OPTION) {
+                        final JFileChooser fc = new JFileChooser();
+                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int retValue = fc.showOpenDialog(null);
+                        if (retValue == JFileChooser.APPROVE_OPTION) {
+                            IGV_DIRECTORY = fc.getSelectedFile();
+                            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                            prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
+                        }
+                    }
+                }
+            }
+
+
+            if (!IGV_DIRECTORY.canRead()) {
+                throw new DataLoadException("Cannot read from user directory", IGV_DIRECTORY.getAbsolutePath());
+            } else if (!canWrite(IGV_DIRECTORY)) {
+                throw new DataLoadException("Cannot write to user directory", IGV_DIRECTORY.getAbsolutePath());
+            }
+        }
+        return IGV_DIRECTORY;
+    }
+
+    private static File getIgvDirectoryOverride() {
+        Preferences userPrefs = null;
+        File override = null;
+        try {
+            // See if an override location has been specified.  This is stored with the Java Preferences API
+            userPrefs = Preferences.userNodeForPackage(Globals.class);
+            String userDir = userPrefs.get(IGV_DIR_USERPREF, null);
+            if (userDir != null) {
+                override = new File(userDir);
+                if (!override.exists()) {
+                    override = null;
+                    userPrefs.remove(IGV_DIR_USERPREF);
+                }
+            }
+        } catch (Exception e) {
+            userPrefs.remove(IGV_DIR_USERPREF);
+            override = null;
+            System.err.println("Error creating user directory");
+            e.printStackTrace();
+        }
+        return override;
     }
 
 
@@ -255,123 +366,6 @@ public class DirectoryManager {
             rootDir = new File(rootDir, "igv");
         }
         return rootDir;
-    }
-
-
-    private static File getUserHome() {
-        if (USER_HOME == null) {
-            String userHomeString = System.getProperty("user.home");
-            USER_HOME = new File(userHomeString);
-
-            // Hack for known Java/Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
-            // TODO -- retest with Java 7 when its released
-//            if (Globals.IS_WINDOWS) {
-//                try {
-//                    Runtime.getRuntime().exec("attrib -r \"" + USER_HOME.getAbsolutePath() + "\"");
-//                } catch (Exception e) {
-//                }
-//            }
-        }
-        return USER_HOME;
-    }
-
-
-    public static File getIgvDirectory() {
-
-        if (IGV_DIRECTORY == null) {
-
-            IGV_DIRECTORY = getIgvDirectoryOverride();
-
-            // If still null, try the default place
-            if (IGV_DIRECTORY == null) {
-                File rootDir = getUserDirectory();
-                IGV_DIRECTORY = new File(rootDir, "igv");
-
-                if (!IGV_DIRECTORY.exists()) {
-                    // See if a pre-2.1 release directory exists, if so copy it
-                    File legacyDirectory = null;
-                    try {
-                        legacyDirectory = getLegacyIGVDirectory();
-                        if (legacyDirectory.exists()) {
-                            log.info("Copying " + legacyDirectory + " => " + IGV_DIRECTORY);
-                            FileUtils.copyDirectory(legacyDirectory, IGV_DIRECTORY);
-                        }
-                    } catch (IOException e) {
-                        log.error("Error copying igv directory " + legacyDirectory + " => " + IGV_DIRECTORY, e);
-                    }
-                }
-
-                if (!IGV_DIRECTORY.exists()) {
-                    try {
-                        boolean wasSuccessful = IGV_DIRECTORY.mkdir();
-                        if (!wasSuccessful) {
-                            System.err.println("Failed to create user directory!");
-                            IGV_DIRECTORY = null;
-                        }
-                    } catch (Exception e) {
-                        log.error("Error creating igv directory", e);
-                    }
-                }
-            }
-
-
-            // The IGV directory either doesn't exist or isn't writeable.  This situation can arise with Windows Vista
-            // and Windows 7 due to a Java bug (http://bugs.sun.com/view_bug.do?bug_id=4787931)
-            if (!(IGV_DIRECTORY.exists() && canWrite(IGV_DIRECTORY))) {
-                if (Globals.isHeadless() || Globals.isSuppressMessages()) {
-                    System.err.println("Cannot write to igv directory: " + IGV_DIRECTORY.getAbsolutePath());
-                    IGV_DIRECTORY = (new File(".")).getParentFile();
-                } else {
-                    int option = JOptionPane.showConfirmDialog(null,
-                            "<html>The default IGV directory (" + IGV_DIRECTORY + ") " +
-                                    "cannot be accessed.  Click Yes to choose a new folder or No to exit.<br>" +
-                                    "This folder will be used to store user preferences and cached genomes.",
-                            "IGV Directory Error", JOptionPane.YES_NO_OPTION);
-
-                    if (option == JOptionPane.YES_OPTION) {
-                        final JFileChooser fc = new JFileChooser();
-                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                        int retValue = fc.showOpenDialog(null);
-                        if (retValue == JFileChooser.APPROVE_OPTION) {
-                            IGV_DIRECTORY = fc.getSelectedFile();
-                            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-                            prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
-                        }
-                    }
-                }
-            }
-
-
-            if (!IGV_DIRECTORY.canRead()) {
-                throw new DataLoadException("Cannot read from user directory", IGV_DIRECTORY.getAbsolutePath());
-            } else if (!canWrite(IGV_DIRECTORY)) {
-                throw new DataLoadException("Cannot write to user directory", IGV_DIRECTORY.getAbsolutePath());
-            }
-        }
-        return IGV_DIRECTORY;
-    }
-
-    private static File getIgvDirectoryOverride() {
-        Preferences userPrefs = null;
-        File override = null;
-        try {
-            // See if an override location has been specified.  This is stored with the Java Preferences API
-            userPrefs = Preferences.userNodeForPackage(Globals.class);
-            String userDir = userPrefs.get(IGV_DIR_USERPREF, null);
-            if (userDir != null) {
-                override = new File(userDir);
-                if (!override.exists()) {
-                    override = null;
-                    userPrefs.remove(IGV_DIR_USERPREF);
-                }
-            }
-        } catch (Exception e) {
-            userPrefs.remove(IGV_DIR_USERPREF);
-            override = null;
-            System.err.println("Error creating user directory");
-            e.printStackTrace();
-        }
-        return override;
     }
 
     private static boolean canWrite(File directory) {
