@@ -1,6 +1,5 @@
 package org.broad.igv.feature.genome;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -13,24 +12,24 @@ import java.util.*;
 
 public class FastaDirectorySequence implements Sequence {
 
-    Map<String, FastaSequence> sequenceMap;
+    Map<String, FastaIndexedSequence> sequenceMap;
 
     public FastaDirectorySequence(String directoryPath, String [] fastaFiles) throws IOException {
         readIndeces(directoryPath, fastaFiles);
     }
 
     private void readIndeces(String directoryPath, String [] fastaFiles) throws IOException {
-        sequenceMap = new LinkedHashMap<String, FastaSequence>();
+        sequenceMap = new LinkedHashMap<String, FastaIndexedSequence>();
         for (String file : fastaFiles) {
             String fastaPath = directoryPath + "/" + file;
-            FastaSequence fastaSequence = new FastaSequence(fastaPath);
+            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
             for (String chr : fastaSequence.getChromosomeNames()) {
                 sequenceMap.put(chr, fastaSequence);
             }
         }
     }
 
-    public Collection<FastaSequence> getFastaSequences() {
+    public Collection<FastaIndexedSequence> getFastaSequences() {
         return sequenceMap.values();
     }
 

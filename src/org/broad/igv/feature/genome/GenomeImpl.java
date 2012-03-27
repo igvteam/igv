@@ -74,15 +74,15 @@ public class GenomeImpl implements Genome {
             FastaDirectorySequence sequence = new FastaDirectorySequence(sequencePath, fastaFiles);
             sequenceHelper = new SequenceHelper(sequence);
             chromosomeNames = new ArrayList();
-            for (FastaSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
                 chromosomeNames.addAll(fastaSequence.getChromosomeNames());
             }
             Collections.sort(chromosomeNames, new ChromosomeComparator());
             chromosomeMap = new LinkedHashMap();
-            for (FastaSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
                 chromosomeNames.addAll(fastaSequence.getChromosomeNames());
             }
-            for (FastaSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
                 for (String chr : fastaSequence.getChromosomeNames()) {
                     int length = fastaSequence.getChromosomeLength(chr);
                     chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
@@ -91,7 +91,7 @@ public class GenomeImpl implements Genome {
             updateChromosomeAliases();
 
         } else {
-            FastaSequence fastaSequence = new FastaSequence(sequencePath);
+            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
             sequenceHelper = new SequenceHelper(fastaSequence);
             chromosomeNames = new ArrayList(fastaSequence.getChromosomeNames());
             chromosomeMap = new LinkedHashMap(chromosomeNames.size());

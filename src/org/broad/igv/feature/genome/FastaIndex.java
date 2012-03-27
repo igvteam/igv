@@ -28,21 +28,22 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 
 /**
- * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard.
- * <p/>
+ * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard, but extended
+ * to handle loading by URLs.
+ *
  * author: jrobinso
  * Date: 8/7/11
  */
-public class FastaSequenceIndex {
+public class FastaIndex {
 
-    static Logger log = Logger.getLogger(FastaSequenceIndex.class);
+    static Logger log = Logger.getLogger(FastaIndex.class);
 
     /**
      * Store the entries.  Use a LinkedHashMap for consistent iteration in insertion order.
      */
     private final LinkedHashMap<String, FastaSequenceIndexEntry> sequenceEntries = new LinkedHashMap<String, FastaSequenceIndexEntry>();
 
-    public FastaSequenceIndex(String indexPath) throws IOException {
+    public FastaIndex(String indexPath) throws IOException {
         parseIndexFile(indexPath);
     }
 
@@ -75,75 +76,79 @@ public class FastaSequenceIndex {
         AsciiLineReader reader = null;
         BufferedWriter writer = null;
 
-        reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
-        writer = new BufferedWriter(new FileWriter(outputPath));
-        String line = null;
-        String curContig = null;
-        int basesPerLine = -1, bytesPerLine = -1;
-        long location = 0, size = 0, lastPosition = 0;
+        try {
+            reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
+            writer = new BufferedWriter(new FileWriter(outputPath));
+            String line = null;
+            String curContig = null;
+            int basesPerLine = -1, bytesPerLine = -1;
+            long location = 0, size = 0, lastPosition = 0;
 
-        int basesThisLine, bytesThisLine;
-        int numInconsistentLines = -1;
-        boolean haveTasks = true;
+            int basesThisLine, bytesThisLine;
+            int numInconsistentLines = -1;
+            boolean haveTasks = true;
 
 
-        //We loop through, generating a new FastaSequenceIndexEntry
-        //every time we see a new header line, or when the file ends.
-        while (haveTasks) {
-            line = reader.readLine();
-            //Treat empty line as end of file
-            //This can come up for trailing newline
-            if (line == null || line.trim().length() == 0) {
-                line = null;
-            }
-            if (line == null || line.startsWith(">")) {
-                //The last line can have a different number of bases/bytes
-                if (numInconsistentLines >= 2) {
-                    throw new DataLoadException("Fasta file has uneven line lengths in contig " + curContig, inputPath);
+            //We loop through, generating a new FastaSequenceIndexEntry
+            //every time we see a new header line, or when the file ends.
+            while (haveTasks) {
+                line = reader.readLine();
+                //Treat empty line as end of file
+                //This can come up for trailing newline
+                if (line == null || line.trim().length() == 0) {
+                    line = null;
                 }
-
-                //Done with old contig
-                if (curContig != null) {
-                    writeLine(writer, curContig, size, location, basesPerLine, bytesPerLine);
-                }
-
-                if (line == null) {
-                    haveTasks = false;
-                    break;
-                }
-
-                //Header line
-                curContig = line.split("\\s")[0];
-                curContig = curContig.substring(1);
-                //Should be starting position of next line
-                location = reader.getPosition();
-                size = 0;
-                basesPerLine = -1;
-                bytesPerLine = -1;
-                numInconsistentLines = -1;
-            } else {
-                basesThisLine = line.length();
-                bytesThisLine = (int) (reader.getPosition() - lastPosition);
-
-                //Calculate stats per line if first line, otherwise
-                //check for consistency
-                if (numInconsistentLines < 0) {
-                    basesPerLine = basesThisLine;
-                    bytesPerLine = bytesThisLine;
-                    numInconsistentLines = 0;
-                } else {
-                    if (basesPerLine != basesThisLine || bytesPerLine != bytesThisLine) {
-                        numInconsistentLines++;
+                if (line == null || line.startsWith(">")) {
+                    //The last line can have a different number of bases/bytes
+                    if (numInconsistentLines >= 2) {
+                        throw new DataLoadException("Fasta file has uneven line lengths in contig " + curContig, inputPath);
                     }
-                }
 
-                size += basesThisLine;
+                    //Done with old contig
+                    if (curContig != null) {
+                        writeLine(writer, curContig, size, location, basesPerLine, bytesPerLine);
+                    }
+
+                    if (line == null) {
+                        haveTasks = false;
+                        break;
+                    }
+
+                    //Header line
+                    curContig = line.split("\\s")[0];
+                    curContig = curContig.substring(1);
+                    //Should be starting position of next line
+                    location = reader.getPosition();
+                    size = 0;
+                    basesPerLine = -1;
+                    bytesPerLine = -1;
+                    numInconsistentLines = -1;
+                } else {
+                    basesThisLine = line.length();
+                    bytesThisLine = (int) (reader.getPosition() - lastPosition);
+
+                    //Calculate stats per line if first line, otherwise
+                    //check for consistency
+                    if (numInconsistentLines < 0) {
+                        basesPerLine = basesThisLine;
+                        bytesPerLine = bytesThisLine;
+                        numInconsistentLines = 0;
+                    } else {
+                        if (basesPerLine != basesThisLine || bytesPerLine != bytesThisLine) {
+                            numInconsistentLines++;
+                        }
+                    }
+
+                    size += basesThisLine;
+                }
+                lastPosition = reader.getPosition();
             }
-            lastPosition = reader.getPosition();
+        } finally {
+            if(reader != null) reader.close();
+            if(writer != null) writer.close();
+
         }
 
-        reader.close();
-        writer.close();
     }
 
     private static void writeLine(Writer writer, String contig, long size, long location, int basesPerLine, int bytesPerLine) throws IOException {

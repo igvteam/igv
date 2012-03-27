@@ -117,7 +117,7 @@ public class GenomeImporter {
                         String fastaIndexPath = fastaPath + ".fai";
                         File indexFile = new File(fastaIndexPath);
                         if (!indexFile.exists()) {
-                            FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
+                            FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
                         }
                         fastaIndexPathList.add(fastaIndexPath);
                         fastaFileNames.add(file.getName());
@@ -134,7 +134,7 @@ public class GenomeImporter {
                     String fastaIndexPath = fastaPath + ".fai";
                     File indexFile = new File(fastaIndexPath);
                     if (!indexFile.exists()) {
-                        FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
+                        FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
                     }
                     fastaIndexPathList.add(fastaIndexPath);
                 }

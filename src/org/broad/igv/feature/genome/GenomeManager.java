@@ -29,14 +29,12 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
@@ -73,12 +71,10 @@ public class GenomeManager {
     IGV igv;
 
     public GenomeManager(IGV igv) {
-        // genomeDescriptorMap = new HashMap();
         this.igv = igv;
     }
 
     public GenomeManager() {
-        //  genomeDescriptorMap = new HashMap();
         this.igv = null;
     }
 
@@ -141,28 +137,7 @@ public class GenomeManager {
 
 
             } else if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                //Assume we are dealing with a gzipped file
-                boolean unzip = true;
-                if (Globals.isHeadless()) {
-                    log.info("Ungzipping file " + genomePath);
-                } else {
-                    unzip = MessageUtils.confirm("IGV cannot read gzipped fasta files directly. Would you like to un-gzip this file?");
-                }
-
-                if (!unzip) {
-                    if (monitor != null) {
-                        monitor.fireProgressChange(100);
-                    }
-                    log.info("Loading cancelled: " + genomePath);
-                    return null;
-                } else {
-                    //This ensures we have a local copy
-                    File archiveFile = getArchiveFile(genomePath);
-                    String outfile = CompressionUtils.ungzipFile(archiveFile.getAbsolutePath(), null);
-                    monitor.fireProgressChange(-25);
-                    return loadGenome(outfile, monitor);
-                }
-
+                throw new GenomeException("IGV cannot readed gzipped fasta files.  Please un-gzip the file and try again.");
             } else {
 
                 // Assume its a fasta
@@ -184,7 +159,7 @@ public class GenomeManager {
                     fastaIndexPath = fastaPath + ".fai";
 
                     log.info("Creating index file at " + fastaIndexPath);
-                    FastaSequenceIndex.createIndexFile(fastaPath, fastaIndexPath);
+                    FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
 
                 }
 
@@ -221,8 +196,7 @@ public class GenomeManager {
     }
 
     /**
-     * Returns a File of the provided genomePath.
-     * If the genomePath is a URL, it will be downloaded
+     * Returns a File of the provided genomePath. If the genomePath is a URL, it will be downloaded
      * and saved in the genome cache directory.
      *
      * @param genomePath
@@ -235,8 +209,8 @@ public class GenomeManager {
         if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
             URL genomeArchiveURL = new URL(genomePath);
-            String cachedFilename = Utilities.getFileNameFromURL(
-                    URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8"));
+            final String tmp = URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8");
+            String cachedFilename = Utilities.getFileNameFromURL(tmp);
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 DirectoryManager.getGenomeCacheDirectory().mkdir();
             }
@@ -249,7 +223,6 @@ public class GenomeManager {
     }
 
     private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {
-
         InputStream geneStream = null;
         try {
             geneStream = genomeDescriptor.getGeneStream();

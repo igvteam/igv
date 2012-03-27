@@ -1,174 +1,85 @@
-/*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
- */
-
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
+import org.broad.igv.util.ResourceLocator;
+import sun.security.provider.SystemSigner;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Set;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Implementation of Sequence backed by an indexed fasta file
+ * A sequence created by reading an entire fasta file (i.e. not an indexed file).
  *
- * @author jrobinso
- * @date 8/7/11
+ * @author Jim Robinson
+ * @date 3/26/12
  */
 public class FastaSequence implements Sequence {
 
-    FastaSequenceIndex index;
-    String path;
-    long contentLength;
+    Map<String, byte[]> sequenceMap;
 
     public FastaSequence(String path) throws IOException {
-
-        this.path = path;
-
-        contentLength = ParsingUtils.getContentLength(path);
-
-        // TODO -- check for existence path & index
-        String indexPath = path + ".fai";
-        index = new FastaSequenceIndex(indexPath);
+         readFasta(path);
     }
-
-
-    /**
-     * Return the sequence for the query interval as a byte array.  Coordinates are "ucsc" style (0 based)
-     * <p/>
-     * Example:  5 bases per line, 6 bytes per line
-     * <p/>
-     * Bases    0 1 2 3 4 * | 5 6 7 8  9 * | 10 11 12 13 14 *  etc
-     * Offset   0 1 2 3 4     0 1 2 3  4      0  1  2  3  4
-     * Bytes    0 1 2 3 4 5 | 6 7 8 9 10   | 11 12 13 14 15 16
-     * <p/>
-     * query 9 - 13
-     * start line = 1
-     * base0      = 1*5 = 5
-     * offset     = (9 - 5) = 4
-     * start byte = (1*6) + 3 = 10
-     * end   line = 2
-     *
-     * @param chr
-     * @param qstart
-     * @param qend
-     * @return
-     */
 
     public byte[] readSequence(String chr, int qstart, int qend) {
-
-        FastaSequenceIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
-        if (idxEntry == null) {
+        byte [] allBytes = sequenceMap.get(chr);
+        if(allBytes == null) {
             return null;
         }
+        else {
+            final int start = Math.max(0, qstart);    // qstart should never be < 0
+            final int end = Math.min(allBytes.length, qend);
+            int len = end - start;
 
-        try {
-
-            final int start = Math.max(0, qstart);
-            final int end = Math.min((int) idxEntry.getSize(), qend);
-
-            final int bytesPerLine = idxEntry.getBytesPerLine();
-            final int basesPerLine = idxEntry.getBasesPerLine();
-            int nEndBytes = bytesPerLine - basesPerLine;
-
-            int startLine = start / basesPerLine;
-            int endLine = end / basesPerLine;
-
-            int base0 = startLine * basesPerLine;   // Base at beginning of start line
-
-            int offset = start - base0;
-            final long position = idxEntry.getPosition();
-            long startByte = position + startLine * bytesPerLine + offset;
-
-            int base1 = endLine * basesPerLine;
-            int offset1 = end - base1;
-            long endByte = Math.min(contentLength, position + endLine * bytesPerLine + offset1);
-
-            if (startByte >= endByte) {
-                return null;
-            }
-
-            // Read all the bytes in the range.  This will include endline characters
-            byte[] allBytes = readBytes(startByte, endByte);
-
-            // Create the array for the sequence -- this will be "allBytes" without the endline characters.
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(end - start);
-
-            int srcPos = 0;
-            int desPos = 0;
-            // Copy first line
-            final int allBytesLength = allBytes.length;
-            if (offset > 0) {
-                int nBases = Math.min(end - start, basesPerLine - offset);
-                bos.write(allBytes, srcPos, nBases);
-                srcPos += (nBases + nEndBytes);
-                desPos += nBases;
-            }
-
-            while (srcPos < allBytesLength) {
-                int nBases = Math.min(basesPerLine, allBytesLength - srcPos);
-                bos.write(allBytes, srcPos, nBases);
-                srcPos += (nBases + nEndBytes);
-                desPos += nBases;
-            }
-
-
-            return bos.toByteArray();
-
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-
-            return null;
+            byte [] bytes = new byte[len];
+            Arrays.fill(bytes, (byte) 0);
+            int s = Math.max(start, 0);
+            System.arraycopy(allBytes, s, bytes, 0, len);
+            return bytes;
         }
-
-
     }
-
 
     /**
-     * Read the bytes between file position posStart and posEnd
+     * Read an entire fasta file, which might be local or remote and might be gzipped.
      *
-     * @throws IOException
+     * @param path
      */
-    private byte[] readBytes(long posStart, long posEnd) throws IOException {
+    private void readFasta(String path) throws IOException {
 
-        SeekableStream ss = null;
+        sequenceMap = new HashMap();
+        BufferedReader br = null;
+
         try {
-            ss = SeekableStreamFactory.getStreamFor(path);
-            int nBytes = (int) (posEnd - posStart);
-            byte[] bytes = new byte[nBytes];
-            ss.seek(posStart);
-            ss.readFully(bytes);
-            return bytes;
-        } finally {
-            if (ss != null) {
-                ss.close();
+            br = ParsingUtils.openBufferedReader(path);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream(10000);
+            String currentChr = null;
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                if (nextLine.startsWith("#") || nextLine.trim().length() == 0) {
+                    continue;
+                } else if (nextLine.startsWith(">")) {
+                    if (currentChr != null) {
+                        byte[] seq = buffer.toByteArray();
+                        sequenceMap.put(currentChr, seq);
+                        buffer.reset();   // Resets the count field of this byte array output stream to zero
+                    }
+                    currentChr = nextLine.substring(1).split("\\s+")[0];
+                } else {
+                    buffer.write(nextLine.trim().getBytes());
+                }
             }
+            // Add last chr
+            if (currentChr != null) {
+                byte[] seq = buffer.toByteArray();
+                sequenceMap.put(currentChr, seq);
+            }
+        } finally {
+            if (br != null) br.close();
         }
-    }
-
-    public Set<String> getChromosomeNames() {
-        return index.getSequenceNames();
-    }
-
-    public int getChromosomeLength(String chrname) {
-        return index.getSequenceSize(chrname);
     }
 }

@@ -38,16 +38,16 @@ import static junit.framework.Assert.*;
  * Time: 7:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FastaSequenceIndexTest {
+public class FastaIndexTest {
 
     static String indexPath = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa.fai";
-    private FastaSequenceIndex index;
+    private FastaIndex index;
 
     @Before
     public void setUp() throws IOException {
         TestUtils.setUpHeadless();
 
-        index = new FastaSequenceIndex(indexPath);
+        index = new FastaIndex(indexPath);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class FastaSequenceIndexTest {
     @Test
     public void testGetIndexEntry() throws Exception {
         //5803340	14565324	50	51
-        FastaSequenceIndex.FastaSequenceIndexEntry entry = index.getIndexEntry("chr03q");
+        FastaIndex.FastaSequenceIndexEntry entry = index.getIndexEntry("chr03q");
         assertEquals("Size", 5803340, entry.getSize());
         assertEquals("Position", 14565324, entry.getPosition());
         assertEquals("basesPerLine", 50, entry.getBasesPerLine());
@@ -82,9 +82,9 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaSequenceIndex.createIndexFile(inPath, outPath);
+        FastaIndex.createIndexFile(inPath, outPath);
 
-        FastaSequenceIndex index = new FastaSequenceIndex(outPath);
+        FastaIndex index = new FastaIndex(outPath);
         assertEquals(1, index.getSequenceNames().size());
         String contig = "NC_000913_bb";
         assertNotNull(index.getIndexEntry(contig));
@@ -96,9 +96,9 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaSequenceIndex.createIndexFile(inPath, outPath);
+        FastaIndex.createIndexFile(inPath, outPath);
 
-        FastaSequenceIndex index = new FastaSequenceIndex(outPath);
+        FastaIndex index = new FastaIndex(outPath);
         assertEquals(2, index.getSequenceNames().size());
         String tA = "my:testA";
         String tG = "my:testG";
@@ -107,7 +107,7 @@ public class FastaSequenceIndexTest {
             assertNotNull(index.getIndexEntry(contig));
         }
 
-        FastaSequenceIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
+        FastaIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
         int tAbasesPL = 58;
 
         int tAbytesPL = tAbasesPL + 1;
@@ -162,7 +162,7 @@ public class FastaSequenceIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaSequenceIndex.createIndexFile(inPath, outPath);
+        FastaIndex.createIndexFile(inPath, outPath);
     }
 
     @Test
