@@ -341,7 +341,7 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    private static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks) {
+    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks) {
 
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //trackSettingsHeading.setFont(boldFont);
