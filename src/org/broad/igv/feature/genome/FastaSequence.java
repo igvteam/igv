@@ -1,13 +1,10 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import sun.security.provider.SystemSigner;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,20 +20,19 @@ public class FastaSequence implements Sequence {
     Map<String, byte[]> sequenceMap;
 
     public FastaSequence(String path) throws IOException {
-         readFasta(path);
+        readFasta(path);
     }
 
     public byte[] readSequence(String chr, int qstart, int qend) {
-        byte [] allBytes = sequenceMap.get(chr);
-        if(allBytes == null) {
+        byte[] allBytes = sequenceMap.get(chr);
+        if (allBytes == null) {
             return null;
-        }
-        else {
+        } else {
             final int start = Math.max(0, qstart);    // qstart should never be < 0
             final int end = Math.min(allBytes.length, qend);
             int len = end - start;
 
-            byte [] bytes = new byte[len];
+            byte[] bytes = new byte[len];
             Arrays.fill(bytes, (byte) 0);
             int s = Math.max(start, 0);
             System.arraycopy(allBytes, s, bytes, 0, len);
