@@ -32,7 +32,7 @@ import java.awt.*;
  */
 public abstract class AbstractColorScale implements ColorScale {
 
-    final private static Color defaultColor = Color.BLACK;
+    final protected static Color defaultColor = Color.BLACK;
     protected Color noDataColor = UIConstants.NO_DATA_COLOR;
 
     public Color getColor(String symbol) {

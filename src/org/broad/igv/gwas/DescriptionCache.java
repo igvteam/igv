@@ -103,7 +103,7 @@ public class DescriptionCache {
             this.values.remove(0);
         }
 
-        return this.chrs.add(chr) & this.locations.add(location) & this.descriptions.add(description) & this.values.add(value);
+        return this.chrs.add(chr) && this.locations.add(location) && this.descriptions.add(description) && this.values.add(value);
     }
 
     public String getDescription(String chr, int location, float value) {

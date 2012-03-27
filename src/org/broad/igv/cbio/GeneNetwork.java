@@ -64,8 +64,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     /**
      * URL they use for testing
      */
-    public static String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
-    public static String BASE_URL = TEST_URL;
+    public static final String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    public static final String BASE_URL = TEST_URL;
     //    static{
 //        InputStream is = NetworkAnnotator.class.getResourceAsStream("resources/url.txt");
 //        BufferedReader br = new BufferedReader(new InputStreamReader(is));

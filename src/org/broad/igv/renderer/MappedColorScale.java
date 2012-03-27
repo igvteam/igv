@@ -23,7 +23,6 @@
 
 package org.broad.igv.renderer;
 
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -38,8 +37,6 @@ import java.util.Map;
 public class MappedColorScale extends AbstractColorScale {
 
     public static String serializationClassId = "MappedColorScale";
-    Color defaultColor = Color.black;
-    Color noDataColor = UIConstants.NO_DATA_COLOR;
     Map<String, Color> colorMap;
     boolean defaultCS = false;
 
