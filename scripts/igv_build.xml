@@ -69,25 +69,24 @@
 
     <!--Macro for creating zipped archive, used by bin and src/bin-->
     <macrodef name="archive">
-        <attribute name="bin.dir"/>
+        <attribute name="bin.dirname"/>
         <attribute name="zip.dest"/>
         <attribute name="update" default="no"/>
 
+
         <sequential>
 
-            <mkdir dir="@{bin.dir}"/>
-
             <!-- Copy files to directory -->
-            <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
-            <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}/igv.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}/batik-codec.jar"/>
 
-            <zip destfile="@{zip.dest}" update="@{update}">
-                <zipfileset dir="@{bin.dir}" filemode="755">
+            <zip destfile="@{zip.dest}" update="@{update}" duplicate="fail">
+                <zipfileset dir="${tmp.dir}" filemode="755">
                     <include name="**/igv.sh"/>
                     <include name="**/igv.command"/>
                     <include name="**/igv.bat"/>
                 </zipfileset>
-                <zipfileset dir="@{bin.dir}">
+                <zipfileset dir="${tmp.dir}">
                     <exclude name="**/igv.sh"/>
                     <exclude name="**/igv.command"/>
                     <exclude name="**/igv.bat"/>
@@ -109,7 +108,7 @@
             <fileset refid="scripts"/>
         </copy>
 
-        <archive bin.dir="${tmp.dir}/${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
+        <archive bin.dirname="${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
     </target>
 
 
@@ -151,7 +150,7 @@
         </copy>
 
 
-        <archive bin.dir="${tmp.dir}/${src.archive.name}" zip.dest="${src.archive.zip}" update="yes"/>
+        <archive bin.dirname="${src.archive.name}" zip.dest="${src.archive.zip}"/>
     </target>
 
 
