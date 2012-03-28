@@ -347,7 +347,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     contentPanel.add(label2);
 
                     //---- ampInput ----
-                    ampInput.setText("0.1");
+                    ampInput.setText("0.9");
                     contentPanel.add(ampInput);
 
                     //---- label4 ----

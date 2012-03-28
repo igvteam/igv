@@ -497,7 +497,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.1</string> 
+               <string>0.9</string> 
               </void> 
               <void property="name"> 
                <string>ampInput</string> 

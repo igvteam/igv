@@ -112,7 +112,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
 
         //See GISTIC supplement, page 20
-        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.1));
+        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.9));
         float[] ampbounds = new float[]{amp, max_val};
         bounds.put("PERCENT_CNA_AMPLIFIED", ampbounds);
         bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", ampbounds);
