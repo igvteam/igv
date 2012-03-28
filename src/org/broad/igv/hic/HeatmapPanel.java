@@ -73,7 +73,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             // Pixels per bin -- used to scale image
             double pixelsPerBin = binSize / scale;
-
             for (int i = tLeft; i <= tRight; i++) {
                 for (int j = tTop; j <= tBottom; j++) {
 

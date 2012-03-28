@@ -8,8 +8,12 @@ import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.Main;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -72,7 +76,33 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
             try {
                 RealMatrix rm = zd.getPearsons(df);
-                renderMatrix(originX, originY, zd.getBinSize(), rm, colorScale, g);
+                /*
+                BufferedImage image = (BufferedImage) mainWindow.createImage(rm.getRowDimension(),rm.getColumnDimension());
+                Graphics2D myg = image.createGraphics();
+                renderMatrix(0,0, rm, colorScale, myg);
+                BufferedImage image2 = null;
+                if (image.getHeight() < 1000) {
+                    image2 = new BufferedImage(1000,1000, image.getType());
+                    Graphics2D g3 = image2.createGraphics();
+                    g3.drawImage(image, 0, 0, 1000,1000,null);
+                    g3.dispose();
+                    g3.setComposite(AlphaComposite.Src);
+
+                    g3.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g3.setRenderingHint(RenderingHints.KEY_RENDERING,
+                            RenderingHints.VALUE_RENDER_QUALITY);
+                    g3.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+                }
+                else {image2 = image;}
+                try {
+                File file = new File("C:/Documents and Settings/neva/pearsons"+zd.getZoom()+".jpg");
+                ImageIO.write(image2, "jpg", file);
+                }
+                catch (IOException e){}
+                */
+                renderMatrix(originX, originY, rm, colorScale, g);
             }
             catch (RuntimeException e) {
                 JOptionPane.showMessageDialog(mainWindow, e.getMessage(), "Pearson Error", JOptionPane.ERROR_MESSAGE);
@@ -126,10 +156,8 @@ public class HeatmapRenderer {
         }
     }
 
-    private void renderMatrix(int originX, int originY, int binSize, RealMatrix rm,
+    private void renderMatrix(int originX, int originY, RealMatrix rm,
                               ColorScale colorScale, Graphics g) {
-
-        MainWindow.DisplayOption displayOption = mainWindow.getDisplayOption();
 
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();

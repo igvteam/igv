@@ -1,21 +1,13 @@
 package org.broad.igv.hic.data;
 
-import org.apache.commons.math.linear.Array2DRowRealMatrix;
-import org.apache.commons.math.linear.EigenDecomposition;
-import org.apache.commons.math.linear.EigenDecompositionImpl;
-import org.apache.commons.math.linear.RealMatrix;
-import org.apache.commons.math.linear.RealVector;
+import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math.stat.descriptive.StatisticalSummary;
-import org.broad.igv.hic.tools.HiCTools;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
+import org.broad.tribble.util.LittleEndianOutputStream;
 
-import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -191,7 +183,7 @@ public class MatrixZoomData {
         for (int i=0; i<size; i++) {
             if (!isZeros(oe.getColumn(i)))
                 // include it...
-                goodCols.add(new Integer(i));
+                goodCols.add(i);
         }
         int[] cols = new int[goodCols.size()];
         int i=0;
@@ -205,12 +197,71 @@ public class MatrixZoomData {
 
     public RealMatrix getPearsons(DensityFunction df) {
         if (pearsons == null) {
+
             if (oe == null)
                 oe = computeOE(df);
+            
             pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+         /*try{
+            pearsons = readRealMatrix("C:/Documents and Settings/neva/pearsons");
+
+            }catch(IOException e){}   */
         }
         return pearsons;
     }
+    
+    private RealMatrix readRealMatrix(String filename) throws IOException {
+        LittleEndianInputStream is = null;
+        RealMatrix rm = null;
+        try {
+            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename + this.zoom)));
+
+            int rows = is.readInt();
+            int cols = is.readInt();
+            double[][] matrix = new double[rows][cols];
+            for (int i=0; i<rows; i++) {
+                for (int j=0; j<cols; j++) {
+                    matrix[i][j] = is.readDouble();
+                }
+            }
+            rm = new Array2DRowRealMatrix(rows, cols);
+            rm.setSubMatrix(matrix,0,0);
+        }
+        catch (IOException error) {
+            System.err.println("IO error when saving Pearson's: " + error);
+        }
+        finally {
+            if (is != null)
+                is.close();
+        }
+         return rm;
+    }
+    
+    private void outputRealMatrix(RealMatrix rm) throws IOException {
+        LittleEndianOutputStream os = null;
+        try {
+            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("C:/Documents and Settings/neva/pearsons" + this.zoom)));
+
+            int rows = rm.getRowDimension();
+            int cols = rm.getColumnDimension();
+            os.writeInt(rows);
+            os.writeInt(cols);
+            double[][] matrix = rm.getData();
+            for (int i=0; i<rows; i++) {
+                for (int j=0; j<cols; j++) {
+                    os.writeDouble(matrix[i][j]);
+                }
+            }
+        }
+        catch (IOException error) {
+            System.err.println("IO error when saving Pearson's: " + error);
+        }
+        finally {
+            if (os != null)
+                os.close();
+        }
+    }
+    
     private boolean isZeros(double[] array) {
         for (double anArray : array)
             if (anArray != 0)
@@ -227,7 +278,6 @@ public class MatrixZoomData {
         RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
-        ArrayList<Double> percentiles = new ArrayList<Double>();
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
@@ -242,22 +292,19 @@ public class MatrixZoomData {
 
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
-                        percentiles.add(Math.abs(normCounts));
                         rm.addToEntry(y, x, normCounts);
                     }
                 }
             }
         }
-        Collections.sort(percentiles);
-        int location = (int) (percentiles.size()*0.8);
-        System.out.println(percentiles.get(location));
+
         return rm;
     }
 
     /**
      * Compute scale parameters by from the first block of data
      *
-     * @return
+     * @return   scale parameters
      */
     public ScaleParameters computeScaleParameters() {
         double binSizeMB = binSize / 1000000.0;
