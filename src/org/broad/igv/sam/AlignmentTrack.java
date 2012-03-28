@@ -131,7 +131,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private Rectangle renderedRect;
     private HashMap<String, Color> selectedReadNames = new HashMap();
     private int selectionColorIndex = 0;
-    private int minHeight = 100;
+    private int minHeight = 50;
     private AlignmentDataManager dataManager;
 
     private Genome genome;
@@ -230,10 +230,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (parent != null && parent.getFrame().getScale() > minVisibleScale) {
             return minHeight;
         }
-        // TODO -- what is the 20 for? JTR
+
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN +
-                TOP_MARGIN);
+        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN);
         return h;
     }
 
@@ -265,8 +264,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderedRect = new Rectangle(rect);
 
         if (context.getScale() > minVisibleScale) {
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Zoom in to see alignments.", context.getVisibleRect(), g);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
             return;
 
         }

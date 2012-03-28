@@ -94,6 +94,7 @@ public class CoverageTrack extends AbstractTrack {
         super.setDataRange(new DataRange(0, 0, 60));
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
+        setMaximumHeight(40);
 
         setColor(coverageGrey);
 

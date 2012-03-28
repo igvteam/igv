@@ -336,7 +336,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @return
      */
     public int getHeight() {
-
         int sampleCount = allSamples.size();
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
@@ -345,8 +344,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             int margins = groupCount * 3;
             return variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         }
-
     }
+
 
     /**
      * Set the height of the track.

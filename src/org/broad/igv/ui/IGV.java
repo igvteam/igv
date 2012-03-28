@@ -2002,7 +2002,6 @@ public class IGV {
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
-                geneFeatureTrack.setPreferredHeight(35);
                 geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
                 geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
