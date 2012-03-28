@@ -14,10 +14,10 @@ import java.util.Map;
  */
 public class DensityFunction {
 
-    int[] positions;
     double[] density;
     int gridSize;
     private int nPoints;
+    private double sum;
     Map<Integer, Double> normFactors;
 
     public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
@@ -25,22 +25,30 @@ public class DensityFunction {
         this.density = densities;
         this.nPoints = densities.length;
         this.normFactors = normFactors;
+        this.sum = 0;
+        for (int i=0; i<nPoints; i++)
+            this.sum += density[i];
     }
 
     public DensityFunction(DensityCalculation calculation) {
         this(calculation.getGridSize(), calculation.getDensityAvg(), calculation.getNormalizationFactors());
     }
-    
+
+    public double getSum() {
+        return this.sum;
+    }
+
     public double getDensity(int chrIdx, int distance) {
 
-        double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
-        normFactor *= .8;
-        int grid = distance;
-        if (grid >= nPoints) {
+       // double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
+      //  normFactor *= .8;
+        double normFactor = 1;
+        // Norm factor essentially present for backwards compatibility
+        if (distance >= nPoints) {
 
             return density[nPoints - 1] / normFactor;
         } else {
-            return density[grid] / normFactor;
+            return density[distance] / normFactor;
         }
     }
 

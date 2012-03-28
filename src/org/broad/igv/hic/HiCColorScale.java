@@ -28,66 +28,31 @@ import java.awt.*;
  */
 public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
 
-    // Use enums to avoid mistakes in initialization
-    enum Scheme {
-        ZERO, ONE, MINUS_ONE
-    }
 
-    private float maxval = 5; // equivalent to maxdiv = 5 in Erez's Python code
-    private float minval = 0;
-    private Scheme scheme = Scheme.ONE;
-
-    public HiCColorScale(Scheme scheme, float minval, float maxval) {
-        this.maxval = maxval;
-        this.minval = minval;
-        this.scheme = scheme;
+    public HiCColorScale() {
     }
 
     public Color getColor(float score) {
         int red, green, blue;
 
-        if (scheme == Scheme.ONE) {
 
-            // why would score ever be < 0 or Nan??
-          /*  if (score < 0 || Float.isNaN(score)) {
-                return new Color(0,0,0);
-            }
-            */
+        if(score > 0) {
 
-            red = (int)(255*Math.min((score)/(maxval),1));
-            green = 0;
-            blue = (int)(255*Math.min((Math.pow(score,-1))/(maxval),1));
-
-            return new Color(red,green,blue);
-        }
-        else if (scheme == Scheme.ZERO) {
-            int R = 255;
-            int G = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
-            int B = (int)(Math.max(0,255-255*(score-minval)/(maxval-minval)));
-            if (G < 0) G = 0;
-            if (B < 0) B = 0;
-            if (G > 255) G = 255;
-            if (B > 255) B = 255;
+            int R = (int) ( 255 * Math.min(score,1));
+            int G = 0;
+            int B = 0;
             return new Color(R,G,B);
-        }
-        else if (scheme == Scheme.MINUS_ONE) {
-            if(score > 0) {
+        } else if(score < 0) {
 
-                int R = (int) ( 255 * Math.min(score/(maxval),1));
-                int G = 0;
-                int B = 0;
-                return new Color(R,G,B);
-            } else if(score < 0) {
-
-                int R = 0;
-                int G = 0;
-                int B = (int) (255 * Math.min(((-1)*score)/(maxval),1));
-                return new Color(R,G,B);
-            } else {
-                return Color.black;
-            }
+            int R = 0;
+            int G = 0;
+            int B = (int) (255 * Math.min(((-1)*score),1));
+            return new Color(R,G,B);
+        } else {
+            // Nan ?
+            return Color.black;
         }
-        else return Color.black;
+
     }
 
     public Color getColor(String symbol) {

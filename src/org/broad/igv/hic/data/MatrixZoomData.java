@@ -40,6 +40,7 @@ public class MatrixZoomData {
     private DatasetReader reader;
     private RealMatrix pearsons;
     private RealMatrix oe;
+    //private double sum;
 
 
     public class ScaleParameters {
@@ -84,6 +85,18 @@ public class MatrixZoomData {
         blocks = new LinkedHashMap<Integer, Block>(nBlocks);
         this.reader = reader;
 
+        // Get the block index keys, and sort
+        /*List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+        Collections.sort(blockNumbers);
+        this.sum = 0;
+        for (int blockNumber : blockNumbers) {
+            Block b = readBlock(blockNumber);
+            if (b != null) {
+                for (ContactRecord rec : b.getContactRecords()) {
+                    this.sum += rec.getCounts();
+                }
+            }
+        } */
     }
 
 
@@ -195,21 +208,6 @@ public class MatrixZoomData {
             if (oe == null)
                 oe = computeOE(df);
             pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-            double[][] array = pearsons.getData();
-            double min = 0;
-            double max = 0;
-            for (int i=0; i<array.length; i++)      {
-                for (int j=0; j<array[0].length; j++) {
-                    if (array[i][j] < min) 
-                        min = array[i][j];
-                    if (array[i][j] > max && i != j)
-                        max = array[i][j];
-                   
-                    //System.out.print(array[i][j] + " ");
-                }
-                //System.out.println();
-            }
-            System.out.println(min + " "+max);
         }
         return pearsons;
     }
@@ -238,8 +236,9 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    //double normCounts = Math.log10(rec.getCounts() / expected);
-                    double normCounts = (rec.getCounts() / expected);
+                    // expected = expected * (this.sum/df.getSum());
+                    double normCounts = Math.log10(rec.getCounts() / expected);
+                    //double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {

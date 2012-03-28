@@ -176,7 +176,7 @@ public class DensityCalculation {
                 continue;
             }
 
-            int len = chr.getSize();
+           /* int len = chr.getSize();
             int nGrids = len / gridSize + 1;
             double expectedCount = 0;
             for (int n = 0; n < nGrids; n++) {
@@ -186,14 +186,20 @@ public class DensityCalculation {
                     // Neva: it's because sometimes possible dists is 0
                 } else {
                     expectedCount += (nGrids - n) * v;
+                   
                 }
-            }
+            }*/
 
-            double observedCount = (double) chromosomeCounts.get(chr.getIndex());
+//            double expectedCount = 0;
+//            for (int i=0; i < numberOfBins; i++)
+//                expectedCount += densityAvg[i];
+                    
+            
+           // double observedCount = (double) chromosomeCounts.get(chr.getIndex());
 
-            double f = expectedCount / observedCount;
-            System.out.println(chr.getName() + "\t" + f);
-
+           // double f = expectedCount / observedCount;
+           // System.out.println(chr.getName() + "\t" + f);
+             double f = 1;
             normalizationFactors.put(chr.getIndex(), f);
         }
     }
