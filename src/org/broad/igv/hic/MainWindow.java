@@ -16,11 +16,9 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
-import org.apache.commons.math.linear.RealVector;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.renderer.ColorScale;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
@@ -144,7 +142,6 @@ public class MainWindow extends JFrame {
         setDropTarget(target);
 
         colorRangeSlider.setUpperValue(1200);
-
     }
 
     private void initColorScales() {
@@ -221,8 +218,8 @@ public class MainWindow extends JFrame {
             SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
             dataset = (new DatasetReader(ss)).read();
             setChromosomes(dataset.getChromosomes());
-            chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
-            chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
+            chrBox1.setModel(new DefaultComboBoxModel<Chromosome>(getChromosomes()));
+            chrBox2.setModel(new DefaultComboBoxModel<Chromosome>(getChromosomes()));
 
 
             // Load the expected density function, if it exists.
@@ -233,13 +230,13 @@ public class MainWindow extends JFrame {
                     is = ParsingUtils.openInputStream(densityFile);
 
                     zoomToDensityMap = DensityUtil.readDensities(is);
-                    comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed", "OE", "Pearson"}));
+                    comboBox1.setModel(new DefaultComboBoxModel<String>(new String[]{"Observed", "OE", "Pearson"}));
 
                 } finally {
                     if (is != null) is.close();
                 }
             } else {
-                comboBox1.setModel(new DefaultComboBoxModel(new String[]{"Observed"}));
+                comboBox1.setModel(new DefaultComboBoxModel<String>(new String[]{"Observed"}));
                 zoomToDensityMap = null;
             }
             comboBox1.setSelectedIndex(0);
@@ -873,7 +870,7 @@ public class MainWindow extends JFrame {
         panel14 = new JPanel();
         label4 = new JLabel();
         panel1 = new JPanel();
-        comboBox1 = new JComboBox();
+        comboBox1 = new JComboBox<String>();
         colorRangePanel = new JPanel();
         panel11 = new JPanel();
         colorRangeLabel = new JLabel();
@@ -940,7 +937,7 @@ public class MainWindow extends JFrame {
                         panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
                         //---- chrBox1 ----
-                        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
+                        chrBox1.setModel(new DefaultComboBoxModel<String>(new String[]{
                                 "All"
                         }));
                         chrBox1.addActionListener(new ActionListener() {
@@ -951,7 +948,7 @@ public class MainWindow extends JFrame {
                         panel9.add(chrBox1);
 
                         //---- chrBox2 ----
-                        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
+                        chrBox2.setModel(new DefaultComboBoxModel<String>(new String[]{
                                 "All"
                         }));
                         chrBox2.addActionListener(new ActionListener() {
@@ -998,7 +995,7 @@ public class MainWindow extends JFrame {
                         panel1.setLayout(new GridLayout(1, 0, 20, 0));
 
                         //---- comboBox1 ----
-                        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                        comboBox1.setModel(new DefaultComboBoxModel<String>(new String[]{
                                 "Observed"
                         }));
                         comboBox1.addActionListener(new ActionListener() {
@@ -1342,7 +1339,7 @@ public class MainWindow extends JFrame {
     private JPanel panel14;
     private JLabel label4;
     private JPanel panel1;
-    private JComboBox comboBox1;
+    private JComboBox<String> comboBox1;
     private JPanel colorRangePanel;
     private JPanel panel11;
     private JLabel colorRangeLabel;
