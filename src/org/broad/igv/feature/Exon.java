@@ -1,27 +1,21 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
-
 
 package org.broad.igv.feature;
 
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
+
+import java.util.Random;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -51,6 +45,9 @@ public class Exon extends AbstractFeature {
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
     // to either the beginning or end of the exon, depending on the strand
     private int mrnaBase = -1;
+
+    //private Equalizer equalizer = new DefaultEqualizer();
+    private int hashCode = 0;
 
 
     public void setMrnaBase(int base) {
@@ -113,11 +110,13 @@ public class Exon extends AbstractFeature {
 
     public void setCodingStart(int codingStart) {
         this.codingStart = Math.max(getStart(), codingStart);
+        hashCode = this.hashCode();
     }
 
 
     public void setCodingEnd(int codingEnd) {
         this.codingEnd = Math.min(getEnd(), codingEnd);
+        hashCode = this.hashCode();
     }
 
 
@@ -207,6 +206,47 @@ public class Exon extends AbstractFeature {
 
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        //return equalizer.equals(this, object);
+        if (object == null || !(object instanceof Exon)) {
+            return false;
+        }
+        Exon other = (Exon) object;
+        boolean eq = getChr().equals(other.getChr());
+        eq &= getStart() == other.getStart();
+        eq &= getEnd() == other.getEnd();
+        eq &= getCdStart() == other.getCdStart();
+        eq &= getCdEnd() == other.getCdEnd();
+        eq &= getStrand() == other.getStrand();
+        return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        if (hashCode != 0) {
+            return hashCode;
+        }
+
+        int hc = getChr().hashCode() + getStrand().hashCode();
+        Random rand = new Random(hc);
+        hc = rand.nextInt();
+        rand.setSeed(getStart());
+        hc += rand.nextInt();
+        rand.setSeed(getEnd());
+        hc += rand.nextInt();
+        rand.setSeed(getCdStart());
+        hc += rand.nextInt();
+        rand.setSeed(getCdEnd());
+        hc += rand.nextInt();
+
+        if (hc == 0) {
+            hc = 1;
+        }
+        hashCode = hc;
+        return hc;
     }
 
 }
