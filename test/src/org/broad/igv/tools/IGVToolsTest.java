@@ -440,12 +440,12 @@ public class IGVToolsTest {
         tstCountBamList(listPath);
 
         //Test comma-separated list
-        //Note that on the command line
-        String listArg = TestUtils.LARGE_DATA_DIR + "/" + largebams[0];
-        for (int ss = 1; ss < largebams.length; ss++) {
-            listArg += "," + TestUtils.LARGE_DATA_DIR + "/" + largebams[ss];
-        }
-        tstCountBamList(listArg);
+        //This is no longer supported
+//        String listArg = TestUtils.LARGE_DATA_DIR + "/" + largebams[0];
+//        for (int ss = 1; ss < largebams.length; ss++) {
+//            listArg += "," + TestUtils.LARGE_DATA_DIR + "/" + largebams[ss];
+//        }
+//        tstCountBamList(listArg);
 
     }
 
@@ -671,11 +671,9 @@ public class IGVToolsTest {
         String mageTabFile = TestUtils.DATA_DIR + "/mage-tab/test.data.txt";
         String outputFile = TestUtils.DATA_DIR + "/mage-tab/test.data.tdf";
         String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
-        String command = "tile -z 1 --fileType mage-tab "  + mageTabFile + " " + outputFile + " " + genfile;
+        String command = "tile -z 1 --fileType mage-tab " + mageTabFile + " " + outputFile + " " + genfile;
 
         igvTools.run(command.split("\\s+"));
-
-
 
 
     }

@@ -378,30 +378,19 @@ public class CoverageCounter {
         }
     }
 
-    private AlignmentReader getReader(String alignmentFile, boolean b) throws IOException {
+    private AlignmentReader getReader(String alignmentFile, boolean requireIndex) throws IOException {
 
-        boolean isList = alignmentFile.indexOf(",") > 0;
-        if (isList) {
-            String[] tokens = alignmentFile.split(",");
-            List<AlignmentReader> readers = new ArrayList(tokens.length);
-            for (String f : tokens) {
-                readers.add(AlignmentReaderFactory.getReader(f, b));
-            }
-            return new MergedAlignmentReader(readers);
-        } else {
-            if (!FileUtils.isRemote(alignmentFile)) {
-                File f = new File(alignmentFile);
-                if (f.isDirectory()) {
-                    List<AlignmentReader> readers = new ArrayList();
-                    for (File file : f.listFiles(new AlignmentFileFilter())) {
-                        readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), b));
-                    }
-                    return new MergedAlignmentReader(readers);
+        if (!FileUtils.isRemote(alignmentFile)) {
+            File f = new File(alignmentFile);
+            if (f.isDirectory()) {
+                List<AlignmentReader> readers = new ArrayList();
+                for (File file : f.listFiles(new AlignmentFileFilter())) {
+                    readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), requireIndex));
                 }
+                return new MergedAlignmentReader(readers);
             }
-            return AlignmentReaderFactory.getReader(alignmentFile, b);
         }
-
+        return AlignmentReaderFactory.getReader(alignmentFile, requireIndex);
     }
 
     /**
