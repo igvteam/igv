@@ -8,6 +8,7 @@ import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.Main;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
@@ -69,9 +70,13 @@ public class HeatmapRenderer {
 
         MainWindow.DisplayOption displayOption = mainWindow.getDisplayOption();
         if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
-            RealMatrix rm = zd.getPearsons(df);
-            renderMatrix(originX, originY, zd.getBinSize(), rm, colorScale, g);
-
+            try {
+                RealMatrix rm = zd.getPearsons(df);
+                renderMatrix(originX, originY, zd.getBinSize(), rm, colorScale, g);
+            }
+            catch (RuntimeException e) {
+                JOptionPane.showMessageDialog(mainWindow, e.getMessage(), "Pearson Error", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
             for (Block b : blocks) {

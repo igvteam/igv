@@ -12,6 +12,7 @@ import org.broad.igv.hic.tools.HiCTools;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -221,7 +222,7 @@ public class MatrixZoomData {
     public RealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
-            throw new RuntimeException("Cannot yet compute pearsons for different chromosomes");
+            throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
 
         int nBins = chr1.getSize() / binSize + 1;
@@ -237,8 +238,8 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    double normCounts = Math.log10(rec.getCounts() / expected);
-                    //double normCounts = (rec.getCounts() / expected);
+                    //double normCounts = Math.log10(rec.getCounts() / expected);
+                    double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
