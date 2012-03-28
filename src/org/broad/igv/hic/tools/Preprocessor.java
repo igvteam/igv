@@ -74,7 +74,7 @@ public class Preprocessor {
             if (loadDensities) {
                 File densitiesFile = new File(outputFile.getPath()+".densities");
                 calculateDensities(inputFileList, densitiesFile);
-                return;
+
             }
 
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));

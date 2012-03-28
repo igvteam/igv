@@ -48,9 +48,9 @@ public class DensityUtil {
     }
 
     private static void calculate(List<Chromosome> chromosomes) throws IOException {
-        String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
+    //    String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
 
-//        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
+        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt", "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 
 
         Map<String, Integer> chrIndexMap = new HashMap<String, Integer>();
