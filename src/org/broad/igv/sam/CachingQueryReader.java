@@ -553,7 +553,7 @@ public class CachingQueryReader {
 
         private List<Alignment> currentSamplingWindow;
         //   private Map<String, Alignment> currentBucket;
-        //   private Map<String, Alignment> currentMates;
+        private Map<String, List<Integer>> currentMates;
         //   private List<Alignment> overflows;
         private Set<String> pairedReadNames;
 
@@ -587,7 +587,7 @@ public class CachingQueryReader {
 
 
             currentSamplingWindow = new ArrayList<Alignment>(maxDepth);
-//            currentMates = new HashMap(maxBucketSize);
+            currentMates = new HashMap<String, List<Integer>>(this.maxDepth);
             pairedReadNames = new HashSet(maxDepth);
 //            overflows = new LinkedList<Alignment>();
         }
@@ -614,6 +614,7 @@ public class CachingQueryReader {
          */
         public void addRecord(Alignment alignment) {
 
+            boolean added = false;
             double beta = 1.0 / maxDepth;
 
             if (alignment.getStart() >= windowEnd) {
@@ -621,7 +622,8 @@ public class CachingQueryReader {
                 emptyBucket();
                 samplingProb = 1;
                 samplingDepth = maxDepth;
-                windowEnd = alignment.getStart() + 10;    // 10 bp bucket
+                //TODO Let user set window size
+                windowEnd = alignment.getStart() + 10;
             }
 
             counts.incCounts(alignment);
@@ -636,29 +638,56 @@ public class CachingQueryReader {
 
             // If we've kept the mate for this alignment keep this one as well, don't subject to sampling
             final String readName = alignment.getReadName();
+
             if (pairedReadNames.contains(readName)) {
                 allocateAlignment(alignment);
-                pairedReadNames.remove(readName);
-                samplingDepth--; //
-
+                pairedReadNames.remove(alignment.getReadName());
+                samplingDepth--;
+                added = true;
             }
 
+
             // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
-            if (currentSamplingWindow.size() > samplingDepth) {
-                if (Math.random() < samplingProb) {
+            // If we have the mate in the bucket already, always keep it.
+            if (currentSamplingWindow.size() > samplingDepth && !currentMates.containsKey(readName)) {
+                if (Math.random() < samplingProb && !added) {
                     int idx = (int) (Math.random() * (currentSamplingWindow.size() - 1));
                     // Replace random record with this one
-                    // TODO -- possibility of pairs in same sampling window is not accounted for here
                     currentSamplingWindow.set(idx, alignment);
+
+                    //Remove the other half of the pair
+                    if (currentMates.containsKey(readName)) {
+                        List<Integer> pairMapping = currentMates.get(readName);
+                        boolean removed = false;
+                        for (int i : pairMapping) {
+                            if (i != idx) {
+                                currentSamplingWindow.remove(i);
+                                removed = true;
+                            }
+                        }
+                        if (removed) {
+                            currentMates.remove(readName);
+                        }
+                    }
                 }
             } else {
-                currentSamplingWindow.add(alignment);
+                if (!added) {
+                    currentSamplingWindow.add(alignment);
+
+                    List<Integer> pairMapping = currentMates.get(readName);
+                    if (pairMapping == null) {
+                        pairMapping = new ArrayList<Integer>(2);
+                        currentMates.put(readName, pairMapping);
+                    }
+                    if (pairMapping.size() < 2) {
+                        pairMapping.add(currentSamplingWindow.size());
+                    }
+                }
             }
 
             samplingProb = 1.0 / (beta + (1.0 / samplingProb));
 
         }
-
 
         private void emptyBucket() {
 
@@ -668,10 +697,12 @@ public class CachingQueryReader {
                 final String readName = alignment.getReadName();
                 if (pairedReadNames.contains(readName)) {
                     pairedReadNames.remove(readName);
-                } else {
+                } else if (alignment.isPaired() && alignment.getMate().isMapped()) {
                     pairedReadNames.add(readName);
                 }
             }
+            pairedReadNames.addAll(currentMates.keySet());
+            currentMates.clear();
             currentSamplingWindow.clear();
 
         }
