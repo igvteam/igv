@@ -292,7 +292,7 @@ public class CachingQueryReaderTest {
      *
      * @throws Exception
      */
-    @Ignore
+    //@Ignore
     @Test
     public void testKeepPairs() throws Exception {
         String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SOLID.bam";
