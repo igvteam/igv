@@ -76,10 +76,10 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
             try {
                 RealMatrix rm = zd.getPearsons(df);
-                /*
+
                 BufferedImage image = (BufferedImage) mainWindow.createImage(rm.getRowDimension(),rm.getColumnDimension());
                 Graphics2D myg = image.createGraphics();
-                renderMatrix(0,0, rm, colorScale, myg);
+                renderMatrix(0,0, rm, colorScale, myg, zd.getZoom());
                 BufferedImage image2 = null;
                 if (image.getHeight() < 1000) {
                     image2 = new BufferedImage(1000,1000, image.getType());
@@ -101,7 +101,7 @@ public class HeatmapRenderer {
                 ImageIO.write(image2, "jpg", file);
                 }
                 catch (IOException e){}
-                */
+
                 renderMatrix(originX, originY, rm, colorScale, g, zd.getZoom());
             }
             catch (RuntimeException e) {
@@ -171,16 +171,22 @@ public class HeatmapRenderer {
 
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();
+        // Scale score (equivalent to scaling color scale) to try to match what the UMass viewer is doing
+        // This is hacky and should be put in HiC Color, perhaps.
+        float scaleFactor;
+        if (zoomLevel == 1 || zoomLevel == 2)
+            scaleFactor = 1f;
+        else if (zoomLevel == 3)
+            scaleFactor = 1.5f;
+        else if (zoomLevel == 4)
+            scaleFactor = 3f;
+        else
+            scaleFactor = zoomLevel - 1;
 
         for (int i = 0; i < nBinsX; i++) {
             for (int j = 0; j < nBinsY; j++) {
                 double score = rm.getEntry(i, j);
-                //float logScore = (float) Math.log10(score);
-
-                // Scale score (equivalent to scaling color scale) to try to match what the UMass viewer is doing
-                float resolution = HiCGlobals.zoomBinSizes[zoomLevel];
-                float scaleFactor = 1000000.0f / resolution;
-
+                //float logScore = (float) Math.log10(score);                                       
                 Color color = score == 0 ? Color.black : colorScale.getColor((float) score * scaleFactor);
                 int px = i - originX;
                 int py = j - originY;

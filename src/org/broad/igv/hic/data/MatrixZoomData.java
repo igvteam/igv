@@ -197,15 +197,10 @@ public class MatrixZoomData {
 
     public RealMatrix getPearsons(DensityFunction df) {
         if (pearsons == null) {
-
             if (oe == null)
                 oe = computeOE(df);
             
-            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-         /*try{
-            pearsons = readRealMatrix("C:/Documents and Settings/neva/pearsons");
-
-            }catch(IOException e){}   */
+           return (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
         }
         return pearsons;
     }

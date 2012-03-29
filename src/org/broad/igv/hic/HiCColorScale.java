@@ -33,17 +33,13 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
     }
 
     public Color getColor(float score) {
-        int red, green, blue;
-
 
         if(score > 0) {
-
             int R = (int) ( 255 * Math.min(score,1));
             int G = 0;
             int B = 0;
             return new Color(R,G,B);
         } else if(score < 0) {
-
             int R = 0;
             int G = 0;
             int B = (int) (255 * Math.min(((-1)*score),1));
