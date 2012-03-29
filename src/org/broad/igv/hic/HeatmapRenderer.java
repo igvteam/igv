@@ -102,7 +102,7 @@ public class HeatmapRenderer {
                 }
                 catch (IOException e){}
                 */
-                renderMatrix(originX, originY, rm, colorScale, g);
+                renderMatrix(originX, originY, rm, colorScale, g, zd.getZoom());
             }
             catch (RuntimeException e) {
                 JOptionPane.showMessageDialog(mainWindow, e.getMessage(), "Pearson Error", JOptionPane.ERROR_MESSAGE);
@@ -156,8 +156,18 @@ public class HeatmapRenderer {
         }
     }
 
+    /**
+     * Used for Pearsons correlation (dense matrix)
+     *
+     * @param originX
+     * @param originY
+     * @param rm
+     * @param colorScale
+     * @param g
+     */
     private void renderMatrix(int originX, int originY, RealMatrix rm,
-                              ColorScale colorScale, Graphics g) {
+                              ColorScale colorScale, Graphics g,
+                              int zoomLevel) {
 
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();
@@ -166,7 +176,12 @@ public class HeatmapRenderer {
             for (int j = 0; j < nBinsY; j++) {
                 double score = rm.getEntry(i, j);
                 //float logScore = (float) Math.log10(score);
-                Color color = score == 0 ? Color.black : colorScale.getColor((float) score);
+
+                // Scale score (equivalent to scaling color scale) to try to match what the UMass viewer is doing
+                float resolution = HiCGlobals.zoomBinSizes[zoomLevel];
+                float scaleFactor = 1000000.0f / resolution;
+
+                Color color = score == 0 ? Color.black : colorScale.getColor((float) score * scaleFactor);
                 int px = i - originX;
                 int py = j - originY;
                 g.setColor(color);
