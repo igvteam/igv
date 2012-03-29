@@ -177,7 +177,7 @@ public class CachingQueryReader {
             }
         }
 
-        // Since we added in 2 passes we need to sort
+        // Since we added in 2 passes, and downsampled,  we need to sort
         Collections.sort(alignments, new AlignmentSorter());
 
         return new TiledIterator(start, end, alignments);
@@ -330,7 +330,12 @@ public class CachingQueryReader {
 
                 // Loop over tiles this read overlaps
                 for (int i = idx0; i <= idx1; i++) {
-                    AlignmentTile t = tiles.get(i);
+                    AlignmentTile t = null;
+                    try {
+                        t = tiles.get(i);
+                    } catch (Exception e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                     t.addRecord(record);
                 }
 
@@ -346,14 +351,18 @@ public class CachingQueryReader {
 
                 // Update pe stats
                 if (peStats != null && record.isPaired() && record.isProperPair()) {
-                    String lb = record.getLibrary();
-                    if (lb == null) lb = "null";
-                    PEStats stats = peStats.get(lb);
-                    if (stats == null) {
-                        stats = new PEStats(lb);
-                        peStats.put(lb, stats);
+                    try {
+                        String lb = record.getLibrary();
+                        if (lb == null) lb = "null";
+                        PEStats stats = peStats.get(lb);
+                        if (stats == null) {
+                            stats = new PEStats(lb);
+                            peStats.put(lb, stats);
+                        }
+                        stats.update(record);
+                    } catch (Exception e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
-                    stats.update(record);
                 }
             }
             // End iteration over alignments
@@ -370,18 +379,26 @@ public class CachingQueryReader {
 
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
-                Alignment mappedMate = mappedMates.get(mappedMateName);
-                Alignment mate = unmappedMates.get(mappedMate.getReadName());
-                if (mate != null) {
-                    mappedMate.setMateSequence(mate.getReadSequence());
+                try {
+                    Alignment mappedMate = mappedMates.get(mappedMateName);
+                    Alignment mate = unmappedMates.get(mappedMate.getReadName());
+                    if (mate != null) {
+                        mappedMate.setMateSequence(mate.getReadSequence());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
             mappedMates = null;
             unmappedMates = null;
 
             for (AlignmentTile t : tiles) {
-                t.setLoaded(true);
-                cache.put(t.getTileNumber(), t);
+                try {
+                    t.setLoaded(true);
+                    cache.put(t.getTileNumber(), t);
+                } catch (Exception e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
 
             return true;
@@ -539,16 +556,17 @@ public class CachingQueryReader {
         private SpliceJunctionHelper spliceJunctionHelper;
 
         int maxDepth;
-        int maxBucketSize;
+ //       int maxBucketSize;
         int e1 = -1;  // End position of current sampling bucket
-        int minStart = -1; //Start location where the reads go deeper than maxDepth
-        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
-        private int lastStart;
+//        int minStart = -1; //Start location where the reads go deeper than maxDepth
+//        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
+//        private int lastStart;
         //int depthCount;
 
-        private Map<String, Alignment> currentBucket;
-        private Map<String, Alignment> currentMates;
-        private List<Alignment> overflows;
+        private List<Alignment> currentBucket;
+     //   private Map<String, Alignment> currentBucket;
+     //   private Map<String, Alignment> currentMates;
+     //   private List<Alignment> overflows;
         private Set<String> pairedReadNames;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
@@ -570,13 +588,13 @@ public class CachingQueryReader {
 
             // Set the max depth, and the max depth of the sampling bucket.
             this.maxDepth = Math.max(1, maxDepth);
-            if (maxDepth < 1000) {
-                maxBucketSize = 1 * maxDepth;
-            } else if (maxDepth < 10000) {
-                maxBucketSize = 1 * maxDepth;
-            } else {
-                maxBucketSize = 1 * maxDepth;
-            }
+//            if (maxDepth < 1000) {
+//                maxBucketSize = 1 * maxDepth;
+//            } else if (maxDepth < 10000) {
+//                maxBucketSize = 1 * maxDepth;
+//            } else {
+//                maxBucketSize = 1 * maxDepth;
+//            }
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
@@ -586,10 +604,10 @@ public class CachingQueryReader {
             }
 
 
-            currentBucket = new HashMap(maxBucketSize);
-            currentMates = new HashMap(maxBucketSize);
-            pairedReadNames = new HashSet(maxDepth);
-            overflows = new LinkedList<Alignment>();
+            currentBucket = new ArrayList<Alignment>(maxDepth);
+//            currentMates = new HashMap(maxBucketSize);
+//            pairedReadNames = new HashSet(maxDepth);
+//            overflows = new LinkedList<Alignment>();
         }
 
         public int getTileNumber() {
@@ -610,57 +628,48 @@ public class CachingQueryReader {
         /**
          * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.
          *
-         * @param record
+         * @param alignment
          */
-        public void addRecord(Alignment record) {
+        public void addRecord(Alignment alignment) {
 
-            if (record.getStart() >= e1) {
+            double beta = 1.0 / maxDepth;
+            double prob = 1;
+
+            if (alignment.getStart() >= e1) {
                 emptyBucket();
-                e1 = record.getStart() + 1;    // 1bp bucket
-               // e1 = record.getEnd();
+                e1 = alignment.getStart() + 5;    // 5 bp bucket
+                // e1 = record.getEnd();
                 ignoredCount = 0;
+                prob = 1;
             } else {
                 //e1 = Math.min(e1, record.getEnd());
             }
 
-            counts.incCounts(record);
+            counts.incCounts(alignment);
 
             if (spliceJunctionHelper != null) {
-                spliceJunctionHelper.addAlignment(record);
+                spliceJunctionHelper.addAlignment(alignment);
             }
 
-            if (currentBucket.size() >= maxDepth && minStart < 0) {
-                minStart = record.getStart();
-            }
 
-            if (currentBucket.size() > maxBucketSize) {
-                ignoredCount++;
-                return;
+            // If the current bucket is < max depth we keep with 100% probability, otherwise it starts decreasing
+            if (currentBucket.size() > maxDepth) {
+               prob = 1.0 / (beta + (1.0 / prob));
+                if(Math.random() < prob) {
+                    int idx = (int) (Math.random() * (currentBucket.size() - 1));
+                    currentBucket.set(idx, alignment);  // Replace random record with this one
+                }
             }
-
-            if (minStart >= 0 || record.getStart() == lastStart) {
-                numAfterMinStart++;
-            } else {
-                numAfterMinStart = 1;
+            else {
+                currentBucket.add(alignment);
             }
-            lastStart = record.getStart();
-
-            final String readName = record.getReadName();
-            if (!currentBucket.containsKey(readName)) {
-                currentBucket.put(readName, record);
-            } else if (!currentMates.containsKey(readName)) {
-                currentMates.put(readName, record);
-            } else {
-                overflows.add(record);
-            }
-
         }
 
 
         private void emptyBucket() {
 
-            List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : sampledRecords) {
+            //List<Alignment> sampledRecords = sampleCurrentBucket();
+            for (Alignment alignment : currentBucket) {
                 int aStart = alignment.getStart();
                 int aEnd = alignment.getEnd();
                 if ((aStart >= start) && (aStart < end)) {
@@ -668,83 +677,21 @@ public class CachingQueryReader {
                 } else if ((aEnd > start) && (aStart < start)) {
                     overlappingRecords.add(alignment);
                 }
+//                final String readName = alignment.getReadName();
+//                if (pairedReadNames.contains(readName)) {
+//                    pairedReadNames.remove(readName); // <= we have both ends.  Assume only 2 alignments with same rn
+//                } else {
+//                    pairedReadNames.add(readName);
+//
+//                }
             }
             currentBucket.clear();
-            currentMates.clear();
-            overflows.clear();
-            lastStart = -1;
-            minStart = -1;
-            numAfterMinStart = 0;
+//            currentMates.clear();
+//            overflows.clear();
+//            lastStart = -1;
+//            minStart = -1;
+//            numAfterMinStart = 0;
         }
-
-
-        /**
-         * Sample the current bucket of alignments to achieve the desired depth.
-         *
-         * @return Sorted list of alignments to be retained
-         */
-        private List<Alignment> sampleCurrentBucket() {
-
-            List<Alignment> sampledList = new ArrayList(maxDepth);
-            if (currentBucket.size() + currentMates.size() + overflows.size() < maxDepth) {
-                sampledList.addAll(currentBucket.values());
-                sampledList.addAll(currentMates.values());
-                sampledList.addAll(overflows);
-            } else {
-
-                // First pull out any mates of reads sampled from previous buckets
-                List<String> added = new ArrayList(pairedReadNames.size());
-                for (String readName : pairedReadNames) {
-                    if (currentBucket.containsKey(readName)) {
-                        sampledList.add(currentBucket.get(readName));
-                        currentBucket.remove(readName);
-                        added.add(readName);
-                    }
-                }
-                pairedReadNames.removeAll(added);
-
-                List<String> keys = new LinkedList(currentBucket.keySet());
-                int total_size = keys.size() + overflows.size();
-                //Fraction of the alignments in the excessive coverage region to keep
-                float frac_keep = (float) (numAfterMinStart + maxDepth - total_size) / (numAfterMinStart);
-                frac_keep = frac_keep > 0.0f ? frac_keep : 2.0f;
-                while (sampledList.size() < maxDepth && keys.size() > 0) {
-                    String key = keys.remove(0);
-                    Alignment a = currentBucket.remove(key);
-
-                    //If the alignment starts outside a region of excessive coverage,
-                    //we include it. Otherwise, we sample.
-                    //boolean keep = a.getStart() < minStart;
-                    boolean keep = !(counts.getTotalCount(a.getStart()) > maxDepth || counts.getTotalCount(a.getEnd()) > maxDepth);
-                    keep |= (frac_keep >= 1) || RAND.nextFloat() < frac_keep;
-                    if (keep) {
-                        sampledList.add(a);
-
-                        // If this alignment is paired,  add its mate to the list, or if its mate is not present
-                        // in this bucket record the read name.
-                        if (a.isPaired() && a.getMate().isMapped()) {
-                            Alignment m = currentMates.remove(key);
-                            if (m != null) {
-                                sampledList.add(m);
-                            } else {
-                                pairedReadNames.add(key);
-                            }
-                        }
-                    }
-                }
-
-                //If there's still room,  sample the "overflows"
-                //TODO Probably the wrong order in which to do this
-                while (sampledList.size() < maxDepth && (overflows.size() > 0)) {
-                    sampledList.add(overflows.remove(RAND.nextInt(overflows.size())));
-                }
-            }
-            // Since we added in 2 passes we need to sort
-            Collections.sort(sampledList, new AlignmentSorter());
-
-            return sampledList;
-        }
-
 
         public List<Alignment> getContainedRecords() {
             return containedRecords;
@@ -766,9 +713,9 @@ public class CachingQueryReader {
                 // Empty any remaining alignments in the current bucket
                 emptyBucket();
                 currentBucket = null;
-                currentMates = null;
-                pairedReadNames = null;
-                overflows = null;
+//                currentMates = null;
+//                pairedReadNames = null;
+//                overflows = null;
                 finalizeSpliceJunctions();
             }
         }
