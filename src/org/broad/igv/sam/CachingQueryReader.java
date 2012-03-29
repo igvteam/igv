@@ -571,11 +571,11 @@ public class CachingQueryReader {
             // Set the max depth, and the max depth of the sampling bucket.
             this.maxDepth = Math.max(1, maxDepth);
             if (maxDepth < 1000) {
-                maxBucketSize = 10 * maxDepth;
+                maxBucketSize = 1 * maxDepth;
             } else if (maxDepth < 10000) {
-                maxBucketSize = 5 * maxDepth;
+                maxBucketSize = 1 * maxDepth;
             } else {
-                maxBucketSize = 2 * maxDepth;
+                maxBucketSize = 1 * maxDepth;
             }
 
             // TODO -- only if splice junctions are on
@@ -616,10 +616,11 @@ public class CachingQueryReader {
 
             if (record.getStart() >= e1) {
                 emptyBucket();
-                e1 = record.getEnd();
+                e1 = record.getStart() + 1;    // 1bp bucket
+               // e1 = record.getEnd();
                 ignoredCount = 0;
             } else {
-                e1 = Math.min(e1, record.getEnd());
+                //e1 = Math.min(e1, record.getEnd());
             }
 
             counts.incCounts(record);
