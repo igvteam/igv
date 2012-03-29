@@ -331,11 +331,7 @@ public class CachingQueryReader {
                 // Loop over tiles this read overlaps
                 for (int i = idx0; i <= idx1; i++) {
                     AlignmentTile t = null;
-                    try {
-                        t = tiles.get(i);
-                    } catch (Exception e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
+                    t = tiles.get(i);
                     t.addRecord(record);
                 }
 
@@ -351,18 +347,15 @@ public class CachingQueryReader {
 
                 // Update pe stats
                 if (peStats != null && record.isPaired() && record.isProperPair()) {
-                    try {
-                        String lb = record.getLibrary();
-                        if (lb == null) lb = "null";
-                        PEStats stats = peStats.get(lb);
-                        if (stats == null) {
-                            stats = new PEStats(lb);
-                            peStats.put(lb, stats);
-                        }
-                        stats.update(record);
-                    } catch (Exception e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    String lb = record.getLibrary();
+                    if (lb == null) lb = "null";
+                    PEStats stats = peStats.get(lb);
+                    if (stats == null) {
+                        stats = new PEStats(lb);
+                        peStats.put(lb, stats);
                     }
+                    stats.update(record);
+
                 }
             }
             // End iteration over alignments
@@ -379,26 +372,18 @@ public class CachingQueryReader {
 
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
-                try {
-                    Alignment mappedMate = mappedMates.get(mappedMateName);
-                    Alignment mate = unmappedMates.get(mappedMate.getReadName());
-                    if (mate != null) {
-                        mappedMate.setMateSequence(mate.getReadSequence());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                Alignment mappedMate = mappedMates.get(mappedMateName);
+                Alignment mate = unmappedMates.get(mappedMate.getReadName());
+                if (mate != null) {
+                    mappedMate.setMateSequence(mate.getReadSequence());
                 }
             }
             mappedMates = null;
             unmappedMates = null;
 
             for (AlignmentTile t : tiles) {
-                try {
-                    t.setLoaded(true);
-                    cache.put(t.getTileNumber(), t);
-                } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                t.setLoaded(true);
+                cache.put(t.getTileNumber(), t);
             }
 
             return true;
@@ -556,17 +541,20 @@ public class CachingQueryReader {
         private SpliceJunctionHelper spliceJunctionHelper;
 
         int maxDepth;
- //       int maxBucketSize;
-        int e1 = -1;  // End position of current sampling bucket
+        int samplingDepth;
+        double samplingProb = 1;
+
+        //       int maxBucketSize;
+        int windowEnd = -1;  // End position of current sampling bucket
 //        int minStart = -1; //Start location where the reads go deeper than maxDepth
 //        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
 //        private int lastStart;
         //int depthCount;
 
-        private List<Alignment> currentBucket;
-     //   private Map<String, Alignment> currentBucket;
-     //   private Map<String, Alignment> currentMates;
-     //   private List<Alignment> overflows;
+        private List<Alignment> currentSamplingWindow;
+        //   private Map<String, Alignment> currentBucket;
+        //   private Map<String, Alignment> currentMates;
+        //   private List<Alignment> overflows;
         private Set<String> pairedReadNames;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
@@ -588,13 +576,7 @@ public class CachingQueryReader {
 
             // Set the max depth, and the max depth of the sampling bucket.
             this.maxDepth = Math.max(1, maxDepth);
-//            if (maxDepth < 1000) {
-//                maxBucketSize = 1 * maxDepth;
-//            } else if (maxDepth < 10000) {
-//                maxBucketSize = 1 * maxDepth;
-//            } else {
-//                maxBucketSize = 1 * maxDepth;
-//            }
+            this.samplingDepth = maxDepth;
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
@@ -604,9 +586,9 @@ public class CachingQueryReader {
             }
 
 
-            currentBucket = new ArrayList<Alignment>(maxDepth);
+            currentSamplingWindow = new ArrayList<Alignment>(maxDepth);
 //            currentMates = new HashMap(maxBucketSize);
-//            pairedReadNames = new HashSet(maxDepth);
+            pairedReadNames = new HashSet(maxDepth);
 //            overflows = new LinkedList<Alignment>();
         }
 
@@ -633,16 +615,13 @@ public class CachingQueryReader {
         public void addRecord(Alignment alignment) {
 
             double beta = 1.0 / maxDepth;
-            double prob = 1;
 
-            if (alignment.getStart() >= e1) {
+            if (alignment.getStart() >= windowEnd) {
+                // Start a new window
                 emptyBucket();
-                e1 = alignment.getStart() + 5;    // 5 bp bucket
-                // e1 = record.getEnd();
-                ignoredCount = 0;
-                prob = 1;
-            } else {
-                //e1 = Math.min(e1, record.getEnd());
+                samplingProb = 1;
+                samplingDepth = maxDepth;
+                windowEnd = alignment.getStart() + 10;    // 10 bp bucket
             }
 
             counts.incCounts(alignment);
@@ -651,46 +630,60 @@ public class CachingQueryReader {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
+            if (samplingDepth < 1) {
+                return; // No room for further alignments
+            }
 
-            // If the current bucket is < max depth we keep with 100% probability, otherwise it starts decreasing
-            if (currentBucket.size() > maxDepth) {
-               prob = 1.0 / (beta + (1.0 / prob));
-                if(Math.random() < prob) {
-                    int idx = (int) (Math.random() * (currentBucket.size() - 1));
-                    currentBucket.set(idx, alignment);  // Replace random record with this one
+            // If we've kept the mate for this alignment keep this one as well, don't subject to sampling
+            final String readName = alignment.getReadName();
+            if (pairedReadNames.contains(readName)) {
+                allocateAlignment(alignment);
+                pairedReadNames.remove(readName);
+                samplingDepth--; //
+
+            }
+
+            // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
+            if (currentSamplingWindow.size() > samplingDepth) {
+                if (Math.random() < samplingProb) {
+                    int idx = (int) (Math.random() * (currentSamplingWindow.size() - 1));
+                    // Replace random record with this one
+                    // TODO -- possibility of pairs in same sampling window is not accounted for here
+                    currentSamplingWindow.set(idx, alignment);
                 }
+            } else {
+                currentSamplingWindow.add(alignment);
             }
-            else {
-                currentBucket.add(alignment);
-            }
+
+            samplingProb = 1.0 / (beta + (1.0 / samplingProb));
+
         }
 
 
         private void emptyBucket() {
 
             //List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : currentBucket) {
-                int aStart = alignment.getStart();
-                int aEnd = alignment.getEnd();
-                if ((aStart >= start) && (aStart < end)) {
-                    containedRecords.add(alignment);
-                } else if ((aEnd > start) && (aStart < start)) {
-                    overlappingRecords.add(alignment);
+            for (Alignment alignment : currentSamplingWindow) {
+                allocateAlignment(alignment);
+                final String readName = alignment.getReadName();
+                if (pairedReadNames.contains(readName)) {
+                    pairedReadNames.remove(readName);
+                } else {
+                    pairedReadNames.add(readName);
                 }
-//                final String readName = alignment.getReadName();
-//                if (pairedReadNames.contains(readName)) {
-//                    pairedReadNames.remove(readName); // <= we have both ends.  Assume only 2 alignments with same rn
-//                } else {
-//                    pairedReadNames.add(readName);
-//
-//                }
             }
-            currentBucket.clear();
-//            currentMates.clear();
-//            overflows.clear();
-//            lastStart = -1;
-//            minStart = -1;
-//            numAfterMinStart = 0;
+            currentSamplingWindow.clear();
+
+        }
+
+        private void allocateAlignment(Alignment alignment) {
+            int aStart = alignment.getStart();
+            int aEnd = alignment.getEnd();
+            if ((aStart >= start) && (aStart < end)) {
+                containedRecords.add(alignment);
+            } else if ((aEnd > start) && (aStart < start)) {
+                overlappingRecords.add(alignment);
+            }
         }
 
         public List<Alignment> getContainedRecords() {
@@ -712,10 +705,7 @@ public class CachingQueryReader {
             if (loaded) {
                 // Empty any remaining alignments in the current bucket
                 emptyBucket();
-                currentBucket = null;
-//                currentMates = null;
-//                pairedReadNames = null;
-//                overflows = null;
+                currentSamplingWindow = null;
                 finalizeSpliceJunctions();
             }
         }
