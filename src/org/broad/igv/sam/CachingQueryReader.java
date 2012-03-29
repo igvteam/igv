@@ -630,8 +630,8 @@ public class CachingQueryReader {
             final String readName = alignment.getReadName();
 
             boolean dontHaveExpectedPair = alignment.isPaired() && alignment.getMate().isMapped() &&
-                    alignment.getMate().getStart() < alignment.getStart() && !pairedReadNames.contains(readName)
-                    && !currentMates.containsKey(readName);
+                    alignment.getMate().getStart() < alignment.getStart() && alignment.getMate().getStart() >= start &&
+                    !pairedReadNames.contains(readName) && !currentMates.containsKey(readName);
 
             if (pairedReadNames.contains(readName)) {
                 allocateAlignment(alignment);
