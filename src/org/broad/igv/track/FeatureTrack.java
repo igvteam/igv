@@ -229,6 +229,13 @@ public class FeatureTrack extends AbstractTrack {
         // Ignored for feature tracks
     }
 
+
+    /**
+     * Return the maximum number of features for any panel in this track.  In whole genome view there is a single panel,
+     * but there are multiple in gene list view (one for each gene list).
+     *
+     * @return
+     */
     public int getNumberOfFeatureLevels() {
         if (getDisplayMode() != DisplayMode.COLLAPSED && packedFeaturesMap.size() > 0) {
             int n = 0;
@@ -236,7 +243,7 @@ public class FeatureTrack extends AbstractTrack {
                 //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
                 //it intermittently.  Food for future thought
                 if (pf != null)
-                    n += pf.getRowCount();
+                    n = Math.max(n, pf.getRowCount());
             }
             return n;
         }
