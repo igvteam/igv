@@ -49,7 +49,16 @@ public class CachingQueryReader {
     /**
      * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
      */
-    private static boolean corruptIndex = false;
+    private boolean corruptIndex = false;
+
+    private float visibilityWindow = 16;    // Visibility window,  in KB
+    private String cachedChr = "";
+    private int tileSize;
+    private AlignmentReader reader;
+    private boolean cancel = false;
+    private LRUCache<Integer, AlignmentTile> cache;
+    private boolean pairedEnd = false;
+
 
     // Map of read group -> paired end stats
 
@@ -65,15 +74,6 @@ public class CachingQueryReader {
         log.debug("Readers canceled");
         activeReaders.clear();
     }
-
-
-    private float visibilityWindow = 16;    // Visibility window,  in KB
-    private String cachedChr = "";
-    private int tileSize;
-    private AlignmentReader reader;
-    private boolean cancel = false;
-    private LRUCache<Integer, AlignmentTile> cache;
-    private boolean pairedEnd = false;
 
 
     public CachingQueryReader(AlignmentReader reader) {
@@ -195,7 +195,7 @@ public class CachingQueryReader {
                 int start = t * tileSize;
                 int end = start + tileSize;
 
-                tile = new AlignmentTile(seq, t, start, end, maxReadDepth, bisulfiteContext);
+                tile = new AlignmentTile(t, start, end, maxReadDepth, bisulfiteContext);
             }
 
             tiles.add(tile);
@@ -534,27 +534,15 @@ public class CachingQueryReader {
         private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
-        int maxDepth;
-        int samplingDepth;
-        double samplingProb = 1;
-
-        //       int maxBucketSize;
-        int windowEnd = -1;  // End position of current sampling bucket
-//        int minStart = -1; //Start location where the reads go deeper than maxDepth
-//        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
-//        private int lastStart;
-        //int depthCount;
-
-        private List<Alignment> currentSamplingWindow;
-        //   private Map<String, Alignment> currentBucket;
-        private Map<String, List<Integer>> currentMates;
-        //   private List<Alignment> overflows;
-        private Set<String> pairedReadNames;
+        private int samplingDepth;
+        private double samplingProb = 1;
+        private SamplingBucket currentSamplingBucket;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
+        private int samplingWindowSize = 50;
 
 
-        AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        AlignmentTile(int tileNumber, int start, int end, int samplingDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.tileNumber = tileNumber;
             this.start = start;
             this.end = end;
@@ -569,8 +557,7 @@ public class CachingQueryReader {
             }
 
             // Set the max depth, and the max depth of the sampling bucket.
-            this.maxDepth = Math.max(1, maxDepth);
-            this.samplingDepth = maxDepth;
+            this.samplingDepth = Math.max(1, samplingDepth);
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
@@ -579,11 +566,6 @@ public class CachingQueryReader {
                 spliceJunctionHelper = new SpliceJunctionHelper();
             }
 
-
-            currentSamplingWindow = new ArrayList<Alignment>(maxDepth);
-            currentMates = new HashMap<String, List<Integer>>(this.maxDepth);
-            pairedReadNames = new HashSet(maxDepth);
-//            overflows = new LinkedList<Alignment>();
         }
 
         public int getTileNumber() {
@@ -608,16 +590,13 @@ public class CachingQueryReader {
          */
         public void addRecord(Alignment alignment) {
 
-            boolean added = false;
-            double beta = 1.0 / maxDepth;
-
-            if (alignment.getStart() >= windowEnd) {
-                // Start a new window
-                emptyBucket();
-                samplingProb = 1;
-                samplingDepth = maxDepth;
-                //TODO Let user set window size
-                windowEnd = alignment.getStart() + 10;
+            final int alignmentStart = alignment.getAlignmentStart();
+            if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
+                if (currentSamplingBucket != null) {
+                    emptyBucket();
+                }
+                int end = alignmentStart + samplingWindowSize;
+                currentSamplingBucket = new SamplingBucket(alignmentStart, end);
             }
 
             counts.incCounts(alignment);
@@ -626,80 +605,25 @@ public class CachingQueryReader {
                 spliceJunctionHelper.addAlignment(alignment);
             }
 
-            // If we've kept the mate for this alignment keep this one as well, don't subject to sampling
-            final String readName = alignment.getReadName();
+            currentSamplingBucket.add(alignment);
 
-            boolean dontHaveExpectedPair = alignment.isPaired() && alignment.getMate().isMapped() &&
-                    alignment.getMate().getStart() < alignment.getStart() && alignment.getMate().getStart() >= start &&
-                    !pairedReadNames.contains(readName) && !currentMates.containsKey(readName);
-
-            if (pairedReadNames.contains(readName)) {
-                allocateAlignment(alignment);
-                pairedReadNames.remove(alignment.getReadName());
-                samplingDepth--;
-                added = true;
-            }
-
-            if (samplingDepth < 1) {
-                return; // No room for further alignments
-            }
-
-            // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
-            // If we have the mate in the bucket already, always keep it.
-            if (currentSamplingWindow.size() > samplingDepth && !currentMates.containsKey(readName)) {
-                if (!added && !dontHaveExpectedPair && RAND.nextDouble() < samplingProb) {
-                    int idx = (int) (RAND.nextDouble() * (currentSamplingWindow.size() - 1));
-                    // Replace random record with this one
-                    currentSamplingWindow.set(idx, alignment);
-
-                    //Remove the other half of the pair
-                    if (currentMates.containsKey(readName)) {
-                        List<Integer> pairMapping = currentMates.get(readName);
-                        boolean removed = false;
-                        for (int i : pairMapping) {
-                            if (i != idx) {
-                                currentSamplingWindow.remove(i);
-                                removed = true;
-                            }
-                        }
-                        if (removed) {
-                            currentMates.remove(readName);
-                        }
-                    }
-                }
-            } else {
-                if (!added && !dontHaveExpectedPair) {
-                    currentSamplingWindow.add(alignment);
-
-                    List<Integer> pairMapping = currentMates.get(readName);
-                    if (pairMapping == null) {
-                        pairMapping = new ArrayList<Integer>(2);
-                        currentMates.put(readName, pairMapping);
-                    }
-                    if (pairMapping.size() < 2) {
-                        pairMapping.add(currentSamplingWindow.size());
-                    }
-                }
-            }
-
-            samplingProb = 1.0 / (beta + (1.0 / samplingProb));
 
         }
 
         private void emptyBucket() {
 
             //List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : currentSamplingWindow) {
+            for (Alignment alignment : currentSamplingBucket.getAlignments()) {
                 allocateAlignment(alignment);
-                final String readName = alignment.getReadName();
-                if (pairedReadNames.contains(readName)) {
-                    pairedReadNames.remove(readName);
-                } else if (alignment.isPaired() && alignment.getMate().isMapped()) {
-                    pairedReadNames.add(readName);
-                }
             }
-            currentMates.clear();
-            currentSamplingWindow.clear();
+
+            if (currentSamplingBucket.isSampled()) {
+                DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
+                        currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
+               // System.out.println(interval);
+            }
+
+            currentSamplingBucket = null;
 
         }
 
@@ -732,7 +656,7 @@ public class CachingQueryReader {
             if (loaded) {
                 // Empty any remaining alignments in the current bucket
                 emptyBucket();
-                currentSamplingWindow = null;
+                currentSamplingBucket = null;
                 finalizeSpliceJunctions();
             }
         }
@@ -765,11 +689,74 @@ public class CachingQueryReader {
         public List<SpliceJunctionFeature> getOverlappingSpliceJunctionFeatures() {
             return overlappingSpliceJunctionFeatures;
         }
+
+
+        private class SamplingBucket {
+            int start;
+            int end;
+            int downsampledCount = 0;
+            List<Alignment> alignments;
+            double beta = 1.0 / samplingDepth;
+
+
+            private SamplingBucket(int start, int end) {
+                this.start = start;
+                this.end = end;
+                alignments = new ArrayList(samplingDepth);
+            }
+
+
+            public void add(Alignment alignment) {
+                // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
+                // If we have the mate in the bucket already, always keep it.
+                if (alignments.size() > samplingDepth) {
+                    if (RAND.nextDouble() < samplingProb) {
+                        int idx = (int) (RAND.nextDouble() * (alignments.size() - 1));
+                        // Replace random record with this one
+                        alignments.set(idx, alignment);
+                    }
+                    downsampledCount++;
+                } else {
+                    alignments.add(alignment);
+                }
+                samplingProb = 1.0 / (beta + (1.0 / samplingProb));
+
+            }
+
+            public List<Alignment> getAlignments() {
+                return alignments;
+            }
+
+            public boolean isSampled() {
+                return downsampledCount > 0;
+            }
+
+            public int getDownsampledCount() {
+                return downsampledCount;
+            }
+        }
     }
 
     private static class AlignmentSorter implements Comparator<Alignment> {
         public int compare(Alignment alignment, Alignment alignment1) {
             return alignment.getStart() - alignment1.getStart();
+        }
+    }
+
+
+    public static class DownsampledInterval {
+        int start;
+        int end;
+        int count;
+
+        public DownsampledInterval(int start, int end, int count) {
+            this.start = start;
+            this.end = end;
+            this.count = count;
+        }
+
+        public String toString() {
+            return start + "-" + end + " (" + count + ")";
         }
     }
 
