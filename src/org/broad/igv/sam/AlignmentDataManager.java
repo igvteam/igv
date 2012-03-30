@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -97,11 +90,10 @@ public class AlignmentDataManager {
 
     public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
         this.experimentType = experimentType;
-        if(experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
+        if (experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
             showSpliceJunctions = false;
-        }
-        else {
-           showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        } else {
+            showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         }
     }
 
@@ -174,7 +166,7 @@ public class AlignmentDataManager {
     }
 
 
-    public void setViewAsPairs(boolean option, AlignmentTrack.GroupOption groupByOption, String tag) {
+    public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
         if (option == this.viewAsPairs) {
             return;
         }
@@ -183,13 +175,12 @@ public class AlignmentDataManager {
         this.viewAsPairs = option;
 
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame, currentPairState, groupByOption, tag);
+            repackAlignments(frame, currentPairState, renderOptions);
         }
     }
 
+    private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
 
-    private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState,
-                                  AlignmentTrack.GroupOption groupByOption, String tag) {
         if (currentPairState == true) {
             AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
             if (loadedInterval == null) {
@@ -229,14 +220,13 @@ public class AlignmentDataManager {
                     alignments.iterator(),
                     loadedInterval.getEnd(),
                     viewAsPairs,
-                    groupByOption,
-                    tag,
+                    renderOptions,
                     MAX_ROWS);
 
             loadedInterval.setAlignmentRows(tmp);
 
         } else {
-            repackAlignments(referenceFrame, groupByOption, tag);
+            repackAlignments(referenceFrame, renderOptions);
         }
     }
 
@@ -245,7 +235,7 @@ public class AlignmentDataManager {
      *
      * @param referenceFrame
      */
-    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption groupByOption, String tag) {
+    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.RenderOptions renderOptions) {
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) {
@@ -259,17 +249,15 @@ public class AlignmentDataManager {
         LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
                 loadedInterval.getEnd(),
-                viewAsPairs,
-                groupByOption,
-                tag,
+                viewAsPairs || renderOptions.isPairedArcView(),
+                renderOptions,
                 MAX_ROWS);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                                     AlignmentTrack.GroupOption groupByOption,
-                                                                                     String tag,
+                                                                                     AlignmentTrack.RenderOptions renderOptions,
                                                                                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final String genomeId = context.getGenomeId();
@@ -281,7 +269,7 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
-            loadAlignments(chr, start, end, groupByOption, tag, context, bisulfiteContext);
+            loadAlignments(chr, start, end, renderOptions, context, bisulfiteContext);
         }
 
         // If there is any overlap in the loaded interval and the requested interval return it.
@@ -299,8 +287,7 @@ public class AlignmentDataManager {
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
-                                            final AlignmentTrack.GroupOption groupByOption,
-                                            final String tag,
+                                            final AlignmentTrack.RenderOptions renderOptions,
                                             final RenderContext context,
                                             final AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
@@ -346,7 +333,7 @@ public class AlignmentDataManager {
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
                     LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, viewAsPairs, groupByOption, tag, maxLevels);
+                            intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
                             alignmentRows, counts, spliceJunctions);

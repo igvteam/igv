@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -36,6 +29,7 @@ import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
+import java.awt.geom.QuadCurve2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,7 +183,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             //int insertSizeThreshold = renderOptions.insertSizeThreshold;
 
             for (Alignment alignment : alignments) {
-
                 // Compute the start and dend of the alignment in pixels
                 double pixelStart = ((alignment.getStart() - origin) / locScale);
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
@@ -327,6 +320,13 @@ public class AlignmentRenderer implements FeatureRenderer {
         Color alignmentColor = getAlignmentColor(pair.firstAlignment, renderOptions);
         Graphics2D g = context.getGraphic2DForColor(alignmentColor);
         g.setFont(font);
+
+        //For showing connection arcs
+        if (renderOptions.isPairedArcView()) {
+            //TODO Change track height
+            rect.y = (int) (context.getVisibleRect().getHeight() - rect.getHeight());
+        }
+
         drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
 
         if (pair.secondAlignment != null) {
@@ -346,8 +346,17 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
-            gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
 
+
+            if (renderOptions.isPairedArcView()) {
+                QuadCurve2D q = new QuadCurve2D.Double();
+                int curveHeight = (int) Math.log(endX - startX) * h;
+                q.setCurve(startX, y + h / 2, (endX + startX) / 2, y + h / 2 - curveHeight, endX, y + h / 2);
+                gLine.setColor(alignmentColor);
+                gLine.draw(q);
+            } else {
+                gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
+            }
         }
 
     }

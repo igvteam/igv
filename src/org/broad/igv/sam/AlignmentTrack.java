@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -278,7 +271,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         try {
             log.debug("Render features");
             Map<String, List<AlignmentInterval.Row>> groups =
-                    dataManager.getGroups(context, renderOptions.groupByOption, renderOptions.getGroupByTag(),
+                    dataManager.getGroups(context, renderOptions,
                             renderOptions.bisulfiteContext);
 
             Map<String, PEStats> peStats = dataManager.getPEStats();
@@ -372,13 +365,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame, option, renderOptions.getGroupByTag());
+            dataManager.repackAlignments(referenceFrame, renderOptions);
         }
     }
 
 
     public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame, renderOptions.groupByOption, renderOptions.getGroupByTag());
+        dataManager.repackAlignments(referenceFrame, renderOptions);
     }
 
     /**
@@ -692,9 +685,30 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         }
 
-        dataManager.setViewAsPairs(vAP, renderOptions.groupByOption, renderOptions.getGroupByTag());
+        dataManager.setViewAsPairs(vAP, renderOptions);
         refresh();
     }
+
+    public boolean isPairedArcView() {
+        return this.renderOptions.isPairedArcView();
+    }
+
+    public void setPairedArcView(boolean option) {
+        if (option == this.isPairedArcView()) return;
+
+        //TODO This is dumb and bad UI design
+        //Should use a combo box or something
+        if (option) {
+            setViewAsPairs(false);
+        }
+
+        renderOptions.setPairedArcView(option);
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            dataManager.repackAlignments(frame, renderOptions);
+        }
+        refresh();
+    }
+
 
     public static class RenderOptions {
         boolean shadeBases;
@@ -702,6 +716,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         boolean flagUnmappedPairs;
         boolean showAllBases;
         boolean showMismatches = true;
+
         private boolean computeIsizes;
         private int minInsertSize;
         private int maxInsertSize;
@@ -712,6 +727,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
+        private boolean pairedArcView = false;
         public boolean flagZeroQualityAlignments = true;
 
         Map<String, PEStats> peStats;
@@ -732,7 +748,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = ColorOption.valueOf(prefs.get(PreferenceManager.SAM_COLOR_BY));
-            GroupOption groupByOption = null;
+            groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
 
@@ -858,6 +874,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         }
 
+        public boolean isPairedArcView() {
+            return pairedArcView;
+        }
+
+        public void setPairedArcView(boolean pairedArcView) {
+            this.pairedArcView = pairedArcView;
+        }
+
+
         public int getMinInsertSize() {
             return minInsertSize;
         }
@@ -974,6 +999,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addViewAsPairsMenuItem();
+
+            boolean viewPairArcsPresent = Boolean.parseBoolean(System.getProperty("pairedArcViewPresent", "false"));
+            if (viewPairArcsPresent) {
+                addViewPairedArcsMenuItem();
+            }
+
             addGoToMate(e);
             showMateRegion(e);
             addInsertSizeMenuItem();
@@ -1302,6 +1333,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             }
 
+            add(item);
+        }
+
+        public void addViewPairedArcsMenuItem() {
+            final JMenuItem item = new JCheckBoxMenuItem("View paired arcs");
+            item.setSelected(isPairedArcView());
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean isPairedArcView = item.isSelected();
+                    setPairedArcView(isPairedArcView);
+                }
+            });
+            item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
 
