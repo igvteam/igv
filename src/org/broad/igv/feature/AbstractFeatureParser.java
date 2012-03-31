@@ -273,16 +273,11 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             }
         }
 
-        //parsingComplete(features);
-        if (IGV.hasInstance() || Globals.isTesting()) {
+        // TODO -- why is this test here?  This will break igvtools processing of expression files
+        //if (IGV.hasInstance() || Globals.isTesting()) {
             FeatureDB.addFeatures(features);
-        }
+        //}
         return features;
-    }
-
-    protected void parsingComplete(List<Feature> features) {
-
-        // Default -- do nothing.
     }
 
     abstract protected Feature parseLine(String nextLine);
