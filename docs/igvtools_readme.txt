@@ -87,7 +87,7 @@ the list file.
 
 Usage:
 
-  igvtools tile [options]  [inputFile] [outputFile] [genome]
+  igvtools toTDF [options]  [inputFile] [outputFile] [genome]
 
 
 Required arguments:
@@ -124,7 +124,7 @@ Options:
 
 Example:
 
-      igvtoolsh tile -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
+      igvtoolsh toTDF -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
 
 
 Notes:
