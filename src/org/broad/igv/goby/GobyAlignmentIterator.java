@@ -21,6 +21,7 @@ package org.broad.igv.goby;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -68,7 +69,8 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     public GobyAlignmentIterator(AlignmentReaderImpl reader, DoubleIndexedIdentifier targetIdentifiers) {
         this.reader = reader;
         this.indexToReferenceId = targetIdentifiers;
-        startReferencePosition = Integer.MAX_VALUE;
+        startReferencePosition = 0;
+        endReferencePosition=Integer.MAX_VALUE;
         previousPosition = Integer.MIN_VALUE;
         useWindow = false;
 
@@ -130,9 +132,10 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
 
     /**
      * A constructor useful only for testing. Do not use for production.
+     *
      * @param targetIndex Index of the reference sequence over which the window is defined.
-     * @param start  Start position
-     * @param end    End position
+     * @param start       Start position
+     * @param end         End position
      * @throws IOException
      */
     protected GobyAlignmentIterator(int targetIndex, int start, int end) throws IOException {
@@ -140,8 +143,8 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         this.targetIndex = targetIndex;
         this.startReferencePosition = start;
         this.endReferencePosition = end;
-        this.reader=null;
-        this.indexToReferenceId=null;
+        this.reader = null;
+        this.indexToReferenceId = null;
     }
 
     /**
@@ -189,7 +192,13 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         } catch (IOException e) {
             nextEntry = null;
             LOG.error(e);
-            throw new RuntimeException("IO error reading next Goby alignment entry", e);
+            //  throw new RuntimeException("IO error reading next Goby alignment entry", e);
+            return false;
+        } catch (GobyRuntimeException e) {
+            nextEntry = null;
+            LOG.error(e);
+            //  throw new RuntimeException("IO error reading next Goby alignment entry", e);
+            return false;
         }
 
         final boolean result = nextEntry != null;
