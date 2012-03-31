@@ -611,7 +611,9 @@ public class CachingQueryReader {
         }
 
         private void emptyBucket() {
-
+            if (currentSamplingBucket==null) {
+                return;
+            }
             //List<Alignment> sampledRecords = sampleCurrentBucket();
             for (Alignment alignment : currentSamplingBucket.getAlignments()) {
                 allocateAlignment(alignment);
