@@ -399,7 +399,7 @@ public class GobyAlignment implements Alignment {
         if (entry.hasPairAlignmentLink()) {
             Alignments.RelatedAlignmentEntry link = entry.getPairAlignmentLink();
             String mateChr = getChromosome(link.getTargetIndex());
-            int mateStart = entry.getPosition();
+            int mateStart = link.getPosition();
             boolean mateNegativeStrand = EntryFlagHelper.isMateReverseStrand(entry);
 
             boolean isReadUnmappedFlag = EntryFlagHelper.isReadUnmapped(entry);
