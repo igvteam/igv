@@ -131,7 +131,7 @@ public class CachingQueryReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end,
                                               List<AlignmentCounts> counts,
                                               List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                              int maxReadDepth, Map<String, PEStats> peStats,
+                                              List<DownsampledInterval> downsampledIntervals, int maxReadDepth, Map<String, PEStats> peStats,
                                               AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         // Get the tiles covering this interval
@@ -163,6 +163,7 @@ public class CachingQueryReader {
         for (AlignmentTile t : tiles) {
             alignments.addAll(t.getContainedRecords());
             counts.add(t.getCounts());
+            downsampledIntervals.addAll(t.getDownsampledIntervals());
 
             if (spliceJunctionFeatures != null) {
                 List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
@@ -530,12 +531,12 @@ public class CachingQueryReader {
         private AlignmentCounts counts;
         private List<Alignment> containedRecords;
         private List<Alignment> overlappingRecords;
+        private List<DownsampledInterval> downsampledIntervals;
         private List<SpliceJunctionFeature> containedSpliceJunctionFeatures;
         private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
         private int samplingDepth;
-        private double samplingProb = 1;
         private SamplingBucket currentSamplingBucket;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
@@ -548,6 +549,7 @@ public class CachingQueryReader {
             this.end = end;
             containedRecords = new ArrayList(16000);
             overlappingRecords = new ArrayList();
+            downsampledIntervals = new ArrayList();
 
             // Use a sparse array for large regions
             if ((end - start) > 100000) {
@@ -606,8 +608,6 @@ public class CachingQueryReader {
             }
 
             currentSamplingBucket.add(alignment);
-
-
         }
 
         private void emptyBucket() {
@@ -620,7 +620,7 @@ public class CachingQueryReader {
             if (currentSamplingBucket.isSampled()) {
                 DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
                         currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
-               // System.out.println(interval);
+                downsampledIntervals.add(interval);
             }
 
             currentSamplingBucket = null;
@@ -641,9 +641,12 @@ public class CachingQueryReader {
             return containedRecords;
         }
 
-
         public List<Alignment> getOverlappingRecords() {
             return overlappingRecords;
+        }
+
+        public List<DownsampledInterval> getDownsampledIntervals() {
+            return downsampledIntervals;
         }
 
         public boolean isLoaded() {
@@ -696,7 +699,6 @@ public class CachingQueryReader {
             int end;
             int downsampledCount = 0;
             List<Alignment> alignments;
-            double beta = 1.0 / samplingDepth;
 
 
             private SamplingBucket(int start, int end) {
@@ -709,17 +711,18 @@ public class CachingQueryReader {
             public void add(Alignment alignment) {
                 // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
                 // If we have the mate in the bucket already, always keep it.
-                if (alignments.size() > samplingDepth) {
+                if (alignments.size() < samplingDepth) {
+                    alignments.add(alignment);
+                } else {
+                    double samplingProb = ((double) samplingDepth) / (samplingDepth +  downsampledCount + 1);
                     if (RAND.nextDouble() < samplingProb) {
                         int idx = (int) (RAND.nextDouble() * (alignments.size() - 1));
                         // Replace random record with this one
                         alignments.set(idx, alignment);
                     }
                     downsampledCount++;
-                } else {
-                    alignments.add(alignment);
+
                 }
-                samplingProb = 1.0 / (beta + (1.0 / samplingProb));
 
             }
 
@@ -745,9 +748,9 @@ public class CachingQueryReader {
 
 
     public static class DownsampledInterval {
-        int start;
-        int end;
-        int count;
+        private int start;
+        private int end;
+        private int count;
 
         public DownsampledInterval(int start, int end, int count) {
             this.start = start;
@@ -757,6 +760,18 @@ public class CachingQueryReader {
 
         public String toString() {
             return start + "-" + end + " (" + count + ")";
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public int getStart() {
+            return start;
         }
     }
 

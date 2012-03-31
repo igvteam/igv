@@ -321,14 +321,15 @@ public class AlignmentDataManager {
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
                     List<AlignmentCounts> counts = new ArrayList();
-
+                    List<CachingQueryReader.DownsampledInterval> downsampledIntervals =
+                            new ArrayList<CachingQueryReader.DownsampledInterval>();
                     List<SpliceJunctionFeature> spliceJunctions = null;
                     if (showSpliceJunctions) {
                         spliceJunctions = new ArrayList<SpliceJunctionFeature>();
                     }
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, maxLevels,
-                            peStats, bisulfiteContext);
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, downsampledIntervals,
+                            maxLevels, peStats, bisulfiteContext);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
@@ -336,7 +337,7 @@ public class AlignmentDataManager {
                             intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                            alignmentRows, counts, spliceJunctions);
+                            alignmentRows, counts, spliceJunctions, downsampledIntervals);
 
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 

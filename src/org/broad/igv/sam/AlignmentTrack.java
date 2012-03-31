@@ -48,6 +48,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.CubicCurve2D;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.*;
@@ -61,6 +62,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
+    static final int DS_MARGIN = 5;
+    static final int DOWNAMPLED_ROW_HEIGHT = 6;
 
     public enum ExperimentType {
         RNA, BISULFITE, OTHER
@@ -226,6 +229,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN);
+
+        h += DOWNAMPLED_ROW_HEIGHT;
+
         return h;
     }
 
@@ -249,22 +255,48 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             sequenceTrack.render(context, seqRect);
         }
 
-        // Top gap.  If there's a sequence track no gap is needed
-        int gap = (seqHeight > 0 ? seqHeight : 6);
-
-        rect.y += gap;
-        rect.height -= gap;
+        // Top gap.
         renderedRect = new Rectangle(rect);
+        renderedRect.y += 2;
+        renderedRect.height -= 2;
 
         if (context.getScale() > minVisibleScale) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Rectangle visibleRect = context.getVisibleRect().intersection(renderedRect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
             return;
-
         }
 
-        renderAlignments(context, rect);
+        Rectangle downsampleRect = new Rectangle(renderedRect);
+        downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
+        renderDownsampledIntervals(context, downsampleRect);
+
+        Rectangle alignmentRect = new Rectangle(renderedRect);
+        alignmentRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN;
+        renderAlignments(context, alignmentRect);
+    }
+
+    private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
+
+        // Might be offscreen
+        if (!context.getVisibleRect().intersects(downsampleRect)) return;
+
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
+        if (loadedInterval == null) return;
+
+        Graphics2D g = context.getGraphic2DForColor(Color.black);
+        List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+        for (CachingQueryReader.DownsampledInterval interval : intervals) {
+            int x0 = context.bpToScreenPixel(interval.getStart());
+            int x1 = context.bpToScreenPixel(interval.getEnd());
+            int w = Math.max(1, x1 - x0);
+            // If there is room, leave a gap on one side
+            if (w > 5) w--;
+            // Greyscale from 0 -> 100 downsampled
+            //int gray = 200 - interval.getCount();
+            //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
+            g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
+        }
     }
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {

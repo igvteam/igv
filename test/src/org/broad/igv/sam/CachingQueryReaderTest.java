@@ -134,7 +134,7 @@ public class CachingQueryReaderTest {
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -275,7 +275,7 @@ public class CachingQueryReaderTest {
 
     public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize) {
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -312,7 +312,7 @@ public class CachingQueryReaderTest {
 
 
             CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                    new ArrayList(), maxDepth, null, null);
+                    new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
             int count = 0;
             Map<String, Integer> pairedReads = new HashMap<String, Integer>();
             while (iter.hasNext()) {
@@ -376,7 +376,7 @@ public class CachingQueryReaderTest {
         int maxDepth = 500;
 
         CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
         int count = 0;
         while (iter.hasNext()) {
             Alignment al = iter.next();
@@ -393,7 +393,6 @@ public class CachingQueryReaderTest {
      */
     private class StartEndSorter implements Comparator<Alignment> {
 
-        @Override
         public int compare(Alignment o1, Alignment o2) {
             Alignment al1 = (Alignment) o1;
             Alignment al2 = (Alignment) o2;
@@ -561,12 +560,10 @@ public class CachingQueryReaderTest {
             this.longseach = longseach;
         }
 
-        @Override
         public boolean hasNext() {
             return counter < length;
         }
 
-        @Override
         public long[] next() {
             if (!hasNext()) {
                 return null;
@@ -577,12 +574,10 @@ public class CachingQueryReaderTest {
             return arr;
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("Can't remove");
         }
 
-        @Override
         public Iterator<long[]> iterator() {
             return this;
         }

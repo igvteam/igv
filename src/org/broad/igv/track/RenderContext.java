@@ -109,6 +109,13 @@ public class RenderContext {
         return referenceFrame;
     }
 
+    public int bpToScreenPixel(double location) {
+        final double scale = getScale();
+        final double origin = getOrigin();
+        return (int) ((location - origin) / scale);
+
+    }
+
     /**
      * Release graphics objects
      *
