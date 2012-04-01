@@ -203,21 +203,23 @@ public class GobyAlignment implements Alignment {
      * @return true if the list has an unbroken chain of back links
      */
     boolean spliceListIsValid(final ObjectArrayList<GobyAlignment> list) {
+
         if (list != null && list.size() > 1) {
             Alignments.AlignmentEntry prevEntry = list.get(0).entry;
             for (int i = 1; i < list.size(); i++) {
                 Alignments.AlignmentEntry currentEntry = list.get(i).entry;
-                Alignments.RelatedAlignmentEntry currentBackwardLink = currentEntry.getSplicedBackwardAlignmentLink();
+                if (!currentEntry.hasSplicedBackwardAlignmentLink()) return false;
+                else {
+                    Alignments.RelatedAlignmentEntry currentBackwardLink = currentEntry.getSplicedBackwardAlignmentLink();
 
-                if ((currentBackwardLink == null) ||
-                        (prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
-                        (prevEntry.getFragmentIndex() >= currentEntry.getFragmentIndex()) ||
-                        (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
-                        (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
-                        (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
-                    return false;
+                    if ((prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
+
+                                    (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
+                                    (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
+                                    (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
+                        return false;
+                    }
                 }
-
                 prevEntry = currentEntry;
             }
         }
@@ -503,7 +505,7 @@ public class GobyAlignment implements Alignment {
                 return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
             } else {
                 ReadMate mate = getMate();
-                if (mate.isMapped()  && isProperPair()) {
+                if (mate.isMapped() && isProperPair()) {
                     return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
                 } else {
                     return Strand.NONE;
