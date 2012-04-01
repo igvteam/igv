@@ -90,7 +90,7 @@ public class MutationLegendPanel extends LegendPanel {
     /**
      * Open the user preferences dialog
      */
-    public void doUserPreferences() {
+    public void edit() {
 
 
         IGV.getInstance().setStatusBarMessage("Setting view properties...");
