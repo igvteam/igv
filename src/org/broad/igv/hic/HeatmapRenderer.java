@@ -76,7 +76,7 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
             try {
                 RealMatrix rm = zd.getPearsons(df);
-
+                /*
                 BufferedImage image = (BufferedImage) mainWindow.createImage(rm.getRowDimension(),rm.getColumnDimension());
                 Graphics2D myg = image.createGraphics();
                 renderMatrix(0,0, rm, colorScale, myg, zd.getZoom());
@@ -97,11 +97,11 @@ public class HeatmapRenderer {
                 }
                 else {image2 = image;}
                 try {
-                File file = new File("C:/Documents and Settings/neva/pearsons"+zd.getZoom()+".jpg");
-                ImageIO.write(image2, "jpg", file);
+                File file = new File("C:/Documents and Settings/neva/pearsons"+zd.getZoom()+".bmp");
+                ImageIO.write(image2, "bmp", file);
                 }
                 catch (IOException e){}
-
+                  */
                 renderMatrix(originX, originY, rm, colorScale, g, zd.getZoom());
             }
             catch (RuntimeException e) {

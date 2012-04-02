@@ -31,7 +31,7 @@ public class MatrixZoomData {
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
     private RealMatrix pearsons;
-    private RealMatrix oe;
+    private SparseRealMatrix oe;
     //private double sum;
 
 
@@ -200,8 +200,9 @@ public class MatrixZoomData {
             if (oe == null)
                 oe = computeOE(df);
             
-           return (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+           pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
         }
+
         return pearsons;
     }
     
@@ -263,14 +264,16 @@ public class MatrixZoomData {
                 return false;
         return true;
     }
-    public RealMatrix computeOE(DensityFunction df) {
+    public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
 
         int nBins = chr1.getSize() / binSize + 1;
-        RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
+
+        SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
+        //RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         for (int blockNumber : blockNumbers) {
