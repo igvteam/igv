@@ -196,7 +196,7 @@ public class CachingQueryReaderTest {
         int end = start + 1;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence, start, end, expSize * 2, expSize);
+        tstSize(cachingReader, sequence, start, end, (int) (expSize * 1.6), expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Edge location, downsampled
@@ -208,7 +208,7 @@ public class CachingQueryReaderTest {
         reader = AlignmentReaderFactory.getReader(loc);
         cachingReader = new CachingQueryReader(reader);
 
-        tstSize(cachingReader, sequence, start, end, expSize * 2, expSize);
+        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
@@ -221,7 +221,7 @@ public class CachingQueryReaderTest {
         reader = AlignmentReaderFactory.getReader(loc);
         cachingReader = new CachingQueryReader(reader);
 
-        tstSize(cachingReader, sequence, start, end, expSize * 2, expSize);
+        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
     }
 
