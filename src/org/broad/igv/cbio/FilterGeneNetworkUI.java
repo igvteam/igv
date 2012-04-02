@@ -1,13 +1,29 @@
 /*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Tue Mar 06 14:09:15 EST 2012
  */
 
 package org.broad.igv.cbio;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.BrowserLauncher;
 import org.w3c.dom.Node;
 
@@ -33,29 +49,95 @@ import java.util.Set;
  */
 public class FilterGeneNetworkUI extends JDialog {
 
+    private Logger log = Logger.getLogger(FilterGeneNetworkUI.class);
+
     private GeneList geneList;
     private List<AttributeFilter> filterRows = new ArrayList<AttributeFilter>(1);
-    GeneNetwork network;
+    GeneNetwork network = null;
 
     private GraphListModel listModel;
 
     public FilterGeneNetworkUI(Frame owner, GeneList geneList) {
         super(owner);
         this.geneList = geneList;
-        initComponents();
-        initComponentData(geneList.getLoci());
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible && network == null) {
+            loadcBioData(this.geneList.getLoci());
+        } else {
+            super.setVisible(visible);
+        }
+    }
+
+    private void loadcBioData(final List<String> geneLoci) {
+
+        final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
+        final ProgressBar progressBar = ProgressBar.showProgressDialog((Frame) getOwner(), "Loading cBio data...", indefMonitor, true);
+        progressBar.setIndeterminate(true);
+        indefMonitor.start();
+
+
+        final Runnable showUI = new Runnable() {
+            @Override
+            public void run() {
+                initComponents();
+                initComponentData();
+                setVisible(true);
+            }
+        };
+
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+
+                WaitCursorManager.CursorToken token = null;
+
+                try {
+                    token = WaitCursorManager.showWaitCursor();
+                    network = GeneNetwork.getFromCBIO(geneLoci);
+                    network.annotateAll(IGV.getInstance().getAllTracks(false));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                    MessageUtils.showMessage("Error loading data: " + e.getMessage());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+
+                    if (progressBar != null) {
+                        progressBar.close();
+                        indefMonitor.stop();
+                    }
+                    UIUtilities.invokeOnEventThread(showUI);
+                }
+            }
+        };
+
+        // If we're on the dispatch thread spawn a worker, otherwise just execute.
+        if (SwingUtilities.isEventDispatchThread()) {
+            SwingWorker worker = new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    runnable.run();
+                    return null;
+                }
+            };
+
+            worker.execute();
+        } else {
+            runnable.run();
+        }
     }
 
     /**
-     * Load relevant data from IGV to initialize
-     * displayed components.
+     * Load data into visual components. This should be called
+     * AFTER loading network.
      */
-    private void initComponentData(List<String> geneLoci) {
+    private void initComponentData() {
         add();
         loadThresholds();
 
-        network = GeneNetwork.getFromCBIO(geneLoci);
-        network.annotateAll(IGV.getInstance().getAllTracks(false));
         listModel = new GraphListModel();
         geneTable.setModel(listModel);
         applySoftFilters();
@@ -148,7 +230,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private void loadThresholds() {
         String mut = PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD, "" + 0.1);
-        String amp = PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.1);
+        String amp = PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.7);
         String exp = PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_THRESHOLD, "" + 0.1);
         mutInput.setText(mut);
         ampInput.setText(amp);
