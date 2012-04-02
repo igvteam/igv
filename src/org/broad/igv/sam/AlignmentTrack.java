@@ -48,7 +48,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.geom.CubicCurve2D;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.*;
@@ -127,7 +126,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private Rectangle renderedRect;
     private HashMap<String, Color> selectedReadNames = new HashMap();
     private int selectionColorIndex = 0;
-    private int minHeight = 50;
     private AlignmentDataManager dataManager;
 
     private Genome genome;
@@ -148,6 +146,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         this.genome = genome;
         this.dataManager = dataManager;
+
+        minimumHeight = 50;
+        maximumHeight = Integer.MAX_VALUE;
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
@@ -217,21 +218,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void setHeight(int preferredHeight) {
         super.setHeight(preferredHeight);
-        minHeight = preferredHeight;
+        minimumHeight = preferredHeight;
     }
 
     @Override
     public int getHeight() {
 
         if (parent != null && parent.getFrame().getScale() > minVisibleScale) {
-            return minHeight;
+            return minimumHeight;
         }
 
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN);
 
+        int h = Math.max(minimumHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN);
         h += DOWNAMPLED_ROW_HEIGHT;
-
+        h = Math.min(maximumHeight, h);
         return h;
     }
 
@@ -319,11 +320,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             Rectangle visibleRect = context.getVisibleRect();
             final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
+            if (renderOptions.isPairedArcView()) {
+                maximumHeight = visibleRect.height - coverageTrack.getHeight();
+            } else {
+                maximumHeight = Integer.MAX_VALUE;
+            }
+
             // Divide rectangle into equal height levels
             double y = inputRect.getY();
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
-                int visHeight = context.getVisibleRect().height;
+                int visHeight = visibleRect.height;
                 int depth = dataManager.getMaxLevels();
                 squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = squishedHeight;
@@ -346,6 +353,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
 
                     if (y + h > visibleRect.getY()) {
+                        if (renderOptions.isPairedArcView()) {
+                            y = visibleRect.getHeight() - h;
+                        }
                         Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                         renderer.renderAlignments(row.alignments,
                                 context,
