@@ -205,20 +205,24 @@ public class CachingQueryReaderTest {
         end = start + 1;
         expSize = 165;
 
-        tstSize(cachingReader, sequence, start, end, expSize + 2, expSize);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+        tstSize(cachingReader, sequence, start, end, expSize * 2, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
         sequence = "chr12";
-        start = 56815674;
+        start = 56815675 - 1;
         end = start + 1;
 
         expSize = 3288;
 
-        tstSize(cachingReader, sequence, start, end, expSize * 5, expSize);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+        tstSize(cachingReader, sequence, start, end, expSize * 2, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
-
-
     }
 
     @Test
