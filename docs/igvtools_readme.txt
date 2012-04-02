@@ -69,7 +69,7 @@ do not work with BAM files.  For manipulating BAM files use samtools.
 ---------------------------------------------------------------------------
 Command "tile"
 ---------------------------------------------------------------------------
-This command is deprecated. Use "toTDF" instead.
+Warning: This command is deprecated. Use "toTDF" instead.
 
 ---------------------------------------------------------------------------
 Command "toTDF"
