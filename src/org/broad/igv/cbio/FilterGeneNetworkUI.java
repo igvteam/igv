@@ -530,7 +530,7 @@ public class FilterGeneNetworkUI extends JDialog {
                 case 0:
                     return nm;
                 case 1:
-                    return network.edgesOf(n).size();
+                    return network.edgesOfFiltered(n).size();
                 default:
                     return null;
             }

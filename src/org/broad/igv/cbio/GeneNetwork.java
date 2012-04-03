@@ -24,7 +24,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.*;
 import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.Pseudograph;
+import org.jgrapht.graph.DirectedMultigraph;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -40,7 +40,7 @@ import java.util.zip.GZIPOutputStream;
  * User: jacob
  * Date: 2012/01/31
  */
-public class GeneNetwork extends Pseudograph<Node, Node> {
+public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
     private Logger log = Logger.getLogger(GeneNetwork.class);
 
@@ -206,6 +206,33 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         Set<Node> filteredSet = new HashSet<Node>(this.vertexSet());
         filteredSet.removeAll(rejectedNodes);
         return filteredSet;
+    }
+
+    /**
+     * Return the set of edges connected to this node, whose neighbors
+     * are not filtered out. If this node is filtered out, will
+     * return the empty set.
+     *
+     * @param n
+     * @return
+     */
+    public Set<Node> edgesOfFiltered(Node n) {
+        if (rejectedNodes.contains(n)) {
+            return new HashSet<Node>(0);
+        }
+        Set<Node> filteredEdges = new HashSet<Node>(this.edgesOf(n).size());
+        for (Node edge : this.outgoingEdgesOf(n)) {
+            if (!rejectedNodes.contains(this.getEdgeTarget(edge)) && !rejectedEdges.contains(edge)) {
+                filteredEdges.add(edge);
+            }
+        }
+
+        for (Node edge : this.incomingEdgesOf(n)) {
+            if (!rejectedNodes.contains(this.getEdgeSource(edge)) && !rejectedEdges.contains(edge)) {
+                filteredEdges.add(edge);
+            }
+        }
+        return filteredEdges;
     }
 
     /**

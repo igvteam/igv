@@ -105,6 +105,17 @@ public class GeneNetworkTest {
         network.loadNetwork(testpath);
         boolean removed = network.filterNodes(tPred) > 0;
         assertTrue(removed);
+
+        //Test that we can get the filtered edges of a node
+        Set<Node> keptNodes = new HashSet<Node>();
+        for (Node n : network.vertexSetFiltered()) {
+            for (Node e : network.edgesOfFiltered(n)) {
+                keptNodes.add(network.getEdgeSource(e));
+                keptNodes.add(network.getEdgeTarget(e));
+            }
+        }
+        assertEquals(network.vertexSetFiltered().size(), keptNodes.size());
+        assertTrue("Soft filtering not performed", keptNodes.size() < network.vertexSet().size());
     }
 
     /**
