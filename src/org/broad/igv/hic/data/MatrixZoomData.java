@@ -32,8 +32,7 @@ public class MatrixZoomData {
     private DatasetReader reader;
     private RealMatrix pearsons;
     private SparseRealMatrix oe;
-    //private double sum;
-
+    private double[] eigenvector;
 
     public class ScaleParameters {
         double percentile90;
@@ -172,27 +171,43 @@ public class MatrixZoomData {
         return b;
     }
 
-    public RealVector getEigenvector(DensityFunction df, int which)    {
-        if (oe == null) {
-            oe = computeOE(df);
-        }
-        pearsons = getPearsons(df);
-        int size = pearsons.getColumnDimension();
-        LinkedList<Integer> goodCols = new LinkedList<Integer>();
+    public double[] getEigenvector(DensityFunction df, int which)    {
+        if (eigenvector == null) {
+            if (pearsons == null) {
+                pearsons = getPearsons(df);
+            }
+            int size = pearsons.getColumnDimension();
+            eigenvector = new double[size];
+            int numgood = 0;
 
-        for (int i=0; i<size; i++) {
-            if (!isZeros(oe.getColumn(i)))
-                // include it...
-                goodCols.add(i);
-        }
-        int[] cols = new int[goodCols.size()];
-        int i=0;
-        for (Integer goodCol : goodCols) cols[i++] = goodCol;
+            for (int i=0; i<size; i++) {
+                eigenvector[i] = -10000;
+                if (!isZeros(oe.getColumn(i))) {
+                    eigenvector[i] = 1;
+                    numgood++;
+                }
+            }
+            int[] cols = new int[numgood];
+            numgood = 0;
+            for (int i=0; i < size; i++)
+                if (eigenvector[i] > 0)
+                    cols[numgood++] = i;
 
-        RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
-        if (which >= subMatrix.getColumnDimension() || which < 0)
-            throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
-        return (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
+            RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+            if (which >= subMatrix.getColumnDimension() || which < 0)
+                throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+            
+            RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
+            double[] ev = rv.toArray();
+            numgood = 0;
+            for (int i=0; i<size; i++) {
+                if (eigenvector[i] == -10000)
+                    eigenvector[i] = 0;
+                else
+                    eigenvector[i] = ev[numgood++];
+            }
+        }
+        return eigenvector;
     }
 
     public RealMatrix getPearsons(DensityFunction df) {

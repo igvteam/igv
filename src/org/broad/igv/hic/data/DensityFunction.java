@@ -17,7 +17,6 @@ public class DensityFunction {
     double[] density;
     int gridSize;
     private int nPoints;
-    private double sum;
     Map<Integer, Double> normFactors;
 
     public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
@@ -25,17 +24,10 @@ public class DensityFunction {
         this.density = densities;
         this.nPoints = densities.length;
         this.normFactors = normFactors;
-        this.sum = 0;
-        for (int i=0; i<nPoints; i++)
-            this.sum += density[i];
     }
 
     public DensityFunction(DensityCalculation calculation) {
         this(calculation.getGridSize(), calculation.getDensityAvg(), calculation.getNormalizationFactors());
-    }
-
-    public double getSum() {
-        return this.sum;
     }
 
     public double getDensity(int chrIdx, int distance) {

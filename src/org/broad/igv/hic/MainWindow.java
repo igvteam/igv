@@ -74,6 +74,8 @@ public class MainWindow extends JFrame {
     private ObservedColorScale observedColorScale;
     private ColorScale oeColorScale;
     private ColorScale pearsonColorScale;
+    private boolean showEigenvector = false;
+    private boolean showDNAseI = false;
 
     private DisplayOption displayOption = DisplayOption.OBSERVED;
 
@@ -81,9 +83,8 @@ public class MainWindow extends JFrame {
     public static void main(String[] args) throws IOException {
 
         final MainWindow mainWindow = new MainWindow();
-        mainWindow.addLoadItems();
         mainWindow.setVisible(true);
-        mainWindow.setSize(950, 700);
+        //mainWindow.setSize(950, 700);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -129,7 +130,6 @@ public class MainWindow extends JFrame {
         rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
         });
-
 
         createCursors();
 
@@ -312,8 +312,6 @@ public class MainWindow extends JFrame {
     }
 
     private void setInitialZoom() {
-
-
         int len = (Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = getHeatmapPanel().getWidth();
         int maxNBins = pixels / BIN_PIXEL_WIDTH;
@@ -378,7 +376,6 @@ public class MainWindow extends JFrame {
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-        saveToImage.setEnabled(true);
         int newBinSize = zd.getBinSize();
 
         // Scale in basepairs per screen pixel
@@ -418,7 +415,6 @@ public class MainWindow extends JFrame {
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
-        saveToImage.setEnabled(true);
 
         resolutionSlider.setValue(zoom);
         xContext.setZoom(zoom, scale);
@@ -519,7 +515,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMaximum(20000);
             colorRangeSlider.setMinimum(0);
             zd = null;
-            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
 
         } catch (IOException e1) {
@@ -534,7 +529,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
-            saveToImage.setEnabled(false);
             load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -548,7 +542,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
             zd = null;
-            saveToImage.setEnabled(false);
             load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -564,7 +557,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
             zd = null;
-            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
 
         } catch (IOException e1) {
@@ -580,7 +572,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMajorTickSpacing(100);
             colorRangeSlider.setUpperValue(1500);
             zd = null;
-            saveToImage.setEnabled(false);
             load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all.hic");
 
         } catch (IOException e1) {
@@ -596,7 +587,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
-            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120313.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -611,7 +601,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
-            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120316.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -626,7 +615,6 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
-            saveToImage.setEnabled(false);
             load("https://iwww.broadinstitute.org/igvdata/hic/COOL-AID_Elena_Mouse_December11.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -679,34 +667,6 @@ public class MainWindow extends JFrame {
         setZoom(newZoom);
         repaint();
     }
-
-    private void saveImageActionPerformed(ActionEvent e) {
-        if (zd != null) {
-            BufferedImage image = (BufferedImage) createImage(1000,1000);
-            Graphics g = image.createGraphics();
-            panel3.paint(g);
-
-            JFileChooser fc = new JFileChooser();
-            fc.showSaveDialog(this);
-            File file = fc.getSelectedFile();
-            try {
-                // default if they give no format or invalid format
-                String fmt = "jpg";
-                int ind = file.getName().indexOf(".");
-                if (ind != -1) {
-                    String ext = file.getName().substring(ind+1);
-                    String[] strs = ImageIO.getWriterFormatNames();
-                    for (String aStr : strs)
-                        if (ext.equals(aStr))
-                            fmt = ext;
-                }
-                ImageIO.write(image.getSubimage(0,0,600,600), fmt, file);
-            }
-            catch (IOException ie) {
-                System.err.println("Unable to write "+file + ": " +ie);
-            }
-        }
-    }
     
     private void getEigenvectorActionPerformed(ActionEvent e) {
         if (zd != null) {
@@ -716,7 +676,7 @@ public class MainWindow extends JFrame {
                 try {
                     String number = JOptionPane.showInputDialog("Which eigenvector do you want to see?");
                     int num = Integer.parseInt(number) - 1;
-                    rv = zd.getEigenvector(df, num).toArray();
+                    rv = zd.getEigenvector(df, num);
                     String str = "";
                     for (int i=0; i<rv.length; i++)  {
                         str += rv[i] + "\n";
@@ -751,9 +711,6 @@ public class MainWindow extends JFrame {
         // TODO add your code here
     }
 
-    private void resolutionComboBoxActionPerformed(ActionEvent e) {
-    }
-
     private void resolutionSliderStateChanged(ChangeEvent e) {
         int idx = resolutionSlider.getValue();
         if (idx >= 0 && idx < HiCGlobals.zoomBinSizes.length) {
@@ -762,12 +719,8 @@ public class MainWindow extends JFrame {
     }
 
     private void colorRangeLabelMouseClicked(MouseEvent e) {
-        //if (e.isPopupTrigger()) {
         ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
         rangeDialog.setVisible(true);
-
-        //}
-
     }
 
     private void colorRangeLabelMousePressed(MouseEvent e) {
@@ -855,43 +808,47 @@ public class MainWindow extends JFrame {
 
 
     private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
-        mainPanel = new JPanel();
-        toolbarPanel = new JPanel();
-        chrSelectionPanel = new JPanel();
-        panel10 = new JPanel();
-        label3 = new JLabel();
-        panel9 = new JPanel();
+        JPanel mainPanel = new JPanel();
+        JPanel toolbarPanel = new JPanel();
+        JPanel chrSelectionPanel = new JPanel();
+        JPanel panel10 = new JPanel();
+        JLabel label3 = new JLabel();
+        JPanel panel9 = new JPanel();
+        JPanel panel2_5 = new JPanel();
+        trackPanel = new JPanel();
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
-        refreshButton = new JideButton();
-        displayOptionPanel = new JPanel();
-        panel14 = new JPanel();
-        label4 = new JLabel();
-        panel1 = new JPanel();
+        JideButton refreshButton = new JideButton();
+        JPanel displayOptionPanel = new JPanel();
+        JPanel panel14 = new JPanel();
+        JLabel label4 = new JLabel();
+        JPanel panel1 = new JPanel();
         comboBox1 = new JComboBox();
-        colorRangePanel = new JPanel();
-        panel11 = new JPanel();
-        colorRangeLabel = new JLabel();
+        JPanel colorRangePanel = new JPanel();
+        JPanel panel11 = new JPanel();
+        JLabel colorRangeLabel = new JLabel();
         colorRangeSlider = new RangeSlider();
-        resolutionPanel = new JPanel();
-        panel12 = new JPanel();
-        resolutionLabel = new JLabel();
-        panel2 = new JPanel();
+        JLabel resolutionLabel = new JLabel();
+        JPanel resolutionPanel = new JPanel();
+        JPanel panel12 = new JPanel();
+        JPanel panel2 = new JPanel();
         resolutionSlider = new JSlider();
         panel3 = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
         heatmapPanel = new HeatmapPanel(this);
         rulerPanel1 = new HiCRulerPanel(this);
-        panel8 = new JPanel();
+        JPanel panel8 = new JPanel();
         thumbnailPanel = new ThumbnailPanel();
         xPlotPanel = new JPanel();
         yPlotPanel = new JPanel();
-        menuBar1 = new JMenuBar();
-        fileMenu = new JMenu();
-        loadMenuItem = new JMenuItem();
-        loadFromURL = new JMenuItem();
+        JMenuBar menuBar1 = new JMenuBar();
+        JMenu fileMenu = new JMenu();
+        JMenu viewMenu = new JMenu();
+        JMenuItem loadMenuItem = new JMenuItem();
+        JMenuItem loadFromURL = new JMenuItem();
+        JMenuItem getEigenvector = new JMenuItem();
+        final JCheckBoxMenuItem viewEigenvector;
+        final JCheckBoxMenuItem viewDNAseI;
 
         //======== this ========
         addComponentListener(new ComponentAdapter() {
@@ -902,324 +859,321 @@ public class MainWindow extends JFrame {
         });
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
+        mainPanel.setLayout(new BorderLayout());
 
-        //======== mainPanel ========
-        {
-            mainPanel.setLayout(new BorderLayout());
+        toolbarPanel.setBorder(null);
+        toolbarPanel.setLayout(new GridLayout());
 
-            //======== toolbarPanel ========
-            {
-                toolbarPanel.setBorder(null);
-                toolbarPanel.setLayout(new GridLayout());
+        chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
+        chrSelectionPanel.setMinimumSize(new Dimension(130, 57));
+        chrSelectionPanel.setPreferredSize(new Dimension(130, 57));
+        chrSelectionPanel.setLayout(new BorderLayout());
 
-                //======== chrSelectionPanel ========
-                {
-                    chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
-                    chrSelectionPanel.setMinimumSize(new Dimension(130, 57));
-                    chrSelectionPanel.setPreferredSize(new Dimension(130, 57));
-                    chrSelectionPanel.setLayout(new BorderLayout());
+        panel10.setBackground(new Color(204, 204, 204));
+        panel10.setLayout(new BorderLayout());
 
-                    //======== panel10 ========
-                    {
-                        panel10.setBackground(new Color(204, 204, 204));
-                        panel10.setLayout(new BorderLayout());
+        label3.setText("Chromosomes");
+        label3.setHorizontalAlignment(SwingConstants.CENTER);
+        panel10.add(label3, BorderLayout.CENTER);
 
-                        //---- label3 ----
-                        label3.setText("Chromosomes");
-                        label3.setHorizontalAlignment(SwingConstants.CENTER);
-                        panel10.add(label3, BorderLayout.CENTER);
-                    }
-                    chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
+        chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
 
-                    //======== panel9 ========
-                    {
-                        panel9.setBackground(new Color(238, 238, 238));
-                        panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
+        panel9.setBackground(new Color(238, 238, 238));
+        panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
-                        //---- chrBox1 ----
-                        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                "All"
-                        }));
-                        chrBox1.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                chrBox1ActionPerformed(e);
-                            }
-                        });
-                        panel9.add(chrBox1);
-
-                        //---- chrBox2 ----
-                        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
-                                "All"
-                        }));
-                        chrBox2.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                chrBox2ActionPerformed(e);
-                            }
-                        });
-                        panel9.add(chrBox2);
-
-                        //---- refreshButton ----
-                        refreshButton.setIcon(new ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));
-                        refreshButton.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                refreshButtonActionPerformed(e);
-                            }
-                        });
-                        panel9.add(refreshButton);
-                    }
-                    chrSelectionPanel.add(panel9, BorderLayout.CENTER);
-                }
-                toolbarPanel.add(chrSelectionPanel);
-
-                //======== displayOptionPanel ========
-                {
-                    displayOptionPanel.setBackground(new Color(238, 238, 238));
-                    displayOptionPanel.setBorder(LineBorder.createGrayLineBorder());
-                    displayOptionPanel.setLayout(new BorderLayout());
-
-                    //======== panel14 ========
-                    {
-                        panel14.setBackground(new Color(204, 204, 204));
-                        panel14.setLayout(new BorderLayout());
-
-                        //---- label4 ----
-                        label4.setText("Show");
-                        label4.setHorizontalAlignment(SwingConstants.CENTER);
-                        panel14.add(label4, BorderLayout.CENTER);
-                    }
-                    displayOptionPanel.add(panel14, BorderLayout.PAGE_START);
-
-                    //======== panel1 ========
-                    {
-                        panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
-                        panel1.setLayout(new GridLayout(1, 0, 20, 0));
-
-                        //---- comboBox1 ----
-                        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
-                                "Observed"
-                        }));
-                        comboBox1.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                comboBox1ActionPerformed(e);
-                            }
-                        });
-                        panel1.add(comboBox1);
-                    }
-                    displayOptionPanel.add(panel1, BorderLayout.CENTER);
-                }
-                toolbarPanel.add(displayOptionPanel);
-
-                //======== colorRangePanel ========
-                {
-                    colorRangePanel.setBorder(LineBorder.createGrayLineBorder());
-                    colorRangePanel.setMinimumSize(new Dimension(96, 70));
-                    colorRangePanel.setPreferredSize(new Dimension(202, 70));
-                    colorRangePanel.setMaximumSize(new Dimension(32769, 70));
-                    colorRangePanel.setLayout(new BorderLayout());
-
-                    //======== panel11 ========
-                    {
-                        panel11.setBackground(new Color(204, 204, 204));
-                        panel11.setLayout(new BorderLayout());
-
-                        //---- colorRangeLabel ----
-                        colorRangeLabel.setText("Color Range");
-                        colorRangeLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                        colorRangeLabel.setToolTipText("Range of color scale in counts per mega-base squared.");
-                        colorRangeLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-                        colorRangeLabel.addMouseListener(new MouseAdapter() {
-                            @Override
-                            public void mousePressed(MouseEvent e) {
-                                colorRangeLabelMousePressed(e);
-                            }
-
-                            @Override
-                            public void mouseClicked(MouseEvent e) {
-                                colorRangeLabelMouseClicked(e);
-                            }
-                        });
-                        panel11.add(colorRangeLabel, BorderLayout.CENTER);
-                    }
-                    colorRangePanel.add(panel11, BorderLayout.PAGE_START);
-
-                    //---- colorRangeSlider ----
-                    colorRangeSlider.setPaintTicks(true);
-                    colorRangeSlider.setPaintLabels(true);
-                    colorRangeSlider.setLowerValue(0);
-                    colorRangeSlider.setMajorTickSpacing(500);
-                    colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
-                    colorRangeSlider.setPreferredSize(new Dimension(200, 52));
-                    colorRangeSlider.setMinimumSize(new Dimension(36, 52));
-                    colorRangeSlider.setMaximum(2000);
-                    colorRangeSlider.setUpperValue(500);
-                    colorRangeSlider.setMinorTickSpacing(100);
-                    colorRangeSlider.addChangeListener(new ChangeListener() {
-                        public void stateChanged(ChangeEvent e) {
-                            colorRangeSliderStateChanged(e);
-                        }
-                    });
-                    colorRangePanel.add(colorRangeSlider, BorderLayout.PAGE_END);
-                }
-                toolbarPanel.add(colorRangePanel);
-
-                //======== resolutionPanel ========
-                {
-                    resolutionPanel.setBorder(LineBorder.createGrayLineBorder());
-                    resolutionPanel.setLayout(new BorderLayout());
-
-                    //======== panel12 ========
-                    {
-                        panel12.setBackground(new Color(204, 204, 204));
-                        panel12.setLayout(new BorderLayout());
-
-                        //---- resolutionLabel ----
-                        resolutionLabel.setText("Resolution");
-                        resolutionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                        resolutionLabel.setBackground(new Color(204, 204, 204));
-                        panel12.add(resolutionLabel, BorderLayout.CENTER);
-                    }
-                    resolutionPanel.add(panel12, BorderLayout.PAGE_START);
-
-                    //======== panel2 ========
-                    {
-                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
-
-                        //---- resolutionSlider ----
-                        resolutionSlider.setMaximum(7);
-                        resolutionSlider.setMajorTickSpacing(1);
-                        resolutionSlider.setPaintTicks(true);
-                        resolutionSlider.setSnapToTicks(true);
-                        resolutionSlider.setPaintLabels(true);
-                        resolutionSlider.setMinorTickSpacing(1);
-                        resolutionSlider.addChangeListener(new ChangeListener() {
-                            public void stateChanged(ChangeEvent e) {
-                                resolutionSliderStateChanged(e);
-                            }
-                        });
-                        panel2.add(resolutionSlider);
-                    }
-                    resolutionPanel.add(panel2, BorderLayout.CENTER);
-                }
-                toolbarPanel.add(resolutionPanel);
+        //---- chrBox1 ----
+        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
+                "All"
+        }));
+        chrBox1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                chrBox1ActionPerformed(e);
             }
-            mainPanel.add(toolbarPanel, BorderLayout.NORTH);
+        });
+        panel9.add(chrBox1);
 
-            //======== panel3 ========
-            {
-                panel3.setLayout(new HiCLayout());
-
-                //---- rulerPanel2 ----
-                rulerPanel2.setMaximumSize(new Dimension(4000, 50));
-                rulerPanel2.setMinimumSize(new Dimension(1, 50));
-                rulerPanel2.setPreferredSize(new Dimension(1, 50));
-                rulerPanel2.setBorder(null);
-                panel3.add(rulerPanel2, BorderLayout.NORTH);
-
-                //---- heatmapPanel ----
-                heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
-                heatmapPanel.setMaximumSize(new Dimension(500, 500));
-                heatmapPanel.setMinimumSize(new Dimension(500, 500));
-                heatmapPanel.setPreferredSize(new Dimension(500, 500));
-                heatmapPanel.setBackground(new Color(238, 238, 238));
-                heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
-                    @Override
-                    public void mouseDragged(MouseEvent e) {
-                        heatmapPanelMouseDragged(e);
-                    }
-                });
-                panel3.add(heatmapPanel, BorderLayout.CENTER);
-
-                //---- rulerPanel1 ----
-                rulerPanel1.setMaximumSize(new Dimension(50, 4000));
-                rulerPanel1.setPreferredSize(new Dimension(50, 500));
-                rulerPanel1.setBorder(null);
-                rulerPanel1.setMinimumSize(new Dimension(50, 1));
-                panel3.add(rulerPanel1, BorderLayout.WEST);
-
-                //======== panel8 ========
-                {
-                    panel8.setMaximumSize(new Dimension(120, 100));
-                    panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
-                    panel8.setLayout(null);
-
-                    //---- thumbnailPanel ----
-                    thumbnailPanel.setMaximumSize(new Dimension(100, 100));
-                    thumbnailPanel.setMinimumSize(new Dimension(100, 100));
-                    thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-                    thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
-                    panel8.add(thumbnailPanel);
-                    thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
-
-                    //======== xPlotPanel ========
-                    {
-                        xPlotPanel.setPreferredSize(new Dimension(250, 100));
-                        xPlotPanel.setLayout(null);
-                    }
-                    panel8.add(xPlotPanel);
-                    xPlotPanel.setBounds(10, 100, xPlotPanel.getPreferredSize().width, 228);
-
-                    //======== yPlotPanel ========
-                    {
-                        yPlotPanel.setPreferredSize(new Dimension(250, 100));
-                        yPlotPanel.setLayout(null);
-                    }
-                    panel8.add(yPlotPanel);
-                    yPlotPanel.setBounds(10, 328, yPlotPanel.getPreferredSize().width, 228);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel8.getComponentCount(); i++) {
-                            Rectangle bounds = panel8.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel8.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel8.setMinimumSize(preferredSize);
-                        panel8.setPreferredSize(preferredSize);
-                    }
-                }
-                panel3.add(panel8, BorderLayout.EAST);
+        //---- chrBox2 ----
+        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
+                "All"
+        }));
+        chrBox2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                chrBox2ActionPerformed(e);
             }
-            mainPanel.add(panel3, BorderLayout.CENTER);
+        });
+        panel9.add(chrBox2);
+
+        //---- refreshButton ----
+        refreshButton.setIcon(new ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));
+        refreshButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                refreshButtonActionPerformed(e);
+            }
+        });
+        panel9.add(refreshButton);
+
+        chrSelectionPanel.add(panel9, BorderLayout.CENTER);
+
+        toolbarPanel.add(chrSelectionPanel);
+
+        //======== displayOptionPanel ========
+
+        displayOptionPanel.setBackground(new Color(238, 238, 238));
+        displayOptionPanel.setBorder(LineBorder.createGrayLineBorder());
+        displayOptionPanel.setLayout(new BorderLayout());
+
+        //======== panel14 ========
+
+        panel14.setBackground(new Color(204, 204, 204));
+        panel14.setLayout(new BorderLayout());
+
+        //---- label4 ----
+        label4.setText("Show");
+        label4.setHorizontalAlignment(SwingConstants.CENTER);
+        panel14.add(label4, BorderLayout.CENTER);
+
+        displayOptionPanel.add(panel14, BorderLayout.PAGE_START);
+
+        //======== panel1 ========
+
+        panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
+        panel1.setLayout(new GridLayout(1, 0, 20, 0));
+
+        //---- comboBox1 ----
+        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                "Observed"
+        }));
+        comboBox1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                comboBox1ActionPerformed(e);
+            }
+        });
+        panel1.add(comboBox1);
+
+        displayOptionPanel.add(panel1, BorderLayout.CENTER);
+
+        toolbarPanel.add(displayOptionPanel);
+
+        //======== colorRangePanel ========
+
+        colorRangePanel.setBorder(LineBorder.createGrayLineBorder());
+        colorRangePanel.setMinimumSize(new Dimension(96, 70));
+        colorRangePanel.setPreferredSize(new Dimension(202, 70));
+        colorRangePanel.setMaximumSize(new Dimension(32769, 70));
+        colorRangePanel.setLayout(new BorderLayout());
+
+        //======== panel11 ========
+
+        panel11.setBackground(new Color(204, 204, 204));
+        panel11.setLayout(new BorderLayout());
+
+        //---- colorRangeLabel ----
+        colorRangeLabel.setText("Color Range");
+        colorRangeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        colorRangeLabel.setToolTipText("Range of color scale in counts per mega-base squared.");
+        colorRangeLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+        colorRangeLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                colorRangeLabelMousePressed(e);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                colorRangeLabelMouseClicked(e);
+            }
+        });
+        panel11.add(colorRangeLabel, BorderLayout.CENTER);
+
+        colorRangePanel.add(panel11, BorderLayout.PAGE_START);
+
+        //---- colorRangeSlider ----
+        colorRangeSlider.setPaintTicks(true);
+        colorRangeSlider.setPaintLabels(true);
+        colorRangeSlider.setLowerValue(0);
+        colorRangeSlider.setMajorTickSpacing(500);
+        colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
+        colorRangeSlider.setPreferredSize(new Dimension(200, 52));
+        colorRangeSlider.setMinimumSize(new Dimension(36, 52));
+        colorRangeSlider.setMaximum(2000);
+        colorRangeSlider.setUpperValue(500);
+        colorRangeSlider.setMinorTickSpacing(100);
+        colorRangeSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                colorRangeSliderStateChanged(e);
+            }
+        });
+        colorRangePanel.add(colorRangeSlider, BorderLayout.PAGE_END);
+
+        toolbarPanel.add(colorRangePanel);
+
+        //======== resolutionPanel ========
+
+        resolutionPanel.setBorder(LineBorder.createGrayLineBorder());
+        resolutionPanel.setLayout(new BorderLayout());
+
+        //======== panel12 ========
+
+        panel12.setBackground(new Color(204, 204, 204));
+        panel12.setLayout(new BorderLayout());
+
+        //---- resolutionLabel ----
+        resolutionLabel.setText("Resolution");
+        resolutionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        resolutionLabel.setBackground(new Color(204, 204, 204));
+        panel12.add(resolutionLabel, BorderLayout.CENTER);
+
+        resolutionPanel.add(panel12, BorderLayout.PAGE_START);
+
+        //======== panel2 ========
+
+        panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+        //---- resolutionSlider ----
+        resolutionSlider.setMaximum(7);
+        resolutionSlider.setMajorTickSpacing(1);
+        resolutionSlider.setPaintTicks(true);
+        resolutionSlider.setSnapToTicks(true);
+        resolutionSlider.setPaintLabels(true);
+        resolutionSlider.setMinorTickSpacing(1);
+        resolutionSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                resolutionSliderStateChanged(e);
+            }
+        });
+        panel2.add(resolutionSlider);
+
+        resolutionPanel.add(panel2, BorderLayout.CENTER);
+
+        toolbarPanel.add(resolutionPanel);
+
+        mainPanel.add(toolbarPanel, BorderLayout.NORTH);
+
+        panel2_5.setLayout(new BorderLayout());
+        
+        trackPanel.setMaximumSize(new Dimension(4000,50));
+        trackPanel.setPreferredSize(new Dimension(1, 50));
+        trackPanel.setMinimumSize(new Dimension(1, 50));
+        trackPanel.setBorder(null);
+        trackPanel.setVisible(false);
+        trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
+
+        final TrackPanel eigenvectorPanel = new TrackPanel();
+        eigenvectorPanel.setMaximumSize(new Dimension(4000,50));
+        eigenvectorPanel.setPreferredSize(new Dimension(1, 50));
+        eigenvectorPanel.setMinimumSize(new Dimension(1, 50));
+        eigenvectorPanel.setBorder(null);
+        trackPanel.add(eigenvectorPanel);
+ 
+        panel2_5.add(trackPanel, BorderLayout.NORTH);
+        
+        //======== panel3 ========
+
+        panel3.setLayout(new HiCLayout());
+
+        //---- rulerPanel2 ----
+        rulerPanel2.setMaximumSize(new Dimension(4000, 50));
+        rulerPanel2.setMinimumSize(new Dimension(1, 50));
+        rulerPanel2.setPreferredSize(new Dimension(1, 50));
+        rulerPanel2.setBorder(null);
+        panel2_5.add(rulerPanel2, BorderLayout.SOUTH);
+        panel3.add(panel2_5, BorderLayout.NORTH);
+
+        //---- heatmapPanel ----
+        heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
+        heatmapPanel.setMaximumSize(new Dimension(500, 500));
+        heatmapPanel.setMinimumSize(new Dimension(500, 500));
+        heatmapPanel.setPreferredSize(new Dimension(500, 500));
+        heatmapPanel.setBackground(new Color(238, 238, 238));
+        heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                heatmapPanelMouseDragged(e);
+            }
+        });
+        panel3.add(heatmapPanel, BorderLayout.CENTER);
+
+        //---- rulerPanel1 ----
+        rulerPanel1.setMaximumSize(new Dimension(50, 4000));
+        rulerPanel1.setPreferredSize(new Dimension(50, 500));
+        rulerPanel1.setBorder(null);
+        rulerPanel1.setMinimumSize(new Dimension(50, 1));
+        panel3.add(rulerPanel1, BorderLayout.WEST);
+
+        //======== panel8 ========
+
+        panel8.setMaximumSize(new Dimension(120, 100));
+        panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
+        panel8.setLayout(null);
+
+        //---- thumbnailPanel ----
+        thumbnailPanel.setMaximumSize(new Dimension(100, 100));
+        thumbnailPanel.setMinimumSize(new Dimension(100, 100));
+        thumbnailPanel.setPreferredSize(new Dimension(100, 100));
+        thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
+        panel8.add(thumbnailPanel);
+        thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
+
+        //======== xPlotPanel ========
+
+        xPlotPanel.setPreferredSize(new Dimension(250, 100));
+        xPlotPanel.setLayout(null);
+
+        panel8.add(xPlotPanel);
+        xPlotPanel.setBounds(10, 100, xPlotPanel.getPreferredSize().width, 228);
+
+        //======== yPlotPanel ========
+
+        yPlotPanel.setPreferredSize(new Dimension(250, 100));
+        yPlotPanel.setLayout(null);
+
+        panel8.add(yPlotPanel);
+        yPlotPanel.setBounds(10, 328, yPlotPanel.getPreferredSize().width, 228);
+
+        // compute preferred size
+        Dimension preferredSize = new Dimension();
+        for (int i = 0; i < panel8.getComponentCount(); i++) {
+            Rectangle bounds = panel8.getComponent(i).getBounds();
+            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
         }
+        Insets insets = panel8.getInsets();
+        preferredSize.width += insets.right;
+        preferredSize.height += insets.bottom;
+        panel8.setMinimumSize(preferredSize);
+        panel8.setPreferredSize(preferredSize);
+
+
+        panel3.add(panel8, BorderLayout.EAST);
+
+        mainPanel.add(panel3, BorderLayout.CENTER);
+
         contentPane.add(mainPanel, BorderLayout.CENTER);
 
         //======== menuBar1 ========
-        {
+        //======== fileMenu ========
+        fileMenu.setText("File");
 
-            //======== fileMenu ========
-            {
-                fileMenu.setText("File");
-
-                //---- loadMenuItem ----
-                loadMenuItem.setText("Load...");
-                loadMenuItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadMenuItemActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadMenuItem);
-
-                //---- loadFromURL ----
-                loadFromURL.setText("Load from URL ...");
-                loadFromURL.setName("loadFromURL");
-                loadFromURL.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadFromURLActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadFromURL);
-                fileMenu.addSeparator();
+        //---- loadMenuItem ----
+        loadMenuItem.setText("Load...");
+        loadMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadMenuItemActionPerformed(e);
             }
-            menuBar1.add(fileMenu);
-        }
-        contentPane.add(menuBar1, BorderLayout.NORTH);
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
-    }
+        });
+        fileMenu.add(loadMenuItem);
 
-    private void addLoadItems() {
+        //---- loadFromURL ----
+        loadFromURL.setText("Load from URL ...");
+        loadFromURL.setName("loadFromURL");
+        loadFromURL.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadFromURLActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadFromURL);
+        fileMenu.addSeparator();
+        
         //---- loadGM ----
         JMenuItem loadGM = new JMenuItem("GM cell line (human)");
         loadGM.addActionListener(new ActionListener() {
@@ -1296,14 +1250,35 @@ public class MainWindow extends JFrame {
         });
         fileMenu.add(loadDmelDataset);
         fileMenu.addSeparator();
-        saveToImage = new JMenuItem();
+
+        JMenuItem saveToImage = new JMenuItem();
         saveToImage.setText("Save to image");
         saveToImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                saveImageActionPerformed(e);
+                BufferedImage image = (BufferedImage) createImage(1000, 1000);
+                Graphics g = image.createGraphics();
+                panel3.paint(g);
+
+                JFileChooser fc = new JFileChooser();
+                fc.showSaveDialog(null);
+                File file = fc.getSelectedFile();
+                try {
+                    // default if they give no format or invalid format
+                    String fmt = "jpg";
+                    int ind = file.getName().indexOf(".");
+                    if (ind != -1) {
+                        String ext = file.getName().substring(ind + 1);
+                        String[] strs = ImageIO.getWriterFormatNames();
+                        for (String aStr : strs)
+                            if (ext.equals(aStr))
+                                fmt = ext;
+                    }
+                    ImageIO.write(image.getSubimage(0, 0, 600, 600), fmt, file);
+                } catch (IOException ie) {
+                    System.err.println("Unable to write " + file + ": " + ie);
+                }
             }
         });
-        saveToImage.setEnabled(false);
         fileMenu.add(saveToImage);
         getEigenvector = new JMenuItem("Get principal eigenvector");
         getEigenvector.addActionListener(new ActionListener() {
@@ -1322,48 +1297,71 @@ public class MainWindow extends JFrame {
         });
         fileMenu.add(exit);
 
+
+        menuBar1.add(fileMenu);
+
+        //======== viewMenu ========
+
+        viewMenu.setText("View");
+        viewEigenvector = new JCheckBoxMenuItem("Eigenvector track");
+        viewEigenvector.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                showEigenvector = viewEigenvector.isSelected();
+                if (showEigenvector) {
+                    if (zd != null) {
+                        DensityFunction df = getDensityFunction(zd.getZoom());
+                        if (df != null) {
+                            double[] rv;
+                            try {
+                                rv = zd.getEigenvector(df, 0);
+                                eigenvectorPanel.setData(rv);
+                                trackPanel.setVisible(true);
+                                pack();
+                            }
+                            catch (NumberFormatException error) {}
+                        }
+                    }
+                }
+                else {
+                    trackPanel.setVisible(false);
+                }
+
+            }
+        });
+        viewMenu.add(viewEigenvector);
+        viewDNAseI = new JCheckBoxMenuItem("DNAseI track");
+        viewDNAseI.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                showDNAseI = viewDNAseI.isSelected();
+                if (showEigenvector || showDNAseI) {
+                    trackPanel.setVisible(true);
+                }
+                else {
+                    trackPanel.setVisible(false);
+                }
+            }
+        });
+        viewMenu.add(viewDNAseI);
+
+        menuBar1.add(viewMenu);
+        contentPane.add(menuBar1, BorderLayout.NORTH);
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
-    private JPanel mainPanel;
-    private JPanel toolbarPanel;
-    private JPanel chrSelectionPanel;
-    private JPanel panel10;
-    private JLabel label3;
-    private JPanel panel9;
+
     private JComboBox chrBox1;
     private JComboBox chrBox2;
-    private JideButton refreshButton;
-    private JPanel displayOptionPanel;
-    private JPanel panel14;
-    private JLabel label4;
-    private JPanel panel1;
     private JComboBox comboBox1;
-    private JPanel colorRangePanel;
-    private JPanel panel11;
-    private JLabel colorRangeLabel;
     private RangeSlider colorRangeSlider;
-    private JPanel resolutionPanel;
-    private JPanel panel12;
-    private JLabel resolutionLabel;
-    private JPanel panel2;
     private JSlider resolutionSlider;
     private JPanel panel3;
+    private JPanel trackPanel;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
-    private JPanel panel8;
+    
     ThumbnailPanel thumbnailPanel;
     private JPanel xPlotPanel;
     private JPanel yPlotPanel;
-    private JMenuBar menuBar1;
-    private JMenu fileMenu;
-    private JMenuItem loadMenuItem;
-    private JMenuItem loadFromURL;
-    private JMenuItem saveToImage;
-    private JMenuItem getEigenvector;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-
 }
