@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.cbio;
@@ -49,7 +42,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class GeneNetwork extends Pseudograph<Node, Node> {
 
-    private Logger logger = Logger.getLogger(GeneNetwork.class);
+    private Logger log = Logger.getLogger(GeneNetwork.class);
 
     public static final String NODE_TAG = "node";
     public static final String EDGE_TAG = "edge";
@@ -60,12 +53,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     /**
      * URL that cbio will use when service is released
      */
-    public static String REAL_URL = "http://www.cbioportal.org/public-portal/webservice.do";
+    static final String REAL_URL = "http://www.cbioportal.org/public-portal/network.do";
     /**
      * URL they use for testing
      */
-    public static final String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
-    public static final String BASE_URL = TEST_URL;
+    static final String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    static String BASE_URL = REAL_URL;
     //    static{
 //        InputStream is = NetworkAnnotator.class.getResourceAsStream("resources/url.txt");
 //        BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -265,23 +258,22 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return this.filterNodes(min_connections) > 0;
     }
 
-    public static GeneNetwork getFromCBIO(Iterable<String> geneList) {
+    public static GeneNetwork getFromCBIO(Iterable<String> geneList) throws IOException {
         String query = HttpUtils.buildURLString(geneList, "+");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
         GeneNetwork network = new GeneNetwork();
-        if (network.loadNetwork(url) > 0) {
-            return network;
-        } else {
-            return null;
-        }
+        network.loadNetwork(url);
+        return network;
     }
 
     /**
      * Load graphml data from provide path.
      *
      * @param path
+     * @throws IOException If something went wrong loading data.
+     *                     Note we wrap other exception types in this.
      */
-    public int loadNetwork(String path) {
+    public int loadNetwork(String path) throws IOException {
         String error = null;
         int numNodes = -1;
         try {
@@ -315,21 +307,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             }
 
             numNodes = this.vertexSet().size();
-
-        } catch (IOException e) {
-            error = e.getMessage();
         } catch (ParserConfigurationException e) {
-            error = e.getMessage();
+            throw new IOException(e.getMessage());
         } catch (SAXException e) {
-            error = e.getMessage();
-        } finally {
-            if (error != null) {
-                logger.error(error);
-                return -1;
-            } else {
-                return numNodes;
-            }
+            throw new IOException(e.getMessage());
         }
+        return numNodes;
     }
 
     /**
@@ -551,8 +534,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             }
             outputStream.flush();
         } catch (IOException e) {
-            logger.error("Error writing cBio stub form to " + outPath);
-            logger.error(e.getMessage());
+            log.error("Error writing cBio stub form to " + outPath);
+            log.error(e.getMessage());
         } finally {
             if (reader != null) {
                 reader.close();

@@ -25,6 +25,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.HttpUtils;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -97,7 +98,12 @@ public class FilterGeneNetworkUI extends JDialog {
                 try {
                     token = WaitCursorManager.showWaitCursor();
                     network = GeneNetwork.getFromCBIO(geneLoci);
-                    network.annotateAll(IGV.getInstance().getAllTracks(false));
+                    if (network.vertexSet().size() == 0) {
+                        MessageUtils.showMessage("No results found for " + HttpUtils.buildURLString(geneLoci, ", "));
+                    } else {
+                        network.annotateAll(IGV.getInstance().getAllTracks(false));
+                        UIUtilities.invokeOnEventThread(showUI);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e.getMessage());
@@ -109,7 +115,6 @@ public class FilterGeneNetworkUI extends JDialog {
                         progressBar.close();
                         indefMonitor.stop();
                     }
-                    UIUtilities.invokeOnEventThread(showUI);
                 }
             }
         };
