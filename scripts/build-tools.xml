@@ -22,7 +22,7 @@
     <property name="version" value="v0.0"/>
     <property name="build-number" value="0.0"/>
 
-    <import file="/build_macros.xml"/>
+    <import file="${basedir}/build_macros.xml"/>
 
 
     <target name="extract-classes">
