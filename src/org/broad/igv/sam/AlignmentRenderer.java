@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
@@ -29,10 +30,10 @@ import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.QuadCurve2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -79,7 +80,11 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static AlignmentRenderer instance;
 
-    public static FeatureRenderer getInstance() {
+    private TreeSet<Shape> arcsByStart;
+    private TreeSet<Shape> arcsByEnd;
+    private HashMap<Shape, Alignment> curveMap;
+
+    public static AlignmentRenderer getInstance() {
         if (instance == null) {
             instance = new AlignmentRenderer();
         }
@@ -90,6 +95,25 @@ public class AlignmentRenderer implements FeatureRenderer {
     private AlignmentRenderer() {
         this.prefs = PreferenceManager.getInstance();
         initializeTagColors();
+        curveMap = new HashMap<Shape, Alignment>();
+
+        arcsByStart = new TreeSet<Shape>(new Comparator<Shape>() {
+            @Override
+            public int compare(Shape o1, Shape o2) {
+                double x1 = o1.getBounds().getMinX();
+                double x2 = o2.getBounds().getMinX();
+                return (int) Math.signum(x1 - x2);
+            }
+        });
+
+        arcsByEnd = new TreeSet<Shape>(new Comparator<Shape>() {
+            @Override
+            public int compare(Shape o1, Shape o2) {
+                double x1 = o1.getBounds().getMaxX();
+                double x2 = o2.getBounds().getMaxX();
+                return (int) Math.signum(x1 - x2);
+            }
+        });
     }
 
     private void initializeTagColors() {
@@ -317,48 +341,59 @@ public class AlignmentRenderer implements FeatureRenderer {
             Font font) {
 
         double locScale = context.getScale();
-        Color alignmentColor = getAlignmentColor(pair.firstAlignment, renderOptions);
-        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
-        g.setFont(font);
+        Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
+        Color alignmentColor2 = null;
 
-        //For showing connection arcs
         if (renderOptions.isPairedArcView()) {
-            //TODO Change track height
-            rect.y = (int) (context.getVisibleRect().getHeight() - rect.getHeight());
+            alignmentColor1 = getColorRelDistance(pair);
+            alignmentColor2 = alignmentColor1;
         }
 
-        drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+        Graphics2D g = context.getGraphic2DForColor(alignmentColor1);
+        g.setFont(font);
+        drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames);
 
         if (pair.secondAlignment != null) {
 
-            alignmentColor = getAlignmentColor(pair.secondAlignment, renderOptions);
-            g = context.getGraphic2DForColor(alignmentColor);
+            if (alignmentColor2 == null) {
+                alignmentColor2 = getAlignmentColor(pair.secondAlignment, renderOptions);
+            }
+            g = context.getGraphic2DForColor(alignmentColor2);
 
-            drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+            drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
 
             Graphics2D gLine = context.getGraphic2DForColor(grey1);
             double origin = context.getOrigin();
             int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
-            startX = Math.max(rect.x, startX);
-
             int endX = (int) ((pair.secondAlignment.getStart() - origin) / locScale);
-            endX = Math.min(rect.x + rect.width, endX);
 
             int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
 
 
             if (renderOptions.isPairedArcView()) {
-                QuadCurve2D q = new QuadCurve2D.Double();
+                GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
                 int curveHeight = (int) Math.log(endX - startX) * h;
-                q.setCurve(startX, y + h / 2, (endX + startX) / 2, y + h / 2 - curveHeight, endX, y + h / 2);
-                gLine.setColor(alignmentColor);
-                gLine.draw(q);
+
+                double botY = y + h / 2;
+                double topY = y + h / 2 - curveHeight;
+                double midX = (endX + startX) / 2;
+
+                path.moveTo(startX, botY);
+                path.quadTo(midX, topY, endX, botY);
+                path.quadTo(midX, topY - 2, startX, botY);
+                path.closePath();
+                arcsByStart.add(path);
+                arcsByEnd.add(path);
+                curveMap.put(path, pair);
+                gLine.setColor(alignmentColor2);
+                gLine.draw(path);
             } else {
+                startX = Math.max(rect.x, startX);
+                endX = Math.min(rect.x + rect.width, endX);
                 gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
             }
         }
-
     }
 
     /**
@@ -863,6 +898,24 @@ public class AlignmentRenderer implements FeatureRenderer {
         return c;
     }
 
+    /**
+     * Assuming we want to color a pair of alignments based on their distance,
+     * this returns an appropriate color
+     *
+     * @param pair
+     * @return
+     */
+    private static Color getColorRelDistance(PairedAlignment pair) {
+        if (pair.secondAlignment == null) {
+            return grey1;
+        }
+
+        int dist = pair.secondAlignment.getStart() - pair.firstAlignment.getEnd();
+        double logDist = Math.log(dist);
+        //TODO Allow user to set this, store
+        ContinuousColorScale colorScale = new ContinuousColorScale(-1, 20, Color.blue, Color.red);
+        return colorScale.getColor((float) logDist);
+    }
 
     /**
      * @return
@@ -905,4 +958,22 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     }
 
+    public SortedSet<Shape> curveOverlap(double x) {
+        QuadCurve2D tcurve = new QuadCurve2D.Double();
+        tcurve.setCurve(x, 0, x, 0, x, 0);
+        SortedSet overlap = new TreeSet(arcsByStart.headSet(tcurve, true));
+        overlap.retainAll(arcsByEnd.tailSet(tcurve, true));
+        return overlap;
+    }
+
+
+    public Alignment getAlignmentForCurve(Shape curve) {
+        return curveMap.get(curve);
+    }
+
+    public void clearCurveMaps() {
+        curveMap.clear();
+        arcsByStart.clear();
+        arcsByEnd.clear();
+    }
 }

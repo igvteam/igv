@@ -322,6 +322,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             if (renderOptions.isPairedArcView()) {
                 maximumHeight = visibleRect.height - coverageTrack.getHeight();
+                AlignmentRenderer.getInstance().clearCurveMaps();
             } else {
                 maximumHeight = Integer.MAX_VALUE;
             }
@@ -351,11 +352,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     if ((visibleRect != null && y > visibleRect.getMaxY())) {
                         return;
                     }
+                    if (renderOptions.isPairedArcView()) {
+                        y = Math.min(getY() + getHeight(), visibleRect.getMaxY());
+                        y -= h;
+                    }
 
                     if (y + h > visibleRect.getY()) {
-                        if (renderOptions.isPairedArcView()) {
-                            y = visibleRect.getHeight() - h;
-                        }
                         Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                         renderer.renderAlignments(row.alignments,
                                 context,
@@ -543,7 +545,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        Alignment feature = getAlignmentAt(position, y, frame);
+
+        Alignment feature = null;
+        if (renderOptions.isPairedArcView()) {
+            //All alignments stacked at the bottom
+            double xloc = (position - frame.getOrigin()) / frame.getScale();
+            SortedSet<Shape> arcs = AlignmentRenderer.getInstance().curveOverlap(xloc);
+            int halfLength = 2;
+            int sideLength = 2 * halfLength;
+            for (Shape curve : arcs) {
+                if (curve.intersects(xloc - halfLength, y - halfLength, sideLength, sideLength)) {
+                    feature = AlignmentRenderer.getInstance().getAlignmentForCurve(curve);
+                    break;
+                }
+            }
+        } else {
+            feature = getAlignmentAt(position, y, frame);
+        }
+
         if (feature == null) {
             return null;
         }
