@@ -1,28 +1,21 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.util;
 
-import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.*;
@@ -36,27 +29,33 @@ import static org.junit.Assert.assertEquals;
  * Date: Feb 8, 2010
  */
 public class ParsingUtilsTest {
-    
+
     public final static String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
     public final static int numChars = characters.length();
-    
+
+    @Before
+    public void setUp() {
+        TestUtils.setUpHeadless();
+        Globals.CONNECT_TIMEOUT = 5 * 60 * 1000;
+    }
+
     @Test
     public void testEstimateLineCount() {
         // Add your code here
     }
-    
+
     @Test
-    public void testSplitSpeed(){
+    public void testSplitSpeed() {
 
         long trials = 100000;
-        int jnk= 0;
+        int jnk = 0;
         long pu_time = 0;
         long nrm_time = 0;
         long tm1, tm2;
         String test_text;
         String[] result;
         Pattern pattern = Pattern.compile("\t");
-        for(int _ =0; _ < trials; _++){
+        for (int _ = 0; _ < trials; _++) {
             test_text = genRandString();
             tm1 = System.nanoTime();
             result = pattern.split(test_text);
@@ -64,7 +63,7 @@ public class ParsingUtilsTest {
             nrm_time += tm2 - tm1;
 
             tm1 = System.nanoTime();
-            jnk = ParsingUtils.split(test_text,result,'\t');
+            jnk = ParsingUtils.split(test_text, result, '\t');
             tm2 = System.nanoTime();
             pu_time += tm2 - tm1;
         }
@@ -74,18 +73,18 @@ public class ParsingUtilsTest {
 
     }
 
-        @Test
-    public void testSplitWhitespaceSpeed(){
+    @Test
+    public void testSplitWhitespaceSpeed() {
 
         long trials = 100000;
-        int jnk= 0;
+        int jnk = 0;
         long pu_time = 0;
         long nrm_time = 0;
         long tm1, tm2;
         String test_text;
         String[] result;
         Pattern pattern = Pattern.compile("\\s+");
-        for(int _ =0; _ < trials; _++){
+        for (int _ = 0; _ < trials; _++) {
             test_text = genRandString();
             tm1 = System.nanoTime();
             result = pattern.split(test_text);
@@ -93,7 +92,7 @@ public class ParsingUtilsTest {
             nrm_time += tm2 - tm1;
 
             tm1 = System.nanoTime();
-            jnk = ParsingUtils.splitWhitespace (test_text,result);
+            jnk = ParsingUtils.splitWhitespace(test_text, result);
             tm2 = System.nanoTime();
             pu_time += tm2 - tm1;
         }
@@ -102,21 +101,21 @@ public class ParsingUtilsTest {
         assertTrue("ParsingUtils vs pattern.split speed test", pu_time < nrm_time);
 
     }
-    
-    private String genRandString(){
+
+    private String genRandString() {
         int numWords = 10;
         int max_length = 20;
         String ret = "";
-        for(int _=0; _ < numWords; _++){
+        for (int _ = 0; _ < numWords; _++) {
             ret += getRandWord(max_length) + "\t";
         }
         return ret;
     }
-    
-    private String getRandWord(int max_length){
-        int length = (int) Math.random()*max_length + 1;
+
+    private String getRandWord(int max_length) {
+        int length = (int) Math.random() * max_length + 1;
         String ret = "";
-        for(int _=0; _ < length; _++){
+        for (int _ = 0; _ < length; _++) {
             ret += characters.charAt((int) Math.random() * numChars);
         }
         return ret;
@@ -193,11 +192,13 @@ public class ParsingUtilsTest {
 
     @Test
     public void testGetContentLengthFTP() {
-        assertTrue(ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL) > 0);
+        long contLength = ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL);
+        assertTrue("Error retrieving content length: " + contLength, contLength > 0);
 
         long start_time = System.currentTimeMillis();
         assertTrue(ParsingUtils.getContentLength(TestUtils.UNAVAILABLE_FTP_URL) == -1);
         long end_time = System.currentTimeMillis();
+        assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
     }
 
