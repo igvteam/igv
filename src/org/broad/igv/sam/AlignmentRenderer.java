@@ -341,12 +341,15 @@ public class AlignmentRenderer implements FeatureRenderer {
             Font font) {
 
         double locScale = context.getScale();
-        Color alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
-        Color alignmentColor2 = null;
 
+        Color alignmentColor1;
+        Color alignmentColor2 = null;
         if (renderOptions.isPairedArcView()) {
-            alignmentColor1 = getColorRelDistance(pair);
+            renderOptions.setColorOption(ColorOption.INSERT_SIZE);
+            alignmentColor1 = getAlignmentColor(pair, renderOptions);
             alignmentColor2 = alignmentColor1;
+        } else {
+            alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
         }
 
         Graphics2D g = context.getGraphic2DForColor(alignmentColor1);
@@ -372,6 +375,10 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
             if (renderOptions.isPairedArcView()) {
+                int relation = compareToBounds(pair, renderOptions);
+                if (relation <= -1 || relation >= +1) {
+                    return;
+                }
                 GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
                 int curveHeight = (int) Math.log(endX - startX) * h;
 
@@ -387,6 +394,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 arcsByEnd.add(path);
                 curveMap.put(path, pair);
                 gLine.setColor(alignmentColor2);
+
                 gLine.draw(path);
             } else {
                 startX = Math.max(rect.x, startX);
@@ -782,10 +790,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        String lb = alignment.getLibrary();
-        if (lb == null) lb = "null";
-        PEStats peStats = renderOptions.peStats.get(lb);
-
         Color c = alignment.getDefaultColor();
         switch (renderOptions.getColorOption()) {
             case BISULFITE:
@@ -811,22 +815,13 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance > 0) {
-                            int minThreshold = renderOptions.getMinInsertSize();
-                            int maxThreshold = renderOptions.getMaxInsertSize();
-                            if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
-                                if (peStats != null) {
-                                    minThreshold = peStats.getMinThreshold();
-                                    maxThreshold = peStats.getMaxThreshold();
-                                }
+                            int relation = compareToBounds(alignment, renderOptions);
 
-                            }
-
-                            if (readDistance < minThreshold) {
+                            if (relation <= -1) {
                                 c = smallISizeColor;
-                            } else if (readDistance > maxThreshold) {
+                            } else if (relation >= +1) {
                                 c = largeISizeColor;
                             }
-                            //return renderOptions.insertSizeColorScale.getColor(readDistance);
                         }
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());
@@ -839,7 +834,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 break;
             case PAIR_ORIENTATION:
-                c = getOrientationColor(alignment, peStats);
+                c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
                 break;
             case READ_STRAND:
                 if (alignment.isNegativeStrand()) {
@@ -898,6 +893,38 @@ public class AlignmentRenderer implements FeatureRenderer {
         return c;
     }
 
+    private PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
+        String lb = alignment.getLibrary();
+        if (lb == null) lb = "null";
+        PEStats peStats = null;
+        if (renderOptions.peStats != null) {
+            peStats = renderOptions.peStats.get(lb);
+        }
+        return peStats;
+    }
+
+    /**
+     * Returns -1 if alignment distance is less than minimum,
+     * 0 if within bounds, and +1 if above maximum.
+     *
+     * @param alignment
+     * @return
+     */
+    private int compareToBounds(Alignment alignment, RenderOptions renderOptions) {
+        int minThreshold = renderOptions.getMinInsertSize();
+        int maxThreshold = renderOptions.getMaxInsertSize();
+        PEStats peStats = getPEStats(alignment, renderOptions);
+        if (renderOptions.isComputeIsizes() && peStats != null) {
+            minThreshold = peStats.getMinThreshold();
+            maxThreshold = peStats.getMaxThreshold();
+        }
+
+        int dist = alignment.getInferredInsertSize();
+        if (dist < minThreshold) return -1;
+        if (dist > maxThreshold) return +1;
+        return 0;
+    }
+
     /**
      * Assuming we want to color a pair of alignments based on their distance,
      * this returns an appropriate color
@@ -910,10 +937,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             return grey1;
         }
 
-        int dist = pair.secondAlignment.getStart() - pair.firstAlignment.getEnd();
+        int dist = pair.getInferredInsertSize();
         double logDist = Math.log(dist);
-        //TODO Allow user to set this, store
-        ContinuousColorScale colorScale = new ContinuousColorScale(-1, 20, Color.blue, Color.red);
+        Color minColor = smallISizeColor;
+        Color maxColor = largeISizeColor;
+        ContinuousColorScale colorScale = new ContinuousColorScale(0, 20, minColor, maxColor);
         return colorScale.getColor((float) logDist);
     }
 

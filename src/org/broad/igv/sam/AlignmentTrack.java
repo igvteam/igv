@@ -818,6 +818,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupByTag = prefs.get(PreferenceManager.SAM_GROUP_BY_TAG);
 
             //updateColorScale();
+
+            peStats = new HashMap<String, PEStats>();
         }
 
         /*private void updateColorScale() {
