@@ -253,7 +253,14 @@ Usage:
 Command "formatexp"
 ---------------------------------------------------------------------------
 
-Format GCT or RES files for display
+Format GCT or RES files for display. This should only be used if the file has not previously been log-transformed and has no negative numbers. The module:
+
+1. Takes the log2 of the data.
+2. Computes the median and subtracts it from each log2 probe value (i.e., centers on the median).
+3. Computer the MAD (mean absolute deviation) using the definition here: http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
+4. Divides each log2 probe value by the MAD.
+
+Supported input file formats are: .gct and .res
 
 Usage:
 	

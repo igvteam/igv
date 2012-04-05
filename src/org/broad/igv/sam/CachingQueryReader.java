@@ -390,8 +390,7 @@ public class CachingQueryReader {
                     "<br>This is often caused by a corrupt index file.");
             return false;
 
-        } catch (Throwable e) {
-
+        } catch (IOException e) {
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
         } finally {
@@ -611,7 +610,7 @@ public class CachingQueryReader {
         }
 
         private void emptyBucket() {
-            if (currentSamplingBucket==null) {
+            if (currentSamplingBucket == null) {
                 return;
             }
             //List<Alignment> sampledRecords = sampleCurrentBucket();
@@ -716,7 +715,7 @@ public class CachingQueryReader {
                 if (alignments.size() < samplingDepth) {
                     alignments.add(alignment);
                 } else {
-                    double samplingProb = ((double) samplingDepth) / (samplingDepth +  downsampledCount + 1);
+                    double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
                     if (RAND.nextDouble() < samplingProb) {
                         int idx = (int) (RAND.nextDouble() * (alignments.size() - 1));
                         // Replace random record with this one
