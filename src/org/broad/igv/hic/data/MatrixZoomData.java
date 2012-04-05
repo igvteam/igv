@@ -216,7 +216,6 @@ public class MatrixZoomData {
         if (pearsons == null) {
             if (oe == null)
                 oe = computeOE(df);
-            
             pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
            /* try {
                outputRealMatrix(pearsons);

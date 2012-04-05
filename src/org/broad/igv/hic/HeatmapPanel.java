@@ -355,7 +355,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                     int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
                     int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
-                    mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+                    mainWindow.setResolutionSliderValue(newZoom);
+                    mainWindow.center(centerLocationX, centerLocationY);
+                    
                 } else {
 
                     //If IGV is running open on loci
