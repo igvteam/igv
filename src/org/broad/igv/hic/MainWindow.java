@@ -209,6 +209,7 @@ public class MainWindow extends JFrame {
 
     public void setDisplayOption(DisplayOption displayOption) {
         this.displayOption = displayOption;
+        //setZoom(7);
         refresh();
         repaint();
     }

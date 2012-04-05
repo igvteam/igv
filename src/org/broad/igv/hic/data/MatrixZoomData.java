@@ -31,7 +31,9 @@ public class MatrixZoomData {
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
     private RealMatrix pearsons;
-    private SparseRealMatrix oe;
+    private double pearsonsMin = -1;
+    private double pearsonsMax = 1;
+    private RealMatrix oe;
     private double[] eigenvector;
 
     public class ScaleParameters {
@@ -215,12 +217,29 @@ public class MatrixZoomData {
             if (oe == null)
                 oe = computeOE(df);
             
-           pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-        }
+            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+           /* try {
+               outputRealMatrix(pearsons);
+            }
+            catch (IOException e) {}
+            */
+            PearsonsMinMax minMax = new PearsonsMinMax();
+            pearsons.walkInOptimizedOrder(minMax);
+            pearsonsMax = minMax.getMaxValue();
+            pearsonsMin = minMax.getMinValue();
 
+        }
         return pearsons;
     }
-    
+
+    public double getPearsonsMin() {
+        return pearsonsMin;
+    }
+
+    public double getPearsonsMax() {
+        return pearsonsMax;
+    }
+
     private RealMatrix readRealMatrix(String filename) throws IOException {
         LittleEndianInputStream is = null;
         RealMatrix rm = null;
@@ -251,7 +270,7 @@ public class MatrixZoomData {
     private void outputRealMatrix(RealMatrix rm) throws IOException {
         LittleEndianOutputStream os = null;
         try {
-            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("C:/Documents and Settings/neva/pearsons" + this.zoom)));
+            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("pearsons" + this.zoom + ".bin")));
 
             int rows = rm.getRowDimension();
             int cols = rm.getColumnDimension();
@@ -361,4 +380,26 @@ public class MatrixZoomData {
         }
     }
 
+    private class PearsonsMinMax extends DefaultRealMatrixPreservingVisitor {
+        private double minValue = Double.MAX_VALUE;
+        private double maxValue = Double.MIN_VALUE;
+        
+        public void visit(int row, int column, double value) {
+            if (row != column) {
+                if (value < minValue)
+                    minValue = value;
+                if (value > maxValue)
+                    maxValue = value;
+            }
+        }
+
+        public double getMinValue() {
+            return minValue;
+        }
+
+        public double getMaxValue() {
+            return maxValue;
+        }
+
+    }
 }

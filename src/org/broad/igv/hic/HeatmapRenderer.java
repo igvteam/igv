@@ -76,7 +76,9 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
             try {
                 RealMatrix rm = zd.getPearsons(df);
-                /*
+                ((HiCColorScale)colorScale).setMin((float)zd.getPearsonsMin());
+                ((HiCColorScale)colorScale).setMax((float)zd.getPearsonsMax());
+             /*
                 BufferedImage image = (BufferedImage) mainWindow.createImage(rm.getRowDimension(),rm.getColumnDimension());
                 Graphics2D myg = image.createGraphics();
                 renderMatrix(0,0, rm, colorScale, myg, zd.getZoom());
@@ -97,11 +99,12 @@ public class HeatmapRenderer {
                 }
                 else {image2 = image;}
                 try {
-                File file = new File("C:/Documents and Settings/neva/pearsons"+zd.getZoom()+".bmp");
-                ImageIO.write(image2, "bmp", file);
+                    System.out.println("Writing file");
+                    File file = new File("pearsons"+zd.getZoom()+".bmp");
+                    ImageIO.write(image2, "bmp", file);
                 }
                 catch (IOException e){}
-                  */
+               */
                 renderMatrix(originX, originY, rm, colorScale, g, zd.getZoom());
             }
             catch (RuntimeException e) {
@@ -171,23 +174,14 @@ public class HeatmapRenderer {
 
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();
-        // Scale score (equivalent to scaling color scale) to try to match what the UMass viewer is doing
-        // This is hacky and should be put in HiC Color, perhaps.
-        float scaleFactor;
-        if (zoomLevel == 1 || zoomLevel == 2)
-            scaleFactor = 1f;
-        else if (zoomLevel == 3)
-            scaleFactor = 1.5f;
-        else if (zoomLevel == 4)
-            scaleFactor = 3f;
-        else
-            scaleFactor = zoomLevel - 1;
+
+
 
         for (int i = 0; i < nBinsX; i++) {
             for (int j = 0; j < nBinsY; j++) {
                 double score = rm.getEntry(i, j);
                 //float logScore = (float) Math.log10(score);                                       
-                Color color = score == 0 ? Color.black : colorScale.getColor((float) score * scaleFactor);
+                Color color = score == 0 ? Color.black : colorScale.getColor((float) score);
                 int px = i - originX;
                 int py = j - originY;
                 g.setColor(color);

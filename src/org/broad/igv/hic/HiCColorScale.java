@@ -28,21 +28,35 @@ import java.awt.*;
  */
 public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
 
+    private float min = -1f;
+    private float max = 1f;
 
     public HiCColorScale() {
+    }
+
+    public void setMin(float min) {
+        this.min = min;
+        System.out.println(min);
+    }
+
+    public void setMax(float max) {
+        this.max = max;
+        System.out.println(max);
     }
 
     public Color getColor(float score) {
 
         if(score > 0) {
+            score = score/max;
             int R = (int) ( 255 * Math.min(score,1));
             int G = 0;
             int B = 0;
             return new Color(R,G,B);
         } else if(score < 0) {
+            score = score/min;
             int R = 0;
             int G = 0;
-            int B = (int) (255 * Math.min(((-1)*score),1));
+            int B = (int) (255 * Math.min(score,1));
             return new Color(R,G,B);
         } else {
             // Nan ?
