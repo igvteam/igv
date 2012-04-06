@@ -784,7 +784,8 @@ public class Preprocessor implements DataConsumer {
                 AffectiveLogParser parser = new AffectiveLogParser(iFile.getAbsolutePath(), this);
                 parser.parse();
             } else {
-                out.println("Error: cannot files of type '" + tmp + "' to TDF format.");
+                out.println("Error: cannot convert files of type '" + tmp + "' to TDF format.");
+                out.println("Try specifying the file type with the --fileType parameter.");
             }
         }
     }

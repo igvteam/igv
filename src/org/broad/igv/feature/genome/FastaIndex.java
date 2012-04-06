@@ -26,6 +26,7 @@ import org.broad.tribble.readers.AsciiLineReader;
 import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard, but extended
@@ -37,6 +38,8 @@ import java.util.Set;
 public class FastaIndex {
 
     static Logger log = Logger.getLogger(FastaIndex.class);
+
+    static Pattern WHITE_SPACE = Pattern.compile("\\s+");
 
     /**
      * Store the entries.  Use a LinkedHashMap for consistent iteration in insertion order.
@@ -115,7 +118,7 @@ public class FastaIndex {
                     }
 
                     //Header line
-                    curContig = line.split("\\s")[0];
+                    curContig = WHITE_SPACE.split(line)[0];
                     curContig = curContig.substring(1);
                     //Should be starting position of next line
                     location = reader.getPosition();

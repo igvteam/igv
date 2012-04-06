@@ -181,6 +181,10 @@
              <string>width</string> 
              <int>568</int> 
             </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>29</int> 
+            </void> 
            </object> 
           </void> 
           <void method="add"> 
@@ -252,6 +256,10 @@
             <void method="setProperty"> 
              <string>width</string> 
              <int>568</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>29</int> 
             </void> 
            </object> 
           </void> 
@@ -917,6 +925,10 @@
             <void method="setProperty"> 
              <string>width</string> 
              <int>568</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>29</int> 
             </void> 
            </object> 
           </void> 

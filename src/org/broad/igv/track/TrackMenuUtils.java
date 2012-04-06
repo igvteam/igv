@@ -290,8 +290,8 @@ public class TrackMenuUtils {
 
         menu.add(getShowDataRangeItem(tracks));
 
-
-        //menu.add(getChangeKMPlotItem(tracks));
+        menu.addSeparator();
+        menu.add(getChangeKMPlotItem(tracks));
 
     }
 

@@ -274,7 +274,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                 //---- idField ----
                 idField.setToolTipText("A uniqe identifier for the genome");
                 panel2.add(idField);
-                idField.setBounds(125, 22, 568, idField.getPreferredSize().height);
+                idField.setBounds(125, 22, 568, 29);
 
                 //---- genomeDisplayNameLabel ----
                 genomeDisplayNameLabel.setText("Name");
@@ -286,7 +286,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                 genomeDisplayNameTextField.setPreferredSize(new Dimension(400, 28));
                 genomeDisplayNameTextField.setMinimumSize(new Dimension(25, 28));
                 panel2.add(genomeDisplayNameTextField);
-                genomeDisplayNameTextField.setBounds(125, 55, 568, genomeDisplayNameTextField.getPreferredSize().height);
+                genomeDisplayNameTextField.setBounds(125, 55, 568, 29);
 
                 //---- sequenceDirectoryCB ----
                 sequenceDirectoryCB.setText("Fasta file is a directory");
@@ -423,7 +423,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
                 sequenceURLField.setPreferredSize(new Dimension(400, 28));
                 sequenceURLField.setMinimumSize(new Dimension(25, 28));
                 panel1.add(sequenceURLField);
-                sequenceURLField.setBounds(125, 170, 568, sequenceURLField.getPreferredSize().height);
+                sequenceURLField.setBounds(125, 170, 568, 29);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
