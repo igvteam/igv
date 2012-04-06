@@ -18,6 +18,8 @@ import java.io.*;
  */
 public class HeatmapPanel extends JComponent implements Serializable {
 
+    enum DragMode {NONE, PAN, ZOOM};
+
     private MainWindow mainWindow;
     private int imageTileWidth = 500;
     ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(100);
@@ -216,7 +218,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     class HeatmapMouseHandler extends MouseAdapter {
 
-        int dragMode = 0;  // 0 => none, 1 => pan,  2 => zoom
+
+
+        DragMode dragMode = DragMode.NONE;
         private Point lastMousePoint;
 
 
@@ -228,9 +232,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
             }
 
             if (e.isAltDown()) {
-                dragMode = 2;
+                dragMode = DragMode.ZOOM;
             } else {
-                dragMode = 1;
+                dragMode = DragMode.PAN;
                 setCursor(mainWindow.fistCursor);
             }
 
@@ -242,7 +246,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseReleased(final MouseEvent e) {
 
-            if (dragMode == 2 && zoomRectangle != null) {
+            if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
 
                 double xBP = mainWindow.xContext.getChromosomePosition(zoomRectangle.x);
                 double yBP = mainWindow.yContext.getChromosomePosition(zoomRectangle.y);
@@ -257,7 +261,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             }
 
-            dragMode = 0;
+            dragMode = DragMode.NONE;
             lastMousePoint = null;
             zoomRectangle = null;
             setCursor(Cursor.getDefaultCursor());
@@ -280,7 +284,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             double deltaX = e.getX() - lastMousePoint.x;
             double deltaY = e.getY() - lastMousePoint.y;
             switch (dragMode) {
-                case 2:
+                case ZOOM:
 
                     Rectangle lastRectangle = zoomRectangle;
 
@@ -311,7 +315,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     break;
                 default:
 
-                    // Size i
                     int dx = (int) (deltaX * mainWindow.xContext.getScale());
                     int dy = (int) (deltaY * mainWindow.yContext.getScale());
                     lastMousePoint = e.getPoint();    // Always save the last Point

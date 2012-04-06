@@ -59,14 +59,17 @@ public class MainWindow extends JFrame {
         OBSERVED("Observed"),
         OE("OE"),
         PEARSON("Pearson");
-        
+
         private String value;
+
         DisplayOption(String value) {
             this.value = value;
         }
+
         public String toString() {
             return value;
         }
+
         public static DisplayOption getByValue(String value) {
             for (final DisplayOption element : EnumSet.allOf(DisplayOption.class)) {
                 if (element.toString().equals(value)) {
@@ -230,9 +233,9 @@ public class MainWindow extends JFrame {
     public void setDisplayOption(String strOption) {
         DisplayOption newDisplay = DisplayOption.getByValue(strOption);
 
-        if (zd != null && zd.getZoom() > 3 && newDisplay == DisplayOption.PEARSON){
+        if (zd != null && zd.getZoom() > 3 && newDisplay == DisplayOption.PEARSON) {
             int ans = JOptionPane.showConfirmDialog(this, "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-            if (ans == JOptionPane.NO_OPTION)   {
+            if (ans == JOptionPane.NO_OPTION) {
                 comboBox1.setSelectedItem(this.displayOption.toString());
                 return;
             }
@@ -278,7 +281,7 @@ public class MainWindow extends JFrame {
                     zoomToDensityMap = DensityUtil.readDensities(is);
                     comboBox1.setModel(new DefaultComboBoxModel(new String[]{
                             DisplayOption.OBSERVED.toString(),
-                            DisplayOption.OE.toString(), 
+                            DisplayOption.OE.toString(),
                             DisplayOption.PEARSON.toString()}));
 
                 } finally {
@@ -325,13 +328,13 @@ public class MainWindow extends JFrame {
                     chr1 = tmp;
                 }
 
-                if (chr2.getName().equals("All") ||  chr2 != xContext.getChromosome() || chr1 != yContext.getChromosome()) {
+                if (chr2.getName().equals("All") || chr2 != xContext.getChromosome() || chr1 != yContext.getChromosome()) {
 
                     xContext = new Context(chr2);
                     yContext = new Context(chr1);
                     rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
                     rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
-                    
+
                     Matrix m = dataset.getMatrix(chr1, chr2);
                     if (m == null) {
                     } else {
@@ -391,12 +394,13 @@ public class MainWindow extends JFrame {
 
     /**
      * Set value of resolution slider to set zoom.
+     *
      * @param value to set resolution slider to
      */
     public void setResolutionSliderValue(int value) {
         resolutionSlider.setValue(value);
     }
-    
+
     /**
      * Change zoom level and recenter
      *
@@ -415,9 +419,9 @@ public class MainWindow extends JFrame {
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-        
+
         showEigenvector();
-        
+
         int newBinSize = zd.getBinSize();
 
         // Scale in basepairs per screen pixel
@@ -437,27 +441,14 @@ public class MainWindow extends JFrame {
         center(centerLocationX, centerLocationY);
 
         getHeatmapPanel().clearTileCache();
-        getRootPane().getGlassPane().setVisible(true);
-        SwingWorker repaintWorker = new SwingWorker() {
-            @Override
-            protected Object doInBackground() {
-                repaint();
-                return null;
-            }
+        repaint();
 
-            @Override
-            protected void done() {
-                getGlassPane().setVisible(false);
-                getContentPane().repaint();
-            }
-        };
-        repaintWorker.execute();
     }
 
 
     public void zoomTo(double xBP, double yBP, double scale) {
 
-        // Find zoom level with resolution
+        // Find zoom level closest to prescribed scale
         int zoom = HiCGlobals.zoomBinSizes.length - 1;
         for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
             if (HiCGlobals.zoomBinSizes[z] < scale) {
@@ -465,17 +456,17 @@ public class MainWindow extends JFrame {
                 break;
             }
         }
-        
+
         if (displayOption == DisplayOption.PEARSON && zoom > 3) {
             int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-            if (ans == JOptionPane.NO_OPTION)   {
+            if (ans == JOptionPane.NO_OPTION) {
                 return;
             }
         }
 
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
-       
+
         zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
         resolutionSlider.setValue(zoom);
 
@@ -485,6 +476,7 @@ public class MainWindow extends JFrame {
         xContext.setOrigin((int) xBP);
         yContext.setOrigin((int) yBP);
 
+        getHeatmapPanel().clearTileCache();
         repaint();
     }
 
@@ -702,15 +694,15 @@ public class MainWindow extends JFrame {
     }
 
     private void comboBox1ActionPerformed(ActionEvent e) {
-      /*
-         if (comboBox1.getSelectedIndex() == 0)
-             setDisplayOption(DisplayOption.OBSERVED);
-        else if (comboBox1.getSelectedIndex() == 1)
-             setDisplayOption(DisplayOption.OE);
-        else
-             setDisplayOption(DisplayOption.PEARSON);
-    */
-       setDisplayOption((String)comboBox1.getSelectedItem());
+        /*
+             if (comboBox1.getSelectedIndex() == 0)
+                 setDisplayOption(DisplayOption.OBSERVED);
+            else if (comboBox1.getSelectedIndex() == 1)
+                 setDisplayOption(DisplayOption.OE);
+            else
+                 setDisplayOption(DisplayOption.PEARSON);
+        */
+        setDisplayOption((String) comboBox1.getSelectedItem());
 
     }
 
@@ -749,18 +741,16 @@ public class MainWindow extends JFrame {
                     eigenvectorPanel.setData(rv);
                     trackPanel.setVisible(true);
                     pack();
-                }
-                catch (Exception error) {
-                    JOptionPane.showMessageDialog(this,"Error while loading eigenvector: " + error.getMessage(),"Eigenvector error",JOptionPane.ERROR_MESSAGE);
+                } catch (Exception error) {
+                    JOptionPane.showMessageDialog(this, "Error while loading eigenvector: " + error.getMessage(), "Eigenvector error", JOptionPane.ERROR_MESSAGE);
                     viewEigenvector.setSelected(false);
                 }
             }
-        }
-        else {
+        } else {
             trackPanel.setVisible(false);
         }
     }
-    
+
     private void getEigenvectorActionPerformed(ActionEvent e) {
         if (zd != null) {
             DensityFunction df = getDensityFunction(zd.getZoom());
@@ -771,7 +761,7 @@ public class MainWindow extends JFrame {
                     int num = Integer.parseInt(number) - 1;
                     rv = zd.getEigenvector(df, num);
                     String str = "";
-                    for (int i=0; i<rv.length; i++)  {
+                    for (int i = 0; i < rv.length; i++) {
                         str += rv[i] + "\n";
 
                     }
@@ -783,21 +773,18 @@ public class MainWindow extends JFrame {
                     frame.getContentPane().add(pane);
                     frame.pack();
                     frame.setVisible(true);
-                }
-                catch (InvalidMatrixException error) {
+                } catch (InvalidMatrixException error) {
                     JOptionPane.showMessageDialog(this, "Unable to calculate eigenvectors after 30 iterations",
                             "Eigenvector error", JOptionPane.ERROR_MESSAGE);
-                }
-                catch (NumberFormatException error) {
-                    JOptionPane.showMessageDialog(this, "You must enter a valid number.\n"+error.getMessage(),
+                } catch (NumberFormatException error) {
+                    JOptionPane.showMessageDialog(this, "You must enter a valid number.\n" + error.getMessage(),
                             "Eigenvector error", JOptionPane.ERROR_MESSAGE);
                 }
-                
-            }
-            else 
+
+            } else
                 System.err.println("No densities available for this file.");
         }
-        
+
     }
 
     private void mainWindowResized(ComponentEvent e) {
@@ -1126,16 +1113,21 @@ public class MainWindow extends JFrame {
         resolutionSlider.addChangeListener(new ChangeListener() {
             // Change zoom level while staying centered on current location.
             // Centering is relative to the bounds of the data, which might not be the bounds of the window
-            @Override
+
             public void stateChanged(ChangeEvent e) {
-                if (!resolutionSlider.getValueIsAdjusting())    {
+                if (!resolutionSlider.getValueIsAdjusting()) {
                     int idx = resolutionSlider.getValue();
                     idx = Math.max(0, Math.min(idx, MAX_ZOOM));
-                    if (zd != null && idx == zd.getZoom())
+
+                    if (zd != null && idx == zd.getZoom()) {
+                        // Nothing to do
                         return;
+                    }
+
                     if (zd != null && idx > 3 && displayOption == DisplayOption.PEARSON) {
+
                         int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                        if (ans == JOptionPane.NO_OPTION)   {
+                        if (ans == JOptionPane.NO_OPTION) {
                             resolutionSlider.setValue(zd.getZoom());
                             return;
                         }
@@ -1159,8 +1151,8 @@ public class MainWindow extends JFrame {
         mainPanel.add(toolbarPanel, BorderLayout.NORTH);
 
         panel2_5.setLayout(new BorderLayout());
-        
-        trackPanel.setMaximumSize(new Dimension(4000,50));
+
+        trackPanel.setMaximumSize(new Dimension(4000, 50));
         trackPanel.setPreferredSize(new Dimension(1, 50));
         trackPanel.setMinimumSize(new Dimension(1, 50));
         trackPanel.setBorder(null);
@@ -1168,14 +1160,14 @@ public class MainWindow extends JFrame {
         trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
 
         eigenvectorPanel = new TrackPanel();
-        eigenvectorPanel.setMaximumSize(new Dimension(4000,50));
+        eigenvectorPanel.setMaximumSize(new Dimension(4000, 50));
         eigenvectorPanel.setPreferredSize(new Dimension(1, 50));
         eigenvectorPanel.setMinimumSize(new Dimension(1, 50));
         eigenvectorPanel.setBorder(null);
         trackPanel.add(eigenvectorPanel);
- 
+
         panel2_5.add(trackPanel, BorderLayout.NORTH);
-        
+
         //======== panel3 ========
 
         panel3.setLayout(new HiCLayout());
@@ -1282,7 +1274,7 @@ public class MainWindow extends JFrame {
         });
         fileMenu.add(loadFromURL);
         fileMenu.addSeparator();
-        
+
         //---- loadGM ----
         JMenuItem loadGM = new JMenuItem("GM cell line (human)");
         loadGM.addActionListener(new ActionListener() {
@@ -1414,23 +1406,21 @@ public class MainWindow extends JFrame {
         viewMenu.setText("View");
         viewEigenvector = new JCheckBoxMenuItem("Eigenvector track");
         viewEigenvector.addItemListener(new ItemListener() {
-            @Override
             public void itemStateChanged(ItemEvent e) {
                 showEigenvector();
             }
         });
         viewEigenvector.setEnabled(false);
         viewMenu.add(viewEigenvector);
-        
+
         viewDNAseI = new JCheckBoxMenuItem("DNAseI track");
         viewDNAseI.addItemListener(new ItemListener() {
-            @Override
+
             public void itemStateChanged(ItemEvent e) {
                 showDNAseI = viewDNAseI.isSelected();
                 if (showEigenvector || showDNAseI) {
                     trackPanel.setVisible(true);
-                }
-                else {
+                } else {
                     trackPanel.setVisible(false);
                 }
             }
@@ -1458,7 +1448,6 @@ public class MainWindow extends JFrame {
     private ThumbnailPanel thumbnailPanel;
     private JPanel xPlotPanel;
     private JPanel yPlotPanel;
-
 
 
 }
