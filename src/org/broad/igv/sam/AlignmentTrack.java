@@ -324,7 +324,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
             if (renderOptions.isPairedArcView()) {
-                maximumHeight = visibleRect.height - coverageTrack.getHeight();
+                maximumHeight = (int) inputRect.getHeight();
                 AlignmentRenderer.getInstance().clearCurveMaps();
             } else {
                 maximumHeight = Integer.MAX_VALUE;
@@ -362,12 +362,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                     if (y + h > visibleRect.getY()) {
                         Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                        renderer.renderAlignments(row.alignments,
-                                context,
-                                rowRectangle,
-                                renderOptions,
-                                leaveMargin,
-                                selectedReadNames);
+                        renderer.renderAlignments(row.alignments, context, rowRectangle,
+                                inputRect, renderOptions, leaveMargin, selectedReadNames);
                     }
                     y += h;
                 }
