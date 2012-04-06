@@ -1,12 +1,23 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.track;
 
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
+import org.broad.tribble.TribbleException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 
 /**
@@ -58,16 +70,10 @@ public class TrackLoaderTest {
     }
 
 
-    @Test
+    @Test(expected = TribbleException.MalformedFeatureFile.class)
     public void testBEDCodec1() throws Exception {
         String filepath = TestUtils.DATA_DIR + "/bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
-        boolean found_ex = false;
-        try {
-            tstLoadFi(filepath, null);
-        } catch (DataLoadException ex) {
-            found_ex = true;
-        }
-        assertTrue(found_ex);
+        tstLoadFi(filepath, null);
     }
 
     @Test
