@@ -184,7 +184,7 @@ public class CachingQueryReaderTest {
     @Test
     public void testQueryLargeFile() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
-        String path = TestUtils.LARGE_DATA_DIR + "/ABCD_igvSample.bam";
+        String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
@@ -228,7 +228,7 @@ public class CachingQueryReaderTest {
     @Test
     public void testQueryPiledUp() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
-        String path = TestUtils.DATA_DIR + "/aligned/pileup.sorted.aligned";
+        String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);

@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.genome.Genome;
@@ -34,7 +45,7 @@ public class UCSCGeneTableCodecTest {
 
     @Test
     public void testLoadGenePred() throws Exception {
-        String file = TestUtils.DATA_DIR + "/gene/EnsembleGenes_sample.genepred";
+        String file = TestUtils.DATA_DIR + "gene/EnsembleGenes_sample.genepred";
         TrackLoader loader = new TrackLoader();
         ResourceLocator locator = new ResourceLocator(file);
         Genome genome = TestUtils.loadGenome();
@@ -60,7 +71,7 @@ public class UCSCGeneTableCodecTest {
 
     @Test
     public void testLoadUCSC() throws Exception {
-        String file = TestUtils.DATA_DIR + "/gene/UCSCgenes_sample.gene";
+        String file = TestUtils.DATA_DIR + "gene/UCSCgenes_sample.gene";
         TrackLoader loader = new TrackLoader();
         ResourceLocator locator = new ResourceLocator(file);
         Genome genome = TestUtils.loadGenome();

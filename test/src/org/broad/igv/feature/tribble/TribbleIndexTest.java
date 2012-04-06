@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.feature.tribble;
@@ -56,7 +49,7 @@ public class TribbleIndexTest {
     @Test
     public void testLinearIndex() throws Exception {
 
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.sample.bed";
         String chr = "chr2";
         int start = 179266309 - 1;
         int end = 179303488 + 1;
@@ -94,7 +87,7 @@ public class TribbleIndexTest {
      */
     public void testIntervalTree() throws Exception {
         //chr2:179,222,066-179,262,059<- CONTAINS TTN
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.sample.bed";
         String chr = "chr2";
         int start = 179266309 - 1;
         int end = 179303488 + 1;
@@ -121,7 +114,7 @@ public class TribbleIndexTest {
 
     @Test
     public void testReadSingleVCF() throws Exception {
-        String file = TestUtils.DATA_DIR + "/vcf/indel_variants_onerow.vcf";
+        String file = TestUtils.DATA_DIR + "vcf/indel_variants_onerow.vcf";
         String chr = "chr9";
         // Linear index
         TestUtils.createIndex(file);
@@ -152,7 +145,7 @@ public class TribbleIndexTest {
         assertEquals(1, count);
 
         //Do similar as above, but have a different test file
-        file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
+        file = TestUtils.DATA_DIR + "vcf/outputPileup.flt1.vcf";
         chr = "1";
         // Linear index
         TestUtils.createIndex(file);
@@ -176,7 +169,7 @@ public class TribbleIndexTest {
     public void testReadVCFGui() throws Exception {
         IGV igv = TestUtils.startGUI();
 
-        String file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
+        String file = TestUtils.DATA_DIR + "vcf/outputPileup.flt1.vcf";
         TestUtils.createIndex(file);
         ResourceLocator locator = new ResourceLocator(file);
         //For files with 1 record, this threw a null pointer exception prior to r1595

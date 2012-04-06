@@ -22,7 +22,6 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +76,7 @@ public class CommandExecutorTest {
 
     @Test
     public void testSetMaxDepth() throws Exception {
-        String file = TestUtils.LARGE_DATA_DIR + "/HG00171.hg18.bam";
+        String file = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
         igv.loadResources(Arrays.asList(new ResourceLocator(file)));
 
         setCheckMaxDepth(5);
@@ -104,8 +103,8 @@ public class CommandExecutorTest {
 
         String name1 = "HG00171.hg18.bam";
         String name2 = "HG00171.hg18.sam";
-        String file1 = TestUtils.LARGE_DATA_DIR + File.separator + name1;
-        String file2 = TestUtils.LARGE_DATA_DIR + File.separator + name2;
+        String file1 = TestUtils.LARGE_DATA_DIR + name1;
+        String file2 = TestUtils.LARGE_DATA_DIR + name2;
         List<ResourceLocator> resources = Arrays.asList(new ResourceLocator(file1), new ResourceLocator(file2));
         igv.loadResources(resources);
 
@@ -139,7 +138,7 @@ public class CommandExecutorTest {
 
     @Test
     public void testSortByRegionScoreType() throws Exception {
-        String sessionPath = TestUtils.DATA_DIR + "/sessions/BRCA_loh2.xml";
+        String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
         TestUtils.loadSession(igv, sessionPath);
         Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
 

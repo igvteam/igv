@@ -61,7 +61,7 @@ public class GobyAlignmentQueryReaderTest {
                 "GL000209.1", "GL000202.1", "GL000214.1", "GL000220.1", "GL000198.1", "GL000208.1", "GL000221.1", "GL000213.1", "GL000234.1", "GL000222.1",
                 "GL000206.1", "GL000230.1"));
 
-        String thmFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.tmh";
+        String thmFile = TestUtils.DATA_DIR + "goby/GDFQPGI-pickrellNA18486_yale.tmh";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
         Set<String> seqs = reader.getSequenceNames();
         assertEquals(expectedSequences.size(), seqs.size());
@@ -73,7 +73,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testIterator() throws Exception {
 
-        String entriesFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.entries";
+        String entriesFile = TestUtils.DATA_DIR + "goby/GDFQPGI-pickrellNA18486_yale.entries";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
         CloseableIterator<Alignment> iter = reader.iterator();
 
@@ -91,7 +91,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testQueryPE() throws Exception {
 
-        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -111,7 +111,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testQueryNoAlignments() throws Exception {
 
-        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -131,7 +131,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testHasNextBug() throws Exception {
 
-        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -151,8 +151,8 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testOrdering() throws Exception {
 
-        String entriesFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.entries";
-        //   String entriesFile =  TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "goby/GDFQPGI-pickrellNA18486_yale.entries";
+        //   String entriesFile =  TestUtils.DATA_DIR + "goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);

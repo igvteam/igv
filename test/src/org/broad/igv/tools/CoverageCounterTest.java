@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.tools;
@@ -70,7 +63,7 @@ public class CoverageCounterTest {
         String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String queryString = "1:16731624-16731624";
         int minMapQuality = 30;
-        File wigFile = new File(TestUtils.DATA_DIR + "/out/testMapQual.wig");
+        File wigFile = new File(TestUtils.DATA_DIR + "out/testMapQual.wig");
         Genome genome = TestUtils.loadGenome();
         int windowSize = 1;
 
@@ -91,7 +84,7 @@ public class CoverageCounterTest {
      */
     @Test
     public void testCountStrand() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        String ifile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
 
 
         int expTot = 71;
@@ -126,10 +119,10 @@ public class CoverageCounterTest {
     */
     @Test
     public void testStrandsConsistent() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        String ifile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         int[] windowSizes = new int[]{10, 50, 101, 500, 999};
 
-        File wigFile = null;//new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
+        File wigFile = null;//new File(TestUtils.DATA_DIR + "out", "testStrandsConsistent.wig");
         Genome genome = this.genome;
         //Test that when we run the process twice, with separate and totalled strands, the results add
         //up properly
@@ -168,10 +161,10 @@ public class CoverageCounterTest {
 
     @Test
     public void testCountBases() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
+        String ifile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
         int expected_cols = 10;
 
-        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountBases.wig");
+        File wigFile = new File(TestUtils.DATA_DIR + "out", "testCountBases.wig");
         Genome genome = this.genome;
         int windowSize = 1;
 
@@ -215,7 +208,7 @@ public class CoverageCounterTest {
      */
     @Test
     public void testColumnCounts() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
+        String ifile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
 
         File wigFile = null;
         Genome genome = this.genome;

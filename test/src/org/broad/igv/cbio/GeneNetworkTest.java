@@ -54,7 +54,7 @@ import static org.junit.Assert.*;
  */
 public class GeneNetworkTest {
 
-    private static String testpath = TestUtils.DATA_DIR + "/tp53network.xml";
+    private static String testpath = TestUtils.DATA_DIR + "tp53network.xml";
     private GeneNetwork network;
 
     @Before
@@ -146,18 +146,18 @@ public class GeneNetworkTest {
 
     @Test
     public void testOutputNoGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         //String networkPath = testpath;
         assertTrue(network.loadNetwork(networkPath) > 0);
-        String outPath = TestUtils.DATA_DIR + "/out/test.xml";
+        String outPath = TestUtils.DATA_DIR + "out/test.xml";
         tstOutputNetwork(network, outPath);
     }
 
     @Test
     public void testOutputGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);
-        String outPath = TestUtils.DATA_DIR + "/out/test.xml.gz";
+        String outPath = TestUtils.DATA_DIR + "out/test.xml.gz";
         tstOutputNetwork(network, outPath);
     }
 
@@ -192,11 +192,11 @@ public class GeneNetworkTest {
         TestUtils.setUpHeadless();
         Genome genome = TestUtils.loadGenome();
 
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);
 
         //Load some tracks
-        String dataPath = TestUtils.DATA_DIR + "/seg/Broad.080528.subtypes.seg.gz";
+        String dataPath = TestUtils.DATA_DIR + "seg/Broad.080528.subtypes.seg.gz";
         ResourceLocator locator = new ResourceLocator(dataPath);
         List<Track> tracks = new TrackLoader().load(locator, genome);
         network.annotateAll(tracks);
@@ -226,7 +226,7 @@ public class GeneNetworkTest {
     @Test
     public void testFilterGraph() throws Exception {
         GeneNetwork geneNetwork = new GeneNetwork();
-        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "/egfr_brca1.xml.gz") > 0);
+        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "egfr_brca1.xml.gz") > 0);
 
         final String badname = "NA";
 
@@ -292,7 +292,7 @@ public class GeneNetworkTest {
 
     @Test
     public void testOutputForcBioView() throws Exception {
-        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "/tp53network.xml") > 0);
+        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "tp53network.xml") > 0);
         String outPath = network.outputForcBioView();
 
         //Now attempt to read back in

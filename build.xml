@@ -164,7 +164,7 @@
     </path>
 
     <property name="test.reports" value="${basedir}/reports"/>
-    <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
+    <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
 
     <fileset dir="${testtmp.dir}" id="allfileset">
         <include name="**/*.class"/>

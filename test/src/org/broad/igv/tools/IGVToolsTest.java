@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.tools;
@@ -56,7 +49,7 @@ public class IGVToolsTest {
 
     IgvTools igvTools;
 
-    private static final String hg18id = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+    private static final String hg18id = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
     private static final int MAX_LINES_CHECK = 200;
 
     @Before
@@ -77,7 +70,7 @@ public class IGVToolsTest {
 
     @Test
     public void testIndexSam() throws Exception {
-        String samFile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test2.sam";
+        String samFile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test2.sam";
         String indPath = samFile + ".sai";
         File indFile = new File(indPath);
         indFile.delete();
@@ -99,7 +92,7 @@ public class IGVToolsTest {
     @Test
     public void testLinearIndex() throws IOException {
 
-        String bedFile = TestUtils.DATA_DIR + "/bed/test.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/test.bed";
 
         File idxFile = new File(bedFile + ".idx");
         if (idxFile.exists()) {
@@ -120,14 +113,14 @@ public class IGVToolsTest {
 
     @Test
     public void testIntervalIndex33() throws Exception {
-        String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
+        String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
         FeatureCodec codec = new VCF3Codec();
         tstIntervalIndex(testFile, codec);
     }
 
     @Test
     public void testIntervalIndex40() throws Exception {
-        String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
+        String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
         FeatureCodec codec = new VCFCodec();
         tstIntervalIndex(testFile, codec);
     }
@@ -172,27 +165,27 @@ public class IGVToolsTest {
     @Test
     public void testTileWigFile() throws IOException {
 
-        String inputFile = TestUtils.LARGE_DATA_DIR + "/phastCons_chr1.wig";
+        String inputFile = TestUtils.LARGE_DATA_DIR + "phastCons_chr1.wig";
         testTile(inputFile, 0, 0);
     }
 
     @Test
     public void testTileCNFile() throws IOException {
 
-        String inputFile = TestUtils.DATA_DIR + "/cn/HindForGISTIC.hg16.cn";
+        String inputFile = TestUtils.DATA_DIR + "cn/HindForGISTIC.hg16.cn";
         testTile(inputFile, 5000000, 6000000);
     }
 
 
     @Test
     public void testTileGCT() throws IOException {
-        String inputFile = TestUtils.DATA_DIR + "/gct/OV.transcriptome__agilentg4502.data.txt";
-        String outFilePath = TestUtils.DATA_DIR + "/out/testTileGCT.wig";
-        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+        String inputFile = TestUtils.DATA_DIR + "gct/OV.transcriptome__agilentg4502.data.txt";
+        String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
+        String genome = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
         String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
-        inputFile = TestUtils.DATA_DIR + "/gct/GBM.methylation__sampled.data.txt";
+        inputFile = TestUtils.DATA_DIR + "gct/GBM.methylation__sampled.data.txt";
         args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
@@ -200,8 +193,8 @@ public class IGVToolsTest {
 
 
     private void testTile(String inputFile, int start, int end) throws IOException {
-        String file1 = TestUtils.DATA_DIR + "/out/file1.tdf";
-        String file2 = TestUtils.DATA_DIR + "/out/file2.tdf";
+        String file1 = TestUtils.DATA_DIR + "out/file1.tdf";
+        String file2 = TestUtils.DATA_DIR + "out/file2.tdf";
 
         //todo Compare 2 outputs more meaningfully
         String[] args = {"toTDF", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
@@ -237,32 +230,32 @@ public class IGVToolsTest {
 
     @Test
     public void testCountTDF() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         tstCount(inputFile, "testtdf", "tdf", null, -1, -1);
     }
 
     @Test
     public void testCountWIG() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
         tstCount(inputFile, "testwig", "wig", null, -1, -1);
         tstCount(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
     }
 
     @Test
     public void testCountSAM() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/sam/test_2.sam";
+        String inputFile = TestUtils.DATA_DIR + "sam/test_2.sam";
         tstCount(inputFile, "testwig", "wig", null, -1, -1);
     }
 
     @Test
     public void testCountBAM() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bam/NA12878.SLX.sample.bam";
+        String inputFile = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         tstCount(inputFile, "testwig", "wig", null, -1, -1);
     }
 
     public void tstCount(String inputFile, String outputBase, String outputExt,
                          String chr, int start, int end) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
+        String outputFile = TestUtils.DATA_DIR + "out/" + outputBase + "_";
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
 
@@ -432,7 +425,7 @@ public class IGVToolsTest {
      */
     @Test
     public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.LARGE_DATA_DIR + "/2largebams.bam.list";
+        String listPath = TestUtils.LARGE_DATA_DIR + "2largebams.bam.list";
         String bamFiName = "HG00171.hg18.bam";
         String[] largebams = generateRepLargebamsList(listPath, bamFiName, 2);
 
@@ -441,16 +434,16 @@ public class IGVToolsTest {
 
         //Test comma-separated list
         //This is no longer supported
-//        String listArg = TestUtils.LARGE_DATA_DIR + "/" + largebams[0];
+//        String listArg = TestUtils.LARGE_DATA_DIR + "" + largebams[0];
 //        for (int ss = 1; ss < largebams.length; ss++) {
-//            listArg += "," + TestUtils.LARGE_DATA_DIR + "/" + largebams[ss];
+//            listArg += "," + TestUtils.LARGE_DATA_DIR + "" + largebams[ss];
 //        }
 //        tstCountBamList(listArg);
 
     }
 
     private void tstCountBamList(String listArg) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "/out/file_";
+        String outputFile = TestUtils.DATA_DIR + "out/file_";
 
         String[] opts = new String[]{"--strands=read", "--strands=first", ""};
 
@@ -469,8 +462,8 @@ public class IGVToolsTest {
     @Test
     public void testSort() throws Exception {
         String inputFiname = "Unigene.unsorted.bed";
-        String inputFile = TestUtils.DATA_DIR + "/bed/" + inputFiname;
-        String outputFile = TestUtils.DATA_DIR + "/out/" + inputFiname + ".sorted";
+        String inputFile = TestUtils.DATA_DIR + "bed/" + inputFiname;
+        String outputFile = TestUtils.DATA_DIR + "out/" + inputFiname + ".sorted";
         File oFile = new File(outputFile);
         oFile.deleteOnExit();
 
@@ -490,8 +483,8 @@ public class IGVToolsTest {
     public void testFormatexp() throws Exception {
         String inputFiname = "igv_test2";
         String ext = ".gct";
-        String inputFile = TestUtils.DATA_DIR + "/gct/" + inputFiname + ext;
-        String outputFile = TestUtils.DATA_DIR + "/out/" + inputFiname + "_formatted" + ext;
+        String inputFile = TestUtils.DATA_DIR + "gct/" + inputFiname + ext;
+        String outputFile = TestUtils.DATA_DIR + "out/" + inputFiname + "_formatted" + ext;
         File oFile = new File(outputFile);
         oFile.deleteOnExit();
 
@@ -508,9 +501,9 @@ public class IGVToolsTest {
     public void testCountDups() throws Exception {
         String inputFiname = "test_5duplicates";
         String ext = ".sam";
-        String inputFile = TestUtils.DATA_DIR + "/sam/" + inputFiname + ext;
-        String outputFileND = TestUtils.DATA_DIR + "/out/" + inputFiname + "_nodups" + ".tdf";
-        String outputFileWithDup = TestUtils.DATA_DIR + "/out/" + inputFiname + "_withdups" + ".tdf";
+        String inputFile = TestUtils.DATA_DIR + "sam/" + inputFiname + ext;
+        String outputFileND = TestUtils.DATA_DIR + "out/" + inputFiname + "_nodups" + ".tdf";
+        String outputFileWithDup = TestUtils.DATA_DIR + "out/" + inputFiname + "_withdups" + ".tdf";
 
         String chr = "1";
         int pos = 9718611;
@@ -548,8 +541,8 @@ public class IGVToolsTest {
 
     @Test
     public void testCountAliased() throws Exception {
-        tstCountAliased(TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam",
-                TestUtils.DATA_DIR + "/sam/NA12878.muc1.test_modchr.sam");
+        tstCountAliased(TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam",
+                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam");
     }
 
 
@@ -559,8 +552,8 @@ public class IGVToolsTest {
      * which are defined in the genome file.
      */
     public void tstCountAliased(String normfile, String aliasedfile) throws Exception {
-        String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
-        String outfile = TestUtils.DATA_DIR + "/out/tmpcount1.wig";
+        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome";
+        String outfile = TestUtils.DATA_DIR + "out/tmpcount1.wig";
         File outFi = new File(outfile);
         outFi.delete();
         outFi.deleteOnExit();
@@ -570,7 +563,7 @@ public class IGVToolsTest {
         igvTools.run(command.split("\\s+"));
 
         //Count non-aliased file
-        String outfile2 = TestUtils.DATA_DIR + "/out/tmpcount2.wig";
+        String outfile2 = TestUtils.DATA_DIR + "out/tmpcount2.wig";
         File outFi2 = new File(outfile2);
         outFi2.delete();
         //Count aliased file
@@ -602,9 +595,9 @@ public class IGVToolsTest {
 
     @Test
     public void testIndexedFasta() throws Exception {
-        String fasta_file = TestUtils.DATA_DIR + "/fasta/ecoli_out.padded.fasta";
-        String infile = TestUtils.DATA_DIR + "/bed/ecoli_out.test.bed";
-        String outfile = TestUtils.DATA_DIR + "/out/findextest.wig";
+        String fasta_file = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        String infile = TestUtils.DATA_DIR + "bed/ecoli_out.test.bed";
+        String outfile = TestUtils.DATA_DIR + "out/findextest.wig";
         String end_command = infile + " " + outfile + " " + fasta_file;
         String count_command = "count " + end_command;
         igvTools.run(count_command.split("\\s"));
@@ -642,12 +635,12 @@ public class IGVToolsTest {
         for (String s : exclude) {
             wfList.remove(WindowFunction.valueOf(s));
         }
-        String inputFile = TestUtils.DATA_DIR + "/bam/NA12878.SLX.sample.bam";
+        String inputFile = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
         tstCountWindowFunctions(inputFile, "All", wfList);
     }
 
     private void tstCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "/out/testCountWindowFunctions.tdf";
+        String outputFile = TestUtils.DATA_DIR + "out/testCountWindowFunctions.tdf";
 
 
         String wfs = "";
@@ -668,9 +661,9 @@ public class IGVToolsTest {
     @Test
     //tile -z 1 --fileType mage-tab
     public void testTileMageTab() throws Exception {
-        String mageTabFile = TestUtils.DATA_DIR + "/mage-tab/test.data.txt";
-        String outputFile = TestUtils.DATA_DIR + "/mage-tab/test.data.tdf";
-        String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
+        String mageTabFile = TestUtils.DATA_DIR + "mage-tab/test.data.txt";
+        String outputFile = TestUtils.DATA_DIR + "mage-tab/test.data.tdf";
+        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome";
         String command = "tile -z 1 --fileType mage-tab " + mageTabFile + " " + outputFile + " " + genfile;
 
         igvTools.run(command.split("\\s+"));

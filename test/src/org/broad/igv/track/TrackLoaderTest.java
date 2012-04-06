@@ -52,7 +52,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testLoadBEDIndexed() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
+        String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         TestUtils.createIndex(filepath);
         tstLoadFi(filepath, 1);
 
@@ -60,7 +60,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testLoadBEDNotIndexed() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
+        String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         if (TrackLoader.isIndexed(filepath)) {
             File f = new File(filepath + ".idx");
             f.delete();
@@ -72,20 +72,20 @@ public class TrackLoaderTest {
 
     @Test(expected = TribbleException.MalformedFeatureFile.class)
     public void testBEDCodec1() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
+        String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
         tstLoadFi(filepath, null);
     }
 
     @Test
     public void testLoadSIF() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/sample/BRCA_sif.txt";
+        String filepath = TestUtils.DATA_DIR + "sample/BRCA_sif.txt";
         //Sample information file, shouldn't have tracks. Not a great test
         tstLoadFi(filepath, 0);
     }
 
     @Test
     public void testLoadGFF() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/gff/simfeatures.gff3";
+        String filepath = TestUtils.DATA_DIR + "gff/simfeatures.gff3";
         TrackLoader loader = new TrackLoader();
         List<Track> tracks = loader.load(new ResourceLocator(filepath), TestUtils.loadGenome());
         assertEquals(1, tracks.size());
@@ -125,7 +125,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testBEDLoadsAliases() throws Exception {
-        tstLoadFi(TestUtils.DATA_DIR + "/bed/canFam2_alias.bed", 1);
+        tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1);
         String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
         for (String alias : aliases) {
             Feature feat = FeatureDB.getFeature(alias);
