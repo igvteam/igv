@@ -76,25 +76,20 @@ public class Globals {
     final static public Pattern colonPattern = Pattern.compile(":");
     final static public Pattern dashPattern = Pattern.compile("-");
     final static public Pattern equalPattern = Pattern.compile("=");
+    final static public Pattern semicolonPattern = Pattern.compile(";");
+
     public static List emptyList = new ArrayList();
     public static String VERSION;
     public static String BUILD;
     public static String TIMESTAMP;
     public static double log2 = Math.log(2);
 
-    /**
-     * Field description
-     */
+
     final public static boolean IS_WINDOWS =
             System.getProperty("os.name").toLowerCase().startsWith("windows");
-    /**
-     * Field description
-     */
     final public static boolean IS_MAC =
             System.getProperty("os.name").toLowerCase().startsWith("mac");
-    /**
-     * Field description
-     */
+
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
     public static Map<Character, Color> nucleotideColors;

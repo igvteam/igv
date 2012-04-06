@@ -48,6 +48,7 @@ public class AlignmentDataManager {
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
     private int maxLevels;
+    private int samplingWindow;
 
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
@@ -62,6 +63,7 @@ public class AlignmentDataManager {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
         maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+        samplingWindow = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -117,7 +119,7 @@ public class AlignmentDataManager {
         return reader.hasIndex();
     }
 
-    public int getMaxLevels() {
+    public int getDownsampleCount() {
         return maxLevels;
     }
 
@@ -348,8 +350,8 @@ public class AlignmentDataManager {
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
                     if (context.getPanel() != null) {
-                        context.getPanel().invalidate();
-                        context.getPanel().repaint();
+                   //     context.getPanel().invalidate();
+                   //     context.getPanel().repaint();
                     }
 
                 } catch (Exception exception) {
