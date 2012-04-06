@@ -408,7 +408,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     private void updateButtonsEnabled() {
         boolean enableMutStates = regionTable.getSelectedRowCount() >= 1;
         boolean enableZoomToRegion = regionTable.getSelectedRowCount() == 1;
-        removeSelectedButton.setEnabled(enableMutStates);
+        removeButton.setEnabled(enableMutStates);
         viewButton.setEnabled(enableMutStates);
         checkBoxZoomWhenNav.setEnabled(enableZoomToRegion);
     }
@@ -422,7 +422,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         panel3 = new JPanel();
         checkBoxShowAllChrs = new JCheckBox();
         addButton = new JButton();
-        removeSelectedButton = new JButton();
+        removeButton = new JButton();
         scrollPane1 = new JScrollPane();
         regionTable = new JTable();
         panel1 = new JPanel();
@@ -471,10 +471,10 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                     addButton.setActionCommand("Add");
                     panel3.add(addButton);
 
-                    //---- removeSelectedButton ----
-                    removeSelectedButton.setAction(actionRemoveRegions);
-                    removeSelectedButton.setText("Removeoetuhet ");
-                    panel3.add(removeSelectedButton);
+                    //---- removeButton ----
+                    removeButton.setAction(actionRemoveRegions);
+                    removeButton.setText("Removeoetuhet ");
+                    panel3.add(removeButton);
                 }
                 contentPanel.add(panel3, BorderLayout.NORTH);
 
@@ -586,7 +586,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     private JPanel panel3;
     private JCheckBox checkBoxShowAllChrs;
     private JButton addButton;
-    private JButton removeSelectedButton;
+    private JButton removeButton;
     private JScrollPane scrollPane1;
     private JTable regionTable;
     private JPanel panel1;
@@ -729,6 +729,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         public void actionPerformed(ActionEvent e) {
             // TODO add your code here
             synchRegions();
+            updateButtonsEnabled();
         }
     }
 

@@ -121,7 +121,7 @@
                <string>Removeoetuhet </string> 
               </void> 
               <void property="name"> 
-               <string>removeSelectedButton</string> 
+               <string>removeButton</string> 
               </void> 
              </object> 
             </void> 
