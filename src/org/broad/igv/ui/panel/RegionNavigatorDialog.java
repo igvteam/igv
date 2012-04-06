@@ -409,7 +409,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         boolean enableMutStates = regionTable.getSelectedRowCount() >= 1;
         boolean enableZoomToRegion = regionTable.getSelectedRowCount() == 1;
         removeSelectedButton.setEnabled(enableMutStates);
-        viewSelectedButton.setEnabled(enableMutStates);
+        viewButton.setEnabled(enableMutStates);
         checkBoxZoomWhenNav.setEnabled(enableZoomToRegion);
     }
 
