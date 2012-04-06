@@ -18,33 +18,34 @@
 
 package org.broad.igv.ui.color;
 
+import org.broad.igv.Globals;
+import org.broad.igv.session.Persistable;
+
 import java.awt.*;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A lookup table mapping symbols (strings) -> color.  Can be initiated with our without a palette.  If
  * a palette is used colors are selected sequentially from the palette as needed until it is exhausted.
  * <p/>
+ *
  * @author jrobinso
  * @date Feb 26, 2010
  */
-public class PaletteColorTable implements ColorTable {
+public class PaletteColorTable implements ColorTable, Persistable {
 
-    Map<String, Color> colorMap;
+    LinkedHashMap<String, Color> colorMap;
     Color[] colors;
 
     public PaletteColorTable() {
-        colorMap = new Hashtable();
+        colorMap = new LinkedHashMap();
     }
 
     public PaletteColorTable(ColorPalette palette) {
-        if(palette != null) {
+        if (palette != null) {
             this.colors = palette.getColors();
         }
-        colorMap = new Hashtable();
+        colorMap = new LinkedHashMap();
     }
 
     public void put(String key, Color c) {
@@ -71,5 +72,63 @@ public class PaletteColorTable implements ColorTable {
 
     public Set<Map.Entry<String, Color>> entrySet() {
         return colorMap.entrySet();
+    }
+
+
+    public String getMapAsString() {
+        StringBuffer buf = new StringBuffer();
+        boolean firstEntry = true;
+        for (Map.Entry<String, Color> entry : colorMap.entrySet()) {
+            if (!firstEntry) {
+                buf.append(";");
+            }
+            String cs = ColorUtilities.colorToString(entry.getValue());
+            buf.append(entry.getKey());
+            buf.append("=");
+            buf.append(cs);
+            firstEntry = false;
+        }
+        return buf.toString();
+    }
+
+    public void restoreMapFromString(String string) {
+
+        if (string == null || string.isEmpty()) return;
+        colorMap.clear();
+        String[] tokens = Globals.semicolonPattern.split(string);
+        for (String t : tokens) {
+            String[] kv = Globals.equalPattern.split(t);
+            colorMap.put(kv[0], ColorUtilities.stringToColor(kv[1]));
+        }
+    }
+
+
+    /**
+     * Return object state as a map of key-value string pairs
+     *
+     * @return
+     */
+    public Map<String, String> getPersistentState() {
+        Map<String, String> state = new HashMap<String, String>();
+        if (colorMap != null && colorMap.size() > 0) {
+            state.put("colorMap", getMapAsString());
+        }
+        return state;
+    }
+
+    /**
+     * Restore object state from a map of key-value string pairs
+     *
+     * @param values
+     */
+    public void restorePersistentState(Map<String, String> values) {
+        String colorMapString = values.get("colorMap");
+        if (colorMapString != null) {
+            restoreMapFromString(colorMapString);
+        }
+    }
+
+    public LinkedHashMap<String,Color> getColorMap() {
+        return colorMap;
     }
 }

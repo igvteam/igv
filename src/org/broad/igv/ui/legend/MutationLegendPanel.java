@@ -30,22 +30,12 @@ import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.util.PropertyDialog;
-import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
 
-import static org.broad.igv.ui.util.PropertyDialog.PreferenceType.COLOR;
-
-import org.broad.igv.ui.util.UIUtilities;
-
-import javax.swing.*;
 import java.awt.*;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Panel to paint a legend for the mutation tracks.
- * TODO -- combine with other legend panels in a general
  *
  * @author jrobinso
  */
@@ -66,7 +56,8 @@ public class MutationLegendPanel extends LegendPanel {
     }
 
     protected void persistResetPreferences() {
-        PreferenceManager.getInstance().setMutationColorScheme(colorTable);
+        PreferenceManager.getInstance().resetMutationColorScheme();
+        reloadPreferences();
     }
 
     protected void reloadPreferences() {
@@ -92,142 +83,23 @@ public class MutationLegendPanel extends LegendPanel {
      */
     public void edit() {
 
+        PaletteColorTable ct = PreferenceManager.getInstance().getMutationColorScheme();
+        ColorMapEditor editor = new ColorMapEditor(IGV.getMainFrame(), ct.getColorMap());
+        editor.setVisible(true);
 
-        IGV.getInstance().setStatusBarMessage("Setting view properties...");
-
-        // Add view preference items to the display
-        LinkedHashMap<String, PreferenceDescriptor> labelTextToKey = addPreferences();
-
-        Window window = SwingUtilities.getWindowAncestor(MutationLegendPanel.this);
-
-        // Create dialog
-        PropertyDialog dialog = new PropertyDialog(PreferenceManager.getInstance(),
-                labelTextToKey, (Dialog) window, true);
-
-        Component parent = IGV.getMainFrame();
-
-        dialog.setLocationRelativeTo(parent);
-        dialog.setTitle("Color Preferences");
-        dialog.setVisible(true);
-
-
-        if (dialog.isCanceled()) {
-            IGV.getInstance().resetStatusMessage();
-            return;
-        }
-
-        try {
+        Map<String, Color> changedColors = editor.getChangedColors();
+        if (!changedColors.isEmpty()) {
+            for (Map.Entry<String, Color> entry : changedColors.entrySet()) {
+                ct.put(entry.getKey(), entry.getValue());
+            }
+            String colorTableString = ct.getMapAsString();
+            PreferenceManager.getInstance().put(PreferenceManager.MUTATION_COLOR_TABLE, colorTableString);
             reloadPreferences();
-
-        }
-        finally {
-
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                public void run() {
-                    SwingUtilities.getWindowAncestor(MutationLegendPanel.this).toFront();
-                }
-            });
-            IGV.getInstance().resetStatusMessage();
         }
 
     }
 
-    protected LinkedHashMap<String, PreferenceDescriptor> addPreferences() {
 
-        LinkedHashMap<String, PreferenceDescriptor> labelTextToKey = new LinkedHashMap<String,
-                PreferenceDescriptor>();
-
-        addIndelColorPreference(labelTextToKey);
-        addMissenseColorPreference(labelTextToKey);
-        addNonsenseColorPreference(labelTextToKey);
-        addSpliceSiteColorPreference(labelTextToKey);
-        addSynonymousColorPreference(labelTextToKey);
-        addTargetRegionColorPreference(labelTextToKey);
-        addUnknownColorPreference(labelTextToKey);
-
-        return labelTextToKey;
-    }
-
-    protected void addNonsenseColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Nonsense");
-        String labelText = "Nonsense Color: ";
-
-        labelTextToKey.put(labelText,
-                new PreferenceDescriptor(PreferenceManager.MUTATION_NONSENSE_COLOR_KEY,
-                        COLOR, ColorUtilities.colorToString(color)));
-    }
-
-    protected void addIndelColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Indel");
-        String labelText = "Indel Color: ";
-
-        labelTextToKey.put(labelText,
-                new PreferenceDescriptor(PreferenceManager.MUTATION_INDEL_COLOR_KEY,
-                        COLOR, ColorUtilities.colorToString(color)));
-    }
-
-    protected void addTargetRegionColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Targeted_Region");
-        String labelText = "Target Region Color: ";
-
-        labelTextToKey.put(labelText,
-                new PreferenceDescriptor(
-                        PreferenceManager.MUTATION_TARGETED_REGION_COLOR_KEY, COLOR,
-                        ColorUtilities.colorToString(color)));
-    }
-
-    protected void addMissenseColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Missense");
-        String labelText = "Missense Color: ";
-
-        labelTextToKey.put(labelText,
-                new PreferenceDescriptor(PreferenceManager.MUTATION_MISSENSE_COLOR_KEY,
-                        COLOR, ColorUtilities.colorToString(color)));
-    }
-
-    protected void addSpliceSiteColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Splice_site");
-        String labelText = "Splice Site Color: ";
-
-        labelTextToKey.put(
-                labelText,
-                new PreferenceDescriptor(
-                        PreferenceManager.MUTATION_SPLICE_SITE_COLOR_KEY, COLOR,
-                        ColorUtilities.colorToString(color)));
-    }
-
-    protected void addSynonymousColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Synonymous");
-        String labelText = "Synonymous Color: ";
-
-        labelTextToKey.put(
-                labelText,
-                new PreferenceDescriptor(
-                        PreferenceManager.MUTATION_SYNONYMOUS_COLOR_KEY, COLOR,
-                        ColorUtilities.colorToString(color)));
-    }
-
-    protected void addUnknownColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
-
-        Color color = colorTable.get("Unknown");
-        String labelText = "Unknown Color: ";
-
-        labelTextToKey.put(labelText,
-                new PreferenceDescriptor(PreferenceManager.MUTATION_UNKNOWN_COLOR_KEY,
-                        COLOR, ColorUtilities.colorToString(color)));
-    }
-
-    /**
-     * Method description
-     *
-     * @param g
-     */
     @Override
     public void paintLegend(Graphics g) {
 
@@ -271,8 +143,7 @@ public class MutationLegendPanel extends LegendPanel {
                 }
             }
 
-        }
-        finally {
+        } finally {
             g2D.dispose();
         }
     }

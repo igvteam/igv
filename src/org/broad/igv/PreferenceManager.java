@@ -82,8 +82,9 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
     public static final String SAM_FLAG_UNMAPPED_PAIR = "SAM.FLAG_UNMAPPED_PAIR";
-    public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS";
-    public static final String SAM_MAX_READS = "SAM.MAX_READS";
+    public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS"; // Sampling count
+    public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
+
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
@@ -122,6 +123,8 @@ public class PreferenceManager implements PropertyManager {
     final static public String LAST_SESSION_DIRECTORY = "LAST_SESSION_DIRECTORY";
     final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
     final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
+
+    final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
     final public static String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
     final public static String MUTATION_NONSENSE_COLOR_KEY = "MUTATION_NONSENSE_COLOR_KEY";
@@ -359,7 +362,6 @@ public class PreferenceManager implements PropertyManager {
         booleanCache.clear();
         objectCache.clear();
     }
-
 
     public void put(String key, String value) {
         preferences.put(key, value);
@@ -783,34 +785,20 @@ public class PreferenceManager implements PropertyManager {
      * Original labels:  Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown
      * Nico's labels:   Synonymous, Missense, Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
      */
-    public void setMutationColorScheme(ColorTable colorScheme) {
+    public void resetMutationColorScheme() {
 
-        String indel = getcommaSeparatedRGBString(colorScheme.get("Indel"));
-        String missense = getcommaSeparatedRGBString(colorScheme.get("Missense"));
-        String nonsense = getcommaSeparatedRGBString(colorScheme.get("Nonsense"));
-        String spliceSite = getcommaSeparatedRGBString(colorScheme.get("Splice_site"));
-        String synonymous = getcommaSeparatedRGBString(colorScheme.get("Synonymous"));
-        String targetedRegion = getcommaSeparatedRGBString(colorScheme.get("Targeted_Region"));
-        String unknown = getcommaSeparatedRGBString(colorScheme.get("Unknown"));
-
-        // nico
-        String truncating = getcommaSeparatedRGBString(colorScheme.get("Truncating"));
-        String nonCodingTranscript = getcommaSeparatedRGBString(colorScheme.get("Non-coding_Transcript"));
-        String otherAAChanging = getcommaSeparatedRGBString(colorScheme.get("Other_AA_changing"));
-        String otherLikelyNeutral = getcommaSeparatedRGBString(colorScheme.get("Other_likely_neutral"));
-
-        put(MUTATION_INDEL_COLOR_KEY, indel);
-        put(MUTATION_MISSENSE_COLOR_KEY, missense);
-        put(MUTATION_NONSENSE_COLOR_KEY, nonsense);
-        put(MUTATION_SPLICE_SITE_COLOR_KEY, spliceSite);
-        put(MUTATION_SYNONYMOUS_COLOR_KEY, synonymous);
-        put(MUTATION_TARGETED_REGION_COLOR_KEY, targetedRegion);
-        put(MUTATION_UNKNOWN_COLOR_KEY, unknown);
-
-        put("MUTATION_Truncating_COLOR", truncating);
-        put("MUTATION_Non-coding_Transcript_COLOR", nonCodingTranscript);
-        put("MUTATION_Other_AA_changing_COLOR", otherAAChanging);
-        put("MUTATION_Other_likely_neutral_COLOR", otherLikelyNeutral);
+        remove(MUTATION_INDEL_COLOR_KEY);
+        remove(MUTATION_MISSENSE_COLOR_KEY);
+        remove(MUTATION_NONSENSE_COLOR_KEY);
+        remove(MUTATION_SPLICE_SITE_COLOR_KEY);
+        remove(MUTATION_SYNONYMOUS_COLOR_KEY);
+        remove(MUTATION_TARGETED_REGION_COLOR_KEY);
+        remove(MUTATION_UNKNOWN_COLOR_KEY);
+        remove("MUTATION_Truncating_COLOR");
+        remove("MUTATION_Non-coding_Transcript_COLOR");
+        remove("MUTATION_Other_AA_changing_COLOR");
+        remove("MUTATION_Other_likely_neutral_COLOR");
+        remove(MUTATION_COLOR_TABLE);
     }
 
     /**
@@ -821,6 +809,17 @@ public class PreferenceManager implements PropertyManager {
      */
     public PaletteColorTable getMutationColorScheme() {
 
+        String colorTableString = get(MUTATION_COLOR_TABLE);
+        if (colorTableString != null) {
+            PaletteColorTable pallete = new PaletteColorTable();
+            pallete.restoreMapFromString(colorTableString);
+            return pallete;
+        } else {
+            return getLegacyMutationColorScheme();
+        }
+    }
+
+    private PaletteColorTable getLegacyMutationColorScheme() {
         String indelColor = get(MUTATION_INDEL_COLOR_KEY);
         String missenseColor = get(MUTATION_MISSENSE_COLOR_KEY);
         String nonsenseColor = get(MUTATION_NONSENSE_COLOR_KEY);
@@ -943,7 +942,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
         defaultValues.put(SAM_MAX_LEVELS, "100");
-        defaultValues.put(SAM_MAX_READS, "500000");
+        defaultValues.put(SAM_SAMPLING_WINDOW, "50");
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
         defaultValues.put(SAM_FILTER_URL, null);

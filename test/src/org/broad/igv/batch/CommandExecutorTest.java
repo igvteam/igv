@@ -92,7 +92,7 @@ public class CommandExecutorTest {
         int checked = 0;
         for (Track track : curTracks) {
             if (track instanceof AlignmentTrack) {
-                assertEquals(maxDepth, ((AlignmentTrack) track).getMaxDepth());
+                assertEquals(maxDepth, ((AlignmentTrack) track).getDownsampleCount());
                 checked++;
             }
         }
@@ -120,8 +120,8 @@ public class CommandExecutorTest {
         AlignmentTrack track2 = tracks.get(1);
 
 
-        assertEquals(md, track1.getMaxDepth());
-        assertEquals(50, track2.getMaxDepth());
+        assertEquals(md, track1.getDownsampleCount());
+        assertEquals(50, track2.getDownsampleCount());
     }
 
     private List<AlignmentTrack> getAlTracks(List<Track> tracks) {
