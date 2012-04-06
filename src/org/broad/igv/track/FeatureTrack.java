@@ -671,7 +671,7 @@ public class FeatureTrack extends AbstractTrack {
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             loadFeatures(chr, start, end, context);
             if (!IGV.getInstance().isExportingSnapshot()) {
-                context.getPanel().repaint();
+               // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
                 return;
             }
         }

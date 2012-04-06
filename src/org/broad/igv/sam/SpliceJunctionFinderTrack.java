@@ -137,6 +137,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
                 int intervalEnd = loadedInterval.getEnd();
                 PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
                 packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                if(context.getPanel() != null) context.getPanel().repaint();
             }
         } catch (IOException e) {
             log.error("Error loading splice junctions", e);
