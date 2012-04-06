@@ -26,6 +26,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.tribble.Feature;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -748,7 +749,7 @@ public class CachingQueryReader {
     }
 
 
-    public static class DownsampledInterval {
+    public static class DownsampledInterval implements Feature {
         private int start;
         private int end;
         private int count;
@@ -773,6 +774,14 @@ public class CachingQueryReader {
 
         public int getStart() {
             return start;
+        }
+
+        public String getChr() {
+            return null;
+        }
+
+        public String getValueString() {
+            return "<html>Downsampled interval (-" + count + ")<br>" + toString();
         }
     }
 
