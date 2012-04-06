@@ -1131,12 +1131,9 @@ public class MainWindow extends JFrame {
                 if (!resolutionSlider.getValueIsAdjusting())    {
                     int idx = resolutionSlider.getValue();
                     idx = Math.max(0, Math.min(idx, MAX_ZOOM));
-                    System.out.println("here idx " + idx + " " + zd + " " + displayOption);
                     if (zd != null && idx == zd.getZoom())
                         return;
-                    System.out.println("gere");
                     if (zd != null && idx > 3 && displayOption == DisplayOption.PEARSON) {
-                        System.out.println("here2");
                         int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
                         if (ans == JOptionPane.NO_OPTION)   {
                             resolutionSlider.setValue(zd.getZoom());
