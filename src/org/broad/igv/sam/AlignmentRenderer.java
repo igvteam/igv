@@ -98,7 +98,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         curveMap = new HashMap<Shape, Alignment>();
 
         arcsByStart = new TreeSet<Shape>(new Comparator<Shape>() {
-            @Override
+
             public int compare(Shape o1, Shape o2) {
                 double x1 = o1.getBounds().getMinX();
                 double x2 = o2.getBounds().getMinX();
@@ -107,7 +107,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         });
 
         arcsByEnd = new TreeSet<Shape>(new Comparator<Shape>() {
-            @Override
+
             public int compare(Shape o1, Shape o2) {
                 double x1 = o1.getBounds().getMaxX();
                 double x2 = o2.getBounds().getMaxX();
@@ -814,15 +814,21 @@ public class AlignmentRenderer implements FeatureRenderer {
                             alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
-                        if (readDistance > 0) {
-                            int relation = compareToBounds(alignment, renderOptions);
 
-                            if (relation <= -1) {
-                                c = smallISizeColor;
-                            } else if (relation >= +1) {
-                                c = largeISizeColor;
-                            }
+                        int minThreshold = renderOptions.getMinInsertSize();
+                        int maxThreshold = renderOptions.getMaxInsertSize();
+                        PEStats peStats = getPEStats(alignment, renderOptions);
+                        if (renderOptions.isComputeIsizes() && peStats != null) {
+                            minThreshold = peStats.getMinThreshold();
+                            maxThreshold = peStats.getMaxThreshold();
                         }
+
+                        if (readDistance < minThreshold) {
+                            c = smallISizeColor;
+                        } else if (readDistance > maxThreshold) {
+                            c = largeISizeColor;
+                        }
+                        //return renderOptions.insertSizeColorScale.getColor(readDistance);
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());
                         if (c == null) {
@@ -959,10 +965,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 PEStats.Orientation libraryOrientation = peStats.getOrientation();
                 switch (libraryOrientation) {
                     case FR:
-                        if (!alignment.isSmallInsert()) {
-                            // if the isize < read length the reads might overlap, invalidating this test
-                            c = frOrientationColors.get(pairOrientation);
-                        }
+                        //if (!alignment.isSmallInsert()) {
+                        // if the isize < read length the reads might overlap, invalidating this test
+                        c = frOrientationColors.get(pairOrientation);
+                        //}
                         break;
                     case RF:
                         c = rfOrientationColors.get(pairOrientation);
