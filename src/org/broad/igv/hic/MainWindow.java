@@ -55,7 +55,7 @@ public class MainWindow extends JFrame {
         return zoomToDensityMap == null ? null : zoomToDensityMap.get(zoom);
     }
 
-    private enum DisplayOption {
+    enum DisplayOption {
         OBSERVED("Observed"),
         OE("OE"),
         PEARSON("Pearson");
