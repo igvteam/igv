@@ -80,7 +80,7 @@ public abstract class AbstractTrack implements Track {
 
     private int top;
     protected int minimumHeight = -1;
-    protected int maximumHeight = 50;
+    protected int maximumHeight = 1000;
 
     private TrackType trackType = TrackType.OTHER;
 
