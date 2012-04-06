@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Region extends Mapping
+public class Region extends AbstractMapping
 {
   List<Anchor> anchors = new ArrayList();
 
@@ -20,7 +20,7 @@ public class Region extends Mapping
     String toChr = a.getToChr();
 
     if (this.anchors.size() > 0) {
-      Anchor lastAnchor = (Anchor)this.anchors.get(this.anchors.size() - 1);
+      Anchor lastAnchor = anchors.get(this.anchors.size() - 1);
       int lastFromEnd = lastAnchor.getFromEnd();
       int lastToEnd = lastAnchor.getToEnd();
 
@@ -30,8 +30,8 @@ public class Region extends Mapping
       int toStart = lastToEnd;
       int toEnd = a.getToStart();
       if ((toEnd > toStart) && (fromEnd > fromStart)) {
-        fillerAnchor.setParameters("psueudo", fromChr, fromStart, fromEnd, fromDirection, toChr, lastToEnd, a.getToStart(), toDirection);
-
+        fillerAnchor.setParameters("psueudo", fromChr, fromStart, fromEnd, fromDirection,
+                toChr, lastToEnd, a.getToStart(), toDirection);
         fillerAnchor.psuedo = true;
         this.anchors.add(fillerAnchor);
       }
@@ -81,10 +81,9 @@ public class Region extends Mapping
       }
     }
 
-    Color c = ChromosomeColors.getColor(getToChr());
     pw.print(getFromChr() + "\t" + getFromStart() + "\t" + getFromEnd() + "\t" + name + "\t1000\t" +
             (getDirection() ? "+" : "-") + "\t" + getFromStart() + "\t" + getFromEnd() + "\t" +
-            convertColorToRGBString(c) + "\t" + blockCount + "\t" +
+            convertColorToRGBString(ChromosomeColors.getColor(getToChr())) + "\t" + blockCount + "\t" +
             blockSizes + "\t" + blockStarts);
 
     return sw.toString();

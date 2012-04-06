@@ -1,17 +1,16 @@
 package org.broad.igv.synteny;
 
-public class Anchor extends Mapping
-{
-  boolean psuedo;
+public class Anchor extends AbstractMapping {
 
-  public double mapPosition(int fromPosition)
-  {
-    double delta = this.scaleFactor * (fromPosition - this.fromStart);
+    boolean psuedo;
 
-    if (this.direction == true) {
-      return this.toStart + delta;
+    public double mapPosition(int fromPosition) {
+        double delta = this.scaleFactor * (fromPosition - this.fromStart);
+
+        if (this.direction == true) {
+            return this.toStart + delta;
+        }
+
+        return this.toEnd - delta;
     }
-
-    return this.toEnd - delta;
-  }
 }

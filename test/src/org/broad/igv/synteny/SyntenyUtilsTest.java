@@ -48,6 +48,8 @@ public class SyntenyUtilsTest {
         String mouseChr = "chr2";
         int mousePosition = 39414197;
 
+
+
         Map<String, List<Mapping>> mappings = SyntenyUtils.loadMappings(testMappings, false);
         Mapping mapping = SyntenyUtils.getMappingContaining(mappings.get(humanChr), humanPosition);
         assertNotNull(mapping);
