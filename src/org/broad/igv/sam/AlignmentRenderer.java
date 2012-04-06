@@ -356,6 +356,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         g.setFont(font);
         drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames);
 
+        //If the paired alignment is in memory, we draw it.
+        //However, we get the coordinates from the first alignment
         if (pair.secondAlignment != null) {
 
             if (alignmentColor2 == null) {
@@ -364,44 +366,45 @@ public class AlignmentRenderer implements FeatureRenderer {
             g = context.getGraphic2DForColor(alignmentColor2);
 
             drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
-
-            Graphics2D gLine = context.getGraphic2DForColor(grey1);
-            double origin = context.getOrigin();
-            int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
-            int endX = (int) ((pair.secondAlignment.getStart() - origin) / locScale);
-
-            int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
-            int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
-
-
-            if (renderOptions.isPairedArcView()) {
-                int relation = compareToBounds(pair, renderOptions);
-                if (relation <= -1 || relation >= +1) {
-                    return;
-                }
-                GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
-                int curveHeight = (int) Math.log(endX - startX) * h;
-
-                double botY = y + h / 2;
-                double topY = y + h / 2 - curveHeight;
-                double midX = (endX + startX) / 2;
-
-                path.moveTo(startX, botY);
-                path.quadTo(midX, topY, endX, botY);
-                path.quadTo(midX, topY - 2, startX, botY);
-                path.closePath();
-                arcsByStart.add(path);
-                arcsByEnd.add(path);
-                curveMap.put(path, pair);
-                gLine.setColor(alignmentColor2);
-
-                gLine.draw(path);
-            } else {
-                startX = Math.max(rect.x, startX);
-                endX = Math.min(rect.x + rect.width, endX);
-                gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-            }
         }
+
+        Graphics2D gLine = context.getGraphic2DForColor(grey1);
+        double origin = context.getOrigin();
+        int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
+        int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
+
+        int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
+        int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
+
+
+        if (renderOptions.isPairedArcView()) {
+            int relation = compareToBounds(pair, renderOptions);
+            if (relation <= -1 || relation >= +1) {
+                return;
+            }
+            GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
+            int curveHeight = (int) Math.sqrt(endX - startX) * h;
+
+            double botY = y + h / 2;
+            double topY = y + h / 2 - curveHeight;
+            double midX = (endX + startX) / 2;
+
+            path.moveTo(startX, botY);
+            path.quadTo(midX, topY, endX, botY);
+            path.quadTo(midX, topY - 2, startX, botY);
+            path.closePath();
+            arcsByStart.add(path);
+            arcsByEnd.add(path);
+            curveMap.put(path, pair);
+            gLine.setColor(alignmentColor2);
+
+            gLine.draw(path);
+        } else {
+            startX = Math.max(rect.x, startX);
+            endX = Math.min(rect.x + rect.width, endX);
+            gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
+        }
+
     }
 
     /**
@@ -925,7 +928,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             maxThreshold = peStats.getMaxThreshold();
         }
 
-        int dist = alignment.getInferredInsertSize();
+        int dist = Math.abs(alignment.getInferredInsertSize());
         if (dist < minThreshold) return -1;
         if (dist > maxThreshold) return +1;
         return 0;
@@ -943,7 +946,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             return grey1;
         }
 
-        int dist = pair.getInferredInsertSize();
+        int dist = Math.abs(pair.getInferredInsertSize());
         double logDist = Math.log(dist);
         Color minColor = smallISizeColor;
         Color maxColor = largeISizeColor;
