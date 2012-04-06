@@ -61,8 +61,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
-    static final int DS_MARGIN = 5;
-    static final int DOWNAMPLED_ROW_HEIGHT = 6;
+    static final int DS_MARGIN_0 = 2;
+    static final int DOWNAMPLED_ROW_HEIGHT = 3;
+    static final int DS_MARGIN_2 = 5;
 
     public enum ExperimentType {
         RNA, BISULFITE, OTHER
@@ -123,15 +124,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private FeatureRenderer renderer;
     private double minVisibleScale = 25;
-    private Rectangle renderedRect;
     private HashMap<String, Color> selectedReadNames = new HashMap();
     private int selectionColorIndex = 0;
+    private int minHeight = 50;
     private AlignmentDataManager dataManager;
 
     private Genome genome;
 
     // The "parent" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
     DataPanel parent;
+    private Rectangle alignmentsRect;
+    private Rectangle downsampleRect;
 
 
     /**
@@ -230,8 +233,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         int nGroups = dataManager.getMaxGroupCount();
 
-        int h = Math.max(minimumHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN);
-        h += DOWNAMPLED_ROW_HEIGHT;
+        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN +
+                DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
+
+
         h = Math.min(maximumHeight, h);
         return h;
     }
@@ -257,24 +262,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
         // Top gap.
-        renderedRect = new Rectangle(rect);
-        renderedRect.y += 2;
-        renderedRect.height -= 2;
+        rect.y += DS_MARGIN_0;
 
         if (context.getScale() > minVisibleScale) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(renderedRect);
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
             return;
         }
 
-        Rectangle downsampleRect = new Rectangle(renderedRect);
+        downsampleRect = new Rectangle(rect);
         downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
         renderDownsampledIntervals(context, downsampleRect);
 
-        Rectangle alignmentRect = new Rectangle(renderedRect);
-        alignmentRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN;
-        renderAlignments(context, alignmentRect);
+        alignmentsRect = new Rectangle(rect);
+        alignmentsRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2;
+        renderAlignments(context, alignmentsRect);
     }
 
     private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
@@ -332,7 +335,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = visibleRect.height;
-                int depth = dataManager.getMaxLevels();
+                int depth = dataManager.getDownsampleCount();
                 squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = squishedHeight;
             }
@@ -545,9 +548,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-
-        Alignment feature = null;
-        if (renderOptions.isPairedArcView()) {
+        if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
+            AlignmentInterval iv = dataManager.getLoadedInterval(frame);
+            List<CachingQueryReader.DownsampledInterval> intervals = iv.getDownsampledIntervals();
+            CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
+                    FeatureUtils.getFeatureAt(position, 0, intervals);
+            return interval == null ? null : interval.getValueString();
+        } else if (renderOptions.isPairedArcView()) {
+            Alignment feature = null;
             //All alignments stacked at the bottom
             double xloc = (position - frame.getOrigin()) / frame.getScale();
             SortedSet<Shape> arcs = AlignmentRenderer.getInstance().curveOverlap(xloc);
@@ -559,14 +567,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     break;
                 }
             }
+            return feature == null ? null : feature.getValueString(position, getWindowFunction());
         } else {
-            feature = getAlignmentAt(position, y, frame);
-        }
+            Alignment feature = getAlignmentAt(position, y, frame);
+            return feature == null ? null : feature.getValueString(position, getWindowFunction());
 
-        if (feature == null) {
-            return null;
         }
-        return feature.getValueString(position, getWindowFunction());
     }
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
@@ -583,7 +589,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 //            return null;
 //        }
 
-        int startY = renderedRect.y;
+        int startY = alignmentsRect.y;
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
         for (List<AlignmentInterval.Row> rows : groups.values()) {
@@ -725,8 +731,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-    public int getMaxDepth() {
-        return dataManager.getMaxLevels();
+    public int getDownsampleCount() {
+        return dataManager.getDownsampleCount();
     }
 
     public void setMaxDepth(int newMaxLevels) {
@@ -1525,7 +1531,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    int maxLevels = dataManager.getMaxLevels();
+                    int maxLevels = dataManager.getDownsampleCount();
                     String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
                     //Cancel button return null
                     if (val == null) {
