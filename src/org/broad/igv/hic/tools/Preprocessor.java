@@ -21,7 +21,7 @@ public class Preprocessor {
 
     // Use 4 threads.  Each matrix can be computed concurrently.
     // TODO -- add argument to specify # of threads.
-    private static ExecutorService threadExecutor = Executors.newFixedThreadPool(4);
+    private static ExecutorService threadExecutor = null;
 
     private List<Chromosome> chromosomes;
 
@@ -59,6 +59,12 @@ public class Preprocessor {
         }
     }
 
+    public void setNumberOfThreads(int n) {
+        if(n > 1) {
+            threadExecutor = Executors.newFixedThreadPool(n);
+        }
+    }
+
     public void setCountThreshold(int countThreshold) {
         this.countThreshold = countThreshold;
     }
@@ -78,7 +84,7 @@ public class Preprocessor {
     public void preprocess(final List<String> inputFileList) throws IOException {
 
         try {
-
+            System.out.println("Start preprocess");
             if (loadDensities) {
                 File densitiesFile = new File(outputFile.getPath() + ".densities");
                 calculateDensities(inputFileList, densitiesFile);
@@ -121,12 +127,10 @@ public class Preprocessor {
                         }
                     }
 
+                    System.out.println("Compute " + chromosomes.get(c1).getName() + "-" + chromosomes.get(c2).getName());
                     final int fc1 = c1;
                     final int fc2 = c2;
                     Runnable runnable = new Runnable() {
-                        int c1;
-                        int c2;
-
                         public void run() {
                             try {
                                 MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
@@ -140,19 +144,27 @@ public class Preprocessor {
 
                         }
                     };
-                    threadExecutor.submit(runnable);
+                    if (threadExecutor == null) {
+                        runnable.run();
+                    } else {
+                        threadExecutor.submit(runnable);
+                    }
                 }
             }
 
-            try {
-                // Do an orderly shutdown (shuts down when all tasks have completed), and wait for its completion.
-                // This is equivalent to do a join on all running threads, and is neccessary or the file will
-                // be closed before the threads have finished.
-                threadExecutor.shutdown();
-                threadExecutor.awaitTermination(10, TimeUnit.DAYS);
-            } catch (InterruptedException e) {
-                outputFile.deleteOnExit();
+            if (threadExecutor != null) {
+                try {
+                    // Do an orderly shutdown (shuts down when all tasks have completed), and wait for its completion.
+                    // This is equivalent to do a join on all running threads, and is neccessary or the file will
+                    // be closed before the threads have finished.
+                    threadExecutor.shutdown();
+                    threadExecutor.awaitTermination(10, TimeUnit.DAYS);
+                } catch (InterruptedException e) {
+                    outputFile.deleteOnExit();
+                }
             }
+
+
             masterIndexPosition = bytesWritten;
             writeMasterIndex();
 

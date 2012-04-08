@@ -60,7 +60,7 @@ public class HiCTools {
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
-        } else if(args[0].equals("pairsToBin")) {
+        } else if (args[0].equals("pairsToBin")) {
             String ifile = args[1];
             String ofile = args[2];
             String genomeId = args[3];
@@ -87,8 +87,7 @@ public class HiCTools {
             String genomeId = "";
             try {
                 genomeId = args[3];
-            }
-            catch (ArrayIndexOutOfBoundsException e) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 System.err.println("No genome ID given");
                 System.exit(0);
             }
@@ -112,6 +111,7 @@ public class HiCTools {
 
             preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
+            preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setLoadDensities(parser.getDensitiesOption());
             preprocessor.preprocess(files);
@@ -280,12 +280,14 @@ public class HiCTools {
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
         private Option loadDensititesOption = null;
+        private Option threadedOption = null;
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
-            countThresholdOption = addIntegerOption('t', "countThreshold");
+            countThresholdOption = addIntegerOption('m', "minCountThreshold");
             loadDensititesOption = addBooleanOption('o', "density");
+            threadedOption = addBooleanOption('t', "threads");
         }
 
         boolean getDiagonalsOption() {
@@ -310,7 +312,13 @@ public class HiCTools {
 
         int getCountThresholdOption() {
             Object opt = getOptionValue(countThresholdOption);
-            return opt == null ? -1 : ((Number) opt).intValue();
+            return opt == null ? 0 : ((Number) opt).intValue();
+        }
+
+        int getThreadedOption() {
+            Object opt = getOptionValue(threadedOption);
+            return opt == null ? 0 : ((Number) opt).intValue();
+
         }
     }
 
