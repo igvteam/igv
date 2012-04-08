@@ -9,12 +9,17 @@ import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author jrobinso
  * @date Aug 16, 2010
  */
 public class Preprocessor {
+
+    private static ExecutorService threadExecutor = Executors.newFixedThreadPool(4);
 
     private List<Chromosome> chromosomes;
 
@@ -68,7 +73,7 @@ public class Preprocessor {
         this.loadDensities = loadDensities;
     }
 
-    public void preprocess(List<String> inputFileList) throws IOException {
+    public void preprocess(final List<String> inputFileList) throws IOException {
 
         try {
 
@@ -114,16 +119,34 @@ public class Preprocessor {
                         }
                     }
 
-                    MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
+                    final int fc1 = c1;
+                    final int fc2 = c2;
+                    Runnable runnable = new Runnable() {
+                        int c1;
+                        int c2;
 
-                    if (matrix != null) {
-                        System.out.println("writing matrix: " + matrix.getKey());
-                        writeMatrix(matrix);
-                    }
+                        public void run() {
+                            try {
+                                MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
+
+                                if (matrix != null) {
+                                     writeMatrix(matrix);
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    };
+                    threadExecutor.submit(runnable);
                 }
             }
 
-
+            try {
+                threadExecutor.awaitTermination(10, TimeUnit.DAYS);
+            } catch (InterruptedException e) {
+                outputFile.deleteOnExit();
+            }
             masterIndexPosition = bytesWritten;
             writeMasterIndex();
 
@@ -352,7 +375,9 @@ public class Preprocessor {
 //    }
 
 
-    public void writeMatrix(MatrixPP matrix) throws IOException {
+    public synchronized void writeMatrix(MatrixPP matrix) throws IOException {
+
+        System.out.println("writing matrix: " + matrix.getKey());
 
         long position = bytesWritten;
 
@@ -588,7 +613,14 @@ public class Preprocessor {
             zoomData = new MatrixZoomDataPP[HiCGlobals.zoomBinSizes.length];
             for (int zoom = 0; zoom < HiCGlobals.zoomBinSizes.length; zoom++) {
                 int binSize = HiCGlobals.zoomBinSizes[zoom];
-                int nColumns = (int) Math.pow(Math.pow(2, zoom), 0.25);
+
+                // Size block (submatrices) to be ~500 bins wide.
+                Chromosome chrom1 = chromosomes.get(chr1);
+                Chromosome chrom2 = chromosomes.get(chr2);
+                int len = Math.max(chrom1.getSize(), chrom2.getSize());
+                int nBins = len / binSize;   // Size of chrom in bins
+                int nColumns = Math.max(1, nBins / 500);
+
                 zoomData[zoom] = new MatrixZoomDataPP(chr1, chr2, binSize, nColumns, zoom);
             }
         }
