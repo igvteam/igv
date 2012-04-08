@@ -42,6 +42,10 @@
         <path id="library.classpath">
             <fileset id="jar.lib" dir="lib"/>
         </path>
+
+
+                <!-- Copy resource files to the tmp directory -->
+
         <!--
         <echo message="Version ${version}"/>
         <replace file="src/org/broad/igv/tools/IgvTools.java" token="@VERSION" value="${version}"/>
@@ -49,19 +53,9 @@
     </target>
 
     <target name="compile" depends="init">
+
         <delete dir="${tmp.dir}"/>
         <mkdir dir="${tmp.dir}"/>
-
-        <!-- Copy resource files to the tmp directory (.txt files, etc) -->
-        <copy todir="${tmp.dir}" overwrite="true">
-            <fileset dir="src">
-                <exclude name="**/*.form"/>
-                <exclude name="**/*.java"/>
-                <exclude name="**/*.svn"/>
-                <exclude name="**/manifest.mf"/>
-            </fileset>
-        </copy>
-
         <javac debug="true" defaultexcludes="false" deprecation="true"
                destdir="${tmp.dir}" optimize="false" proceed="false"
                srcdir="src">
@@ -79,7 +73,12 @@
                 <root classname="org.apache.log4j.ConsoleAppender"/>
                 <rootfileset dir="${tmp.dir}" includes="org/apache/commons/logging/*.class"/>
             </classfileset>
-            <fileset dir="src" includes="resources/**, log4j.properties"/>
+            <fileset dir="${src.dir}">
+                <exclude name="**/*.form"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.svn"/>
+                <exclude name="**/manifest.mf"/>
+            </fileset>
             <manifest>
                 <attribute name="Implementation-Title" value="${title}"/>
                 <attribute name="Main-Class" value="${main-class}"/>
