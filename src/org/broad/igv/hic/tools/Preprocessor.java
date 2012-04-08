@@ -143,6 +143,10 @@ public class Preprocessor {
             }
 
             try {
+                // Do an orderly shutdown (shuts down when all tasks have completed), and wait for its completion.
+                // This is equivalent to do a join on all running threads, and is neccessary or the file will
+                // be closed before the threads have finished.
+                threadExecutor.shutdown();
                 threadExecutor.awaitTermination(10, TimeUnit.DAYS);
             } catch (InterruptedException e) {
                 outputFile.deleteOnExit();
