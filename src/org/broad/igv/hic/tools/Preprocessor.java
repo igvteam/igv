@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Preprocessor {
 
+    // Use 4 threads.  Each matrix can be computed concurrently.
+    // TODO -- add argument to specify # of threads.
     private static ExecutorService threadExecutor = Executors.newFixedThreadPool(4);
 
     private List<Chromosome> chromosomes;
@@ -130,7 +132,7 @@ public class Preprocessor {
                                 MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
 
                                 if (matrix != null) {
-                                     writeMatrix(matrix);
+                                    writeMatrix(matrix);
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -309,16 +311,20 @@ public class Preprocessor {
                 long pos = blockIndexPositions.get(key);
                 IndexEntry[] blockIndex = blockIndexMap.get(key);
 
-                raf.getChannel().position(pos);
+                if (blockIndex == null) {
+                    System.err.println("Missing block index for: " + key);
+                } else {
+                    raf.getChannel().position(pos);
 
-                // Write as little endian
-                buffer = new BufferedByteWriter();
-                for (int i = 0; i < blockIndex.length; i++) {
-                    buffer.putInt(blockIndex[i].id);
-                    buffer.putLong(blockIndex[i].position);
-                    buffer.putInt(blockIndex[i].size);
+                    // Write as little endian
+                    buffer = new BufferedByteWriter();
+                    for (int i = 0; i < blockIndex.length; i++) {
+                        buffer.putInt(blockIndex[i].id);
+                        buffer.putLong(blockIndex[i].position);
+                        buffer.putInt(blockIndex[i].size);
+                    }
+                    raf.write(buffer.getBytes());
                 }
-                raf.write(buffer.getBytes());
             }
         } finally {
             if (raf != null) raf.close();
@@ -381,7 +387,7 @@ public class Preprocessor {
 
     public synchronized void writeMatrix(MatrixPP matrix) throws IOException {
 
-        System.out.println("writing matrix: " + matrix.getKey());
+        System.out.println("Start writing matrix: " + matrix.getKey());
 
         long position = bytesWritten;
 
@@ -394,11 +400,13 @@ public class Preprocessor {
         int size = (int) (bytesWritten - position);
         matrixPositions.put(matrix.getKey(), new IndexEntry(position, size));
 
-
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
             IndexEntry[] blockIndex = writeZoomData(zd);
-            blockIndexMap.put(getBlockKey(zd), blockIndex);
+            final String blockKey = getBlockKey(zd);
+            blockIndexMap.put(blockKey, blockIndex);
         }
+
+        System.out.println("Done writing matrix: " + matrix.getKey());
     }
 
     private String getBlockKey(MatrixZoomDataPP zd) {
@@ -407,17 +415,17 @@ public class Preprocessor {
 
     private void writeZoomHeader(MatrixZoomDataPP zd) throws IOException {
 
+        int numberOfBlocks = zd.getBlocks().size();
+
         writeInt(zd.getZoom());
         writeInt(zd.getBinSize());
         writeInt(zd.getBlockBinCount());
         writeInt(zd.getBlockColumnCount());
-
-        final Map<Integer, Block> blocks = zd.getBlocks();
-        writeInt(blocks.size());
+        writeInt(numberOfBlocks);
         blockIndexPositions.put(getBlockKey(zd), bytesWritten);
 
         // Placeholder for block index
-        for (int i = 0; i < zd.getBlocks().size(); i++) {
+        for (int i = 0; i < numberOfBlocks; i++) {
             writeInt(0);
             writeLong(0l);
             writeInt(0);
