@@ -36,9 +36,11 @@ import java.util.regex.Pattern;
 public class AsciiPairIterator implements PairIterator {
 
     static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+    // Map of name -> index
+    private Map<String, Integer> chromosomeOrdinals;
     AlignmentPair nextPair = null;
     BufferedReader reader;
-    String [] tokens = new String[12];
+    String[] tokens = new String[12];
 
     /**
      * A map of chromosome name -> chromosome string.  A private "intern" pool.  The java "intern" pool stores string
@@ -46,27 +48,37 @@ public class AsciiPairIterator implements PairIterator {
      */
     Map<String, String> stringInternPool = new HashMap();
 
-    public AsciiPairIterator(String path) throws IOException {
-
+    public AsciiPairIterator(String path, Map<String, Integer> chromosomeOrdinals) throws IOException {
         this.reader = org.broad.igv.util.ParsingUtils.openBufferedReader(path);
+        this.chromosomeOrdinals = chromosomeOrdinals;
         advance();
     }
 
+    /**
+     * Read the next record
+     * <p/>
+     * D0J8AACXX120130:6:1101:1003:8700/1 15 61559113 0 D0J8AACXX120130:6:1101:1003:8700/2 15 61559309 16
+     * D0J8AACXX120130:6:1101:1004:2368/1 10 26641879 16 D0J8AACXX120130:6:1101:1004:2368/2 9 12797549 0
+     */
     private void advance() {
 
         try {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
 
-                int nTokens =  ParsingUtils.splitWhitespace(nextLine, tokens);
+                int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
                 if (nTokens < 10) {
                     String chrom1 = getInternedString(tokens[1]);
                     String chrom2 = getInternedString(tokens[5]);
-                    int pos1 = Integer.parseInt(tokens[2]);
-                    int pos2 = Integer.parseInt(tokens[6]);
 
-                    nextPair = new AlignmentPair(chrom1, pos1, chrom2, pos2);
-                    return;
+                    if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
+                        int chr1 = chromosomeOrdinals.get(chrom1);
+                        int chr2 = chromosomeOrdinals.get(chrom2);
+                        int pos1 = Integer.parseInt(tokens[2]);
+                        int pos2 = Integer.parseInt(tokens[6]);
+                        nextPair = new AlignmentPair(chr1, pos1, chr2, pos2);
+                        return;
+                    }
                 }
 
             }
@@ -81,13 +93,12 @@ public class AsciiPairIterator implements PairIterator {
      * Replace "aString" with a stored equivalent object, if it exists.  If it does not store it.  The purpose
      * of this class is to avoid running out of memory storing zillions of equivalent string.
      *
-     *
      * @param aString
      * @return
      */
     private String getInternedString(String aString) {
         String s = stringInternPool.get(aString);
-        if(s == null) {
+        if (s == null) {
             s = new String(aString); // THe "new" will break any dependency on larger strings if this is a "substring"
             stringInternPool.put(aString, s);
         }

@@ -1,6 +1,7 @@
 package org.broad.igv.hic.tools;
 
 //import org.broad.igv.hic.MainWindow;
+
 import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.util.CompressionUtils;
@@ -15,37 +16,37 @@ import java.util.*;
  */
 public class Preprocessor {
 
-    private List<Chromosome>          chromosomes;
+    private List<Chromosome> chromosomes;
 
     // Map of name -> index
-    private Map<String, Integer>      chromosomeOrdinals;
+    private Map<String, Integer> chromosomeOrdinals;
 
-    private File                      outputFile;
-    private LittleEndianOutputStream  fos;
-    private long                      bytesWritten;
+    private File outputFile;
+    private LittleEndianOutputStream fos;
+    private long bytesWritten;
 
-    private long                      masterIndexPosition;
-    private Map<String, IndexEntry>   matrixPositions;
-    private Map<String, Long>         blockIndexPositions;
+    private long masterIndexPosition;
+    private Map<String, IndexEntry> matrixPositions;
+    private Map<String, Long> blockIndexPositions;
     private Map<String, IndexEntry[]> blockIndexMap;
 
-    private int                       countThreshold;
-    private boolean                   diagonalsOnly;
-    private boolean                   loadDensities;
-    private Set<String>               includedChromosomes;
+    private int countThreshold;
+    private boolean diagonalsOnly;
+    private boolean loadDensities;
+    private Set<String> includedChromosomes;
 
     public Preprocessor(File outputFile, List<Chromosome> chromosomes) {
-        this.outputFile     = outputFile;
-        this.chromosomes    = chromosomes;
-        matrixPositions     = new LinkedHashMap<String, IndexEntry>();
+        this.outputFile = outputFile;
+        this.chromosomes = chromosomes;
+        matrixPositions = new LinkedHashMap<String, IndexEntry>();
         blockIndexPositions = new LinkedHashMap<String, Long>();
-        blockIndexMap       = new LinkedHashMap<String, IndexEntry[]>();
+        blockIndexMap = new LinkedHashMap<String, IndexEntry[]>();
 
-        bytesWritten        = 0;
-        countThreshold      = 0;
-        diagonalsOnly       = false;
-        loadDensities       = false;
-        chromosomeOrdinals  = new Hashtable<String,Integer>();
+        bytesWritten = 0;
+        countThreshold = 0;
+        diagonalsOnly = false;
+        loadDensities = false;
+        chromosomeOrdinals = new Hashtable<String, Integer>();
         for (int i = 0; i < chromosomes.size(); i++) {
             chromosomeOrdinals.put(chromosomes.get(i).getName(), i);
         }
@@ -72,7 +73,7 @@ public class Preprocessor {
         try {
 
             if (loadDensities) {
-                File densitiesFile = new File(outputFile.getPath()+".densities");
+                File densitiesFile = new File(outputFile.getPath() + ".densities");
                 calculateDensities(inputFileList, densitiesFile);
 
             }
@@ -136,11 +137,12 @@ public class Preprocessor {
     }
 
     /**
-     *  Calculate observed/expected and write to a densities file that can be loaded later with
-     *  the Hi-C viewer.
-     *  @param paths Files to calculate densities on
-     *  @param densitiesFile Output file for densities
-     *  @throws IOException
+     * Calculate observed/expected and write to a densities file that can be loaded later with
+     * the Hi-C viewer.
+     *
+     * @param paths         Files to calculate densities on
+     * @param densitiesFile Output file for densities
+     * @throws IOException
      */
     private void calculateDensities(List<String> paths, File densitiesFile) throws IOException {
         // Limit calcs to 10KB
@@ -155,20 +157,15 @@ public class Preprocessor {
         }
 
         for (String path : paths) {
-            AsciiPairIterator iter = new AsciiPairIterator(path);
+            AsciiPairIterator iter = new AsciiPairIterator(path, chromosomeOrdinals);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
-                if (pair.getChr1().equals(pair.getChr2())) {
+                if (pair.getChr1() == pair.getChr2()) {
                     int dist = Math.abs(pair.getPos1() - pair.getPos2());
 
-
-                    String chrName1 = pair.getChr1();
-                    Integer index = chromosomeOrdinals.get(chrName1);
-
-                    if (index != null) {   // Make sure we know this chromosome
-                        for (int z = 0; z < gridSizeArray.length; z++) {
-                            calcs[z].addDistance(index, dist);
-                        }
+                    int index = pair.getChr1();
+                    for (int z = 0; z < gridSizeArray.length; z++) {
+                        calcs[z].addDistance(index, dist);
                     }
                 }
             }
@@ -207,26 +204,25 @@ public class Preprocessor {
 
         for (String file : inputFileList) {
 
-            PairIterator iter = (file.endsWith(".bam") || file.endsWith(".bam.hg19")) ?
-                    new BAMPairIterator(file) :
-                    new AsciiPairIterator(file);
+            PairIterator iter = (file.endsWith(".bin")) ?
+                    new BinPairIterator(file) :
+                    new AsciiPairIterator(file, chromosomeOrdinals);
 
             while (iter.hasNext()) {
 
                 AlignmentPair pair = iter.next();
                 int pos1 = pair.getPos1();
                 int pos2 = pair.getPos2();
-                Integer chr1 = chromosomeOrdinals.get(pair.getChr1());
-                Integer chr2 = chromosomeOrdinals.get(pair.getChr2());
-                if (chr1 != null && chr2 != null) {
-                    if (isWholeGenome) {
-                        pos1 = getGenomicPosition(chr1, pos1);
-                        pos2 = getGenomicPosition(chr2, pos2);
-                        incrementCount(matrix, c1, pos1, c2, pos2);
-                    } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
-                        incrementCount(matrix, chr1, pos1, chr2, pos2);
-                    }
+                int chr1 = pair.getChr1();
+                int chr2 = pair.getChr2();
+                if (isWholeGenome) {
+                    pos1 = getGenomicPosition(chr1, pos1);
+                    pos2 = getGenomicPosition(chr2, pos2);
+                    incrementCount(matrix, c1, pos1, c2, pos2);
+                } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
+                    incrementCount(matrix, chr1, pos1, chr2, pos2);
                 }
+
             }
 
             iter.close();
@@ -580,22 +576,22 @@ public class Preprocessor {
 
 
         /**
-          * Constructor for creating a matrix and initializing zoomd data at predefined resolution scales.  This
-          * constructor is used when parsing alignment files.
-          *
-          * @param chr1
-          * @param chr2
-          */
-         MatrixPP(int chr1, int chr2) {
-             this.chr1 = chr1;
-             this.chr2 = chr2;
-             zoomData = new MatrixZoomDataPP[HiCGlobals.zoomBinSizes.length];
-             for (int zoom = 0; zoom < HiCGlobals.zoomBinSizes.length; zoom++) {
-                 int binSize = HiCGlobals.zoomBinSizes[zoom];
-                 int nColumns = (int) Math.pow(Math.pow(2, zoom), 0.25);
-                 zoomData[zoom] = new MatrixZoomDataPP(chr1, chr2, binSize, nColumns, zoom);
-             }
-         }
+         * Constructor for creating a matrix and initializing zoomed data at predefined resolution scales.  This
+         * constructor is used when parsing alignment files.
+         *
+         * @param chr1
+         * @param chr2
+         */
+        MatrixPP(int chr1, int chr2) {
+            this.chr1 = chr1;
+            this.chr2 = chr2;
+            zoomData = new MatrixZoomDataPP[HiCGlobals.zoomBinSizes.length];
+            for (int zoom = 0; zoom < HiCGlobals.zoomBinSizes.length; zoom++) {
+                int binSize = HiCGlobals.zoomBinSizes[zoom];
+                int nColumns = (int) Math.pow(Math.pow(2, zoom), 0.25);
+                zoomData[zoom] = new MatrixZoomDataPP(chr1, chr2, binSize, nColumns, zoom);
+            }
+        }
 
         /**
          * Constructor for creating a matrix with a single zoom level at a specified bin size.  This is provided
@@ -703,6 +699,7 @@ public class Preprocessor {
 
 
         /**
+         * Representation of MatrixZoomData used for preprocessing
          *
          * @param chr1             index of first chromosome  (x-axis)
          * @param chr2
@@ -722,7 +719,7 @@ public class Preprocessor {
 
             int nBinsX = chromosomes.get(chr1).getSize() / binSize + 1;
             blockBinCount = nBinsX / blockColumnCount + 1;
-            blocks = new LinkedHashMap<Integer,Block>(blockColumnCount * blockColumnCount);
+            blocks = new LinkedHashMap<Integer, Block>(blockColumnCount * blockColumnCount);
         }
 
 

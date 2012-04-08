@@ -60,6 +60,12 @@ public class HiCTools {
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
+        } else if(args[0].equals("pairsToBin")) {
+            String ifile = args[1];
+            String ofile = args[2];
+            String genomeId = args[3];
+            List<Chromosome> chromosomes = loadChromosomes(genomeId);
+            AsciiToBinConverter.convert(ifile, ofile, chromosomes);
         } else if (args[0].equals("printmatrix")) {
             if (args.length < 5) {
                 System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize");
