@@ -88,7 +88,6 @@ public class Preprocessor {
             if (loadDensities) {
                 File densitiesFile = new File(outputFile.getPath() + ".densities");
                 calculateDensities(inputFileList, densitiesFile);
-
             }
 
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
@@ -198,7 +197,9 @@ public class Preprocessor {
         }
 
         for (String path : paths) {
-            AsciiPairIterator iter = new AsciiPairIterator(path, chromosomeOrdinals);
+            PairIterator iter = (path.endsWith(".bin")) ?
+                    new BinPairIterator(path) :
+                    new AsciiPairIterator(path, chromosomeOrdinals);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == pair.getChr2()) {

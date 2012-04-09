@@ -72,7 +72,9 @@ public class DensityUtil {
         }
 
         for (String path : paths) {
-            AsciiPairIterator iter = new AsciiPairIterator(path, chrIndexMap);
+            PairIterator iter = (path.endsWith(".bin")) ?
+                    new BinPairIterator(path) :
+                    new AsciiPairIterator(path, chrIndexMap);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == (pair.getChr2())) {
