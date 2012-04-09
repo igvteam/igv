@@ -15,6 +15,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -33,8 +36,12 @@ public class HeatmapRenderer {
                        int originY,
                        int width,
                        int height,
-                       MatrixZoomData zd,
-                       Graphics g) {
+                       final MatrixZoomData zd,
+                       MainWindow.DisplayOption displayOption,
+                       Graphics2D g) {
+
+        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 
         int chr1 = zd.getChr1();
         int chr2 = zd.getChr2();
@@ -62,55 +69,24 @@ public class HeatmapRenderer {
             }
         }
 
-        DensityFunction df = null;
-        if (mainWindow.getDisplayOption() == MainWindow.DisplayOption.OE ||
-                mainWindow.getDisplayOption() == MainWindow.DisplayOption.PEARSON) {
-            df = mainWindow.getDensityFunction(zd.getZoom());
-        }
 
-
-        // Iterate through blocks overlapping visible region
         ColorScale colorScale = mainWindow.getColorScale();
 
-        MainWindow.DisplayOption displayOption = mainWindow.getDisplayOption();
-        if (displayOption == MainWindow.DisplayOption.PEARSON && df != null) {
-            try {
-                RealMatrix rm = zd.getPearsons(df);
-                ((HiCColorScale)colorScale).setMin((float)zd.getPearsonsMin());
-                ((HiCColorScale)colorScale).setMax((float)zd.getPearsonsMax());
-             /*
-                BufferedImage image = (BufferedImage) mainWindow.createImage(rm.getRowDimension(),rm.getColumnDimension());
-                Graphics2D myg = image.createGraphics();
-                renderMatrix(0,0, rm, colorScale, myg, zd.getZoom());
-                BufferedImage image2 = null;
-                if (image.getHeight() < 1000) {
-                    image2 = new BufferedImage(1000,1000, image.getType());
-                    Graphics2D g3 = image2.createGraphics();
-                    g3.drawImage(image, 0, 0, 1000,1000,null);
-                    g3.dispose();
-                    g3.setComposite(AlphaComposite.Src);
+        if (displayOption == MainWindow.DisplayOption.PEARSON) {
+            RealMatrix pearsonsMatrix = zd.getPearsons();
+            if (pearsonsMatrix != null) {
+                ((HiCColorScale) colorScale).setMin((float) zd.getPearsonsMin());
+                ((HiCColorScale) colorScale).setMax((float) zd.getPearsonsMax());
+                renderMatrix(originX, originY, pearsonsMatrix, colorScale, g, zd.getZoom());
 
-                    g3.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g3.setRenderingHint(RenderingHints.KEY_RENDERING,
-                            RenderingHints.VALUE_RENDER_QUALITY);
-                    g3.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
-                }
-                else {image2 = image;}
-                try {
-                    System.out.println("Writing file");
-                    File file = new File("pearsons"+zd.getZoom()+".bmp");
-                    ImageIO.write(image2, "bmp", file);
-                }
-                catch (IOException e){}
-               */
-                renderMatrix(originX, originY, rm, colorScale, g, zd.getZoom());
-            }
-            catch (RuntimeException e) {
-                JOptionPane.showMessageDialog(mainWindow, e.getMessage(), "Pearson Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
+            // Iterate through blocks overlapping visible region
+            DensityFunction df = null;
+            if (displayOption == MainWindow.DisplayOption.OE) {
+                df = mainWindow.getDensityFunction(zd.getZoom());
+            }
+
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
             for (Block b : blocks) {
                 renderBlock(originX, originY, chr1, chr2, binSizeMB, b, colorScale, df, g);
@@ -119,7 +95,7 @@ public class HeatmapRenderer {
     }
 
     private void renderBlock(int originX, int originY, int chr1, int chr2, double binSizeMB, Block b,
-                             ColorScale colorScale, DensityFunction df, Graphics g) {
+                             ColorScale colorScale, DensityFunction df, Graphics2D g) {
 
         MainWindow.DisplayOption displayOption = mainWindow.getDisplayOption();
         double binSizeMB2 = binSizeMB * binSizeMB;
@@ -146,14 +122,17 @@ public class HeatmapRenderer {
                 color = colorScale.getColor((float) score);
                 int px = (rec.getX() - originX);
                 int py = (rec.getY() - originY);
-
                 g.setColor(color);
-                g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
+                if (px > -1 && py > -1) {
+                    g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
+                }
 
                 if (sameChr && (rec.getX() != rec.getY())) {
                     px = (rec.getY() - originX);
                     py = (rec.getX() - originY);
-                    g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
+                    if (px > -1 && py > -1) {
+                        g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
+                    }
                 }
             }
         }
@@ -174,7 +153,6 @@ public class HeatmapRenderer {
 
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();
-
 
 
         for (int i = 0; i < nBinsX; i++) {

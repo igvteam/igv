@@ -35,6 +35,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javax.swing.*;
 
 /**
@@ -44,16 +48,8 @@ public class MainWindow extends JFrame {
 
 
     Map<Integer, DensityFunction> zoomToDensityMap = null;
+    private Matrix matrix;
 
-    /**
-     * Return the expected density function for the given zoom level.
-     *
-     * @param zoom
-     * @return
-     */
-    public DensityFunction getDensityFunction(int zoom) {
-        return zoomToDensityMap == null ? null : zoomToDensityMap.get(zoom);
-    }
 
     enum DisplayOption {
         OBSERVED("Observed"),
@@ -79,6 +75,10 @@ public class MainWindow extends JFrame {
             return null;
         }
     }
+
+    HiC hic;
+
+    private static ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
 
 
     public static Cursor fistCursor;
@@ -111,6 +111,18 @@ public class MainWindow extends JFrame {
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    public MainWindow() throws IOException {
+
+        initColorScales();
+        initComponents();
+        createCursors();
+        pack();
+
+        DropTarget target = new DropTarget(this, new FileDropTargetListener());
+        setDropTarget(target);
+
+        colorRangeSlider.setUpperValue(1200);
+    }
 
     public void createCursors() {
         BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
@@ -125,46 +137,6 @@ public class MainWindow extends JFrame {
         g = handImage.createGraphics();
         g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
         MainWindow.fistCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
-    }
-
-
-    public MainWindow() throws IOException {
-
-        initColorScales();
-
-        initComponents();
-
-        //resolutionSlider.setUI(new BasicSliderUI(resolutionSlider));
-        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
-        Font f = FontManager.getFont(8);
-        for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
-            if ((i + 1) % 2 == 0) {
-                final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
-                tickLabel.setFont(f);
-                resolutionLabels.put(i, tickLabel);
-            }
-        }
-        resolutionSlider.setLabelTable(resolutionLabels);
-
-        //resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
-        // setLayout(new HiCLayout());
-
-        // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
-        rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
-        });
-
-        createCursors();
-
-        thumbnailPanel.setMainWindow(this);
-        thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-
-        pack();
-
-        DropTarget target = new DropTarget(this, new FileDropTargetListener());
-        setDropTarget(target);
-
-        colorRangeSlider.setUpperValue(1200);
     }
 
     private void initColorScales() {
@@ -231,34 +203,37 @@ public class MainWindow extends JFrame {
     }
 
     public void setDisplayOption(String strOption) {
+
         DisplayOption newDisplay = DisplayOption.getByValue(strOption);
 
-        if (zd != null && zd.getZoom() > 3 && newDisplay == DisplayOption.PEARSON) {
-            int ans = JOptionPane.showConfirmDialog(this, "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-            if (ans == JOptionPane.NO_OPTION) {
-                comboBox1.setSelectedItem(this.displayOption.toString());
-                return;
-            }
-        }
-
         if (this.displayOption != newDisplay) {
+
+            if (newDisplay == DisplayOption.PEARSON && zd.getPearsons() == null) {
+                if (zd.getZoom() > 3) {
+                    int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
+                            "this zoom will take a while.\nAre you sure you want to proceed?",
+                            "Confirm calculation", JOptionPane.YES_NO_OPTION);
+                    if (ans == JOptionPane.NO_OPTION) {
+                        return;
+                    }
+                }
+
+                this.displayOption = newDisplay;
+                final DensityFunction df = getDensityFunction(zd.getZoom());
+                Runnable callable = new Runnable() {
+                    public void run() {
+                        zd.computePearsons(df);
+                        refresh();
+                    }
+                };
+                executeLongRunningTask(callable);
+                return;
+
+
+            }
             this.displayOption = newDisplay;
             refresh();
-            getRootPane().getGlassPane().setVisible(true);
-            SwingWorker repaintWorker = new SwingWorker() {
-                @Override
-                protected Object doInBackground() {
-                    repaint();
-                    return null;
-                }
 
-                @Override
-                protected void done() {
-                    getGlassPane().setVisible(false);
-                    getContentPane().repaint();
-                }
-            };
-            repaintWorker.execute();
         }
     }
 
@@ -279,7 +254,7 @@ public class MainWindow extends JFrame {
                     is = ParsingUtils.openInputStream(densityFile);
 
                     zoomToDensityMap = DensityUtil.readDensities(is);
-                    comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+                    displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{
                             DisplayOption.OBSERVED.toString(),
                             DisplayOption.OE.toString(),
                             DisplayOption.PEARSON.toString()}));
@@ -288,10 +263,10 @@ public class MainWindow extends JFrame {
                     if (is != null) is.close();
                 }
             } else {
-                comboBox1.setModel(new DefaultComboBoxModel(new String[]{DisplayOption.OBSERVED.toString()}));
+                displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{DisplayOption.OBSERVED.toString()}));
                 zoomToDensityMap = null;
             }
-            comboBox1.setSelectedIndex(0);
+            displayOptionComboBox.setSelectedIndex(0);
         } else {
             // error -- unknown file type
         }
@@ -303,19 +278,9 @@ public class MainWindow extends JFrame {
 
     private void refreshChromosomes() {
 
-        getRootPane().getGlassPane().setVisible(true);
 
-        SwingWorker worker = new SwingWorker() {
-            @Override
-            protected void done() {
-                getGlassPane().setVisible(false);
-                getContentPane().repaint();
-            }
-
-            @Override
-            protected Object doInBackground() throws Exception {
-
-
+        Runnable runnable = new Runnable() {
+            public void run() {
                 Chromosome chr1 = (Chromosome) chrBox1.getSelectedItem();
                 Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
 
@@ -335,51 +300,60 @@ public class MainWindow extends JFrame {
                     rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
                     rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
 
-                    Matrix m = dataset.getMatrix(chr1, chr2);
-                    if (m == null) {
+                    matrix = dataset.getMatrix(chr1, chr2);
+                    if (matrix == null) {
+                        //?? TODO -- this is probably an error
                     } else {
                         setInitialZoom();
                     }
                 }
-                if (t1 != t2 || chr2.getName().equals("All") || zoomToDensityMap == null)
+                if (t1 != t2 || chr2.getName().equals("All") || zoomToDensityMap == null) {
                     viewEigenvector.setEnabled(false);
-                else
+                    displayOptionComboBox.setSelectedIndex(0);
+                    displayOptionComboBox.setEnabled(false);
+                } else {
                     viewEigenvector.setEnabled(true);
+                    displayOptionComboBox.setEnabled(true);
+                }
 
                 refresh();
-
-                return null;
             }
-
         };
 
-        worker.execute();
+        executeLongRunningTask(runnable);
 
     }
 
     private void refresh() {
         getHeatmapPanel().clearTileCache();
-        if (zd != null) {
+        repaint();
+        if (matrix != null) {
             //MatrixZoomData.ScaleParameters scaleParameters = zd.computeScaleParameters();
-            Image thumbnail = heatmapPanel.getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
+            // Refresh the thumbnail, using lowest resolution data
+            // TODO -- this only needs to be done in some circumstances
+
+            MatrixZoomData zd0 = matrix.getObservedMatrix(0);
+            Image thumbnail = heatmapPanel.getThumbnailImage(zd0, thumbnailPanel.getWidth(), thumbnailPanel.getHeight(),
+                    displayOption);
             thumbnailPanel.setImage(thumbnail);
         }
     }
 
     private void setInitialZoom() {
-        int len = (Math.max(xContext.getChrLength(), yContext.getChrLength()));
-        int pixels = getHeatmapPanel().getWidth();
-        int maxNBins = pixels / BIN_PIXEL_WIDTH;
 
         if (xContext.getChromosome().getName().equals("All")) {
             resolutionSlider.setValue(0);
             resolutionSlider.setEnabled(false); //
-            setZoom(0, -1, -1);
-        } else {// Find right zoom level
+            setZoom(0, -1, -1, true);
+        } else {
             resolutionSlider.setEnabled(true);
-            int bp_bin = len / maxNBins;
             int initialZoom = 1;
 
+//            Find right zoom level
+//            int pixels = getHeatmapPanel().getWidth();
+//            int len = (Math.max(xContext.getChrLength(), yContext.getChrLength()));
+//            int maxNBins = pixels / BIN_PIXEL_WIDTH;
+//            int bp_bin = len / maxNBins;
 //            int initalZoom = HiCGlobals.zoomBinSizes.length - 1;
 //            for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
 //                if (HiCGlobals.zoomBinSizes[z] < bp_bin) {
@@ -388,98 +362,143 @@ public class MainWindow extends JFrame {
 //                }
 //            }
             resolutionSlider.setValue(initialZoom);
-            setZoom(initialZoom, -1, -1);
+            setZoom(initialZoom, -1, -1, true);
         }
     }
 
-    /**
-     * Set value of resolution slider to set zoom.
-     *
-     * @param value to set resolution slider to
-     */
-    public void setResolutionSliderValue(int value) {
-        resolutionSlider.setValue(value);
-    }
 
     /**
-     * Change zoom level and recenter
+     * Change zoom level and recenter.  Triggered by the resolutionSlider, or by a double-click in the
+     * heatmap panel.
      *
      * @param newZoom
      * @param centerLocationX center X location in base pairs
      * @param centerLocationY center Y location in base pairs
      */
-    private void setZoom(int newZoom, int centerLocationX, int centerLocationY) {
+    public void setZoom(int newZoom, final int centerLocationX, final int centerLocationY, boolean updateSlider) {
 
         if (newZoom < 0 || newZoom > MAX_ZOOM) return;
-        if (newZoom != resolutionSlider.getValue()) {
-            System.err.println("Resolution != newZoom, this shouldn't ever happen.");
-            resolutionSlider.setValue(newZoom);
+
+        final Chromosome chr1 = xContext.getChromosome();
+        final Chromosome chr2 = yContext.getChromosome();
+        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+
+
+        if (displayOption == DisplayOption.PEARSON && newZD.getPearsons() == null) {
+
+            if (newZoom > 3) {
+                int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
+                        "this zoom will take a while.\nAre you sure you want to proceed?",
+                        "Confirm calculation", JOptionPane.YES_NO_OPTION);
+                if (ans == JOptionPane.NO_OPTION) {
+                    resolutionSlider.setValue(zd.getZoom());
+                    return;
+                }
+            }
+
+            final DensityFunction df = getDensityFunction(newZoom);
+
+            Runnable callable = new Runnable() {
+                public void run() {
+                    newZD.computePearsons(df);
+                    refresh();
+                    updateState2(newZD, centerLocationX, centerLocationY);
+                }
+            };
+            executeLongRunningTask(callable);
+            return;
+
+
+        } else {
+            newZD.printDescription();
+            updateState2(newZD, centerLocationX, centerLocationY);
         }
 
-        Chromosome chr1 = xContext.getChromosome();
-        Chromosome chr2 = yContext.getChromosome();
-        zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+    }
 
-        showEigenvector();
+    private void updateState2(MatrixZoomData newZD, double centerLocationX, double centerLocationY) {
+
+        zd = newZD;
+        int newZoom = zd.getZoom();
+        //showEigenvector();
 
         int newBinSize = zd.getBinSize();
-
-        // Scale in basepairs per screen pixel
-        double scale = (double) newBinSize;
 
         double xScaleMax = (double) xContext.getChrLength() / getHeatmapPanel().getWidth();
         double yScaleMax = (double) yContext.getChrLength() / getHeatmapPanel().getWidth();
         double scaleMax = Math.max(xScaleMax, yScaleMax);
 
-        scale = Math.min(scale, scaleMax);
+        double scale = Math.min(newBinSize, scaleMax);
 
         xContext.setZoom(newZoom, scale);
         yContext.setZoom(newZoom, scale);
 
-        //zoomComboBox.setSelectedIndex(newZoom);
-
-        center(centerLocationX, centerLocationY);
-
-        getHeatmapPanel().clearTileCache();
-        repaint();
-
+        center((int) centerLocationX, (int) centerLocationY);
+        resolutionSlider.setValue(newZoom);
+        refresh();
     }
 
 
-    public void zoomTo(double xBP, double yBP, double scale) {
+    /**
+     * Zoom to a specific rectangle.  Triggered by the alt-drag action in the heatmap panel.
+     *
+     * @param xBP
+     * @param yBP
+     * @param scale
+     */
+    public void zoomTo(final double xBP, final double yBP, final double scale) {
 
         // Find zoom level closest to prescribed scale
-        int zoom = HiCGlobals.zoomBinSizes.length - 1;
+        int newZoom = HiCGlobals.zoomBinSizes.length - 1;
         for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
             if (HiCGlobals.zoomBinSizes[z] < scale) {
-                zoom = z - 1;
+                newZoom = z - 1;
                 break;
             }
         }
 
-        if (displayOption == DisplayOption.PEARSON && zoom > 3) {
-            int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-            if (ans == JOptionPane.NO_OPTION) {
-                return;
+        final Chromosome chr1 = xContext.getChromosome();
+        final Chromosome chr2 = yContext.getChromosome();
+        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+
+        if (displayOption == DisplayOption.PEARSON && newZD.getPearsons() == null) {
+            if (newZoom > 3) {
+                int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
+                        "this zoom will take a while.\nAre you sure you want to proceed?",
+                        "Confirm calculation", JOptionPane.YES_NO_OPTION);
+                if (ans == JOptionPane.NO_OPTION) {
+                    return;
+                }
             }
+
+            final DensityFunction df = getDensityFunction(newZoom);
+            Runnable callable = new Runnable() {
+                public void run() {
+                    newZD.computePearsons(df);
+                    refresh();
+                    updateState(newZD, scale, xBP, yBP);
+                }
+            };
+            executeLongRunningTask(callable);
+            return;
+
+
+        } else {
+            updateState(newZD, scale, xBP, yBP);
+
         }
-
-        Chromosome chr1 = xContext.getChromosome();
-        Chromosome chr2 = yContext.getChromosome();
-
-        zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
-        resolutionSlider.setValue(zoom);
-
-        xContext.setZoom(zoom, scale);
-        yContext.setZoom(zoom, scale);
-
-        xContext.setOrigin((int) xBP);
-        yContext.setOrigin((int) yBP);
-
-        getHeatmapPanel().clearTileCache();
-        repaint();
     }
 
+
+    private void updateState(MatrixZoomData newZD, double scale, double xBP, double yBP) {
+        zd = newZD;
+        xContext.setZoom(zd.getZoom(), scale);
+        yContext.setZoom(zd.getZoom(), scale);
+        xContext.setOrigin((int) xBP);
+        yContext.setOrigin((int) yBP);
+        resolutionSlider.setValue(zd.getZoom());
+        refresh();
+    }
 
     public void center(int centerLocationX, int centerLocationY) {
         double w = (getHeatmapPanel().getWidth() * xContext.getScale());
@@ -682,42 +701,17 @@ public class MainWindow extends JFrame {
     private void chrBox1ActionPerformed(ActionEvent e) {
         if (chrBox1.getSelectedIndex() == 0) {
             chrBox2.setSelectedIndex(0);
-            refreshChromosomes();
         }
     }
 
     private void chrBox2ActionPerformed(ActionEvent e) {
         if (chrBox2.getSelectedIndex() == 0) {
             chrBox1.setSelectedIndex(0);
-            refreshChromosomes();
         }
     }
 
-    private void comboBox1ActionPerformed(ActionEvent e) {
-        /*
-             if (comboBox1.getSelectedIndex() == 0)
-                 setDisplayOption(DisplayOption.OBSERVED);
-            else if (comboBox1.getSelectedIndex() == 1)
-                 setDisplayOption(DisplayOption.OE);
-            else
-                 setDisplayOption(DisplayOption.PEARSON);
-        */
-        setDisplayOption((String) comboBox1.getSelectedItem());
-
-    }
-
-    private void zoomOutButtonActionPerformed(ActionEvent e) {
-        int z = xContext.getZoom();
-        int newZoom = Math.max(z - 1, 0);
-        resolutionSlider.setValue(newZoom);
-        repaint();
-    }
-
-    private void zoomInButtonActionPerformed(ActionEvent e) {
-        int z = xContext.getZoom();
-        int newZoom = Math.min(z + 1, MAX_ZOOM);
-        resolutionSlider.setValue(newZoom);
-        repaint();
+    private void displayOptionComboBoxActionPerformed(ActionEvent e) {
+        setDisplayOption((String) displayOptionComboBox.getSelectedItem());
     }
 
     private void showEigenvector() {
@@ -750,6 +744,17 @@ public class MainWindow extends JFrame {
             trackPanel.setVisible(false);
         }
     }
+
+    /**
+     * Return the expected density function for the given zoom level.
+     *
+     * @param zoom
+     * @return
+     */
+    public DensityFunction getDensityFunction(int zoom) {
+        return zoomToDensityMap == null ? null : zoomToDensityMap.get(zoom);
+    }
+
 
     private void getEigenvectorActionPerformed(ActionEvent e) {
         if (zd != null) {
@@ -804,6 +809,26 @@ public class MainWindow extends JFrame {
 
         }
 
+    }
+
+    public Future executeLongRunningTask(final Runnable runnable) {
+
+        Callable<Object> wrapper = new Callable<Object>() {
+            public Object call() throws Exception {
+                final Component glassPane = getGlassPane();
+                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                glassPane.setVisible(true);
+                try {
+                    runnable.run();
+                    return "done";
+                } finally {
+                    glassPane.setVisible(false);
+                }
+
+            }
+        };
+
+        return threadExecutor.submit(wrapper);
     }
 
     /**
@@ -897,7 +922,7 @@ public class MainWindow extends JFrame {
         JPanel panel14 = new JPanel();
         JLabel label4 = new JLabel();
         JPanel panel1 = new JPanel();
-        comboBox1 = new JComboBox();
+        displayOptionComboBox = new JComboBox();
         JPanel colorRangePanel = new JPanel();
         JPanel panel11 = new JPanel();
         JLabel colorRangeLabel = new JLabel();
@@ -1013,15 +1038,15 @@ public class MainWindow extends JFrame {
         panel1.setLayout(new GridLayout(1, 0, 20, 0));
 
         //---- comboBox1 ----
-        comboBox1.setModel(new DefaultComboBoxModel(new String[]{
+        displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{
                 DisplayOption.OBSERVED.toString()
         }));
-        comboBox1.addActionListener(new ActionListener() {
+        displayOptionComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                comboBox1ActionPerformed(e);
+                displayOptionComboBoxActionPerformed(e);
             }
         });
-        panel1.add(comboBox1);
+        panel1.add(displayOptionComboBox);
 
         displayOptionPanel.add(panel1, BorderLayout.CENTER);
 
@@ -1103,12 +1128,23 @@ public class MainWindow extends JFrame {
         panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
         //---- resolutionSlider ----
-        resolutionSlider.setMaximum(7);
+        resolutionSlider.setMaximum(8);
         resolutionSlider.setMajorTickSpacing(1);
         resolutionSlider.setPaintTicks(true);
         resolutionSlider.setSnapToTicks(true);
         resolutionSlider.setPaintLabels(true);
         resolutionSlider.setMinorTickSpacing(1);
+
+        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
+        Font f = FontManager.getFont(8);
+        for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
+            if ((i + 1) % 2 == 0) {
+                final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
+                tickLabel.setFont(f);
+                resolutionLabels.put(i, tickLabel);
+            }
+        }
+        resolutionSlider.setLabelTable(resolutionLabels);
         // Setting the zoom should always be done by calling resolutionSlider.setValue() so work isn't done twice.
         resolutionSlider.addChangeListener(new ChangeListener() {
             // Change zoom level while staying centered on current location.
@@ -1124,18 +1160,10 @@ public class MainWindow extends JFrame {
                         return;
                     }
 
-                    if (zd != null && idx > 3 && displayOption == DisplayOption.PEARSON) {
-
-                        int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at this zoom will take a while.\nAre you sure you want to proceed?", "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                        if (ans == JOptionPane.NO_OPTION) {
-                            resolutionSlider.setValue(zd.getZoom());
-                            return;
-                        }
-                    }
                     if (xContext != null) {
                         int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
                         int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
-                        setZoom(idx, centerLocationX, centerLocationY);
+                        setZoom(idx, centerLocationX, centerLocationY, false);
                     }
                     //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
                     //zoomOutButton.setEnabled(newZoom > 0);
@@ -1212,6 +1240,8 @@ public class MainWindow extends JFrame {
         thumbnailPanel.setMinimumSize(new Dimension(100, 100));
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
+        thumbnailPanel.setMainWindow(this);
+        thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         panel8.add(thumbnailPanel);
         thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
 
@@ -1430,12 +1460,18 @@ public class MainWindow extends JFrame {
 
         menuBar1.add(viewMenu);
         contentPane.add(menuBar1, BorderLayout.NORTH);
+
+        // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
+        rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
+        });
+
     }
 
 
     private JComboBox chrBox1;
     private JComboBox chrBox2;
-    private JComboBox comboBox1;
+    private JComboBox displayOptionComboBox;
     private RangeSlider colorRangeSlider;
     private JSlider resolutionSlider;
     private JPanel panel3;

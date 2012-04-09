@@ -9,12 +9,20 @@ import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
  * @date Aug 10, 2010
  */
 public class MatrixZoomData {
+
+    // A thread executor for computing Pearsons correlation
+    // TODO -- move this to some utility class
+
 
     private Chromosome chr1;  // Redundant, but convenient
     private Chromosome chr2;  // Redundant, but convenient
@@ -66,7 +74,7 @@ public class MatrixZoomData {
         this.blockColumnCount = dis.readInt();
 
         int nBlocks = dis.readInt();
-        this.blockIndex = new HashMap<Integer,Preprocessor.IndexEntry>(nBlocks);
+        this.blockIndex = new HashMap<Integer, Preprocessor.IndexEntry>(nBlocks);
 
         for (int b = 0; b < nBlocks; b++) {
             int blockNumber = dis.readInt();
@@ -173,16 +181,16 @@ public class MatrixZoomData {
         return b;
     }
 
-    public double[] getEigenvector(DensityFunction df, int which)    {
+    public double[] getEigenvector(DensityFunction df, int which) {
         if (eigenvector == null) {
             if (pearsons == null) {
-                pearsons = getPearsons(df);
+                pearsons = computePearsons(df);
             }
             int size = pearsons.getColumnDimension();
             eigenvector = new double[size];
             int numgood = 0;
 
-            for (int i=0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 eigenvector[i] = -10000;
                 if (!isZeros(oe.getColumn(i))) {
                     eigenvector[i] = 1;
@@ -191,18 +199,18 @@ public class MatrixZoomData {
             }
             int[] cols = new int[numgood];
             numgood = 0;
-            for (int i=0; i < size; i++)
+            for (int i = 0; i < size; i++)
                 if (eigenvector[i] > 0)
                     cols[numgood++] = i;
 
             RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
             if (which >= subMatrix.getColumnDimension() || which < 0)
                 throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
-            
+
             RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
             double[] ev = rv.toArray();
             numgood = 0;
-            for (int i=0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 if (eigenvector[i] == -10000)
                     eigenvector[i] = 0;
                 else
@@ -212,22 +220,20 @@ public class MatrixZoomData {
         return eigenvector;
     }
 
-    public RealMatrix getPearsons(DensityFunction df) {
-        if (pearsons == null) {
-            if (oe == null)
-                oe = computeOE(df);
-            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-           /* try {
-               outputRealMatrix(pearsons);
-            }
-            catch (IOException e) {}
-            */
-            PearsonsMinMax minMax = new PearsonsMinMax();
-            pearsons.walkInOptimizedOrder(minMax);
-            pearsonsMax = minMax.getMaxValue();
-            pearsonsMin = minMax.getMinValue();
+    public RealMatrix getPearsons() {
+        return pearsons;
+    }
 
+    public RealMatrix computePearsons(DensityFunction df) {
+        if (oe == null) {
+            oe = computeOE(df);
         }
+        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+
+        PearsonsMinMax minMax = new PearsonsMinMax();
+        pearsons.walkInOptimizedOrder(minMax);
+        pearsonsMax = minMax.getMaxValue();
+        pearsonsMin = minMax.getMinValue();
         return pearsons;
     }
 
@@ -248,24 +254,22 @@ public class MatrixZoomData {
             int rows = is.readInt();
             int cols = is.readInt();
             double[][] matrix = new double[rows][cols];
-            for (int i=0; i<rows; i++) {
-                for (int j=0; j<cols; j++) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     matrix[i][j] = is.readDouble();
                 }
             }
             rm = new Array2DRowRealMatrix(rows, cols);
-            rm.setSubMatrix(matrix,0,0);
-        }
-        catch (IOException error) {
+            rm.setSubMatrix(matrix, 0, 0);
+        } catch (IOException error) {
             System.err.println("IO error when saving Pearson's: " + error);
-        }
-        finally {
+        } finally {
             if (is != null)
                 is.close();
         }
-         return rm;
+        return rm;
     }
-    
+
     private void outputRealMatrix(RealMatrix rm) throws IOException {
         LittleEndianOutputStream os = null;
         try {
@@ -276,27 +280,26 @@ public class MatrixZoomData {
             os.writeInt(rows);
             os.writeInt(cols);
             double[][] matrix = rm.getData();
-            for (int i=0; i<rows; i++) {
-                for (int j=0; j<cols; j++) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     os.writeDouble(matrix[i][j]);
                 }
             }
-        }
-        catch (IOException error) {
+        } catch (IOException error) {
             System.err.println("IO error when saving Pearson's: " + error);
-        }
-        finally {
+        } finally {
             if (os != null)
                 os.close();
         }
     }
-    
+
     private boolean isZeros(double[] array) {
         for (double anArray : array)
             if (anArray != 0)
                 return false;
         return true;
     }
+
     public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
@@ -335,7 +338,7 @@ public class MatrixZoomData {
     /**
      * Compute scale parameters by from the first block of data
      *
-     * @return   scale parameters
+     * @return scale parameters
      */
     public ScaleParameters computeScaleParameters() {
         double binSizeMB = binSize / 1000000.0;
@@ -359,6 +362,17 @@ public class MatrixZoomData {
     }
 
 
+    public void printDescription() {
+        System.out.println("Chromosomes: " + chr1.getName() + " - " + chr2.getName());
+        System.out.println("zoom: " + zoom);
+        System.out.println("binSize (bp): " + binSize);
+        System.out.println("blockBinCount (bins): " + blockBinCount);
+        System.out.println("blockColumnCount (columns): " + blockColumnCount);
+
+        System.out.println("Block size (bp): " + blockBinCount * binSize);
+        System.out.println("");
+
+    }
     // Dump the contents to standard out
 
     public void dump() {
@@ -382,7 +396,7 @@ public class MatrixZoomData {
     private class PearsonsMinMax extends DefaultRealMatrixPreservingVisitor {
         private double minValue = Double.MAX_VALUE;
         private double maxValue = Double.MIN_VALUE;
-        
+
         public void visit(int row, int column, double value) {
             if (row != column) {
                 if (value < minValue)

@@ -78,13 +78,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
             for (int i = tLeft; i <= tRight; i++) {
                 for (int j = tTop; j <= tBottom; j++) {
 
-                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
+                    ImageTile tile = getImageTile(i, j, pixelsPerBin, mainWindow.getDisplayOption());
                     if (tile != null) {
 
                         int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
                         int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
 
                         g.drawImage(tile.image, pxOffset, pyOffset, null);
+
+                        // Uncomment to see image boundaries (for debugging)
+                        //g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
                     }
 
                 }
@@ -119,17 +122,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 g.setColor(color);
             }
 
-
-            // Uncomment below to see grid (for debugging).
-            /*for (int i = tLeft; i <= tRight; i++) {
-                for (int j = tTop; j <= tBottom; j++) {
-                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
-                    int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
-                    int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
-                    g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
-                }
-            }*/
-
         }
 
         if (zoomRectangle != null) {
@@ -137,17 +129,17 @@ public class HeatmapPanel extends JComponent implements Serializable {
         }
     }
 
-    public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
+    public Image getThumbnailImage(MatrixZoomData zd, int tw, int th, MainWindow.DisplayOption displayOption) {
 
-        int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-        int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+        int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / zd.getBinSize() + 1;
+        int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / zd.getBinSize() + 1;
 
         int wh = Math.max(maxBinCountX, maxBinCountY);
 
         BufferedImage image = (BufferedImage) createImage(wh, wh);
-        Graphics g = image.createGraphics();
-
-        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
+        Graphics2D g = image.createGraphics();
+        Rectangle clipBounds = new Rectangle(0, 0, wh, wh);
+        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, displayOption, g);
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
@@ -161,8 +153,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
      * @param scaleFactor
      * @return
      */
-    private ImageTile getImageTile(int i, int j, double scaleFactor) {
-        String key = "_" + i + "_" + j;
+    private ImageTile getImageTile(int i, int j, double scaleFactor, MainWindow.DisplayOption displayOption) {
+        String key = "_" + i + "_" + j + "_" + displayOption;
         ImageTile tile = tileCache.get(key);
 
         if (tile == null) {
@@ -181,7 +173,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             final int bx0 = i * imageTileWidth;
             final int by0 = j * imageTileWidth;
-            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, g2D);
+            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, displayOption, g2D);
 
             if (scaleFactor > 0.999 && scaleFactor < 1.001) {
                 tile = new ImageTile(image, bx0, by0);
@@ -265,7 +257,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             lastMousePoint = null;
             zoomRectangle = null;
             setCursor(Cursor.getDefaultCursor());
-            repaint();
+            //repaint();
         }
 
 
@@ -358,8 +350,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                     int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
                     int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
-                    mainWindow.setResolutionSliderValue(newZoom);
-                    mainWindow.center(centerLocationX, centerLocationY);
+                    mainWindow.setZoom(newZoom, centerLocationX, centerLocationY, true);
                     
                 } else {
 
