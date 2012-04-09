@@ -647,6 +647,7 @@ public class MainWindow extends JFrame {
         }
     }
 
+
     private void loadMar1ActionPerformed(ActionEvent e) {
         try {
             observedColorScale.setMaxCount(1);
@@ -943,7 +944,6 @@ public class MainWindow extends JFrame {
         JMenuBar menuBar1 = new JMenuBar();
         JMenu fileMenu = new JMenu();
         JMenu viewMenu = new JMenu();
-        JMenuItem loadMenuItem = new JMenuItem();
         JMenuItem loadFromURL = new JMenuItem();
         JMenuItem getEigenvector = new JMenuItem();
         final JCheckBoxMenuItem viewDNAseI;
@@ -1286,6 +1286,7 @@ public class MainWindow extends JFrame {
         fileMenu.setText("File");
 
         //---- loadMenuItem ----
+        JMenuItem loadMenuItem = new JMenuItem();
         loadMenuItem.setText("Load...");
         loadMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1305,82 +1306,8 @@ public class MainWindow extends JFrame {
         fileMenu.add(loadFromURL);
         fileMenu.addSeparator();
 
-        //---- loadGM ----
-        JMenuItem loadGM = new JMenuItem("GM cell line (human)");
-        loadGM.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadGMActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadGM);
-
-        //---- load562 ----
-        JMenuItem load562 = new JMenuItem("K562 cell line (human)");
-        load562.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                load562ActionPerformed(e);
-            }
-        });
-        fileMenu.add(load562);
-        fileMenu.addSeparator();
-
-        //---- loadHindIII ----
-        JMenuItem loadHindIII = new JMenuItem("HindIII August (human)");
-        loadHindIII.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadHindIIIActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadHindIII);
-
-        //---- loadFeb ----
-        JMenuItem loadFeb = new JMenuItem("HiSeq February (human)");
-        loadFeb.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadFebActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadFeb);
-
-        fileMenu.addSeparator();
-
-        //---- loadMar1 ----
-        JMenuItem loadMar1 = new JMenuItem("Hi-C Elena Human (03/13/2012)");
-        loadMar1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadMar1ActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadMar1);
-
-        //---- loadMar2 ----
-        JMenuItem loadMar2 = new JMenuItem("Hi-C Elena Human (03/16/2012)");
-        loadMar2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadMar2ActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadMar2);
-
-        //---- loadCoolAid ----
-        JMenuItem loadCoolAid = new JMenuItem("COOL-AID Elena Mouse (12/2011)");
-        loadCoolAid.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadCoolAidActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadCoolAid);
-        fileMenu.addSeparator();
-
-        //---- loadDmelDataset ----
-        JMenuItem loadDmelDataset = new JMenuItem("Fly");
-        loadDmelDataset.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadDmelDatasetActionPerformed(e);
-            }
-        });
-        fileMenu.add(loadDmelDataset);
-        fileMenu.addSeparator();
+        // Pre-defined datasets.  TODO -- generate from a file
+        addPredefinedLoadItems(fileMenu);
 
         JMenuItem saveToImage = new JMenuItem();
         saveToImage.setText("Save to image");
@@ -1466,6 +1393,85 @@ public class MainWindow extends JFrame {
         rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
         });
 
+    }
+
+    private void addPredefinedLoadItems(JMenu fileMenu) {
+        //---- loadGM ----
+        JMenuItem loadGM = new JMenuItem("GM cell line (human)");
+        loadGM.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadGMActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadGM);
+
+        //---- load562 ----
+        JMenuItem load562 = new JMenuItem("K562 cell line (human)");
+        load562.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                load562ActionPerformed(e);
+            }
+        });
+        fileMenu.add(load562);
+        fileMenu.addSeparator();
+
+        //---- loadHindIII ----
+        JMenuItem loadHindIII = new JMenuItem("HindIII August (human)");
+        loadHindIII.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadHindIIIActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadHindIII);
+
+        //---- loadFeb ----
+        JMenuItem loadFeb = new JMenuItem("HiSeq February (human)");
+        loadFeb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadFebActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadFeb);
+
+        fileMenu.addSeparator();
+
+        //---- loadMar1 ----
+        JMenuItem loadMar1 = new JMenuItem("Hi-C Elena Human (03/13/2012)");
+        loadMar1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadMar1ActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadMar1);
+
+        //---- loadMar2 ----
+        JMenuItem loadMar2 = new JMenuItem("Hi-C Elena Human (03/16/2012)");
+        loadMar2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadMar2ActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadMar2);
+
+        //---- loadCoolAid ----
+        JMenuItem loadCoolAid = new JMenuItem("COOL-AID Elena Mouse (12/2011)");
+        loadCoolAid.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadCoolAidActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadCoolAid);
+        fileMenu.addSeparator();
+
+        //---- loadDmelDataset ----
+        JMenuItem loadDmelDataset = new JMenuItem("Fly");
+        loadDmelDataset.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadDmelDatasetActionPerformed(e);
+            }
+        });
+        fileMenu.add(loadDmelDataset);
+        fileMenu.addSeparator();
     }
 
 

@@ -6,6 +6,7 @@ import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
+import sun.jvm.hotspot.runtime.Threads;
 
 import java.io.*;
 import java.util.*;
@@ -19,9 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Preprocessor {
 
-    // Use 4 threads.  Each matrix can be computed concurrently.
-    // TODO -- add argument to specify # of threads.
-    private static ExecutorService threadExecutor = null;
+    int nThreads = 0;
 
     private List<Chromosome> chromosomes;
 
@@ -30,7 +29,6 @@ public class Preprocessor {
 
     private File outputFile;
     private LittleEndianOutputStream fos;
-    private long bytesWritten;
 
     private long masterIndexPosition;
     private Map<String, IndexEntry> matrixPositions;
@@ -49,7 +47,6 @@ public class Preprocessor {
         blockIndexPositions = new LinkedHashMap<String, Long>();
         blockIndexMap = new LinkedHashMap<String, IndexEntry[]>();
 
-        bytesWritten = 0;
         countThreshold = 0;
         diagonalsOnly = false;
         loadDensities = false;
@@ -60,9 +57,7 @@ public class Preprocessor {
     }
 
     public void setNumberOfThreads(int n) {
-        if(n > 1) {
-            threadExecutor = Executors.newFixedThreadPool(n);
-        }
+        this.nThreads = n;
     }
 
     public void setCountThreshold(int countThreshold) {
@@ -93,22 +88,24 @@ public class Preprocessor {
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
             // Placeholder for master index position, replace later
-            writeLong(0l);
+            fos.writeLong(0l);
 
             int nChrs = chromosomes.size();
-            writeInt(nChrs);
+            fos.writeInt(nChrs);
             for (Chromosome chromosome : chromosomes) {
-                writeString(chromosome.getName());
-                writeInt(chromosome.getSize());
+                fos.writeString(chromosome.getName());
+                fos.writeInt(chromosome.getSize());
             }
 
             // Attribute dictionary -- nothing for now, reserve for future.
             int nAttributes = 0;
-            writeInt(nAttributes);
+            fos.writeInt(nAttributes);
             // Future -- loop through attributes writing key/value pairs
 
 
             // Compute matrices.  Note that c2 is always >= c1
+            List<Thread> threads = new ArrayList();
+            final List<MatrixPP> matrices = new ArrayList<MatrixPP>();
             for (int c1 = 0; c1 < nChrs; c1++) {
                 for (int c2 = c1; c2 < nChrs; c2++) {
 
@@ -126,45 +123,46 @@ public class Preprocessor {
                         }
                     }
 
-                    System.out.println("Compute " + chromosomes.get(c1).getName() + "-" + chromosomes.get(c2).getName());
-                    final int fc1 = c1;
-                    final int fc2 = c2;
-                    Runnable runnable = new Runnable() {
-                        public void run() {
-                            try {
-                                MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
-
-                                if (matrix != null) {
-                                    writeMatrix(matrix);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
+                    if (nThreads <= 1) {
+                        MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
+                        if (matrix != null) {
+                            writeMatrix(matrix);
                         }
-                    };
-                    if (threadExecutor == null) {
-                        runnable.run();
                     } else {
-                        threadExecutor.submit(runnable);
+                        final int fc1 = c1;
+                        final int fc2 = c2;
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                try {
+                                    MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
+                                    if (matrix != null) {
+                                        matrices.add(matrix);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        };
+                        threads.add(new Thread(runnable));
+
+                        // Thread queue is full.  Process it
+                        if (threads.size() >= nThreads) {
+                            processThreads(threads, matrices);
+                        }
+
                     }
+
                 }
             }
 
-            if (threadExecutor != null) {
-                try {
-                    // Do an orderly shutdown (shuts down when all tasks have completed), and wait for its completion.
-                    // This is equivalent to do a join on all running threads, and is neccessary or the file will
-                    // be closed before the threads have finished.
-                    threadExecutor.shutdown();
-                    threadExecutor.awaitTermination(10, TimeUnit.DAYS);
-                } catch (InterruptedException e) {
-                    outputFile.deleteOnExit();
-                }
+            // Process any leftover threads
+            if (threads.size() > 0) {
+                processThreads(threads, matrices);
             }
 
 
-            masterIndexPosition = bytesWritten;
+            masterIndexPosition = fos.getWrittenCount();
             writeMasterIndex();
 
 
@@ -174,6 +172,25 @@ public class Preprocessor {
         }
 
         updateIndexPositions();
+    }
+
+    private void processThreads(List<Thread> threads, List<MatrixPP> matrices) throws IOException {
+        for (Thread t : threads) {
+            t.start();
+        }
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        for (MatrixPP matrix : matrices) {
+            writeMatrix(matrix);
+        }
+        threads.clear();
+        matrices.clear();
     }
 
     /**
@@ -357,8 +374,8 @@ public class Preprocessor {
         //writeExpectedValues(buffer);
 
         byte[] bytes = buffer.getBytes();
-        writeInt(bytes.length);
-        write(bytes);
+        fos.writeInt(bytes.length);
+        fos.write(bytes);
     }
 
     private void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
@@ -402,15 +419,15 @@ public class Preprocessor {
 
         System.out.println("Start writing matrix: " + matrix.getKey());
 
-        long position = bytesWritten;
+        long position = fos.getWrittenCount();
 
-        writeInt(matrix.getChr1());
-        writeInt(matrix.getChr2());
-        writeInt(matrix.getZoomData().length);
+        fos.writeInt(matrix.getChr1());
+        fos.writeInt(matrix.getChr2());
+        fos.writeInt(matrix.getZoomData().length);
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
             writeZoomHeader(zd);
         }
-        int size = (int) (bytesWritten - position);
+        int size = (int) (fos.getWrittenCount() - position);
         matrixPositions.put(matrix.getKey(), new IndexEntry(position, size));
 
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
@@ -430,18 +447,18 @@ public class Preprocessor {
 
         int numberOfBlocks = zd.getBlocks().size();
 
-        writeInt(zd.getZoom());
-        writeInt(zd.getBinSize());
-        writeInt(zd.getBlockBinCount());
-        writeInt(zd.getBlockColumnCount());
-        writeInt(numberOfBlocks);
-        blockIndexPositions.put(getBlockKey(zd), bytesWritten);
+        fos.writeInt(zd.getZoom());
+        fos.writeInt(zd.getBinSize());
+        fos.writeInt(zd.getBlockBinCount());
+        fos.writeInt(zd.getBlockColumnCount());
+        fos.writeInt(numberOfBlocks);
+        blockIndexPositions.put(getBlockKey(zd), fos.getWrittenCount());
 
         // Placeholder for block index
         for (int i = 0; i < numberOfBlocks; i++) {
-            writeInt(0);
-            writeLong(0l);
-            writeInt(0);
+            fos.writeInt(0);
+            fos.writeLong(0l);
+            fos.writeInt(0);
         }
 
     }
@@ -457,9 +474,9 @@ public class Preprocessor {
             int blockNumber = entry.getKey().intValue();
             Block block = entry.getValue();
 
-            long position = bytesWritten;
+            long position = fos.getWrittenCount();
             writeContactRecords(block);
-            int size = (int) (bytesWritten - position);
+            int size = (int) (fos.getWrittenCount() - position);
 
             indexEntries[i] = new IndexEntry(blockNumber, position, size);
             i++;
@@ -504,42 +521,8 @@ public class Preprocessor {
 
         byte[] bytes = buffer.getBytes();
         byte[] compressedBytes = CompressionUtils.compress(bytes);
-        write(compressedBytes);
+        fos.write(compressedBytes);
 
-    }
-
-    private void writeDouble(double d) throws IOException {
-        fos.writeDouble(d);
-        bytesWritten += 8;
-    }
-
-
-    private void writeInt(int v) throws IOException {
-        fos.writeInt(v);
-        bytesWritten += 4;
-    }
-
-    private void writeShort(short v) throws IOException {
-
-        fos.writeShort(v);
-        bytesWritten += 2;
-    }
-
-    public void writeLong(long v) throws IOException {
-        fos.writeLong(v);
-        bytesWritten += 8;
-    }
-
-    private void write(byte[] bytes) throws IOException {
-        fos.write(bytes);
-        bytesWritten += bytes.length;
-    }
-
-    private void writeString(String string) throws IOException {
-        byte[] bytes = string.getBytes();
-        write(bytes);
-        fos.write((byte) 0);
-        bytesWritten++;
     }
 
 
