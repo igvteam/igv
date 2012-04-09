@@ -6,13 +6,9 @@ import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
-import sun.jvm.hotspot.runtime.Threads;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author jrobinso
