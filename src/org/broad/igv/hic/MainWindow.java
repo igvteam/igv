@@ -46,9 +46,11 @@ import javax.swing.*;
  */
 public class MainWindow extends JFrame {
 
+    // The "model" object containing the state for this instance.
+    HiC hic;
+
 
     Map<Integer, DensityFunction> zoomToDensityMap = null;
-    private Matrix matrix;
 
 
     enum DisplayOption {
@@ -76,7 +78,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    HiC hic;
 
     private static ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
 
@@ -87,10 +88,6 @@ public class MainWindow extends JFrame {
     public static final int BIN_PIXEL_WIDTH = 1;
 
     //private int len;                             
-    public Context xContext;
-    public Context yContext;
-    Dataset dataset;
-    MatrixZoomData zd;
     private Chromosome[] chromosomes;
     private int[] chromosomeBoundaries;
 
@@ -100,7 +97,7 @@ public class MainWindow extends JFrame {
     private boolean showEigenvector = false;
     private boolean showDNAseI = false;
 
-    private DisplayOption displayOption = DisplayOption.OBSERVED;
+   // private DisplayOption displayOption = DisplayOption.OBSERVED;
 
 
     public static void main(String[] args) throws IOException {
@@ -112,6 +109,8 @@ public class MainWindow extends JFrame {
     }
 
     public MainWindow() throws IOException {
+
+        hic = new HiC(this);
 
         initColorScales();
         initComponents();
@@ -153,7 +152,7 @@ public class MainWindow extends JFrame {
     }
 
     public boolean isWholeGenome() {
-        return xContext != null && xContext.getChromosome().getName().equals("All");
+        return hic.xContext != null && hic.xContext.getChromosome().getName().equals("All");
     }
 
     public Chromosome[] getChromosomes() {
@@ -188,7 +187,7 @@ public class MainWindow extends JFrame {
 
     public ColorScale getColorScale() {
 
-        switch (displayOption) {
+        switch (hic.getDisplayOption()) {
             case OE:
                 return oeColorScale;
             case PEARSON:
@@ -198,50 +197,13 @@ public class MainWindow extends JFrame {
         }
     }
 
-    public DisplayOption getDisplayOption() {
-        return displayOption;
-    }
 
-    public void setDisplayOption(String strOption) {
-
-        DisplayOption newDisplay = DisplayOption.getByValue(strOption);
-
-        if (this.displayOption != newDisplay) {
-
-            if (newDisplay == DisplayOption.PEARSON && zd.getPearsons() == null) {
-                if (zd.getZoom() > 3) {
-                    int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
-                            "this zoom will take a while.\nAre you sure you want to proceed?",
-                            "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                    if (ans == JOptionPane.NO_OPTION) {
-                        return;
-                    }
-                }
-
-                this.displayOption = newDisplay;
-                final DensityFunction df = getDensityFunction(zd.getZoom());
-                Runnable callable = new Runnable() {
-                    public void run() {
-                        zd.computePearsons(df);
-                        refresh();
-                    }
-                };
-                executeLongRunningTask(callable);
-                return;
-
-
-            }
-            this.displayOption = newDisplay;
-            refresh();
-
-        }
-    }
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
             SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
-            dataset = (new DatasetReader(ss)).read();
-            setChromosomes(dataset.getChromosomes());
+            hic.dataset = (new DatasetReader(ss)).read();
+            setChromosomes(hic.dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
 
@@ -271,8 +233,8 @@ public class MainWindow extends JFrame {
             // error -- unknown file type
         }
         setTitle(file);
-        xContext = null;
-        yContext = null;
+        hic.xContext = null;
+        hic.yContext = null;
         refreshChromosomes();
     }
 
@@ -293,15 +255,16 @@ public class MainWindow extends JFrame {
                     chr1 = tmp;
                 }
 
-                if (chr2.getName().equals("All") || chr2 != xContext.getChromosome() || chr1 != yContext.getChromosome()) {
+                if (chr2.getName().equals("All") ||
+                        chr2 != hic.xContext.getChromosome() || chr1 != hic.yContext.getChromosome()) {
 
-                    xContext = new Context(chr2);
-                    yContext = new Context(chr1);
-                    rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
-                    rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+                    hic.xContext = new Context(chr2);
+                    hic.yContext = new Context(chr1);
+                    rulerPanel2.setFrame(hic.xContext, HiCRulerPanel.Orientation.HORIZONTAL);
+                    rulerPanel1.setFrame(hic.yContext, HiCRulerPanel.Orientation.VERTICAL);
 
-                    matrix = dataset.getMatrix(chr1, chr2);
-                    if (matrix == null) {
+                    hic.matrix = hic.dataset.getMatrix(chr1, chr2);
+                    if (hic.matrix == null) {
                         //?? TODO -- this is probably an error
                     } else {
                         setInitialZoom();
@@ -324,27 +287,30 @@ public class MainWindow extends JFrame {
 
     }
 
-    private void refresh() {
+    void refresh() {
         getHeatmapPanel().clearTileCache();
         repaint();
-        if (matrix != null) {
+        if (hic.matrix != null) {
             //MatrixZoomData.ScaleParameters scaleParameters = zd.computeScaleParameters();
             // Refresh the thumbnail, using lowest resolution data
             // TODO -- this only needs to be done in some circumstances
 
-            MatrixZoomData zd0 = matrix.getObservedMatrix(0);
-            Image thumbnail = heatmapPanel.getThumbnailImage(zd0, thumbnailPanel.getWidth(), thumbnailPanel.getHeight(),
-                    displayOption);
+            MatrixZoomData zd0 = hic.matrix.getObservedMatrix(0);
+            Image thumbnail = heatmapPanel.getThumbnailImage(
+                    zd0,
+                    thumbnailPanel.getWidth(),
+                    thumbnailPanel.getHeight(),
+                    hic.getDisplayOption());
             thumbnailPanel.setImage(thumbnail);
         }
     }
 
     private void setInitialZoom() {
 
-        if (xContext.getChromosome().getName().equals("All")) {
+        if (hic.xContext.getChromosome().getName().equals("All")) {
             resolutionSlider.setValue(0);
             resolutionSlider.setEnabled(false); //
-            setZoom(0, -1, -1, true);
+            hic.setZoom(0, -1, -1, true);
         } else {
             resolutionSlider.setEnabled(true);
             int initialZoom = 1;
@@ -362,176 +328,8 @@ public class MainWindow extends JFrame {
 //                }
 //            }
             resolutionSlider.setValue(initialZoom);
-            setZoom(initialZoom, -1, -1, true);
+            hic.setZoom(initialZoom, -1, -1, true);
         }
-    }
-
-
-    /**
-     * Change zoom level and recenter.  Triggered by the resolutionSlider, or by a double-click in the
-     * heatmap panel.
-     *
-     * @param newZoom
-     * @param centerLocationX center X location in base pairs
-     * @param centerLocationY center Y location in base pairs
-     */
-    public void setZoom(int newZoom, final int centerLocationX, final int centerLocationY, boolean updateSlider) {
-
-        if (newZoom < 0 || newZoom > MAX_ZOOM) return;
-
-        final Chromosome chr1 = xContext.getChromosome();
-        final Chromosome chr2 = yContext.getChromosome();
-        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-
-
-        if (displayOption == DisplayOption.PEARSON && newZD.getPearsons() == null) {
-
-            if (newZoom > 3) {
-                int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
-                        "this zoom will take a while.\nAre you sure you want to proceed?",
-                        "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                if (ans == JOptionPane.NO_OPTION) {
-                    resolutionSlider.setValue(zd.getZoom());
-                    return;
-                }
-            }
-
-            final DensityFunction df = getDensityFunction(newZoom);
-
-            Runnable callable = new Runnable() {
-                public void run() {
-                    newZD.computePearsons(df);
-                    refresh();
-                    updateState2(newZD, centerLocationX, centerLocationY);
-                }
-            };
-            executeLongRunningTask(callable);
-            return;
-
-
-        } else {
-            newZD.printDescription();
-            updateState2(newZD, centerLocationX, centerLocationY);
-        }
-
-    }
-
-    private void updateState2(MatrixZoomData newZD, double centerLocationX, double centerLocationY) {
-
-        zd = newZD;
-        int newZoom = zd.getZoom();
-        //showEigenvector();
-
-        int newBinSize = zd.getBinSize();
-
-        double xScaleMax = (double) xContext.getChrLength() / getHeatmapPanel().getWidth();
-        double yScaleMax = (double) yContext.getChrLength() / getHeatmapPanel().getWidth();
-        double scaleMax = Math.max(xScaleMax, yScaleMax);
-
-        double scale = Math.min(newBinSize, scaleMax);
-
-        xContext.setZoom(newZoom, scale);
-        yContext.setZoom(newZoom, scale);
-
-        center((int) centerLocationX, (int) centerLocationY);
-        resolutionSlider.setValue(newZoom);
-        refresh();
-    }
-
-
-    /**
-     * Zoom to a specific rectangle.  Triggered by the alt-drag action in the heatmap panel.
-     *
-     * @param xBP
-     * @param yBP
-     * @param scale
-     */
-    public void zoomTo(final double xBP, final double yBP, final double scale) {
-
-        // Find zoom level closest to prescribed scale
-        int newZoom = HiCGlobals.zoomBinSizes.length - 1;
-        for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
-            if (HiCGlobals.zoomBinSizes[z] < scale) {
-                newZoom = z - 1;
-                break;
-            }
-        }
-
-        final Chromosome chr1 = xContext.getChromosome();
-        final Chromosome chr2 = yContext.getChromosome();
-        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-
-        if (displayOption == DisplayOption.PEARSON && newZD.getPearsons() == null) {
-            if (newZoom > 3) {
-                int ans = JOptionPane.showConfirmDialog(resolutionSlider.getTopLevelAncestor(), "Pearson's calculation at " +
-                        "this zoom will take a while.\nAre you sure you want to proceed?",
-                        "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                if (ans == JOptionPane.NO_OPTION) {
-                    return;
-                }
-            }
-
-            final DensityFunction df = getDensityFunction(newZoom);
-            Runnable callable = new Runnable() {
-                public void run() {
-                    newZD.computePearsons(df);
-                    refresh();
-                    updateState(newZD, scale, xBP, yBP);
-                }
-            };
-            executeLongRunningTask(callable);
-            return;
-
-
-        } else {
-            updateState(newZD, scale, xBP, yBP);
-
-        }
-    }
-
-
-    private void updateState(MatrixZoomData newZD, double scale, double xBP, double yBP) {
-        zd = newZD;
-        xContext.setZoom(zd.getZoom(), scale);
-        yContext.setZoom(zd.getZoom(), scale);
-        xContext.setOrigin((int) xBP);
-        yContext.setOrigin((int) yBP);
-        resolutionSlider.setValue(zd.getZoom());
-        refresh();
-    }
-
-    public void center(int centerLocationX, int centerLocationY) {
-        double w = (getHeatmapPanel().getWidth() * xContext.getScale());
-        int newX = (int) (centerLocationX - w / 2);
-        double h = (getHeatmapPanel().getHeight() * yContext.getScale());
-        int newY = (int) (centerLocationY - h / 2);
-        moveTo(newX, newY);
-    }
-
-
-    public void moveBy(int dx, int dy) {
-        final int newX = xContext.getOrigin() + dx;
-        final int newY = yContext.getOrigin() + dy;
-        moveTo(newX, newY);
-    }
-
-    private void moveTo(int newX, int newY) {
-        final double bpWidthX = xContext.getScale() * getHeatmapPanel().getWidth();
-        int maxX = (int) (xContext.getChrLength() - bpWidthX);
-        final double bpWidthY = yContext.getScale() * getHeatmapPanel().getHeight();
-        int maxY = (int) (yContext.getChrLength() - bpWidthY);
-
-        int x = Math.max(0, Math.min(maxX, newX));
-        int y = Math.max(0, Math.min(maxY, newY));
-
-        xContext.setOrigin(x);
-        yContext.setOrigin(y);
-
-//        String locus1 = "chr" + (xContext.getChromosome().getName()) + ":" + x + "-" + (int) (x + bpWidthX);
-//        String locus2 = "chr" + (yContext.getChromosome().getName()) + ":" + x + "-" + (int) (y + bpWidthY);
-//        IGVUtils.sendToIGV(locus1, locus2);
-
-        repaint();
     }
 
 
@@ -582,7 +380,7 @@ public class MainWindow extends JFrame {
             observedColorScale.setMaxCount(20000);
             colorRangeSlider.setMaximum(20000);
             colorRangeSlider.setMinimum(0);
-            zd = null;
+            hic.reset();
             load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
 
         } catch (IOException e1) {
@@ -596,7 +394,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
-            zd = null;
+            hic.reset();
             load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -609,7 +407,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(10);
-            zd = null;
+            hic.reset();
             load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -624,7 +422,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMajorTickSpacing(10);
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(20);
-            zd = null;
+            hic.reset();
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
 
         } catch (IOException e1) {
@@ -639,7 +437,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setMajorTickSpacing(100);
             colorRangeSlider.setUpperValue(1500);
-            zd = null;
+            hic.reset();
             load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all.hic");
 
         } catch (IOException e1) {
@@ -655,7 +453,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
-            zd = null;
+            hic.reset();
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120313.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -669,7 +467,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
-            zd = null;
+            hic.reset();
             load("https://iwww.broadinstitute.org/igvdata/hic/Elena_Human_120316.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -683,7 +481,7 @@ public class MainWindow extends JFrame {
             colorRangeSlider.setMinimum(0);
             colorRangeSlider.setUpperValue(1);
             colorRangeSlider.setMajorTickSpacing(1);
-            zd = null;
+            hic.reset();
             load("https://iwww.broadinstitute.org/igvdata/hic/COOL-AID_Elena_Mouse_December11.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
@@ -712,13 +510,13 @@ public class MainWindow extends JFrame {
     }
 
     private void displayOptionComboBoxActionPerformed(ActionEvent e) {
-        setDisplayOption((String) displayOptionComboBox.getSelectedItem());
+        hic.setDisplayOption((String) displayOptionComboBox.getSelectedItem());
     }
 
     private void showEigenvector() {
         boolean show = viewEigenvector.isSelected();
-        if (show && zd != null) {
-            if (zd.getZoom() > 3) {
+        if (show && hic.zd != null) {
+            if (hic.zd.getZoom() > 3) {
                 String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
                 str += "At this zoom, calculation might take a while.\n";
                 str += "Are you sure you want to proceed?";
@@ -728,11 +526,11 @@ public class MainWindow extends JFrame {
                     return;
                 }
             }
-            DensityFunction df = getDensityFunction(zd.getZoom());
+            DensityFunction df = getDensityFunction(hic.zd.getZoom());
             if (df != null) {
                 double[] rv;
                 try {
-                    rv = zd.getEigenvector(df, 0);
+                    rv = hic.zd.getEigenvector(df, 0);
                     eigenvectorPanel.setData(rv);
                     trackPanel.setVisible(true);
                     pack();
@@ -758,14 +556,14 @@ public class MainWindow extends JFrame {
 
 
     private void getEigenvectorActionPerformed(ActionEvent e) {
-        if (zd != null) {
-            DensityFunction df = getDensityFunction(zd.getZoom());
+        if (hic.zd != null) {
+            DensityFunction df = getDensityFunction(hic.zd.getZoom());
             if (df != null) {
                 double[] rv;
                 try {
                     String number = JOptionPane.showInputDialog("Which eigenvector do you want to see?");
                     int num = Integer.parseInt(number) - 1;
-                    rv = zd.getEigenvector(df, num);
+                    rv = hic.zd.getEigenvector(df, num);
                     String str = "";
                     for (int i = 0; i < rv.length; i++) {
                         str += rv[i] + "\n";
@@ -935,10 +733,10 @@ public class MainWindow extends JFrame {
         resolutionSlider = new JSlider();
         panel3 = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
-        heatmapPanel = new HeatmapPanel(this);
+        heatmapPanel = new HeatmapPanel(this, hic);
         rulerPanel1 = new HiCRulerPanel(this);
         JPanel panel8 = new JPanel();
-        thumbnailPanel = new ThumbnailPanel();
+        thumbnailPanel = new ThumbnailPanel(this, hic);
         xPlotPanel = new JPanel();
         yPlotPanel = new JPanel();
         JMenuBar menuBar1 = new JMenuBar();
@@ -1155,15 +953,15 @@ public class MainWindow extends JFrame {
                     int idx = resolutionSlider.getValue();
                     idx = Math.max(0, Math.min(idx, MAX_ZOOM));
 
-                    if (zd != null && idx == zd.getZoom()) {
+                    if (hic.zd != null && idx == hic.zd.getZoom()) {
                         // Nothing to do
                         return;
                     }
 
-                    if (xContext != null) {
-                        int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
-                        int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
-                        setZoom(idx, centerLocationX, centerLocationY, false);
+                    if (hic.xContext != null) {
+                        int centerLocationX = (int) hic.xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
+                        int centerLocationY = (int) hic.yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
+                        hic.setZoom(idx, centerLocationX, centerLocationY, false);
                     }
                     //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
                     //zoomOutButton.setEnabled(newZoom > 0);
@@ -1240,7 +1038,6 @@ public class MainWindow extends JFrame {
         thumbnailPanel.setMinimumSize(new Dimension(100, 100));
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
-        thumbnailPanel.setMainWindow(this);
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         panel8.add(thumbnailPanel);
         thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
@@ -1479,7 +1276,7 @@ public class MainWindow extends JFrame {
     private JComboBox chrBox2;
     private JComboBox displayOptionComboBox;
     private RangeSlider colorRangeSlider;
-    private JSlider resolutionSlider;
+    JSlider resolutionSlider;
     private JPanel panel3;
     private JPanel trackPanel;
     private TrackPanel eigenvectorPanel;

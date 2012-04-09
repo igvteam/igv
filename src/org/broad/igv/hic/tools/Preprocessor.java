@@ -83,7 +83,7 @@ public class Preprocessor {
 
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
-            // Placeholder for master index position, replace later
+            // Placeholder for master index position, replaced with actual position after all contents are written
             fos.writeLong(0l);
 
             int nChrs = chromosomes.size();
@@ -96,8 +96,6 @@ public class Preprocessor {
             // Attribute dictionary -- nothing for now, reserve for future.
             int nAttributes = 0;
             fos.writeInt(nAttributes);
-            // Future -- loop through attributes writing key/value pairs
-
 
             // Compute matrices.  Note that c2 is always >= c1
             List<Thread> threads = new ArrayList();
@@ -145,12 +143,12 @@ public class Preprocessor {
                         // Thread queue is full.  Process it
                         if (threads.size() >= nThreads) {
                             processThreads(threads, matrices);
+                            threads.clear();
+                            matrices.clear();
                         }
-
                     }
-
                 }
-            }
+            } // End of double loop through chromosomes
 
             // Process any leftover threads
             if (threads.size() > 0) {
@@ -185,8 +183,6 @@ public class Preprocessor {
         for (MatrixPP matrix : matrices) {
             writeMatrix(matrix);
         }
-        threads.clear();
-        matrices.clear();
     }
 
     /**

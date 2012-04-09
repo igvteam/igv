@@ -14,7 +14,9 @@ import java.io.Serializable;
  */
 public class ThumbnailPanel extends JComponent implements Serializable {
 
+
     private MainWindow mainWindow;
+    private HiC hic;
 
     Image image;
 
@@ -26,16 +28,19 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private Rectangle innerRectangle;
 
 
-    public ThumbnailPanel() {
+    public ThumbnailPanel(MainWindow mainWindow, HiC model) {
 
-         addMouseListener(new MouseAdapter() {
+        this.mainWindow = mainWindow;
+        this.hic = model;
+
+        addMouseListener(new MouseAdapter() {
 
 
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 int xBP = (int) (mouseEvent.getX() * xScale);
                 int yBP = (int) (mouseEvent.getY() * yScale);
-                mainWindow.center(xBP, yBP);
+                hic.center(xBP, yBP);
             }
 
             @Override
@@ -60,7 +65,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
                 if (lastPoint != null) {
                     int dxBP = ((int) ((mouseEvent.getX() - lastPoint.x) * xScale));
                     int dyBP = ((int) ((mouseEvent.getY() - lastPoint.y) * xScale));
-                    mainWindow.moveBy(dxBP, dyBP);
+                    hic.moveBy(dxBP, dyBP);
                     lastPoint = mouseEvent.getPoint();
                 }
 
@@ -72,13 +77,9 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     public void setImage(Image image) {
         this.image = image;
-        int maxLen = Math.max(mainWindow.xContext.getChrLength(), mainWindow.yContext.getChrLength());
+        int maxLen = Math.max(hic.xContext.getChrLength(), hic.yContext.getChrLength());
         xScale = ((double) maxLen) / getWidth();
         yScale = xScale;
-    }
-
-    public void setMainWindow(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
     }
 
     public String getName() {
@@ -101,21 +102,21 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private void renderVisibleWindow(Graphics2D g) {
 
 
-        if (mainWindow != null && mainWindow.xContext != null) {
+        if (hic != null && hic.xContext != null) {
 
             int wPixels = mainWindow.getHeatmapPanel().getWidth();
             int hPixels = mainWindow.getHeatmapPanel().getHeight();
 
-            int originX = mainWindow.xContext.getOrigin();
+            int originX = hic.xContext.getOrigin();
             int x = (int) (originX / xScale);
 
-            int originY = mainWindow.yContext.getOrigin();
+            int originY = hic.yContext.getOrigin();
             int y = (int) (originY / yScale);
 
-            int wBP = (int) (mainWindow.xContext.getScale() * wPixels);
+            int wBP = (int) (hic.xContext.getScale() * wPixels);
             int w = (int) (wBP / xScale);
 
-            int yBP = (int) (mainWindow.yContext.getScale() * hPixels);
+            int yBP = (int) (hic.yContext.getScale() * hPixels);
             int h = (int) (yBP / yScale);
 
             if (w < 4) {

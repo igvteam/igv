@@ -6,18 +6,9 @@ import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.renderer.ColorScale;
-import org.broad.igv.ui.Main;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -26,10 +17,12 @@ import java.util.concurrent.Future;
 public class HeatmapRenderer {
 
     // TODO -- introduce a "model" in lieu of MainWindow pointer
+    HiC hic;
     MainWindow mainWindow;
 
-    public HeatmapRenderer(MainWindow mainWindow) {
+    public HeatmapRenderer(MainWindow mainWindow, HiC hic) {
         this.mainWindow = mainWindow;
+        this.hic = hic;
     }
 
     public void render(int originX,
@@ -97,7 +90,7 @@ public class HeatmapRenderer {
     private void renderBlock(int originX, int originY, int chr1, int chr2, double binSizeMB, Block b,
                              ColorScale colorScale, DensityFunction df, Graphics2D g) {
 
-        MainWindow.DisplayOption displayOption = mainWindow.getDisplayOption();
+        MainWindow.DisplayOption displayOption = hic.getDisplayOption();
         double binSizeMB2 = binSizeMB * binSizeMB;
         boolean sameChr = (chr1 == chr2);
 
