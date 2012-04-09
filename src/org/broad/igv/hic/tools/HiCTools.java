@@ -287,7 +287,7 @@ public class HiCTools {
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
             loadDensititesOption = addBooleanOption('o', "density");
-            threadedOption = addBooleanOption('t', "threads");
+            threadedOption = addIntegerOption('t', "threads");
         }
 
         boolean getDiagonalsOption() {
