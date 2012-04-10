@@ -124,8 +124,10 @@ public class CommandExecutor {
                     return bringToFront();
                 } else if (cmd.equalsIgnoreCase("viewaspairs")) {
                     return setViewAsPairs(param1, param2);
-                } else if (cmd.equalsIgnoreCase("maxdepth")) {
-                    return this.setMaxCoverageDepth(param1, param2);
+                } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
+                    return this.setSamplingWindowSize(param1, param2);
+                } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
+                    return this.setSamplingReadCount(param1, param2);
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
@@ -168,20 +170,41 @@ public class CommandExecutor {
         return "OK";
     }
 
-    private String setMaxCoverageDepth(String maxCovDepth, String trackName) {
+    private String setSamplingWindowSize(String windowSize, String trackName) {
         List<Track> tracks = igv.getAllTracks(false);
         try {
-            Integer maxDepth = Integer.parseInt(maxCovDepth);
+            int ws = Integer.parseInt(windowSize);
             for (Track track : tracks) {
                 if (track instanceof AlignmentTrack) {
                     if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
                         AlignmentTrack atrack = (AlignmentTrack) track;
-                        atrack.setMaxDepth(maxDepth);
+                        atrack.setSamplignWindowSize(ws);
                     }
                 }
             }
         } catch (NumberFormatException e) {
-            final String msg = "Error parsing maxDepth value: " + maxCovDepth + ". Command ignored";
+            final String msg = "Error parsing maxDepth value: " + windowSize + ". Command ignored";
+            log.error(msg);
+            return msg;
+        }
+        return "OK";
+
+    }
+
+    private String setSamplingReadCount(String samplingReadCount, String trackName) {
+        List<Track> tracks = igv.getAllTracks(false);
+        try {
+            int rc = Integer.parseInt(samplingReadCount);
+            for (Track track : tracks) {
+                if (track instanceof AlignmentTrack) {
+                    if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                        AlignmentTrack atrack = (AlignmentTrack) track;
+                        atrack.setMaxDepth(rc);
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            final String msg = "Error parsing maxDepth value: " + samplingReadCount + ". Command ignored";
             log.error(msg);
             return msg;
         }

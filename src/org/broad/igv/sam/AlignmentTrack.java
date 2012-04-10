@@ -335,7 +335,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = visibleRect.height;
-                int depth = dataManager.getDownsampleCount();
+                int depth = dataManager.getNLevels();
                 squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = squishedHeight;
             }
@@ -546,10 +546,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
             AlignmentInterval iv = dataManager.getLoadedInterval(frame);
-            List<CachingQueryReader.DownsampledInterval> intervals = iv.getDownsampledIntervals();
-            CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
-                    FeatureUtils.getFeatureAt(position, 0, intervals);
-            return interval == null ? null : interval.getValueString();
+            if (iv == null) {
+                return null;
+            } else {
+                List<CachingQueryReader.DownsampledInterval> intervals = iv.getDownsampledIntervals();
+                CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
+                        FeatureUtils.getFeatureAt(position, 0, intervals);
+                return interval == null ? null : interval.getValueString();
+            }
         } else if (renderOptions.isPairedArcView()) {
             Alignment feature = null;
             //All alignments stacked at the bottom
@@ -728,12 +732,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public int getDownsampleCount() {
-        return dataManager.getDownsampleCount();
+        return dataManager.getDownsampleOptions().getMaxReadCount();
     }
 
-    public void setMaxDepth(int newMaxLevels) {
-        dataManager.setMaxLevels(newMaxLevels);
-        //dataManager.reload();
+    public void setSamplignWindowSize(int newSize) {
+        dataManager.getDownsampleOptions().setSampleWindowSize(newSize);
+        refresh();
+    }
+
+    public void setMaxDepth(int newReadCount) {
+        dataManager.getDownsampleOptions().setMaxReadCount(newReadCount);
         refresh();
     }
 
@@ -1076,7 +1084,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addPackMenuItem();
-            addCoverageDepthMenuItem();
+            //addCoverageDepthMenuItem();
             addShowCoverageItem();
             addLoadCoverageDataItem();
 
@@ -1521,31 +1529,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        public void addCoverageDepthMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    int maxLevels = dataManager.getDownsampleCount();
-                    String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
-                    //Cancel button return null
-                    if (val == null) {
-                        return;
-                    }
-                    try {
-                        int newMaxLevels = Integer.parseInt(val);
-                        if (newMaxLevels != maxLevels) {
-                            setMaxDepth(newMaxLevels);
-                        }
-                    } catch (NumberFormatException ex) {
-                        MessageUtils.showMessage("Insert size must be an integer value: " + val);
-                    }
-
-                }
-            });
-            add(item);
-        }
+//        public void addCoverageDepthMenuItem() {
+//            // Change track height by attribute
+//            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
+//            item.addActionListener(new ActionListener() {
+//
+//                public void actionPerformed(ActionEvent aEvt) {
+//                    int maxLevels = dataManager.getDownsampleOptions().getMaxReadCount();
+//                    String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
+//                    //Cancel button return null
+//                    if (val == null) {
+//                        return;
+//                    }
+//                    try {
+//                        int newMaxLevels = Integer.parseInt(val);
+//                        if (newMaxLevels != maxLevels) {
+//                            setMaxDepth(newMaxLevels);
+//                        }
+//                    } catch (NumberFormatException ex) {
+//                        MessageUtils.showMessage("Insert size must be an integer value: " + val);
+//                    }
+//
+//                }
+//            });
+//            add(item);
+//        }
 
 
         public void addInsertSizeMenuItem() {

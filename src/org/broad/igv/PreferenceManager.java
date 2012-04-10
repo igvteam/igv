@@ -84,6 +84,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_FLAG_UNMAPPED_PAIR = "SAM.FLAG_UNMAPPED_PAIR";
     public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS"; // Sampling count
     public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
+    public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
 
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
@@ -941,8 +942,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHADE_BASE_QUALITY, "true");
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
-        defaultValues.put(SAM_MAX_LEVELS, "100");
+        defaultValues.put(SAM_DOWNSAMPLE_READS, "true");
         defaultValues.put(SAM_SAMPLING_WINDOW, "50");
+        defaultValues.put(SAM_MAX_LEVELS, "100");
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
         defaultValues.put(SAM_FILTER_URL, null);

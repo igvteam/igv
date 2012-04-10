@@ -47,8 +47,7 @@ public class AlignmentDataManager {
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
-    private int maxLevels;
-    private int samplingWindow;
+    private DownsampleOptions downsampleOptions;
 
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
@@ -62,8 +61,6 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
-        samplingWindow = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -117,15 +114,6 @@ public class AlignmentDataManager {
 
     public boolean hasIndex() {
         return reader.hasIndex();
-    }
-
-    public int getDownsampleCount() {
-        return maxLevels;
-    }
-
-    public void setMaxLevels(int maxLevels) {
-        clear();
-        this.maxLevels = maxLevels;
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -222,8 +210,7 @@ public class AlignmentDataManager {
                     alignments.iterator(),
                     loadedInterval.getEnd(),
                     viewAsPairs,
-                    renderOptions,
-                    MAX_ROWS);
+                    renderOptions);
 
             loadedInterval.setAlignmentRows(tmp);
 
@@ -252,8 +239,7 @@ public class AlignmentDataManager {
                 iter,
                 loadedInterval.getEnd(),
                 viewAsPairs || renderOptions.isPairedArcView(),
-                renderOptions,
-                MAX_ROWS);
+                renderOptions);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
@@ -331,12 +317,12 @@ public class AlignmentDataManager {
                     }
 
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, downsampledIntervals,
-                            maxLevels, peStats, bisulfiteContext);
+                            downsampleOptions, peStats, bisulfiteContext);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
                     LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions, maxLevels);
+                            intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
                             alignmentRows, counts, spliceJunctions, downsampledIntervals);
@@ -350,8 +336,8 @@ public class AlignmentDataManager {
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
                     if (context.getPanel() != null) {
-                   //     context.getPanel().invalidate();
-                   //     context.getPanel().repaint();
+                        //     context.getPanel().invalidate();
+                        //     context.getPanel().repaint();
                     }
 
                 } catch (Exception exception) {
@@ -442,6 +428,47 @@ public class AlignmentDataManager {
 
     public boolean isShowSpliceJunctions() {
         return showSpliceJunctions;
+    }
+
+    public DownsampleOptions getDownsampleOptions() {
+        return downsampleOptions;
+    }
+
+    public static class DownsampleOptions {
+        private boolean downsample;
+        private int sampleWindowSize;
+        private int maxReadCount;
+
+        public DownsampleOptions() {
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            downsample = prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
+            sampleWindowSize = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
+            maxReadCount = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+        }
+
+        public boolean isDownsample() {
+            return downsample;
+        }
+
+        public void setDownsample(boolean downsample) {
+            this.downsample = downsample;
+        }
+
+        public int getSampleWindowSize() {
+            return sampleWindowSize;
+        }
+
+        public void setSampleWindowSize(int sampleWindowSize) {
+            this.sampleWindowSize = sampleWindowSize;
+        }
+
+        public int getMaxReadCount() {
+            return maxReadCount;
+        }
+
+        public void setMaxReadCount(int maxReadCount) {
+            this.maxReadCount = maxReadCount;
+        }
     }
 }
 

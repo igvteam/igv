@@ -132,17 +132,16 @@ public class CachingQueryReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end,
                                               List<AlignmentCounts> counts,
                                               List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                              List<DownsampledInterval> downsampledIntervals, int maxReadDepth, Map<String, PEStats> peStats,
+                                              List<DownsampledInterval> downsampledIntervals,
+                                              AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                              Map<String, PEStats> peStats,
                                               AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         // Get the tiles covering this interval
         int startTile = (start + 1) / getTileSize(sequence);
         int endTile = end / getTileSize(sequence);    // <= inclusive
 
-        // Be a bit conservative with maxReadDepth (get a few more reads than we think necessary)
-        int readDepthPlus = (int) (1.1 * maxReadDepth);
-
-        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats, bisulfiteContext);
+        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, downsampleOptions, peStats, bisulfiteContext);
         if (tiles.size() == 0) {
             return EmptyAlignmentIterator.getInstance();
         }
@@ -178,8 +177,10 @@ public class CachingQueryReader {
         return new TiledIterator(start, end, alignments);
     }
 
-    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth,
-                                        Map<String, PEStats> peStats, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile,
+                                        AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                        Map<String, PEStats> peStats,
+                                        AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         if (!seq.equals(cachedChr)) {
             cache.clear();
@@ -197,7 +198,7 @@ public class CachingQueryReader {
                 int start = t * tileSize;
                 int end = start + tileSize;
 
-                tile = new AlignmentTile(t, start, end, maxReadDepth, bisulfiteContext);
+                tile = new AlignmentTile(t, start, end, downsampleOptions, bisulfiteContext);
             }
 
             tiles.add(tile);
@@ -536,14 +537,17 @@ public class CachingQueryReader {
         private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
+        private boolean downsample;
+        private int samplingWindowSize;
         private int samplingDepth;
         private SamplingBucket currentSamplingBucket;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
-        private int samplingWindowSize = 50;
 
 
-        AlignmentTile(int tileNumber, int start, int end, int samplingDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        AlignmentTile(int tileNumber, int start, int end,
+                      AlignmentDataManager.DownsampleOptions downsampleOptions,
+                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.tileNumber = tileNumber;
             this.start = start;
             this.end = end;
@@ -559,7 +563,13 @@ public class CachingQueryReader {
             }
 
             // Set the max depth, and the max depth of the sampling bucket.
-            this.samplingDepth = Math.max(1, samplingDepth);
+            if(downsampleOptions == null) {
+                // Use default settings (from preferences)
+                downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+            }
+            this.downsample = downsampleOptions.isDownsample();
+            this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
+            this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
@@ -592,22 +602,26 @@ public class CachingQueryReader {
          */
         public void addRecord(Alignment alignment) {
 
-            final int alignmentStart = alignment.getAlignmentStart();
-            if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
-                if (currentSamplingBucket != null) {
-                    emptyBucket();
+            if (downsample) {
+                final int alignmentStart = alignment.getAlignmentStart();
+                if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
+                    if (currentSamplingBucket != null) {
+                        emptyBucket();
+                    }
+                    int end = alignmentStart + samplingWindowSize;
+                    currentSamplingBucket = new SamplingBucket(alignmentStart, end);
                 }
-                int end = alignmentStart + samplingWindowSize;
-                currentSamplingBucket = new SamplingBucket(alignmentStart, end);
+
+                counts.incCounts(alignment);
+
+                if (spliceJunctionHelper != null) {
+                    spliceJunctionHelper.addAlignment(alignment);
+                }
+
+                currentSamplingBucket.add(alignment);
+            } else {
+                allocateAlignment(alignment);
             }
-
-            counts.incCounts(alignment);
-
-            if (spliceJunctionHelper != null) {
-                spliceJunctionHelper.addAlignment(alignment);
-            }
-
-            currentSamplingBucket.add(alignment);
         }
 
         private void emptyBucket() {
@@ -781,7 +795,7 @@ public class CachingQueryReader {
         }
 
         public String getValueString() {
-            return "<html>Downsampled interval (-" + count + ")<br>" + toString();
+            return "Interval [" + start + "-" + end + "] <br>" + count + " reads removed.";
         }
     }
 

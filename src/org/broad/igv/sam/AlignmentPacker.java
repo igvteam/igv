@@ -54,14 +54,12 @@ public class AlignmentPacker {
      * @param end
      * @param pairAlignments
      * @param renderOptions
-     * @param maxLevels      @return
      */
     public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(
             Iterator<Alignment> iter,
             int end,
             boolean pairAlignments,
-            AlignmentTrack.RenderOptions renderOptions,
-            int maxLevels) {
+            AlignmentTrack.RenderOptions renderOptions) {
 
         LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
@@ -74,7 +72,7 @@ public class AlignmentPacker {
 
         if (groupBy == null) {
             List<Row> alignmentRows = new ArrayList(10000);
-            pack(iter, end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+            pack(iter, end, pairAlignments, lengthComparator, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
             // Separate alignments into groups.
@@ -100,11 +98,11 @@ public class AlignmentPacker {
             for (String key : keys) {
                 List<Row> alignmentRows = new ArrayList(10000);
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
                 packedAlignments.put(key, alignmentRows);
             }
             List<Row> alignmentRows = new ArrayList(10000);
-            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
 
@@ -132,8 +130,8 @@ public class AlignmentPacker {
         return null;
     }
 
-    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows,
-                      int maxLevels) {
+    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator,
+                      List<Row> alignmentRows) {
 
         if (!iter.hasNext()) {
             return;

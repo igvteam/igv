@@ -133,8 +133,10 @@ public class CachingQueryReaderTest {
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -278,8 +280,10 @@ public class CachingQueryReaderTest {
     }
 
     public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize) {
+
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -313,10 +317,10 @@ public class CachingQueryReaderTest {
             ResourceLocator loc = new ResourceLocator(path);
             AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
             CachingQueryReader cachingReader = new CachingQueryReader(reader);
-
+            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
 
             CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                    new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
+                    new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
             int count = 0;
             Map<String, Integer> pairedReads = new HashMap<String, Integer>();
             while (iter.hasNext()) {
@@ -379,8 +383,9 @@ public class CachingQueryReaderTest {
         int end = 3000;
         int maxDepth = 500;
 
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
         CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         int count = 0;
         while (iter.hasNext()) {
             Alignment al = iter.next();

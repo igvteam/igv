@@ -70,7 +70,8 @@ public class AlignmentPackerTest {
         int qualityThreshold = 0;
         int maxLevels = 1000;
 
-        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, false, new AlignmentTrack.RenderOptions(), 10000);
+        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, false,
+                new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
         for (List<AlignmentInterval.Row> alignmentrows : result.values()) {
             for (AlignmentInterval.Row alignmentrow : alignmentrows) {
