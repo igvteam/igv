@@ -599,14 +599,14 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new GSOpenSessionMenuAction("Load session from GenomeSpace...", IGV.getInstance());
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menu.add(new JSeparator());
-        menuAction = new MenuAction("Logout") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                GSUtils.logout();
-            }
-        };
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menu.add(new JSeparator());
+//        menuAction = new MenuAction("Logout") {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                GSUtils.logout();
+//            }
+//        };
+//        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
 
