@@ -31,3 +31,6 @@ Align command:
 Finally, since the iterator we are testing requires a SORTED alignment run
 
    java -jar goby.jar -m sort -d -o sorted-seq-var-reads-gsnap seq-var-reads-gsnap.entries
+
+The files named *-hybrid have been compressed with the Hybrid-1 codec of Goby 2.0
+
