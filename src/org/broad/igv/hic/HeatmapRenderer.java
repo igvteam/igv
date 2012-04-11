@@ -20,9 +20,20 @@ public class HeatmapRenderer {
     HiC hic;
     MainWindow mainWindow;
 
+    private ObservedColorScale observedColorScale;
+    private ColorScale oeColorScale;
+    private ColorScale pearsonColorScale;
+
     public HeatmapRenderer(MainWindow mainWindow, HiC hic) {
         this.mainWindow = mainWindow;
         this.hic = hic;
+
+        int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
+        observedColorScale = new ObservedColorScale();
+        observedColorScale.setMaxCount(initialMaxCount);
+        observedColorScale.setBackground(Color.white);
+        oeColorScale = new HiCColorScale();
+        pearsonColorScale = new HiCColorScale();
     }
 
     public void render(int originX,
@@ -63,7 +74,7 @@ public class HeatmapRenderer {
         }
 
 
-        ColorScale colorScale = mainWindow.getColorScale();
+        ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
             RealMatrix pearsonsMatrix = zd.getPearsons();
@@ -77,7 +88,7 @@ public class HeatmapRenderer {
             // Iterate through blocks overlapping visible region
             DensityFunction df = null;
             if (displayOption == MainWindow.DisplayOption.OE) {
-                df = mainWindow.getDensityFunction(zd.getZoom());
+                df = hic.getDensityFunction(zd.getZoom());
             }
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
@@ -86,6 +97,20 @@ public class HeatmapRenderer {
             }
         }
     }
+
+
+    private ColorScale getColorScale() {
+
+        switch (hic.getDisplayOption()) {
+            case OE:
+                return oeColorScale;
+            case PEARSON:
+                return pearsonColorScale;
+            default:
+                return observedColorScale;
+        }
+    }
+
 
     private void renderBlock(int originX, int originY, int chr1, int chr2, double binSizeMB, Block b,
                              ColorScale colorScale, DensityFunction df, Graphics2D g) {
@@ -168,4 +193,7 @@ public class HeatmapRenderer {
     }
 
 
+    public void setObservedRange(int min, int max) {
+        observedColorScale.setRange(min, max);
+    }
 }

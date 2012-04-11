@@ -39,7 +39,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
     enum Orientation {HORIZONTAL, VERTICAL}
 
 
-    private MainWindow mainWindow;
+    private HiC hic;
     private Orientation orientation;
 
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
@@ -54,8 +54,8 @@ public class HiCRulerPanel extends JPanel implements Serializable {
     public HiCRulerPanel() {
     }
 
-    public HiCRulerPanel(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
+    public HiCRulerPanel(HiC hic) {
+        this.hic = hic;
     }
 
     public void setFrame(Context frame, Orientation orientation) {
@@ -140,10 +140,10 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         if (chromosome.getName().equals("All")) {
             int x1 = 0;
-            Chromosome[] chromosomes = mainWindow.getChromosomes();
+            Chromosome[] chromosomes = hic.getChromosomes();
             // Index 0 is whole genome
             int genomeCoord = 0;
-            for(int i=1; i<chromosomes.length; i++) {
+            for (int i = 1; i < chromosomes.length; i++) {
                 Chromosome c = chromosomes[i];
                 genomeCoord += (c.getSize() / 1000);
                 int x2 = frame.getScreenPosition(genomeCoord);
@@ -161,7 +161,6 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         } else {
 
 
-
             int range = (int) (w * frame.getScale());
             TickSpacing ts = findSpacing(range, false);
             double spacing = ts.getMajorTick();
@@ -177,7 +176,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
                 x = frame.getScreenPosition(l);
 
 
-                String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +  " " + ts.getMajorUnit();
+                String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
                 int strWidth = g.getFontMetrics().stringWidth(chrPosition);
                 int strPosition = isHorizontal() ? x - strWidth / 2 : -x - strWidth / 2;
                 //if (strPosition > strEnd) {
