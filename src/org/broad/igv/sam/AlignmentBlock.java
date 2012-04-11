@@ -103,7 +103,7 @@ public class AlignmentBlock {
     }
 
     // Default implementation -- to be overriden
-    public short[][] getFlowSignalContext(int offset) {
+    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
         return null;
     }
 }

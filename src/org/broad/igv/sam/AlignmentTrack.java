@@ -419,7 +419,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     if (!block.contains((int)location) || !block.hasFlowSignals()) {
                         continue;
                     }
-                    short flowSignal = block.getFlowSignalContext((int)location- block.getStart())[1][0];
+                    short flowSignal = block.getFlowSignalSubContext((int)location- block.getStart()).signals[1][0];
                     if (map.containsKey(flowSignal)) {
                         // increment
                         map.put(flowSignal, map.get(flowSignal) + 1);

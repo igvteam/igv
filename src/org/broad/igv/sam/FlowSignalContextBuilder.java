@@ -109,14 +109,17 @@ public class FlowSignalContextBuilder {
     public FlowSignalContext getFlowSignalContext(byte[] readBases, int fromIdx, int nBases) {
         int i, idx;
         short[][][] blockFlowSignals = null;
+        char[][][] blockFlowOrder = null; 
 
         if (null == this.flowSignals) {
             return null;
         }
 
         blockFlowSignals = new short[nBases][][];
+        blockFlowOrder = new char[nBases][][];
         //Default value
         Arrays.fill(blockFlowSignals, null);
+        Arrays.fill(blockFlowOrder, null);
 
         // NB: should be at the first base of a HP
         // Go through the bases
@@ -124,6 +127,7 @@ public class FlowSignalContextBuilder {
         idx = 0;
         while (0 <= this.flowSignalsIndex && this.flowSignalsIndex < this.flowSignals.length && i < fromIdx + nBases) {
             short s = this.flowSignals[this.flowSignalsIndex];
+            char f = this.flowOrder.charAt(this.flowSignalsIndex % this.flowOrder.length());
             int nextFlowSignalsStart = -1, nextFlowSignalsEnd = -1;
             int j = i + 1;
             if (j < readBases.length) {
@@ -158,38 +162,49 @@ public class FlowSignalContextBuilder {
             }
             // set-up block
             blockFlowSignals[idx] = new short[3][];
+            blockFlowOrder[idx] = new char[3][];
             // this.previous context
             if (0 <= this.prevFlowSignalsStart && this.prevFlowSignalsStart <= this.prevFlowSignalsEnd && this.prevFlowSignalsEnd < this.flowSignals.length) {
                 blockFlowSignals[idx][0] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
+                blockFlowOrder[idx][0] = new char[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
                     for (j = this.prevFlowSignalsEnd; this.prevFlowSignalsStart <= j; j--) {
                         blockFlowSignals[idx][0][this.prevFlowSignalsEnd - j] = this.flowSignals[j];
+                        blockFlowOrder[idx][0][this.prevFlowSignalsEnd - j] = this.flowOrder.charAt(j % this.flowOrder.length());
                     }
                 } else {
                     for (j = this.prevFlowSignalsStart; j <= this.prevFlowSignalsEnd; j++) {
                         blockFlowSignals[idx][0][j-this.prevFlowSignalsStart] = this.flowSignals[j];
+                        blockFlowOrder[idx][0][j-this.prevFlowSignalsStart] = this.flowOrder.charAt(j % this.flowOrder.length());
                     }
                 }
             } else {
                 blockFlowSignals[idx][0] = null;
+                blockFlowOrder[idx][0] = null;
             }
             // current context
             blockFlowSignals[idx][1] = new short[1];
+            blockFlowOrder[idx][1] = new char[1];
             blockFlowSignals[idx][1][0] = s;
+            blockFlowOrder[idx][1][0] = f;
             // next context
             if (0 <= nextFlowSignalsStart && nextFlowSignalsStart <= nextFlowSignalsEnd && nextFlowSignalsEnd < this.flowSignals.length) {
                 blockFlowSignals[idx][2] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
+                blockFlowOrder[idx][2] = new char[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
                     for (j = nextFlowSignalsEnd; nextFlowSignalsStart <= j; j--) {
                         blockFlowSignals[idx][2][nextFlowSignalsEnd - j] = this.flowSignals[j];
+                        blockFlowOrder[idx][2][nextFlowSignalsEnd - j] = this.flowOrder.charAt(j % this.flowOrder.length());
                     }
                 } else {
                     for (j = nextFlowSignalsStart; j <= nextFlowSignalsEnd; j++) {
                         blockFlowSignals[idx][2][j-nextFlowSignalsStart] = this.flowSignals[j];
+                        blockFlowOrder[idx][2][j-nextFlowSignalsStart] = this.flowOrder.charAt(j % this.flowOrder.length());
                     }
                 }
             } else {
                 blockFlowSignals[idx][2] = null;
+                blockFlowOrder[idx][2] = null;
             }
             // update for the next iteration
             this.prevFlowSignalsStart = nextFlowSignalsStart;
@@ -198,6 +213,6 @@ public class FlowSignalContextBuilder {
             idx++; // next base
         }
 
-        return new FlowSignalContext(blockFlowSignals);
+        return new FlowSignalContext(blockFlowSignals, blockFlowOrder);
     }
 }

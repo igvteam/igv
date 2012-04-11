@@ -10,8 +10,10 @@ import java.util.Arrays;
  */
 public class FlowSignalContext {
     public short[][][]signals = null;
+    public char[][][]bases = null;
 
-    public FlowSignalContext(short[][][] signals) {
+    public FlowSignalContext(short[][][] signals, char[][][] bases) {
         this.signals = signals;
+        this.bases = bases;
     }
 }
