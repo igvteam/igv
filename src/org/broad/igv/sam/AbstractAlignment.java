@@ -121,6 +121,7 @@ public abstract class AbstractAlignment implements Alignment {
         }
         return 0;
     }
+    
     private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
         if (block.hasFlowSignals()) {
             // flow signals
@@ -178,7 +179,7 @@ public abstract class AbstractAlignment implements Alignment {
                         for (offset=0;offset<block.getBases().length;offset++) {
                             byte base = block.getBase(offset);
                             buf.append((char)base + ": ");
-                            bufAppendFlowSignals(block, buf, offset); // TODO: add in all blocks
+                            bufAppendFlowSignals(block, buf, offset);
                         }
                         buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();

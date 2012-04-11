@@ -646,7 +646,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
                                 expectedFlowSignal = 100 * (short)((flowSignal + 50.0) / 100.0);
                             } else {
-                                // NB: this may estimate the reference homopolymer length incrrect in some cases, especially when we have
+                                // NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
                                 // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
                                 // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
                                 if (!misMatch) {

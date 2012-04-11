@@ -37,8 +37,8 @@ public class AlignmentBlock {
         return new AlignmentBlock(start, bases, qualities, baseAlignment);
     }
 
-    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, short[][][] flowSignals, Alignment baseAlignment) {
-        return new AlignmentBlockFS(start, bases, qualities, flowSignals, baseAlignment);
+    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext, Alignment baseAlignment) {
+        return new AlignmentBlockFS(start, bases, qualities, fContext, baseAlignment);
     }
 
     protected AlignmentBlock(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
