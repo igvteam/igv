@@ -43,6 +43,7 @@ public class MatrixZoomData {
     private double pearsonsMax = 1;
     private RealMatrix oe;
     private double[] eigenvector;
+    private int sum;
 
     public class ScaleParameters {
         double percentile90;
@@ -86,8 +87,8 @@ public class MatrixZoomData {
         blocks = new LinkedHashMap<Integer, Block>(nBlocks);
         this.reader = reader;
 
-        // Get the block index keys, and sort
-        /*List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+
+        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         Collections.sort(blockNumbers);
         this.sum = 0;
         for (int blockNumber : blockNumbers) {
@@ -97,7 +98,7 @@ public class MatrixZoomData {
                     this.sum += rec.getCounts();
                 }
             }
-        } */
+        }
     }
 
 
@@ -105,7 +106,9 @@ public class MatrixZoomData {
         return binSize;
     }
 
-
+    public int getSum() {
+        return sum;
+    }
     public int getChr1() {
         return chr1.getIndex();
     }
@@ -191,8 +194,8 @@ public class MatrixZoomData {
             int numgood = 0;
 
             for (int i = 0; i < size; i++) {
-                eigenvector[i] = -10000;
-                if (!isZeros(oe.getColumn(i))) {
+                eigenvector[i] = Double.NaN;
+                if (!isZeros(oe.getRow(i))) {
                     eigenvector[i] = 1;
                     numgood++;
                 }
@@ -200,18 +203,20 @@ public class MatrixZoomData {
             int[] cols = new int[numgood];
             numgood = 0;
             for (int i = 0; i < size; i++)
-                if (eigenvector[i] > 0)
+                if (!Double.isNaN(eigenvector[i]))
                     cols[numgood++] = i;
 
             RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+
             if (which >= subMatrix.getColumnDimension() || which < 0)
                 throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+
 
             RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
             double[] ev = rv.toArray();
             numgood = 0;
             for (int i = 0; i < size; i++) {
-                if (eigenvector[i] == -10000)
+                if (Double.isNaN(eigenvector[i]))
                     eigenvector[i] = 0;
                 else
                     eigenvector[i] = ev[numgood++];
@@ -225,9 +230,11 @@ public class MatrixZoomData {
     }
 
     public RealMatrix computePearsons(DensityFunction df) {
-        if (oe == null) {
+
+        if (oe == null)
             oe = computeOE(df);
-        }
+
+
         pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
 
         PearsonsMinMax minMax = new PearsonsMinMax();
@@ -300,6 +307,19 @@ public class MatrixZoomData {
         return true;
     }
 
+    private double getVectorMean(RealVector vector) {
+        double sum = 0;
+        int count = 0;
+        int size = vector.getDimension();
+        for (int i=0; i<size; i++) {
+            if (!Double.isNaN(vector.getEntry(i))) {
+                sum += vector.getEntry(i);
+                count++;
+            }
+        }
+        return sum/count;
+    }
+    
     public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
@@ -309,7 +329,6 @@ public class MatrixZoomData {
         int nBins = chr1.getSize() / binSize + 1;
 
         SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
-        //RealMatrix rm = new Array2DRowRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         for (int blockNumber : blockNumbers) {
@@ -320,9 +339,8 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    // expected = expected * (this.sum/df.getSum());
-                    double normCounts = Math.log10(rec.getCounts() / expected);
-                    //double normCounts = (rec.getCounts() / expected);
+                    expected = expected * (this.sum/df.getSum());
+                    double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
@@ -331,6 +349,33 @@ public class MatrixZoomData {
                 }
             }
         }
+        int size = rm.getRowDimension();
+        BitSet bitSet = new BitSet(size);
+        double[] nans = new double[size];
+        for (int i=0; i<size; i++)
+            nans[i] = Double.NaN;
+        
+        for (int i=0; i<size; i++)  {
+            if (isZeros(rm.getRow(i))) {
+                bitSet.set(i);
+            }
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (bitSet.get(i)) {
+                rm.setRow(i, nans);
+                rm.setColumn(i, nans);
+            }
+        }
+
+        for (int i=0; i<size; i++) {
+            RealVector v = rm.getRowVector(i);
+            double m = getVectorMean(v);
+            RealVector newV = v.mapSubtract(m);
+            rm.setRowVector(i, newV);
+        }
+        PearsonsResetNan resetNan = new PearsonsResetNan();
+        rm.walkInOptimizedOrder(resetNan);
 
         return rm;
     }
@@ -393,6 +438,14 @@ public class MatrixZoomData {
         }
     }
 
+    private class PearsonsResetNan extends DefaultRealMatrixChangingVisitor {
+        public double visit(int row, int column, double value) {
+            if (Double.isNaN(value))
+                return 0;
+            return value;
+        }
+    }
+    
     private class PearsonsMinMax extends DefaultRealMatrixPreservingVisitor {
         private double minValue = Double.MAX_VALUE;
         private double maxValue = Double.MIN_VALUE;
@@ -415,4 +468,5 @@ public class MatrixZoomData {
         }
 
     }
+
 }
