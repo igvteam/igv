@@ -71,6 +71,7 @@ public class HttpUtils {
         synchronized (HttpUtils.class) {
             org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
             instance = new HttpUtils();
+            instance.disableCertificateValidation();
             CookieHandler.setDefault(new CookieManager());
         }
     }
