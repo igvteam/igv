@@ -90,6 +90,7 @@ public class HiC {
      * @param newZoom
      * @param centerLocationX center X location in base pairs
      * @param centerLocationY center Y location in base pairs
+     * @param updateSlider
      */
     public void setZoom(int newZoom, final int centerLocationX, final int centerLocationY, boolean updateSlider) {
 
@@ -122,9 +123,6 @@ public class HiC {
                 }
             };
             mainWindow.executeLongRunningTask(callable);
-            return;
-
-
         } else {
             newZD.printDescription();
             updateState2(newZD, centerLocationX, centerLocationY);
@@ -198,9 +196,6 @@ public class HiC {
                 }
             };
             mainWindow.executeLongRunningTask(callable);
-            return;
-
-
         } else {
             updateState(newZD, scale, xBP, yBP);
 
@@ -293,5 +288,9 @@ public class HiC {
         return df == null ? null : zd.getEigenvector(df, n);
     }
 
+    public int getSum() {
+        if (zd == null) return 0;
+        else return zd.getSum();
+    }
 
 }
