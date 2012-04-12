@@ -122,7 +122,8 @@ public class FileUtils {
         if (path == null) {
             return false;
         }
-        return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
+        return path.startsWith("http://") || path.startsWith("https://") ||
+                path.startsWith("ftp://");
     }
 
 

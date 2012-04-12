@@ -191,14 +191,7 @@ public class UIConstants {
 
     public static Color NO_DATA_COLOR = new Color(200, 200, 200, 150);
     // GENOME
-    /**
-     * Field description
-     */
-    final static public String IMPORT_GENOME_LIST_MENU_ITEM = "Import Genome...";
-    /**
-     * Field description
-     */
-    final static public String LOAD_GENOME_LIST_MENU_ITEM = "Load Genome...";
+
     /**
      * Field description
      */

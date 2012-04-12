@@ -142,13 +142,11 @@ public class IGVMenuBar extends JMenuBar {
 
         // Load genome
         menuAction =
-                new MenuAction(LOAD_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_I) {
+                new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
 
                     @Override
                     public void actionPerformed(ActionEvent event) {
-
                         SwingWorker worker = new SwingWorker() {
-
                             public Object doInBackground() {
                                 org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
                                 IGV.getInstance().doLoadGenome(monitor);
@@ -162,9 +160,14 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(LOAD_GENOME_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Load genome from URL
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, IGV.getInstance());
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+
+        //loadGenome(file.getAbsolutePath(), monitor);
         menuAction =
-                new MenuAction(UIConstants.IMPORT_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_D) {
+                new MenuAction("Import Genome...", null, KeyEvent.VK_D) {
 
                     @Override
                     public void actionPerformed(ActionEvent event) {
@@ -192,8 +195,7 @@ public class IGVMenuBar extends JMenuBar {
         } catch (IOException iOException) {
             // Ignore
         }
-        removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(
-                UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
+        removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
         removeImportedGenomeAction.setEnabled(hasImportedGenomes);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(removeImportedGenomeAction));
 

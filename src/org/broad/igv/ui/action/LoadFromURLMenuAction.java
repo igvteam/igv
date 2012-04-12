@@ -31,6 +31,7 @@ import org.broad.igv.util.ResourceLocator;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -43,7 +44,9 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
+    public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     private IGV mainFrame;
+    boolean genome = false;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
@@ -61,7 +64,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (url != null && url.trim().length() > 0) {
                 if (url.endsWith(".xml") || url.endsWith(".session")) {
                     try {
-                        boolean merge=false;
+                        boolean merge = false;
                         String locus = null;
                         mainFrame.doRestoreSession(url, locus, merge);
                     } catch (Exception ex) {
@@ -80,6 +83,16 @@ public class LoadFromURLMenuAction extends MenuAction {
                 ResourceLocator rl = new ResourceLocator(url.trim());
                 rl.setType("das");
                 mainFrame.loadTracks(Arrays.asList(rl));
+            }
+        } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
+            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
+                    JOptionPane.QUESTION_MESSAGE);
+            if (url != null && url.trim().length() > 0) {
+                try {
+                    mainFrame.loadGenome(url.trim(), null);
+                } catch (IOException e1) {
+                    MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
+                }
             }
         }
     }

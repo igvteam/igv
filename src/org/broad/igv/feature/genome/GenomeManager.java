@@ -799,47 +799,39 @@ public class GenomeManager {
     /**
      * Create a genome archive (.genome) file.
      *
-     * @param genomeZipLocation              A File path to a directory in which the .genome
-     *                                       output file will be written.
-     * @param cytobandFileName               A File path to a file that contains cytoband data.
-     * @param refFlatFileName                A File path to a gene file.
-     * @param fastaFileName                  A File path to a FASTA file, a .gz file containing a
-     *                                       single FASTA file, or a directory containing ONLY FASTA files.
-     * @param relativeSequenceLocation       A relative path to the location
-     *                                       (relative to the .genome file to be created) where the sequence data for
-     *                                       the new genome will be written.
-     * @param genomeDisplayName              The unique user-readable name of the new genome.
-     * @param genomeId                       The id to be assigned to the genome.
-     * @param genomeFileName                 The file name (not path) of the .genome archive
-     *                                       file to be created.
-     * @param monitor                        A ProgressMonitor used to track progress - null,
-     *                                       if no progress updating is required.
-     * @param sequenceOutputLocationOverride
+     * @param genomeFile
+     * @param cytobandFileName  A File path to a file that contains cytoband data.
+     * @param refFlatFileName   A File path to a gene file.
+     * @param fastaFileName     A File path to a FASTA file, a .gz file containing a
+     *                          single FASTA file, or a directory containing ONLY FASTA files.
+     *                          (relative to the .genome file to be created) where the sequence data for
+     *                          the new genome will be written.
+     * @param genomeDisplayName The unique user-readable name of the new genome.
+     * @param genomeId          The id to be assigned to the genome.
+     * @param genomeFileName    The file name (not path) of the .genome archive
+     *                          file to be created.
+     * @param monitor           A ProgressMonitor used to track progress - null,
+     *                          if no progress updating is required.
      * @return GenomeListItem
      * @throws FileNotFoundException
      */
-    public GenomeListItem defineGenome(String genomeZipLocation,
+    public GenomeListItem defineGenome(File genomeFile,
                                        String cytobandFileName,
                                        String refFlatFileName,
                                        String fastaFileName,
                                        String chrAliasFileName,
-                                       String relativeSequenceLocation,
                                        String genomeDisplayName,
                                        String genomeId,
                                        String genomeFileName,
-                                       ProgressMonitor monitor,
-                                       String sequenceOutputLocationOverride)
+                                       ProgressMonitor monitor)
             throws IOException {
 
-        File zipFileLocation = null;
-        File fastaInputFile = null;
         File refFlatFile = null;
         File cytobandFile = null;
         File chrAliasFile = null;
 
-        if ((genomeZipLocation != null) && (genomeZipLocation.trim().length() != 0)) {
-            zipFileLocation = new File(genomeZipLocation);
-            PreferenceManager.getInstance().setLastGenomeImportDirectory(zipFileLocation);
+        if (genomeFile != null) {
+            PreferenceManager.getInstance().setLastGenomeImportDirectory(genomeFile.getParentFile());
         }
 
         if ((cytobandFileName != null) && (cytobandFileName.trim().length() != 0)) {
@@ -854,26 +846,17 @@ public class GenomeManager {
             chrAliasFile = new File(chrAliasFileName);
         }
 
-        if ((fastaFileName != null) && (fastaFileName.trim().length() != 0)) {
-            fastaInputFile = new File(fastaFileName);
-        }
-
         if (monitor != null) monitor.fireProgressChange(25);
 
-        File archiveFile = (new GenomeImporter()).createGenomeArchive(zipFileLocation,
-                genomeFileName, genomeId, genomeDisplayName, relativeSequenceLocation,
-                fastaInputFile, refFlatFile, cytobandFile, chrAliasFile,
-                sequenceOutputLocationOverride, monitor);
+        (new GenomeImporter()).createGenomeArchive(genomeFile, genomeId,
+                genomeDisplayName, fastaFileName, refFlatFile, cytobandFile, chrAliasFile);
 
         if (monitor != null) monitor.fireProgressChange(75);
 
-        if (archiveFile == null) {
-            return null;
-        } else {
-            GenomeListItem newItem = new GenomeListItem(genomeDisplayName, archiveFile.getAbsolutePath(), genomeId, true);
-            addUserDefineGenomeItem(newItem);
-            return newItem;
-        }
+        GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId, true);
+        addUserDefineGenomeItem(newItem);
+        return newItem;
+
     }
 
     public String getGenomeId() {

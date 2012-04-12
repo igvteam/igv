@@ -23,15 +23,15 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 
-import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * /**
@@ -50,47 +50,31 @@ public class GenomeImporter {
      * genome. All file/directory validation is assume to have been done by validation
      * outside of this method.
      *
-     * @param archiveOutputLocation
-     * @param genomeFileName
-     * @param genomeId                       Id of the genome.
-     * @param genomeDisplayName              The genome name that is user-friendly.
-     * @param sequenceLocation               The location of sequence data.
-     * @param sequenceInputFile
-     * @param refFlatFile                    RefFlat file.
-     * @param cytobandFile                   Cytoband file.
-     * @param sequenceOutputLocationOverride
-     * @param monitor
+     * @param genomeFile
+     * @param genomeId              Id of the genome.
+     * @param genomeDisplayName     The genome name that is user-friendly.
+     * @param fastaFile             The location of a fasta file, or directory of fasta files
+     * @param refFlatFile           RefFlat file.
+     * @param cytobandFile          Cytoband file.
      * @return The newly created genome archive file.
      */
-    public File createGenomeArchive(File archiveOutputLocation,
-                                    String genomeFileName,
+    public File createGenomeArchive(File genomeFile,
                                     String genomeId,
                                     String genomeDisplayName,
-                                    String sequenceLocation,
-                                    File sequenceInputFile,
+                                    String fastaFile,
                                     File refFlatFile,
                                     File cytobandFile,
-                                    File chrAliasFile,
-                                    String sequenceOutputLocationOverride,
-                                    ProgressMonitor monitor) throws IOException {
+                                    File chrAliasFile) throws IOException {
 
-        if ((archiveOutputLocation == null) || (genomeFileName == null) || (genomeId == null) || (genomeDisplayName == null)) {
+        if ((genomeFile == null) || (genomeId == null) || (genomeDisplayName == null)) {
 
             log.error("Invalid input for genome creation: ");
-            log.error("\tGenome Output Location=" + archiveOutputLocation);
-            log.error("\tGenome filename=" + genomeFileName);
+            log.error("\tGenome file=" + genomeFile.getAbsolutePath());
             log.error("\tGenome Id=" + genomeId);
             log.error("\tGenome Name" + genomeDisplayName);
             return null;
         }
 
-
-        // Create a tmp directory for genome files
-        File tmpdir = new File(DirectoryManager.getGenomeCacheDirectory(), genomeFileName + "_tmp");
-        if (tmpdir.exists()) {
-            tmpdir.delete();
-        }
-        tmpdir.mkdir();
 
         File propertyFile = null;
 
@@ -100,10 +84,25 @@ public class GenomeImporter {
             boolean fastaDirectory = false;
             List<String> fastaFileNames = new ArrayList<String>();
 
-            if (sequenceInputFile != null) {
+            if (!FileUtils.resourceExists(fastaFile)) {
+                String msg = "File not found: " + fastaFile;
+                throw new GenomeException(msg);
+            }
+            if (fastaFile.toLowerCase().endsWith(Globals.ZIP_EXTENSION)) {
+                String msg = "Error.  Zip archives are not supported.  Please select a fasta file.";
+                throw new GenomeException(msg);
+            }
+            if (fastaFile.toLowerCase().endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                String msg = "Error.  GZipped files are not supported.  Please select a non-gzipped fasta file.";
+                throw new GenomeException(msg);
+            }
 
-                List<String> fastaIndexPathList = new ArrayList<String>();
+            List<String> fastaIndexPathList = new ArrayList<String>();
+            String fastaIndexPath = fastaFile + ".fai";
 
+            File sequenceInputFile = new File(fastaFile);
+            if (sequenceInputFile.exists()) {
+                // Local file
                 if (sequenceInputFile.isDirectory()) {
                     fastaDirectory = true;
                     List<File> files = getSequenceFiles(sequenceInputFile);
@@ -113,47 +112,41 @@ public class GenomeImporter {
                                     "<br>All fasta files must be gunzipped prior to importing.";
                             throw new GenomeException(msg);
                         }
-                        String fastaPath = file.getAbsolutePath();
-                        String fastaIndexPath = fastaPath + ".fai";
+
                         File indexFile = new File(fastaIndexPath);
                         if (!indexFile.exists()) {
-                            FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
+                            FastaIndex.createIndexFile(fastaFile, fastaIndexPath);
                         }
                         fastaIndexPathList.add(fastaIndexPath);
                         fastaFileNames.add(file.getName());
                     }
-                } else if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.ZIP_EXTENSION)) {
-                    String msg = "Error.  Zip archives are not supported.  Please select a fasta file.";
-                    throw new GenomeException(msg);
-                } else if (sequenceInputFile.getName().toLowerCase().endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                    String msg = "Error.  GZipped files are not supported.  Please select a non-gzipped fasta file.";
-                    throw new GenomeException(msg);
                 } else {
-                    // Single fasta -- index
-                    String fastaPath = sequenceInputFile.getAbsolutePath();
-                    String fastaIndexPath = fastaPath + ".fai";
+                    // Index if neccessary
                     File indexFile = new File(fastaIndexPath);
                     if (!indexFile.exists()) {
-                        FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
+                        FastaIndex.createIndexFile(fastaFile, fastaIndexPath);
                     }
                     fastaIndexPathList.add(fastaIndexPath);
                 }
-
+            }
+            else {
+                if(!FileUtils.resourceExists(fastaIndexPath)){
+                    String msg = "<html>Index file " + fastaIndexPath + " Not found. " +
+                            "<br>Remote fasta files must be indexed prior to importing.";
+                    throw new GenomeException(msg);
+                }
             }
 
-            // Create Property File for genome archive
-            if (sequenceOutputLocationOverride != null && sequenceOutputLocationOverride.length() > 0) {
-                sequenceLocation = sequenceOutputLocationOverride;
-            } else {
-                sequenceLocation = FileUtils.getRelativePath(archiveOutputLocation.getAbsolutePath(), sequenceLocation);
-            }
 
+            fastaFile = FileUtils.getRelativePath(genomeFile.getParent(), fastaFile);
 
-            propertyFile = createGenomePropertyFile(genomeId, genomeDisplayName, sequenceLocation, refFlatFile,
-                    cytobandFile, chrAliasFile, fastaDirectory, fastaFileNames, tmpdir);
-            archive = new File(archiveOutputLocation, genomeFileName);
-            File[] inputFiles = {refFlatFile, cytobandFile, propertyFile, chrAliasFile};
-            Utilities.createZipFile(archive, inputFiles);
+            // Create "in memory" property file
+            byte[] propertyBytes = createGenomePropertyFile(genomeId, genomeDisplayName, fastaFile, refFlatFile,
+                    cytobandFile, chrAliasFile, fastaDirectory, fastaFileNames);
+            File[] inputFiles = {refFlatFile, cytobandFile, chrAliasFile};
+
+            // Create archive
+            createGenomeArchive(genomeFile, inputFiles, propertyBytes);
 
 
         } finally {
@@ -166,7 +159,6 @@ public class GenomeImporter {
             }
 
             if (propertyFile != null) propertyFile.delete();
-            org.apache.commons.io.FileUtils.deleteDirectory(tmpdir);
         }
         return archive;
     }
@@ -181,7 +173,6 @@ public class GenomeImporter {
                 files.add(f);
             }
         }
-
         return files;
     }
 
@@ -199,24 +190,22 @@ public class GenomeImporter {
      * @param fastaFileNames
      * @return
      */
-    public File createGenomePropertyFile(String genomeId,
-                                         String genomeDisplayName,
-                                         String relativeSequenceLocation,
-                                         File refFlatFile,
-                                         File cytobandFile,
-                                         File chrAliasFile,
-                                         boolean fastaDirectory,
-                                         List<String> fastaFileNames,
-                                         File tmpdir) throws IOException {
+    public byte[] createGenomePropertyFile(String genomeId,
+                                           String genomeDisplayName,
+                                           String relativeSequenceLocation,
+                                           File refFlatFile,
+                                           File cytobandFile,
+                                           File chrAliasFile,
+                                           boolean fastaDirectory,
+                                           List<String> fastaFileNames) throws IOException {
 
         PrintWriter propertyFileWriter = null;
         try {
 
-            File propertyFile = new File(tmpdir, "property.txt");
-            propertyFile.createNewFile();
+            ByteArrayOutputStream propertyBytes = new ByteArrayOutputStream();
 
             // Add the new property file to the archive
-            propertyFileWriter = new PrintWriter(new FileWriter(propertyFile));
+            propertyFileWriter = new PrintWriter(new OutputStreamWriter(propertyBytes));
 
             propertyFileWriter.println("fasta=true"); // Fasta is the only format supported now
 
@@ -252,7 +241,9 @@ public class GenomeImporter {
                 }
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + relativeSequenceLocation);
             }
-            return propertyFile;
+
+            propertyFileWriter.flush();
+            return propertyBytes.toByteArray();
 
         } finally {
             if (propertyFileWriter != null) {
@@ -261,6 +252,68 @@ public class GenomeImporter {
             }
         }
 
+    }
+
+
+    final static int ZIP_ENTRY_CHUNK_SIZE = 64000;
+
+    static public void createGenomeArchive(File zipOutputFile, File[] inputFiles, byte[] propertyBytes)
+            throws FileNotFoundException, IOException {
+
+        if (zipOutputFile == null) {
+            return;
+        }
+
+        if ((inputFiles == null) || (inputFiles.length == 0)) {
+            return;
+        }
+
+        ZipOutputStream zipOutputStream = null;
+
+        try {
+            zipOutputStream = new ZipOutputStream(new FileOutputStream(zipOutputFile));
+
+            ZipEntry propertiesEntry = new ZipEntry("property.txt");
+            propertiesEntry.setSize(propertyBytes.length);
+            zipOutputStream.putNextEntry(propertiesEntry);
+            zipOutputStream.write(propertyBytes);
+
+
+            for (File file : inputFiles) {
+
+                if (file == null) {
+                    continue;
+                }
+
+                long fileLength = file.length();
+
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+                zipEntry.setSize(fileLength);
+                zipOutputStream.putNextEntry(zipEntry);
+
+                BufferedInputStream bufferedInputstream = null;
+                try {
+                    InputStream inputStream = new FileInputStream(file);
+                    bufferedInputstream = new BufferedInputStream(inputStream);
+
+                    int bytesRead = 0;
+                    byte[] data = new byte[ZIP_ENTRY_CHUNK_SIZE];
+
+                    while ((bytesRead = bufferedInputstream.read(data)) != -1) {
+                        zipOutputStream.write(data, 0, bytesRead);
+                    }
+                } finally {
+                    if (bufferedInputstream != null) {
+                        bufferedInputstream.close();
+                    }
+                }
+            }
+        } finally {
+            if (zipOutputStream != null) {
+                zipOutputStream.flush();
+                zipOutputStream.close();
+            }
+        }
     }
 
 }

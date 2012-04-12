@@ -37,8 +37,8 @@ public class FileDialogUtils {
     public static int LOAD = FileDialog.LOAD;
     public static int SAVE = FileDialog.SAVE;
 
-    public static File chooseFile(String title, File initialDirectory, int mode) {
 
+    public static File chooseFile(String title, File initialDirectory, int mode) {
         return chooseFile(title, initialDirectory, null, mode);
     }
 
@@ -48,10 +48,15 @@ public class FileDialogUtils {
     }
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {
-        return chooseFile(title, initialDirectory, initialFile, null, mode);
+        return chooseFile(title, initialDirectory, initialFile, null, JFileChooser.FILES_ONLY, mode);
     }
 
-    public static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter, int mode) {
+    public static File chooseFileOrDirectory(String title, File initialDirectory, File initialFile, int mode) {
+        return chooseFile(title, initialDirectory, initialFile, null, JFileChooser.FILES_AND_DIRECTORIES, mode);
+    }
+
+    private static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter,
+                                  int directoriesMode, int mode) {
 
         if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
@@ -61,15 +66,15 @@ public class FileDialogUtils {
         if (initialFile != null) initialFile = new File(initialFile.getName());
 
         // TODO -- use native dialogs for windows as well?
-        if (Globals.IS_MAC) {
-            return chooseNative(title, initialDirectory, initialFile, filter, false, mode);
+        if (Globals.IS_MAC && directoriesMode != JFileChooser.FILES_AND_DIRECTORIES) {
+            return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         } else {
-            return chooseSwing(title, initialDirectory, initialFile, filter, false, mode);
+            return chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
         }
     }
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
-        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, false);
+        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(true);
         boolean approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
         if (approve) {
@@ -82,15 +87,16 @@ public class FileDialogUtils {
 
     public static File chooseDirectory(String title, File initialDirectory) {
         if (Globals.IS_MAC) {
-            return chooseNative(title, initialDirectory, null, null, true, LOAD);
+            return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
         } else {
-            return chooseSwing(title, initialDirectory, null, null, true, LOAD);
+            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
         }
     }
 
     private static File chooseNative(String title, File initialDirectory, File initialFile, FilenameFilter filter,
-                                     boolean directories, int mode) {
+                                     int directoryMode, int mode) {
 
+        boolean directories = JFileChooser.DIRECTORIES_ONLY == directoryMode;
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
         FileDialog fd = new FileDialog(IGV.getMainFrame(), title);
         if (initialDirectory != null) {
@@ -121,10 +127,10 @@ public class FileDialogUtils {
 
 
     private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
-                                    boolean directories, int mode) {
+                                    int directoryMode, int mode) {
 
 
-        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directories);
+        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directoryMode);
 
         boolean approve;
         if (mode == LOAD) {
@@ -141,9 +147,17 @@ public class FileDialogUtils {
 
     }
 
-
+    /**
+     * @param title
+     * @param initialDirectory
+     * @param initialFile
+     * @param filter
+     * @param directoryMode    either JFileChooser.DIRECTORIES_ONLY, JFileChooser.FILES_ONLY, or
+     *                         JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_AND_DIRECTORIES
+     * @return
+     */
     private static JFileChooser getJFileChooser(String title, File initialDirectory, File initialFile,
-                                                final FilenameFilter filter, boolean directories) {
+                                                final FilenameFilter filter, int directoryMode) {
         JFileChooser fileChooser = new JFileChooser();
         if (initialDirectory != null) {
             fileChooser.setCurrentDirectory(initialDirectory);
@@ -166,7 +180,8 @@ public class FileDialogUtils {
         }
 
         fileChooser.setDialogTitle(title);
-        fileChooser.setFileSelectionMode(directories ? JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_ONLY);
+        fileChooser.setFileSelectionMode(directoryMode);
+
         return fileChooser;
     }
 

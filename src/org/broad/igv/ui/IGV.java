@@ -432,10 +432,11 @@ public class IGV {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(this, true);
-
+            GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(mainFrame, this);
             genomeBuilderDialog.setVisible(true);
-            if (genomeBuilderDialog.isCanceled()) {
+
+            File genomeZipFile = genomeBuilderDialog.getArchiveFile();
+            if (genomeBuilderDialog.isCanceled() || genomeZipFile == null) {
                 return;
             }
 
@@ -443,22 +444,19 @@ public class IGV {
                 bar = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
             }
 
-            String genomeZipLocation = genomeBuilderDialog.getGenomeArchiveLocation();
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
             String refFlatFileName = genomeBuilderDialog.getRefFlatFileName();
             String fastaFileName = genomeBuilderDialog.getFastaFileName();
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
-            String sequenceLocation = genomeBuilderDialog.getSequenceLocation();
-            String seqLocationOverride = genomeBuilderDialog.getSequenceLocationOverride();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
             String genomeFileName = genomeBuilderDialog.getArchiveFileName();
 
 
             GenomeListItem genomeListItem = getGenomeManager().defineGenome(
-                    genomeZipLocation, cytobandFileName, refFlatFileName,
-                    fastaFileName, chrAliasFile, sequenceLocation, genomeDisplayName,
-                    genomeId, genomeFileName, monitor, seqLocationOverride);
+                    genomeZipFile, cytobandFileName, refFlatFileName,
+                    fastaFileName, chrAliasFile, genomeDisplayName,
+                    genomeId, genomeFileName, monitor);
 
             if (genomeListItem != null) {
                 enableRemoveGenomes();
