@@ -2439,7 +2439,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>315</int> 
+               <int>300</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -2509,7 +2509,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>585</int> 
+               <int>580</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 

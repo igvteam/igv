@@ -334,6 +334,10 @@
              <string>label</string> 
              <string>...</string> 
             </void> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Browse</string> 
+            </void> 
             <void property="name"> 
              <string>fastaFileButton</string> 
             </void> 
@@ -475,6 +479,10 @@
              <string>label</string> 
              <string>...</string> 
             </void> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Browse</string> 
+            </void> 
             <void property="name"> 
              <string>cytobandFileButton</string> 
             </void> 
@@ -586,6 +594,10 @@
              <string>label</string> 
              <string>...</string> 
             </void> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Browse</string> 
+            </void> 
             <void property="name"> 
              <string>refFlatFileButton</string> 
             </void> 
@@ -692,6 +704,10 @@
             <void method="setProperty"> 
              <string>label</string> 
              <string>...</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Browse</string> 
             </void> 
             <void property="name"> 
              <string>chrAliasButton</string> 

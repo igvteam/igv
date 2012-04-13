@@ -40,7 +40,6 @@ public class RunScriptMenuAction extends MenuAction {
     public RunScriptMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
     }
 
     public void actionPerformed(ActionEvent e) {

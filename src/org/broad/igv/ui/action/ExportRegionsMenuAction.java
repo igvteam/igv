@@ -49,7 +49,6 @@ public class ExportRegionsMenuAction extends MenuAction {
     public ExportRegionsMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
     }
 
     @Override

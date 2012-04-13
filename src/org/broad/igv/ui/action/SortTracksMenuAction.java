@@ -42,7 +42,6 @@ public class SortTracksMenuAction extends MenuAction {
     public SortTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.SORT_TRACKS_TOOLTIP);
     }
 
     @Override

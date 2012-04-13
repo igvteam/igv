@@ -72,12 +72,11 @@ public class UIConstants {
     final static public String SAVE_SESSION_AS_TOOLTIP = "Save the current session to the specified file";
     final static public String RESTORE_SESSION_TOOLTIP = "Reload the named session";
     final static public String EXIT_TOOLTIP = "Exit the application";
-    final static public String EXPORT_REGION_TOOLTIP = "Allows currently selected regions to be exported to a file";
-    final static public String IMPORT_REGION_TOOLTIP = "Allows previously exported regions to be reloaded";
+    final static public String EXPORT_REGION_TOOLTIP = "Save all defined regions to a file";
+    final static public String IMPORT_REGION_TOOLTIP = "Load regions from a file";
     final static public String CLEAR_REGION_TOOLTIP = "Clear all regions of interest";// Edit Menu Item Tooltips
     final static public String CHANGE_GENOME_TOOLTIP = "Switch the current genome";
-    final static public String IMPORT_GENOME_TOOLTIP =
-            "Define a user-defined genome";
+
     final static public String LOAD_GENOME_TOOLTIP =
             "Load a previously created \".genome\" file";
     final static public String REMOVE_USER_DEFINE_GENOME_TOOLTIP =
@@ -104,7 +103,7 @@ public class UIConstants {
     final static public String SORT_TRACKS_TOOLTIP =
             "Sort tracks by attribute value";
     final static public String GROUP_TRACKS_TOOLTIP =
-            "Group tracks";
+            "Group tracks by attribute value";
     final static public String FILTER_TRACKS_TOOLTIP =
             "Filter tracks by attribute value";
     final static public String RESET_DEFAULT_TRACK_HEIGHT_TOOLTIP =

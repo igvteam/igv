@@ -1054,7 +1054,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samDownsampleCountField);
-                    samDownsampleCountField.setBounds(315, 22, 80, 28);
+                    samDownsampleCountField.setBounds(300, 22, 80, 28);
 
                     //---- jLabel13 ----
                     jLabel13.setText("per window size (bases):");
@@ -1075,7 +1075,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel4.add(samSamplingWindowField);
-                    samSamplingWindowField.setBounds(585, 22, 80, 28);
+                    samSamplingWindowField.setBounds(580, 22, 80, 28);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();

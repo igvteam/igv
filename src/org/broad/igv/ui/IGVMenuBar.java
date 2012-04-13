@@ -157,11 +157,12 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 };
 
-        menuAction.setToolTipText(LOAD_GENOME_TOOLTIP);
+        menuAction.setToolTipText("Load a FASTA or .genome file");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Load genome from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, IGV.getInstance());
+        menuAction.setToolTipText("Load a FASTA or .genome file");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -185,7 +186,7 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 };
 
-        menuAction.setToolTipText(IMPORT_GENOME_TOOLTIP);
+        menuAction.setToolTipText("Create a .genome file");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         boolean hasImportedGenomes = true;
@@ -224,6 +225,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, IGV.getInstance());
+
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
@@ -236,6 +238,7 @@ public class IGVMenuBar extends JMenuBar {
                 IgvToolsGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId());
             }
         };
+        setToolTipText(null);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -489,6 +492,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Export Regions
         menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
+        setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -530,22 +534,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(HELP_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
-        menuAction =
-                new MenuAction("Tutorial ... ") {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            BrowserLauncher.openURL(SERVER_BASE_URL + "igv/QuickStart");
-                        } catch (IOException ex) {
-                            log.error("Error opening browser", ex);
-                        }
-
-                    }
-                };
-        menuAction.setToolTipText(TUTORIAL_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         if (Desktop.isDesktopSupported()) {
             final Desktop desktop = Desktop.getDesktop();
