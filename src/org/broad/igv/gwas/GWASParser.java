@@ -46,6 +46,11 @@ public class GWASParser {
     private int SNPCol = -1;
 
 
+    public static boolean isGWASFile(String typeString) {
+        return typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
+                typeString.endsWith(".qassoc") || typeString.endsWith(".gwas");
+    }
+
     public ResourceLocator getLocator() {
         return locator;
     }

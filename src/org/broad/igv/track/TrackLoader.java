@@ -236,8 +236,7 @@ public class TrackLoader {
             } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
-                    typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
+            } else if (GWASParser.isGWASFile(typeString)) {
                 loadGWASFile(locator, newTracks);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);

@@ -182,6 +182,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
     final public static String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
     final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
+    final public static String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
 
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
     public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
@@ -999,6 +1000,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_ALTERNATING_COLORS, "false");
         defaultValues.put(GWAS_PRIMARY_COLOR, "69,101,183");
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
+        defaultValues.put(GWAS_SHOW_AXIS, "true");
 
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");

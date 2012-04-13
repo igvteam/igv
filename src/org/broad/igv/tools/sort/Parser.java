@@ -31,12 +31,19 @@ public class Parser {
     private int chrCol;
     private int startCol;
     private String[] fields;
+    boolean splitOnWhiteSpace = false;
 
     public Parser(int chrCol, int startCol) {
         this.chrCol = chrCol;
         this.startCol = startCol;
         fields = new String[this.startCol + 1];
     }
+
+    public Parser(int chrCol, int startCol, boolean splitOnWhitespace) {
+        this(chrCol, startCol);
+        this.splitOnWhiteSpace = splitOnWhitespace;
+    }
+
 
     public SortableRecord readNextRecord(AsciiLineReader reader) {
         String nextLine = null;
@@ -54,7 +61,9 @@ public class Parser {
     }
 
     public SortableRecord createRecord(String nextLine) {
-        int nTokens = ParsingUtils.split(nextLine, fields, '\t');
+        int nTokens = splitOnWhiteSpace ?
+                ParsingUtils.splitWhitespace(nextLine, fields) :
+                ParsingUtils.split(nextLine, fields, '\t');
         // TODO -- what to do if nTokens < startCol?
 
         String chr = fields[chrCol];

@@ -77,6 +77,7 @@ public class Globals {
     final static public Pattern dashPattern = Pattern.compile("-");
     final static public Pattern equalPattern = Pattern.compile("=");
     final static public Pattern semicolonPattern = Pattern.compile(";");
+    static final  public  Pattern whitespacePattern = Pattern.compile("\\s+");
 
     public static List emptyList = new ArrayList();
     public static String VERSION;
@@ -93,7 +94,6 @@ public class Globals {
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
     public static Map<Character, Color> nucleotideColors;
-
 
     static {
         Properties properties = new Properties();
