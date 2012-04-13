@@ -502,8 +502,8 @@ public class HttpUtils {
 
         // Install the all-trusting trust manager
         try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (NoSuchAlgorithmException e) {
         } catch (KeyManagementException e) {
