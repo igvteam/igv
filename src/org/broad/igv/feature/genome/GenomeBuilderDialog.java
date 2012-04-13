@@ -9,6 +9,7 @@ import java.awt.event.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 
 import java.awt.*;
@@ -40,11 +41,13 @@ public class GenomeBuilderDialog extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
-
-        archiveFile = chooseArchiveFile();
-        canceled = (archiveFile == null);
-        setVisible(false);
-        dispose();
+        boolean valid = validateFields();
+        if (valid) {
+            archiveFile = chooseArchiveFile();
+            canceled = (archiveFile == null);
+            setVisible(false);
+            dispose();
+        }
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -57,6 +60,32 @@ public class GenomeBuilderDialog extends JDialog {
         File dir = PreferenceManager.getInstance().getLastGenomeImportDirectory();
         File initFile = new File(getGenomeId() + ".genome");
         return FileDialogUtils.chooseFile("Save .genome file", dir, initFile, FileDialog.SAVE);
+    }
+
+    private boolean validateFields() {
+        StringBuffer errors = new StringBuffer();
+        String id = getGenomeId();
+        String name = getGenomeDisplayName();
+        String fastaFile = getFastaFileName();
+        if (id == null || id.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("Unique ID is required");
+        }
+        if (name == null || name.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("Descriptive name is required");
+        }
+        if (fastaFile == null || fastaFile.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("FASTA file is required");
+        }
+        if (errors.length() == 0) {
+            return true;
+        } else {
+            MessageUtils.showMessage(errors.toString());
+            return false;
+        }
+
     }
 
     private void initComponents() {
