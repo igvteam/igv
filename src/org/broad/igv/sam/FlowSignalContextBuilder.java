@@ -16,6 +16,7 @@ public class FlowSignalContextBuilder {
     private int flowOrderIndex = -1;
     private int prevFlowSignalsStart = -1;
     private int prevFlowSignalsEnd = -1;
+    private int flowOrderStart = -1;
     private boolean readNegativeStrandFlag;
     private boolean[] incorporations = null; // required for the reverse strand
 
@@ -26,15 +27,15 @@ public class FlowSignalContextBuilder {
 
         this.flowSignals = flowSignals;
         this.flowOrder = flowOrder;
-        this.flowOrderIndex = flowOrderStart;
-        this.flowSignalsIndex = 0; // NB: the key sequence/barcode sequence should have been remove for the signals already
+        this.flowOrderIndex = this.flowOrderStart = flowOrderStart;
+        this.flowSignalsIndex = 0; // NB: the key sequence/barcode sequence should have been removed for the signals already
         this.readNegativeStrandFlag = readNegativeStrandFlag;
 
         // init
         if (this.readNegativeStrandFlag) {
             int i;
             this.incorporations = new boolean[this.flowSignals.length];
-            // go to the end of the signals
+            // go to the end of the signals to find the first sequenced base
             for (i=readBases.length-1;0<=i;i--) {
                 while (this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[i]]) {
                     this.flowOrderIndex++;
@@ -59,6 +60,7 @@ public class FlowSignalContextBuilder {
             }
             this.prevFlowSignalsEnd = this.flowSignalsIndex - 1;
         }
+        /*
         if (0 < fromIdx) { // skip over leading bases (ex. soft clipped bases)
             int i = 0;
             while (0 <= this.flowSignalsIndex && this.flowSignalsIndex < this.flowSignals.length && i < fromIdx) {
@@ -101,6 +103,7 @@ public class FlowSignalContextBuilder {
                 i++; // next base
             }
         }
+        */
     }
 
     // TODO:
@@ -127,7 +130,7 @@ public class FlowSignalContextBuilder {
         idx = 0;
         while (0 <= this.flowSignalsIndex && this.flowSignalsIndex < this.flowSignals.length && i < fromIdx + nBases) {
             short s = this.flowSignals[this.flowSignalsIndex];
-            char f = this.flowOrder.charAt(this.flowSignalsIndex % this.flowOrder.length());
+            char f = this.flowOrder.charAt((this.flowSignalsIndex + this.flowOrderStart) % this.flowOrder.length());
             int nextFlowSignalsStart = -1, nextFlowSignalsEnd = -1;
             int j = i + 1;
             if (j < readBases.length) {
@@ -170,12 +173,12 @@ public class FlowSignalContextBuilder {
                 if (this.readNegativeStrandFlag) {
                     for (j = this.prevFlowSignalsEnd; this.prevFlowSignalsStart <= j; j--) {
                         blockFlowSignals[idx][0][this.prevFlowSignalsEnd - j] = this.flowSignals[j];
-                        blockFlowOrder[idx][0][this.prevFlowSignalsEnd - j] = this.flowOrder.charAt(j % this.flowOrder.length());
+                        blockFlowOrder[idx][0][this.prevFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
                     for (j = this.prevFlowSignalsStart; j <= this.prevFlowSignalsEnd; j++) {
                         blockFlowSignals[idx][0][j-this.prevFlowSignalsStart] = this.flowSignals[j];
-                        blockFlowOrder[idx][0][j-this.prevFlowSignalsStart] = this.flowOrder.charAt(j % this.flowOrder.length());
+                        blockFlowOrder[idx][0][j-this.prevFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
@@ -194,12 +197,12 @@ public class FlowSignalContextBuilder {
                 if (this.readNegativeStrandFlag) {
                     for (j = nextFlowSignalsEnd; nextFlowSignalsStart <= j; j--) {
                         blockFlowSignals[idx][2][nextFlowSignalsEnd - j] = this.flowSignals[j];
-                        blockFlowOrder[idx][2][nextFlowSignalsEnd - j] = this.flowOrder.charAt(j % this.flowOrder.length());
+                        blockFlowOrder[idx][2][nextFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
                     for (j = nextFlowSignalsStart; j <= nextFlowSignalsEnd; j++) {
                         blockFlowSignals[idx][2][j-nextFlowSignalsStart] = this.flowSignals[j];
-                        blockFlowOrder[idx][2][j-nextFlowSignalsStart] = this.flowOrder.charAt(j % this.flowOrder.length());
+                        blockFlowOrder[idx][2][j-nextFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
