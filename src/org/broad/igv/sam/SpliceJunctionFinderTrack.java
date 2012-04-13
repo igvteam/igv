@@ -31,7 +31,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
@@ -56,7 +55,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.
-    DataPanel parent;
+    JComponent parent;
 
 
     public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, Genome genome) {

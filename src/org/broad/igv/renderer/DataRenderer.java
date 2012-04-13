@@ -32,11 +32,9 @@ package org.broad.igv.renderer;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.util.List;

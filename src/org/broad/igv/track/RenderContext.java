@@ -1,138 +1,40 @@
-/*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
- */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.track;
 
-import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * @author jrobinso
+ * @author Jim Robinson
+ * @date 4/13/12
  */
-public class RenderContext {
+public interface RenderContext {
+    Graphics2D getGraphic2DForColor(Color color);
 
-    private String genomeId;
-    private Graphics2D graphics;
-    private Map<Color, Graphics2D> graphicCacheByColor;
-    private ReferenceFrame referenceFrame;
-    private DataPanel panel;
-    private Rectangle visibleRect;
+    Color getBackgroundColor();
 
-    public RenderContext(String genomeId, DataPanel panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
-        this.genomeId = genomeId;
-        this.graphics = graphics;
-        this.panel = panel;
-        this.graphicCacheByColor = new HashMap();
-        this.referenceFrame = referenceFrame;
-        this.visibleRect = visibleRect;
-    }
+    String getChr();
 
-    public Graphics2D getGraphic2DForColor(Color color) {
+    double getOrigin();
 
-        Graphics2D g = graphicCacheByColor.get(color);
-        if (g == null) {
-            g = (Graphics2D) graphics.create();
-            graphicCacheByColor.put(color, g);
-            g.setColor(color);
-        }
-        return g;
-    }
+    double getEndLocation();
 
+    double getScale();
 
-    public Color getBackgroundColor() {
-        return panel.getBackground();
-    }
+    Rectangle getVisibleRect();
 
-    public String getChr() {
-        return referenceFrame.getChrName();
-    }
+    JComponent getPanel();
 
-    public double getOrigin() {
-        return referenceFrame.getOrigin();
-    }
+    Graphics2D getGraphics();
 
-    public double getEndLocation() {
-        return referenceFrame.getEnd();
-    }
+    int getZoom();
 
-    public double getScale() {
-        return referenceFrame.getScale();
-    }
+    String getGenomeId();
 
-    public Rectangle getVisibleRect() {
-        return visibleRect;
-    }
+    ReferenceFrame getReferenceFrame();
 
-    public DataPanel getPanel() {
-        return panel;
-    }
+    int bpToScreenPixel(double location);
 
-    public Graphics2D getGraphics() {
-        return graphics;
-    }
-
-    public int getZoom() {
-        return referenceFrame.getZoom();
-    }
-
-
-    public String getGenomeId() {
-        return genomeId;
-    }
-
-
-    public ReferenceFrame getReferenceFrame() {
-        return referenceFrame;
-    }
-
-    public int bpToScreenPixel(double location) {
-        final double scale = getScale();
-        final double origin = getOrigin();
-        return (int) ((location - origin) / scale);
-
-    }
-
-    /**
-     * Release graphics objects
-     *
-     * @throws java.lang.Throwable
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        dispose();
-    }
-
-    public void dispose() {
-        for (Graphics2D g : graphicCacheByColor.values()) {
-            g.dispose();
-        }
-        graphicCacheByColor.clear();
-    }
-
-
+    void dispose();
 }

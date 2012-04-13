@@ -23,13 +23,11 @@
 
 package org.broad.igv.renderer;
 
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
-import java.util.*;
 
 /**
  * @author jrobinso

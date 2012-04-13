@@ -24,7 +24,6 @@ package org.broad.igv.feature.dranger;
 
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.FeatureRenderer;
-import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 

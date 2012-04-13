@@ -28,7 +28,6 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;

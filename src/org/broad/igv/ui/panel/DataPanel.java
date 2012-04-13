@@ -29,10 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackClickEvent;
-import org.broad.igv.track.TrackGroup;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -122,7 +119,7 @@ public class DataPanel extends JComponent implements Paintable {
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
             String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
 
-            context = new RenderContext(genomeId, this, graphics2D, frame, this.getVisibleRect());
+            context = new RenderContextImpl(genomeId, this, graphics2D, frame, this.getVisibleRect());
 
             if (IS_MAC) {
                 this.applyMacPerformanceHints((Graphics2D) g);
@@ -224,7 +221,7 @@ public class DataPanel extends JComponent implements Paintable {
 
             String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
 
-            context = new RenderContext(genomeId, null, g, frame, rect);
+            context = new RenderContextImpl(genomeId, null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
             int height = rect.height;

@@ -132,7 +132,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private Genome genome;
 
     // The "parent" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
-    DataPanel parent;
+    JComponent parent;
     private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
 
@@ -227,7 +227,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public int getHeight() {
 
-        if (parent != null && parent.getFrame().getScale() > minVisibleScale) {
+        if (parent != null &&
+                (parent instanceof DataPanel && ((DataPanel) parent).getFrame().getScale() > minVisibleScale)) {
             return minimumHeight;
         }
 

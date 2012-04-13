@@ -31,7 +31,6 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -99,6 +98,7 @@ public class EWigTrack extends AbstractTrack {
 
     private void paint(RenderContext context, Rectangle rect) {
 
+        // The total score
         List<LocusScore> scores = scoreSource.getSummaryScoresForRange(context.getChr(),
                 (int) context.getOrigin(),
                 (int) context.getEndLocation(),
@@ -111,19 +111,11 @@ public class EWigTrack extends AbstractTrack {
                     context.getZoom()));
         }
 
-        Graphics2D graphics = context.getGraphic2DForColor(AlignmentRenderer.grey1);
-
-        // Temporary until proper windowing is implemented
-        int lastpX = -1;
-
         for (int idx = 0; idx < scores.size(); idx++) {
 
             LocusScore score = scores.get(idx);
             int startPosition = score.getStart();
             int endPosition = score.getEnd();
-            // TODO -- this should not be neccessary
-            // int endPosition = Math.max(startPosition + 1, score.getEnd());
-
 
             int pX = (int) (rect.getX() + (startPosition - context.getOrigin()) / context.getScale());
             int dX = Math.max(1,
@@ -169,8 +161,6 @@ public class EWigTrack extends AbstractTrack {
                 }
             }
 
-
-            lastpX = pX;
         }
 
         // Draw border
@@ -251,7 +241,7 @@ public class EWigTrack extends AbstractTrack {
         return popupMenu;
     }
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        return "";
-    }
+//    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+//        return null;
+//    }
 }
