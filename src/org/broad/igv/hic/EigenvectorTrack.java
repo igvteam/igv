@@ -12,14 +12,23 @@ import java.awt.*;
  */
 public class EigenvectorTrack extends AbstractTrack {
 
-    double [] data;
+
+    double step;
+    double[] data;
+    private double dataMax;
 
     public EigenvectorTrack(String id, String name) {
         super(id, name);
     }
 
-    public void setData(double[] data) {
+    public void setData(double step, double[] data) {
+        this.step = step;
         this.data = data;
+        dataMax = 0;
+        for (double aData : data) {
+            if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
+        }
+
     }
 
     /**
@@ -30,21 +39,31 @@ public class EigenvectorTrack extends AbstractTrack {
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void render(RenderContext context, Rectangle rect) {
+
+        if (data == null) return;
+
         int h = rect.height / 2;
-        Graphics2D g2d = context.getGraphic2DForColor(Color.blue.darker());
+        Graphics2D g2d = context.getGraphics();
         g2d.setColor(Color.blue.darker());
-        double data_max = 0;
-        for (double aData : data) {
-            if (Math.abs(aData) > data_max) data_max = Math.abs(aData);
-        }
+
+        int lastXPixel = -1;
+
         for (int i = 0; i < data.length; i++) {
-            int myh = (int) ((data[i] / data_max) * h);
-            if (data[i] > 0) {
-                g2d.fillRect(i, h - myh, 1, myh);
-            } else {
-                System.out.println(h + " " + myh);
-                g2d.fillRect(i, h, 1, -myh);
+
+            int genomicPosition = (int) (step * i);
+            int xPixel = context.bpToScreenPixel(genomicPosition);
+
+            if (xPixel > lastXPixel && lastXPixel >= 0) {
+
+                int myh = (int) ((data[i] / dataMax) * h);
+                if (data[i] > 0) {
+                    g2d.fillRect(lastXPixel, h - myh, (xPixel - lastXPixel), myh);
+                } else {
+                    System.out.println(h + " " + myh);
+                    g2d.fillRect(lastXPixel, h, xPixel - lastXPixel, -myh);
+                }
             }
+            lastXPixel = xPixel;
         }
 
     }

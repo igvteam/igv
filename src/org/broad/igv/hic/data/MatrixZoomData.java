@@ -109,6 +109,7 @@ public class MatrixZoomData {
     public int getSum() {
         return sum;
     }
+
     public int getChr1() {
         return chr1.getIndex();
     }
@@ -184,44 +185,48 @@ public class MatrixZoomData {
         return b;
     }
 
-    public double[] getEigenvector(DensityFunction df, int which) {
-        if (eigenvector == null) {
-            if (pearsons == null) {
-                pearsons = computePearsons(df);
-            }
-            int size = pearsons.getColumnDimension();
-            eigenvector = new double[size];
-            int numgood = 0;
+    public double[] getEigenvector() {
+        return eigenvector;
+    }
 
-            for (int i = 0; i < size; i++) {
-                eigenvector[i] = Double.NaN;
-                if (!isZeros(oe.getRow(i))) {
-                    eigenvector[i] = 1;
-                    numgood++;
-                }
-            }
-            int[] cols = new int[numgood];
-            numgood = 0;
-            for (int i = 0; i < size; i++)
-                if (!Double.isNaN(eigenvector[i]))
-                    cols[numgood++] = i;
+    public double[] computeEigenvector(DensityFunction df, int which) {
 
-            RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+        if (pearsons == null) {
+            pearsons = computePearsons(df);
+        }
+        int size = pearsons.getColumnDimension();
+        eigenvector = new double[size];
+        int numgood = 0;
 
-            if (which >= subMatrix.getColumnDimension() || which < 0)
-                throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
-
-
-            RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
-            double[] ev = rv.toArray();
-            numgood = 0;
-            for (int i = 0; i < size; i++) {
-                if (Double.isNaN(eigenvector[i]))
-                    eigenvector[i] = 0;
-                else
-                    eigenvector[i] = ev[numgood++];
+        for (int i = 0; i < size; i++) {
+            eigenvector[i] = Double.NaN;
+            if (!isZeros(oe.getRow(i))) {
+                eigenvector[i] = 1;
+                numgood++;
             }
         }
+        int[] cols = new int[numgood];
+        numgood = 0;
+        for (int i = 0; i < size; i++)
+            if (!Double.isNaN(eigenvector[i]))
+                cols[numgood++] = i;
+
+        RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+
+        if (which >= subMatrix.getColumnDimension() || which < 0)
+            throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+
+
+        RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
+        double[] ev = rv.toArray();
+        numgood = 0;
+        for (int i = 0; i < size; i++) {
+            if (Double.isNaN(eigenvector[i]))
+                eigenvector[i] = 0;
+            else
+                eigenvector[i] = ev[numgood++];
+        }
+
         return eigenvector;
     }
 
@@ -311,15 +316,15 @@ public class MatrixZoomData {
         double sum = 0;
         int count = 0;
         int size = vector.getDimension();
-        for (int i=0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             if (!Double.isNaN(vector.getEntry(i))) {
                 sum += vector.getEntry(i);
                 count++;
             }
         }
-        return sum/count;
+        return sum / count;
     }
-    
+
     public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
@@ -339,7 +344,7 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    expected = expected * (this.sum/df.getSum());
+                    expected = expected * (this.sum / df.getSum());
                     double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
@@ -352,10 +357,10 @@ public class MatrixZoomData {
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
         double[] nans = new double[size];
-        for (int i=0; i<size; i++)
+        for (int i = 0; i < size; i++)
             nans[i] = Double.NaN;
-        
-        for (int i=0; i<size; i++)  {
+
+        for (int i = 0; i < size; i++) {
             if (isZeros(rm.getRow(i))) {
                 bitSet.set(i);
             }
@@ -368,7 +373,7 @@ public class MatrixZoomData {
             }
         }
 
-        for (int i=0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             RealVector v = rm.getRowVector(i);
             double m = getVectorMean(v);
             RealVector newV = v.mapSubtract(m);
@@ -445,7 +450,7 @@ public class MatrixZoomData {
             return value;
         }
     }
-    
+
     private class PearsonsMinMax extends DefaultRealMatrixPreservingVisitor {
         private double minValue = Double.MAX_VALUE;
         private double maxValue = Double.MIN_VALUE;

@@ -281,11 +281,32 @@ public class HiC {
         }
     }
 
-    public double [] getEigenvector(int n) {
-        if(zd == null) return null;
+    public double[] getEigenvector(final int n) {
+        if (zd == null) return null;
 
-        DensityFunction df = getDensityFunction();
-        return df == null ? null : zd.getEigenvector(df, n);
+        double[] eigenvector = zd.getEigenvector();
+        if (eigenvector == null) {
+            final DensityFunction df = getDensityFunction();
+            if (df != null) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        if (zd.getZoom() > 3) {
+                            String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
+                            str += "At this zoom, calculation might take a while.\n";
+                            str += "Are you sure you want to proceed?";
+                            int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
+                            if (ans == JOptionPane.NO_OPTION) {
+                                return;
+                            }
+                        }
+                        double[] eigenvector = zd.computeEigenvector(df, n);
+                        mainWindow.updateEigenvectorTrack(eigenvector, zd.getBinSize());
+                    }
+                };
+                mainWindow.executeLongRunningTask(runnable);
+            }
+        }
+        return eigenvector;
     }
 
     public int getSum() {

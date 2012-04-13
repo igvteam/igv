@@ -47,6 +47,7 @@ public class MainWindow extends JFrame {
 
     // The "model" object containing the state for this instance.
     HiC hic;
+    private EigenvectorTrack eigenvectorTrack;
 
 //    Map<Integer, DensityFunction> zoomToDensityMap = null;
 
@@ -356,39 +357,18 @@ public class MainWindow extends JFrame {
 
     private void updateEigenvectorTrack() {
         boolean show = viewEigenvector.isSelected();
+        trackPanel.setVisible(show);
         if (show && hic.zd != null) {
-            if (hic.zd.getZoom() > 3) {
-                String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
-                str += "At this zoom, calculation might take a while.\n";
-                str += "Are you sure you want to proceed?";
-                int ans = JOptionPane.showConfirmDialog(this, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                if (ans == JOptionPane.NO_OPTION) {
-                    viewEigenvector.setSelected(false);
-                    return;
-                }
+            double[] rv = hic.getEigenvector(0);
+            if (rv != null) {
+                updateEigenvectorTrack(rv, hic.zd.getBinSize());
             }
-
-            DensityFunction df = hic.getDensityFunction();
-            if (df != null) {
-                double[] rv;
-                try {
-                    rv = hic.getEigenvector(0);
-                    if (rv != null) {
-                        eigenvectorPanel.setData(rv);
-                        trackPanel.setVisible(true);
-                        pack();
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Expected densities are not available.  Cannot comput eigenvector.");
-                    }
-                } catch (Exception error) {
-                    JOptionPane.showMessageDialog(this, "Error while loading eigenvector: " + error.getMessage(),
-                            "Eigenvector error", JOptionPane.ERROR_MESSAGE);
-                    viewEigenvector.setSelected(false);
-                }
-            }
-        } else {
-            trackPanel.setVisible(false);
         }
+    }
+
+    public void updateEigenvectorTrack(double[] eigenvector, double binSize) {
+        eigenvectorTrack.setData(binSize, eigenvector);
+        trackPanel.repaint();
     }
 
 
@@ -999,12 +979,19 @@ public class MainWindow extends JFrame {
         trackPanel.setVisible(false);
         trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
 
-        eigenvectorPanel = new TrackPanel();
+
+        eigenvectorPanel = new TrackPanel(hic);
         eigenvectorPanel.setMaximumSize(new Dimension(4000, 50));
         eigenvectorPanel.setPreferredSize(new Dimension(1, 50));
         eigenvectorPanel.setMinimumSize(new Dimension(1, 50));
         eigenvectorPanel.setBorder(null);
         trackPanel.add(eigenvectorPanel);
+
+
+        eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
+        eigenvectorPanel.setTrack(eigenvectorTrack);
+        trackPanel.setVisible(true);
+
 
         panel2_5.add(trackPanel, BorderLayout.NORTH);
 

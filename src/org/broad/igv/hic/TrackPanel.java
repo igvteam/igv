@@ -17,14 +17,12 @@ import java.awt.*;
  */
 public class TrackPanel extends JPanel {
 
-
+    HiC hic;
     Track track;
-    ReferenceFrame referenceFrame;
 
-    public TrackPanel() {
-        // Hack
-        referenceFrame = new ReferenceFrame("HiC");
-     }
+    public TrackPanel(HiC hiC) {
+        this.hic = hiC;
+    }
 
     public void setTrack(Track track) {
         this.track = track;
@@ -34,10 +32,14 @@ public class TrackPanel extends JPanel {
 
     protected void paintComponent(Graphics graphics) {
 
-        track.setHeight(getHeight());
+        if (track == null) {
+            return;
+        }
 
-        RenderContext context = new RenderContextImpl("hg18", this, (Graphics2D) graphics, referenceFrame,
-                getVisibleRect());
+        track.setHeight(getHeight());  // <= TODO move to setBounds
+
+
+        RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, getVisibleRect());
         track.render(context, getBounds());
 
 
