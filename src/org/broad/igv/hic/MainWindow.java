@@ -140,9 +140,6 @@ public class MainWindow extends JFrame {
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
 
-            // Try to get a "last modified date" for the file, to act as a proxy for version number
-            long lastModifiedDate = FileUtils.getModifiedDate(file);
-
             SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
             hic.dataset = (new DatasetReader(ss)).read();
             setChromosomes(hic.dataset.getChromosomes());
@@ -570,7 +567,7 @@ public class MainWindow extends JFrame {
                             colorRangeSlider.setMajorTickSpacing(100);
                             colorRangeSlider.setUpperValue(1500);
                             hic.reset();
-                            load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all.hic");
+                            load("http://iwww.broadinstitute.org/igvdata/hic/Feb2012/inter_all_v1.hic");
                         } catch (IOException e1) {
                             JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
                         }
