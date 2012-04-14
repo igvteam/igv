@@ -230,6 +230,7 @@ public class CachingQueryReaderTest {
     @Test
     public void testQueryPiledUp() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "false");
         String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);
