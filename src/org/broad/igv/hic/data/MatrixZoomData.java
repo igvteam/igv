@@ -43,7 +43,7 @@ public class MatrixZoomData {
     private double pearsonsMax = 1;
     private RealMatrix oe;
     private double[] eigenvector;
-    private int sum;
+    private int sum = -1;
 
     public class ScaleParameters {
         double percentile90;
@@ -70,6 +70,13 @@ public class MatrixZoomData {
         this.chr1 = chr1;
         this.chr2 = chr2;
         this.zoom = dis.readInt();
+
+        if (reader.getVersion() >= 1) {
+            this.sum = dis.readInt();
+        } else {
+            this.sum = -1;  // Flag => compute when needed.
+        }
+
         this.binSize = dis.readInt();
         this.blockBinCount = dis.readInt();
         this.blockColumnCount = dis.readInt();
@@ -87,18 +94,6 @@ public class MatrixZoomData {
         blocks = new LinkedHashMap<Integer, Block>(nBlocks);
         this.reader = reader;
 
-
-        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
-        Collections.sort(blockNumbers);
-        this.sum = 0;
-        for (int blockNumber : blockNumbers) {
-            Block b = readBlock(blockNumber);
-            if (b != null) {
-                for (ContactRecord rec : b.getContactRecords()) {
-                    this.sum += rec.getCounts();
-                }
-            }
-        }
     }
 
 
@@ -325,10 +320,31 @@ public class MatrixZoomData {
         return sum / count;
     }
 
+    /**
+     * Neccessary for "old" HiC files
+     */
+    private void computeSum() {
+        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+        Collections.sort(blockNumbers);
+        this.sum = 0;
+        for (int blockNumber : blockNumbers) {
+            Block b = readBlock(blockNumber);
+            if (b != null) {
+                for (ContactRecord rec : b.getContactRecords()) {
+                    this.sum += rec.getCounts();
+                }
+            }
+        }
+    }
+
     public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
+        }
+
+        if (sum < 0) {
+            computeSum();
         }
 
         int nBins = chr1.getSize() / binSize + 1;

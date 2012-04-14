@@ -124,7 +124,7 @@ public class HiC {
             };
             mainWindow.executeLongRunningTask(callable);
         } else {
-            newZD.printDescription();
+            //newZD.printDescription();
             updateState2(newZD, centerLocationX, centerLocationY);
         }
 
@@ -307,11 +307,6 @@ public class HiC {
             }
         }
         return eigenvector;
-    }
-
-    public int getSum() {
-        if (zd == null) return 0;
-        else return zd.getSum();
     }
 
 }

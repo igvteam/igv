@@ -542,4 +542,20 @@ public class FileUtils {
         }
         return absolutePath;
     }
+
+    public static long getModifiedDate(String file) {
+        if (file.startsWith("http://") || file.startsWith("https://")) {
+            try {
+                String lastModified = HttpUtils.getInstance().getHeaderField(new URL(file), "Last-Modified");
+                return Integer.parseInt(lastModified);
+            } catch (Exception e) {
+                return 0;
+            }
+        } else if (file.startsWith("ftp://")) {
+            return 0;
+        } else {
+            File f = new File(file);
+            return f.exists() ? f.lastModified() : 0;
+        }
+    }
 }

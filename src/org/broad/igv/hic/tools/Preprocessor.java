@@ -93,9 +93,11 @@ public class Preprocessor {
                 fos.writeInt(chromosome.getSize());
             }
 
-            // Attribute dictionary -- nothing for now, reserve for future.
-            int nAttributes = 0;
+            // Attribute dictionary -- only 1 attribute for now, version
+            int nAttributes = 1;
             fos.writeInt(nAttributes);
+            fos.writeString("Version");
+            fos.writeString("1");
 
             // Compute matrices.  Note that c2 is always >= c1
             List<Thread> threads = new ArrayList();
@@ -385,27 +387,6 @@ public class Preprocessor {
         }
     }
 
-//
-//    private void writeExpectedValues(BufferedByteWriter buffer) throws IOException {
-//        buffer.putLong(totalCount);
-//
-//        densityCalculation.computeDensity();
-//
-//        buffer.putInt(densityCalculation.getGridSize());
-//        double[] densities = densityCalculation.getDensityAvg();
-//        buffer.putInt(densities.length);
-//        for(int i=0; i<densities.length; i++) {
-//            buffer.putDouble(densities[i]);
-//        }
-//
-//        Map<Integer, Double> normFactors = densityCalculation.getNormalizationFactors();
-//        buffer.putInt(normFactors.size());
-//        for(Map.Entry<Integer, Double> entry : normFactors.entrySet()) {
-//            buffer.putInt(entry.getKey());
-//            buffer.putDouble(entry.getValue());
-//        }
-//    }
-
 
     public synchronized void writeMatrix(MatrixPP matrix) throws IOException {
 
@@ -440,6 +421,7 @@ public class Preprocessor {
         int numberOfBlocks = zd.getBlocks().size();
 
         fos.writeInt(zd.getZoom());
+        fos.writeInt(zd.getSum());
         fos.writeInt(zd.getBinSize());
         fos.writeInt(zd.getBlockBinCount());
         fos.writeInt(zd.getBlockColumnCount());
@@ -690,6 +672,7 @@ public class Preprocessor {
         private int chr1;  // Redundant, but convenient    BinDatasetReader
         private int chr2;  // Redundant, but convenient
 
+        private int sum;
         private int zoom;
         private int binSize;         // bin size in bp
         private int blockBinCount;   // block size in bins
@@ -698,6 +681,9 @@ public class Preprocessor {
         private LinkedHashMap<Integer, Block> blocks;
         private Map<Integer, Preprocessor.IndexEntry> blockIndex;
 
+        int getSum() {
+            return sum;
+        }
 
         int getBinSize() {
             return binSize;
@@ -741,7 +727,7 @@ public class Preprocessor {
          */
         MatrixZoomDataPP(int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
 
-
+            this.sum = 0;
             this.chr1 = chr1;
             this.chr2 = chr2;
             this.binSize = binSize;
@@ -756,14 +742,20 @@ public class Preprocessor {
 
 
         public void incrementCount(int pos1, int pos2) {
+
+            sum++;
+
             int xBin = pos1 / getBinSize();
             int yBin = pos2 / getBinSize();
-
             if (chr1 == chr2) {
                 int b1 = Math.min(xBin, yBin);
                 int b2 = Math.max(xBin, yBin);
                 xBin = b1;
                 yBin = b2;
+
+                if(b1 != b2) {
+                    sum++;  // <= count for mirror cell.
+                }
             }
 
             // compute block number (fist block is zero)

@@ -45,32 +45,11 @@ import javax.swing.*;
  */
 public class MainWindow extends JFrame {
 
+    private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
     HiC hic;
     private EigenvectorTrack eigenvectorTrack;
 
-//    Map<Integer, DensityFunction> zoomToDensityMap = null;
-
-
-    enum DisplayOption {
-        OBSERVED("Observed"),
-        OE("OE"),
-        PEARSON("Pearson");
-
-        private String value;
-
-        DisplayOption(String value) {
-            this.value = value;
-        }
-
-        public String toString() {
-            return value;
-        }
-
-    }
-
-
-    private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
 
 
     public static Cursor fistCursor;
@@ -160,6 +139,10 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
+
+            // Try to get a "last modified date" for the file, to act as a proxy for version number
+            long lastModifiedDate = FileUtils.getModifiedDate(file);
+
             SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
             hic.dataset = (new DatasetReader(ss)).read();
             setChromosomes(hic.dataset.getChromosomes());
@@ -1203,6 +1186,22 @@ public class MainWindow extends JFrame {
     private ThumbnailPanel thumbnailPanel;
     private JPanel xPlotPanel;
     private JPanel yPlotPanel;
+
+
+    enum DisplayOption {
+        OBSERVED("Observed"),
+        OE("OE"),
+        PEARSON("Pearson");
+        private String value;
+
+        DisplayOption(String value) {
+            this.value = value;
+        }
+        public String toString() {
+            return value;
+        }
+
+    }
 
 
 }
