@@ -24,7 +24,6 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -32,8 +31,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 
 /**
@@ -46,12 +43,10 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     private IGV mainFrame;
-    boolean genome = false;
 
     public LoadFromURLMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
     }
 
     @Override

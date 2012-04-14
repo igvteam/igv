@@ -23,7 +23,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
-import org.broad.igv.gs.GSUtils;
 import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
@@ -43,7 +42,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -110,12 +108,15 @@ public class IGVMenuBar extends JMenuBar {
 
         // Load menu items
         menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGV.getInstance());
@@ -130,12 +131,15 @@ public class IGVMenuBar extends JMenuBar {
 
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
@@ -169,14 +173,10 @@ public class IGVMenuBar extends JMenuBar {
         //loadGenome(file.getAbsolutePath(), monitor);
         menuAction =
                 new MenuAction("Import Genome...", null, KeyEvent.VK_D) {
-
                     @Override
                     public void actionPerformed(ActionEvent event) {
-
                         SwingWorker worker = new SwingWorker() {
-
                             public Object doInBackground() {
-
                                 org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
                                 IGV.getInstance().doDefineGenome(monitor);
                                 return null;
@@ -186,22 +186,19 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 };
 
-        menuAction.setToolTipText("Create a .genome file");
+        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         boolean hasImportedGenomes = true;
         try {
             hasImportedGenomes = !IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList().isEmpty();
-
         } catch (IOException iOException) {
             // Ignore
         }
         removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
         removeImportedGenomeAction.setEnabled(hasImportedGenomes);
+        removeImportedGenomeAction.setToolTipText(UIConstants.REMOVE_IMPORTED_GENOME_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(removeImportedGenomeAction));
-
-        //menuAction = new ClearGenomeCacheAction("Clear Genome Cache...");
-        //menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
 
@@ -209,7 +206,6 @@ public class IGVMenuBar extends JMenuBar {
         // Snapshot Application
         menuAction =
                 new MenuAction("Save Image ...", null, KeyEvent.VK_A) {
-
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         IGV.getInstance().saveImage(IGV.getInstance().getMainPanel());
@@ -238,7 +234,6 @@ public class IGVMenuBar extends JMenuBar {
                 IgvToolsGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId());
             }
         };
-        setToolTipText(null);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -295,25 +290,30 @@ public class IGVMenuBar extends JMenuBar {
         MenuAction menuAction = null;
 
         // Sort Context
-        menuAction = new SortTracksMenuAction("Sort Tracks ...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction = new SortTracksMenuAction("Sort Tracks...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new GroupTracksMenuAction("Group Tracks  ... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction = new GroupTracksMenuAction("Group Tracks... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks ...", KeyEvent.VK_F, IGV.getInstance());
+        filterTracksAction = new FilterTracksMenuAction("Filter Tracks...", KeyEvent.VK_F, IGV.getInstance());
+        filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
 
         menuItems.add(new JSeparator());
 
         // Reset Tracks
         menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         // Set track height
         menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -330,12 +330,9 @@ public class IGVMenuBar extends JMenuBar {
         // Preferences
         menuAction =
                 new MenuAction("Preferences...", null, KeyEvent.VK_P) {
-
                     @Override
                     public void actionPerformed(ActionEvent e) {
-
                         UIUtilities.invokeOnEventThread(new Runnable() {
-
                             public void run() {
                                 IGV.getInstance().doViewPreferences();
                             }
@@ -347,7 +344,6 @@ public class IGVMenuBar extends JMenuBar {
 
         menuAction =
                 new MenuAction("Color Legends ...", null, KeyEvent.VK_H) {
-
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         (new LegendDialog(IGV.getMainFrame())).setVisible(true);
@@ -413,7 +409,6 @@ public class IGVMenuBar extends JMenuBar {
                 IGV.getInstance().doRefresh();
             }
         };
-        menuAction.setToolTipText(SHOW_ATTRIBUTE_DISPLAY_TOOLTIP);
         menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, isShow);
         menuItems.add(menuItem);
 
@@ -454,7 +449,6 @@ public class IGVMenuBar extends JMenuBar {
                         dlg.setVisible(true);
                     }
                 };
-        //menuAction.setToolTipText("");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
@@ -474,12 +468,11 @@ public class IGVMenuBar extends JMenuBar {
 
 
         menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
+        menuAction.setToolTipText(UIConstants.REGION_NAVIGATOR_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction =
                 new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
-
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         (new GeneListManagerUI(IGV.getMainFrame())).setVisible(true);
@@ -492,7 +485,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Export Regions
         menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
-        setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
+        menuAction.setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 

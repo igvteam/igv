@@ -44,7 +44,7 @@ public class NavigateRegionsMenuAction extends MenuAction {
     public NavigateRegionsMenuAction(String label, IGV mainFrame) {
         super(label, null);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
+        setToolTipText(UIConstants.REGION_NAVIGATOR_TOOLTIP);
     }
 
     @Override

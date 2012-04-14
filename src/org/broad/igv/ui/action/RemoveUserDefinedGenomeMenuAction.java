@@ -50,7 +50,6 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
      */
     public RemoveUserDefinedGenomeMenuAction(String label, int mnemonic) {
         super(label, null, mnemonic);
-        setToolTipText(UIConstants.REMOVE_USER_DEFINE_GENOME_TOOLTIP);
     }
 
     /**

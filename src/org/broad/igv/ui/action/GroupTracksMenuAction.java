@@ -44,7 +44,6 @@ public class GroupTracksMenuAction extends MenuAction {
     public GroupTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
     }
 
     @Override

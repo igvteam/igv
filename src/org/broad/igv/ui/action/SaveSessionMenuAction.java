@@ -60,7 +60,6 @@ public class SaveSessionMenuAction extends MenuAction {
     public SaveSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
     }
 
     /**

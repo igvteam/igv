@@ -53,15 +53,13 @@ public class OpenSessionMenuAction extends MenuAction {
         super(label);
         this.sessionFile = sessionFile;
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
         autoload = true;
     }
 
     public OpenSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
-    }
+     }
 
     @Override
     public void actionPerformed(ActionEvent e) {

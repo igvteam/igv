@@ -38,7 +38,6 @@ public class NewSessionMenuAction extends MenuAction {
     public NewSessionMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
-        setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
     }
 
     @Override
