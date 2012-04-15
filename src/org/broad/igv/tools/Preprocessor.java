@@ -775,7 +775,7 @@ public class Preprocessor implements DataConsumer {
         if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("cpg")) {
             WiggleParser wg = new WiggleParser(iFile.getAbsolutePath(), this, genome);
             wg.parse();
-        } else if (tmp.endsWith(".cn") || tmp.endsWith(".xcn") || tmp.endsWith(".igv") || tmp.endsWith(".snp")) {
+        } else if (tmp.endsWith("cn") || tmp.endsWith("xcn") || tmp.endsWith("igv") || tmp.endsWith("snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
         } else {
