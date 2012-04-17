@@ -64,6 +64,7 @@ public class AlignmentDataManager {
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        this.downsampleOptions = new DownsampleOptions();
         initChrMap(genome);
     }
 

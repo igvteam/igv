@@ -736,7 +736,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager.getDownsampleOptions().getMaxReadCount();
     }
 
-    public void setSamplignWindowSize(int newSize) {
+    public void setSamplingWindowSize(int newSize) {
         dataManager.getDownsampleOptions().setSampleWindowSize(newSize);
         refresh();
     }
