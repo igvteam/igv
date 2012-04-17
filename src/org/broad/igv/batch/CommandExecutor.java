@@ -51,6 +51,8 @@ public class CommandExecutor {
 
     private File snapshotDirectory;
     private IGV igv;
+    private int sleepInterval = 2000;
+    ;
 
 
     public CommandExecutor() {
@@ -128,7 +130,9 @@ public class CommandExecutor {
                     return this.setSamplingWindowSize(param1, param2);
                 } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
                     return this.setSamplingReadCount(param1, param2);
-                } else if (cmd.equals("exit")) {
+                } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
+                    return this.setSleepInterval(param1);
+                }else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
                     log.error("UNKOWN COMMAND: " + command);
@@ -144,7 +148,7 @@ public class CommandExecutor {
                 LRUCache.clearCaches();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");
-            Thread.sleep(2000);
+            Thread.sleep(sleepInterval);
             log.debug("Finished sleeping");
 
         } catch (Exception e) {
@@ -221,9 +225,19 @@ public class CommandExecutor {
             SnapshotUtilities.setMaxPanelHeight(h);
             return "OK";
         } catch (NumberFormatException e) {
-            return "ERROR - max panel height value ('" + param1 + ".) must be a number";
+            return "ERROR - max panel height value ('" + param1 + ".) must be an integer number";
         }
     }
+
+    private String setSleepInterval(String param1) {
+        try {
+            sleepInterval = Integer.parseInt(param1.trim());
+            return "OK";
+        } catch (NumberFormatException e) {
+            return "ERROR - sleep interval value ('" + param1 + ".) must be an integer number";
+        }
+    }
+
 
     private String genome(String param1) {
         if (param1 == null) {
