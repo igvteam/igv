@@ -2434,4 +2434,21 @@ public class IGV {
     }
 
 
+    public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
+        try {
+            IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            byte[] seqBytes = genome.getSequence(chr, start, end);
+            if (seqBytes == null) {
+                MessageUtils.showMessage("Sequence not available. Try enabling http byte-range requests");
+            } else {
+                String sequence = new String(seqBytes);
+                StringUtils.copyTextToClipboard(sequence);
+            }
+
+        } finally {
+            IGV.getMainFrame().setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+
 }

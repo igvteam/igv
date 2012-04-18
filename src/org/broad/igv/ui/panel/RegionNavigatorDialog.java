@@ -20,10 +20,9 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -33,8 +32,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -473,7 +470,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- removeButton ----
                     removeButton.setAction(actionRemoveRegions);
-                    removeButton.setText("Remove ");
+                    removeButton.setText("Remove");
                     panel3.add(removeButton);
                 }
                 contentPanel.add(panel3, BorderLayout.NORTH);
@@ -765,21 +762,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             if (length > MAX_SEQUENCE_LENGTH) {
                                 JOptionPane.showMessageDialog(RegionNavigatorDialog.this, "Region is to large to copy sequence data.");
                             } else {
-                                try {
-                                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                                    byte[] seqBytes = genome.getSequence(chr, start, end);
-                                    if (seqBytes == null) {
-                                        MessageUtils.showMessage("Sequence not available");
-                                    } else {
-                                        String sequence = new String(seqBytes);
-                                        copyTextToClipboard(sequence);
-                                    }
-
-                                } finally {
-                                    setCursor(Cursor.getDefaultCursor());
-                                }
-
+                                IGV.copySequenceToClipboard(IGV.getInstance().getGenomeManager().getCurrentGenome(),
+                                        chr, start, end);
                             }
                         }
                     });
@@ -791,7 +775,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             String details = chr + ":" + start + "-" + end;
                             if (desc != null && !desc.isEmpty())
                                 details = details + ", " + desc;
-                            copyTextToClipboard(details);
+                            StringUtils.copyTextToClipboard(details);
                         }
                     });
                     popupMenu.add(copyDetailsItem);
@@ -800,16 +784,6 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             }
         }
 
-        /**
-         * Copy a text string to the clipboard
-         *
-         * @param text
-         */
-        private void copyTextToClipboard(String text) {
-            StringSelection stringSelection = new StringSelection(text);
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
-        }
     }
 
 }
