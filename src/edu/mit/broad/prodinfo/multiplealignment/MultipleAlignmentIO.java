@@ -26,10 +26,6 @@ import java.util.List;
 import edu.mit.broad.prodinfo.genomicplot.ParseException;
 
 public interface MultipleAlignmentIO {
-	MultipleAlignment load(String fileName) throws IOException, ParseException;
-	MultipleAlignment load(InputStream in) throws IOException, ParseException;
-	MultipleAlignment load(String fileName, List<String> sequencesToLoad) throws IOException, ParseException;
-	MultipleAlignment load(InputStream in, List<String> sequencesToLoad) throws IOException, ParseException;
 	void write(BufferedWriter bw, MultipleAlignment ma) throws IOException;
 	void write(BufferedWriter bw, MultipleAlignment ma, List<String> orderOfSequences) throws IOException ;
 	String getPreferredFileExtension();

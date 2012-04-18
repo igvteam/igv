@@ -18,203 +18,179 @@
 
 package edu.mit.broad.prodinfo.multiplealignment;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import edu.mit.broad.prodinfo.datastrutures.IntervalTree;
 import edu.mit.broad.prodinfo.genomicplot.ParseException;
 import edu.mit.broad.prodinfo.multiplealignment.MAFAlignment.MAFHeader;
 import edu.mit.broad.prodinfo.multiplealignment.MAFAlignment.MAFMultipleAlignmentBlock;
 import edu.mit.broad.prodinfo.multiplealignment.MultipleAlignment.AlignedSequence;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 public class MAFIO implements MultipleAlignmentIO {
-	RandomAccessFile fileHandle;
-	MAFAlignment alignment;
-	String alignmentFile;
 
-	public MAFIO(String alignmentFile, boolean keepFileHandle) throws IOException, ParseException {
-		alignment = createUnloadedAlignment(alignmentFile);
-		this.alignmentFile = alignmentFile;
-		if(keepFileHandle) {
-			fileHandle = new RandomAccessFile(alignmentFile, "r");
-		}
-	}
+    SeekableStream fileHandle;
+    String alignmentFile;
+    private IntervalTree<Long> index;
 
-	public MAFIO() {
-		super();
-	}
-	public String getPreferredFileExtension() {
-		return ".maf";
-	}
+    public MAFIO(String alignmentFile, boolean keepFileHandle) throws IOException, ParseException {
+        // alignment = createUnloadedAlignment(alignmentFile);
+        this.alignmentFile = alignmentFile;
+        if (keepFileHandle) {
+            fileHandle = SeekableStreamFactory.getStreamFor(alignmentFile);
+        }
+        checkIndex(alignmentFile);
+    }
 
-	public void destroyFileHandle() throws IOException {
-        if(fileHandle != null) {
+    public MAFIO() {
+        super();
+    }
+
+    public String getPreferredFileExtension() {
+        return ".maf";
+    }
+
+    public void destroyFileHandle() throws IOException {
+        if (fileHandle != null) {
             fileHandle.close();
         }
     }
 
-	public MAFAlignment load(List<String> sequencesToLoad, int start, int end) throws IOException, ParseException {
-		//RandomAccessFile handle = fileHandle;
-		boolean closeFile = false;
-		if(fileHandle == null ) { // It would be nice to test whether the handle is closed if not null....
+    public MAFAlignment load(List<String> sequencesToLoad, int start, int end) throws IOException, ParseException {
+        //RandomAccessFile handle = fileHandle;
+        MAFAlignment alignment = null;
+        boolean closeFile = false;
+        if (fileHandle == null) { // It would be nice to test whether the handle is closed if not null....
             closeFile = true;
-			fileHandle = new RandomAccessFile(alignmentFile, "r");
-		}
-		try {
-			alignment.load(fileHandle, start, end, sequencesToLoad);
-		} finally {
-			if(closeFile) {
+            fileHandle = SeekableStreamFactory.getStreamFor(alignmentFile);
+        }
+        try {
+            alignment = new MAFAlignment(index);
+            alignment.load(fileHandle, start, end, sequencesToLoad);
+        } finally {
+            if (closeFile) {
                 fileHandle.close();
                 fileHandle = null;
             }
-		}
-		return alignment;
-	}
+        }
+        return alignment;
+    }
 
-	public MAFAlignment createUnloadedAlignment(String fileName) throws IOException, ParseException {
-		MAFAlignment aln = new MAFAlignment();
-		String idxFileName = fileName + ".index";
-		File idxFile = new File(idxFileName);
-		if(!idxFile.exists()) {
-			aln.createIndex(fileName);
-			aln.writeIndex(idxFileName);
-		} else {
-			aln = new MAFAlignment(idxFileName);
-		}
+     public void write(BufferedWriter bw, MultipleAlignment ma)
+            throws IOException {
+        // TODO Auto-generated method stub
 
-		return aln;
-	}
+    }
 
-	public MAFAlignment load(String fileName) throws IOException, ParseException {
-		return load(fileName, new ArrayList<String>());
-	}
+    public void write(BufferedWriter bw, MultipleAlignment ma, List<String> sequenceOrder)
+            throws IOException {
+        // TODO Auto-generated method stub
+    }
 
-	public MAFAlignment load(String fileName, List<String> sequencesToLoad) throws IOException, ParseException {
-		MAFAlignment aln = new MAFAlignment();
-		String idxFileName = fileName + ".index";
-		File idxFile = new File(idxFileName);
-		if(!idxFile.exists()) {
-			aln.createIndex(fileName);
-			aln.writeIndex(idxFileName);
-		} else {
-			aln = new MAFAlignment(idxFileName);
-		}
 
-		RandomAccessFile raf = new RandomAccessFile(fileName,"r");
-		aln.load(raf, sequencesToLoad);
-		raf.close();
-		return aln;
-	}
+    private void checkIndex(String fileName) throws IOException, ParseException {
+        String idxFileName = fileName + ".index";
+        if (FileUtils.resourceExists(idxFileName)) {
+            loadIndex(idxFileName);
+        } else {
+            if (FileUtils.isRemote(fileName)) {
+                throw new RuntimeException("Index file not found: " + idxFileName);
+            } else {
+                createIndex(fileName);
+                writeIndex(idxFileName);
+            }
+        }
+    }
 
-	public MultipleAlignment load(InputStream in) throws IOException, ParseException {
-		return load(in, new ArrayList<String>());
-	}
+    public void loadIndex(String idxFile) throws IOException {
+        index = new IntervalTree<Long>();
+        BufferedReader br = null;
+        try {
+            br = ParsingUtils.openBufferedReader(idxFile);
+            //System.err.println("Loading index " + idxFile);
+            String line = null;
+            int l = 0;
+            while ((line = br.readLine()) != null) {
+                String[] info = line.split("\t");
+                int start = Integer.parseInt(info[0]);
+                int end = Integer.parseInt(info[1]) + start;
+                long offset = Long.parseLong(info[2]);
+                //System.out.println("Read line "+ l++);
+                index.put(start, end, offset);
+            }
+        } finally {
+            if (br != null) br.close();
+        }
 
-	public MAFAlignment load(String fileName, List<String> sequencesToLoad, int start, int end) throws IOException, ParseException {
-		MAFAlignment aln = new MAFAlignment();
-		String idxFileName = fileName + ".index";
-		File idxFile = new File(idxFileName);
-		if(!idxFile.exists()) {
-			System.out.print("Index file not exists, creating and writing it: " + idxFileName);
-			aln.createIndex(fileName);
-			aln.writeIndex(idxFileName);
-			System.out.println("   Done writing index");
-		} else {
-			aln = new MAFAlignment(idxFileName);
-		}
+    }
 
-		RandomAccessFile raf = new RandomAccessFile(fileName,"r");
-		aln.load(raf,start, end,sequencesToLoad);
-		raf.close();
-		return aln;
-	}
 
-	public MultipleAlignment load(InputStream in, List<String> sequencesToLoad) throws IOException, ParseException {
-		MAFAlignment aln = new MAFAlignment();
-		MAFHeader header = aln.getHeader();
-		Stack<MAFMultipleAlignmentBlock> blocks = new Stack<MAFMultipleAlignmentBlock>();
-		ArrayList<String> seqIds = new ArrayList<String>();
+    public void createIndex(String alignmentFile) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(alignmentFile, "r");
+        index = new IntervalTree<Long>();//LinkedHashMap<Integer, Long>();
+        String line;
+        String[] lineInfo = null;
+        long lastOffset = 0;
+        try {
+            boolean readNext = false;
+            while ((line = raf.readLine()) != null) {
+                //Ignore all comment lines
+                if (line.startsWith("#") || line.trim().length() == 0) {
+                    continue;
+                }
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		String [] lineInfo = null;
-		String line = br.readLine();
-		if(line == null || !line.startsWith("##maf ")) {
-			throw new ParseException("First line in the file " + line + " was either null or did not start with \"##maf \" as specified");
-		}
+                if (line.startsWith("a ")) {
+                    readNext = true;
+                    lastOffset = raf.getFilePointer() - line.getBytes().length - 1;
+                } else if (line.startsWith("s ")) {
+                    if (readNext) {
+                        lineInfo = line.split("\\s+");
+                        int start = Integer.parseInt(lineInfo[2]);
+                        int end = Integer.parseInt(lineInfo[3]) + start;
+                        index.put(start, end, lastOffset);
+                    }
+                    readNext = false;
+                } else if (line.startsWith("i ")) {
+                    //We do not handle information lines yet.
+                    continue;
+                } else if (line.startsWith("q ")) {
+                    //We do not handle quality lines yet.
+                    continue;
+                } else {
+                    readNext = false;
+                }
 
-		header.setVariablesFromRawData(line.substring(6).split("\\s"));
+            }
+        } finally {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-		line = br.readLine();
-		if(line == null || !line.startsWith("# ")) {
-			throw new ParseException("Second line in the file " + line + " was either null or did not start with \"# \" as specified");
-		}
-		header.setRunParameters(line.substring(2));
+    }
 
-		while((line = br.readLine()) != null) {
-			//Ignore all comment lines
-			if(line.startsWith("#") || line.trim().length() == 0){
-				continue;
-			}
 
-			if(line.startsWith("a ")) {
-				MAFMultipleAlignmentBlock ma = new MAFMultipleAlignmentBlock();
-				blocks.push(ma);
-				lineInfo = line.substring(2).split("\\s");
-				ma.setAlignmentInfoFromRawData(lineInfo);
-			} else if(line.startsWith("s ")) {
-				//System.out.println("\tAlignment aligned seq " + line);
-				MAFMultipleAlignmentBlock ma = blocks.peek();
-				lineInfo = line.substring(2).split("\\s+");
-				AlignedSequence alnSeq = ma.addSequenceFromRawData(lineInfo);
-				if(sequencesToLoad !=null && sequencesToLoad.size() > 0 && !sequencesToLoad.contains(alnSeq.getId()) ) {
-					//System.out.println("sequence " + alnSeq.getId() + " is not in sequencesToLoad, ignoring");
-					continue;
-				}
-
-				//System.out.println("ma  getReferenceId? " + ma.getReferenceId());
-
-				if(aln.getReferenceId() == null) {
-					System.err.println("Ref is " + ma.getReferenceId());
-					aln.setReferenceId(alnSeq.getId());
-				}
-
-				if(ma.getReferenceId() != null) {
-					ma.setReferenceId(aln.getReferenceId());
-				}
-
-				if(!seqIds.contains(alnSeq.getId())) {
-					seqIds.add(alnSeq.getId());
-				}
-			} else if (line.startsWith("i ") || line.startsWith("e ")) {
-				System.err.println("Information blocks (i/e) are not yet supported");
-			} else {
-				throw new ParseException("Invalid alignment line <"+ line +">");
-			}
-
-		}
-
-		aln.setBlocks(blocks);
-		aln.setAlignedSequences(seqIds);
-		return aln.toMultipleAlignment();
-	}
-
-	public void write(BufferedWriter bw, MultipleAlignment ma)
-			throws IOException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void write(BufferedWriter bw, MultipleAlignment ma, List<String> sequenceOrder)
-		throws IOException {
-		// TODO Auto-generated method stub
-	}
+    public void writeIndex(String indexFileName) throws IOException {
+        Iterator<IntervalTree.Node<Long>> idxEntryIt = index.iterator();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(indexFileName));
+        while (idxEntryIt.hasNext()) {
+            IntervalTree.Node<Long> entry = idxEntryIt.next();
+            bw.write(String.valueOf(entry.getStart()));
+            bw.write("\t" + String.valueOf(entry.getEnd() - entry.getStart()));
+            bw.write("\t" + String.valueOf(entry.getValue()));
+            bw.newLine();
+        }
+        bw.close();
+    }
 
 
 }

@@ -229,8 +229,10 @@ public class TrackLoader {
                 if (MutationParser.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome);
                 } else {
-                    loadMAFTrack(locator, newTracks);
+                    loadMAFTrack(locator, newTracks, genome);
                 }
+            } else if (typeString.endsWith(".maf.dict")) {
+                loadMAFTrack(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
@@ -458,8 +460,8 @@ public class TrackLoader {
             this.loadMutFile(locator, newTracks, genome);
         } else if (WiggleParser.isWiggle(locator)) {
             loadWigFile(locator, newTracks, genome);
-        } else if (locator.getPath().toLowerCase().contains(".maf")) {
-            loadMAFTrack(locator, newTracks);
+        } else if (locator.getPath().toLowerCase().contains(".maf") || locator.getPath().toLowerCase().endsWith(".maf.dict")) {
+            loadMAFTrack(locator, newTracks, genome);
         }
     }
 
@@ -887,8 +889,8 @@ public class TrackLoader {
         (new RNAIHairpinParser(locator.getPath())).parse();
     }
 
-    private void loadMAFTrack(ResourceLocator locator, List<Track> newTracks) {
-        MAFTrack t = new MAFTrack(locator);
+    private void loadMAFTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        MAFTrack t = new MAFTrack(locator, genome);
         t.setName("Multiple Alignments");
         newTracks.add(t);
     }

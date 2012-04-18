@@ -45,7 +45,6 @@ public class CommandExecutor {
     private File snapshotDirectory;
     private IGV igv;
     private int sleepInterval = 2000;
-    ;
 
 
     public CommandExecutor() {
@@ -141,7 +140,7 @@ public class CommandExecutor {
                 LRUCache.clearCaches();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");
-            Thread.sleep(sleepInterval);
+            if(sleepInterval > 0) Thread.sleep(sleepInterval);
             log.debug("Finished sleeping");
 
         } catch (Exception e) {

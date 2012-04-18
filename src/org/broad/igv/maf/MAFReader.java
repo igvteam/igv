@@ -33,4 +33,10 @@ public interface MAFReader {
     MAFTile loadTile(String chr, int start, int end,
                      List<String> species);
 
+    /**
+     * Return the sequence (chromosome) names represented in this file.   Can return null if unknown.
+     *
+     * @return
+     */
+    List<String> getChrNames();
 }

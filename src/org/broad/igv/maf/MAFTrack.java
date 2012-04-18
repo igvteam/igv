@@ -19,6 +19,7 @@ package org.broad.igv.maf;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.maf.MAFTile.MASequence;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
@@ -26,11 +27,17 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -48,10 +55,28 @@ public class MAFTrack extends AbstractTrack {
     // A hack until full MAF track is implemented.
     Rectangle visibleNameRect;
 
+    Genome genome;
 
-    public MAFTrack(ResourceLocator locator) {
+    /**
+     * Map of chr alias -> "true" chromosome names.
+     */
+    private HashMap<String, String> chrMappings;
+
+
+
+    public MAFTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
-        this.mgr = new MAFManager(locator);
+        this.genome = genome;
+        this.mgr = new MAFManager(locator, genome);
+
+        List<String> mafChrNames = mgr.getChrNames();
+        if(mafChrNames != null) {
+            chrMappings = new HashMap();
+            for(String mafChr : mafChrNames) {
+                String chr = genome.getChromosomeAlias(mafChr);
+                chrMappings.put(chr, mafChr);
+            }
+        }
     }
 
     @Override
@@ -86,7 +111,7 @@ public class MAFTrack extends AbstractTrack {
 
         rect.height = EXPANDED_HEIGHT;
 
-        String ref = MAFManager.speciesNames.getProperty(mgr.refId);
+        String ref = mgr.getSpeciesName(mgr.refId);
         if (ref == null) {
             ref = mgr.refId;
         }
@@ -95,7 +120,7 @@ public class MAFTrack extends AbstractTrack {
 
         for (String sp : mgr.getSelectedSpecies()) {
 
-            String name = MAFManager.speciesNames.getProperty(sp);
+            String name =  mgr.getSpeciesName(sp);
             if (name == null) {
                 name = sp;
             }
@@ -133,18 +158,10 @@ public class MAFTrack extends AbstractTrack {
         double origin = context.getOrigin();
         String chr = context.getChr();
 
+        String mafChr = chrMappings == null ? null : chrMappings.get(chr);
         int start = (int) origin;
         int end = (int) (origin + rect.width * locScale) + 1;
-
-        // TODO -- check genome and chr to load correct MAF file
-        //if (!genome.equals("hg18")) {
-        //    return;
-        //}
-
-// Get tiles
-        MAFTile[] tiles = mgr.getTiles(chr, start, end);
-
-
+        MAFTile[] tiles = mgr.getTiles(mafChr, start, end);
         if (tiles != null) {
             for (MAFTile tile : tiles) {
                 // render tile
@@ -156,8 +173,7 @@ public class MAFTrack extends AbstractTrack {
 
     }
 
-    private void renderTile(RenderContext context, Rectangle trackRectangle,
-                            MAFTile tile) {
+    private void renderTile(RenderContext context, Rectangle trackRectangle, MAFTile tile) {
 
         int y = trackRectangle.y;
 
@@ -176,7 +192,7 @@ public class MAFTrack extends AbstractTrack {
         renderer.renderAligment(reference, reference, null, context, rect, this);
         rect.y += rect.height;
 
-        // TODO Render gaps
+
         for (String sp : mgr.getSelectedSpecies()) {
 
             MASequence seq = tile.alignedSequences.get(sp);
@@ -219,6 +235,28 @@ public class MAFTrack extends AbstractTrack {
         return 0;
     }
 
+
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
+    @Override
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+        IGVPopupMenu menu = new IGVPopupMenu();
+
+        JMenuItem configTrack = new JMenuItem("Configure track...");
+        configTrack.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                configureTrack();
+            }
+        });
+
+        menu.add(configTrack);
+        return menu;
+    }
+
+
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
@@ -229,9 +267,10 @@ public class MAFTrack extends AbstractTrack {
         return false;
     }
 
+
+
     private void configureTrack() {
-        MAFConfigurationDialog dialog = new MAFConfigurationDialog(
-                IGV.getMainFrame(), true, mgr);
+        MAFConfigurationDialog dialog = new MAFConfigurationDialog(IGV.getMainFrame(), true, mgr);
         dialog.setLocationRelativeTo(IGV.getMainFrame());
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
