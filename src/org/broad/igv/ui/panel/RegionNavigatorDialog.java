@@ -473,7 +473,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- removeButton ----
                     removeButton.setAction(actionRemoveRegions);
-                    removeButton.setText("Removeoetuhet ");
+                    removeButton.setText("Remove ");
                     panel3.add(removeButton);
                 }
                 contentPanel.add(panel3, BorderLayout.NORTH);

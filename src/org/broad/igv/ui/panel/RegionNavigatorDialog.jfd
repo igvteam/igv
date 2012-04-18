@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_29" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -118,7 +118,7 @@
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Removeoetuhet </string> 
+               <string>Remove</string> 
               </void> 
               <void property="name"> 
                <string>removeButton</string> 
