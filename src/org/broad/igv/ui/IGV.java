@@ -2438,10 +2438,17 @@ public class IGV {
         try {
             IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             byte[] seqBytes = genome.getSequence(chr, start, end);
+
             if (seqBytes == null) {
                 MessageUtils.showMessage("Sequence not available. Try enabling http byte-range requests");
             } else {
                 String sequence = new String(seqBytes);
+                //TODO This will complement sequence if sequence track is flipped
+                //Might be un-intuitive to user if they do it from region dialog
+//                SequenceTrack sequenceTrack = IGV.getInstance().getSequenceTrack();
+//                if(sequenceTrack != null && sequenceTrack.getStrand() == Strand.NEGATIVE){
+//                    sequence = AminoAcidManager.getNucleotideComplement(sequence);
+//                }
                 StringUtils.copyTextToClipboard(sequence);
             }
 
