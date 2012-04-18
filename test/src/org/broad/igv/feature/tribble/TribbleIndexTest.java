@@ -184,7 +184,7 @@ public class TribbleIndexTest {
 
         //IGV.getRootPane().setVisible(false);
         //IGV.getRootPane().dispatchEvent(new WindowEvent(IGV.getMainFrame(), WindowEvent.WINDOW_CLOSING));
-        //igv.doExitApplication();
+        //igv.saveSessionList();
         //System.out.println(IGV.getMainFrame());
     }
 

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -29,7 +22,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.PropertyManager;
@@ -40,8 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-
-import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
 /**
  * Manages user preferences.
@@ -107,6 +97,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String PORT_NUMBER = "PORT_NUMBER";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     final public static String FRAME_BOUNDS_KEY = "IGV.Bounds";
+    final public static String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
     final public static String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
     final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
@@ -976,7 +967,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SEARCH_ZOOM, "true");
 
 
-        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
+        defaultValues.put(GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
         defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
 
@@ -1035,7 +1026,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
 
-
+        defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
     }
 
     /**

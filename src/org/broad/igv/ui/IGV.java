@@ -268,12 +268,16 @@ public class IGV {
         // Set the application's previous location and size
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
+        int state = PreferenceManager.getInstance().getAsInt(PreferenceManager.FRAME_STATE_KEY);
+
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
                 applicationBounds.getMaxY() > screenBounds.getHeight()) {
             int width = Math.min(1150, (int) screenBounds.getWidth());
             int height = Math.min(800, (int) screenBounds.getHeight());
             applicationBounds = new Rectangle(0, 0, width, height);
         }
+
+        mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
 
         BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
@@ -800,7 +804,7 @@ public class IGV {
         });
     }
 
-    final public void doExitApplication() {
+    final public void saveStateForExit() {
 
         // Store recent sessions
         if (!getRecentSessionList().isEmpty()) {
@@ -824,6 +828,9 @@ public class IGV {
             PreferenceManager.getInstance().setRecentSessions(recentSessions);
         }
 
+        // Save application location and size
+        PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
+        PreferenceManager.getInstance().put(PreferenceManager.FRAME_STATE_KEY, "" + mainFrame.getExtendedState());
 
     }
 
