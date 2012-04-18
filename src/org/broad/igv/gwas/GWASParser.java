@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.gwas;
 
@@ -39,6 +32,7 @@ public class GWASParser {
 
     private static final Logger log = Logger.getLogger(GWASParser.class);
     private ResourceLocator locator;
+    private Genome genome;
 
     private int locationCol = -1;
     private int chrCol = -1;
@@ -60,8 +54,9 @@ public class GWASParser {
     }
 
 
-    public GWASParser(ResourceLocator locator) {
+    public GWASParser(ResourceLocator locator, Genome genome) {
         this.locator = locator;
+        this.genome = genome;
 
     }
 
@@ -211,25 +206,15 @@ public class GWASParser {
                 }
             }
 
-        } catch (
-                ParserException e
-                )
-
-        {
+        } catch (ParserException e) {
             throw e;
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        } finally
-
-        {
+        } finally {
             reader.close();
             fs.close();
         }
@@ -313,29 +298,18 @@ public class GWASParser {
 
 
             return resultLine;
-        } catch (
-                ParserException e
-                )
-
-        {
+        } catch (ParserException e) {
             throw e;
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        } finally
-
-        {
+        } finally {
             reader.close();
             fs.close();
         }
-
 
     }
 
@@ -346,8 +320,6 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
 
         try {
             fs = new FileInputStream(locator.getPath());
@@ -394,13 +366,20 @@ public class GWASParser {
                         float p;
 
                         try {
-                            p = Float.parseFloat(tokens[pCol].trim());
-                            // Transform to -log10
-                            p = (float) -log10((double) p);
-
-
+                            String sp = tokens[pCol].trim();
+                            p = Float.parseFloat(sp);
+                            //If the p value is very very small, we can still parse it
+                            //since we're taking the log10
+                            if (Float.isInfinite(p) || Float.isNaN(p) || p == 0.0f) {
+                                p = -(float) log10Exp(sp);
+                            } else {
+                                p = -(float) log10(p);
+                            }
+                            if (Float.isInfinite(p) || Float.isNaN(p)) {
+                                throw new NumberFormatException("log10(" + sp + ") resulted in invalid value");
+                            }
                         } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            throw new ParserException("Column " + pCol + " must be a numeric value. " + e.getMessage(), reader.getCurrentLineNumber(), nextLine);
                         }
 
 
@@ -417,41 +396,45 @@ public class GWASParser {
                             indexCounter = 0;
 
                         }
-
-
                     }
-
                 }
-
-
             }
 
-
             return gData;
-        } catch (
-                ParserException e
-                )
-
-        {
+        } catch (ParserException e) {
             throw e;
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        } finally
-
-        {
+        } finally {
             reader.close();
             fs.close();
         }
 
 
+    }
+
+
+    /**
+     * Calculates the log base 10 of a number in exponential format.
+     * We do this by parsing the exponent and significand separately.
+     * <p/>
+     * log10Exp("1e-100") would return -100
+     *
+     * @param number
+     * @return
+     */
+    private double log10Exp(String number) {
+        String[] parts = number.split("[eE]", 2);
+        float significand = Float.parseFloat(parts[0]);
+        float exp = 0;
+        if (parts.length == 2) {
+            exp = Float.parseFloat(parts[1]);
+        }
+        return Math.log10(significand) + exp;
     }
 
 

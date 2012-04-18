@@ -239,7 +239,7 @@ public class TrackLoader {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (GWASParser.isGWASFile(typeString)) {
-                loadGWASFile(locator, newTracks);
+                loadGWASFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (path.contains("Participant") && path.endsWith(".csv")) {
@@ -490,9 +490,9 @@ public class TrackLoader {
      */
 
 
-    private void loadGWASFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadGWASFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        GWASParser gwasParser = new GWASParser(locator);
+        GWASParser gwasParser = new GWASParser(locator, genome);
         GWASData gwasData = gwasParser.parse();
 
         GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser);
