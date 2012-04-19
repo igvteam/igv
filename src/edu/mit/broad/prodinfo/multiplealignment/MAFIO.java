@@ -83,7 +83,7 @@ public class MAFIO implements MultipleAlignmentIO {
         return alignment;
     }
 
-     public void write(BufferedWriter bw, MultipleAlignment ma)
+    public void write(BufferedWriter bw, MultipleAlignment ma)
             throws IOException {
         // TODO Auto-generated method stub
 
@@ -109,6 +109,12 @@ public class MAFIO implements MultipleAlignmentIO {
         }
     }
 
+    /**
+     * Load every 100 lines
+     *
+     * @param idxFile
+     * @throws IOException
+     */
     public void loadIndex(String idxFile) throws IOException {
         index = new IntervalTree<Long>();
         BufferedReader br = null;
@@ -118,12 +124,16 @@ public class MAFIO implements MultipleAlignmentIO {
             String line = null;
             int l = 0;
             while ((line = br.readLine()) != null) {
-                String[] info = line.split("\t");
-                int start = Integer.parseInt(info[0]);
-                int end = Integer.parseInt(info[1]) + start;
-                long offset = Long.parseLong(info[2]);
-                //System.out.println("Read line "+ l++);
-                index.put(start, end, offset);
+                if (l % 100 == 0) {
+                    String[] info = line.split("\t");
+                    int start = Integer.parseInt(info[0]);
+                    int end = Integer.parseInt(info[1]) + start;
+                    long offset = Long.parseLong(info[2]);
+                    //System.out.println("Read line "+ l++);
+                    index.put(start, end, offset);
+                }
+
+                l++;
             }
         } finally {
             if (br != null) br.close();
@@ -131,7 +141,17 @@ public class MAFIO implements MultipleAlignmentIO {
 
     }
 
-
+    /**
+     * Create an index for the MAF file.
+     * <p/>
+     * Example MAF lines:
+     * a score=34237.000000
+     * s hg19.chr1     10917 479 + 249250621 gagaggc
+     * s panTro2.chr15 13606 455 - 100063
+     *
+     * @param alignmentFile
+     * @throws IOException
+     */
     public void createIndex(String alignmentFile) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(alignmentFile, "r");
         index = new IntervalTree<Long>();//LinkedHashMap<Integer, Long>();
