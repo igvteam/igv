@@ -112,7 +112,7 @@ public class GWASParser {
 
     /**
      * TODO -- This method is nearly identical to "parse()", and is apparently only used to support the popup text.
-     *
+     * <p/>
      * Parses and populates description cache from a GWAS result file. Cache will be filled with data points surrounding the given query data point.
      *
      * @param gData          GWASData object
@@ -170,7 +170,7 @@ public class GWASParser {
                             try {
                                 p = Double.parseDouble(tokens[pCol].trim());
                                 // Transform to -log10
-                                p =  -log10(p);
+                                p = -log10(p);
 
 
                             } catch (NumberFormatException e) {
@@ -232,107 +232,6 @@ public class GWASParser {
 
     }
 
-    /**
-     * Find a description line from the result file for a single data point. This is more efficiently achieved using the DescriptionCache(), but could be useful for certain types of data sets.
-     *
-     * @param hitChr         Chromosome of the query data point
-     * @param hitLocation    Nucleotide location of the query data point
-     * @param searchStartRow Result file row where populating the cache will start
-     * @return
-     * @throws IOException
-     */
-    public String parseDescriptionLine(String hitChr, double hitLocation, int searchStartRow) throws IOException {
-
-
-        FileInputStream fs = null;
-
-        AsciiLineReader reader = null;
-        String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        boolean hitFound = false;
-        String resultLine = "";
-
-
-        try {
-            fs = new FileInputStream(locator.getPath());
-            fs.getChannel().position(0);
-            reader = new AsciiLineReader(fs);
-
-            // Parse header line
-            String headerLine = reader.readLine();
-            if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", reader.getCurrentLineNumber(), nextLine);
-
-            // Tokenize header for creation of tokenized descriptions
-            headerLine = headerLine.trim();
-            String[] headers = new String[1000];
-            //int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
-            int headersSize = ParsingUtils.splitWhitespace(headerLine, headers);
-
-
-            int rowCounter = 0;
-
-            while (!hitFound && (nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
-
-
-                nextLine = nextLine.trim();
-                rowCounter++;
-                if (rowCounter >= searchStartRow) {
-                    String[] tokens = new String[100];
-                    //ParsingUtils.splitSpaces(nextLine, tokens);
-                    ParsingUtils.splitWhitespace(nextLine, tokens);
-
-                    if (tokens.length > 1) {
-
-                        String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
-
-                        int start;
-
-                        try {
-                            start = Integer.parseInt(tokens[locationCol].trim());
-                        } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
-                        }
-
-                        if (chr.equals(hitChr) && start == hitLocation) {
-                            hitFound = true;
-                            for (int i = 0; i < headersSize; i++) {
-                                resultLine += headers[i] + ": " + tokens[i] + "<br>";
-
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            return resultLine;
-        } catch (
-                ParserException e
-                )
-
-        {
-            throw e;
-        } catch (
-                Exception e
-                )
-
-        {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
-            } else {
-                throw new RuntimeException(e);
-            }
-        } finally
-
-        {
-            reader.close();
-            fs.close();
-        }
-
-
-    }
-
     public GWASData parse() throws IOException {
 
 
@@ -340,8 +239,6 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
 
         try {
             fs = new FileInputStream(locator.getPath());
@@ -389,12 +286,14 @@ public class GWASParser {
 
                         try {
                             p = Double.parseDouble(tokens[pCol].trim());
+                            if(p <= 0) {
+                                throw new ParserException("Column " + pCol + " must be a positive numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            }
                             // Transform to -log10
                             p = -log10(p);
 
-
                         } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            throw new ParserException("Column " + pCol + " must be a positive numeric value.", reader.getCurrentLineNumber(), nextLine);
                         }
 
 
@@ -419,28 +318,15 @@ public class GWASParser {
 
 
             }
-
-
             return gData;
-        } catch (
-                ParserException e
-                )
 
-        {
-            throw e;
-        } catch (
-                Exception e
-                )
-
-        {
+        }  catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        } finally
-
-        {
+        } finally {
             reader.close();
             fs.close();
         }
