@@ -34,6 +34,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
@@ -81,7 +82,6 @@ public class GWASTrack extends AbstractTrack {
     private String displayName = null;
     private boolean drawYAxis = true;
     private boolean showAxis = true;
-
 
     String getDisplayName() {
         return displayName;
@@ -148,9 +148,6 @@ public class GWASTrack extends AbstractTrack {
         double adjustedRectY = adjustedRect.getY();
         this.maxY = adjustedRectMaxY;
         this.scale = context.getScale();
-        int bufferX = (int) adjustedRectMaxX;
-        int bufferY = (int) adjustedRectMaxY;
-        Color[][] drawBuffer = new Color[bufferX + 1][bufferY + 1];
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -212,7 +209,7 @@ public class GWASTrack extends AbstractTrack {
                 }
 
                 IntArrayList locations = this.gData.getLocations().get(chr);
-                FloatArrayList values = this.gData.getValues().get(chr);
+                DoubleArrayList values = this.gData.getValues().get(chr);
 
                 int size = locations.size();
 
@@ -234,9 +231,9 @@ public class GWASTrack extends AbstractTrack {
                         break;
 
                     // Based on value of the data point, calculate Y-coordinate
-                    float dataY = values.get(j);
+                    double dataY = values.get(j);
 
-                    if (!Float.isNaN(dataY)) {
+                    if (!Double.isNaN(dataY)) {
 
                         int xPointSize = (int) Math.ceil(dataY / pointSizeScale);
 
@@ -269,31 +266,16 @@ public class GWASTrack extends AbstractTrack {
                             maxDrawY = (int) adjustedRectMaxY;
 
                         // Loop through all the pixels of the data point and fill in drawing buffer
-                        for (int drawX = x; drawX < maxDrawX; drawX++)
-                            for (int drawY = y; drawY < maxDrawY; drawY++)
-                                drawBuffer[drawX][drawY] = drawColor;
+                        Graphics2D g = context.getGraphic2DForColor(drawColor);
+                        for (int drawX = x; drawX < maxDrawX; drawX++) {
+                            for (int drawY = y; drawY < maxDrawY; drawY++) {
+                                 g.fillRect(x, y, 1, 1);
+                            }
+                        }
                     }
                 }
             }
         }
-
-        // Draw the pixels from the drawing buffer to the canvas
-
-        Graphics2D g = context.getGraphics();
-        Color color;
-        Color prevColor = null;
-
-        for (int x = 0; x < bufferX; x++)
-            for (int y = 0; y < bufferY; y++) {
-                color = drawBuffer[x][y];
-                if (color != null) {
-                    if (!color.equals(prevColor)) {
-                        g.setColor(color);
-                        prevColor = color;
-                    }
-                    g.fillRect(x, y, 1, 1);
-                }
-            }
 
         // Draw the legend axis
         if (showAxis) {
@@ -446,7 +428,7 @@ public class GWASTrack extends AbstractTrack {
 
         String textValue = "";
 
-        float value = this.gData.getValues().get(chr).get(index);
+        double value = this.gData.getValues().get(chr).get(index);
         int hitLocation = this.gData.getLocations().get(chr).get(index);
         int rowIndex = gData.getCumulativeChrLocation(chr) + index;
 

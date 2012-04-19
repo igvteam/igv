@@ -15,6 +15,7 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -47,13 +48,13 @@ public class GWASParserTest {
     public void testParse() throws Exception {
         GWASParser parser = new GWASParser(new ResourceLocator(TestUtils.DATA_DIR + "gwas/smallp.gwas"), genome);
         GWASData data = parser.parse();
-        LinkedHashMap<String, FloatArrayList> values = data.getValues();
+        LinkedHashMap<String, DoubleArrayList> values = data.getValues();
         for (String chr : values.keySet()) {
-            FloatArrayList floats = values.get(chr);
+            DoubleArrayList floats = values.get(chr);
             for (int ff = 0; ff < floats.size(); ff++) {
-                float val = floats.get(ff);
-                assertFalse("Value is infinite", Float.isInfinite(val));
-                assertFalse("Value isNan", Float.isNaN(val));
+                double val = floats.get(ff);
+                assertFalse("Value is infinite", Double.isInfinite(val));
+                assertFalse("Value isNan", Double.isNaN(val));
                 assertFalse("Value is 0", val == 0.0f);
             }
         }

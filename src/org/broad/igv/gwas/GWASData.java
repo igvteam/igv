@@ -19,6 +19,7 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
@@ -40,45 +41,22 @@ public class GWASData {
     // Location of the data points, chr and nucleotide location
     private LinkedHashMap<String, IntArrayList> locations = new LinkedHashMap();
     // Values for the data points, chr and value
-    private LinkedHashMap<String, FloatArrayList> values = new LinkedHashMap();
+    private LinkedHashMap<String, DoubleArrayList> values = new LinkedHashMap();
     // Cache containing descriptions i.e. original rows from the parsed result file
     private DescriptionCache descriptionCache = new DescriptionCache();
     private IntArrayList fileIndex = new IntArrayList(100);
-    private float maxValue = 0;
+    private double maxValue = 0;
 
     public DescriptionCache getDescriptionCache() {
         return descriptionCache;
     }
 
-    public void setDescriptionCache(DescriptionCache descriptionCache) {
-        this.descriptionCache = descriptionCache;
-    }
-
-    /**
-     * Get bytecount for start of bin containing given index
-     *
-     * @param index
-     * @return
-     */
-
-    public int getByteStartByIndex(int index) {
-
-
-        int bin = index / 10000;
-        return fileIndex.get(bin);
-
-    }
 
     public IntArrayList getFileIndex() {
         return fileIndex;
     }
 
-    public void setFileIndex(IntArrayList fileIndex) {
-        this.fileIndex = fileIndex;
-    }
-
-
-    public float getMaxValue() {
+    public double getMaxValue() {
         return maxValue;
     }
 
@@ -107,69 +85,6 @@ public class GWASData {
 
 
     /**
-     * Get index of data point based on chromosomal location
-     *
-     * @param chr
-     * @param location
-     * @return index of data point in given location, -1 if not found
-     */
-
-
-    public int getIndexByLocation(String chr, int location) {
-
-        if (this.locations.containsKey(chr)) {
-            int[] locList = this.locations.get(chr).toArray();
-            int indexCounter = 0;
-            for (int loc : locList) {
-                if (loc == location)
-                    return indexCounter;
-                indexCounter++;
-
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Get index of nearest data point based on chromosomal location
-     *
-     * @param chr
-     * @param location
-     * @return index of data point in nearest location, -1 if not found
-     */
-
-    public int getNearestIndexByLocation(String chr, int location) {
-
-        int index = -1;
-        if (this.locations.containsKey(chr)) {
-            int[] locList = this.locations.get(chr).toArray();
-            int indexCounter = 0;
-
-            while ((locList[indexCounter] < location) && (indexCounter < locList.length)) {
-                indexCounter++;
-            }
-            // Used to ensure that array boundaries are not exceeded
-            int beforeIndex = indexCounter - 1;
-            if (beforeIndex < 0)
-                beforeIndex = 0;
-            // Index of nearest data point before the location
-            int before = locList[beforeIndex];
-            // Index of nearest data point after the location
-            int after = locList[indexCounter];
-
-            // Compare which one is closer and use ase index
-            if (Math.abs(location - before) < Math.abs(location - after))
-                index = beforeIndex;
-            else
-                index = indexCounter;
-
-
-        }
-        return index;
-    }
-
-
-    /**
      * Get index of nearest data point based on given parameters
      *
      * @param chr         Chromosome
@@ -188,7 +103,7 @@ public class GWASData {
         // Check if the location chr exists in data set
         if (this.locations.containsKey(chr)) {
             int[] locList = this.locations.get(chr).toArray();
-            float[] valueList = this.values.get(chr).toArray();
+            double[] valueList = this.values.get(chr).toArray();
             int indexCounter = 0;
 
             // Find index of the closest value before the location
@@ -258,12 +173,10 @@ public class GWASData {
         this.locations.put(chr, locations);
     }
 
-    public void addValue(String chr, float value) {
-        FloatArrayList valueList = new FloatArrayList(1);
+    public void addValue(String chr, double value) {
+        DoubleArrayList valueList = new DoubleArrayList(1);
         if (this.values != null && this.values.get(chr) != null) {
-
             valueList = this.values.get(chr);
-
         }
         valueList.add(value);
         this.addValues(chr, valueList);
@@ -272,9 +185,9 @@ public class GWASData {
 
     }
 
-    void addValues(String chr, FloatArrayList values) {
+    void addValues(String chr, DoubleArrayList values) {
         if (this.values == null) {
-            this.values = new LinkedHashMap<String, FloatArrayList>();
+            this.values = new LinkedHashMap<String, DoubleArrayList>();
         }
 
         this.values.put(chr, values);
@@ -285,15 +198,9 @@ public class GWASData {
         return locations;
     }
 
-    public void setLocations(LinkedHashMap<String, IntArrayList> locations) {
-        this.locations = locations;
-    }
 
-    public LinkedHashMap<String, FloatArrayList> getValues() {
+    public LinkedHashMap<String, DoubleArrayList> getValues() {
         return values;
     }
 
-    public void setValues(LinkedHashMap<String, FloatArrayList> values) {
-        this.values = values;
-    }
 }
