@@ -44,6 +44,8 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
+    // A "dummy" reference for soft-clipped reads.
+    private static byte [] softClippedReference = new byte[1000];
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
@@ -644,7 +646,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         int start = block.getStart();
         int end = start + read.length;
-        byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
+        byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
 
         if (read != null && read.length > 0 && reference != null) {
