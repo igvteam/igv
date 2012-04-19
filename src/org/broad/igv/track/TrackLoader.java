@@ -416,12 +416,6 @@ public class TrackLoader {
         GFFParser featureParser = new GFFParser(locator.getPath());
         List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
-        for (FeatureTrack track : tracks) {
-            track.setName(locator.getTrackName());
-            track.setRendererClass(IGVFeatureRenderer.class);
-            track.setHeight(45);
-        }
-
     }
 
     /**

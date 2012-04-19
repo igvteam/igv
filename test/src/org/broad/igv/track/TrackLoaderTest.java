@@ -90,6 +90,9 @@ public class TrackLoaderTest {
         List<Track> tracks = loader.load(new ResourceLocator(filepath), TestUtils.loadGenome());
         assertEquals(1, tracks.size());
         FeatureTrack track = (FeatureTrack) tracks.get(0);
+
+        assertEquals("notmeaningful", track.getName());
+
         List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
         assertEquals(2, features.size());
         IGVFeature feat0 = (IGVFeature) features.get(0);
