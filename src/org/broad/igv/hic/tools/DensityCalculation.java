@@ -190,16 +190,16 @@ public class DensityCalculation {
                 }
             }*/
 
-//            double expectedCount = 0;
-//            for (int i=0; i < numberOfBins; i++)
-//                expectedCount += densityAvg[i];
+           double expectedCount = 0;
+           for (int i=0; i < numberOfBins; i++)
+                expectedCount += densityAvg[i];
                     
             
-           // double observedCount = (double) chromosomeCounts.get(chr.getIndex());
+           double observedCount = (double) chromosomeCounts.get(chr.getIndex());
 
-           // double f = expectedCount / observedCount;
-           // System.out.println(chr.getName() + "\t" + f);
-             double f = 1;
+           double f = expectedCount / observedCount;
+           System.out.println(chr.getName() + "\t" + f);
+           //  double f = 1;
             normalizationFactors.put(chr.getIndex(), f);
         }
     }
