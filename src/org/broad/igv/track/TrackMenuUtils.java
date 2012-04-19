@@ -964,7 +964,6 @@ public class TrackMenuUtils {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Kaplan-Meier Plot...");
         item.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
 
                 // If one or fewer tracks are selected assume the intent is to use all tracks.  A right-click
@@ -975,6 +974,12 @@ public class TrackMenuUtils {
                 frame.setVisible(true);
             }
         });
+
+        // The Kaplan-Meier plot requires sample information, specifically survival, sample, and censure.  We
+        // can't know if these columns exist, but we can at least know if sample-info has been loaded.
+        // 3-4 columns always exist by default, more indicate at least some sample attributes are defined.
+        boolean sampleInfoLoaded = AttributeManager.getInstance().getAttributeNames().size() > 4;
+        item.setEnabled(sampleInfoLoaded);
         return item;
     }
 
