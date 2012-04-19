@@ -42,7 +42,7 @@ public class DescriptionCache {
 
     private ArrayList<String> chrs = new ArrayList<String>();
     private ArrayList<Integer> locations = new ArrayList<Integer>();
-    private ArrayList<Float> values = new ArrayList<Float>();
+    private ArrayList<Double> values = new ArrayList<Double>();
     private ArrayList<String> descriptions = new ArrayList<String>();
     // Storage for the header tokens
     private String[] headerTokens = new String[1000];
@@ -94,7 +94,7 @@ public class DescriptionCache {
     }
 
 
-    public boolean add(String chr, int location, float value, String description) {
+    public boolean add(String chr, int location, double value, String description) {
 
         if (this.locations.size() >= this.maxSize) {
             this.locations.remove(0);
@@ -106,7 +106,7 @@ public class DescriptionCache {
         return this.chrs.add(chr) && this.locations.add(location) && this.descriptions.add(description) && this.values.add(value);
     }
 
-    public String getDescription(String chr, int location, float value) {
+    public String getDescription(String chr, int location, double value) {
 
         String description = null;
 
@@ -127,7 +127,7 @@ public class DescriptionCache {
     }
 
 
-    public String getDescriptionString(String chr, int location, float value) {
+    public String getDescriptionString(String chr, int location, double value) {
 
         String description = this.getDescription(chr, location, value);
         String descriptionString = null;
