@@ -132,12 +132,7 @@ public class GWASTrack extends AbstractTrack {
 
     }
 
-    /**
-     * Render GWAS data
-     *
-     * @param context
-     * @param arect
-     */
+
     public void render(RenderContext context, Rectangle arect) {
 
         Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
@@ -148,6 +143,9 @@ public class GWASTrack extends AbstractTrack {
         double adjustedRectY = adjustedRect.getY();
         this.maxY = adjustedRectMaxY;
         this.scale = context.getScale();
+        int bufferX = (int) adjustedRectMaxX;
+        int bufferY = (int) adjustedRectMaxY;
+        Color[][] drawBuffer = new Color[bufferX + 1][bufferY + 1];
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -266,16 +264,31 @@ public class GWASTrack extends AbstractTrack {
                             maxDrawY = (int) adjustedRectMaxY;
 
                         // Loop through all the pixels of the data point and fill in drawing buffer
-                        Graphics2D g = context.getGraphic2DForColor(drawColor);
-                        for (int drawX = x; drawX < maxDrawX; drawX++) {
-                            for (int drawY = y; drawY < maxDrawY; drawY++) {
-                                 g.fillRect(x, y, 1, 1);
-                            }
-                        }
+                        for (int drawX = x; drawX < maxDrawX; drawX++)
+                            for (int drawY = y; drawY < maxDrawY; drawY++)
+                                drawBuffer[drawX][drawY] = drawColor;
                     }
                 }
             }
         }
+
+        // Draw the pixels from the drawing buffer to the canvas
+
+        Graphics2D g = context.getGraphics();
+        Color color;
+        Color prevColor = null;
+
+        for (int x = 0; x < bufferX; x++)
+            for (int y = 0; y < bufferY; y++) {
+                color = drawBuffer[x][y];
+                if (color != null) {
+                    if (!color.equals(prevColor)) {
+                        g.setColor(color);
+                        prevColor = color;
+                    }
+                    g.fillRect(x, y, 1, 1);
+                }
+            }
 
         // Draw the legend axis
         if (showAxis) {
@@ -352,7 +365,6 @@ public class GWASTrack extends AbstractTrack {
             }
         }
     }
-
 
     int computeYPixelValue(Rectangle drawingRect, DataRange axisDefinition, double dataY) {
 
