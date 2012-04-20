@@ -26,10 +26,10 @@ import static junit.framework.Assert.assertTrue;
  * @date 4/19/12
  */
 public class BBMethylDataSourceTest {
-    @Test
+    //@Test
     public void testQuery() throws Exception {
 
-        String testFile = "http://www.broadinstitute.org/~ziller/RRBS/RRBS_cpgMethylation_Normal_B00390107_.RRBS.bb";
+        String testFile = "path-to-test-file.bb";
         String chr = "chr7";
         int start = 26133475;
         int end = 27333475;
