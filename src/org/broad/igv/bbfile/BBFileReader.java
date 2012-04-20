@@ -29,6 +29,7 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.apache.log4j.Logger;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableFileStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class BBFileReader {
 
 
     public BBFileReader(String path) throws IOException {
-        this(path, new SeekableFileStream(new File(path)));
+        this(path, SeekableStreamFactory.getStreamFor(path));
 
     }
 

@@ -45,6 +45,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
+import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
@@ -704,7 +705,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    public void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
@@ -759,7 +760,13 @@ public class TrackLoader {
 
     }
 
-    private void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        if(locator.getPath().contains("RRBS_cpgMethylation")) {
+            loadZillerMethylTrack(locator, newTracks, genome);
+            return;
+        }
+
 
         String trackName = locator.getTrackName();
         String trackId = locator.getPath();
@@ -779,6 +786,13 @@ public class TrackLoader {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
     }
+
+    private void loadZillerMethylTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        MethylTrack track = new MethylTrack(locator, genome);
+        newTracks.add(track);
+    }
+
 
     private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
