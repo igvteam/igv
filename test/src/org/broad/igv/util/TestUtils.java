@@ -104,6 +104,7 @@ public class TestUtils {
         }
         org.junit.Assume.assumeTrue(!headless);
         setUpTestEnvironment();
+        Globals.setHeadless(false);
         IGV igv;
         //If IGV is already open, we get the instance.
         try {

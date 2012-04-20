@@ -505,7 +505,7 @@ public class TrackLoader {
             String path = locator.getPath();
             for (RNAIDataSource ds : dataSources) {
                 String trackId = path + "_" + ds.getName();
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds, genome);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
 
                 // Set attributes.
                 track.setAttributeValue("SCREEN", ds.getScreen());
@@ -554,7 +554,7 @@ public class TrackLoader {
         for (String trackName : ds.getTrackNames()) {
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setProperties(trackProperties);
             newTracks.add(track);
@@ -581,7 +581,7 @@ public class TrackLoader {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
@@ -688,7 +688,7 @@ public class TrackLoader {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackId, ds, genome);
 
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (label == null || multiTrack) ? heading : label;
             track.setName(displayName);
@@ -745,7 +745,7 @@ public class TrackLoader {
             final DataSource dataSource = locator.getPath().endsWith(".counts") ?
                     new GobyCountArchiveDataSource(locator) :
                     new TDFDataSource(reader, trackNumber, heading, genome);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -762,7 +762,7 @@ public class TrackLoader {
 
     public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        if(locator.getPath().contains("RRBS_cpgMethylation")) {
+        if (locator.getPath().contains("RRBS_cpgMethylation")) {
             loadZillerMethylTrack(locator, newTracks, genome);
             return;
         }
@@ -777,7 +777,7 @@ public class TrackLoader {
         BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
 
         if (reader.isBigWigFile()) {
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
             newTracks.add(track);
         } else if (reader.isBigBedFile()) {
             FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
@@ -806,8 +806,7 @@ public class TrackLoader {
         String trackName = locator.getFileName();
         final DataSource dataSource = new GobyCountArchiveDataSource(locator);
 
-        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                dataSource, genome);
+        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
         newTracks.add(track);
 
@@ -871,7 +870,7 @@ public class TrackLoader {
         for (RNAIDataSource ds : dataSources) {
             String name = ds.getName();
             String trackId = path + "_" + name;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds);
 
             // Set attributes.  This "hack" is neccessary to register these attributes with the
             // attribute manager to get displayed.
@@ -1086,7 +1085,7 @@ public class TrackLoader {
         for (String trackName : ds.getDataHeadings()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
 
@@ -1121,7 +1120,7 @@ public class TrackLoader {
             for (String trackName : ds.getDataHeadings()) {
                 String trackId = path + "_" + trackName;
                 SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
                 track.setRendererClass(HeatmapRenderer.class);
                 track.setTrackType(ds.getType());
 
@@ -1155,7 +1154,7 @@ public class TrackLoader {
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             newTracks.add(track);
