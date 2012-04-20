@@ -20,6 +20,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.tribble.util.ParsingUtils;
 
@@ -91,7 +92,9 @@ public class IGVBEDCodec extends UCSCCodec {
             end = Integer.parseInt(tokens[2]);
         }
 
-        BasicFeature feature = new BasicFeature(chr, start, end);
+        BasicFeature feature = spliceJunctions ?
+                new SpliceJunctionFeature(chr, start, end) :
+                new BasicFeature(chr, start, end);
 
         // The rest of the columns are optional.  Stop parsing upon encountering
         // a non-expected value
