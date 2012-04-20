@@ -27,7 +27,13 @@ import static junit.framework.Assert.assertTrue;
  * @date 4/19/12
  */
 public class CachingMethylSourceTest {
-   // @Test
+
+    @Test
+    public void pointlessTest() {
+        //Must have at least 1 test method
+    }
+
+    // @Test
     public void testQuery() throws Exception {
 
         String testFile = "path-to-test-file.bb";
@@ -45,7 +51,7 @@ public class CachingMethylSourceTest {
 
         int maxTileCount = 100000;
         int tileSize = 100;
-        MethylDataSource cachedSource = new CachingMethylSource( new BBMethylDataSource(testFile, genome),
+        MethylDataSource cachedSource = new CachingMethylSource(new BBMethylDataSource(testFile, genome),
                 maxTileCount, tileSize);
         Iterator<MethylScore> iter2 = cachedSource.query(chr, start, end);
         List<MethylScore> cachedScores = new ArrayList<MethylScore>();
@@ -55,7 +61,7 @@ public class CachingMethylSourceTest {
 
         assertTrue(cachedScores.size() > 0);
         assertEquals(cachedScores.size(), nonCachedScores.size());
-        for(int i=0; i<cachedScores.size(); i++) {
+        for (int i = 0; i < cachedScores.size(); i++) {
             MethylScore cScore = cachedScores.get(i);
             MethylScore score = nonCachedScores.get(i);
             assertEquals(cScore.getStart(), score.getStart());

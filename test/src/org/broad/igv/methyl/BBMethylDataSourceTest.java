@@ -26,6 +26,12 @@ import static junit.framework.Assert.assertTrue;
  * @date 4/19/12
  */
 public class BBMethylDataSourceTest {
+
+    @Test
+    public void pointlessTest() {
+        //Must have at least 1 test method
+    }
+
     //@Test
     public void testQuery() throws Exception {
 
