@@ -66,23 +66,68 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DS_MARGIN_2 = 5;
 
     public enum ExperimentType {
-        RNA, BISULFITE, OTHER
+        RNA, BISULFITE, OTHER;
+
+        static ExperimentType strToValue(String str) {
+             try {
+                 return valueOf(str);
+             }
+             catch(Exception e) {
+                 return ExperimentType.OTHER;
+             }
+         }
     }
 
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
+
+        static ColorOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return ColorOption.NONE;
+            }
+        }
     }
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
+
+        static SortOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return SortOption.START;
+            }
+        }
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE;
+
+        static GroupOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return GroupOption.NONE;
+            }
+        }
     }
 
     public enum BisulfiteContext {
-        CG, CHH, CHG, HCG, GCH, WCG
+        CG, CHH, CHG, HCG, GCH, WCG;
+
+        static BisulfiteContext strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return BisulfiteContext.CG;
+            }
+        }
     }
 
 
@@ -819,7 +864,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
-            colorOption = ColorOption.valueOf(prefs.get(PreferenceManager.SAM_COLOR_BY));
+            colorOption = ColorOption.strToValue(prefs.get(PreferenceManager.SAM_COLOR_BY));
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
@@ -924,15 +969,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             value = attributes.get("colorOption");
             if (value != null) {
-                colorOption = ColorOption.valueOf(value);
+                colorOption = ColorOption.strToValue(value);
             }
             value = attributes.get("groupByOption");
             if (value != null) {
-                groupByOption = GroupOption.valueOf(value);
+                groupByOption = GroupOption.strToValue(value);
             }
             value = attributes.get("bisulfiteContextRenderOption");
             if (value != null) {
-                bisulfiteContext = BisulfiteContext.valueOf(value);
+                bisulfiteContext = BisulfiteContext.strToValue(value);
             }
             value = attributes.get("groupByTag");
             if (value != null) {
