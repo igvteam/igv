@@ -16,10 +16,8 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.bbfile;
-
 import org.apache.log4j.Logger;
 
-import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import java.util.zip.Deflater;
 import java.io.ByteArrayOutputStream;
@@ -57,7 +55,7 @@ public class BBCompressionUtils {
     public static byte[] decompress(byte[] data, int uncompressBufSize) {
 
         // mpd: new code
-        byte[] inbuf = data;   // input is first assigned to full data
+        byte [] inbuf = data;   // input is first assigned to full data
         int rem = data.length;
         int count = 0;
         int off = 0;
@@ -89,8 +87,7 @@ public class BBCompressionUtils {
 
                 bos.write(outbuf, 0, count);
 
-            } catch (DataFormatException e) {
-                // Ignore, we get zillions of these on what appears to be a valid file
+            //} catch (DataFormatException e) {
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -104,9 +101,8 @@ public class BBCompressionUtils {
         // Get the decompressed data
         return bos.toByteArray();
     }
-
     /*
-   * */
+    * */
     public static byte[] compress(byte[] data, int compressBufSize) {
         Deflater compressor = new Deflater();
         compressor.setLevel(Deflater.DEFAULT_COMPRESSION);
@@ -137,5 +133,5 @@ public class BBCompressionUtils {
 
     }
 
-
+    
 }
