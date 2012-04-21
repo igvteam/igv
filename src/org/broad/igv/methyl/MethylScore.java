@@ -49,7 +49,9 @@ public class MethylScore implements LocusScore {
      * @return
      */
     public String getValueString(double position, WindowFunction windowFunction) {
-        return percentMethylated + "%" + " [" + totalCount + "]";
+        String totalCountString = totalCount < Short.MAX_VALUE ? String.valueOf(totalCount) :
+                "> " + Short.MAX_VALUE;
+        return percentMethylated + "%" + " [" + totalCountString + "]";
     }
 
     /**

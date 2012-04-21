@@ -99,7 +99,12 @@ public class BBMethylDataSource implements MethylDataSource {
                 // What to do, throw exception?
             }
             short percent = Short.parseShort(tokens[0]);
-            short count = Short.parseShort(tokens[1]);
+            short count;
+            try {
+                count = Short.parseShort(tokens[1]);
+            } catch (NumberFormatException e) {
+                count = Short.MAX_VALUE;    // Protect against the occassional massive coverage depth
+            }
             return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), percent, count);
 
         }
