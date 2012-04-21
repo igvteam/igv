@@ -12,7 +12,6 @@
 
 package org.broad.igv.track;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -48,7 +47,9 @@ public class DataSourceTrack extends DataTrack {
         float min = (float) dataSource.getDataMin();
         float max = (float) dataSource.getDataMax();
         float baseline = 0;
-        if (min < 0) {
+
+        // If the range is all + numbers set the min to zero
+        if (min > 0) {
             min = 0;
         }
         for (LocusScore score : scores) {
