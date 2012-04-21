@@ -195,7 +195,7 @@ public class TrackMenuUtils {
 
         final String[] labels = {"Heatmap", "Bar Chart", "Scatterplot", "Line Plot"};
         final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
-                ScatterplotRenderer.class, LineplotRenderer.class
+                PointsRenderer.class, LineplotRenderer.class
         };
 
         //JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);

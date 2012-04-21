@@ -15,7 +15,8 @@ import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.ScatterplotRenderer;
+import org.broad.igv.renderer.PointsRenderer;
+
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.Track;
@@ -25,10 +26,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -123,10 +121,10 @@ public class AffectiveUtils {
                 track.setDataRange(new DataRange(0, 1.5f));
             } else if (trackName.equals("Battery")) {
                 track.setDataRange(new DataRange(-1, 0, 1));
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
             } else if (trackName.endsWith("Celsius")) {
                 track.setDataRange(new DataRange(20, 30));
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
             } else if (trackName.startsWith("EDA")) {
                 track.setDataRange(new DataRange(0, 10));
                 track.setColor(new Color(0, 150, 0));

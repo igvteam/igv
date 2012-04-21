@@ -12,10 +12,12 @@
 
 package org.broad.igv.methyl;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.renderer.ScatterplotRenderer;
+import org.broad.igv.renderer.PointsRenderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.util.LongRunningTask;
@@ -29,6 +31,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Experimental class for specific dataset.
+ * <p/>
+ * if(locator.getPath().contains("RRBS_cpgMethylation") || locator.getPath().contains("")) {
+ *
  * @author Jim Robinson
  * @date 4/19/12
  */
@@ -37,16 +43,22 @@ public class MethylTrack extends AbstractTrack {
     MethylDataSource dataSource;
     Interval loadedInterval;
     Renderer renderer;
-
+    int resolutionThreshold;
 
     public MethylTrack(ResourceLocator dataResourceLocator, Genome genome) throws IOException {
         super(dataResourceLocator);
-        renderer = new ScatterplotRenderer();
-        this.dataSource = new CachingMethylSource(new BBMethylDataSource(dataResourceLocator.getPath(), genome));
+        renderer = new PointsRenderer();
+        // this.dataSource = new CachingMethylSource(new BBMethylDataSource(dataResourceLocator.getPath(), genome));
+        this.dataSource = new BBMethylDataSource(dataResourceLocator.getPath(), genome);
+
+        this.setHeight(60);
 
         loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
         this.setDataRange(new DataRange(0, 100));
-        this.setShowDataRange(true);
+
+        boolean isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
+        resolutionThreshold = isWGBS ? 1000000 : Integer.MAX_VALUE;
+
     }
 
     /**
@@ -57,6 +69,19 @@ public class MethylTrack extends AbstractTrack {
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void render(final RenderContext context, final Rectangle rect) {
+
+        if (context.getChr().equals(Globals.CHR_ALL) || context.getScale() * rect.width > resolutionThreshold) {
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Rectangle textRect = new Rectangle(rect);
+
+            // Keep text near the top of the track rectangle
+            textRect.height = Math.min(rect.height, 20);
+            textRect.height = Math.min(rect.height, 20);
+            String message = context.getChr().equals(Globals.CHR_ALL) ? "Zoom in to see features." :
+                    "Zoom in to see features, or right-click to increase Feature Visibility Window.";
+            GraphicUtils.drawCenteredText(message, textRect, g);
+            return;
+        }
 
         final String chr = context.getChr();
         final int start = (int) context.getOrigin();
@@ -76,7 +101,7 @@ public class MethylTrack extends AbstractTrack {
                         scores.add(iter.next());
                     }
                     loadedInterval = new Interval(chr, expandedStart, expandedEnd, scores);
-                    context.getPanel().repaint(rect);
+                    context.getPanel().repaint(); //rect);
                 }
             };
             LongRunningTask.submit(runnable);

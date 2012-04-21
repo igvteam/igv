@@ -47,30 +47,16 @@ public class MessageUtils {
     }
 
 
-    public static synchronized void showMessage(final String message) {
+    public static synchronized void showMessage(String message) {
 
         if (Globals.isHeadless() || Globals.isSuppressMessages()) { //|| !IGV.hasInstance()) {
             log.info(message);
         } else {
-            final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            if (SwingUtilities.isEventDispatchThread()) {
-                JOptionPane.showMessageDialog(parent, message);
-            } else {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        JOptionPane.showMessageDialog(parent, message);
-                    }
-                };
-                try {
-                    SwingUtilities.invokeAndWait(runnable);
-                } catch (InterruptedException e) {
-                    log.error("Error in showMessage", e);
-                    throw new RuntimeException(e);
-                } catch (InvocationTargetException e) {
-                    log.error("Error in showMessage", e);
-                    throw new RuntimeException(e.getCause());
-                }
-            }
+            // Always use HTML for message displays, but first remove any embedded <html> tags.
+            message = "<html>" + message.replaceAll("<html>", "");
+            Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            JOptionPane.showMessageDialog(parent, message);
+
         }
     }
 

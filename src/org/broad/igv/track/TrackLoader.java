@@ -588,7 +588,7 @@ public class TrackLoader {
             track.setProperties(trackProperties);
 
             if (type == TrackType.ALLELE_FREQUENCY) {
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
                 track.setHeight(40);
             }
             newTracks.add(track);
@@ -762,7 +762,8 @@ public class TrackLoader {
 
     public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        if (locator.getPath().contains("RRBS_cpgMethylation")) {
+        // TODO -- remove the Ziller hack below when we have converted there files to something standard
+        if(locator.getPath().contains("RRBS_cpgMethylation") || locator.getPath().contains("BiSeq_cpgMethylation")) {
             loadZillerMethylTrack(locator, newTracks, genome);
             return;
         }

@@ -345,7 +345,7 @@ public class ParsingUtils {
                             if (value.equals("bar")) {
                                 trackProperties.setRendererClass(BarChartRenderer.class);
                             } else if (value.equals("points")) {
-                                trackProperties.setRendererClass(ScatterplotRenderer.class);
+                                trackProperties.setRendererClass(PointsRenderer.class);
                                 trackProperties.setWindowingFunction(WindowFunction.none);
                             } else if (value.equals("line")) {
                                 trackProperties.setRendererClass(LineplotRenderer.class);

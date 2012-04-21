@@ -33,10 +33,20 @@ import java.awt.*;
 /**
  * @author jrobinso
  */
-public class ScatterplotRenderer extends XYPlotRenderer {
+public class PointsRenderer extends XYPlotRenderer {
+
+    int pointsSize = 2;
+
+    public int getPointsSize() {
+        return pointsSize;
+    }
+
+    public void setPointsSize(int pointsSize) {
+        this.pointsSize = pointsSize;
+    }
 
     protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, RenderContext context) {
-        context.getGraphic2DForColor(graphColor).fillRect(pX, pY, dx, 2);
+        context.getGraphic2DForColor(graphColor).fillRect(pX, pY, dx, pointsSize);
 
     }
 
