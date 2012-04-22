@@ -18,6 +18,8 @@
 
 package org.broad.igv.bbfile;
 
+import java.util.ArrayList;
+
 /**
  * Created by IntelliJ IDEA.
  * User: martind
@@ -25,34 +27,63 @@ package org.broad.igv.bbfile;
  * Time: 11:16:03 AM
  * To change this template use File | Settings | File Templates.
  */
-public interface RPTreeNode {
+public class RPTreeNode {
+
+    boolean leaf;
+    protected RPChromosomeRegion chromosomeBounds;  // chromosome bounds for entire node
+    protected ArrayList<RPTreeNodeItem> items; // array for child items
+
+    public RPTreeNode(boolean leaf) {
+        this.leaf = leaf;
+        items = new ArrayList<RPTreeNodeItem>();
+    }
 
     // Identifies the node as a leaf node or a child (non-leaf) node.
-    public boolean isLeaf();
+    public boolean isLeaf() {
+        return leaf;
+    }
 
-    // Returns the chromosome bounds belonging to the entire node.
-    public RPChromosomeRegion getChromosomeBounds();
+    public RPChromosomeRegion getChromosomeBounds() {
+        return chromosomeBounds;
+    }
 
-     // Note: compareRegions returns the following values:
-     //   -2 indicates chromosome region is completely below node region
-     //   -1 indicates that chromosome region intersect node region from below
-     //  0 means that chromosome region is inclusive to node region
-     //  1 indicates chromosome region intersects node region from above
-     //  2 indicates that this region is completely above that region
-    public int compareRegions(RPChromosomeRegion chromosomeRegion);
+    public int compareRegions(RPChromosomeRegion chromosomeRegion) {
+        return chromosomeBounds.compareRegions(chromosomeRegion);
+    }
 
-    // Returns the number of items assigned to the node.
-    public int getItemCount();
+    public int getItemCount() {
+        return items.size();
+    }
 
-    // Returns the indexed node item.
-    public  RPTreeNodeItem getItem(int index);
+    public RPTreeNodeItem getItem(int index) {
+        if (index < 0 || index >= items.size())
+            return null;
+        else {
+            return items.get(index);
+        }
+    }
 
-    // Inserts new node item according to bounds rank
-    public boolean insertItem(RPTreeNodeItem item);
+    public void insertItem(RPTreeNodeItem item) {
 
-    // Deletes indexed node item
-    public boolean deleteItem(int index);
+        RPTreeNodeItem newItem = item;
 
-    // prints the node items
-    public void printItems();
+        // Quick implementation: assumes all keys are inserted in rank order
+        // todo: or compare key and insert at rank location
+        items.add(newItem);
+
+        // Update node bounds or start node chromosome bounds with first entry
+        if (chromosomeBounds == null) {
+            chromosomeBounds = new RPChromosomeRegion(newItem.getChromosomeBounds());
+        } else {
+            chromosomeBounds = chromosomeBounds.getExtremes(newItem.getChromosomeBounds());
+        }
+
+    }
+
+    public void printItems() {
+
+        for (int item = 0; item < items.size(); ++item) {
+            items.get(item).print();
+        }
+    }
 }

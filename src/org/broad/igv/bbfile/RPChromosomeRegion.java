@@ -101,81 +101,70 @@ public class RPChromosomeRegion {
         log.debug("EndBase = " + endBase);
     }
 
-    /*
-    *   Comparator for mChromosome bounds is used to find relevant intervals and
-    *   rank placement of node items. Returned value indicates relative
-    *   positioning to supplied chromosome test region , and expands on normal
-    *   comparator by indicating partial overlap in the extremes.
-    *
-    *   Returns:
-    *       - 2 indicates that this region is completely disjoint below the test region
-    *       -1 indicates this region intersects the test region from below
-    *       0 indicates that this region is inclusive to the test region
-    *       1 indicates this region intersects the test region from above
-    *       2 indicates that this region is completely disjoint above the test region
-    *
-    *   Note: additional tests can be applied to determine intersection from above
-    *   or below the test region and disjoint above or below the test region cases.
-    * */
+    /**
+     * Comparator for mChromosome bounds is used to find relevant intervals and
+     * rank placement of node items. Returned value indicates relative
+     * positioning to supplied chromosome test region , and expands on normal
+     * comparator by indicating partial overlap in the extremes.
+     * <p/>
+     * Returns:
+     * - 2 indicates that this region is completely disjoint below the test region
+     * -1 indicates this region intersects the test region from below
+     * 0 indicates that this region is inclusive to the test region
+     * 1 indicates this region intersects the test region from above
+     * 2 indicates that this region is completely disjoint above the test region
+     * <p/>
+     * Note: additional tests can be applied to determine intersection from above
+     * or below the test region and disjoint above or below the test region cases.
+     */
 
     public int compareRegions(RPChromosomeRegion testRegion) {
 
+        return compareRegions(testRegion.startChromID, testRegion.startBase, testRegion.endChromID, testRegion.endBase);
+    }
+
+    public int compareRegions(int testRegionStartChromID, int testRegionStartBase, int testRegionEndChromID, int testRegionEndBase) {
+
         // test if this region is contained by (i.e. subset of) testRegion region
-        if (this.containedIn(testRegion))
+        if (containedIn(testRegionStartChromID, testRegionStartBase, testRegionEndChromID, testRegionEndBase))
             return 0;
 
             // test if  testRegion region is disjoint from above or below
-        else if (this.disjointBelow(testRegion))
+        else if (disjointBelow(testRegionStartChromID, testRegionStartBase))
             return -2;
-        else if (this.disjointAbove(testRegion))
+        else if (disjointAbove(testRegionEndChromID, testRegionEndBase))
             return 2;
 
             // Otherwise this region must intersect
-        else if (this.intersectsBelow(testRegion))
+        else if (this.intersectsBelow(testRegionStartChromID, testRegionStartBase))
             return -1;
-        else if (this.intersectsAbove(testRegion))
+        else if (this.intersectsAbove(testRegionEndChromID, testRegionEndBase))
             return 1;
 
         // unexpected condition is unknown
         return 3;
     }
 
-    /*
-    *   Method checks if test region matches this region
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region equals the test region: true or false
-    * */
 
-    public boolean equals(RPChromosomeRegion testRegion) {
+    /**
+     * Method checks if test region contains this region;
+     * (i.e this region is subset oftest region).
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome selection region
+     * <p/>
+     * Returns:
+     * This region is contained in the test region: true or false
+     */
 
-        if (startChromID == testRegion.startChromID && startBase == testRegion.startBase &&
-                endChromID == testRegion.endChromID && endBase == testRegion.endBase)
-            return true;
-        else
-            return false;
-    }
 
-    /*
-    *   Method checks if test region contains this region;
-    *   (i.e this region is subset oftest region).
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region is contained in the test region: true or false
-    * */
+    private boolean containedIn(int testRegionStartChromID, int testRegionStartBase, int testRegionEndChromID, int testRegionEndBase) {
 
-    public boolean containedIn(RPChromosomeRegion testRegion) {
 
-        if (startChromID > testRegion.startChromID ||
-                (startChromID == testRegion.startChromID && startBase >= testRegion.startBase)) {
-            if (endChromID < testRegion.endChromID ||
-                    (endChromID == testRegion.endChromID && endBase <= testRegion.endBase))
+        if (startChromID > testRegionStartChromID ||
+                (startChromID == testRegionStartChromID && startBase >= testRegionStartBase)) {
+            if (endChromID < testRegionEndChromID ||
+                    (endChromID == testRegionEndChromID && endBase <= testRegionEndBase))
                 return true;
             else
                 return false;
@@ -183,25 +172,25 @@ public class RPChromosomeRegion {
             return false;
     }
 
-    /*
-    *   Method checks if this region intersects test region from below
-    *
-    *   Note: To be true, this region must have some part outside the test region
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region intersects the test region from below: true or false
-    * */
 
-    public boolean intersectsBelow(RPChromosomeRegion testRegion) {
+    /**
+     * Method checks if this region intersects test region from below
+     * <p/>
+     * Note: To be true, this region must have some part outside the test region
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome selection region
+     * <p/>
+     * Returns:
+     * This region intersects the test region from below: true or false
+     */
+    private boolean intersectsBelow(int testRegionStartChromID, int testRegionStartBase) {
 
         // Only need to test if some part of this region is below and some within test region.
-        if (startChromID < testRegion.startChromID ||
-                (startChromID == testRegion.startChromID && startBase < testRegion.startBase)) {
-            if (endChromID > testRegion.startChromID ||
-                    (endChromID == testRegion.startChromID && endBase > testRegion.startBase))
+        if (startChromID < testRegionStartChromID ||
+                (startChromID == testRegionStartChromID && startBase < testRegionStartBase)) {
+            if (endChromID > testRegionStartChromID ||
+                    (endChromID == testRegionStartChromID && endBase > testRegionStartBase))
                 return true;
             else
                 return false;
@@ -209,25 +198,24 @@ public class RPChromosomeRegion {
             return false;
     }
 
-    /*
-    *   Method checks if this region intersects test region from above.
-    *
-    *   Note: To be true, this region must have some part outside the test region
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region intersects the test region from above: true or false
-    * */
-
-    public boolean intersectsAbove(RPChromosomeRegion testRegion) {
+    /**
+     * Method checks if this region intersects test region from above.
+     * <p/>
+     * Note: To be true, this region must have some part outside the test region
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome selection region
+     * <p/>
+     * Returns:
+     * This region intersects the test region from above: true or false
+     */
+    private boolean intersectsAbove(int testRegionEndChromID, int testRegionEndBase) {
 
         // Only need to test if some part of this region is above and some within test region.
-        if (endChromID > testRegion.endChromID ||
-                (endChromID == testRegion.endChromID && endBase > testRegion.endBase)) {
-            if (startChromID < testRegion.endChromID ||
-                    (startChromID == testRegion.endChromID && startBase < testRegion.endBase))
+        if (endChromID > testRegionEndChromID ||
+                (endChromID == testRegionEndChromID && endBase > testRegionEndBase)) {
+            if (startChromID < testRegionEndChromID ||
+                    (startChromID == testRegionEndChromID && startBase < testRegionEndBase))
                 return true;
             else
                 return false;
@@ -235,53 +223,51 @@ public class RPChromosomeRegion {
             return false;
     }
 
-    /*
-    *   Method checks if this region is completely below test region.
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region is disjoint below the test region: true or false
-    * */
+    /**
+     * Method checks if this region is completely below test region.
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome selection region
+     * <p/>
+     * Returns:
+     * This region is disjoint below the test region: true or false
+     */
+    private boolean disjointBelow(int testRegionStartChromID, int testRegionStartBase) {
 
-    public boolean disjointBelow(RPChromosomeRegion testRegion) {
-
-        if (endChromID < testRegion.startChromID ||
-                endChromID == testRegion.startChromID && endBase <= testRegion.startBase)
+        if (endChromID < testRegionStartChromID ||
+                endChromID == testRegionStartChromID && endBase <= testRegionStartBase)
             return true;
         else
             return false;
     }
 
-    /*
-    *   Method checks if this region region is completely above test region.
-    *
-    *   Parameters:
-    *       testRegion - chromosome selection region
-    *
-    *   Returns:
-    *       This region is disjoint above the test region: true or false
-    * */
+    /**
+     * Method checks if this region region is completely above test region.
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome selection region
+     * <p/>
+     * Returns:
+     * This region is disjoint above the test region: true or false
+     */
+    private boolean disjointAbove(int testRegionEndChromID, int testRegionEndBase) {
 
-    public boolean disjointAbove(RPChromosomeRegion testRegion) {
-
-        if (startChromID > testRegion.endChromID ||
-                startChromID == testRegion.endChromID && startBase >= testRegion.endBase)
+        if (startChromID > testRegionEndChromID ||
+                startChromID == testRegionEndChromID && startBase >= testRegionEndBase)
             return true;
         else
             return false;
     }
 
-    /*
-    *   Method computes the extremes between this region and the test region
-    *
-    *   Parameters:
-    *       testRegion - chromosome region to compare against this region
-    *
-    *   Returns:
-    *       new chromosome region of extremes
-    * */
+    /**
+     * Method computes the extremes between this region and the test region
+     * <p/>
+     * Parameters:
+     * testRegion - chromosome region to compare against this region
+     * <p/>
+     * Returns:
+     * new chromosome region of extremes
+     */
 
     public RPChromosomeRegion getExtremes(RPChromosomeRegion testRegion) {
         RPChromosomeRegion newRegion = new RPChromosomeRegion(this);
@@ -303,24 +289,5 @@ public class RPChromosomeRegion {
 
         return newRegion;
     }
-
-    public void expand(RPChromosomeRegion testRegion) {
-        if (testRegion.startChromID < startChromID ||
-                (testRegion.startChromID == startChromID &&
-                        testRegion.startBase < startBase)) {
-            startChromID = testRegion.startChromID;
-            startBase = testRegion.startBase;
-        }
-
-        if (testRegion.endChromID > endChromID ||
-                (testRegion.endChromID == endChromID &&
-                        testRegion.endBase > endBase)) {
-            endChromID = testRegion.endChromID;
-            endBase = testRegion.endBase;
-        }
-
-
-    }
-
 
 }

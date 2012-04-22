@@ -18,6 +18,8 @@
 
 package org.broad.igv.bbfile;
 
+import org.apache.log4j.Logger;
+
 /**
  * Created by IntelliJ IDEA.
  * User: martind
@@ -34,20 +36,41 @@ package org.broad.igv.bbfile;
 *
 * */
 
-interface RPTreeNodeItem  {
+abstract class RPTreeNodeItem {
+
+    private static Logger log = Logger.getLogger(RPTreeNodeItem.class);
 
 
-    // returns the chromosome boundary for the item
-    public RPChromosomeRegion getChromosomeBounds();
+    protected RPChromosomeRegion chromosomeBounds; // chromosome bounds for item
+
+
+    public RPTreeNodeItem(RPChromosomeRegion chromosomeBounds) {
+        this.chromosomeBounds = chromosomeBounds;
+    }
+
+    public RPChromosomeRegion getChromosomeBounds() {
+        return chromosomeBounds;
+    }
 
     // Note: compareRegions returns the following values:
-     //   -2 indicates chromosome region is completely below node region
-     //   -1 indicates that chromosome region intersect node region from below
-     //  0 means that chromosome region is inclusive to node region
-     //  1 indicates chromosome region intersects node region from above
-     //  2 indicates that this region is completely above that region
-    public int compareRegions(RPChromosomeRegion chromosomeRegion);
+    //   -2 indicates chromosome region is completely below node region
+    //   -1 indicates that chromosome region intersect node region from below
+    //  0 means that chromosome region is inclusive to node region
+    //  1 indicates chromosome region intersects node region from above
+    //  2 indicates that this region is completely above that region
 
-    // Prints the tree node item.
-    void print();
+    public int compareRegions(RPChromosomeRegion chromosomeRegion) {
+        return chromosomeBounds.compareRegions(chromosomeRegion);
+    }
+
+    public void print() {
+
+        log.debug("Child node item :\n");
+        log.debug(" StartChromID = " + chromosomeBounds.getStartChromID() + "\n");
+        log.debug(" StartBase = " + chromosomeBounds.getStartBase() + "\n");
+        log.debug(" EndChromID = " + chromosomeBounds.getEndChromID() + "\n");
+        log.debug(" EndBase = " + chromosomeBounds.getEndBase() + "\n");
+
+
+    }
 }
