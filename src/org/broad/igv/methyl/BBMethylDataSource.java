@@ -88,24 +88,36 @@ public class BBMethylDataSource implements MethylDataSource {
 
         public MethylScore next() {
 
-            BedFeature feat = bedIterator.next();
-            BasicFeature feature = new BasicFeature(feat.getChromosome(), feat.getStartBase(), feat.getEndBase());
-            String[] restOfFields = feat.getRestOfFields();
-            String name = restOfFields[0];
-            //‘92%[51]’
+            BedFeature feat = null;
 
-            String[] tokens = percentPattern.split(name.replace("'", "").replace("[", "").replace("]", ""));
-            if (tokens.length != 2) {
-                // What to do, throw exception?
+            while (feat == null && bedIterator.hasNext()) {
+                feat = bedIterator.next();
+                String[] restOfFields = feat.getRestOfFields();
+                String name = restOfFields[0];
+                //‘92%[51]’
+
+                String[] tokens = percentPattern.split(name.replace("'", "").replace("[", "").replace("]", ""));
+                if (tokens.length != 2) {
+                    // What to do, throw exception?
+                    continue;
+                }
+                short percent = 0;
+                try {
+                    percent = Short.parseShort(tokens[0]);
+                } catch (NumberFormatException e) {
+                    continue;
+                    //    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                short count;
+                try {
+                    count = Short.parseShort(tokens[1]);
+                } catch (NumberFormatException e) {
+                    count = Short.MAX_VALUE;    // Protect against the occassional massive coverage depth
+                }
+                return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), percent, count);
             }
-            short percent = Short.parseShort(tokens[0]);
-            short count;
-            try {
-                count = Short.parseShort(tokens[1]);
-            } catch (NumberFormatException e) {
-                count = Short.MAX_VALUE;    // Protect against the occassional massive coverage depth
-            }
-            return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), percent, count);
+
+            return null;
 
         }
 

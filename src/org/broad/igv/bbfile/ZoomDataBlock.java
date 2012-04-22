@@ -19,6 +19,7 @@
 package org.broad.igv.bbfile;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
@@ -95,7 +96,7 @@ public class ZoomDataBlock {
             // decompress if necessary - the buffer size is 0 for uncomressed data
             // Note:  BBFile Table C specifies a decompression buffer size
             if (uncompressBufSize > 0)
-                zoomBuffer = BBCompressionUtils.decompress(buffer, uncompressBufSize);
+                zoomBuffer = CompressionUtils.decompress(buffer, uncompressBufSize);
             else
                 zoomBuffer = buffer;    // use uncompressed read buffer directly
 
