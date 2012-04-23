@@ -27,15 +27,14 @@ public class CachingMethylSource implements MethylDataSource {
 
     private static Logger log = Logger.getLogger(CachingMethylSource.class);
     private static int DEFAULT_TILE_COUNT = 4;
-    private static int DEFAULT_TILE_SIZE = 1000000; //1 MB
     private int binSize;
 
     MethylDataSource reader;
     LRUCache<String, Bin> cache;
 
 
-    public CachingMethylSource(MethylDataSource reader) {
-        this(reader, DEFAULT_TILE_COUNT, DEFAULT_TILE_SIZE);
+    public CachingMethylSource(MethylDataSource reader, int binSize) {
+        this(reader, DEFAULT_TILE_COUNT, binSize);
     }
 
 

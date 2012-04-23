@@ -40,6 +40,8 @@ import java.util.List;
  */
 public class MethylTrack extends AbstractTrack {
 
+    public static final int ONE_MB = 1000000;
+    public static final int TEN_MB = 10000000;
     MethylDataSource dataSource;
     Interval loadedInterval;
     Renderer renderer;
@@ -47,18 +49,14 @@ public class MethylTrack extends AbstractTrack {
 
     public MethylTrack(ResourceLocator dataResourceLocator, Genome genome) throws IOException {
         super(dataResourceLocator);
+        setHeight(60);
         renderer = new PointsRenderer();
-        // this.dataSource = new CachingMethylSource(new BBMethylDataSource(dataResourceLocator.getPath(), genome));
-        this.dataSource = new BBMethylDataSource(dataResourceLocator.getPath(), genome);
-
-        this.setHeight(60);
-
-        loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
-        this.setDataRange(new DataRange(0, 100));
 
         boolean isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
-        resolutionThreshold = isWGBS ? 1000000 : Integer.MAX_VALUE;
-
+        resolutionThreshold = isWGBS ? ONE_MB : TEN_MB;
+        dataSource = new CachingMethylSource( new BBMethylDataSource(dataResourceLocator.getPath(), genome), resolutionThreshold);
+        loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
+        setDataRange(new DataRange(0, 100));
     }
 
     /**
