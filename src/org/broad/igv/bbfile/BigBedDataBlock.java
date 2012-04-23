@@ -162,11 +162,11 @@ public class BigBedDataBlock {
                 }
 
                 int leafHitValue = selectionRegion.compareRegions(chromID, chromStart, chromID, chromEnd);
-                if (leafHitValue == 2 || (contained && leafHitValue == 1)) {
+                if (leafHitValue == -2 || (contained && leafHitValue == -1)) {
                     remDataSize -= (minItemSize + restOfFields.length());
                     break;
                 }
-                if (leafHitValue == -2 || (contained && leafHitValue == -1)) {
+                if (leafHitValue == 2 || (contained && leafHitValue == 1)) {
                     remDataSize -= (minItemSize + restOfFields.length());
                     continue;
                 } else {
