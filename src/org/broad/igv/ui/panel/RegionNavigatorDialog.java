@@ -32,10 +32,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -410,6 +407,10 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         checkBoxZoomWhenNav.setEnabled(enableZoomToRegion);
     }
 
+    private void thisWindowActivated(WindowEvent e) {
+        synchRegions();
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -438,6 +439,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         //======== this ========
         setTitle("Regions of Interest");
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                thisWindowActivated(e);
+            }
+        });
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
