@@ -360,7 +360,7 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    expected = expected * (this.sum / df.getSum());
+                    //expected = expected * (this.sum / df.getSum());
                     double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
