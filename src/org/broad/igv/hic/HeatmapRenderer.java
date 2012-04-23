@@ -133,7 +133,6 @@ public class HeatmapRenderer {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1, dist);
-                    //expected = expected * (hic.getSum()/df.getSum());
                     score = rec.getCounts() / expected;
                     score = Math.log10(score);
                 } else {
