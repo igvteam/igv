@@ -42,10 +42,12 @@ public class MethylTrack extends AbstractTrack {
 
     public static final int ONE_MB = 1000000;
     public static final int TEN_MB = 10000000;
-    MethylDataSource dataSource;
-    Interval loadedInterval;
-    Renderer renderer;
-    int resolutionThreshold;
+
+    private MethylDataSource dataSource;
+    private Interval loadedInterval;
+    private Renderer renderer;
+    private int resolutionThreshold;
+    private boolean loading = false;
 
     public MethylTrack(ResourceLocator dataResourceLocator, Genome genome) throws IOException {
         super(dataResourceLocator);
@@ -54,7 +56,7 @@ public class MethylTrack extends AbstractTrack {
 
         boolean isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
         resolutionThreshold = isWGBS ? ONE_MB : TEN_MB;
-        dataSource = new CachingMethylSource( new BBMethylDataSource(dataResourceLocator.getPath(), genome), resolutionThreshold);
+        dataSource = new CachingMethylSource(new BBMethylDataSource(dataResourceLocator.getPath(), genome), resolutionThreshold);
         loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
         setDataRange(new DataRange(0, 100));
     }
@@ -87,22 +89,30 @@ public class MethylTrack extends AbstractTrack {
         if (loadedInterval.contains(chr, start, end)) {
             renderer.render(loadedInterval.scores, context, rect, this);
         } else {
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    int width = (end - start) / 2;
-                    int expandedStart = Math.max(0, start - width);
-                    int expandedEnd = end + width;
+            if (!loading) {
+                loading = true;
+                Runnable runnable = new Runnable() {
+                    public void run() {
 
-                    List<MethylScore> scores = new ArrayList<MethylScore>(1000);
-                    Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
-                    while (iter.hasNext()) {
-                        scores.add(iter.next());
+                        try {
+                            int width = (end - start) / 2;
+                            int expandedStart = Math.max(0, start - width);
+                            int expandedEnd = end + width;
+
+                            List<MethylScore> scores = new ArrayList<MethylScore>(1000);
+                            Iterator<MethylScore> iter = dataSource.query(chr, expandedStart, expandedEnd);
+                            while (iter.hasNext()) {
+                                scores.add(iter.next());
+                            }
+                            loadedInterval = new Interval(chr, expandedStart, expandedEnd, scores);
+                            context.getPanel().repaint(); //rect);
+                        } finally {
+                            loading = false;
+                        }
                     }
-                    loadedInterval = new Interval(chr, expandedStart, expandedEnd, scores);
-                    context.getPanel().repaint(); //rect);
-                }
-            };
-            LongRunningTask.submit(runnable);
+                };
+                LongRunningTask.submit(runnable);
+            }
         }
     }
 
