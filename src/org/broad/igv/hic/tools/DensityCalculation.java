@@ -302,6 +302,12 @@ public class DensityCalculation {
         gridSize = is.readInt();
         int nChromosomes = is.readInt();
 
+        // Chromosome indexes
+        Integer[] chrIndexes = new Integer[nChromosomes];
+        for (int i = 0; i < nChromosomes; i++) {
+            chrIndexes[i] = is.readInt();
+        }
+
         // Normalization factors
         normalizationFactors = new LinkedHashMap<Integer,Double>(nChromosomes);
         for (int i = 0; i < nChromosomes; i++) {
