@@ -13,6 +13,7 @@
 package org.broad.igv.methyl;
 
 import org.broad.igv.Globals;
+import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
@@ -40,8 +41,8 @@ import java.util.List;
  */
 public class MethylTrack extends AbstractTrack {
 
-    public static final int ONE_MB = 1000000;
-    public static final int TEN_MB = 10000000;
+    public static final int FIVE_MB = 5000000;
+    public static final int FIFTY_MB = 50000000;
 
     private MethylDataSource dataSource;
     private Interval loadedInterval;
@@ -49,14 +50,23 @@ public class MethylTrack extends AbstractTrack {
     private int resolutionThreshold;
     private boolean loading = false;
 
-    public MethylTrack(ResourceLocator dataResourceLocator, Genome genome) throws IOException {
+    public MethylTrack(ResourceLocator dataResourceLocator, BBFileReader reader, Genome genome) throws IOException {
         super(dataResourceLocator);
         setHeight(60);
         renderer = new PointsRenderer();
 
-        boolean isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
-        resolutionThreshold = isWGBS ? ONE_MB : TEN_MB;
-        dataSource = new CachingMethylSource(new BBMethylDataSource(dataResourceLocator.getPath(), genome), resolutionThreshold);
+        boolean isWGBS;
+        if (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq")) {
+            resolutionThreshold = FIVE_MB;
+            dataSource = new CachingMethylSource(new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome), resolutionThreshold);
+            //dataSource = new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome);
+        } else {
+            isWGBS = dataResourceLocator.getPath().contains("BiSeq_cpgMethylation");
+            resolutionThreshold = isWGBS ? FIVE_MB : FIFTY_MB;
+            dataSource = new CachingMethylSource(new BBMethylDataSource(reader, BBMethylDataSource.Type.ZILLER, genome), resolutionThreshold);
+            //dataSource = new BBMethylDataSource(reader, BBMethylDataSource.Type.USC, genome);
+        }
+
         loadedInterval = new Interval("", -1, -1, Collections.<MethylScore>emptyList());
         setDataRange(new DataRange(0, 100));
     }

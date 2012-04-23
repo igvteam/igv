@@ -100,7 +100,7 @@ public class BBFileReader {
     private int uncompressBufSize;     // buffer byte size for data decompression; 0 for uncompressed
 
     // AutoSQL String defines custom BigBed formats
-    private long autoSqlOffset;
+
     private String autoSqlFormat;
 
     // This section defines the zoom items if zoom data exists
@@ -118,6 +118,7 @@ public class BBFileReader {
     // R+ tree
     private long chromDataTreeOffset;  // file offset to mChromosome data R+ tree
     private RPTree chromosomeDataTree;     // Container for the mChromosome data R+ tree
+    private String autoSql;
 
 
     public BBFileReader(String path) throws IOException {
@@ -125,7 +126,7 @@ public class BBFileReader {
 
     }
 
-    public BBFileReader(String path, SeekableStream stream) {
+    public BBFileReader(String path, SeekableStream stream) throws IOException {
 
 
         log.debug("Opening BBFile source  " + path);
@@ -166,10 +167,12 @@ public class BBFileReader {
         }
 
         // get the AutoSQL custom BigBed fields
-        autoSqlOffset = fileHeader.getAutoSqlOffset();
+
+
+        long autoSqlOffset = fileHeader.getAutoSqlOffset();
         if (autoSqlOffset != 0) {
-            // read in .as entry
-            // mFileOffset = mAutoSqlOffset + sizeof(.as format field);
+            fis.seek(autoSqlOffset);
+            autoSql = readNullTerminatedString(fis);
         }
 
         // get the Total Summary Block (Table DD)
@@ -197,7 +200,7 @@ public class BBFileReader {
 
         // get number of data records indexed by the R+ chromosome data location tree
         fileOffset = fileHeader.getFullDataOffset();
-     }
+    }
 
     /*
     *   Method returns the Big Binary File header which identifies
@@ -288,6 +291,10 @@ public class BBFileReader {
         return chromosomeList;
     }
 
+    public String getAutoSql() {
+        return autoSql;
+    }
+
     /**
      * Returns an iterator for BigBed features which occupy a chromosome selection region.
      * <p/>
@@ -350,7 +357,7 @@ public class BBFileReader {
      * 2) A null object is returned if the file is not BigWig.(see isBigWigFile method)
      */
     synchronized public BigWigIterator getBigWigIterator(String startChromosome, int startBase,
-                                            String endChromosome, int endBase, boolean contained) {
+                                                         String endChromosome, int endBase, boolean contained) {
 
 
         if (!isBigWigFile())
@@ -392,7 +399,7 @@ public class BBFileReader {
      * 1) An empty iterator is returned if region has no data available
      */
     synchronized public ZoomLevelIterator getZoomLevelIterator(int zoomLevel, String startChromosome, int startBase,
-                                                  String endChromosome, int endBase, boolean contained) {
+                                                               String endChromosome, int endBase, boolean contained) {
         // check for valid zoom level
         if (zoomLevel < 1 || zoomLevel > zoomLevelCount)
             throw new RuntimeException("Error: ZoomLevelIterator zoom level is out of range\n");
@@ -491,6 +498,18 @@ public class BBFileReader {
 
         return chromBounds;
     }
+
+
+    private static String readNullTerminatedString(InputStream fis) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(fis, 1000);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
+        byte b;
+        while ((b = (byte) bis.read()) != 0) {
+            bos.write(b);
+        }
+        return new String(bos.toByteArray());
+    }
+
 
 
 } // end of BBFileReader

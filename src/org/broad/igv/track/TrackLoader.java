@@ -762,13 +762,6 @@ public class TrackLoader {
 
     public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        // TODO -- remove the Ziller hack below when we have converted there files to something standard
-        if(locator.getPath().contains("RRBS_cpgMethylation") || locator.getPath().contains("BiSeq_cpgMethylation")) {
-            loadZillerMethylTrack(locator, newTracks, genome);
-            return;
-        }
-
-
         String trackName = locator.getTrackName();
         String trackId = locator.getPath();
 
@@ -781,16 +774,23 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
             newTracks.add(track);
         } else if (reader.isBigBedFile()) {
-            FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-            newTracks.add(track);
+
+            if (locator.getPath().contains("RRBS_cpgMethylation") ||
+                    locator.getPath().contains("BiSeq_cpgMethylation") ||
+                    (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
+                loadMethylTrack(locator, reader, newTracks, genome);
+            } else {
+                FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
+                newTracks.add(track);
+            }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
     }
 
-    private void loadZillerMethylTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {
 
-        MethylTrack track = new MethylTrack(locator, genome);
+        MethylTrack track = new MethylTrack(locator, reader, genome);
         newTracks.add(track);
     }
 

@@ -13,6 +13,7 @@
 package org.broad.igv.methyl;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 /**
@@ -24,19 +25,49 @@ public class MethylScore implements LocusScore {
     String chr;
     int start;
     int end;
-    short percentMethylated;
-    short totalCount;
+    Strand strand;
+    float percentMethylated;
+    int totalCount;
 
-    public MethylScore(String chr, int start, int end, short percentMethylated, short totalCount) {
+    public MethylScore(String chr, int start, int end, Strand strand, float percentMethylated, int totalCount) {
         this.chr = chr;
-        this.end = end;
-        this.percentMethylated = percentMethylated;
         this.start = start;
+        this.end = end;
+        this.strand = strand;
+        this.percentMethylated = percentMethylated;
         this.totalCount = totalCount;
     }
 
+    public String getChr() {
+        return chr;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public Strand getStrand() {
+        return strand;
+    }
+
     public float getScore() {
-        return percentMethylated;  //To change body of implemented methods use File | Settings | File Templates.
+        return percentMethylated;
+    }
+
+    public int getCount() {
+        return totalCount;
+    }
+
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     /**
@@ -49,38 +80,8 @@ public class MethylScore implements LocusScore {
      * @return
      */
     public String getValueString(double position, WindowFunction windowFunction) {
-        String totalCountString = totalCount < Short.MAX_VALUE ? String.valueOf(totalCount) :
-                "> " + Short.MAX_VALUE;
-        return percentMethylated + "%" + " [" + totalCountString + "]";
+        return percentMethylated + "%" + " [" + totalCount + "]" +
+                (strand == Strand.POSITIVE ? " (+)" : (strand == Strand.NEGATIVE ? " (-)" : ""));
     }
 
-    /**
-     * Return the features reference sequence name, e.g chromosome or contig
-     */
-    public String getChr() {
-        return chr;
-    }
-
-    /**
-     * Return the start position
-     */
-    public int getStart() {
-        return start;
-    }
-
-    /**
-     * Return the end position
-     */
-    public int getEnd() {
-        return end;
-    }
-
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public void setEnd(int end) {
-        this.end = end;
-    }
 }
