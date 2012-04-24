@@ -285,9 +285,6 @@ public class GFFParser implements FeatureParser {
                 LinkedHashMap<String, String> attributes = new LinkedHashMap();
                 //attributes.put("Type", featureType);
                 helper.parseAttributes(attributeString, attributes);
-
-                String description = getDescription(attributes, featureType);
-
                 String id = helper.getID(attributes);
 
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
@@ -323,7 +320,6 @@ public class GFFParser implements FeatureParser {
                     for (String pid : parentIds) {
 
                         Exon exon = new Exon(chromosome, start, end, strand);
-                        exon.setDescription(description);
                         exon.setAttributes(attributes);
                         exon.setUTR(utrTerms.contains(featureType));
 
@@ -348,7 +344,6 @@ public class GFFParser implements FeatureParser {
                 } else {
                     BasicFeature f = new BasicFeature(chromosome, start, end, strand);
                     f.setName(getName(attributes));
-                    f.setDescription(description);
                     f.setAttributes(attributes);
 
                     if (attributes.containsKey("color")) {
@@ -413,41 +408,7 @@ public class GFFParser implements FeatureParser {
         return features;
     }
 
-    public static String getDescription(Map<String, String> attributes) {
-        return getDescription(attributes, null);
-    }
 
-
-    static String getDescription(Map<String, String> attributes, String type) {
-        // 30 attributes is the maximum visible on a typical screen
-        int max = 30;
-        int count = 0;
-
-        // Reset buffer.
-        buf.setLength(0);
-        if (type != null) {
-            buf.append(type);
-            buf.append("<br>");
-        }
-        for (Map.Entry<String, String> att : attributes.entrySet()) {
-
-            //if (!ignoreAttributes.contains(att.getKey())) {
-            String attValue = att.getValue().replaceAll(";", "<br>");
-            buf.append(att.getKey());
-            buf.append(" = ");
-            buf.append(attValue);
-            buf.append("<br>");
-            if (++count > max) {
-                buf.append("...");
-                break;
-            }
-
-            //}
-        }
-        String description = buf.toString();
-
-        return description;
-    }
 
     private Strand convertStrand(String strandString) {
         Strand strand = Strand.NONE;

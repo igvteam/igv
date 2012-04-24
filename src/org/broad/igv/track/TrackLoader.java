@@ -154,7 +154,7 @@ public class TrackLoader {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
-            } else if (isIndexed(path)) {
+            } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // VCF files must be indexed.
@@ -350,13 +350,7 @@ public class TrackLoader {
 
     }
 
-    /**
-     * Load the input file as a BED or Attribute (Sample Info) file.  First assume
-     * it is a BED file,  if no features are found load as an attribute file.
-     *
-     * @param locator
-     * @param newTracks
-     */
+    
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
@@ -1211,10 +1205,10 @@ public class TrackLoader {
     }
 
 
-    public static boolean isIndexed(String path) {
+    public static boolean isIndexed(String path, Genome genome) {
 
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
-        if (!isIndexable(path)) {
+        if (!isIndexable(path, genome)) {
             return false;
         }
 
@@ -1248,16 +1242,14 @@ public class TrackLoader {
      * @param path
      * @return
      */
-    private static boolean isIndexable(String path) {
+    private static boolean isIndexable(String path, Genome genome) {
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
 
-        return fn.endsWith(".vcf4") || fn.endsWith(".vcf") || fn.endsWith(".bed") || fn.endsWith(".repmask") ||
-                fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx") ||
-                fn.endsWith(".gvf") || fn.endsWith(".gtf");
+        return CodecFactory.getCodec(path, genome) != null;
     }
 
 

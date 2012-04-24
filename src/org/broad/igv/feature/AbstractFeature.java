@@ -220,4 +220,33 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
     public String getLocusString() {
         return getChr() + ":" + (getStart() + 1) + "-" + getEnd();
     }
+
+
+    protected String getAttributeString() {
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("<br>");
+        // 30 attributes is the maximum visible on a typical screen
+        int max = 30;
+        int count = 0;
+        for (Map.Entry<String, String> att : attributes.entrySet()) {
+
+            //if (!ignoreAttributes.contains(att.getKey())) {
+            String attValue = att.getValue().replaceAll(";", "<br>");
+            buf.append(att.getKey());
+            buf.append(" = ");
+            buf.append(attValue);
+            buf.append("<br>");
+            if (++count > max) {
+                buf.append("...");
+                break;
+            }
+
+            //}
+        }
+        String description = buf.toString();
+
+        return description;
+
+    }
 }

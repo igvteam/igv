@@ -72,7 +72,7 @@ public class CodecFactory {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
         } else if (fn.contains("ucscgene")) {
             return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
-        } else if (fn.endsWith(".repmask")) {
+        } else if (fn.endsWith(".rmask")) {
             return new REPMaskCodec(genome);
         } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
             return new GFFCodec(GFFCodec.Version.GFF3, genome);
