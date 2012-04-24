@@ -38,12 +38,14 @@ public class FrameManager {
     static {
         //TODO This is a hack.
         if (!Globals.isHeadless()) {
-            defaultFrame = new ReferenceFrame("genome");
-            frames.add(defaultFrame);
+            frames.add(getDefaultFrame());
         }
     }
 
     public static ReferenceFrame getDefaultFrame() {
+        if(defaultFrame == null){
+            defaultFrame = new ReferenceFrame("genome");
+        }
         return defaultFrame;
     }
 
@@ -66,11 +68,11 @@ public class FrameManager {
         if (searchString != null) {
             Locus locus = getLocus(searchString, 0);
             if (locus != null) {
-                defaultFrame.setInterval(locus);
+                getDefaultFrame().setInterval(locus);
             }
         }
-        frames.add(defaultFrame);
-        defaultFrame.recordHistory();
+        frames.add(getDefaultFrame());
+        getDefaultFrame().recordHistory();
     }
 
 
@@ -79,7 +81,7 @@ public class FrameManager {
         frames.clear();
 
         if (gl == null) {
-            frames.add(defaultFrame);
+            frames.add(getDefaultFrame());
         } else {
             int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
             List<String> lociNotFound = new ArrayList();
@@ -90,7 +92,7 @@ public class FrameManager {
                     lociNotFound.add(loci.get(0));
                 } else {
                     IGV.getInstance().getSession().setCurrentGeneList(null);
-                    defaultFrame.jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
+                    getDefaultFrame().jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
                 }
             } else {
                 for (String searchString : gl.getLoci()) {
