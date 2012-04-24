@@ -61,7 +61,7 @@ public class TrackLoaderTest {
     @Test
     public void testLoadBEDNotIndexed() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
-        if (TrackLoader.isIndexed(filepath)) {
+        if (TrackLoader.isIndexed(filepath, null)) {
             File f = new File(filepath + ".idx");
             f.delete();
         }
