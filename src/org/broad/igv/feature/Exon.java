@@ -110,13 +110,13 @@ public class Exon extends AbstractFeature {
 
     public void setCodingStart(int codingStart) {
         this.codingStart = Math.max(getStart(), codingStart);
-        hashCode = this.hashCode();
+        hashCode = 0;  // Invalidate hashCode
     }
 
 
     public void setCodingEnd(int codingEnd) {
         this.codingEnd = Math.min(getEnd(), codingEnd);
-        hashCode = this.hashCode();
+        hashCode = 0;     // Invalidate hashCode
     }
 
 
