@@ -47,7 +47,7 @@ public class ShutdownThread extends Thread {
     }
 
     private static void cleanupBamIndexCache() {
-        File dir = DirectoryManager.getBamIndexCacheDirectory();
+        File dir = DirectoryManager.getCacheDirectory();
         for (File f : dir.listFiles()) {
             f.delete();
         }

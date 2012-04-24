@@ -14,6 +14,7 @@ package org.broad.igv.cbio;
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
@@ -119,6 +120,18 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
+
+
+    private String sourcePath;
+
+    /**
+     * Generally for testing. The path from which data was loaded.
+     *
+     * @return
+     */
+    String getSourcePath() {
+        return sourcePath;
+    }
 
 //    protected KeyFactory edgeKeyFactory;
 //    protected KeyFactory vertexKeyFactory;
@@ -285,9 +298,32 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return this.filterNodes(min_connections) > 0;
     }
 
-    public static GeneNetwork getFromCBIO(Iterable<String> geneList) throws IOException {
+    /**
+     * Hash the url to get a file name, locate it in temp directory
+     *
+     * @param url
+     * @return
+     */
+    static File getCachedFile(String url) {
+        String cachedFileName = Math.abs(url.hashCode()) + "_tmp.xml";
+        File cachedFile = new File(DirectoryManager.getCacheDirectory(), cachedFileName);
+        return cachedFile;
+    }
+
+    static String getURLForGeneList(Iterable<String> geneList) {
         String query = HttpUtils.buildURLString(geneList, "+");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
+        return url;
+    }
+
+    public static GeneNetwork getFromCBIO(Iterable<String> geneList) throws IOException {
+        String url = getURLForGeneList(geneList);
+
+        File cachedFile = getCachedFile(url);
+        if (cachedFile.exists()) {
+            url = cachedFile.getAbsolutePath();
+        }
+
         GeneNetwork network = new GeneNetwork();
         network.loadNetwork(url);
         return network;
@@ -305,7 +341,22 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         int numNodes = -1;
         try {
             InputStream cbioStream = ParsingUtils.openInputStreamGZ(new ResourceLocator(path));
+            this.sourcePath = path;
             Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
+
+            //Cache the file
+            if (HttpUtils.isURL(path)) {
+                File cacheFile = getCachedFile(path);
+                try {
+                    this.exportDocument(document, cacheFile.getAbsolutePath());
+                } catch (IOException e) {
+                    //No biggy, we just don't cache the file
+                    log.error("Error caching file: " + e);
+                    cacheFile.delete();
+                }
+                cacheFile.deleteOnExit();
+            }
+
             this.origDocument = document;
 
             //Read schema from top and save it
@@ -511,28 +562,39 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return count;
     }
 
-
     /**
      * Write document to XML at outputFile. File is deleted if there
      * is an error writing out. If the outputFile has a .gz extension,
      * the output is gzipped.
      *
-     * @param outputFile
+     * @param document   The Document to write out
+     * @param outputPath
      * @return success
      * @throws java.io.IOException
      */
-    public int exportGraph(String outputFile) throws IOException {
-        boolean gzip = outputFile.endsWith(".gz");
+    private int exportDocument(Document document, String outputPath) throws IOException {
+        boolean gzip = outputPath.endsWith(".gz");
 
-        String xmlString = Utilities.getString(this.createDocument());
+        String xmlString = Utilities.getString(document);
 
-        OutputStream stream = new FileOutputStream(outputFile);
+        OutputStream stream = new FileOutputStream(outputPath);
         int count = writeEncodedString(xmlString, stream, gzip, false);
 
         stream.flush();
         stream.close();
 
         return count;
+    }
+
+    /**
+     * Calls {@link #exportDocument} with the Document created from {@link #createDocument}
+     *
+     * @param outputFile
+     * @return
+     * @throws IOException
+     */
+    int exportGraph(String outputFile) throws IOException {
+        return exportDocument(this.createDocument(), outputFile);
     }
 
     public String outputForcBioView() throws IOException {

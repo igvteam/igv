@@ -319,6 +319,24 @@ public class GeneNetworkTest {
         }
     }
 
+    @Test
+    public void testCaching() throws Exception{
+        String[] geneArray = new String[]{"sox1", "brca1", "DIRAS3"};
+        List<String> geneList = Arrays.asList(geneArray);
+        GeneNetwork anno = GeneNetwork.getFromCBIO(geneList);
+
+        assertTrue(HttpUtils.isURL(anno.getSourcePath()));
+
+        //Check that cached file exists
+        String url = GeneNetwork.getURLForGeneList(geneList);
+        File cachedFile = GeneNetwork.getCachedFile(url);
+        assertTrue(cachedFile.exists());
+
+        //This one should be loaded from local file
+        GeneNetwork anno2 = GeneNetwork.getFromCBIO(geneList);
+        assertFalse(HttpUtils.isURL(anno2.getSourcePath()));
+    }
+
     public static class SimpleVertexFactory implements VertexFactory<Node> {
         private long vCounter = 0;
 

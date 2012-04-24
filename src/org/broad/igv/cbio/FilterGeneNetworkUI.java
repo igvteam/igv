@@ -100,7 +100,6 @@ public class FilterGeneNetworkUI extends JDialog {
         progressBar.setIndeterminate(true);
         indefMonitor.start();
 
-
         final Runnable showUI = new Runnable() {
             @Override
             public void run() {
