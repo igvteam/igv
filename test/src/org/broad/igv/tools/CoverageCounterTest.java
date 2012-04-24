@@ -33,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 public class CoverageCounterTest {
 
     static PreferenceManager preferenceManager;
-    static boolean useByteRange;
     static Genome genome;
 
     @BeforeClass
@@ -41,18 +40,15 @@ public class CoverageCounterTest {
         TestUtils.setUpHeadless();
         genome = TestUtils.loadGenome();
         preferenceManager = PreferenceManager.getInstance();
-        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
         //TestUtils.clearOutputDir();
     }
 
     @Before
     public void setUp() {
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
     }
 
     /**

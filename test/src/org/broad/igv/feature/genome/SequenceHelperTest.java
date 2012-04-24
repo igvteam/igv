@@ -41,7 +41,6 @@ public class SequenceHelperTest {
 
     static String seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
     static PreferenceManager preferenceManager;
-    static boolean useByteRange;
 
     public SequenceHelperTest() {
     }
@@ -50,14 +49,12 @@ public class SequenceHelperTest {
     public static void setUpClass() throws Exception {
         Globals.setHeadless(true);
         preferenceManager = PreferenceManager.getInstance();
-        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-    }
+      }
 
     @Before
     public void setUp() {
         //Web requests don't seem to work with this false
-        preferenceManager.override(PreferenceManager.USE_BYTE_RANGE, "" + true);
-    }
+     }
 
     @After
     public void tearDown() {
