@@ -15,6 +15,7 @@
 
 package org.broad.igv.cbio;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.lists.GeneList;
@@ -33,14 +34,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Dialog for letting the user filter a GeneNetwork from
@@ -57,6 +57,27 @@ public class FilterGeneNetworkUI extends JDialog {
     GeneNetwork network = null;
 
     private GraphListModel listModel;
+    private static List<String> columnNames;
+    private static Map<Integer, String> columnNumToKeyMap;
+    static{
+        String[] firstLabels = {"Gene label", "Interactions"};
+        columnNumToKeyMap = new HashMap<Integer, String>(GeneNetwork.attributeMap.size());
+        columnNames = new ArrayList<String>(firstLabels.length + GeneNetwork.attributeMap.size());
+        for(String label: firstLabels){
+            columnNames.add(label);
+        }
+        int ind= columnNames.size();
+        for(String label: GeneNetwork.attributeMap.keySet()){
+            columnNumToKeyMap.put(ind, label);
+            ind++;
+
+            label = label.replace('_', ' ');
+            label = label.replace("PERCENT", "%");
+            columnNames.add(label);
+            
+        }
+        
+    }
 
     public FilterGeneNetworkUI(Frame owner, GeneList geneList) {
         super(owner);
@@ -202,7 +223,42 @@ public class FilterGeneNetworkUI extends JDialog {
         }
     }
 
+    /**
+     * Sorting of the rows is done on the view, not the underlying model, 
+     * so we must convert. See {@link TableRowSorter}
+     * @return
+     *  int[] of model indices which are selected
+     */
+    private int[] getModelIndices(){
+        int[] selection = geneTable.getSelectedRows();
+        for (int i = 0; i < selection.length; i++) {
+            selection[i] = geneTable.convertRowIndexToModel(selection[i]);
+        }
+        return selection;
+    }
+
     private void okButtonActionPerformed(ActionEvent e) {
+        //If any rows are selected, we only keep those
+        //We lookup by name, because table could get sorted
+        int[] keepRows = getModelIndices();
+        if(keepRows.length > 0){
+            final Set<Node> keepNodes = new HashSet<Node>(keepRows.length);
+            GraphListModel model = (GraphListModel) geneTable.getModel();
+            List<Node> vertices = model.getVertices();
+            for(Integer loc: keepRows){
+                keepNodes.add(vertices.get(loc));
+            }
+
+            Predicate<Node> selectedPredicated = new Predicate<Node>(){
+
+                @Override
+                public boolean evaluate(Node object) {
+                    return keepNodes.contains(object);
+                }
+            };
+            network.filterNodes(selectedPredicated);
+        }
+                
         setVisible(false);
         showNetwork();
     }
@@ -259,9 +315,10 @@ public class FilterGeneNetworkUI extends JDialog {
         // Generated using JFormDesigner non-commercial license
         tabbedPane = new JTabbedPane();
         dialogPane = new JPanel();
+        panel1 = new JPanel();
+        addRow = new JButton();
         contentPane = new JPanel();
         buttonBar = new JPanel();
-        addRow = new JButton();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
         refFilter = new JButton();
@@ -301,49 +358,62 @@ public class FilterGeneNetworkUI extends JDialog {
                 dialogPane.setMinimumSize(new Dimension(443, 300));
                 dialogPane.setPreferredSize(new Dimension(443, 300));
                 dialogPane.setLayout(new GridBagLayout());
-                ((GridBagLayout) dialogPane.getLayout()).columnWidths = new int[]{0, 0};
-                ((GridBagLayout) dialogPane.getLayout()).rowHeights = new int[]{0, 0, 0, 0};
-                ((GridBagLayout) dialogPane.getLayout()).columnWeights = new double[]{1.0, 1.0E-4};
-                ((GridBagLayout) dialogPane.getLayout()).rowWeights = new double[]{0.0, 1.0, 0.0, 1.0E-4};
+                ((GridBagLayout)dialogPane.getLayout()).columnWidths = new int[] {0, 0};
+                ((GridBagLayout)dialogPane.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                ((GridBagLayout)dialogPane.getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
+                ((GridBagLayout)dialogPane.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0, 0.0, 1.0E-4};
 
-                //======== contentPane ========
+                //======== panel1 ========
                 {
-                    contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-                }
-                dialogPane.add(contentPane, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //======== buttonBar ========
-                {
-                    buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                    buttonBar.setLayout(new GridBagLayout());
-                    ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 80};
-                    ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+                    panel1.setLayout(new GridBagLayout());
+                    ((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {0, 0, 0};
+                    ((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {0, 0};
+                    ((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout)panel1.getLayout()).rowWeights = new double[] {0.0, 1.0E-4};
 
                     //---- addRow ----
-                    addRow.setText("Add");
-                    addRow.setMaximumSize(new Dimension(30, 28));
-                    addRow.setMinimumSize(new Dimension(30, 28));
-                    addRow.setPreferredSize(new Dimension(30, 28));
+                    addRow.setText("Add Filter");
+                    addRow.setMaximumSize(new Dimension(200, 28));
+                    addRow.setMinimumSize(new Dimension(100, 28));
+                    addRow.setPreferredSize(new Dimension(150, 28));
                     addRow.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             addRowActionPerformed(e);
                         }
                     });
-                    buttonBar.add(addRow, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                    panel1.add(addRow, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
+                }
+                dialogPane.add(panel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //======== contentPane ========
+                {
+                    contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+                }
+                dialogPane.add(contentPane, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //======== buttonBar ========
+                {
+                    buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                    buttonBar.setLayout(new GridBagLayout());
+                    ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 80};
+                    ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
                     //---- keepIsolated ----
                     keepIsolated.setText("Keep Isolated Genes");
+                    keepIsolated.setVisible(false);
                     buttonBar.add(keepIsolated, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- okButton ----
-                    okButton.setText("View");
+                    okButton.setText("View Network");
                     okButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -351,8 +421,8 @@ public class FilterGeneNetworkUI extends JDialog {
                         }
                     });
                     buttonBar.add(okButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- refFilter ----
                     refFilter.setText("Refresh Filter");
@@ -363,8 +433,8 @@ public class FilterGeneNetworkUI extends JDialog {
                         }
                     });
                     buttonBar.add(refFilter, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- cancelButton ----
                     cancelButton.setText("Cancel");
@@ -375,27 +445,30 @@ public class FilterGeneNetworkUI extends JDialog {
                         }
                     });
                     buttonBar.add(cancelButton, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                     //---- helpButton ----
                     helpButton.setText("Help");
                     helpButton.setVisible(false);
                     buttonBar.add(helpButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-                }
-                dialogPane.add(buttonBar, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 0), 0, 0));
+                }
+                dialogPane.add(buttonBar, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //======== scrollPane1 ========
                 {
+
+                    //---- geneTable ----
+                    geneTable.setAutoCreateRowSorter(true);
                     scrollPane1.setViewportView(geneTable);
                 }
-                dialogPane.add(scrollPane1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                dialogPane.add(scrollPane1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             tabbedPane.addTab("Filter", dialogPane);
 
@@ -461,9 +534,10 @@ public class FilterGeneNetworkUI extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JTabbedPane tabbedPane;
     private JPanel dialogPane;
+    private JPanel panel1;
+    private JButton addRow;
     private JPanel contentPane;
     private JPanel buttonBar;
-    private JButton addRow;
     private JCheckBox keepIsolated;
     private JButton okButton;
     private JButton refFilter;
@@ -487,11 +561,13 @@ public class FilterGeneNetworkUI extends JDialog {
     private class GraphListModel extends AbstractTableModel {
 
         private List<Node> vertices = null;
-        private final String[] columnNames = {"Gene label", "# of interactions"};
 
-        private void getVertices() {
-            Set<Node> nodes = network.vertexSetFiltered();
-            vertices = Arrays.asList(nodes.toArray(new Node[0]));
+        private List<Node> getVertices() {
+            if(vertices == null){
+                Set<Node> nodes = network.vertexSetFiltered();
+                vertices = Arrays.asList(nodes.toArray(new Node[0]));
+            }
+            return vertices;
 
             //Collections.sort(vertexNames);
         }
@@ -503,36 +579,39 @@ public class FilterGeneNetworkUI extends JDialog {
 
         @Override
         public int getRowCount() {
-            if (vertices == null) {
-                getVertices();
-            }
-            return vertices.size();
+            return getVertices().size();
         }
 
         @Override
         public int getColumnCount() {
-            return 2;
+            return columnNames.size();
         }
 
         public String getColumnName(int col) {
-            return columnNames[col].toString();
+            return columnNames.get(col);
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            if (vertices == null) {
-                getVertices();
-            }
 
-            Node n = vertices.get(rowIndex);
-            String nm = GeneNetwork.getNodeKeyData(vertices.get(rowIndex), "label");
+            Node n = getVertices().get(rowIndex);
+            String nm = GeneNetwork.getNodeKeyData(n, "label");
             switch (columnIndex) {
                 case 0:
                     return nm;
                 case 1:
                     return network.edgesOfFiltered(n).size();
                 default:
-                    return null;
+                    String key = columnNumToKeyMap.get(columnIndex);
+                    if (key == null) {
+                        return null;
+                    }
+                    String val = GeneNetwork.getNodeKeyData(n, key);
+                    if ("nan".equalsIgnoreCase(val)) {
+                        return null;
+                    }
+                    return val;
+
             }
         }
 
