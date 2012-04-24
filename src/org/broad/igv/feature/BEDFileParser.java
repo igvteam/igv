@@ -116,9 +116,7 @@ public class BEDFileParser extends UCSCParser {
                         FeatureDB.put(sym.trim().toUpperCase(), feature);
                     }
                 }
-
-                String description = GFFParser.getDescription(atts);
-                feature.setDescription(description);
+                feature.setAttributes(atts);
 
 
             } else {

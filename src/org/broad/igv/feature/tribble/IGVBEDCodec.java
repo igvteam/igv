@@ -129,8 +129,7 @@ public class IGVBEDCodec extends UCSCCodec {
                     }
                 }
 
-                String description = GFFParser.getDescription(atts);
-                feature.setDescription(description);
+                feature.setAttributes(atts);
 
 
             } else {
