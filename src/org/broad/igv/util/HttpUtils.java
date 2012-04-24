@@ -165,12 +165,6 @@ public class HttpUtils {
 
     public static boolean useByteRange(URL url) {
 
-        // Get explicit user setting
-        boolean userByteRangeSetting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-        if (!userByteRangeSetting) {
-            // No means no!
-            return false;
-        }
 
         // We can test byte-range success for broad hosted data. We can't know if they work or not in other
         // environments (e.g. intranets)
@@ -179,11 +173,13 @@ public class HttpUtils {
             if (!byteRangeTested) {
                 byteRangeTestSuccess = testByteRange();
                 byteRangeTested = true;   // <= to prevent testing again
+
             }
             return byteRangeTestSuccess;
         } else {
             return true;
         }
+
 
     }
 

@@ -155,8 +155,6 @@ public class PreferenceManager implements PropertyManager {
 
     final public static String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
-    final public static String USE_BYTE_RANGE = "UseHttpByteRange";
-
     public static final String FLANKING_REGION = "FLAKING_REGIONS";
 
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
@@ -900,7 +898,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SHOW_REGION_BARS, "false");
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");
-        defaultValues.put(USE_BYTE_RANGE, "true");
+
         defaultValues.put(OVERLAY_MUTATION_TRACKS, "true");
         defaultValues.put(SHOW_ORPHANED_MUTATIONS, "true");
         defaultValues.put(COLOR_MUTATIONS, "false");
