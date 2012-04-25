@@ -32,5 +32,7 @@ Finally, since the iterator we are testing requires a SORTED alignment run
 
    java -jar goby.jar -m sort -d -o sorted-seq-var-reads-gsnap seq-var-reads-gsnap.entries
 
-The files named *-hybrid have been compressed with the Hybrid-1 codec of Goby 2.0
+The files named *-hybrid have been compressed with the Hybrid-1 codec of Goby 2.0 with the following options:
+
+goby 1g ca GDFQPGI-pickrellNA18486_yale -o GDFQPGI-pickrellNA18486_yale-hybrid -x MessageChunksWriter:codec=hybrid-1 -x MessageChunksWriter:template-compression=true -x AlignmentCollectionHandler:enable-domain-optimizations=true -x AlignmentWriterImpl:permutate-query-indices=true -x AlignmentCollectionHandler:ignore-read-origin=true -x AlignmentCollectionHandler:debug-level=1
 
