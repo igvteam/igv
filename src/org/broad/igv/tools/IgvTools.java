@@ -717,6 +717,12 @@ public class IgvTools {
             System.out.println("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
+        
+        if(ifile.endsWith(".bam")){
+            String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
+            System.out.println(msg);
+            throw new PreprocessingException(msg);
+        }
 
         if (outputFileName == null) {
             outputFileName = ifile;
