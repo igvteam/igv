@@ -114,7 +114,7 @@ public class DirectoryManager {
 
             // The IGV directory either doesn't exist or isn't writeable.  This situation can arise with Windows Vista
             // and Windows 7 due to a Java bug (http://bugs.sun.com/view_bug.do?bug_id=4787931)
-            if (!(IGV_DIRECTORY.exists() && canWrite(IGV_DIRECTORY))) {
+            if (IGV_DIRECTORY == null || !IGV_DIRECTORY.exists() || !canWrite(IGV_DIRECTORY)) {
                 if (Globals.isHeadless() || Globals.isSuppressMessages()) {
                     System.err.println("Cannot write to igv directory: " + IGV_DIRECTORY.getAbsolutePath());
                     IGV_DIRECTORY = (new File(".")).getParentFile();
