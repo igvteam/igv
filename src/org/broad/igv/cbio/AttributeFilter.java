@@ -1,4 +1,15 @@
 /*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Fri Mar 09 15:54:00 EST 2012
  */
 
@@ -12,13 +23,13 @@ import java.awt.*;
  */
 public class AttributeFilter {
 
-    public AttributeFilter() {
+    AttributeFilter() {
         initComponents();
         attrName.setModel(new DefaultComboBoxModel(GeneNetwork.attributeMap.keySet().toArray()));
         attrName.addItem(GeneNetwork.PERCENT_ALTERED);
     }
 
-    public Component getComponent() {
+    Component getComponent() {
         return this.filterRow;
     }
 
@@ -33,6 +44,7 @@ public class AttributeFilter {
         label2 = new JLabel();
         maxVal = new JTextField();
         delRow = new JButton();
+        addRow = new JButton();
 
         //======== panel1 ========
         {
@@ -57,7 +69,7 @@ public class AttributeFilter {
 
                 //---- minVal ----
                 minVal.setText("0.0");
-                minVal.setMaximumSize(new Dimension(100, 28));
+                minVal.setMaximumSize(new Dimension(80, 28));
                 minVal.setPreferredSize(new Dimension(50, 28));
                 minVal.setMinimumSize(new Dimension(50, 28));
                 filterRow.add(minVal);
@@ -68,7 +80,7 @@ public class AttributeFilter {
 
                 //---- maxVal ----
                 maxVal.setText("100.0");
-                maxVal.setMaximumSize(new Dimension(100, 28));
+                maxVal.setMaximumSize(new Dimension(80, 28));
                 maxVal.setPreferredSize(new Dimension(50, 28));
                 maxVal.setMinimumSize(new Dimension(50, 28));
                 filterRow.add(maxVal);
@@ -78,7 +90,18 @@ public class AttributeFilter {
                 delRow.setMaximumSize(new Dimension(20, 29));
                 delRow.setMinimumSize(new Dimension(20, 29));
                 delRow.setPreferredSize(new Dimension(20, 29));
+                delRow.setToolTipText("Delete this filter");
+                delRow.setMargin(new Insets(2, 2, 2, 2));
                 filterRow.add(delRow);
+
+                //---- addRow ----
+                addRow.setText("+");
+                addRow.setMaximumSize(new Dimension(20, 29));
+                addRow.setMinimumSize(new Dimension(20, 29));
+                addRow.setPreferredSize(new Dimension(20, 29));
+                addRow.setToolTipText("Add a new filter");
+                addRow.setMargin(new Insets(2, 2, 2, 2));
+                filterRow.add(addRow);
             }
             panel1.add(filterRow, BorderLayout.CENTER);
         }
@@ -95,9 +118,24 @@ public class AttributeFilter {
     private JLabel label2;
     JTextField maxVal;
     private JButton delRow;
+    private JButton addRow;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    public JButton getDelRow() {
+    JButton getDelRow() {
         return delRow;
     }
+
+
+    JButton getAddRow() {
+        return addRow;
+    }
+
+    void setShowDel(boolean showDel){
+        delRow.setVisible(showDel);
+    }
+
+    void setIsLast(boolean isLast){
+        addRow.setVisible(isLast);
+    }
+
 }

@@ -167,6 +167,17 @@ public class FilterGeneNetworkUI extends JDialog {
         geneTable.setModel(listModel);
         applySoftFilters();
     }
+    
+    private void remove(AttributeFilter row){
+        contentPane.remove(row.getComponent());
+        filterRows.remove(row);
+        int numRows = filterRows.size();
+        filterRows.get(numRows - 1).setIsLast(true);
+        filterRows.get(0).setShowDel(numRows >= 2);
+        validateTree();    
+    }
+
+
 
     private void add() {
         final AttributeFilter row = new AttributeFilter();
@@ -174,15 +185,31 @@ public class FilterGeneNetworkUI extends JDialog {
         row.getDelRow().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                contentPane.remove(row.getComponent());
-                filterRows.remove(row);
-                validateTree();
+                remove(row);
+            }
+        });
+
+        row.getAddRow().addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                add();
             }
         });
         contentPane.add(row.getComponent());
+
+        //Set the status of being last
+        if(filterRows.size() >= 1){
+            filterRows.get(filterRows.size() - 1).setIsLast(false);
+        }
+        filterRows.add(row);
+
+        int numRows = filterRows.size();
+        filterRows.get(numRows - 1).setIsLast(true);
+        filterRows.get(0).setShowDel(numRows >= 2);
+
         validateTree();
 
-        this.filterRows.add(row);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -337,13 +364,14 @@ public class FilterGeneNetworkUI extends JDialog {
         expInput = new JTextField();
 
         //======== this ========
-        setMinimumSize(new Dimension(550, 22));
+        setMinimumSize(new Dimension(600, 22));
         Container contentPane2 = getContentPane();
         contentPane2.setLayout(new BorderLayout());
 
         //======== tabbedPane ========
         {
-            tabbedPane.setPreferredSize(new Dimension(464, 346));
+            tabbedPane.setPreferredSize(new Dimension(550, 346));
+            tabbedPane.setMinimumSize(new Dimension(550, 346));
             tabbedPane.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
@@ -375,6 +403,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     addRow.setMaximumSize(new Dimension(200, 28));
                     addRow.setMinimumSize(new Dimension(100, 28));
                     addRow.setPreferredSize(new Dimension(150, 28));
+                    addRow.setVisible(false);
                     addRow.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -475,6 +504,8 @@ public class FilterGeneNetworkUI extends JDialog {
             //======== thresholds ========
             {
                 thresholds.setBorder(new EmptyBorder(12, 12, 12, 12));
+                thresholds.setPreferredSize(new Dimension(550, 196));
+                thresholds.setMinimumSize(new Dimension(550, 196));
                 thresholds.setLayout(new BorderLayout());
 
                 //======== contentPanel ========

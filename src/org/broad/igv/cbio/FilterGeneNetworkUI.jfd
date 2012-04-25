@@ -15,7 +15,7 @@
       <void method="setProperty"> 
        <string>minimumSize</string> 
        <object class="java.awt.Dimension"> 
-        <int>550</int> 
+        <int>600</int> 
         <int>22</int> 
        </object> 
       </void> 
@@ -28,7 +28,14 @@
         <void method="setProperty"> 
          <string>preferredSize</string> 
          <object class="java.awt.Dimension"> 
-          <int>464</int> 
+          <int>550</int> 
+          <int>346</int> 
+         </object> 
+        </void> 
+        <void method="setProperty"> 
+         <string>minimumSize</string> 
+         <object class="java.awt.Dimension"> 
+          <int>550</int> 
           <int>346</int> 
          </object> 
         </void> 
@@ -151,6 +158,10 @@
                 <int>150</int> 
                 <int>28</int> 
                </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>visible</string> 
+               <boolean>false</boolean> 
               </void> 
               <void property="name"> 
                <string>addRow</string> 
@@ -439,6 +450,20 @@
             <int>12</int> 
            </object> 
           </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>550</int> 
+            <int>196</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>550</int> 
+            <int>196</int> 
+           </object> 
+          </void> 
           <void property="name"> 
            <string>thresholds</string> 
           </void> 
@@ -629,7 +654,7 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>660</int> 
+        <int>550</int> 
         <int>305</int> 
        </object> 
       </void> 
