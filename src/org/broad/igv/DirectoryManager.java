@@ -83,7 +83,7 @@ public class DirectoryManager {
                 try {
                     Runtime.getRuntime().exec("attrib -r \"" + getUserDirectory().getAbsolutePath() + "\"");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    // We tried
                 }
             }
 
