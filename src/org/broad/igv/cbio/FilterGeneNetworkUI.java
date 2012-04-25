@@ -57,6 +57,9 @@ public class FilterGeneNetworkUI extends JDialog {
     GeneNetwork network = null;
 
     private GraphListModel listModel;
+    private Map<String, JTextField> thresholdsMap = new HashMap<String, JTextField>(5);
+
+
     private static List<String> columnNames;
     private static Map<Integer, String> columnNumToKeyMap;
     static{
@@ -74,9 +77,9 @@ public class FilterGeneNetworkUI extends JDialog {
             label = label.replace('_', ' ');
             label = label.replace("PERCENT", "%");
             columnNames.add(label);
-            
+
         }
-        
+
     }
 
     public FilterGeneNetworkUI(Frame owner, GeneList geneList) {
@@ -155,26 +158,37 @@ public class FilterGeneNetworkUI extends JDialog {
         }
     }
 
+
+    private void initThresholdsMap() {
+        thresholdsMap.put(PreferenceManager.CBIO_MUTATION_THRESHOLD, mutInput);
+        thresholdsMap.put(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, ampInput);
+        thresholdsMap.put(PreferenceManager.CBIO_DELETION_THRESHOLD, delInput);
+        thresholdsMap.put(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD, expUpInput);
+        thresholdsMap.put(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD, expDownInput);
+    }
     /**
      * Load data into visual components. This should be called
      * AFTER loading network.
      */
     private void initComponentData() {
         add();
+
+        initThresholdsMap();
+
         loadThresholds();
 
         listModel = new GraphListModel();
         geneTable.setModel(listModel);
         applySoftFilters();
     }
-    
+
     private void remove(AttributeFilter row){
         contentPane.remove(row.getComponent());
         filterRows.remove(row);
         int numRows = filterRows.size();
         filterRows.get(numRows - 1).setIsLast(true);
         filterRows.get(0).setShowDel(numRows >= 2);
-        validateTree();    
+        validateTree();
     }
 
 
@@ -250,7 +264,7 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     /**
-     * Sorting of the rows is done on the view, not the underlying model, 
+     * Sorting of the rows is done on the view, not the underlying model,
      * so we must convert. See {@link TableRowSorter}
      * @return
      *  int[] of model indices which are selected
@@ -284,7 +298,7 @@ public class FilterGeneNetworkUI extends JDialog {
             };
             network.filterNodes(selectedPredicated);
         }
-                
+
         setVisible(false);
         showNetwork();
     }
@@ -302,12 +316,10 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private boolean saveThresholds() {
         try {
-            float mut = Float.parseFloat(mutInput.getText());
-            float amp = Float.parseFloat(ampInput.getText());
-            float exp = Float.parseFloat(expInput.getText());
-            PreferenceManager.getInstance().put(PreferenceManager.CBIO_MUTATION_THRESHOLD, "" + mut);
-            PreferenceManager.getInstance().put(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + amp);
-            PreferenceManager.getInstance().put(PreferenceManager.CBIO_EXPRESSION_THRESHOLD, "" + exp);
+            for (Map.Entry<String, JTextField> entry: thresholdsMap.entrySet()) {
+                float value = Float.parseFloat(entry.getValue().getText());
+                PreferenceManager.getInstance().put(entry.getKey(), "" + value);
+            }
         } catch (NumberFormatException e) {
             MessageUtils.showMessage("Inputs must be numeric. " + e.getMessage());
             return false;
@@ -316,12 +328,10 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     private void loadThresholds() {
-        String mut = PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD, "" + 0.1);
-        String amp = PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.7);
-        String exp = PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_THRESHOLD, "" + 0.1);
-        mutInput.setText(mut);
-        ampInput.setText(amp);
-        expInput.setText(exp);
+        for (Map.Entry<String, JTextField> entry: thresholdsMap.entrySet()) {
+            String value = PreferenceManager.getInstance().get(entry.getKey());
+            entry.getValue().setText(value);
+        }
     }
 
     private void tabbedPaneStateChanged(ChangeEvent e) {
@@ -354,14 +364,16 @@ public class FilterGeneNetworkUI extends JDialog {
         geneTable = new JTable();
         thresholds = new JPanel();
         contentPanel = new JPanel();
-        label5 = new JLabel();
-        label6 = new JLabel();
         label1 = new JLabel();
         mutInput = new JTextField();
         label2 = new JLabel();
         ampInput = new JTextField();
+        label3 = new JLabel();
+        delInput = new JTextField();
         label4 = new JLabel();
-        expInput = new JTextField();
+        expUpInput = new JTextField();
+        label7 = new JLabel();
+        expDownInput = new JTextField();
 
         //======== this ========
         setMinimumSize(new Dimension(600, 22));
@@ -510,44 +522,94 @@ public class FilterGeneNetworkUI extends JDialog {
 
                 //======== contentPanel ========
                 {
-                    contentPanel.setLayout(new GridLayout(4, 2, 20, 20));
-
-                    //---- label5 ----
-                    label5.setText("Minimum thresholds for a");
-                    label5.setHorizontalAlignment(SwingConstants.RIGHT);
-                    label5.setMaximumSize(new Dimension(361, 16));
-                    contentPanel.add(label5);
-
-                    //---- label6 ----
-                    label6.setText("gene to be considered \"altered\".");
-                    contentPanel.add(label6);
+                    contentPanel.setLayout(new GridBagLayout());
+                    ((GridBagLayout)contentPanel.getLayout()).columnWidths = new int[] {0, 0, 0, 0, 0, 0};
+                    ((GridBagLayout)contentPanel.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                    ((GridBagLayout)contentPanel.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 1.0, 1.0, 1.0E-4};
+                    ((GridBagLayout)contentPanel.getLayout()).rowWeights = new double[] {1.0, 1.0, 1.0, 1.0, 1.0E-4};
 
                     //---- label1 ----
                     label1.setText("Mutation:");
                     label1.setHorizontalAlignment(SwingConstants.RIGHT);
-                    contentPanel.add(label1);
+                    label1.setLabelFor(mutInput);
+                    contentPanel.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- mutInput ----
                     mutInput.setText("0.1");
-                    contentPanel.add(mutInput);
+                    mutInput.setAutoscrolls(false);
+                    mutInput.setMinimumSize(new Dimension(34, 28));
+                    mutInput.setPreferredSize(new Dimension(45, 28));
+                    contentPanel.add(mutInput, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- label2 ----
-                    label2.setText("Amplification/Deletion:");
+                    label2.setText("Amplification:");
                     label2.setHorizontalAlignment(SwingConstants.RIGHT);
-                    contentPanel.add(label2);
+                    label2.setLabelFor(ampInput);
+                    contentPanel.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- ampInput ----
-                    ampInput.setText("0.9");
-                    contentPanel.add(ampInput);
+                    ampInput.setText("0.7");
+                    ampInput.setMinimumSize(new Dimension(34, 28));
+                    ampInput.setPreferredSize(new Dimension(45, 28));
+                    contentPanel.add(ampInput, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
+
+                    //---- label3 ----
+                    label3.setText("Deletion:");
+                    label3.setHorizontalAlignment(SwingConstants.RIGHT);
+                    label3.setLabelFor(delInput);
+                    contentPanel.add(label3, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 5), 0, 0));
+
+                    //---- delInput ----
+                    delInput.setText("0.7");
+                    delInput.setMinimumSize(new Dimension(34, 28));
+                    delInput.setPreferredSize(new Dimension(45, 28));
+                    delInput.setMaximumSize(new Dimension(50, 2147483647));
+                    contentPanel.add(delInput, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- label4 ----
-                    label4.setText("Expression Up/Down:");
+                    label4.setText("Expression Up:");
                     label4.setHorizontalAlignment(SwingConstants.RIGHT);
-                    contentPanel.add(label4);
+                    label4.setLabelFor(expUpInput);
+                    contentPanel.add(label4, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 5), 0, 0));
 
-                    //---- expInput ----
-                    expInput.setText("0.1");
-                    contentPanel.add(expInput);
+                    //---- expUpInput ----
+                    expUpInput.setText("0.1");
+                    expUpInput.setMinimumSize(new Dimension(34, 28));
+                    expUpInput.setPreferredSize(new Dimension(35, 28));
+                    contentPanel.add(expUpInput, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 5), 0, 0));
+
+                    //---- label7 ----
+                    label7.setText("Expression Down:");
+                    label7.setHorizontalAlignment(SwingConstants.RIGHT);
+                    label7.setLabelFor(expDownInput);
+                    contentPanel.add(label7, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 10, 5), 0, 0));
+
+                    //---- expDownInput ----
+                    expDownInput.setText("0.1");
+                    expDownInput.setPreferredSize(new Dimension(45, 28));
+                    expDownInput.setMinimumSize(new Dimension(34, 28));
+                    expDownInput.setMaximumSize(new Dimension(50, 2147483647));
+                    contentPanel.add(expDownInput, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
                 }
                 thresholds.add(contentPanel, BorderLayout.CENTER);
             }
@@ -577,14 +639,16 @@ public class FilterGeneNetworkUI extends JDialog {
     private JTable geneTable;
     private JPanel thresholds;
     private JPanel contentPanel;
-    private JLabel label5;
-    private JLabel label6;
     private JLabel label1;
     private JTextField mutInput;
     private JLabel label2;
     private JTextField ampInput;
+    private JLabel label3;
+    private JTextField delInput;
     private JLabel label4;
-    private JTextField expInput;
+    private JTextField expUpInput;
+    private JLabel label7;
+    private JTextField expDownInput;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 

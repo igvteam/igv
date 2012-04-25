@@ -471,61 +471,34 @@
            <object class="com.jformdesigner.model.FormContainer"> 
             <string>javax.swing.JPanel</string> 
             <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>java.awt.GridLayout</class> 
+             <class>java.awt.GridBagLayout</class> 
              <void method="setProperty"> 
-              <string>columns</string> 
-              <int>2</int> 
+              <string>$columnSpecs</string> 
+              <string>0:1.0, 0, 0, 0:1.0, 0:1.0</string> 
              </void> 
              <void method="setProperty"> 
-              <string>rows</string> 
-              <int>4</int> 
+              <string>$rowSpecs</string> 
+              <string>0:1.0, 0:1.0, 0:1.0, 0:1.0</string> 
              </void> 
              <void method="setProperty"> 
-              <string>hgap</string> 
-              <int>20</int> 
+              <string>$hGap</string> 
+              <int>5</int> 
              </void> 
              <void method="setProperty"> 
-              <string>vgap</string> 
-              <int>20</int> 
+              <string>$vGap</string> 
+              <int>10</int> 
+             </void> 
+             <void method="setProperty"> 
+              <string>$alignTop</string> 
+              <boolean>true</boolean> 
+             </void> 
+             <void method="setProperty"> 
+              <string>$alignLeft</string> 
+              <boolean>true</boolean> 
              </void> 
             </object> 
             <void property="name"> 
              <string>contentPanel</string> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Minimum thresholds for a</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>horizontalAlignment</string> 
-               <int>4</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>maximumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>361</int> 
-                <int>16</int> 
-               </object> 
-              </void> 
-              <void property="name"> 
-               <string>label5</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>gene to be considered &quot;altered&quot;.</string> 
-              </void> 
-              <void property="name"> 
-               <string>label6</string> 
-              </void> 
-             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
@@ -538,9 +511,18 @@
                <string>horizontalAlignment</string> 
                <int>4</int> 
               </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>mutInput</string> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>label1</string> 
               </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
              </object> 
             </void> 
             <void method="add"> 
@@ -549,25 +531,63 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>0.1</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>autoscrolls</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>34</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>45</int> 
+                <int>28</int> 
+               </object> 
               </void> 
               <void property="name"> 
                <string>mutInput</string> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>1</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Amplification/Deletion:</string> 
+               <string>Amplification:</string> 
               </void> 
               <void method="setProperty"> 
                <string>horizontalAlignment</string> 
                <int>4</int> 
               </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>ampInput</string> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>label2</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 
@@ -576,10 +596,35 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.9</string> 
+               <string>0.7</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>34</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>45</int> 
+                <int>28</int> 
+               </object> 
               </void> 
               <void property="name"> 
                <string>ampInput</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>1</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 
@@ -588,14 +633,104 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Expression Up/Down:</string> 
+               <string>Deletion:</string> 
               </void> 
               <void method="setProperty"> 
                <string>horizontalAlignment</string> 
                <int>4</int> 
               </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>delInput</string> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>label3</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>1</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>2</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>0.7</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>34</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>45</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>50</int> 
+                <int>2147483647</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>delInput</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>3</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>1</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Expression Up:</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>horizontalAlignment</string> 
+               <int>4</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>expUpInput</string> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>label4</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>2</int> 
               </void> 
              </object> 
             </void> 
@@ -606,8 +741,110 @@
                <string>text</string> 
                <string>0.1</string> 
               </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>34</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>35</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
               <void property="name"> 
-               <string>expInput</string> 
+               <string>expUpInput</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>1</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>2</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Expression Down:</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>horizontalAlignment</string> 
+               <int>4</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>expDownInput</string> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>label7</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>2</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>2</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>0.1</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>45</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>34</int> 
+                <int>28</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>50</int> 
+                <int>2147483647</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>expDownInput</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>2</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>3</int> 
               </void> 
              </object> 
             </void> 
@@ -655,7 +892,7 @@
        <string>size</string> 
        <object class="java.awt.Dimension"> 
         <int>550</int> 
-        <int>305</int> 
+        <int>370</int> 
        </object> 
       </void> 
      </object> 

@@ -102,19 +102,23 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
     static {
         float max_val = 2 << 10;
-        float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD, "" + 0.1));
+
+        float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD));
         bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
 
         //See GISTIC supplement, page 20
-        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD, "" + 0.9));
-        float[] ampbounds = new float[]{amp, max_val};
-        bounds.put("PERCENT_CNA_AMPLIFIED", ampbounds);
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", ampbounds);
+        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD));
+        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{amp, max_val});
+
+        float del = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_DELETION_THRESHOLD));
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{del, max_val});
 
         //See GISTIC supplement, page 5, just gives greater than or less than 0
-        float exp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_THRESHOLD, "" + 0.1));
-        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{exp, max_val});
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -exp});
+        float expUp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD));
+        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{expUp, max_val});
+
+        float expDown = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD));
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -expDown});
 
 
     }

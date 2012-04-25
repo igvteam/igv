@@ -188,7 +188,9 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
     public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
-    public static final String CBIO_EXPRESSION_THRESHOLD = "CBIO_EXPRESSION_THRESHOLD";
+    public static final String CBIO_DELETION_THRESHOLD = "CBIO_DELETION_THRESHOLD";
+    public static final String CBIO_EXPRESSION_UP_THRESHOLD = "CBIO_EXPRESSION_UP_THRESHOLD";
+    public static final String CBIO_EXPRESSION_DOWN_THRESHOLD = "CBIO_EXPRESSION_DOWN_THRESHOLD";
 
 
     public static final String DB_ENABLED = "DB_ENABLED";
@@ -1025,6 +1027,12 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
 
         defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
+        
+        defaultValues.put(CBIO_MUTATION_THRESHOLD, "0.1");
+        defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");
+        defaultValues.put(CBIO_DELETION_THRESHOLD, "0.9");
+        defaultValues.put(CBIO_EXPRESSION_UP_THRESHOLD, "0.1");
+        defaultValues.put(CBIO_EXPRESSION_DOWN_THRESHOLD, "0.1");
     }
 
     /**
