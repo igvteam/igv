@@ -287,13 +287,14 @@ public class DirectoryManager {
      * is successfully moved, irrespective of any errors that might occur later (e.g. when attempting to
      * remove the old directory).
      *
-     * @param newDirectory
+     * @param newParentDirectory
      * @return True if the directory is successfully moved, false otherwise
      */
 
-    public static Boolean moveIGVDirectory(final File newDirectory) {
+    public static Boolean moveIGVDirectory(final File newParentDirectory) {
 
-        if (newDirectory.equals(IGV_DIRECTORY)) {
+        File newIGVDirectory = new File(newParentDirectory, "igv");
+        if (newIGVDirectory.equals(IGV_DIRECTORY)) {
             return false; // Nothing to do
         }
 
@@ -304,12 +305,12 @@ public class DirectoryManager {
 
             try {
                 System.out.println("Moving directory");
-                FileUtils.copyDirectory(IGV_DIRECTORY, newDirectory);
-                IGV_DIRECTORY = newDirectory;
+                FileUtils.copyDirectory(IGV_DIRECTORY, newIGVDirectory);
+                IGV_DIRECTORY = newIGVDirectory;
 
                 // Store location of new directory in Java preferences node (not pref.properties)
                 Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-                prefs.put(IGV_DIR_USERPREF, newDirectory.getAbsolutePath());
+                prefs.put(IGV_DIR_USERPREF, newIGVDirectory.getAbsolutePath());
 
                 // Update preference manager with new file location
                 PreferenceManager.getInstance().setPrefsFile(getPreferencesFile().getAbsolutePath());
