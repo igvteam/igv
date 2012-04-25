@@ -78,6 +78,15 @@ public class DirectoryManager {
 
         if (IGV_DIRECTORY == null) {
 
+            // Hack for known Java / Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                try {
+                    Runtime.getRuntime().exec("attrib -r \"" + getUserDirectory().getAbsolutePath() + "\"");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             IGV_DIRECTORY = getIgvDirectoryOverride();
 
             // If still null, try the default place
