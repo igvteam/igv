@@ -2410,10 +2410,6 @@ public class IGV {
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
-                    if (igvArgs.getLocusString() != null) {
-                        goToLocus(igvArgs.getLocusString());
-                    }
-
                 }
             });
 
@@ -2423,7 +2419,7 @@ public class IGV {
 
 
         /**
-         * Called when the background thread is complete (IGV window is open and data loaded).
+         * Called when the background thread is complete
          */
         @Override
         protected void done() {

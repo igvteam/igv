@@ -105,7 +105,7 @@ public class BBMethylDataSource implements MethylDataSource {
 
         private MethylScore createZillerScore(BedFeature feat, String[] restOfFields) {
             String name = restOfFields[0];
-            //‘92%[51]’
+            //'92%[51]'
             String[] tokens = percentPattern.split(name.replace("'", "").replace("[", "").replace("]", ""));
             float percent = Float.parseFloat(tokens[0]);
             int count = Integer.parseInt(tokens[1]);

@@ -199,7 +199,7 @@ public class AffectiveLogParser {
      * UUID: AFQ441000BU
      * Sampling Rate: 8
      * Start Time: 2011-04-06 08:57:35 Offset:-04
-     * Z-axis | Y-axis | X-axis | Battery | °Celsius | EDA(uS)
+     * Z-axis | Y-axis | X-axis | BAttery | Celsius | EDA(uS)
      * ---------------------------------------------------------
      */
     static class Header {
