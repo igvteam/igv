@@ -26,6 +26,7 @@ import org.broad.tribble.util.ParsingUtils;
 
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,6 @@ public class IGVBEDCodec extends UCSCCodec {
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
     Genome genome;
-
 
     public IGVBEDCodec() {
         this.genome = null;
@@ -144,6 +144,9 @@ public class IGVBEDCodec extends UCSCCodec {
             try {
                 float score = Float.parseFloat(tokens[4]);
                 feature.setScore(score);
+                if (spliceJunctions) {
+                    ((SpliceJunctionFeature) feature).setJunctionDepth((int) score);
+                }
             } catch (NumberFormatException numberFormatException) {
 
                 // Unexpected, but does not invalidate the previous values.
@@ -179,6 +182,16 @@ public class IGVBEDCodec extends UCSCCodec {
         // Exons
         if (tokenCount > 11) {
             createExons(start, tokens, feature, chr, feature.getStrand());
+            //todo: some refactoring that allows this hack to be removed
+            if (spliceJunctions) {
+                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+
+                List<Exon> exons = feature.getExons();
+
+                junctionFeature.setJunctionStart(start + exons.get(0).getLength());
+                junctionFeature.setJunctionEnd(end - exons.get(1).getLength());
+
+            }
         }
 
         return feature;

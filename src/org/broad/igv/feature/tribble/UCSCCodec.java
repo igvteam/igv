@@ -56,7 +56,6 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     @Deprecated
     protected final int startOffsetValue = 0;
 
-
     /**
      * @param reader
      * @return
