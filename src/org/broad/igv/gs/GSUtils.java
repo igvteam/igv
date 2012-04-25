@@ -32,20 +32,7 @@ import java.util.List;
 /**
  * @author jrobinso
  * @date Jun 9, 2011
- * <p/>
- * <p/>
- * Prod servers
- * identityServerUrl=https://identity.genomespace.org/identityServer/basic
- * atmServer=https://atm.genomespace.org/atm
- * dmServer=https://dm.genomespace.org/datamanager
- * Test servers
- * identityServerUrl=https://identitytest.genomespace.org:8443/identityServer/basic
- * atmServer=https://atmtest.genomespace.org:8443/atm
- * dmServer=https://dmtest.genomespace.org:8444/datamanager
- * Dev servers
- * identityServerUrl=https://localhost:8443/identityServer/basic
- * atmServer=https://localhost:8443/atm
- * dmServer=https://dmtest.genomespace.org:8444/datamanager
+ *
  */
 public class GSUtils {
     static final Logger log = Logger.getLogger(GSUtils.class);
