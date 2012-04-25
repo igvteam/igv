@@ -208,5 +208,39 @@ public class Exon extends AbstractFeature {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+//    @Override
+//    public boolean equals(Object object) {
+//        //return equalizer.equals(this, object);
+//        if (object == null || !(object instanceof Exon)) {
+//            return false;
+//        }
+//        Exon other = (Exon) object;
+//        boolean eq = getChr().equals(other.getChr());
+//        eq &= getStart() == other.getStart();
+//        eq &= getEnd() == other.getEnd();
+//        eq &= getCdStart() == other.getCdStart();
+//        eq &= getCdEnd() == other.getCdEnd();
+//        eq &= getStrand() == other.getStrand();
+//        return eq;
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        if (hashCode != 0) {
+//            return hashCode;
+//        }
+//
+//        String conc = getChr() + getStrand().toString() + getStart();
+//        conc += getEnd();
+//        conc += getCdStart();
+//        conc += getCdEnd();
+//        int hc = conc.hashCode();
+//
+//        if (hc == 0) {
+//            hc = 1;
+//        }
+//        hashCode = hc;
+//        return hc;
+//    }
 
 }
