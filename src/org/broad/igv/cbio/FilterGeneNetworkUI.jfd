@@ -530,7 +530,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.1</string> 
+               <string>1</string> 
               </void> 
               <void method="setProperty"> 
                <string>autoscrolls</string> 

@@ -537,7 +537,7 @@ public class FilterGeneNetworkUI extends JDialog {
                         new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- mutInput ----
-                    mutInput.setText("0.1");
+                    mutInput.setText("1");
                     mutInput.setAutoscrolls(false);
                     mutInput.setMinimumSize(new Dimension(34, 28));
                     mutInput.setPreferredSize(new Dimension(45, 28));
@@ -550,8 +550,8 @@ public class FilterGeneNetworkUI extends JDialog {
                     label2.setHorizontalAlignment(SwingConstants.RIGHT);
                     label2.setLabelFor(ampInput);
                     contentPanel.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- ampInput ----
                     ampInput.setText("0.7");
@@ -566,8 +566,8 @@ public class FilterGeneNetworkUI extends JDialog {
                     label3.setHorizontalAlignment(SwingConstants.RIGHT);
                     label3.setLabelFor(delInput);
                     contentPanel.add(label3, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- delInput ----
                     delInput.setText("0.7");
@@ -583,24 +583,24 @@ public class FilterGeneNetworkUI extends JDialog {
                     label4.setHorizontalAlignment(SwingConstants.RIGHT);
                     label4.setLabelFor(expUpInput);
                     contentPanel.add(label4, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- expUpInput ----
                     expUpInput.setText("0.1");
                     expUpInput.setMinimumSize(new Dimension(34, 28));
                     expUpInput.setPreferredSize(new Dimension(35, 28));
                     contentPanel.add(expUpInput, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- label7 ----
                     label7.setText("Expression Down:");
                     label7.setHorizontalAlignment(SwingConstants.RIGHT);
                     label7.setLabelFor(expDownInput);
                     contentPanel.add(label7, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 10, 5), 0, 0));
 
                     //---- expDownInput ----
                     expDownInput.setText("0.1");

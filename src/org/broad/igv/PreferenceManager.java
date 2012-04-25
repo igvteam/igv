@@ -1028,7 +1028,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
         
-        defaultValues.put(CBIO_MUTATION_THRESHOLD, "0.1");
+        defaultValues.put(CBIO_MUTATION_THRESHOLD, "1");
         defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");
         defaultValues.put(CBIO_DELETION_THRESHOLD, "0.9");
         defaultValues.put(CBIO_EXPRESSION_UP_THRESHOLD, "0.1");

@@ -100,6 +100,16 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         attributeMap.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
     }
 
+    /**
+     * The thresholds determine whether a particular sample is altered in that fashion.
+     * The number is calculated using track.getRegionScore
+     *
+     * Mutation will be the number of mutations in a given gene (integer)
+     *
+     * For the others, we take the numerical value that has been read from the data source,
+     * and average it over the region of each gene.
+     *
+     */
     static {
         float max_val = 2 << 10;
 
