@@ -76,7 +76,7 @@ public class FileDialogUtils {
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
         JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(true);
-        boolean approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+        boolean approve = fileChooser.showOpenDialog(getParentFrame()) == JFileChooser.APPROVE_OPTION;
         if (approve) {
             return fileChooser.getSelectedFiles();
         } else {
@@ -93,12 +93,14 @@ public class FileDialogUtils {
         }
     }
 
+
     private static File chooseNative(String title, File initialDirectory, File initialFile, FilenameFilter filter,
                                      int directoryMode, int mode) {
 
         boolean directories = JFileChooser.DIRECTORIES_ONLY == directoryMode;
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
-        FileDialog fd = new FileDialog(IGV.getMainFrame(), title);
+        Frame parentFrame = getParentFrame();
+        FileDialog fd = new FileDialog(parentFrame, title);
         if (initialDirectory != null) {
             fd.setDirectory(initialDirectory.getAbsolutePath());
         }
@@ -125,18 +127,18 @@ public class FileDialogUtils {
         }
     }
 
-
     private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
                                     int directoryMode, int mode) {
 
-
+        UIManager.put("FileChooser.readOnly", Boolean.FALSE);
         JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directoryMode);
-
+        Frame parentFrame = getParentFrame();
         boolean approve;
         if (mode == LOAD) {
-            approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+            approve = fileChooser.showOpenDialog(parentFrame) == JFileChooser.APPROVE_OPTION;
         } else {
-            approve = fileChooser.showSaveDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+
+            approve = fileChooser.showSaveDialog(parentFrame) == JFileChooser.APPROVE_OPTION;
         }
 
         if (approve) {
@@ -206,5 +208,12 @@ public class FileDialogUtils {
         }
         return fname;
     }
+
+
+    private static Frame getParentFrame() {
+        return IGV.hasInstance() ? IGV.getMainFrame() : null;
+    }
+
+
 
 }

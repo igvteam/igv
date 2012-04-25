@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.util.RuntimeUtils;
@@ -126,11 +127,10 @@ public class DirectoryManager {
                             "IGV Directory Error", JOptionPane.YES_NO_OPTION);
 
                     if (option == JOptionPane.YES_OPTION) {
-                        final JFileChooser fc = new JFileChooser();
-                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                        int retValue = fc.showOpenDialog(null);
-                        if (retValue == JFileChooser.APPROVE_OPTION) {
-                            IGV_DIRECTORY = fc.getSelectedFile();
+                        File parentDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", null);
+                        if(parentDirectory != null) {
+                            IGV_DIRECTORY = new File(parentDirectory, "igv");
+                            IGV_DIRECTORY.mkdir();
                             Preferences prefs = Preferences.userNodeForPackage(Globals.class);
                             prefs.put(IGV_DIR_USERPREF, IGV_DIRECTORY.getAbsolutePath());
                         }
@@ -139,7 +139,7 @@ public class DirectoryManager {
             }
 
 
-            if (!IGV_DIRECTORY.canRead()) {
+            if (IGV_DIRECTORY == null || !IGV_DIRECTORY.canRead()) {
                 throw new DataLoadException("Cannot read from user directory", IGV_DIRECTORY.getAbsolutePath());
             } else if (!canWrite(IGV_DIRECTORY)) {
                 throw new DataLoadException("Cannot write to user directory", IGV_DIRECTORY.getAbsolutePath());
