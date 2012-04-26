@@ -99,18 +99,5 @@ public class FileUtilsTest {
     }
 
 
-    @Test
-    public void testLegalFileName() {
-        String fn = "?[]/\\=+<>:;\"'*|";
-        String legalFN = "_qm__fbr__rbr__fsl__bsl__eq__pl__lt__gt__co__sc__dq__sq__st__pp_";
-
-        //System.out.println(fn);
-
-        String conFN = FileUtils.legalFileName(fn);
-
-        //System.out.println(conFN);
-
-        assertEquals(legalFN, conFN);
-    }
 
 }

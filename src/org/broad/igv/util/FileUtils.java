@@ -36,35 +36,12 @@ import java.util.regex.Pattern;
  * @author jrobinso
  */
 public class FileUtils {
+
+    private static final Logger log = Logger.getLogger(FileUtils.class);
+
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    public static StringBuffer buffer = new StringBuffer();
-    private static Logger log = Logger.getLogger(FileUtils.class);
-
-
-    static Map<String, String> illegalChar = new HashMap();
-
-    static {
-        illegalChar.put("_qm_", "\\?");
-        illegalChar.put("_fbr_", "\\[");
-        illegalChar.put("_rbr_", "]");
-        illegalChar.put("_fsl_", "/");
-        illegalChar.put("_bsl_", "\\\\");
-        illegalChar.put("_eq_", "=");
-        illegalChar.put("_pl_", "\\+");
-        illegalChar.put("_lt_", "<");
-        illegalChar.put("_gt_", ">");
-        illegalChar.put("_co_", ":");
-        illegalChar.put("_sc_", ";");
-        illegalChar.put("_dq_", "\"");
-        illegalChar.put("_sq_", "'");
-        illegalChar.put("_st_", "\\*");
-        illegalChar.put("_pp_", "\\|");
-    }
-
-    static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
-
-    static final String FILE_SEP = System.getProperty("file.separator");
+    final public static String FILE_SEP = System.getProperty("file.separator");
+    final static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
 
     /**
@@ -415,14 +392,6 @@ public class FileUtils {
             writer.close();
 
         }
-    }
-
-
-    static public String legalFileName(String string) {
-        for (Map.Entry<String, String> entry : illegalChar.entrySet()) {
-            string = string.replaceAll(entry.getValue(), entry.getKey());
-        }
-        return string;
     }
 
     /**
