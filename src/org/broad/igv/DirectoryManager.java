@@ -285,13 +285,12 @@ public class DirectoryManager {
      * is successfully moved, irrespective of any errors that might occur later (e.g. when attempting to
      * remove the old directory).
      *
-     * @param newParentDirectory
+     * @param newIGVDirectory
      * @return True if the directory is successfully moved, false otherwise
      */
 
-    public static Boolean moveIGVDirectory(final File newParentDirectory) {
+    public static Boolean moveIGVDirectory(final File newIGVDirectory) {
 
-        File newIGVDirectory = new File(newParentDirectory, "igv");
         if (newIGVDirectory.equals(IGV_DIRECTORY)) {
             return false; // Nothing to do
         }
@@ -302,7 +301,7 @@ public class DirectoryManager {
 
             try {
                 log.info("Moving igv directory from " + oldDirectory.getParent() + " to " +
-                        newParentDirectory.getAbsolutePath());
+                        newIGVDirectory.getAbsolutePath());
                 FileUtils.copyDirectory(IGV_DIRECTORY, newIGVDirectory);
                 IGV_DIRECTORY = newIGVDirectory;
 
