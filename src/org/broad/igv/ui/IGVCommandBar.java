@@ -223,9 +223,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                             // TODO -- warn user.
                             // Unload all tracks, begin new session.  This should be done after the genome switch
-                            if (igv.isStartupComplete()) {
-                                igv.resetSession(null);
-                            }
+//                            if (igv.isStartupComplete()) {
+//                                igv.resetSession(null);
+//                            }
 
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);

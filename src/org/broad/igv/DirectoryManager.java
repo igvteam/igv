@@ -153,6 +153,8 @@ public class DirectoryManager {
             } else if (!canWrite(IGV_DIRECTORY)) {
                 throw new DataLoadException("Cannot write to user directory", IGV_DIRECTORY.getAbsolutePath());
             }
+
+            log.info("IGV Directory: " + IGV_DIRECTORY.getAbsolutePath());
         }
         return IGV_DIRECTORY;
     }
