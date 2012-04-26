@@ -37,15 +37,12 @@ public class DirectoryManager {
     private static Logger log = Logger.getLogger(DirectoryManager.class);
 
     private static File USER_HOME;
-    private  static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
-    private  static File IGV_DIRECTORY;     // The IGV application directory
-    private  static File GENOME_CACHE_DIRECTORY;
-    private  static File GENE_LIST_DIRECTORY;
-    private  static File BAM_CACHE_DIRECTORY;
+    private static File USER_DIRECTORY;    // FileSystemView.getFileSystemView().getDefaultDirectory();
+    private static File IGV_DIRECTORY;     // The IGV application directory
+    private static File GENOME_CACHE_DIRECTORY;
+    private static File GENE_LIST_DIRECTORY;
+    private static File BAM_CACHE_DIRECTORY;
     final public static String IGV_DIR_USERPREF = "igvDir";
-
-
-
 
 
     private static File getUserHome() {
@@ -71,7 +68,6 @@ public class DirectoryManager {
         }
         return USER_DIRECTORY;
     }
-
 
 
     public static File getIgvDirectory() {
@@ -132,12 +128,12 @@ public class DirectoryManager {
                     int option = JOptionPane.showConfirmDialog(null,
                             "<html>The default IGV directory (" + IGV_DIRECTORY + ") " +
                                     "cannot be accessed.  Click Yes to choose a new folder or No to exit.<br>" +
-                                    "This folder will be used to store user preferences and cached genomes.",
+                                    "This folder will be used to create the 'igv' directory",
                             "IGV Directory Error", JOptionPane.YES_NO_OPTION);
 
                     if (option == JOptionPane.YES_OPTION) {
-                        File parentDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", null);
-                        if(parentDirectory != null) {
+                        File parentDirectory = FileDialogUtils.chooseDirectory("Select a location for the igv directory", null);
+                        if (parentDirectory != null) {
                             IGV_DIRECTORY = new File(parentDirectory, "igv");
                             IGV_DIRECTORY.mkdir();
                             Preferences prefs = Preferences.userNodeForPackage(Globals.class);
@@ -356,8 +352,8 @@ public class DirectoryManager {
         if (Globals.IS_LINUX || Globals.IS_MAC) {
             //System.out.println("Deleting: " + oldDirectory);
             String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath());
-            if(result != null && result.trim().length() > 0) {
-                 log.info("Response from 'rm -rf': " + result);
+            if (result != null && result.trim().length() > 0) {
+                log.info("Response from 'rm -rf': " + result);
             }
         } else {
             // The apache commons FileUtils is not working reliably
