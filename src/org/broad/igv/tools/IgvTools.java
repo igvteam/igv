@@ -896,7 +896,7 @@ public class IgvTools {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 //Right now the parser adds these to the FeatureDB map
                 //May want to move that someplace else
-                List<Feature> features = parser.loadFeatures(reader);
+                List<Feature> features = parser.loadFeatures(reader, genome);
                 is.close();
             }
         }

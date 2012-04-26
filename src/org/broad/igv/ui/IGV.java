@@ -1991,7 +1991,7 @@ public class IGV {
                 MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
                         "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
             } else {
-                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
+                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader, genome);
                 String name = geneTrackName;
                 if (name == null) name = "Genes";
 

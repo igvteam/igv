@@ -14,6 +14,7 @@ package org.broad.igv.track;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
@@ -103,6 +104,32 @@ public class TrackLoaderTest {
         assertEquals(7563 - 1, feat1.getStart());
         assertEquals(7938, feat1.getEnd());
     }
+
+    @Test
+    public void testLoadGFFAliasedChrs() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/aliased.gff";
+        TrackLoader loader = new TrackLoader();
+        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
+        List<Track> tracks = loader.load(new ResourceLocator(filepath), genome);
+        assertEquals(1, tracks.size());
+        FeatureTrack track = (FeatureTrack) tracks.get(0);
+
+        assertEquals("aliased.gff", track.getName());
+
+        List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
+        assertEquals(56, features.size());
+
+        features = track.getFeatures("chr5", 0, Integer.MAX_VALUE);
+        assertEquals(16, features.size());
+
+        //Non-aliased
+        features = track.getFeatures("NC_007072.3", 0, Integer.MAX_VALUE);
+        assertEquals(30, features.size());
+    }
+
+
+
+
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
         Genome genome = TestUtils.loadGenome();
