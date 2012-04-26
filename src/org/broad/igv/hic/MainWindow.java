@@ -165,7 +165,7 @@ public class MainWindow extends JFrame {
                     if (is != null) is.close();
                 }
             } else {
-                displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{DisplayOption.OBSERVED.toString()}));
+                displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{DisplayOption.OBSERVED}));
                 zoomToDensityMap = null;
             }
             displayOptionComboBox.setSelectedIndex(0);
@@ -331,7 +331,7 @@ public class MainWindow extends JFrame {
     }
 
     private void displayOptionComboBoxActionPerformed(ActionEvent e) {
-        hic.setDisplayOption((DisplayOption) displayOptionComboBox.getSelectedItem());
+        hic.setDisplayOption((DisplayOption)(displayOptionComboBox.getSelectedItem()));
     }
 
 
