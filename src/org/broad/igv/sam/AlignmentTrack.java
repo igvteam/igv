@@ -777,20 +777,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-    public int getDownsampleCount() {
-        return dataManager.getDownsampleOptions().getMaxReadCount();
-    }
-
-    public void setSamplingWindowSize(int newSize) {
-        dataManager.getDownsampleOptions().setSampleWindowSize(newSize);
-        refresh();
-    }
-
-    public void setMaxDepth(int newReadCount) {
-        dataManager.getDownsampleOptions().setMaxReadCount(newReadCount);
-        refresh();
-    }
-
     public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
         if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {

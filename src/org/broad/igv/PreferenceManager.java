@@ -623,6 +623,7 @@ public class PreferenceManager implements PropertyManager {
      */
     public void overrideDataServerURL(String url) {
         preferences.putOverride(DATA_SERVER_URL_KEY, url);
+        clearCaches();
     }
 
     /**
@@ -634,6 +635,7 @@ public class PreferenceManager implements PropertyManager {
      */
     public void override(String key, String value) {
         preferences.putOverride(key, value);
+        clearCaches();
     }
 
     public void loadOverrides(String overridePropertyFilePath) {

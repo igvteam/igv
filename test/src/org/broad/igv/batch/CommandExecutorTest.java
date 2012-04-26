@@ -11,6 +11,7 @@
 
 package org.broad.igv.batch;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
@@ -76,52 +77,19 @@ public class CommandExecutorTest {
 
     @Test
     public void testSetMaxDepth() throws Exception {
-        String file = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        igv.loadResources(Arrays.asList(new ResourceLocator(file)));
-
         setCheckMaxDepth(5);
         setCheckMaxDepth(50);
     }
 
     private void setCheckMaxDepth(int maxDepth) {
         String res = exec.execute("maxDepth " + maxDepth);
-        assertFalse(res.contains("UNKNOWN"));
+        assertFalse(res.contains("ERROR"));
+        int newMaxDepth = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+        assertEquals(maxDepth, newMaxDepth);
 
-        List<Track> curTracks = igv.getAllTracks(false);
-        int checked = 0;
-        for (Track track : curTracks) {
-            if (track instanceof AlignmentTrack) {
-                assertEquals(maxDepth, ((AlignmentTrack) track).getDownsampleCount());
-                checked++;
-            }
-        }
-        assertTrue("No alignmenttracks found", checked > 0);
     }
 
-    @Test
-    public void testSetMaxDepthByTrack() throws Exception {
 
-        String name1 = "HG00171.hg18.bam";
-        String name2 = "HG00171.hg18.sam";
-        String file1 = TestUtils.LARGE_DATA_DIR + name1;
-        String file2 = TestUtils.LARGE_DATA_DIR + name2;
-        List<ResourceLocator> resources = Arrays.asList(new ResourceLocator(file1), new ResourceLocator(file2));
-        igv.loadResources(resources);
-
-        setCheckMaxDepth(5);
-        setCheckMaxDepth(50);
-
-        int md = 100;
-        exec.execute("maxDepth " + md + " " + name1);
-
-        List<AlignmentTrack> tracks = getAlTracks(igv.getAllTracks(false));
-        AlignmentTrack track1 = tracks.get(0);
-        AlignmentTrack track2 = tracks.get(1);
-
-
-        assertEquals(md, track1.getDownsampleCount());
-        assertEquals(50, track2.getDownsampleCount());
-    }
 
     private List<AlignmentTrack> getAlTracks(List<Track> tracks) {
         List<AlignmentTrack> out = new ArrayList<AlignmentTrack>(tracks.size());

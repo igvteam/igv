@@ -17,6 +17,7 @@
 package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
@@ -119,9 +120,9 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("viewaspairs")) {
                     return setViewAsPairs(param1, param2);
                 } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
-                    return this.setSamplingWindowSize(param1, param2);
+                    return this.setSamplingWindowSize(param1);
                 } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
-                    return this.setSamplingReadCount(param1, param2);
+                    return this.setSamplingReadCount(param1);
                 } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
                     return this.setSleepInterval(param1);
                 } else if (cmd.equals("exit")) {
@@ -140,7 +141,7 @@ public class CommandExecutor {
                 LRUCache.clearCaches();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");
-            if(sleepInterval > 0) Thread.sleep(sleepInterval);
+            if (sleepInterval > 0) Thread.sleep(sleepInterval);
             log.debug("Finished sleeping");
 
         } catch (Exception e) {
@@ -166,45 +167,26 @@ public class CommandExecutor {
         return "OK";
     }
 
-    private String setSamplingWindowSize(String windowSize, String trackName) {
-        List<Track> tracks = igv.getAllTracks(false);
+    private String setSamplingWindowSize(String windowSize) {
         try {
-            int ws = Integer.parseInt(windowSize);
-            for (Track track : tracks) {
-                if (track instanceof AlignmentTrack) {
-                    if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                        AlignmentTrack atrack = (AlignmentTrack) track;
-                        atrack.setSamplingWindowSize(ws);
-                    }
-                }
-            }
-        } catch (NumberFormatException e) {
-            final String msg = "Error parsing maxDepth value: " + windowSize + ". Command ignored";
-            log.error(msg);
-            return msg;
-        }
-        return "OK";
+             Integer.parseInt(windowSize);
+             PreferenceManager.getInstance().override(PreferenceManager.SAM_SAMPLING_WINDOW, String.valueOf(windowSize));
+             return "OK";
+         } catch (NumberFormatException e) {
+              return "ERROR: SAMPLING WINDOW IS NOT A NUMBER: " + windowSize;
+         }
 
     }
 
-    private String setSamplingReadCount(String samplingReadCount, String trackName) {
-        List<Track> tracks = igv.getAllTracks(false);
+    private String setSamplingReadCount(String samplingReadCount) {
         try {
-            int rc = Integer.parseInt(samplingReadCount);
-            for (Track track : tracks) {
-                if (track instanceof AlignmentTrack) {
-                    if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
-                        AlignmentTrack atrack = (AlignmentTrack) track;
-                        atrack.setMaxDepth(rc);
-                    }
-                }
-            }
+            Integer.parseInt(samplingReadCount);
+            PreferenceManager.getInstance().override(PreferenceManager.SAM_MAX_LEVELS, String.valueOf(samplingReadCount));
+            return "OK";
         } catch (NumberFormatException e) {
-            final String msg = "Error parsing maxDepth value: " + samplingReadCount + ". Command ignored";
-            log.error(msg);
-            return msg;
+             return "ERROR: SAMPLING READ COUNT IS NOT A NUMBER: " + samplingReadCount;
         }
-        return "OK";
+
     }
 
     private String gotoImmediate(List<String> args) {

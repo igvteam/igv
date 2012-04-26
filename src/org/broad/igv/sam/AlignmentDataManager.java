@@ -47,7 +47,6 @@ public class AlignmentDataManager {
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
-    private DownsampleOptions downsampleOptions;
 
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
@@ -64,7 +63,6 @@ public class AlignmentDataManager {
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        this.downsampleOptions = new DownsampleOptions();
         initChrMap(genome);
     }
 
@@ -304,14 +302,15 @@ public class AlignmentDataManager {
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
+                DownsampleOptions downsampleOptions = new DownsampleOptions();
+
                 CloseableIterator<Alignment> iter = null;
                 try {
 
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
                     List<AlignmentCounts> counts = new ArrayList();
-                    List<CachingQueryReader.DownsampledInterval> downsampledIntervals =
-                            new ArrayList<CachingQueryReader.DownsampledInterval>();
+                    List<CachingQueryReader.DownsampledInterval> downsampledIntervals = new ArrayList<CachingQueryReader.DownsampledInterval>();
                     List<SpliceJunctionFeature> spliceJunctions = null;
                     if (showSpliceJunctions) {
                         spliceJunctions = new ArrayList<SpliceJunctionFeature>();
@@ -429,10 +428,6 @@ public class AlignmentDataManager {
 
     public boolean isShowSpliceJunctions() {
         return showSpliceJunctions;
-    }
-
-    public DownsampleOptions getDownsampleOptions() {
-        return downsampleOptions;
     }
 
     public static class DownsampleOptions {
