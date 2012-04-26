@@ -59,6 +59,10 @@ public class CodecFactory {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
+        if(fn.endsWith(".txt")) {
+            int l = fn.length() - 4;
+            fn = fn.substring(0, l);
+        }
 
         if (fn.endsWith(".vcf4")) {
             return new VCFWrapperCodec(new VCFCodec(), genome);
