@@ -302,9 +302,9 @@ public class DirectoryManager {
 
             File oldDirectory = IGV_DIRECTORY;
 
-
             try {
-                System.out.println("Moving directory");
+                log.info("Moving igv directory from " + oldDirectory.getParent() + " to " +
+                        newParentDirectory.getAbsolutePath());
                 FileUtils.copyDirectory(IGV_DIRECTORY, newIGVDirectory);
                 IGV_DIRECTORY = newIGVDirectory;
 
