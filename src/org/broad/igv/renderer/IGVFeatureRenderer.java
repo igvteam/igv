@@ -26,6 +26,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +73,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     int blockHeight = BLOCK_HEIGHT;
     int thinBlockHeight = THIN_BLOCK_HEIGHT;
 
-    private AlternativeSpliceGraph exonGraph;
+    //Map from Exon to y offset
+    //Could use more coordinates, but they are all contained in the Exon
+    private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -134,9 +137,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             for (int i = 0; i < featureArray.length; i++) {
 
                 IGVFeature feature = featureArray[i];
-
-                exonGraph.startFeature();
-
 
                 // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
@@ -339,15 +339,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
         for (Exon exon : gene.getExons()) {
-//            if(!exonGraph.addExon(exon)){
-//                continue;
-//            }
-//            if(exonGraph.containsVertex(AlternativeSpliceGraph.getExonProxy(exon))){
-//                continue;
-//            }else{
-//                exonGraph.addExon(exon);
-//            }
-
 
             // Parse expression from tags, if available
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
@@ -377,6 +368,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 colorToggle = !colorToggle;
             }
 
+            int curYOffset = yOffset;
+//            IExon pExon = Exon.getExonProxy(exon);
+//            if(exonMap.containsKey(pExon)){
+//                curYOffset= exonMap.get(pExon);
+//            }else{
+//                exonMap.put(pExon, yOffset);
+//            }
 
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
@@ -391,20 +389,19 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         getPixelFromChromosomeLocation(exon.getChr(),
                                 exon.getCdEnd(), theOrigin, locationScale)));
 
-
                 // Entire exon is UTR
                 if (exon.isUTR()) {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;
-                    blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                    blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
 
                 } else {// Exon contains 5' UTR -- draw non-coding part
                     if (pCdStart > pStart) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pCdStart, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -412,7 +409,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pCdEnd, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pEnd = pCdEnd;
                     }
 
@@ -421,18 +418,18 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = Math.max(2, pClippedEnd - pClippedStart);
-                        blockGraphics.fillRect(pClippedStart, yOffset - blockHeight / 2, pClippedWidth, blockHeight);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - blockHeight / 2, pClippedWidth, blockHeight);
 
                     }
                 }
 
                 Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.white);
-                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, yOffset, mode, arrowGraphics);
+                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, curYOffset, mode, arrowGraphics);
 
 
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
-                            yOffset, exon, trackRectangle);
+                            curYOffset, exon, trackRectangle);
                 }
 
             }
@@ -683,6 +680,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     public void reset() {
-        exonGraph = new AlternativeSpliceGraph();
+        exonMap.clear();
     }
 }

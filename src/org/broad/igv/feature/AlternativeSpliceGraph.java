@@ -55,7 +55,7 @@ public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> 
      */
     public boolean addExon(IExon exon) {
 
-        IExon eProx = getExonProxy(exon);
+        IExon eProx = Exon.getExonProxy(exon);
         //Should be a no-op if exon already there
         boolean added = addVertex(eProx);
 
@@ -93,64 +93,5 @@ public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> 
         lastExon = null;
     }
 
-    public static IExon getExonProxy(IExon exon) {
-        InvocationHandler handler = new ExonLocHandler(exon);
-        IExon eProx = (IExon) Proxy.newProxyInstance(IExon.class.getClassLoader(),
-                new Class[]{IExon.class},
-                handler);
-        return eProx;
-    }
 
-    private static class ExonLocHandler implements InvocationHandler {
-
-        private IExon parent;
-        private int hashCode = 0;
-
-        public ExonLocHandler(IExon parent) {
-            this.parent = parent;
-        }
-
-        private boolean equals(IExon parent, Object inother) {
-            if (inother == null || !(inother instanceof IExon)) {
-                return false;
-            }
-            IExon other = (IExon) inother;
-            boolean eq = parent.getChr().equals(other.getChr());
-            eq &= parent.getStart() == other.getStart();
-            eq &= parent.getEnd() == other.getEnd();
-            eq &= parent.getCdStart() == other.getCdStart();
-            eq &= parent.getCdEnd() == other.getCdEnd();
-            eq &= parent.getStrand() == other.getStrand();
-            return eq;
-        }
-
-        private int hashCode(IExon parent) {
-            if (hashCode != 0) {
-                return hashCode;
-            }
-
-            String conc = parent.getChr() + parent.getStrand().toString() + parent.getStart();
-            conc += parent.getEnd();
-            conc += parent.getCdStart();
-            conc += parent.getCdEnd();
-            int hc = conc.hashCode();
-
-            if (hc == 0) {
-                hc = 1;
-            }
-            hashCode = hc;
-            return hc;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method.getName().equals("hashCode")) {
-                return hashCode(parent);
-            } else if (method.getName().equals("equals")) {
-                return equals(parent, args[0]);
-            } else {
-                return method.invoke(parent, args);
-            }
-        }
-    }
 }
