@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
@@ -107,6 +108,12 @@ public class GobyAlignment implements Alignment {
         int j = 0;
 
         final int leftPadding = alignmentEntry.getQueryPosition();
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+        if (showSoftClipped && entry.hasSoftClippedBasesLeft()) {
+            int clipLength = entry.getSoftClippedBasesLeft().length();
+
+            addSoftClipBlock(blocks, Math.max(0,entry.getPosition() - clipLength), entry.getSoftClippedBasesLeft());
+        }
         for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
             final String from = var.getFrom();
             final int fromLength = from.length();
@@ -161,6 +168,11 @@ public class GobyAlignment implements Alignment {
 
         addBlock(blocks, start, bases, scores);
         blocks = introduceDeletions(blocks, entry);
+        if (showSoftClipped && entry.hasSoftClippedBasesRight()) {
+
+            int targetAlignedLength=entry.getTargetAlignedLength();
+            addSoftClipBlock(blocks, entry.getPosition() +targetAlignedLength, entry.getSoftClippedBasesRight());
+        }
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
 
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
@@ -187,13 +199,30 @@ public class GobyAlignment implements Alignment {
                     spliceHeadAlignment.gapTypes = new CharArrayList(10);
                 }
                 spliceHeadAlignment.gapTypes.add(SamAlignment.SKIPPED_REGION);
-
+                 // TODO determine if we are erroneously erasing the softClipped block here as well.
                 // Since the previous alignment carries this information, we clear up block and insertionBlock
                 // in this alignment:
                 this.block = new AlignmentBlock[0];
                 this.insertionBlock = new AlignmentBlock[0];
             }
         }
+    }
+
+    private void addSoftClipBlock(ObjectArrayList<AlignmentBlock> blocks, int position, String softClippedBasesLeft) {
+        final int length = softClippedBasesLeft.length();
+        byte[] bases = new byte[length];
+        byte[] scores = new byte[length];
+        for (int i=0;i< length;i++) {
+            bases[i]=(byte)softClippedBasesLeft.charAt(i);
+            scores[i]= (byte)40;
+        }
+        final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
+                bases,
+                scores,
+                this);
+        alignmentBlock.setSoftClipped(true);
+        blocks.add(alignmentBlock);
+
     }
 
     /**
@@ -214,9 +243,9 @@ public class GobyAlignment implements Alignment {
 
                     if ((prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
 
-                                    (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
-                                    (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
-                                    (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
+                            (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
+                            (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
+                            (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
                         return false;
                     }
                 }
