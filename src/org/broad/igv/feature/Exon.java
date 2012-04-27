@@ -15,8 +15,6 @@ package org.broad.igv.feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.Random;
-
 //~--- JDK imports ------------------------------------------------------------
 
 
@@ -25,7 +23,7 @@ import java.util.Random;
  *
  * @author jrobinso
  */
-public class Exon extends AbstractFeature {
+public class Exon extends AbstractFeature implements IExon {
 
     /**
      * The index of the exon relative to the start codon.  The exon with the start
@@ -40,15 +38,11 @@ public class Exon extends AbstractFeature {
     private int codingStart;
     private int codingEnd;
     private AminoAcidSequence aminoAcidSequence;
-    boolean utr = false;
+    private boolean utr = false;
 
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
     // to either the beginning or end of the exon, depending on the strand
     private int mrnaBase = -1;
-
-    //private Equalizer equalizer = new DefaultEqualizer();
-    private int hashCode = 0;
-
 
     public void setMrnaBase(int base) {
         this.mrnaBase = base;
@@ -110,13 +104,11 @@ public class Exon extends AbstractFeature {
 
     public void setCodingStart(int codingStart) {
         this.codingStart = Math.max(getStart(), codingStart);
-        hashCode = 0;  // Invalidate hashCode
     }
 
 
     public void setCodingEnd(int codingEnd) {
         this.codingEnd = Math.min(getEnd(), codingEnd);
-        hashCode = 0;     // Invalidate hashCode
     }
 
 
@@ -207,40 +199,5 @@ public class Exon extends AbstractFeature {
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
-
-//    @Override
-//    public boolean equals(Object object) {
-//        //return equalizer.equals(this, object);
-//        if (object == null || !(object instanceof Exon)) {
-//            return false;
-//        }
-//        Exon other = (Exon) object;
-//        boolean eq = getChr().equals(other.getChr());
-//        eq &= getStart() == other.getStart();
-//        eq &= getEnd() == other.getEnd();
-//        eq &= getCdStart() == other.getCdStart();
-//        eq &= getCdEnd() == other.getCdEnd();
-//        eq &= getStrand() == other.getStrand();
-//        return eq;
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        if (hashCode != 0) {
-//            return hashCode;
-//        }
-//
-//        String conc = getChr() + getStrand().toString() + getStart();
-//        conc += getEnd();
-//        conc += getCdStart();
-//        conc += getCdEnd();
-//        int hc = conc.hashCode();
-//
-//        if (hc == 0) {
-//            hc = 1;
-//        }
-//        hashCode = hc;
-//        return hc;
-//    }
 
 }
