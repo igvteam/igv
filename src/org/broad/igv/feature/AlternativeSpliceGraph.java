@@ -27,51 +27,81 @@ import java.util.Collection;
  * User: jacob
  * Date: 2012/03/28
  */
-public class AlternativeSpliceGraph extends DefaultDirectedGraph<IGVFeature, Object> {
+public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> {
+
+    private IExon lastExon = null;
+
+    public AlternativeSpliceGraph() {
+        super(Object.class);
+    }
+
 
     public AlternativeSpliceGraph(Collection<? extends IGVFeature> features) {
-        super(Object.class);
-        createFeatureGraph(features);
+        this();
+        addFeatures(features);
     }
 
-    private void createFeatureGraph(Collection<? extends IGVFeature> features) {
+    /**
+     * If an exon overlaps exactly a different exon,
+     * we add appropriate edges.
+     * <p/>
+     * If we find a new exon, we add a node for it.
+     * <p/>
+     * If an exon partially overlaps, we
+     * treat that as a different exon.
+     * TODO Treat overlapping regions as same
+     *
+     * @param exon The exon to add
+     */
+    public boolean addExon(IExon exon) {
 
-        /**
-         * We loop through features to build the graph.
-         * If an exon overlaps exactly a different exon,
-         * we add appropriate edges.
-         *
-         * If we find a new exon, we add a node for it.
-         *
-         * If an exon partially overlaps, we
-         * treat that as a different exon.
-         * TODO Treat overlapping regions as same
-         *
-         */
-        for (IGVFeature feature : features) {
+        IExon eProx = getExonProxy(exon);
+        //Should be a no-op if exon already there
+        boolean added = addVertex(eProx);
 
-            IExon lastExon = null;
-            for (Exon exon : feature.getExons()) {
-
-                InvocationHandler handler = new ExonLocHandler(exon);
-                IExon eProx = (IExon) Proxy.newProxyInstance(IExon.class.getClassLoader(),
-                        new Class[]{IExon.class},
-                        handler);
-
-                //Should be a no-op if exon already there
-                addVertex(eProx);
-
-                if (lastExon != null) {
-                    addEdge(lastExon, eProx);
-                }
-                lastExon = eProx;
+        if (added) {
+            if (lastExon != null) {
+                addEdge(lastExon, eProx);
             }
+            lastExon = eProx;
         }
 
-
+        return added;
     }
 
-    private class ExonLocHandler implements InvocationHandler {
+    private void addFeature(IGVFeature feature) {
+        startFeature();
+        for (Exon exon : feature.getExons()) {
+            addExon(exon);
+        }
+    }
+
+
+    /**
+     * Convenience method for calling
+     * {@link #addFeature} on each.
+     *
+     * @param features
+     */
+    private void addFeatures(Collection<? extends IGVFeature> features) {
+        for (IGVFeature feature : features) {
+            addFeature(feature);
+        }
+    }
+
+    public void startFeature() {
+        lastExon = null;
+    }
+
+    public static IExon getExonProxy(IExon exon) {
+        InvocationHandler handler = new ExonLocHandler(exon);
+        IExon eProx = (IExon) Proxy.newProxyInstance(IExon.class.getClassLoader(),
+                new Class[]{IExon.class},
+                handler);
+        return eProx;
+    }
+
+    private static class ExonLocHandler implements InvocationHandler {
 
         private IExon parent;
         private int hashCode = 0;

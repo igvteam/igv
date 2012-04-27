@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.renderer;
 
@@ -23,7 +16,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.*;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -75,6 +71,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     int blockHeight = BLOCK_HEIGHT;
     int thinBlockHeight = THIN_BLOCK_HEIGHT;
+
+    private AlternativeSpliceGraph exonGraph;
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -136,6 +134,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             for (int i = 0; i < featureArray.length; i++) {
 
                 IGVFeature feature = featureArray[i];
+
+                exonGraph.startFeature();
 
 
                 // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
@@ -339,6 +339,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
         for (Exon exon : gene.getExons()) {
+//            if(!exonGraph.addExon(exon)){
+//                continue;
+//            }
+//            if(exonGraph.containsVertex(AlternativeSpliceGraph.getExonProxy(exon))){
+//                continue;
+//            }else{
+//                exonGraph.addExon(exon);
+//            }
+
 
             // Parse expression from tags, if available
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
@@ -673,4 +682,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return (int) Math.round((chromosomeLocation - origin) / locationScale);
     }
 
+    public void reset() {
+        exonGraph = new AlternativeSpliceGraph();
+    }
 }

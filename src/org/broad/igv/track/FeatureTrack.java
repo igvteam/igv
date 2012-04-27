@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.track;
 
@@ -671,7 +664,7 @@ public class FeatureTrack extends AbstractTrack {
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             loadFeatures(chr, start, end, context);
             if (!IGV.getInstance().isExportingSnapshot()) {
-               // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
+                // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
                 return;
             }
         }
@@ -699,6 +692,10 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
+
+
+        IGVFeatureRenderer renderer = (IGVFeatureRenderer) getRenderer();
+        renderer.reset();
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
@@ -712,9 +709,10 @@ public class FeatureTrack extends AbstractTrack {
                     double h = inputRect.getHeight() / nLevels;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i = 0;
+
                     for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
-                        getRenderer().render(row.features, context, rect, this);
+                        renderer.render(row.features, context, levelRects.get(i), this);
                         if (selectedFeatureRowIndex == i) {
                             Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
                             fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -727,7 +725,7 @@ public class FeatureTrack extends AbstractTrack {
         } else {
             List<IGVFeature> features = packedFeatures.getFeatures();
             if (features != null) {
-                getRenderer().render(features, context, inputRect, this);
+                renderer.render(features, context, inputRect, this);
             }
         }
     }
