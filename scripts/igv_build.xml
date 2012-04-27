@@ -119,6 +119,7 @@
         <!-- Copy scripts and docs -->
         <copy todir="${tmp.dir}/${src.archive.name}">
             <fileset file="build.xml"/>
+            <fileset file="build_macros.xml"/>
             <fileset dir="${basedir}">
                 <include name="docs/*"/>
                 <!--include name="test/src/**/*"/>

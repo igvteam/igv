@@ -48,17 +48,17 @@
     </target>
 
 
-    <!--We could use this to check for availability, and use BCEL by default.
-        Going to leave it up to the user though -->
-    <!--condition property="use.bcel">
+    <!-- Would like to be able to set bcel to true or false
+    This is easy in ant 1.8, but not earlier versions-->
+    <condition property="actuse.bcel">
         <and>
             <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
-            <not><isset property="nobcel"/></not>
+            <istrue value="${use.bcel}"/>
         </and>
-    </condition-->
+    </condition>
 
     <!-- Unzip jars to the tmp directory -->
-    <target name="prepare" if="use.bcel">
+    <target name="prepare" if="actuse.bcel">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -132,7 +132,7 @@
         </sequential>
     </macrodef>
 
-    <target name="build-all" depends="compile" unless="use.bcel" description="Build the IGV JAR, without using bcel">
+    <target name="build-all" depends="compile" unless="actuse.bcel" description="Build the IGV JAR, without using bcel">
         <fileset dir="${tmp.dir}" id="files"/>
 
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
@@ -142,7 +142,7 @@
         <build includedFileset="files"/>
     </target>
 
-    <target name="build-small" depends="compile" if="use.bcel"
+    <target name="build-small" depends="compile" if="actuse.bcel"
             description="Build the IGV JAR using BCEL to take only required classes">
 
         <classfileset dir="${tmp.dir}" id="files">
