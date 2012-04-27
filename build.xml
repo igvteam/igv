@@ -67,6 +67,7 @@
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
+                <exclude name="**/goby-io-igv.jar"/>
             </fileset>
         </unzip>
     </target>
@@ -127,6 +128,7 @@
                 </manifest>
             </jar>
             <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
+            <copy file="${lib.dir}goby-io-igv.jar" tofile="${dist.dir}goby-io-igv.jar" overwrite="true"/>
         </sequential>
     </macrodef>
 
@@ -147,7 +149,7 @@
             <root classname="${main-class}"/>
         </classfileset>
 
-        <property name="class-path" value="batic-codec.jar"/>
+        <property name="class-path" value="batic-codec.jar goby-io-igv.jar"/>
 
         <build includedFileset="files"/>
     </target>
