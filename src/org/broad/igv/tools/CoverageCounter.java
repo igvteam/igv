@@ -248,10 +248,10 @@ public class CoverageCounter {
         try {
 
             if (interval == null) {
-                reader = getReader(alignmentFile, false);
+                reader = AlignmentReaderFactory.getReader(alignmentFile, false);
                 iter = reader.iterator();
             } else {
-                reader = getReader(alignmentFile, true);
+                reader = AlignmentReaderFactory.getReader(alignmentFile, true);
                 iter = reader.query(interval.getChr(), interval.getStart() - 1, interval.getEnd(), false);
             }
 
@@ -378,20 +378,6 @@ public class CoverageCounter {
         }
     }
 
-    private AlignmentReader getReader(String alignmentFile, boolean requireIndex) throws IOException {
-
-        if (!FileUtils.isRemote(alignmentFile)) {
-            File f = new File(alignmentFile);
-            if (f.isDirectory()) {
-                List<AlignmentReader> readers = new ArrayList();
-                for (File file : f.listFiles(new AlignmentFileFilter())) {
-                    readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), requireIndex));
-                }
-                return new MergedAlignmentReader(readers);
-            }
-        }
-        return AlignmentReaderFactory.getReader(alignmentFile, requireIndex);
-    }
 
     /**
      * The names of tracks which will be created by this parser
