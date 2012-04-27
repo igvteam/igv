@@ -154,9 +154,15 @@ public class ExpressionFileParser {
 
     public static FileType determineType(ResourceLocator dataFileLocator) {
         String fn = dataFileLocator.getPath().toLowerCase();
-        if (fn.endsWith(".txt") || fn.endsWith(".tab") || fn.endsWith(".xls") || fn.endsWith(".gz")) {
-            fn = fn.substring(0, fn.lastIndexOf("."));
+        if (fn.endsWith(".gz")) {
+            int l = fn.length() - 3;
+            fn = fn.substring(0, l);
         }
+        if (fn.endsWith(".txt")) {
+            int l = fn.length() - 4;
+            fn = fn.substring(0, l);
+        }
+
         //TODO genomespace hack
         if (dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")) {
             fn = ".gct";
@@ -331,8 +337,7 @@ public class ExpressionFileParser {
         } else {
             if (errorCount < MAX_ERROR_COUNT) {
                 log.info("Probe: '" + probeId + "' could not be mapped to a genomic position.");
-            }
-            else if (errorCount == MAX_ERROR_COUNT) {
+            } else if (errorCount == MAX_ERROR_COUNT) {
                 log.info("Maximum probe mapping warning count exceeded.  Further mapping errors will not be logged");
             }
             errorCount++;
