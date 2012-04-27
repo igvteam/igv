@@ -41,6 +41,8 @@
                  keystore="${keystore}"/>
         <signjar jar="${dist.dir}batik-codec.jar" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
+        <signjar jar="${dist.dir}goby-io-igv.jar" alias="${alias}" keypass="${key-password}"
+                 storepass="${store-password}" keystore="${keystore}"/>
     </target>
 
     <fileset id="scripts" dir="${scripts.dir}">
@@ -57,6 +59,7 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
             <fileset file="${dist.dir}batik-codec.jar"/>
+            <fileset file="${dist.dir}goby-io-igv.jar"/>
         </copy>
     </target>
 
@@ -70,8 +73,9 @@
         <sequential>
 
             <!-- Copy files to directory -->
-            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}/igv.jar"/>
-            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}/batik-codec.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}igv.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}batik-codec.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}goby-io-igv.jar"/>
 
             <zip destfile="@{zip.dest}" update="@{update}" duplicate="fail">
                 <zipfileset dir="${tmp.dir}" filemode="755">
