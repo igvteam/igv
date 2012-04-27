@@ -16,7 +16,7 @@
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
-    <property name="use.bcel" value="true"/>
+    <property name="include.libs" value="true"/>
 
     <import file="../build.xml"/>
 

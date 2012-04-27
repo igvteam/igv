@@ -50,15 +50,15 @@
 
     <!-- Would like to be able to set bcel to true or false
     This is easy in ant 1.8, but not earlier versions-->
-    <condition property="actuse.bcel">
+    <condition property="act.include.libs">
         <and>
             <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
-            <istrue value="${use.bcel}"/>
+            <istrue value="${include.libs}"/>
         </and>
     </condition>
 
     <!-- Unzip jars to the tmp directory -->
-    <target name="prepare" if="actuse.bcel">
+    <target name="prepare" if="act.include.libs">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -132,7 +132,7 @@
         </sequential>
     </macrodef>
 
-    <target name="build-all" depends="compile" unless="actuse.bcel" description="Build the IGV JAR, without using bcel">
+    <target name="build-small" depends="compile" unless="act.include.libs" description="Build the IGV JAR, without including libraries">
         <fileset dir="${tmp.dir}" id="files"/>
 
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
@@ -142,8 +142,8 @@
         <build includedFileset="files"/>
     </target>
 
-    <target name="build-small" depends="compile" if="actuse.bcel"
-            description="Build the IGV JAR using BCEL to take only required classes">
+    <target name="build-all" depends="compile" if="act.include.libs"
+            description="Build the IGV JAR, including libraries, using BCEL to take only required classes">
 
         <classfileset dir="${tmp.dir}" id="files">
             <root classname="${main-class}"/>

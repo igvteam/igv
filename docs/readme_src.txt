@@ -22,9 +22,23 @@ Optional: BCEL (http://commons.apache.org/bcel/)
 
 
 The above script will build "igv.jar" in the root directory of the distribution.
+This file does not include the external libraries on which IGV depends, and so will only when located
+in the same directory as a folder called "lib" containing all necessary jars.
 
-Possible problems:
+Optional:
 
+To package IGV for distribution, run the following command:
+
+ant -Dinclude.libs=true
+
+The command
+
+ant -Dinclude.libs=false
+
+will have the same effect as running "ant".
+
+
+This requires the BCEL library.
 Some ant distributions do not come with the optional library needed
 needed to use BCEL. BCEL is used only in certain build tasks, and is
 not needed for the default build. It is used when publishing the jar,
@@ -36,7 +50,7 @@ Unable to load dependency analyzer:
 org.apache.tools.ant.util.depend.bcel.FullAnalyzer
 
 To solve this issue, download the latest version of ant from Apache, and make sure
-it includes ant-apache-bcel.jar.
+it includes ant-apache-bcel.jar and bcel-5.2.jar (or latest version number).
 
 ========================
 TESTING IGV
