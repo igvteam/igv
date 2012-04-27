@@ -31,6 +31,7 @@ import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
@@ -350,7 +351,7 @@ public class TrackLoader {
 
     }
 
-    
+
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
@@ -509,7 +510,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal()) {
             if (!checkSize(locator.getPath())) {
@@ -519,40 +520,42 @@ public class TrackLoader {
 
         ExpressionFileParser parser = null;
         ExpressionDataset ds = null;
-
-        String fName = locator.getTrackName();
-
-        // TODO -- handle remote resource
-        try {
-            parser = new ExpressionFileParser(locator, null, genome);
-        } catch (IOException e) {
-            log.error("Error creating GCT parser.", e);
-            throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());
-        }
+        parser = new ExpressionFileParser(locator, null, genome);
         ds = parser.createDataset();
-        ds.setName(fName);
-        ds.setNormalized(true);
-        ds.setLogValues(true);
+        if (ds.isEmpty()) {
+            String message = "The probes in the file <br>&nbsp;&nbsp;&nbsp;" + locator.getPath() + "<br>" +
+                    "could not be mapped to genomic positions.  This can be corrected by specify a probe mapping<br>" +
+                    "file from the Preferences window (Probes tab), or by specifing the genomic positions in the<br>" +
+                    "expression data file.  Please see the user guide for more details.";
+            MessageUtils.showMessage(message);
 
-        /*
-         * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
-         * OverlappingProcessor proc = new OverlappingProcessor(ds);
-         * proc.setZoomMax(0);
-         * proc.process(outputFile.getAbsolutePath());
-         * loadH5File(outputFile, messages, attributeList, group);
-         */
+        } else {
+            ds.setName(locator.getTrackName());
+            ds.setNormalized(true);
+            ds.setLogValues(true);
 
-        // Counter for generating ID
-        TrackProperties trackProperties = ds.getTrackProperties();
-        String path = locator.getPath();
-        for (String trackName : ds.getTrackNames()) {
-            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
-            String trackId = path + "_" + trackName;
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setRendererClass(HeatmapRenderer.class);
-            track.setProperties(trackProperties);
-            newTracks.add(track);
+            /*
+            * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
+            * OverlappingProcessor proc = new OverlappingProcessor(ds);
+            * proc.setZoomMax(0);
+            * proc.process(outputFile.getAbsolutePath());
+            * loadH5File(outputFile, messages, attributeList, group);
+            */
+
+            // Counter for generating ID
+            TrackProperties trackProperties = ds.getTrackProperties();
+            String path = locator.getPath();
+            for (String trackName : ds.getTrackNames()) {
+                DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
+                String trackId = path + "_" + trackName;
+                Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setRendererClass(HeatmapRenderer.class);
+                track.setProperties(trackProperties);
+                newTracks.add(track);
+            }
         }
+
+
     }
 
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
