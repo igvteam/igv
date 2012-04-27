@@ -219,15 +219,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
                     String alignmentPath = tokens[1];
                     boolean isAbsolute;
-                    if(alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
+                    if (alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
                         isAbsolute = true;
-                    }
-                    else {
+                    } else {
                         String absolutePath = (new File(alignmentPath)).getAbsolutePath();
                         String prefix = absolutePath.substring(0, 3);
                         isAbsolute = alignmentPath.startsWith(prefix);
                     }
-                    if(!isAbsolute) {
+                    if (!isAbsolute) {
                         alignmentPath = FileUtils.getAbsolutePath(alignmentPath, bamListPath);
                     }
 
@@ -1198,7 +1197,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (e.isMetaDown() || e.isControlDown()) {
             if (sampleAtPosition != null) {
                 if (selectedSamples.contains(sampleAtPosition)) {
-                //    selectedSamples.remove(sampleAtPosition);
+                    //    selectedSamples.remove(sampleAtPosition);
                 } else {
                     selectedSamples.add(sampleAtPosition);
                 }
@@ -1402,6 +1401,34 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         LongRunningTask.submit(runnable);
     }
 
+    /**
+     * Return the nextLine or previous feature relative to the center location.
+     *
+     * Loop through "next feature from super implementation until first non-filtered variant is found.
+     *
+     *
+     * @param chr
+     * @param center
+     * @param forward
+     * @return
+     * @throws java.io.IOException
+     */
+    @Override
+    public Feature nextFeature(String chr, double center, boolean forward, ReferenceFrame frame) throws IOException {
+
+        if(getHideFiltered()) {
+        Feature f;
+        while ((f = super.nextFeature(chr, center, forward, frame)) != null) {
+            if (!(f instanceof Variant) || !((Variant) f).isFiltered()) {
+                return f;
+            }
+        }
+        return null;
+        }
+        else {
+            return super.nextFeature(chr, center, forward, frame);
+        }
+    }
 
     static class SampleBounds {
         int top;
