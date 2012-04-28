@@ -61,6 +61,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
+    private static final Color SELECTED_BAND_COLOR = new Color(210, 210, 210);
     private static final Color borderGray = new Color(200, 200, 200);
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
@@ -754,11 +755,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             } else {
                 g2D.setColor(BAND2_COLOR);
                 coloredLast = true;
-
             }
 
             if (bandRectangle.intersects(visibleRectangle)) {
                 if (!supressFill) {
+                    if (selectedSamples.contains(sample) && hasAlignmentFiles()) {
+                        g2D.setColor(SELECTED_BAND_COLOR);
+                    }
                     g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
                 }
 
@@ -770,11 +773,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         g2D.setColor(Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
                     }
-                    if (selectedSamples.contains(sample)) {
-                        g2D.setColor(Color.green);
-                        int d = bandRectangle.height;
-                        g2D.fillRect(bandRectangle.x + bandRectangle.width - 17, bandRectangle.y, 15, d);
-                    }
+
 
                 } else if (type == BackgroundType.ATTRIBUTE) {
 
@@ -1403,9 +1402,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Return the nextLine or previous feature relative to the center location.
-     *
+     * <p/>
      * Loop through "next feature from super implementation until first non-filtered variant is found.
-     *
      *
      * @param chr
      * @param center
@@ -1416,16 +1414,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     @Override
     public Feature nextFeature(String chr, double center, boolean forward, ReferenceFrame frame) throws IOException {
 
-        if(getHideFiltered()) {
-        Feature f;
-        while ((f = super.nextFeature(chr, center, forward, frame)) != null) {
-            if (!(f instanceof Variant) || !((Variant) f).isFiltered()) {
-                return f;
+        if (getHideFiltered()) {
+            Feature f;
+            while ((f = super.nextFeature(chr, center, forward, frame)) != null) {
+                if (!(f instanceof Variant) || !((Variant) f).isFiltered()) {
+                    return f;
+                }
             }
-        }
-        return null;
-        }
-        else {
+            return null;
+        } else {
             return super.nextFeature(chr, center, forward, frame);
         }
     }
