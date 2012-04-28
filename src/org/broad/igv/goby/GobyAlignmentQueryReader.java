@@ -30,7 +30,9 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,7 +52,7 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
     private final String basename;
     private DoubleIndexedIdentifier targetIdentifiers;
     private boolean isIndexed;
-    private Set<String> targetSequenceNames;
+    private List<String> targetSequenceNames;
 
 
     /**
@@ -76,7 +78,7 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
         // reader.close();
         // reader = null;
 
-        targetSequenceNames = new HashSet();
+        targetSequenceNames = new ArrayList();
         for (MutableString ms : identifiers.keySet()) {
             targetSequenceNames.add(ms.toString());
         }
@@ -98,7 +100,7 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
         }
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         return targetSequenceNames;
     }
 

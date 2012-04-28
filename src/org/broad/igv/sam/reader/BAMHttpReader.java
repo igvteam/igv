@@ -31,10 +31,7 @@ import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,6 +53,7 @@ public class BAMHttpReader implements AlignmentReader {
     SAMFileHeader header;
     File indexFile;
     SAMFileReader reader;
+    List<String> sequenceNames;
 
     public BAMHttpReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.url = new URL(locator.getPath());
@@ -91,20 +89,22 @@ public class BAMHttpReader implements AlignmentReader {
         return indexFile != null && indexFile.exists();
     }
 
-    public Set<String> getSequenceNames() {
-        SAMFileHeader header = getHeader();
-        if (header == null) {
-            return null;
-        }
-        Set<String> seqNames = new HashSet();
-        List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
-        if (records.size() > 0) {
-            for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
-                String chr = rec.getSequenceName();
-                seqNames.add(chr);
+    public List<String> getSequenceNames() {
+        if (sequenceNames == null) {
+            SAMFileHeader header = getHeader();
+            if (header == null) {
+                return null;
+            }
+            sequenceNames = new ArrayList();
+            List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
+            if (records.size() > 0) {
+                for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
+                    String chr = rec.getSequenceName();
+                    sequenceNames.add(chr);
+                }
             }
         }
-        return seqNames;
+        return sequenceNames;
     }
 
 

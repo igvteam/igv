@@ -113,12 +113,8 @@ public class CachingQueryReader {
         reader.close();
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         return reader.getSequenceNames();
-    }
-
-    public SAMFileHeader getHeader() throws IOException {
-        return reader.getHeader();
     }
 
     public CloseableIterator<Alignment> iterator() {

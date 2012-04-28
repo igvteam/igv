@@ -38,6 +38,8 @@ import org.broad.tribble.util.SeekableStreamFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,7 +53,7 @@ public class SAMReader implements AlignmentReader {
     String samFile;
     FeatureIndex featureIndex;
     SAMFileHeader header;
-
+    List<String> sequenceNames;
 
     public SAMReader(String samFile) throws IOException {
         this(samFile, true);
@@ -84,11 +86,9 @@ public class SAMReader implements AlignmentReader {
             reader = new SAMFileReader(bis);
             header = reader.getFileHeader();
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error loading header", e);
-        }
-        finally {
+        } finally {
             try {
                 if (is != null) {
                     is.close();
@@ -97,28 +97,11 @@ public class SAMReader implements AlignmentReader {
                     reader.close();
                 }
 
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
 
             }
         }
     }
-
-    /*
-    private void loadHeader() throws IOException {
-
-        SeekableStream stream = null;
-        try {
-            stream = SeekableStreamFactory.getStreamFor(samFile);
-            SAMFileReader reader = new SAMFileReader(stream);
-            header = reader.getFileHeader();
-            reader.close();
-        }
-        finally {
-            stream.close();
-            stream = null;
-        }
-    } */
 
     public CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) {
 
@@ -180,17 +163,20 @@ public class SAMReader implements AlignmentReader {
         return featureIndex;
     }
 
-    public Set<String> getSequenceNames() {
-        FeatureIndex idx = getIndex();
-        if (idx == null) {
-            return null;
-        } else {
-            return idx.getIndexedChromosomes();
+    public List<String> getSequenceNames() {
+        if (sequenceNames == null) {
+            FeatureIndex idx = getIndex();
+            if (idx == null) {
+                return null;
+            } else {
+                sequenceNames = new ArrayList<String>(idx.getIndexedChromosomes());
+            }
         }
+        return sequenceNames;
 
     }
 
-    public CloseableIterator<Alignment> iterator() { 
+    public CloseableIterator<Alignment> iterator() {
         try {
 
             // Skip to the start of the query interval and open a sam file reader

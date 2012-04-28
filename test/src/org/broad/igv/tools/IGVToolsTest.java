@@ -18,6 +18,9 @@ import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.reader.AlignmentReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
 import org.broad.igv.tdf.TDFDataSource;
@@ -425,21 +428,46 @@ public class IGVToolsTest {
      */
     @Test
     public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.LARGE_DATA_DIR + "2largebams.bam.list";
-        String bamFiName = "HG00171.hg18.bam";
-        String[] largebams = generateRepLargebamsList(listPath, bamFiName, 2);
-
-        //Test list file
+        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
         tstCountBamList(listPath);
+    }
 
-        //Test comma-separated list
-        //This is no longer supported
-//        String listArg = TestUtils.LARGE_DATA_DIR + "" + largebams[0];
-//        for (int ss = 1; ss < largebams.length; ss++) {
-//            listArg += "," + TestUtils.LARGE_DATA_DIR + "" + largebams[ss];
-//        }
-//        tstCountBamList(listArg);
+    /**
+     * Test iterating through a merged bam file(actually a list with the same file duplicated).  Each record
+     * should appear twice (since the list contains the same file twice), and in coordinate sort order.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMergedBam() throws Exception {
+        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
+        AlignmentReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(listPath), false);
 
+        Set<String> visitedChromosomes = new HashSet();
+        String lastChr = null;
+        int lastStart = -1;
+
+        Iterator<Alignment> iter = reader.iterator();
+        while (iter.hasNext()) {
+            Alignment a1 = iter.next();
+            Alignment a2 = iter.next();
+            assertEquals(a1.getReadName(), a2.getReadName());
+            assertEquals(a1.getChr(), a2.getChr());
+            assertEquals(a1.getStart(), a2.getStart());
+            assertEquals(a2.getEnd(), a2.getEnd());
+
+            String chr = a1.getChr();
+            int start = a1.getAlignmentStart();
+            if (lastChr != null && chr.equals(lastChr)) {
+                assertTrue(a1.getReadName(), start >= lastStart);
+            } else {
+                assertFalse(visitedChromosomes.contains(chr));
+                lastChr = chr;
+                visitedChromosomes.add(chr);
+            }
+            lastStart = start;
+
+        }
     }
 
     private void tstCountBamList(String listArg) throws Exception {

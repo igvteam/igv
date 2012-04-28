@@ -76,7 +76,7 @@ public class AlignmentDataManager {
      */
     private void initChrMap(Genome genome) {
         if (genome != null) {
-            Set<String> seqNames = reader.getSequenceNames();
+            List<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
                 for (String chr : seqNames) {
                     String alias = genome.getChromosomeAlias(chr);
@@ -125,7 +125,7 @@ public class AlignmentDataManager {
      *
      * @return
      */
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         return reader.getSequenceNames();
     }
 

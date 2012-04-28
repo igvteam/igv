@@ -12,7 +12,9 @@ import org.broad.igv.util.HttpUtils;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,12 +22,12 @@ import java.util.Set;
  *
  * @author Jim Robinson
  * @date 12/15/11
- *
+ * <p/>
  * Example URLs:
  * http://host/query.cgi?file=input.sam&start=800&end=900&contained=true
  * http://host/samHeader.cgi?file=input.sam
  * http://phhost/getSequenceNames.cgi?file=input.sam
-*/
+ */
 
 public class CGIAlignmentReader implements AlignmentReader {
 
@@ -37,6 +39,7 @@ public class CGIAlignmentReader implements AlignmentReader {
     String seqNameScript = "getSequenceNames.cgi";
     String query;
     SAMFileHeader header;
+    List<String> sequenceNames;
 
     public CGIAlignmentReader(String url) throws MalformedURLException {
 
@@ -70,7 +73,7 @@ public class CGIAlignmentReader implements AlignmentReader {
         //Nothing to do.  Could notify server that we are done, if that is useful
     }
 
-     /**
+    /**
      * Try to load header, if there are any errors just set to null and continue.  The header is optional
      */
     private void loadHeader() {
@@ -97,33 +100,34 @@ public class CGIAlignmentReader implements AlignmentReader {
         }
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
+        if (sequenceNames == null) {
+            InputStream is = null;
+            try {
+                URL url = new URL(getSequenceNamesURL());
+                is = HttpUtils.getInstance().openConnectionStream(url);
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                sequenceNames = new ArrayList<String>();
+                String nextLine;
+                while ((nextLine = br.readLine()) != null) {
+                    String[] tokens = nextLine.split("\\s+");
+                    for (String seq : tokens) {
+                        sequenceNames.add(seq);
+                    }
+                }
 
-        InputStream is = null;
-        try {
-            URL url = new URL(getSequenceNamesURL());
-            is = HttpUtils.getInstance().openConnectionStream(url);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            HashSet<String> seqNames = new HashSet<String>();
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                String[] tokens = nextLine.split("\\s+");
-                for (String seq : tokens) {
-                    seqNames.add(seq);
+            } catch (IOException e) {
+                log.error("Error fetching sequence names", e);
+                return null;
+            } finally {
+                if (is != null) try {
+                    is.close();
+                } catch (IOException e) {
+                    log.error(e);
                 }
             }
-            return seqNames;
-
-        } catch (IOException e) {
-            log.error("Error fetching sequence names", e);
-            return null;
-        } finally {
-            if (is != null) try {
-                is.close();
-            } catch (IOException e) {
-                log.error(e);
-            }
         }
+        return sequenceNames;
 
 
     }

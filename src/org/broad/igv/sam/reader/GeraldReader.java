@@ -29,6 +29,8 @@ import org.broad.tribble.readers.AsciiLineReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -74,11 +76,6 @@ public class GeraldReader implements AlignmentReader {
         }
     }
 
-    public SAMFileHeader getHeader() {
-        return null;
-    }
-
-
     private FeatureIndex getIndex() {
         if (featureIndex == null) {
             featureIndex = SamUtils.getIndexFor(alignmentFile);
@@ -86,12 +83,12 @@ public class GeraldReader implements AlignmentReader {
         return featureIndex;
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         FeatureIndex idx = getIndex();
         if (idx == null) {
             return null;
         } else {
-            return idx.getIndexedChromosomes();
+            return new ArrayList<String>(idx.getIndexedChromosomes());
         }
     }
 

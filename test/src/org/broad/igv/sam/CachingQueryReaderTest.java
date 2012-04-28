@@ -71,15 +71,11 @@ public class CachingQueryReaderTest {
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        SAMFileHeader expectedHeader = reader.getHeader();
         reader.close();
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        SAMFileHeader header = cachingReader.getHeader();
         cachingReader.close();
-
-        assertTrue(header.equals(expectedHeader));
     }
 
     @Test

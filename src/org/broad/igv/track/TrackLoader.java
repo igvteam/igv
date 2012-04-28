@@ -924,7 +924,7 @@ public class TrackLoader {
 
             // Check that alignments we loaded actually match some data.  Many BAM files will contain some sequences
             // not represented in the genome, buf if there are no matches warn the user.
-            Set<String> seqNames = dataManager.getSequenceNames();
+            List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
                 if (!checkSequenceNames(locator.getPath(), genome, seqNames)) {
                     return;
@@ -1006,7 +1006,7 @@ public class TrackLoader {
      * @param seqNames
      * @return true if there is at least one sequence match, false otherwise
      */
-    private boolean checkSequenceNames(String filename, Genome genome, Set<String> seqNames) {
+    private boolean checkSequenceNames(String filename, Genome genome, List<String> seqNames) {
         boolean atLeastOneMatch = false;
         for (String seqName : seqNames) {
             if (genome.getChromosome(seqName) != null) {

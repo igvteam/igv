@@ -34,6 +34,7 @@ import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,12 +66,12 @@ public class BAMFileReader implements AlignmentReader {
         return header;
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         SAMFileHeader header = getHeader();
         if (header == null) {
             return null;
         }
-        Set<String> seqNames = new HashSet();
+        List<String> seqNames = new ArrayList();
         List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
         if (records.size() > 0) {
             for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {

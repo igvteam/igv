@@ -27,16 +27,20 @@ import java.util.*;
 
 
 /**
- * Performs a logical merge of bam files
+ * Performs a logical merge of bam files.
+ * <p/>
  * User: jrobinso
  * Date: Apr 25, 2010
  */
 public class MergedAlignmentReader implements AlignmentReader {
 
-    Collection<AlignmentReader> readers;
+    List<AlignmentReader> readers;
+    List<String> sequenceNames;
+    Map<String, Integer> sequenceNameIndex;
 
-    public MergedAlignmentReader(Collection<AlignmentReader> readers) {
+    public MergedAlignmentReader(List<AlignmentReader> readers) {
         this.readers = readers;
+        loadSequenceNames();
     }
 
     public CloseableIterator<Alignment> iterator() {
@@ -53,19 +57,27 @@ public class MergedAlignmentReader implements AlignmentReader {
         }
     }
 
+    public List<String> getSequenceNames() {
+        return sequenceNames;
+    }
+
 
     /**
-     * Return the header for this file group.
-     * // TODO -- we are assuming that the headers are consistent for all files in this group, we should really check
+     * Return the merged list of all sequence names, maintaining order.
      *
      * @return
      */
-    public SAMFileHeader getHeader() throws IOException {
-        return readers.iterator().next().getHeader();
-    }
-
-    public Set<String> getSequenceNames() {
-        return readers.iterator().next().getSequenceNames();
+    public void loadSequenceNames() {
+        // Use a set for quick comparison
+        LinkedHashSet<String> names = new LinkedHashSet<String>(50);
+        for (AlignmentReader reader : readers) {
+            names.addAll(reader.getSequenceNames());
+        }
+        sequenceNames = new ArrayList<String>(names);
+        sequenceNameIndex = new HashMap<String, Integer>(sequenceNames.size());
+        for (int i = 0; i < sequenceNames.size(); i++) {
+            sequenceNameIndex.put(sequenceNames.get(i), i);
+        }
     }
 
     public boolean hasIndex() {
@@ -92,7 +104,7 @@ public class MergedAlignmentReader implements AlignmentReader {
         }
 
         private void create(String chr, int start, int end, boolean contained) throws IOException {
-            iteratorQueue = new PriorityQueue(readers.size(), new FooComparator());
+            iteratorQueue = new PriorityQueue(readers.size(), new AlignmentStartComparator());
             boolean iterate = (start == end) && (start == -1);
             for (AlignmentReader reader : readers) {
                 CloseableIterator<Alignment> iter;
@@ -163,10 +175,21 @@ public class MergedAlignmentReader implements AlignmentReader {
             }
         }
 
-        class FooComparator implements Comparator<RecordIterWrapper> {
+        class AlignmentStartComparator implements Comparator<RecordIterWrapper> {
 
-            public int compare(RecordIterWrapper wrapper, RecordIterWrapper foo1) {
-                return wrapper.nextRecord.getAlignmentStart() - foo1.nextRecord.getAlignmentStart();
+            public int compare(RecordIterWrapper wrapper1, RecordIterWrapper wrapper2) {
+                Alignment a1 = wrapper1.nextRecord;
+                Alignment a2 = wrapper2.nextRecord;
+
+                int idx1 = sequenceNameIndex.get(a1.getChr());
+                int idx2 = sequenceNameIndex.get(a2.getChr());
+                if (idx1 > idx2) {
+                    return 1;
+                } else if (idx1 < idx2) {
+                    return -1;
+                } else {
+                    return a1.getAlignmentStart() - a2.getAlignmentStart();
+                }
             }
         }
     }

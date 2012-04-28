@@ -284,7 +284,7 @@ public class CoverageCounter {
                         if (counter != null) {
                             counter.closeBucketsBefore(alignment.getAlignmentStart() - tolerance, wigWriter);
                         }
-                    } else {
+                    } else {  // New chromosome
                         if (counter != null) {
                             counter.closeBucketsBefore(Integer.MAX_VALUE, wigWriter);
                         }

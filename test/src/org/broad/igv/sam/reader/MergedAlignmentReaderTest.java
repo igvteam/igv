@@ -68,7 +68,6 @@ public class MergedAlignmentReaderTest {
         Alignment align;
 
         AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(file, false);
-        SAMFileHeader mergedHeader = mergedReader.getHeader();
         CloseableIterator<Alignment> combData = mergedReader.query("chr1", start, end, false);
 
         Map<Float, Integer> combinedCounts = new HashMap();
@@ -86,13 +85,6 @@ public class MergedAlignmentReaderTest {
         String singfile = in.readLine();
         singfile = FileUtils.getAbsolutePath(singfile, file);
         AlignmentReader singReader = AlignmentReaderFactory.getReader(singfile, false);
-        SAMFileHeader singHeader = singReader.getHeader();
-
-        //Compare the headers
-        assertEquals(singHeader.getTextHeader(), mergedHeader.getTextHeader());
-        assertEquals(singHeader.getVersion(), mergedHeader.getVersion());
-        assertEquals(singHeader.getCreator(), mergedHeader.getCreator());
-
 
         CloseableIterator<Alignment> singData = singReader.query("chr1", start, end, false);
 

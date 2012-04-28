@@ -32,6 +32,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static junit.framework.Assert.assertFalse;
@@ -63,7 +64,7 @@ public class GobyAlignmentQueryReaderTest {
 
         String thmFile = TestUtils.DATA_DIR + "goby/GDFQPGI-pickrellNA18486_yale.tmh";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
-        Set<String> seqs = reader.getSequenceNames();
+        List<String> seqs = reader.getSequenceNames();
         assertEquals(expectedSequences.size(), seqs.size());
         for (String s : seqs) {
             assertTrue(expectedSequences.contains(s));
