@@ -333,7 +333,7 @@ public class CommandExecutor {
         }
 
         for (String sessionPath : sessionPaths) {
-            igv.doRestoreSession(sessionPath, locus, merge);
+            igv.restoreSessionSynchronous(sessionPath, locus, merge);
         }
 
         igv.loadTracks(fileLocators);

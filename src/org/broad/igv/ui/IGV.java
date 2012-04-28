@@ -1223,95 +1223,105 @@ public class IGV {
 
     }
 
+    /**
+     * Load a session file, possibly asynchronously (if on the event dispatch thread).
+     *
+     * @param sessionPath
+     * @param locus
+     * @param merge
+     */
+    public void doRestoreSession(final String sessionPath,
+                                 final String locus,
+                                 final boolean merge) {
 
-    final public SwingWorker doRestoreSession(final String sessionPath,
-                                              final String locus,
-                                              final boolean merge) {
-
-        SwingWorker worker = new SwingWorker() {
-
-            CursorToken cursorToken = null;
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                InputStream inputStream = null;
-                try {
-
-                    cursorToken = WaitCursorManager.showWaitCursor();
-
-                    if (!merge) {
-                        // Do this first, it closes all open SeekableFileStreams.
-                        resetSession(sessionPath);
-                    }
-
-                    setStatusBarMessage("Opening session...");
-                    inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-
-                    boolean isUCSC = sessionPath.endsWith(".session");
-                    final SessionReader sessionReader = isUCSC ?
-                            new UCSCSessionReader(IGV.this) :
-                            new IGVSessionReader(IGV.this);
-
-                    sessionReader.loadSession(inputStream, session, sessionPath);
-
-                    String searchText = locus == null ? session.getLocus() : locus;
-
-                    // NOTE: Nothing to do if chr == all
-                    if (!FrameManager.isGeneListMode() && searchText != null &&
-                            !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
-                        goToLocus(searchText);
-                    }
-
-
-                    mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-                    LRUCache.clearCaches();
-
-
-                    double[] dividerFractions = session.getDividerFractions();
-                    if (dividerFractions != null) {
-                        contentPane.getMainPanel().setDividerFractions(dividerFractions);
-                    }
-                    session.clearDividerLocations();
-
-                    //If there's a RegionNavigatorDialog, kill it.
-                    //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-                    RegionNavigatorDialog.destroyActiveInstance();
-
-                    if (!getRecentSessionList().contains(sessionPath)) {
-                        getRecentSessionList().addFirst(sessionPath);
-                    }
-
-
-                    doRefresh();
-                } catch (Exception e) {
-                    String message = "Failed to load session! : " + sessionPath;
-                    log.error(message, e);
-                    MessageUtils.showMessage(message + ": " + e.getMessage());
-
-                } finally {
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException iOException) {
-                            log.error("Error closing session stream", iOException);
-                        }
-                        resetStatusMessage();
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                if (cursorToken != null) {
-                    WaitCursorManager.removeWaitCursor(cursorToken);
-                }
+        Runnable runnable = new Runnable() {
+            public void run() {
+                restoreSessionSynchronous(sessionPath, locus, merge);
             }
         };
 
-        worker.execute();
-        return worker;
+        if (SwingUtilities.isEventDispatchThread()) {
+            LongRunningTask.submit(runnable);
+        } else {
+            runnable.run();
+        }
+
     }
+
+    /**
+     * Load a session file in the current thread.  This should not be called from the event dispatch thread.
+     *
+     * @param merge
+     * @param sessionPath
+     * @param locus
+     * @return true if successful
+     */
+    public boolean restoreSessionSynchronous(String sessionPath, String locus, boolean merge) {
+        InputStream inputStream = null;
+        try {
+            if (!merge) {
+                // Do this first, it closes all open SeekableFileStreams.
+                resetSession(sessionPath);
+            }
+
+            setStatusBarMessage("Opening session...");
+            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+
+            boolean isUCSC = sessionPath.endsWith(".session");
+            final SessionReader sessionReader = isUCSC ?
+                    new UCSCSessionReader(this) :
+                    new IGVSessionReader(this);
+
+            sessionReader.loadSession(inputStream, session, sessionPath);
+
+            String searchText = locus == null ? session.getLocus() : locus;
+
+            // NOTE: Nothing to do if chr == all
+            if (!FrameManager.isGeneListMode() && searchText != null &&
+                    !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
+                goToLocus(searchText);
+            }
+
+
+            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+            LRUCache.clearCaches();
+
+
+            double[] dividerFractions = session.getDividerFractions();
+            if (dividerFractions != null) {
+                contentPane.getMainPanel().setDividerFractions(dividerFractions);
+            }
+            session.clearDividerLocations();
+
+            //If there's a RegionNavigatorDialog, kill it.
+            //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+            RegionNavigatorDialog.destroyActiveInstance();
+
+            if (!getRecentSessionList().contains(sessionPath)) {
+                getRecentSessionList().addFirst(sessionPath);
+            }
+            doRefresh();
+            return true;
+
+        } catch (Exception e) {
+            log.error("Error loading session", e);
+            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +
+                    e.getMessage();
+            MessageUtils.showMessage(message);
+            return false;
+
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException iOException) {
+                    log.error("Error closing session stream", iOException);
+                }
+                resetStatusMessage();
+            }
+        }
+    }
+
 
     /**
      * Reset the default status message, which is the number of tracks loaded.
@@ -2333,56 +2343,50 @@ public class IGV {
                 final ProgressBar bar2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
                 indefMonitor.start();
 
-                try {
 
-                    if (log.isDebugEnabled()) {
-                        log.debug("Calling restore session");
+                if (log.isDebugEnabled()) {
+                    log.debug("Calling restore session");
+                }
+
+
+                if (igvArgs.getSessionFile() != null) {
+                    boolean success = false;
+                    if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
+                        boolean merge = false;
+                        success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
+                    } else {
+                        File sf = new File(igvArgs.getSessionFile());
+                        if (sf.exists()) {
+                            success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
+                        }
+                    }
+                    if (!success) {
+// Session load failed, load default genome
+                        String genomeId = preferenceManager.getDefaultGenome();
+                        contentPane.getCommandBar().selectGenomeFromList(genomeId);
+
+                    }
+                } else if (igvArgs.getDataFileString() != null) {
+                    // Not an xml file, assume its a list of data files
+                    String[] tokens = igvArgs.getDataFileString().split(",");
+                    String[] names = null;
+                    if (igvArgs.getName() != null) {
+                        names = igvArgs.getName().split(",");
                     }
 
-
-                    if (igvArgs.getSessionFile() != null) {
-                        if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
-                            boolean merge = false;
-                            doRestoreSession(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
-                        } else {
-                            File sf = new File(igvArgs.getSessionFile());
-                            if (sf.exists()) {
-                                doRestoreSession(sf, igvArgs.getLocusString());
-                            }
+                    String indexFile = igvArgs.getIndexFile();
+                    List<ResourceLocator> locators = new ArrayList();
+                    int idx = 0;
+                    for (String p : tokens) {
+                        ResourceLocator rl = new ResourceLocator(p);
+                        if (names != null && idx < names.length) {
+                            rl.setName(names[idx]);
                         }
-                    } else if (igvArgs.getDataFileString() != null) {
-                        // Not an xml file, assume its a list of data files
-                        String[] tokens = igvArgs.getDataFileString().split(",");
-                        String[] names = null;
-                        if (igvArgs.getName() != null) {
-                            names = igvArgs.getName().split(",");
-                        }
-
-                        String indexFile = igvArgs.getIndexFile();
-                        List<ResourceLocator> locators = new ArrayList();
-                        int idx = 0;
-                        for (String p : tokens) {
-                            ResourceLocator rl = new ResourceLocator(p);
-                            if (names != null && idx < names.length) {
-                                rl.setName(names[idx]);
-                            }
-                            rl.setIndexPath(indexFile);
-                            locators.add(rl);
-                            idx++;
-                        }
-                        loadResources(locators);
+                        rl.setIndexPath(indexFile);
+                        locators.add(rl);
+                        idx++;
                     }
-
-
-                } catch (Exception ex) {
-                    String tmp = igvArgs.getSessionFile() != null ? igvArgs.getSessionFile() : igvArgs.getDataFileString();
-                    JOptionPane.showMessageDialog(mainFrame, "<html>Error loading session: " + tmp + "<br>" + ex.toString());
-                    log.error("Error loading session: " + tmp, ex);
-
-                    // Session load failed, load default genome
-                    String genomeId = preferenceManager.getDefaultGenome();
-                    contentPane.getCommandBar().selectGenomeFromList(genomeId);
-
+                    loadResources(locators);
                 }
 
 
