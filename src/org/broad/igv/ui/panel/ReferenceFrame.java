@@ -536,7 +536,6 @@ public class ReferenceFrame {
     public Chromosome getChromosome() {
         Genome genome = getGenome();
         if (genome == null) {
-            log.error("Genome not loaded!");
             return null;
         }
 
