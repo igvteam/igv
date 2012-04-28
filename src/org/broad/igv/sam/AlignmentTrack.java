@@ -435,7 +435,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void clearCaches() {
         dataManager.clear();
-        renderOptions = new RenderOptions();
     }
 
 
@@ -854,6 +853,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+
 
             colorByTag = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
             sortByTag = prefs.get(PreferenceManager.SAM_SORT_BY_TAG);
