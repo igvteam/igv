@@ -133,11 +133,7 @@ public class TestUtils {
      * @throws InterruptedException
      */
     public static void loadSession(IGV igv, String sessionPath) throws InterruptedException {
-        Future worker = igv.doRestoreSession(sessionPath, null, false);
-
-        while (!worker.isDone()) {
-            Thread.sleep(100);
-        }
+        igv.doRestoreSession(sessionPath, null, false);
     }
 
     public static boolean checkHeadlessEnvironment() {
