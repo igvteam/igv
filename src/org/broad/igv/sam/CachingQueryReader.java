@@ -559,7 +559,7 @@ public class CachingQueryReader {
             }
 
             // Set the max depth, and the max depth of the sampling bucket.
-            if(downsampleOptions == null) {
+            if (downsampleOptions == null) {
                 // Use default settings (from preferences)
                 downsampleOptions = new AlignmentDataManager.DownsampleOptions();
             }
@@ -598,6 +598,8 @@ public class CachingQueryReader {
          */
         public void addRecord(Alignment alignment) {
 
+            counts.incCounts(alignment);
+
             if (downsample) {
                 final int alignmentStart = alignment.getAlignmentStart();
                 if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
@@ -607,8 +609,6 @@ public class CachingQueryReader {
                     int end = alignmentStart + samplingWindowSize;
                     currentSamplingBucket = new SamplingBucket(alignmentStart, end);
                 }
-
-                counts.incCounts(alignment);
 
                 if (spliceJunctionHelper != null) {
                     spliceJunctionHelper.addAlignment(alignment);
