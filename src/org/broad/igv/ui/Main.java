@@ -194,7 +194,7 @@ public class Main {
     /**
      * Class to encapsulate IGV command line arguments.
      */
-    static class IGVArgs {
+    static public  class IGVArgs {
         private String batchFile = null;
         private String sessionFile = null;
         private String dataFileString = null;
