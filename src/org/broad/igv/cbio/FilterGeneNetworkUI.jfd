@@ -278,6 +278,10 @@
                <string>text</string> 
                <string>View Network</string> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Display the network in a web browser</string> 
+              </void> 
               <void property="name"> 
                <string>okButton</string> 
               </void> 
@@ -304,6 +308,10 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>Refresh Filter</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>visible</string> 
+               <boolean>false</boolean> 
               </void> 
               <void property="name"> 
                <string>refFilter</string> 

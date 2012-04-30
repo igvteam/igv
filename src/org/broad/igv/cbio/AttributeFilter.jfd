@@ -69,8 +69,8 @@
           </void> 
           <void method="auxiliary"> 
            <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableModifiers</string> 
-            <int>0</int> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
            </void> 
           </void> 
          </object> 
@@ -221,6 +221,12 @@
           <void property="name"> 
            <string>delRow</string> 
           </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
+           </void> 
+          </void> 
          </object> 
         </void> 
         <void method="add"> 
@@ -257,6 +263,12 @@
           </void> 
           <void property="name"> 
            <string>addRow</string> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
+           </void> 
           </void> 
          </object> 
         </void> 

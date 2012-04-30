@@ -38,6 +38,8 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -183,7 +185,7 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     private void remove(AttributeFilter row){
-        contentPane.remove(row.getComponent());
+        contentPane.remove(row.getPanel());
         filterRows.remove(row);
         int numRows = filterRows.size();
         filterRows.get(numRows - 1).setIsLast(true);
@@ -210,7 +212,18 @@ public class FilterGeneNetworkUI extends JDialog {
                 add();
             }
         });
-        contentPane.add(row.getComponent());
+        contentPane.add(row.getPanel());
+
+        //We want to refresh the
+        RefreshListener listener = new RefreshListener();
+
+        row.getAttrName().addActionListener(listener);
+        for(JTextField text: new JTextField[]{row.minVal, row.maxVal}){
+            text.addActionListener(listener);
+            text.addFocusListener(listener);
+        }
+
+
 
         //Set the status of being last
         if(filterRows.size() >= 1){
@@ -235,7 +248,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
         //TODO This is only AND, should also include OR
         for (AttributeFilter filter : this.filterRows) {
-            String filt_el = (String) filter.attrName.getSelectedItem();
+            String filt_el = (String) filter.getAttrName().getSelectedItem();
             if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
                 float min = Float.parseFloat(filter.minVal.getText());
                 float max = Float.parseFloat(filter.maxVal.getText());
@@ -307,11 +320,17 @@ public class FilterGeneNetworkUI extends JDialog {
         add();
     }
 
-    private void refFilterActionPerformed(ActionEvent e) {
+    /**
+     * Refresh the view based on filter input.
+     */
+    private void refreshFilters(){
         this.applySoftFilters();
         listModel.markDirty();
         this.validateTree();
+    }
 
+    private void refFilterActionPerformed(ActionEvent e) {
+        refreshFilters();
     }
 
     private boolean saveThresholds() {
@@ -454,6 +473,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
                     //---- okButton ----
                     okButton.setText("View Network");
+                    okButton.setToolTipText("Display the network in a web browser");
                     okButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -466,6 +486,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
                     //---- refFilter ----
                     refFilter.setText("Refresh Filter");
+                    refFilter.setVisible(false);
                     refFilter.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -712,6 +733,24 @@ public class FilterGeneNetworkUI extends JDialog {
         @Override
         public boolean isCellEditable(int row, int col) {
             return false;
+        }
+    }
+
+    private class RefreshListener implements FocusListener, ActionListener{
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            //pass
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            refreshFilters();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            refreshFilters();
         }
     }
 }

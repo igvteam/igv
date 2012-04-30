@@ -29,7 +29,7 @@ public class AttributeFilter {
         attrName.addItem(GeneNetwork.PERCENT_ALTERED);
     }
 
-    Component getComponent() {
+    JPanel getPanel() {
         return this.filterRow;
     }
 
@@ -112,7 +112,7 @@ public class AttributeFilter {
     // Generated using JFormDesigner non-commercial license
     private JPanel panel1;
     private JPanel filterRow;
-    JComboBox attrName;
+    private JComboBox attrName;
     private JLabel label1;
     JTextField minVal;
     private JLabel label2;
@@ -125,7 +125,6 @@ public class AttributeFilter {
         return delRow;
     }
 
-
     JButton getAddRow() {
         return addRow;
     }
@@ -136,6 +135,10 @@ public class AttributeFilter {
 
     void setIsLast(boolean isLast){
         addRow.setVisible(isLast);
+    }
+
+    JComboBox getAttrName(){
+        return attrName;
     }
 
 }
