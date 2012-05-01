@@ -11,21 +11,17 @@
 
 package org.broad.igv;
 
-import org.apache.batik.css.engine.value.css2.CursorManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.*;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.util.RuntimeUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
 /**
@@ -350,7 +346,7 @@ public class DirectoryManager {
     private static void deleteDirectory(File oldDirectory) throws IOException {
         if (Globals.IS_LINUX || Globals.IS_MAC) {
             //System.out.println("Deleting: " + oldDirectory);
-            String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath());
+            String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath(), null, null);
             if (result != null && result.trim().length() > 0) {
                 log.info("Response from 'rm -rf': " + result);
             }
