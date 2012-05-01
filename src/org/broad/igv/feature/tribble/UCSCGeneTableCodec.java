@@ -1,5 +1,6 @@
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
@@ -77,7 +78,8 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         }
 
         line = line.replaceAll("\"", "");
-        int tokenCount = ParsingUtils.split(line, tokens, '\t');
+        String [] tokens = Globals.whitespacePattern.split(line);
+        int tokenCount = tokens.length;
 
         if (tokenCount <= strandColumn) {
             return null;

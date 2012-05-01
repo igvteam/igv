@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
@@ -50,7 +51,8 @@ public class PSLCodec extends UCSCCodec {
                 return null;
             }
 
-            int nTokens = ParsingUtils.splitWhitespace(line, tokens);
+            String[] tokens = Globals.whitespacePattern.split(line);
+            int nTokens = tokens.length;
             if (nTokens < 21) {
                 // log.info("Skipping line ")
                 return null;

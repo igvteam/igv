@@ -220,18 +220,6 @@ public class ParsingUtils {
     }
 
     /**
-     * Helper to call through to Tribble ParsingUtils
-     *
-     * @param aString the string to split
-     * @param tokens  an array to hold the parsed tokens
-     * @return the number of tokens parsed
-     * @see org.broad.tribble.util.ParsingUtils
-     */
-    public static int splitWhitespace(String aString, String[] tokens) {
-        return org.broad.tribble.util.ParsingUtils.splitWhitespace(aString, tokens);
-    }
-
-    /**
      * Method description
      *
      * @param file

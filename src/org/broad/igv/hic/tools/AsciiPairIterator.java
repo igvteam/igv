@@ -19,6 +19,7 @@
 package org.broad.igv.hic.tools;
 
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -40,7 +41,6 @@ public class AsciiPairIterator implements PairIterator {
     private Map<String, Integer> chromosomeOrdinals;
     AlignmentPair nextPair = null;
     BufferedReader reader;
-    String[] tokens = new String[12];
 
     /**
      * A map of chromosome name -> chromosome string.  A private "intern" pool.  The java "intern" pool stores string
@@ -65,8 +65,8 @@ public class AsciiPairIterator implements PairIterator {
         try {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
-
-                int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                int nTokens = tokens.length;
                 if (nTokens < 10) {
                     String chrom1 = getInternedString(tokens[1]);
                     String chrom2 = getInternedString(tokens[5]);

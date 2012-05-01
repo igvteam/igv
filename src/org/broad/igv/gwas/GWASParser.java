@@ -11,6 +11,7 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
@@ -62,10 +63,8 @@ public class GWASParser {
         headerString = headerString.trim();
 
 
-        String[] headers = new String[1000];
-
-        //int headersSize = ParsingUtils.splitSpaces(headerString, headers);
-        int headersSize = ParsingUtils.splitWhitespace(headerString, headers);
+        String[] headers = Globals.whitespacePattern.split(headerString);
+        int headersSize = headers.length;
 
         if (headersSize < 4)
             parsingSuccessful = false;
@@ -148,9 +147,7 @@ public class GWASParser {
                 rowCounter++;
 
                 if (rowCounter >= searchStartRow) {
-                    String[] tokens = new String[1000];
-                    //ParsingUtils.splitSpaces(nextLine, tokens);
-                    ParsingUtils.splitWhitespace(nextLine, tokens);
+                    String[] tokens = Globals.whitespacePattern.split(nextLine);
 
                     if (tokens.length > 1) {
 
@@ -255,9 +252,7 @@ public class GWASParser {
                 nextLine = nextLine.trim();
                 rowCounter++;
 
-                String[] tokens = new String[100];
-                //ParsingUtils.splitSpaces(nextLine, tokens);
-                ParsingUtils.splitWhitespace(nextLine, tokens);
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
 
                 if (tokens.length > 1) {
 

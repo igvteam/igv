@@ -37,9 +37,7 @@ import java.io.IOException;
  */
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
-    protected String[] tokens = new String[50];
-
-    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;
     protected boolean spliceJunctions;
 

@@ -17,6 +17,7 @@
  */
 package org.broad.igv.data;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.collections.FloatArrayList;
@@ -132,9 +133,6 @@ public class WiggleParser {
 
     public WiggleDataset parse() {
 
-
-        String[] tokens = new String[10];
-
         lastPosition = -1;
         unsortedChromosomes = new HashSet();
 
@@ -182,7 +180,8 @@ public class WiggleParser {
 
                 } else {
                     // Must be data
-                    int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    int nTokens = tokens.length;
                     if (nTokens == 0) {
                         continue;
                     }

@@ -22,6 +22,7 @@
  */
 package org.broad.igv.tools.parsers;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
@@ -115,7 +116,7 @@ public class CNParser extends AbstractParser {
         int nDataColumns = (tokens.length - firstDataColumn) / skipColumns;
         String[] headings = new String[nDataColumns];
         for (int i = firstDataColumn; i < tokens.length; i += skipColumns) {
-             int idx = (i - firstDataColumn) / skipColumns;
+            int idx = (i - firstDataColumn) / skipColumns;
             headings[idx] = tokens[i];
         }
         setHeadings(headings);
@@ -128,7 +129,6 @@ public class CNParser extends AbstractParser {
 
         AsciiLineReader reader = null;
         try {
-            String[] tokens = new String[10000];
 
             lastPosition = 0;
 
@@ -160,8 +160,8 @@ public class CNParser extends AbstractParser {
 
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
-
-                int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                int nTokens = tokens.length;
                 if (nTokens == 0) {
                     continue;
                 }

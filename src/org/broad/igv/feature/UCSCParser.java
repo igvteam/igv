@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
@@ -31,8 +32,6 @@ import org.broad.igv.util.ParsingUtils;
  */
 abstract public class UCSCParser extends AbstractFeatureParser {
 
-
-    String[] tokens = new String[25];
 
     protected IGVFeature parseLine(String nextLine) {
 
@@ -46,7 +45,8 @@ abstract public class UCSCParser extends AbstractFeatureParser {
             setTrackProperties(tp);
         }
 
-        int nTokens = ParsingUtils.splitWhitespace(nextLine.replaceAll("\"", ""), tokens);
+        String[] tokens = Globals.whitespacePattern.split(nextLine.replaceAll("\"", ""));
+        int nTokens = tokens.length;
         return parseLine(tokens, nTokens);
     }
 

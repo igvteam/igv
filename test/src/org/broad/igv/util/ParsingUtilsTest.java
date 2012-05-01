@@ -73,35 +73,6 @@ public class ParsingUtilsTest {
 
     }
 
-    @Test
-    public void testSplitWhitespaceSpeed() {
-
-        long trials = 100000;
-        int jnk = 0;
-        long pu_time = 0;
-        long nrm_time = 0;
-        long tm1, tm2;
-        String test_text;
-        String[] result;
-        Pattern pattern = Pattern.compile("\\s+");
-        for (int _ = 0; _ < trials; _++) {
-            test_text = genRandString();
-            tm1 = System.nanoTime();
-            result = pattern.split(test_text);
-            tm2 = System.nanoTime();
-            nrm_time += tm2 - tm1;
-
-            tm1 = System.nanoTime();
-            jnk = ParsingUtils.splitWhitespace(test_text, result);
-            tm2 = System.nanoTime();
-            pu_time += tm2 - tm1;
-        }
-        //System.out.println("Average ParsingUtils.split time: " + pu_time / trials);
-        //System.out.println("Average String.split time: " + nrm_time / trials);
-        assertTrue("ParsingUtils vs pattern.split speed test", pu_time < nrm_time);
-
-    }
-
     private String genRandString() {
         int numWords = 10;
         int max_length = 20;
@@ -146,43 +117,6 @@ public class ParsingUtilsTest {
         assertEquals("", tokens[2]);
     }
 
-    @Test
-    public void testSplitWhitespace1() {
-        String[] tokens = new String[10];
-        String blankColumnLine = "a b\t\td";
-        int nTokens = ParsingUtils.splitWhitespace(blankColumnLine, tokens);
-        assertEquals(4, nTokens);
-        assertEquals("a", tokens[0]);
-        assertEquals("b", tokens[1]);
-        assertEquals("", tokens[2]);
-        assertEquals("d", tokens[3]);
-    }
-
-    @Test
-    public void testSplitWhitespace2() {
-        String[] tokens = new String[10];
-        String blankColumnLine = "a b\t\td\t";
-        int nTokens = ParsingUtils.splitWhitespace(blankColumnLine, tokens);
-        assertEquals(5, nTokens);
-        assertEquals("a", tokens[0]);
-        assertEquals("b", tokens[1]);
-        assertEquals("", tokens[2]);
-        assertEquals("d", tokens[3]);
-        assertEquals("", tokens[2]);
-    }
-
-    @Test
-    public void testSplitWhitespace3() {
-        String[] tokens = new String[10];
-        String blankColumnLine = "a   b  \t \td";
-        int nTokens = ParsingUtils.splitWhitespace(blankColumnLine, tokens);
-        assertEquals(5, nTokens);
-        assertEquals("a", tokens[0]);
-        assertEquals("b", tokens[1]);
-        assertEquals("", tokens[2]);
-        assertEquals("", tokens[2]);
-        assertEquals("d", tokens[4]);
-    }
 
     @Test
     public void testComputeReadingShifts

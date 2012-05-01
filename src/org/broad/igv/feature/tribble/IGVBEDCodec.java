@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
@@ -72,7 +73,8 @@ public class IGVBEDCodec extends UCSCCodec {
             return null;
         }
 
-        int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
+        String [] tokens = Globals.whitespacePattern.split(nextLine);
+        int tokenCount = tokens.length;
 
         // The first 3 columns are non optional for BED.  We will relax this
         // and only require 2.

@@ -18,6 +18,7 @@
 
 package org.broad.igv.tools.sort;
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -30,13 +31,11 @@ public class Parser {
 
     private int chrCol;
     private int startCol;
-    private String[] fields;
     boolean splitOnWhiteSpace = false;
 
     public Parser(int chrCol, int startCol) {
         this.chrCol = chrCol;
         this.startCol = startCol;
-        fields = new String[this.startCol + 1];
     }
 
     public Parser(int chrCol, int startCol, boolean splitOnWhitespace) {
@@ -61,18 +60,16 @@ public class Parser {
     }
 
     public SortableRecord createRecord(String nextLine) {
-        int nTokens = splitOnWhiteSpace ?
-                ParsingUtils.splitWhitespace(nextLine, fields) :
-                ParsingUtils.split(nextLine, fields, '\t');
-        // TODO -- what to do if nTokens < startCol?
+        String[] fields = splitOnWhiteSpace ?
+                Globals.whitespacePattern.split(nextLine) :
+                Globals.tabPattern.split(nextLine);
 
         String chr = fields[chrCol];
 
-        int start ;
+        int start;
         try {
             start = Integer.parseInt(fields[startCol].trim());
-        }
-        catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             start = Integer.MAX_VALUE;
         }
         String text = nextLine;

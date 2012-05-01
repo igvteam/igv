@@ -18,6 +18,7 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
@@ -52,9 +53,9 @@ public class PeakCodec extends UCSCCodec {
             return null;
         }
 
-        int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
+        String [] tokens = Globals.whitespacePattern.split(nextLine);
+        int tokenCount = tokens.length;
 
-        String[] tokens = nextLine.split("\t");
         String chrToken = tokens[0];
         String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
         int start = Integer.parseInt(tokens[1]);

@@ -19,6 +19,7 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -182,7 +183,6 @@ public class FastaIndex {
     private void parseIndexFile(String indexFile) throws IOException {
 
         BufferedReader reader = null;
-        String[] tokens = new String[5];
         try {
             reader = ParsingUtils.openBufferedReader(indexFile);
 
@@ -190,7 +190,8 @@ public class FastaIndex {
             while ((nextLine = reader.readLine()) != null) {
 
                 // Tokenize and validate the index line.
-                int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+                String[] tokens =  Globals.whitespacePattern.split(nextLine);
+                int nTokens =  tokens.length;
                 if (nTokens != 5) {
                     throw new RuntimeException("Error.  Unexpected number of tokens parsing: " + indexFile);
                 }

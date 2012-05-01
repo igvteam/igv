@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -58,8 +59,6 @@ import java.util.Map;
  */
 public class REPMaskCodec implements FeatureCodec {
 
-    // Declare a  array once, to be reused.
-    String[] tokens = new String[15];
     FeatureFileHeader header;
     Genome genome;
 
@@ -123,6 +122,7 @@ public class REPMaskCodec implements FeatureCodec {
      * @return
      */
     public Feature decodeLoc(String line) {
+        String[] tokens = Globals.whitespacePattern.split(line);
         String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
@@ -135,7 +135,8 @@ public class REPMaskCodec implements FeatureCodec {
             return null;
         }
 
-        int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
+        String[] tokens = Globals.whitespacePattern.split(nextLine);
+        int tokenCount = tokens.length;
 
         if (tokenCount < 15) {
             return null;
