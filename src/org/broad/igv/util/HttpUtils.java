@@ -136,6 +136,7 @@ public class HttpUtils {
      */
     public static boolean testByteRange() {
 
+        log.info("Testing range-byte request");
         try {
             String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
             byte[] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
@@ -149,10 +150,11 @@ public class HttpUtils {
 
             for (int i = 0; i < expectedBytes.length; i++) {
                 if (buffer[i] != expectedBytes[i]) {
-                    log.info("Byte range test failed -- problem with client network environment.");
+                    log.info("Range-byte test failed -- problem with client network environment.");
                     return false;
                 }
             }
+            log.info("Range-byte request succeeded");
             return true;
         } catch (IOException e) {
             log.error("Error while testing byte range " + e.getMessage());
