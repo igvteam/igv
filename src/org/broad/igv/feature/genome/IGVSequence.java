@@ -51,6 +51,7 @@ public class IGVSequence implements Sequence {
 
     public byte[] readSequence(String chr, int start, int end) {
 
+        log.info("Reading sequence: " + chr + ":" + start + "-" + end);
         String fn = getChrFileName(chr);
         String seqFile = dirPath + fn;
 
@@ -63,6 +64,9 @@ public class IGVSequence implements Sequence {
             byte[] bytes = new byte[end - start];
             is.seek(start);
             is.read(bytes);
+
+            log.info("Sequence returned: " + (new String(bytes)));
+
             return bytes;
 
         } catch (Exception ex) {
