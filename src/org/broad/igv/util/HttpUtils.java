@@ -138,15 +138,19 @@ public class HttpUtils {
 
         log.info("Testing range-byte request");
         try {
-            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
-            byte[] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
-                    'T', 'T', 'T', 'A', 'G', 'T', 'A', 'G', 'A', 'G', 'T'};
+            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
+            byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
+                    'G', 'A', 'G', 'A', 'G', 'G'};
 
 
             SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
-            str.seek(161032764);
-            byte[] buffer = new byte[expectedBytes.length];
-            str.read(buffer, 0, expectedBytes.length);
+            str.seek(25350000);
+            byte[] buffer = new byte[80000];
+            str.read(buffer);
+
+//            for(int i=0; i<expectedBytes.length; i++) {
+//
+//            }
 
             for (int i = 0; i < expectedBytes.length; i++) {
                 if (buffer[i] != expectedBytes[i]) {
@@ -163,6 +167,7 @@ public class HttpUtils {
             return true;
         }
     }
+
 
 
     public static boolean useByteRange(URL url) {
