@@ -582,7 +582,7 @@ public class HttpUtils {
 
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
-            //conn.setRequestProperty("Accept", "application/json,text/plain");
+            conn.setRequestProperty("Accept", "application/json,text/plain");
 
         }
 
