@@ -37,8 +37,9 @@ public class FastaUtils {
      * @param inputPath
      * @param outputPath
      * @return
-     * @throws org.broad.igv.exceptions.DataLoadException If the fasta file cannot be indexed, for instance
-     *                           because the lines are of an uneven length
+     * @throws org.broad.igv.exceptions.DataLoadException
+     *          If the fasta file cannot be indexed, for instance
+     *          because the lines are of an uneven length
      */
     public static void createIndexFile(String inputPath, String outputPath) throws DataLoadException, IOException {
 
@@ -56,17 +57,16 @@ public class FastaUtils {
             int basesThisLine, bytesThisLine;
             int numInconsistentLines = -1;
             boolean haveTasks = true;
+            //Number of blank lines in the current contig.
+            //-1 for not set
+            int numBlanks = -1;
 
 
             //We loop through, generating a new FastaSequenceIndexEntry
             //every time we see a new header line, or when the file ends.
             while (haveTasks) {
                 line = reader.readLine();
-                //Treat empty line as end of file
-                //This can come up for trailing newline
-                if (line == null || line.trim().length() == 0) {
-                    line = null;
-                }
+
                 if (line == null || line.startsWith(">")) {
                     //The last line can have a different number of bases/bytes
                     if (numInconsistentLines >= 2) {
@@ -102,19 +102,28 @@ public class FastaUtils {
                         basesPerLine = basesThisLine;
                         bytesPerLine = bytesThisLine;
                         numInconsistentLines = 0;
+                        numBlanks = 0;
                     } else {
-                        if (basesPerLine != basesThisLine || bytesPerLine != bytesThisLine) {
+                        if ((basesPerLine != basesThisLine || bytesPerLine != bytesThisLine) && basesThisLine > 0) {
                             numInconsistentLines++;
                         }
                     }
+
+                    //Empty line. This is allowed if it's at the end of the contig
+                    if (basesThisLine == 0) {
+                        numBlanks++;
+                    } else if (numBlanks >= 1) {
+                        throw new DataLoadException("Blank line at line " + reader.getCurrentLineNumber() + " in contig " + curContig, inputPath);
+                    }
+
 
                     size += basesThisLine;
                 }
                 lastPosition = reader.getPosition();
             }
         } finally {
-            if(reader != null) reader.close();
-            if(writer != null) writer.close();
+            if (reader != null) reader.close();
+            if (writer != null) writer.close();
 
         }
 
@@ -145,20 +154,19 @@ public class FastaUtils {
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
             String nextLine;
             int count = 0;
-            while((nextLine = br.readLine()) != null) {
-                if(nextLine.startsWith(">")) {
-                    if(count != 0) {
+            while ((nextLine = br.readLine()) != null) {
+                if (nextLine.startsWith(">")) {
+                    if (count != 0) {
                         pw.println();
                     }
                     pw.println(nextLine);
                     count = 0;
-                }
-                else {
-                    char [] characters = nextLine.toCharArray();
-                    for(int i=0; i<characters.length; i++) {
+                } else {
+                    char[] characters = nextLine.toCharArray();
+                    for (int i = 0; i < characters.length; i++) {
                         pw.print(characters[i]);
                         count++;
-                        if(count == basesPerLine) {
+                        if (count == basesPerLine) {
                             pw.println();
                             count = 0;
                         }
@@ -166,8 +174,8 @@ public class FastaUtils {
                 }
             }
         } finally {
-            if(br != null) br.close();
-            if(pw != null) pw.close();
+            if (br != null) br.close();
+            if (pw != null) pw.close();
         }
     }
 }

@@ -16,11 +16,8 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import static junit.framework.Assert.*;
 
@@ -35,6 +32,46 @@ public class FastaIndexTest {
 
     static String indexPath = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa.fai";
     private FastaIndex index;
+
+    public static void main(String[] args) throws IOException {
+
+        long numContigs = (long) 1.4e6;
+        String outfilepath = TestUtils.DATA_DIR + numContigs + "contigs.fasta";
+        genManyContigFasta(outfilepath, 80, numContigs);
+    }
+
+    /**
+     * Generate a fasta file with a large number of contigs
+     * Each will be only 1 line
+     *
+     * @param outfilepath
+     * @param linelen
+     * @param numContigs
+     */
+    static void genManyContigFasta(String outfilepath, int linelen, long numContigs) throws IOException {
+        char[] chars = {'A', 'C', 'G', 'T'};
+        long seed = 3458056478l;
+        Random rand = new Random(seed);
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outfilepath)));
+        PrintWriter writer = new PrintWriter(out);
+        String line;
+
+        for (int num = 0; num < numContigs; num++) {
+
+            writer.print(">contig");
+            writer.println(num);
+
+            line = "";
+            for (int ch = 0; ch < linelen; ch++) {
+                line += chars[rand.nextInt(chars.length)];
+            }
+            writer.println(line);
+        }
+
+        writer.flush();
+        writer.close();
+
+    }
 
     @Before
     public void setUp() throws IOException {
@@ -156,6 +193,55 @@ public class FastaIndexTest {
         outFile.deleteOnExit();
 
         FastaUtils.createIndexFile(inPath, outPath);
+    }
+
+    @Test(expected = DataLoadException.class)
+    public void testCreateIndexBlankLines() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "fasta/blank_lines.fas";
+        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        FastaUtils.createIndexFile(inPath, outPath);
+    }
+
+    static Map<String, Integer> testFastaBlanks;
+
+    static {
+        testFastaBlanks = new HashMap<String, Integer>(3);
+        testFastaBlanks.put("Chrom1", 632);
+        testFastaBlanks.put("Chrom2", 284);
+        testFastaBlanks.put("Chrom3", 287);
+    }
+
+    @Test
+    public void testCreateIndexTrailingBlank() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "fasta/trailing_line.fas";
+        tstCreateIndexGoodBlanks(inPath, testFastaBlanks);
+    }
+
+    @Test
+    public void testCreateIndexBlankBetweenContigs() throws Exception {
+        String inPath = TestUtils.DATA_DIR + "fasta/blank_lines_betweencontigs.fas";
+        tstCreateIndexGoodBlanks(inPath, testFastaBlanks);
+    }
+
+    public void tstCreateIndexGoodBlanks(String inPath, Map<String, Integer> expectedSizes) throws Exception {
+        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        FastaUtils.createIndexFile(inPath, outPath);
+
+        FastaIndex seq = new FastaIndex(outPath);
+        assertEquals(expectedSizes.size(), seq.getSequenceNames().size());
+        for (String chrom : expectedSizes.keySet()) {
+            assertEquals((int) expectedSizes.get(chrom), seq.getSequenceSize(chrom));
+        }
+
+
     }
 
     @Test
