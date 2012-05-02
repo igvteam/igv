@@ -45,7 +45,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
     // A "dummy" reference for soft-clipped reads.
-    private static byte [] softClippedReference = new byte[1000];
+    private static byte[] softClippedReference = new byte[1000];
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
@@ -680,11 +680,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int idx = loc - start;
 
                 // Is this base a mismatch?  Note '=' means indicates a match by definition
-                // If we do not have a valid reference we assume a match.  Soft clipped
-                // bases are considered mismatched by definition
+                // If we do not have a valid reference we assume a match.
                 boolean misMatch;
                 if (isSoftClipped) {
-                    misMatch = true;  // <= by definition, any matches are coincidence
+                    // Goby will return '=' characters when the soft-clip happens to match the reference.
+                    // It could actually be useful to see which part of the soft clipped bases match, to help detect
+                    // cases when an aligner clipped too much.
+                    final byte readbase = read[idx];
+                    misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
                 } else {
                     final byte refbase = reference[idx];
                     final byte readbase = read[idx];
