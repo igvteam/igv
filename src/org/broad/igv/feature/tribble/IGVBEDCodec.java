@@ -181,6 +181,7 @@ public class IGVBEDCodec extends UCSCCodec {
         return feature;
     }
 
+    @Override
     public BasicFeature decode(String nextLine) {
 
         if (nextLine.trim().length() == 0) {
@@ -210,6 +211,7 @@ public class IGVBEDCodec extends UCSCCodec {
      * @param path the file to test for parsability with this codec
      * @return true if potentialInput can be parsed, false otherwise
      */
+    @Override
     public boolean canDecode(String path) {
         return path.toLowerCase().endsWith(".bed");
     }

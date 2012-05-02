@@ -61,15 +61,30 @@ public class RuntimeUtils {
     }
 
 
-    public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {
-
+    /**
+     * Start an external process with the provided message
+     *
+     * See {@link Runtime#exec(String, String[], File)} for explanation of arguments
+     * @return
+     */
+    public static Process startExternalProcess(String msg, String[] envp, File dir){
         Runtime run = Runtime.getRuntime();
         Process pr = null;
+
         try {
-            pr = run.exec(cmd, envp, dir);
+            pr = run.exec(msg, envp, dir);
         } catch (IOException e) {
             e.printStackTrace();
+        }finally{
+            return pr;
         }
+    }
+
+
+    public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {
+
+
+        Process pr = startExternalProcess(cmd, envp, dir);
         try {
             pr.waitFor();
         } catch (InterruptedException e) {

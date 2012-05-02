@@ -11,9 +11,16 @@
 
 package org.broad.igv.track;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.util.RuntimeUtils;
+import org.broad.tribble.Feature;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +29,8 @@ import java.util.List;
  * Date: 2012/05/01
  */
 public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource {
+
+    private static Logger log = Logger.getLogger(CombinedFeatureSource.class);
 
     private FeatureSource sourceA;
     private FeatureSource sourceB;
@@ -47,15 +56,112 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         this.operation = operation;
     }
 
-    @Override
-    public Iterator getFeatures(String chr, int start, int end) throws IOException {
-        Iterator iterA = sourceA.getFeatures(chr, start, end);
-        Iterator iterB = sourceB.getFeatures(chr, start, end);
-
-        while (iterA.hasNext()) {
-
+    private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream){
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
+        IGVBEDCodec codec = new IGVBEDCodec();
+        int numLines = 0;
+        while(features.hasNext()){
+            String data = codec.encode(features.next());
+            writer.println(data);
+            numLines++;
         }
-        return null;
+        writer.flush();
+        writer.close();
+
+        return numLines;
+    }
+
+    //TODO Cache
+    @Override
+    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+        Iterator<Feature> iterA = sourceA.getFeatures(chr, start, end);
+        Iterator<Feature> iterB = sourceB.getFeatures(chr, start, end);
+
+        //First we need to write out the features in B to a file
+        File outFile = File.createTempFile("featuresB", ".bed", null);
+        outFile.deleteOnExit();
+
+        //Write data to temporary file
+        int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFile));
+
+        //Start bedtools process
+        String cmd = BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFile.getAbsolutePath() + " -a stdin";
+        Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
+
+        //Write data to bedtools
+        int numA = writeFeaturesToStream(iterA, pr.getOutputStream());
+
+        try{
+            pr.waitFor();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+            throw new IOException(e);
+        }
+
+        //Read back in the data which bedtools output
+        BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+        BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+
+        List<Feature> featuresList = new ArrayList<Feature>(numA + numB);
+        IGVBEDCodec codec = new IGVBEDCodec();
+
+
+        String line;
+        Feature feat;
+        while ((line = in.readLine()) != null) {
+            if(operation == Operation.WINDOW){
+                String[] closest = splitDualFeatures(line)[1];
+                feat = codec.decode(closest);
+            }else{
+                feat = codec.decode(line);
+            }
+            featuresList.add(feat);
+//            if(operation == Operation.CLOSEST){
+//                //If not found, bedtools returns -1 for positions
+//                if(closest[1].trim().equalsIgnoreCase("-1")){
+//                    continue;
+//                }
+        }
+
+        in.close();
+
+
+        while ((line = err.readLine()) != null) {
+            log.error(line);
+        }
+        err.close();
+
+        return featuresList.iterator();
+    }
+
+    /**
+     * Certain bedtools commands output features side by side
+     * e.g.
+     * chr1 5   10  chr1    8   20
+     *
+     * might be one line, the first 3 columns representing data from file A
+     * and the second 3 representing data from file B
+     * @param input
+     * @return
+     *  A 2-D string array. First index is length 2, second is the number of
+     *  columns each feature has. out[0] is the first feature, out[1] is the second
+     */
+    private String[][] splitDualFeatures(String input){
+        String[] tokens = Globals.whitespacePattern.split(input);
+        int colsPerFeat = 3;
+
+        assert tokens.length == colsPerFeat*2;
+
+        String[] feat1 = new String[colsPerFeat];
+        String[] feat2 = new String[colsPerFeat];
+        for(int cc=0; cc < colsPerFeat; cc++){
+            feat1[cc] = tokens[cc];
+            feat2[cc] = tokens[cc + colsPerFeat];
+        }
+
+        String[][] out = new String[][]{feat1, feat2};
+        return out;
+
     }
 
     @Override
@@ -75,10 +181,15 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
 
 
     public enum Operation {
-        INTERSECT("intersect"),
-        MERGE("merge"),
-        CLUSTER("cluster"),
-        SUBTRACT("subtract");
+        //We use these bed flags to ensure output will be in bed format, even
+        //if input is bam
+        INTERSECT("intersect -bed"),
+        SUBTRACT("subtract"),
+        //Identify the "closest" feature in file B for each feature in file A
+        //IGV doesn't have a meaningful way to display this
+        //CLOSEST("closest"),
+        WINDOW("window -bed"),
+        COVERAGE("coverage");
 
 
         private String cmd;
