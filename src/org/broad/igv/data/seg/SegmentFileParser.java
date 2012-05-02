@@ -20,6 +20,7 @@ package org.broad.igv.data.seg;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -116,14 +117,11 @@ public class SegmentFileParser implements SegFileParser {
                 dataColumn = headings.length - 1;
             }
 
-            String[] tokens = new String[headings.length];
-
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 
-                int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                int nTokens = tokens.length;
                 if (nTokens > 4) {
-
-
                     int start;
                     int end;
                     try {
@@ -172,7 +170,7 @@ public class SegmentFileParser implements SegFileParser {
                         String description = desc == null ? null : desc.toString();
                         dataset.addSegment(trackId, chr, start, end, value, description);
                     } catch (NumberFormatException numberFormatException) {
-                       // log.info("Skipping line: " + nextLine);
+                        // log.info("Skipping line: " + nextLine);
                     }
                 }
             }

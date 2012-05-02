@@ -20,6 +20,7 @@ package org.broad.igv.data.rnai;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -68,8 +69,9 @@ public class RNAIHairpinParser {
 
             while ((nextLine = reader.readLine()) != null) {
                 if (!nextLine.startsWith("#")) {
-                    String[] tokens = new String[15];
-                    int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+
+                    String[] tokens = Globals.tabPattern.split(nextLine);
+                    int nTokens = tokens.length;
                     if (nTokens > 11) {
                         try {
                             String batchId = new String(tokens[0].trim());

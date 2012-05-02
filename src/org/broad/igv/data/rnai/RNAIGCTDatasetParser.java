@@ -19,6 +19,7 @@
 package org.broad.igv.data.rnai;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
@@ -67,7 +68,6 @@ public class RNAIGCTDatasetParser {
         InputStream probeMappingStream = null;
 
         try {
-            String[] tokens = new String[1000];
             reader = ParsingUtils.openAsciiReader(dataFileLocator);
 
             String headerLine = null;
@@ -81,8 +81,9 @@ public class RNAIGCTDatasetParser {
 
             // Parse column headings
             int skip = 1;
-            int nTokens = ParsingUtils.split(headerLine, tokens, '\t');
 
+            String[] tokens = Globals.tabPattern.split(headerLine);
+            int nTokens = tokens.length;
 
             String description = (nTokens > descriptionColumn)
                     ? new String(tokens[descriptionColumn]) : null;

@@ -222,10 +222,10 @@ public class ExpressionFileParser {
 
             // Loop through the data rows
 
-            String[] tokens = new String[formatDescriptor.totalColumnCount];
             while ((nextLine = reader.readLine()) != null) {
 
-                int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                int nTokens = tokens.length;
                 String probeId = new String(tokens[probeColumn]);
                 float[] values = new float[nDataColumns];
 

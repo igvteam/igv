@@ -466,10 +466,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             int cdEnd = Integer.parseInt(restOfFields[4]);
 
             int exonCount = Integer.parseInt(restOfFields[6]);
-            String[] exonSizes = new String[exonCount];
-            String[] startsBuffer = new String[exonCount];
-            ParsingUtils.split(restOfFields[7], exonSizes, ',');
-            ParsingUtils.split(restOfFields[8], startsBuffer, ',');
+            String[] exonSizes = Globals.commaPattern.split(restOfFields[7]);
+            String[] startsBuffer = Globals.commaPattern.split(restOfFields[8]);
 
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
 
