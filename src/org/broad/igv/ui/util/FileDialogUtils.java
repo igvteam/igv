@@ -21,6 +21,8 @@ package org.broad.igv.ui.util;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.filefilters.AlignmentFileFilter;
+import org.broad.igv.ui.filefilters.CoverageFileFilter;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -56,7 +58,7 @@ public class FileDialogUtils {
     }
 
     private static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter,
-                                  int directoriesMode, int mode) {
+                                   int directoriesMode, int mode) {
 
         if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
@@ -76,6 +78,11 @@ public class FileDialogUtils {
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
         JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.addChoosableFileFilter(new AlignmentFileFilter());
+        fileChooser.addChoosableFileFilter(new CoverageFileFilter());
+        // set the default file filter to "All"
+        fileChooser.setFileFilter(fileChooser.getChoosableFileFilters()[0]);
+
         boolean approve = fileChooser.showOpenDialog(getParentFrame()) == JFileChooser.APPROVE_OPTION;
         if (approve) {
             return fileChooser.getSelectedFiles();
@@ -213,7 +220,6 @@ public class FileDialogUtils {
     private static Frame getParentFrame() {
         return IGV.hasInstance() ? IGV.getMainFrame() : null;
     }
-
 
 
 }
