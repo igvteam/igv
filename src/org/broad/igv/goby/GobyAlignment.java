@@ -39,6 +39,7 @@ import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -65,6 +66,11 @@ public class GobyAlignment implements Alignment {
     private Color defaultColor = new Color(200, 200, 200);
     private CharArrayList gapTypes = null;
     private static final ReadMate unmappedMate = new ReadMate("*", -1, false, true);
+    private Comparator<? super AlignmentBlock> blockComparator = new Comparator<AlignmentBlock>() {
+        public int compare(AlignmentBlock alignmentBlock, AlignmentBlock alignmentBlock1) {
+            return alignmentBlock.getStart() - alignmentBlock1.getStart();
+        }
+    };
 
     /**
      * Construct the facade for an iterator and entry.
@@ -76,6 +82,7 @@ public class GobyAlignment implements Alignment {
         this.iterator = iterator;
         this.entry = entry;
         buildBlocks(entry);
+
     }
 
 
@@ -104,15 +111,20 @@ public class GobyAlignment implements Alignment {
         byte[] readBases = new byte[readLength];
         byte[] readQual = new byte[readLength];
         Arrays.fill(readBases, (byte) '=');
-        Arrays.fill(readQual, (byte) 40);
+        if (alignmentEntry.hasReadQualityScores()) {
+            readQual = alignmentEntry.getReadQualityScores().toByteArray();
+        } else {
+            Arrays.fill(readQual, (byte) 40);
+        }
         int j = 0;
-
+        int insertedBases = 0;
+        int deletedBases = 0;
         final int leftPadding = alignmentEntry.getQueryPosition();
         boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
         if (showSoftClipped && entry.hasSoftClippedBasesLeft()) {
             int clipLength = entry.getSoftClippedBasesLeft().length();
 
-            addSoftClipBlock(blocks, Math.max(0,entry.getPosition() - clipLength), entry.getSoftClippedBasesLeft());
+            addSoftClipBlock(blocks, Math.max(0, entry.getPosition() - clipLength), entry.getSoftClippedBasesLeft(),readQual,0);
         }
         for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
             final String from = var.getFrom();
@@ -132,6 +144,7 @@ public class GobyAlignment implements Alignment {
 
                     bases.add((byte) toChar);
                     scores.add(qual);
+                    deletedBases++;
 
                 }
                 addBlock(insertionBlocks, alignmentEntry.getPosition() + var.getPosition(), bases, scores);
@@ -139,30 +152,32 @@ public class GobyAlignment implements Alignment {
                 scores.clear();
             } else if (!to.contains("-")) {
                 for (int i = 0; i < toLength; i++) {
-                    final int offset = j + var.getPosition() + i - 1 + leftPadding;
+                    final int offset = j + var.getPosition() + i - 1 + leftPadding - insertedBases;
                     if (offset > 0 && offset < readBases.length) {
                         readBases[offset] = (byte) to.charAt(i);
                         if (i < toQuality.size()) {
                             readQual[offset] = toQuality.byteAt(i);
                         }
                     }
+
                 }
+            } else {
+                // has read deletion:
+                insertedBases++;
             }
         }
 
 
         int pos = start;
-        int readInsertions = 0;
-        // The following min statement should not be necessary, but it appears that a version of bwa with Goby support
-        // can incorrectly set getQueryAlignedLength to values larger than the query length..
-        int matchLength = Math.min(alignmentEntry.getQueryAlignedLength(), alignmentEntry.getQueryLength());
+        int matchLength = alignmentEntry.getQueryAlignedLength() - deletedBases;
         int endAlignmentRefPosition = matchLength + start;
         bases.clear();
         scores.clear();
-        while (pos < endAlignmentRefPosition) {
 
-            bases.add(readBases[pos - start + leftPadding]);
-            scores.add(readQual[pos - start + leftPadding]);
+        while (pos < endAlignmentRefPosition) {
+            final int index = pos - start + leftPadding;
+            bases.add(readBases[index]);
+            scores.add(readQual[index]);
             ++pos;
         }
 
@@ -170,12 +185,15 @@ public class GobyAlignment implements Alignment {
         blocks = introduceDeletions(blocks, entry);
         if (showSoftClipped && entry.hasSoftClippedBasesRight()) {
 
-            int targetAlignedLength=entry.getTargetAlignedLength();
-            addSoftClipBlock(blocks, entry.getPosition() +targetAlignedLength, entry.getSoftClippedBasesRight());
+            int targetAlignedLength = entry.getTargetAlignedLength();
+            addSoftClipBlock(blocks, entry.getPosition() + targetAlignedLength, entry.getSoftClippedBasesRight(),
+                    readQual,
+                    entry.getQueryAlignedLength()+entry.getSoftClippedBasesLeft().length());
         }
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
-
+        Arrays.sort(block, blockComparator);
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
+        Arrays.sort(insertionBlock, blockComparator);
         ObjectArrayList<GobyAlignment> list = null;
 
         if (alignmentEntry.hasSplicedForwardAlignmentLink() || alignmentEntry.hasSplicedBackwardAlignmentLink()) {
@@ -199,22 +217,39 @@ public class GobyAlignment implements Alignment {
                     spliceHeadAlignment.gapTypes = new CharArrayList(10);
                 }
                 spliceHeadAlignment.gapTypes.add(SamAlignment.SKIPPED_REGION);
-                 // TODO determine if we are erroneously erasing the softClipped block here as well.
+
                 // Since the previous alignment carries this information, we clear up block and insertionBlock
-                // in this alignment:
-                this.block = new AlignmentBlock[0];
+                // in this alignment, but keep any softClips:
+                this.block = keepSoftClips(block);
                 this.insertionBlock = new AlignmentBlock[0];
             }
         }
     }
 
-    private void addSoftClipBlock(ObjectArrayList<AlignmentBlock> blocks, int position, String softClippedBasesLeft) {
+    private AlignmentBlock[] keepSoftClips(AlignmentBlock[] blocks) {
+        int numSoftCLippedBlocks = 0;
+        for (AlignmentBlock block : blocks) {
+            if (block.isSoftClipped()) numSoftCLippedBlocks++;
+        }
+        AlignmentBlock[] tmp = new AlignmentBlock[numSoftCLippedBlocks];
+        int j = 0;
+        for (int i = 0; i < numSoftCLippedBlocks; i++) {
+            AlignmentBlock block = blocks[j++];
+            if (block.isSoftClipped()) {
+                tmp[i] = block;
+            }
+        }
+        return tmp;
+    }
+
+    private void addSoftClipBlock(ObjectArrayList<AlignmentBlock> blocks, int position, String softClippedBasesLeft, byte[] readQualScores, int j) {
         final int length = softClippedBasesLeft.length();
         byte[] bases = new byte[length];
         byte[] scores = new byte[length];
-        for (int i=0;i< length;i++) {
-            bases[i]=(byte)softClippedBasesLeft.charAt(i);
-            scores[i]= (byte)40;
+
+        for (int i = 0; i < length; i++) {
+            bases[i] = (byte) softClippedBasesLeft.charAt(i);
+            scores[i] = readQualScores[j++];
         }
         final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
                 bases,
@@ -272,38 +307,42 @@ public class GobyAlignment implements Alignment {
 
 
             for (AlignmentBlock block : blocks) {
-                final int vrPos = var.getPosition() + entry.getPosition();
-                if (hasReadDeletion(var) && vrPos >= block.getStart() && vrPos <= block.getEnd()) {
+                if (!block.isSoftClipped()) {
 
-                    ByteList leftBases = new ByteArrayList(block.getBases());
-                    ByteList leftScores = new ByteArrayList(block.getQualities());
-                    ByteList rightBases = new ByteArrayList(block.getBases());
-                    ByteList rightScores = new ByteArrayList(block.getQualities());
-                    int deletionPosition = var.getPosition() - 1;
-                    leftBases = leftBases.subList(0, deletionPosition);
-                    rightBases = rightBases.subList(deletionPosition, rightBases.size());
+                    final int vrPos = var.getPosition() + entry.getPosition();
+                    if (hasReadDeletion(var) && vrPos >= block.getStart() && vrPos <= block.getEnd()) {
 
-                    leftScores = leftScores.subList(0, deletionPosition);
-                    rightScores = rightScores.subList(deletionPosition, rightScores.size());
+                        ByteList leftBases = new ByteArrayList(block.getBases());
+                        ByteList leftScores = new ByteArrayList(block.getQualities());
+                        ByteList rightBases = new ByteArrayList(block.getBases());
+                        ByteList rightScores = new ByteArrayList(block.getQualities());
+                        int deletionPosition = var.getPosition() - 1;
+                        leftBases = leftBases.subList(0, deletionPosition);
+                        rightBases = rightBases.subList(deletionPosition, rightBases.size());
 
-                    AlignmentBlock left = AlignmentBlock.getInstance(block.getStart(),
-                            leftBases.toByteArray(new byte[leftBases.size()]),
-                            leftScores.toByteArray(new byte[leftScores.size()]),
-                            this);
+                        leftScores = leftScores.subList(0, deletionPosition);
+                        rightScores = rightScores.subList(deletionPosition, rightScores.size());
 
-                    AlignmentBlock right = AlignmentBlock.getInstance(block.getStart() + leftBases.size()
-                            + var.getFrom().length(),
-                            rightBases.toByteArray(new byte[rightBases.size()]),
-                            rightScores.toByteArray(new byte[rightScores.size()]),
-                            this);
+                        AlignmentBlock left = AlignmentBlock.getInstance(block.getStart(),
+                                leftBases.toByteArray(new byte[leftBases.size()]),
+                                leftScores.toByteArray(new byte[leftScores.size()]),
+                                this);
 
-                    blocks.remove(block);
-                    newBlocks.add(left);
-                    newBlocks.add(right);
+                        AlignmentBlock right = AlignmentBlock.getInstance(block.getStart() + leftBases.size()
+                                + var.getFrom().length(),
+                                rightBases.toByteArray(new byte[rightBases.size()]),
+                                rightScores.toByteArray(new byte[rightScores.size()]),
+                                this);
 
+                        blocks.remove(block);
+                        newBlocks.add(left);
+                        newBlocks.add(right);
+
+                    }
                 }
             }
         }
+
         newBlocks.addAll(blocks);
         return newBlocks;
     }

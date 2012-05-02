@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import junit.framework.Assert;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -246,7 +248,8 @@ public class GobyAlignmentQueryReaderTest {
         assertEquals(1, gAlignment.block.length);
         assertEquals(1, gAlignment.insertionBlock.length);
         assertEquals(1010, gAlignment.insertionBlock[0].getStart());
-        assertEquals(50, gAlignment.block[0].getBases().length);
+        // the aligned block is 50-2 because the 2 bases are in their own insertion block.
+        assertEquals(48, gAlignment.block[0].getBases().length);
     }
 
     @Test
@@ -373,4 +376,30 @@ public class GobyAlignmentQueryReaderTest {
 
     }
 
+    @Test
+    public void testTricky1() throws IOException {
+        String entriesFile = TestUtils.DATA_DIR + "goby/tricky/sorted-tricky-spliced-17.header";
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.iterator();
+
+        assertTrue(iter.hasNext());
+        Alignment igvAlignment = iter.next();
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
+
+        Assert.assertEquals(2 + (showSoftClipped ? 1 : 0), igvAlignment.getAlignmentBlocks().length);
+        Assert.assertEquals("==A====G===GA=====T============================================",
+                basesToText(igvAlignment.getAlignmentBlocks()[1 + (showSoftClipped ? 1 : 0)].getBases()));
+        iter.close();
+        reader.close();
+
+    }
+
+    private String basesToText(byte[] bases) {
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < bases.length; i++) {
+            sb.append((char) bases[i]);
+        }
+        return sb.toString();
+    }
 }

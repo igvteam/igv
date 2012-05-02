@@ -106,4 +106,20 @@ public class AlignmentBlock {
     public short[][] getFlowSignalContext(int offset) {
         return null;
     }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("[block ");
+        sb.append(isSoftClipped()?"softClipped ":" ");
+        sb.append(getStart());
+        sb.append("-");
+        sb.append(getEnd());
+        sb.append(" ");
+        for (int i=0;i<bases.length;i++) {
+            sb.append((char)bases[i]);
+        }
+        sb.append("]")  ;
+        return sb.toString();
+    }
 }
