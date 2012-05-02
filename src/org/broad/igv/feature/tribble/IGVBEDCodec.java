@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.feature.tribble;
@@ -21,8 +14,8 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.net.URLEncoder;
@@ -62,18 +55,7 @@ public class IGVBEDCodec extends UCSCCodec {
         return this.gffTags;
     }
 
-    public BasicFeature decode(String nextLine) {
-
-        if (nextLine.trim().length() == 0) {
-            return null;
-        }
-
-        if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
-            this.readHeaderLine(nextLine);
-            return null;
-        }
-
-        String [] tokens = Globals.whitespacePattern.split(nextLine);
+    public BasicFeature decode(String[] tokens) {
         int tokenCount = tokens.length;
 
         // The first 3 columns are non optional for BED.  We will relax this
@@ -199,6 +181,22 @@ public class IGVBEDCodec extends UCSCCodec {
         return feature;
     }
 
+    public BasicFeature decode(String nextLine) {
+
+        if (nextLine.trim().length() == 0) {
+            return null;
+        }
+
+        if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
+            this.readHeaderLine(nextLine);
+            return null;
+        }
+
+        String[] tokens = Globals.whitespacePattern.split(nextLine);
+
+        return decode(tokens);
+    }
+
     /**
      * This function returns true iff the File potentialInput can be parsed by this
      * codec.
@@ -256,7 +254,7 @@ public class IGVBEDCodec extends UCSCCodec {
      * @param feature - feature to encode
      * @return the encodec string
      */
-    public String encode(BasicFeature feature) {
+    public String encode(Feature feature) {
 
         StringBuffer buffer = new StringBuffer();
 
@@ -267,14 +265,23 @@ public class IGVBEDCodec extends UCSCCodec {
         buffer.append("\t");
         buffer.append(String.valueOf(feature.getEnd()));
 
-        if (feature.getName() != null || (gffTags && feature.getDescription() != null)) {
+        BasicFeature basicFeature = null;
+
+        //TODO Bad practice right here
+        if (!(feature instanceof BasicFeature)) {
+            return buffer.toString();
+        } else {
+            basicFeature = (BasicFeature) feature;
+        }
+
+        if (basicFeature.getName() != null || (gffTags && basicFeature.getDescription() != null)) {
 
             buffer.append("\t");
 
-            if (gffTags && feature.getDescription() != null) {
+            if (gffTags && basicFeature.getDescription() != null) {
                 // mRNA<br>ID = LOC_Os01g01010.2<br>Name = LOC_Os01g01010.2<br>Parent = LOC_Os01g01010<br>
                 //ID=LOC_Os01g01010.1:exon_1;Parent=LOC_Os01g01010.1
-                String[] attrs = BR_PATTERN.split(feature.getDescription());
+                String[] attrs = BR_PATTERN.split(basicFeature.getDescription());
                 buffer.append("\"");
                 for (String att : attrs) {
                     String[] kv = EQ_PATTERN.split(att, 2);
@@ -288,16 +295,16 @@ public class IGVBEDCodec extends UCSCCodec {
                 }
                 buffer.append("\"");
             } else {
-                buffer.append(feature.getName());
+                buffer.append(basicFeature.getName());
             }
 
-            boolean more = !Float.isNaN(feature.getScore()) || feature.getStrand() != Strand.NONE ||
-                    feature.getColor() != null || feature.getExonCount() > 0;
+            boolean more = !Float.isNaN(basicFeature.getScore()) || basicFeature.getStrand() != Strand.NONE ||
+                    basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
 
             if (more) {
                 buffer.append("\t");
                 // UCSC scores are integers between 0 and 1000, but
-                float score = feature.getScore();
+                float score = basicFeature.getScore();
                 if (Float.isNaN(score)) {
                     buffer.append("1000");
 
@@ -307,27 +314,27 @@ public class IGVBEDCodec extends UCSCCodec {
                 }
 
 
-                more = feature.getStrand() != Strand.NONE || feature.getColor() != null || feature.getExonCount() > 0;
+                more = basicFeature.getStrand() != Strand.NONE || basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
                 if (more) {
                     buffer.append("\t");
-                    Strand strand = feature.getStrand();
+                    Strand strand = basicFeature.getStrand();
                     if (strand == Strand.NONE) buffer.append(" ");
                     else if (strand == Strand.POSITIVE) buffer.append("+");
                     else if (strand == Strand.NEGATIVE) buffer.append("-");
 
-                    more = feature.getColor() != null || feature.getExonCount() > 0;
+                    more = basicFeature.getColor() != null || basicFeature.getExonCount() > 0;
 
                     if (more) {
-                        // Must continue if feature has color or exons
-                        java.util.List<Exon> exons = feature.getExons();
-                        if (feature.getColor() != null || exons != null) {
+                        // Must continue if basicFeature has color or exons
+                        java.util.List<Exon> exons = basicFeature.getExons();
+                        if (basicFeature.getColor() != null || exons != null) {
                             buffer.append("\t");
-                            buffer.append(String.valueOf(feature.getThickStart()));
+                            buffer.append(String.valueOf(basicFeature.getThickStart()));
                             buffer.append("\t");
-                            buffer.append(String.valueOf(feature.getThickEnd()));
+                            buffer.append(String.valueOf(basicFeature.getThickEnd()));
                             buffer.append("\t");
 
-                            java.awt.Color c = feature.getColor();
+                            java.awt.Color c = basicFeature.getColor();
                             buffer.append(c == null ? "." : ColorUtilities.colorToString(c));
                             buffer.append("\t");
 
