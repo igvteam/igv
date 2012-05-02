@@ -75,7 +75,7 @@ public class FastaIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaIndex.createIndexFile(inPath, outPath);
+        FastaUtils.createIndexFile(inPath, outPath);
 
         FastaIndex index = new FastaIndex(outPath);
         assertEquals(1, index.getSequenceNames().size());
@@ -89,7 +89,7 @@ public class FastaIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaIndex.createIndexFile(inPath, outPath);
+        FastaUtils.createIndexFile(inPath, outPath);
 
         FastaIndex index = new FastaIndex(outPath);
         assertEquals(2, index.getSequenceNames().size());
@@ -155,7 +155,7 @@ public class FastaIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        FastaIndex.createIndexFile(inPath, outPath);
+        FastaUtils.createIndexFile(inPath, outPath);
     }
 
     @Test

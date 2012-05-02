@@ -115,7 +115,7 @@ public class GenomeImporter {
 
                         File indexFile = new File(fastaIndexPath);
                         if (!indexFile.exists()) {
-                            FastaIndex.createIndexFile(fastaFile, fastaIndexPath);
+                            FastaUtils.createIndexFile(fastaFile, fastaIndexPath);
                         }
                         fastaIndexPathList.add(fastaIndexPath);
                         fastaFileNames.add(file.getName());
@@ -124,7 +124,7 @@ public class GenomeImporter {
                     // Index if neccessary
                     File indexFile = new File(fastaIndexPath);
                     if (!indexFile.exists()) {
-                        FastaIndex.createIndexFile(fastaFile, fastaIndexPath);
+                        FastaUtils.createIndexFile(fastaFile, fastaIndexPath);
                     }
                     fastaIndexPathList.add(fastaIndexPath);
                 }

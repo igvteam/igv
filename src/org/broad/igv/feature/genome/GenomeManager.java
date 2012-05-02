@@ -159,7 +159,7 @@ public class GenomeManager {
                     fastaIndexPath = fastaPath + ".fai";
 
                     log.info("Creating index file at " + fastaIndexPath);
-                    FastaIndex.createIndexFile(fastaPath, fastaIndexPath);
+                    FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
 
                 }
 
