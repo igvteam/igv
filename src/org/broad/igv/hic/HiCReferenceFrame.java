@@ -28,7 +28,6 @@ public class HiCReferenceFrame extends ReferenceFrame {
         this.genome = genome;
     }
 
-    @Override
     protected Genome getGenome() {
         return genome;
     }

@@ -235,7 +235,7 @@ public class IGV {
 
         }
         contentPane = new IGVContentPane(this);
-        menuBar = new IGVMenuBar(this);
+        menuBar = new IGVMenuBar();
 
         rootPane.setContentPane(contentPane);
         rootPane.setJMenuBar(menuBar);
