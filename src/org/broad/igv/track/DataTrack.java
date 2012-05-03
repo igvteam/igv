@@ -25,6 +25,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.XYPlotRenderer;
@@ -118,9 +119,11 @@ public abstract class DataTrack extends AbstractTrack {
         try {
             featuresLoading = true;
             int maxEnd = end;
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
+            String queryChr = chr;
             if (genome != null) {
+                queryChr = genome.getChromosomeAlias(chr);
                 Chromosome c = genome.getChromosome(chr);
                 if (c != null) maxEnd = Math.max(c.getLength(), end);
             }
@@ -128,7 +131,7 @@ public abstract class DataTrack extends AbstractTrack {
             int delta = (end - start) / 2;
             int expandedStart = Math.max(0, start - delta);
             int expandedEnd = Math.min(maxEnd, end + delta);
-            List<LocusScore> inViewScores = getSummaryScores(chr, expandedStart, expandedEnd, zoom);
+            List<LocusScore> inViewScores = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
             LoadedDataInterval interval = new LoadedDataInterval(chr, start, end, zoom, inViewScores);
             loadedIntervalCache.put(context.getReferenceFrame().getName(), interval);
             return inViewScores;

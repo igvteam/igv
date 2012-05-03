@@ -59,24 +59,26 @@ public class GenomeManager {
 
     final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
 
+    private static GenomeManager theInstance;
+
     private Genome currentGenome;
 
     private List<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
 
-    /**
-     * The IGV instance that owns this GenomeManager.  Can be null.
-     */
-    IGV igv;
 
-    public GenomeManager(IGV igv) {
-        this.igv = igv;
+    public synchronized static GenomeManager getInstance() {
+        if (theInstance == null) {
+            theInstance = new GenomeManager();
+        }
+        return theInstance;
     }
 
-    public GenomeManager() {
-        this.igv = null;
+    private GenomeManager() {
+
     }
+
 
     public void setCurrentGenome(Genome currentGenome) {
         this.currentGenome = currentGenome;
@@ -98,6 +100,8 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
 
+            GenomeImpl newGenome = null;
+
             if (monitor != null) {
                 monitor.fireProgressChange(25);
             }
@@ -115,21 +119,22 @@ public class GenomeManager {
                 boolean isFasta = genomeDescriptor.isFasta();
                 String[] fastaFiles = genomeDescriptor.getFastaFileNames();
 
-                GenomeImpl genome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta, fastaFiles);
-                currentGenome = genome;
+                newGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta, fastaFiles);
+                setCurrentGenome(newGenome);
+
                 log.info("Genome loaded.  id= " + id);
 
                 if (genomeDescriptor.hasCytobands()) {
                     LinkedHashMap<String, List<Cytoband>> cytobandMap = loadCytobandFile(genomeDescriptor);
                     if (!isFasta) {
-                        genome.generateChromosomeMap(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
+                        newGenome.generateChromosomeMap(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
                     }
-                    genome.setCytobands(cytobandMap);
+                    newGenome.setCytobands(cytobandMap);
                 }
 
 
-                if (aliases != null) genome.addChrAliases(aliases);
-                if (!Globals.isHeadless()) {
+                if (aliases != null) newGenome.addChrAliases(aliases);
+                if (IGV.hasInstance() && !Globals.isHeadless()) {
                     updateGeneTrack(genomeDescriptor);
                 }
 
@@ -170,7 +175,8 @@ public class GenomeManager {
                 }
 
 
-                currentGenome = new GenomeImpl(id, name, fastaPath, true, null);
+                newGenome = new GenomeImpl(id, name, fastaPath, true, null);
+                setCurrentGenome(newGenome);
 
                 log.info("Genome loaded.  id= " + id);
                 if (!Globals.isHeadless()) {
@@ -183,9 +189,7 @@ public class GenomeManager {
             }
 
             // Do this last so that user defined aliases have preference.
-            if (currentGenome instanceof GenomeImpl) {
-                ((GenomeImpl) currentGenome).loadUserDefinedAliases();
-            }
+            newGenome.loadUserDefinedAliases();
 
             return currentGenome;
 

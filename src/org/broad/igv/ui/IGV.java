@@ -76,7 +76,6 @@ public class IGV {
 
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
-    static List<IGV> instances = new LinkedList();
 
     // Window components
     private Frame mainFrame;
@@ -126,12 +125,8 @@ public class IGV {
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
-    private boolean startupComplete = false;
 
-
-    /**
-     *
-     */
+    // Listeners
     Collection<SoftReference<TrackGroupEventListener>> groupListeners =
             Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
 
@@ -154,19 +149,9 @@ public class IGV {
         return theInstance;
     }
 
-
-    public static IGV getFirstInstance() {
-        if (instances.isEmpty()) {
-            throw new RuntimeException("IGV has not been initialized.  Must call createInstance(Frame) first");
-        }
-        return instances.get(0);
-    }
-
-
     public static boolean hasInstance() {
         return theInstance != null;
     }
-
 
     public static JRootPane getRootPane() {
         return getInstance().rootPane;
@@ -183,9 +168,8 @@ public class IGV {
     private IGV(Frame frame) {
 
         theInstance = this;
-        instances.add(this);
 
-        genomeManager = new GenomeManager(this);
+        genomeManager = GenomeManager.getInstance();
 
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
@@ -200,9 +184,7 @@ public class IGV {
             }
 
             private void windowCloseEvent() {
-                instances.remove(this);
                 PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
-
             }
 
             @Override
@@ -253,7 +235,7 @@ public class IGV {
 
         }
         contentPane = new IGVContentPane(this);
-        menuBar = new IGVMenuBar();
+        menuBar = new IGVMenuBar(this);
 
         rootPane.setContentPane(contentPane);
         rootPane.setJMenuBar(menuBar);
@@ -418,14 +400,7 @@ public class IGV {
 
 
     public void selectGenomeFromList(String genome) {
-        try {
-            contentPane.getCommandBar().selectGenomeFromList(genome);
-        } catch (FileNotFoundException e) {
-            log.error("File not found while intializing genome!", e);
-        } catch (NoRouteToHostException e) {
-            log.error("Error while intializing genome!", e);
-        }
-
+        contentPane.getCommandBar().selectGenomeFromList(genome);
     }
 
 
@@ -577,6 +552,7 @@ public class IGV {
         Genome genome = getGenomeManager().loadGenome(path, monitor);
         //If genome loading cancelled
         if (genome == null) return;
+
         final String name = genome.getDisplayName();
         final String id = genome.getId();
 
@@ -585,6 +561,10 @@ public class IGV {
 
         contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
         contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+
+        // Reset the session (unload all tracks)
+        resetSession(null);
+
 
     }
 
@@ -2277,21 +2257,16 @@ public class IGV {
             log.debug("startUp");
         }
 
-        SwingWorker worker = new StartupWorker(igvArgs);
-        worker.execute();
-    }
-
-    public boolean isStartupComplete() {
-        return startupComplete;
+        LongRunningTask.submit(new StartupRunnable(igvArgs));
     }
 
     /**
      * Swing worker class to startup IGV
      */
-    public class StartupWorker extends SwingWorker {
+    public class StartupRunnable implements Runnable {
         Main.IGVArgs igvArgs;
 
-        StartupWorker(Main.IGVArgs args) {
+        StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
 
         }
@@ -2303,8 +2278,7 @@ public class IGV {
          * @throws Exception
          */
         @Override
-        protected Object doInBackground() throws Exception {
-
+        public void run() {
 
             final ProgressMonitor monitor = new ProgressMonitor();
             final ProgressBar progressBar = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
@@ -2361,7 +2335,6 @@ public class IGV {
                         }
                     }
                     if (!success) {
-// Session load failed, load default genome
                         String genomeId = preferenceManager.getDefaultGenome();
                         contentPane.getCommandBar().selectGenomeFromList(genomeId);
 
@@ -2408,28 +2381,17 @@ public class IGV {
                 CommandListener.start(port);
             }
 
-
-            startupComplete = true;
-
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
+                    if (igvArgs.getBatchFile() != null) {
+                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+                    }
+
                 }
             });
 
 
-            return null;
-        }
-
-
-        /**
-         * Called when the background thread is complete
-         */
-        @Override
-        protected void done() {
-            if (igvArgs.getBatchFile() != null) {
-                LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
-            }
         }
     }
 

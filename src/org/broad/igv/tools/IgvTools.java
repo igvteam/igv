@@ -858,8 +858,7 @@ public class IgvTools {
 
         String rootDir = FileUtils.getInstallDirectory();
 
-        final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
-                IGV.getInstance().getGenomeManager();
+        final GenomeManager genomeManager = GenomeManager.getInstance();
         Genome genome = genomeManager.getCurrentGenome();
         if (genome != null && genome.getId().equals(genomeFileOrID)) {
             return genome;

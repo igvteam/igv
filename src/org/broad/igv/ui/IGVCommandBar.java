@@ -222,10 +222,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             }
 
                             // TODO -- warn user.
-                            // Unload all tracks, begin new session.  This should be done after the genome switch
-//                            if (igv.isStartupComplete()) {
-//                                igv.resetSession(null);
-//                            }
+                            igv.resetSession(null);
 
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);
@@ -265,20 +262,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 }
             };
 
-            // If we're on the dispatch thread spawn a worker, otherwise just execute.   
-            if (SwingUtilities.isEventDispatchThread()) {
-                SwingWorker worker = new SwingWorker() {
-                    @Override
-                    protected Object doInBackground() throws Exception {
-                        runnable.run();
-                        return null;
-                    }
-                };
-
-                worker.execute();
-            } else {
-                runnable.run();
-            }
+            // If we're on the dispatch thread spawn a worker, otherwise just execute.
+            LongRunningTask.submit(runnable);
         }
     }
 
@@ -602,8 +587,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     /**
      * Called from session loading,  command line listener, startup code
      */
-    public void selectGenomeFromList(final String genomeId)
-            throws FileNotFoundException, NoRouteToHostException {
+    public void selectGenomeFromList(final String genomeId) {
 
 
         // See if this genome is already loaded

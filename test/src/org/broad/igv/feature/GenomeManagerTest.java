@@ -45,7 +45,7 @@ public class GenomeManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        genomeManager = new GenomeManager(null);
+        genomeManager = GenomeManager.getInstance();
     }
 
     @AfterClass

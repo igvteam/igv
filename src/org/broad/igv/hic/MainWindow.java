@@ -16,13 +16,18 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
@@ -968,9 +973,22 @@ public class MainWindow extends JFrame {
         trackPanel.add(eigenvectorPanel);
 
 
-        eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
-        eigenvectorPanel.setTrack(eigenvectorTrack);
-        trackPanel.setVisible(true);
+        try {
+            String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
+            Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+
+            String testURL = "http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseGm06990RawRep1.bigWig";
+            java.util.List<Track> tracks = new ArrayList();
+            (new TrackLoader()).loadBWFile(new ResourceLocator(testURL),tracks, genome);
+
+           // eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
+            eigenvectorPanel.setTrack(tracks.get(0)); //    eigenvectorTrack); //
+            eigenvectorPanel.setGenome(genome);
+            trackPanel.setVisible(true);
+
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
 
         panel2_5.add(trackPanel, BorderLayout.NORTH);

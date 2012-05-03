@@ -164,7 +164,7 @@ public class FastaIndexTest {
         assertEquals(tGsize, entry.getSize());
         assertEquals(tG, entry.getContig());
 
-        GenomeManager manager = new GenomeManager();
+        GenomeManager manager = GenomeManager.getInstance();
         Genome genome = manager.loadGenome(inPath, null);
         String tAseq = new String(genome.getSequence(tA, 0, tAsize));
         assertEquals(tAsize, tAseq.length());
@@ -253,7 +253,7 @@ public class FastaIndexTest {
         outFile.delete();
         outFile.deleteOnExit();
 
-        GenomeManager manager = new GenomeManager();
+        GenomeManager manager = GenomeManager.getInstance();
         Genome genome = manager.loadGenome(inPath, null);
         String chr = "gi|110640213|ref|NC_008253.1|";
         assertNotNull(genome.getChromosome(chr));

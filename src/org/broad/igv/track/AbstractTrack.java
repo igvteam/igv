@@ -118,37 +118,20 @@ public abstract class AbstractTrack implements Track {
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator, String id) {
-        this.resourceLocator = dataResourceLocator;
-        this.id = id;
-        String drName = dataResourceLocator.getName();
-        this.name = drName != null ? drName : dataResourceLocator.getFileName();
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(dataResourceLocator, id, dataResourceLocator.getTrackName());
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator) {
-        this.resourceLocator = dataResourceLocator;
-        this.id = dataResourceLocator.getPath();
-        String drName = dataResourceLocator.getName();
-        this.name = drName != null ? drName : dataResourceLocator.getFileName();
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(dataResourceLocator, dataResourceLocator.getPath(), dataResourceLocator.getTrackName());
     }
 
     public AbstractTrack(String id) {
-        this.name = id;
-        this.id = id;
-        init();
-
-        prefMgr = PreferenceManager.getInstance();
+        this(null, id, id);
     }
 
 
     public AbstractTrack(String id, String name) {
-        this.name = name;
-        this.id = id;
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(null, id, name);
     }
 
     private void init() {
@@ -444,8 +427,8 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
 
-        if(height < getHeight()) {
-            if(this.getDisplayMode() == DisplayMode.EXPANDED) {
+        if (height < getHeight()) {
+            if (this.getDisplayMode() == DisplayMode.EXPANDED) {
                 this.setDisplayMode(DisplayMode.SQUISHED);
             }
         }
