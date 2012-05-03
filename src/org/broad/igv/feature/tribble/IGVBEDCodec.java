@@ -193,7 +193,7 @@ public class IGVBEDCodec extends UCSCCodec {
             return null;
         }
 
-        String[] tokens = Globals.tabPattern.split(nextLine);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
 
         return decode(tokens);
     }
