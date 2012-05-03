@@ -31,7 +31,6 @@ import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -122,7 +121,7 @@ public class REPMaskCodec implements FeatureCodec {
      * @return
      */
     public Feature decodeLoc(String line) {
-        String[] tokens = Globals.whitespacePattern.split(line);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
         String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
@@ -135,7 +134,7 @@ public class REPMaskCodec implements FeatureCodec {
             return null;
         }
 
-        String[] tokens = Globals.whitespacePattern.split(nextLine);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
         int tokenCount = tokens.length;
 
         if (tokenCount < 15) {

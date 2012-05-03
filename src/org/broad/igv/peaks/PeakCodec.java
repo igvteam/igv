@@ -19,14 +19,8 @@
 package org.broad.igv.peaks;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.UCSCCodec;
-import org.broad.igv.util.ParsingUtils;
-
-import java.awt.*;
 
 
 /**
@@ -53,7 +47,7 @@ public class PeakCodec extends UCSCCodec {
             return null;
         }
 
-        String [] tokens = Globals.whitespacePattern.split(nextLine);
+        String [] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
         int tokenCount = tokens.length;
 
         String chrToken = tokens[0];

@@ -20,7 +20,6 @@ import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -150,7 +149,7 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
      *  columns each feature has. out[0] is the first feature, out[1] is the second
      */
     private String[][] splitDualFeatures(String input, int colsPerFeat){
-        String[] tokens = Globals.whitespacePattern.split(input);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(input);
 
         assert tokens.length == colsPerFeat*2;
 

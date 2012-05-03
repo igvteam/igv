@@ -160,7 +160,7 @@ public class CNParser extends AbstractParser {
 
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
-                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens = tokens.length;
                 if (nTokens == 0) {
                     continue;

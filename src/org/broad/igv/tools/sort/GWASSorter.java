@@ -7,7 +7,6 @@ import org.broad.tribble.readers.AsciiLineReader;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * @author Jim Robinson
@@ -35,7 +34,7 @@ public class GWASSorter extends Sorter {
             while ((nextLine = br.readLine()) != null) {
                 headerLines.add(nextLine);
                 if (!nextLine.startsWith("#")) {
-                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                     for (int i = 0; i < tokens.length; i++) {
                         if (tokens[i].equalsIgnoreCase("chr")) {
                             chrCol = i;

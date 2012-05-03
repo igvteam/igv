@@ -20,13 +20,10 @@ package org.broad.igv.hic.tools;
 
 
 import org.broad.igv.Globals;
-import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -65,7 +62,7 @@ public class AsciiPairIterator implements PairIterator {
         try {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens = tokens.length;
                 if (nTokens < 10) {
                     String chrom1 = getInternedString(tokens[1]);

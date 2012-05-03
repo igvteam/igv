@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -63,7 +62,7 @@ public class GWASParser {
         headerString = headerString.trim();
 
 
-        String[] headers = Globals.whitespacePattern.split(headerString);
+        String[] headers = Globals.singleTabMultiSpacePattern.split(headerString);
         int headersSize = headers.length;
 
         if (headersSize < 4)
@@ -147,7 +146,7 @@ public class GWASParser {
                 rowCounter++;
 
                 if (rowCounter >= searchStartRow) {
-                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
 
                     if (tokens.length > 1) {
 
@@ -252,7 +251,7 @@ public class GWASParser {
                 nextLine = nextLine.trim();
                 rowCounter++;
 
-                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
 
                 if (tokens.length > 1) {
 

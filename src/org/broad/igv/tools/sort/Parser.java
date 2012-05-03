@@ -19,7 +19,6 @@
 package org.broad.igv.tools.sort;
 
 import org.broad.igv.Globals;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ public class Parser {
 
     public SortableRecord createRecord(String nextLine) {
         String[] fields = splitOnWhiteSpace ?
-                Globals.whitespacePattern.split(nextLine) :
+                Globals.singleTabMultiSpacePattern.split(nextLine) :
                 Globals.tabPattern.split(nextLine);
 
         String chr = fields[chrCol];

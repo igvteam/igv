@@ -21,7 +21,6 @@ package org.broad.igv.gwas;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.ParsingUtils;
 
 import java.util.ArrayList;
 
@@ -80,7 +79,7 @@ public class DescriptionCache {
 
     public void setHeaderTokens(String headerString) {
         headerString = headerString.trim();
-         this.headerTokens = Globals.whitespacePattern.split(headerString);
+         this.headerTokens = Globals.singleTabMultiSpacePattern.split(headerString);
     }
 
 
@@ -133,7 +132,7 @@ public class DescriptionCache {
         if (description != null) {
             descriptionString = "";
             int headersSize = this.getHeaderTokens().length;
-            String[] tokens = Globals.whitespacePattern.split(description);
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(description);
 
             for (int i = 0; i < headersSize; i++) {
                 String tmpHeaderToken = this.getHeaderTokens()[i];

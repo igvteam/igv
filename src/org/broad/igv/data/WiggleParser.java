@@ -180,7 +180,7 @@ public class WiggleParser {
 
                 } else {
                     // Must be data
-                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                     int nTokens = tokens.length;
                     if (nTokens == 0) {
                         continue;

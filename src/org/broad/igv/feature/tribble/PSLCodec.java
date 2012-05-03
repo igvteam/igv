@@ -23,7 +23,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.Feature;
 
 /**
@@ -51,7 +50,7 @@ public class PSLCodec extends UCSCCodec {
                 return null;
             }
 
-            String[] tokens = Globals.whitespacePattern.split(line);
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
             int nTokens = tokens.length;
             if (nTokens < 21) {
                 // log.info("Skipping line ")

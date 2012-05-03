@@ -20,14 +20,11 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Representation of a fasta (.fai) index.  This is a modified version of a similar class in Picard, but extended
@@ -85,7 +82,7 @@ public class FastaIndex {
             while ((nextLine = reader.readLine()) != null) {
 
                 // Tokenize and validate the index line.
-                String[] tokens =  Globals.whitespacePattern.split(nextLine);
+                String[] tokens =  Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens =  tokens.length;
                 if (nTokens != 5) {
                     throw new RuntimeException("Error.  Unexpected number of tokens parsing: " + indexFile);

@@ -12,6 +12,7 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.GeneTrackRenderer;
@@ -194,7 +195,6 @@ public class GFFParser implements FeatureParser {
                 genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             }
             Set<String> featuresToHide = new HashSet();
-            String[] tokens = new String[200];
 
             while ((line = reader.readLine()) != null) {
 
@@ -231,8 +231,8 @@ public class GFFParser implements FeatureParser {
                     continue;
                 }
 
-
-                int nTokens = ParsingUtils.split(line, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(line);
+                int nTokens = tokens.length;
 
                 // GFF files have 9 tokens
                 if (nTokens < 9) {
