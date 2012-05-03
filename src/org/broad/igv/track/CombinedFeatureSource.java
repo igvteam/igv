@@ -110,7 +110,7 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         Feature feat;
         while ((line = in.readLine()) != null) {
             if(operation == Operation.WINDOW){
-                String[] closest = splitDualFeatures(line)[1];
+                String[] closest = splitDualFeatures(line, 3)[1];
                 feat = codec.decode(closest);
             }else{
                 feat = codec.decode(line);
@@ -142,13 +142,15 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
      * might be one line, the first 3 columns representing data from file A
      * and the second 3 representing data from file B
      * @param input
+     * @param colsPerFeat Number of columns each feature should have.
+     *                    input must have >= 2x this number. Extra columns
+     *                    are ignored.
      * @return
      *  A 2-D string array. First index is length 2, second is the number of
      *  columns each feature has. out[0] is the first feature, out[1] is the second
      */
-    private String[][] splitDualFeatures(String input){
+    private String[][] splitDualFeatures(String input, int colsPerFeat){
         String[] tokens = Globals.whitespacePattern.split(input);
-        int colsPerFeat = 3;
 
         assert tokens.length == colsPerFeat*2;
 
@@ -162,6 +164,31 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         String[][] out = new String[][]{feat1, feat2};
         return out;
 
+    }
+
+    /**
+     * Bedtools reports certain features as:
+     * chr  start   end some_number
+     * Where some_number might be coverage, overlap, fraction, etc
+     *
+     * @param input
+     * @return
+     */
+    private String[] convertBedToolsOutToBed(String[] input){
+        if(input.length < 3){
+            throw new IllegalArgumentException("Input array has only " + input.length + " columns, need at least 3");
+        }
+
+        //No score data
+        if(input.length == 3){
+            return input;
+        }
+
+        String[] output = new String[input.length + 1];
+        System.arraycopy(input, 0, output, 0, 3);
+        output[3] = "";
+        System.arraycopy(input, 3, output, 4, input.length - 3);
+        return output;
     }
 
     @Override
@@ -183,11 +210,13 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
     public enum Operation {
         //We use these bed flags to ensure output will be in bed format, even
         //if input is bam
+        //TODO Include -wo, -wb options
         INTERSECT("intersect -bed"),
         SUBTRACT("subtract"),
         //Identify the "closest" feature in file B for each feature in file A
         //IGV doesn't have a meaningful way to display this
         //CLOSEST("closest"),
+        //TODO include -d option
         WINDOW("window -bed"),
         COVERAGE("coverage");
 

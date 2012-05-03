@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/05/01
  */
+@Ignore
 public class CombinedFeatureSourceTest {
 
     Genome genome;
