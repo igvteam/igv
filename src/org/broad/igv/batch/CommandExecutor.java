@@ -49,7 +49,7 @@ public class CommandExecutor {
 
 
     public CommandExecutor() {
-        igv = IGV.getFirstInstance();
+        igv = IGV.getInstance();
     }
 
     private List<String> getArgs(String[] tokens) {

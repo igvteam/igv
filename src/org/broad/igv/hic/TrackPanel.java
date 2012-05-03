@@ -1,5 +1,6 @@
 package org.broad.igv.hic;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -19,6 +20,7 @@ public class TrackPanel extends JPanel {
 
     HiC hic;
     Track track;
+    Genome genome;
 
     public TrackPanel(HiC hiC) {
         this.hic = hiC;
@@ -37,12 +39,14 @@ public class TrackPanel extends JPanel {
         }
 
         track.setHeight(getHeight());  // <= TODO move to setBounds
-
-
-        RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, getVisibleRect());
-        track.render(context, getBounds());
-
+        if (hic.xContext != null) {
+            RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, getVisibleRect(), genome);
+            track.render(context, getBounds());
+        }
 
     }
 
+    public void setGenome(Genome genome) {
+        this.genome = genome;
+    }
 }
