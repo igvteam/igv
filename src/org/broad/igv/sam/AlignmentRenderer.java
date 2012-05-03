@@ -681,13 +681,22 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Is this base a mismatch?  Note '=' means indicates a match by definition
                 // If we do not have a valid reference we assume a match.
-                final byte refbase = reference[idx];
-                final byte readbase = read[idx];
-                boolean misMatch = readbase != '=' &&
-                        reference != null &&
-                        idx < reference.length &&
-                        refbase != 0 &&
-                        !AlignmentUtils.compareBases(refbase, readbase);
+                boolean misMatch;
+                if (isSoftClipped) {
+                    // Goby will return '=' characters when the soft-clip happens to match the reference.
+                    // It could actually be useful to see which part of the soft clipped bases match, to help detect
+                    // cases when an aligner clipped too much.
+                    final byte readbase = read[idx];
+                    misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
+                } else {
+                    final byte refbase = reference[idx];
+                    final byte readbase = read[idx];
+                    misMatch = readbase != '=' &&
+                            reference != null &&
+                            idx < reference.length &&
+                            refbase != 0 &&
+                            !AlignmentUtils.compareBases(refbase, readbase);
+                }
 
 
                 if (showAllBases || (!bisulfiteMode && misMatch) ||
