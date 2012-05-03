@@ -694,8 +694,7 @@ public class FeatureTrack extends AbstractTrack {
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
 
 
-        IGVFeatureRenderer renderer = (IGVFeatureRenderer) getRenderer();
-        renderer.reset();
+        FeatureRenderer renderer =  getRenderer();
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
