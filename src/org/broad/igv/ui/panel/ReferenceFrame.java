@@ -362,7 +362,7 @@ public class ReferenceFrame {
         }
     }
 
-    private Genome getGenome() {
+    protected Genome getGenome() {
         return IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
