@@ -18,24 +18,11 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileWriter;
-import net.sf.samtools.SAMFileWriterFactory;
-import org.broad.igv.sam.reader.AlignmentReader;
-import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -131,49 +118,5 @@ public class SamAlignmentTest {
 //        }
 
     }
-
-    /**
-     * Test our ability to write SAM Records out to a file
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testWriteRecords() throws Exception {
-        String inpath = TestUtils.DATA_DIR + "sam/test_2.sam";
-        String outpath = TestUtils.DATA_DIR + "out/tmp_sam.sam";
-        File outFile = new File(outpath);
-
-        SAMReader reader = new SAMReader(inpath, false);
-        SAMFileHeader header = reader.getHeader();
-        Iterator<Alignment> iter = reader.iterator();
-
-        SamAlignment alignment;
-        List<Alignment> origAlignments = new ArrayList<Alignment>();
-
-        SAMFileWriter writer = new SAMFileWriterFactory().makeSAMWriter(header, false, outFile);
-
-        while (iter.hasNext()) {
-            alignment = (SamAlignment) iter.next();
-            origAlignments.add(alignment);
-            writer.addAlignment(alignment.getRecord());
-        }
-        writer.close();
-
-        //Read back in, check equality
-        AlignmentReader outputReader = AlignmentReaderFactory.getReader(outFile.getAbsolutePath(), false);
-        Iterator<Alignment> outputIter = outputReader.iterator();
-        int index = 0;
-        while (outputIter.hasNext()) {
-            Alignment outputAl = outputIter.next();
-            Alignment origAl = origAlignments.get(index);
-
-            assertEquals("Cigar strings not equal at " + index, origAl.getCigarString(), outputAl.getCigarString());
-            index++;
-        }
-        assertEquals("Incorrect number of alignments", origAlignments.size(), index);
-
-
-    }
-
 
 }
