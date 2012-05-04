@@ -198,9 +198,7 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bedz")) {
-                loadIndexedBedzFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
+            }  else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".list")) {
@@ -453,22 +451,6 @@ public class TrackLoader {
         } else if (locator.getPath().toLowerCase().contains(".maf") || locator.getPath().toLowerCase().endsWith(".maf.dict")) {
             loadMAFTrack(locator, newTracks, genome);
         }
-    }
-
-    /**
-     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
-     *
-     * @param locator
-     * @param newTracks
-     */
-    private void loadIndexedBedzFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        File featureFile = new File(locator.getPath());
-        File indexFile = new File(locator.getPath() + ".sai");
-        FeatureSource src = new IndexedBEDFeatureSource(featureFile, indexFile, genome);
-        Track t = new FeatureTrack(locator, src);
-        newTracks.add(t);
-
     }
 
     /**

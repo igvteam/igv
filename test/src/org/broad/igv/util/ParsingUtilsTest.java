@@ -39,40 +39,6 @@ public class ParsingUtilsTest {
         Globals.CONNECT_TIMEOUT = 5 * 60 * 1000;
     }
 
-    @Test
-    public void testEstimateLineCount() {
-        // Add your code here
-    }
-
-    @Test
-    public void testSplitSpeed() {
-
-        long trials = 100000;
-        int jnk = 0;
-        long pu_time = 0;
-        long nrm_time = 0;
-        long tm1, tm2;
-        String test_text;
-        String[] result;
-        Pattern pattern = Pattern.compile("\t");
-        for (int _ = 0; _ < trials; _++) {
-            test_text = genRandString();
-            tm1 = System.nanoTime();
-            result = pattern.split(test_text);
-            tm2 = System.nanoTime();
-            nrm_time += tm2 - tm1;
-
-            tm1 = System.nanoTime();
-            jnk = ParsingUtils.split(test_text, result, '\t');
-            tm2 = System.nanoTime();
-            pu_time += tm2 - tm1;
-        }
-        //System.out.println("Average ParsingUtils.split time: " + pu_time / trials);
-        //System.out.println("Average String.split time: " + nrm_time / trials);
-        assertTrue("ParsingUtils vs pattern.split speed test", pu_time < nrm_time);
-
-    }
-
     private String genRandString() {
         int numWords = 10;
         int max_length = 20;
@@ -94,9 +60,9 @@ public class ParsingUtilsTest {
 
     @Test
     public void testSplit1() {
-        String[] tokens = new String[10];
         String blankColumnLine = "a\tb\t\td";
-        int nTokens = ParsingUtils.split(blankColumnLine, tokens, '\t');
+        String[] tokens = Globals.tabPattern.split(blankColumnLine);
+        int nTokens = tokens.length;
         assertEquals(4, nTokens);
         assertEquals("a", tokens[0]);
         assertEquals("b", tokens[1]);
@@ -106,9 +72,9 @@ public class ParsingUtilsTest {
 
     @Test
     public void testSplit2() {
-        String[] tokens = new String[10];
         String blankColumnLine = "a\tb\t\td\t";
-        int nTokens = ParsingUtils.split(blankColumnLine, tokens, '\t');
+        String[] tokens = Globals.tabPattern.split(blankColumnLine);
+        int nTokens = tokens.length;
         assertEquals(5, nTokens);
         assertEquals("a", tokens[0]);
         assertEquals("b", tokens[1]);

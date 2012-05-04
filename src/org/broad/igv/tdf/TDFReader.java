@@ -23,6 +23,7 @@
 package org.broad.igv.tdf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -435,13 +436,13 @@ public class TDFReader {
 
     public Set<String> getChromosomeNames() {
         if (chrNames == null) {
-            ///DatasetIndex chr1/z0/mean=org.broad.igv.tdf.TDFReader$IndexEntry@6a493b65
+            ///DatasetIndex /chr1/z0/mean=org.broad.igv.tdf.TDFReader$IndexEntry@6a493b65
             chrNames = new HashSet();
-            String[] tokens = new String[2];
             for (String key : datasetIndex.keySet()) {
-                int nTokens = ParsingUtils.split(key, tokens, '/');
-                if (nTokens > 0) {
-                    chrNames.add(tokens[0]);
+                String[] tokens =  Globals.forwardSlashPattern.split(key);
+                int nTokens = tokens.length;
+                if (nTokens > 1) {
+                    chrNames.add(tokens[1]);
                 }
             }
         }

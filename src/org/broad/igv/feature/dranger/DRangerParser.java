@@ -22,7 +22,9 @@
  */
 package org.broad.igv.feature.dranger;
 
+import org.apache.batik.dom.svg12.Global;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.Strand;
@@ -65,7 +67,6 @@ public class DRangerParser {
     // 48	    0	    long_range	4195715	3'-UTR of ENST0000037493
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
-        String[] tokens = new String[100];
         List<FeatureTrack> tracks = new ArrayList();
         AsciiLineReader reader = null;
         List<org.broad.tribble.Feature> features = new ArrayList(5000);
@@ -76,7 +77,8 @@ public class DRangerParser {
             reader = ParsingUtils.openAsciiReader(locator);
             setColumns(reader.readLine());
             while ((nextLine = reader.readLine()) != null) {
-                int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                int nTokens = tokens.length;
                 if (nTokens > pos2Column) {
                     int index = Integer.parseInt(tokens[numColumn]);
 
@@ -121,11 +123,9 @@ public class DRangerParser {
                     features.add(feature);
                 }
             }
-        }
-        catch (NumberFormatException ne) {
+        } catch (NumberFormatException ne) {
             throw new ParserException("Column " + parseColumn + " must be a numeric value", reader.getCurrentLineNumber(), nextLine);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error parsing dRanger file", e);
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
@@ -150,8 +150,7 @@ public class DRangerParser {
     private int toInt(String token) {
         try {
             return Integer.parseInt(token);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return 0;
         }
     }

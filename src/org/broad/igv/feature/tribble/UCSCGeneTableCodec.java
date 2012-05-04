@@ -27,6 +27,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
     private int exonCountColumn = 8;
     private int startsBufferColumn = 9;
     private int endsBufferColumn = 10;
+    private int frameBufferColumn = 15;
 
     public enum Type {
 
@@ -78,7 +79,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         }
 
         line = line.replaceAll("\"", "");
-        String [] tokens = Globals.singleTabMultiSpacePattern.split(line);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
         int tokenCount = tokens.length;
 
         if (tokenCount <= strandColumn) {
@@ -149,11 +150,8 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         int cdEnd = Integer.parseInt(tokens[cdEndColumn]);
 
         int exonCount = Integer.parseInt(tokens[exonCountColumn]);
-        String[] startsBuffer = new String[exonCount];
-        String[] endsBuffer = new String[exonCount];
-        ParsingUtils.split(tokens[startsBufferColumn], startsBuffer, ',');
-        ParsingUtils.split(tokens[endsBufferColumn], endsBuffer, ',');
-
+        String[] startsBuffer = Globals.commaPattern.split(tokens[startsBufferColumn]);
+        String[] endsBuffer = Globals.commaPattern.split(tokens[endsBufferColumn]);
 
         if (startsBuffer.length == endsBuffer.length) {
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
@@ -191,8 +189,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         if (type == Type.GENEPRED && tokenCount > 15) {
             try {
 
-                String[] frameBuffer = new String[exonCount];
-                ParsingUtils.split(tokens[15], frameBuffer, ',');
+                String[] frameBuffer = Globals.commaPattern.split(tokens[frameBufferColumn]);
                 for (int i = 0; i < frameBuffer.length; i++) {
                     int exonFrame = Integer.parseInt(frameBuffer[i].trim());
                     if (exonFrame == -1) {

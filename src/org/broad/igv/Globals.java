@@ -78,6 +78,7 @@ public class Globals {
     final static public Pattern equalPattern = Pattern.compile("=");
     final static public Pattern semicolonPattern = Pattern.compile(";");
     final static public Pattern singleTabMultiSpacePattern = Pattern.compile("\t|( +)");
+    final static public Pattern forwardSlashPattern = Pattern.compile("/");
 
     public static List emptyList = new ArrayList();
     public static String VERSION;

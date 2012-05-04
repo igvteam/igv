@@ -31,6 +31,7 @@ import org.broad.igv.ui.util.MenuAndToolbarUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -57,9 +58,10 @@ public class IGVMenuBar extends JMenuBar {
     private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
+    IGV igv;
 
-
-    public IGVMenuBar() {
+    public IGVMenuBar(IGV igv) {
+        this.igv = igv;
         setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
         setBorderPainted(true);
 
@@ -101,38 +103,38 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         // Load menu items
-        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, IGV.getInstance());
+        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, IGV.getInstance());
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGV.getInstance());
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, igv);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
-            menuAction = new LoadFromDatabaseAction("Load from Database...", 0, IGV.getInstance());
+            menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
         menuItems.add(new JSeparator());
 
         // Session menu items
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, IGV.getInstance());
+        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, IGV.getInstance());
+        menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, igv);
         menuAction.setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, IGV.getInstance());
+        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
         menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -141,17 +143,11 @@ public class IGVMenuBar extends JMenuBar {
         // Load genome
         menuAction =
                 new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
-
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        SwingWorker worker = new SwingWorker() {
-                            public Object doInBackground() {
-                                org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                                IGV.getInstance().doLoadGenome(monitor);
-                                return null;
-                            }
-                        };
-                        worker.execute();
+                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        igv.doLoadGenome(monitor);
+
                     }
                 };
 
@@ -159,7 +155,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Load genome from URL
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, IGV.getInstance());
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
         menuAction.setToolTipText("Load a FASTA or .genome file");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -169,14 +165,8 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Import Genome...", null, KeyEvent.VK_D) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        SwingWorker worker = new SwingWorker() {
-                            public Object doInBackground() {
-                                org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                                IGV.getInstance().doDefineGenome(monitor);
-                                return null;
-                            }
-                        };
-                        worker.execute();
+                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        igv.doDefineGenome(monitor);
                     }
                 };
 
@@ -185,7 +175,7 @@ public class IGVMenuBar extends JMenuBar {
 
         boolean hasImportedGenomes = true;
         try {
-            hasImportedGenomes = !IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList().isEmpty();
+            hasImportedGenomes = !igv.getGenomeManager().getUserDefinedGenomeArchiveList().isEmpty();
         } catch (IOException iOException) {
             // Ignore
         }
@@ -202,7 +192,7 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Save Image ...", null, KeyEvent.VK_A) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().saveImage(IGV.getInstance().getMainPanel());
+                        igv.saveImage(igv.getMainPanel());
 
                     }
                 };
@@ -214,7 +204,7 @@ public class IGVMenuBar extends JMenuBar {
         // batch script
         menuItems.add(new JSeparator());
 
-        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, IGV.getInstance());
+        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, igv);
 
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -222,10 +212,10 @@ public class IGVMenuBar extends JMenuBar {
 
         menuItems.add(new JSeparator());
 
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGV.getInstance()) {
+        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IgvToolsGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId());
+                IgvToolsGui.launch(false, igv.getGenomeManager().getGenomeId());
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -248,15 +238,15 @@ public class IGVMenuBar extends JMenuBar {
 
         // Empty the recent sessions list before we start to do
         // anything with it
-        IGV.getInstance().getRecentSessionList().clear();
+        igv.getRecentSessionList().clear();
 
         // Retrieve the stored session paths
         String recentSessions = PreferenceManager.getInstance().getRecentSessions();
         if (recentSessions != null) {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
-                if (!IGV.getInstance().getRecentSessionList().contains(sessionPath)) {
-                    IGV.getInstance().getRecentSessionList().add(sessionPath);
+                if (!igv.getRecentSessionList().contains(sessionPath)) {
+                    igv.getRecentSessionList().add(sessionPath);
                 }
 
             }

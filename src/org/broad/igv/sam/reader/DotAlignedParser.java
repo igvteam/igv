@@ -23,6 +23,7 @@
 package org.broad.igv.sam.reader;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.sam.DotAlignedAlignment;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -35,13 +36,12 @@ import java.io.IOException;
 public class DotAlignedParser implements AlignmentParser {
 
     private static Logger log = Logger.getLogger(GeraldParser.class);
- 
+
     public static int CHROMOSOME_COLUMN = 0;
     private static int START_COLUMN = 1;
     private static int END_COLUMN = 2;
     private static int STRAND_COLUMN = 3;
     private static int NAME_COLUMN = -1;
-    private String[] fields = new String[20];
     boolean bedFormat = false;
 
     public DotAlignedParser() {
@@ -75,8 +75,10 @@ public class DotAlignedParser implements AlignmentParser {
 
 
         try {
-            int nTokens = ParsingUtils.split(nextLine, fields, '\t');
-            if(nTokens <= END_COLUMN)  {
+            String[] fields = Globals.tabPattern.split(nextLine);
+            int nTokens = fields.length;
+
+            if (nTokens <= END_COLUMN) {
                 System.out.println("Skipping line: " + nextLine);
                 return null;
             }

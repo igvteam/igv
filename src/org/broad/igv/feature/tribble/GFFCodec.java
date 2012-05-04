@@ -12,6 +12,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
@@ -66,11 +67,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
 
 
     FeatureFileHeader header;
-
     Helper helper;
-
-    String[] tokens = new String[10];
-
     Genome genome;
 
     public GFFCodec(Genome genome) {
@@ -155,13 +152,12 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             helper = new GFF3Helper();
         }
 
-
         if (line.startsWith("#")) {
             return null;
         }
 
-
-        int nTokens = ParsingUtils.split(line, tokens, '\t');
+        String[] tokens = Globals.tabPattern.split(line);
+        int nTokens = tokens.length;
 
         // GFF files have 9 tokens
         if (nTokens < 9) {

@@ -206,20 +206,6 @@ public class ParsingUtils {
     }
 
     /**
-     * Helper to call through to Tribble ParsingUtils
-     *
-     * @param aString the string to split
-     * @param tokens  an array to hold the parsed tokens
-     * @param delim   character that delimits tokens
-     * @return the number of tokens parsed
-     * @see org.broad.tribble.util.ParsingUtils
-     */
-
-    public static int split(String aString, String[] tokens, char delim) {
-        return org.broad.tribble.util.ParsingUtils.split(aString, tokens, delim);
-    }
-
-    /**
      * Method description
      *
      * @param file

@@ -188,7 +188,7 @@ public class GFFParser implements FeatureParser {
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
         List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
-        int lineNumber=0;
+        int lineNumber = 0;
         try {
 
             if (IGV.hasInstance() && genome == null) {
@@ -353,7 +353,7 @@ public class GFFParser implements FeatureParser {
                         if (featureType.equals("gene")) {
                             geneCache.put(id, f);
                             if (featuresToHide.contains(featureType)) {
-                               if (IGV.hasInstance()) FeatureDB.addFeature(f);
+                                if (IGV.hasInstance()) FeatureDB.addFeature(f);
                             } else {
                                 features.add(f);
                             }
@@ -400,7 +400,6 @@ public class GFFParser implements FeatureParser {
     }
 
 
-
     private Strand convertStrand(String strandString) {
         Strand strand = Strand.NONE;
         if (strandString.equals("-")) {
@@ -440,12 +439,11 @@ public class GFFParser implements FeatureParser {
         String ext = "." + gffFile.substring(gffFile.length() - 4);
 
         Map<String, PrintWriter> writers = new HashMap();
-        String[] tokens = new String[20];
 
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {
-                int nTokens = ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
 
                 // GFF files have 9 columns
                 String type = tokens[2];
@@ -465,14 +463,13 @@ public class GFFParser implements FeatureParser {
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (nextLine.startsWith("#")) {
-                ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
-
                 // GFF files have 9 columns
                 for (PrintWriter pw : writers.values()) {
                     pw.println(nextLine);
                 }
             } else {
-                int nTokens = ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
+                int nTokens = tokens.length;
                 String type = tokens[2];
                 if (geneParts.contains(type)) {
                     type = "gene";
