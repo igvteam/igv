@@ -214,9 +214,6 @@ public class TrackLoader {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
                 loadGobyCountsArchive(locator, newTracks, genome);
-            } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
-                    typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
-                loadPslFile(locator, newTracks, genome);
             } else if (GFFParser.isGFF(locator.getPath())) {
                 loadGFFfile(locator, newTracks, genome);
             } else if (AbstractFeatureParser.canParse(locator.getPath())) {
@@ -379,25 +376,6 @@ public class TrackLoader {
         newTracks.addAll(parser.loadTracks(locator, genome));
     }
 
-    /**
-     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
-     *
-     * @param locator
-     * @param newTracks
-     */
-    private void loadPslFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        PSLParser featureParser = new PSLParser();
-        List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
-        newTracks.addAll(tracks);
-        for (FeatureTrack t : tracks) {
-            t.setMinimumHeight(10);
-            t.setHeight(30);
-            t.setDisplayMode(Track.DisplayMode.EXPANDED);
-
-        }
-
-    }
 
     /**
      * Load the input file as a feature, mutation, or maf (multiple alignment) file.

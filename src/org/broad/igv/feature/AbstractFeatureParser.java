@@ -45,6 +45,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
     private static Logger log = Logger.getLogger(IGV.class);
     protected int startBase = 0;
+    boolean gffTags = false;
 
     /* An object to collection track properties, if specified in the feature file. */
     protected TrackProperties trackProperties = null;
@@ -79,7 +80,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         return CodecFactory.getCodec(tmp, genome);
     }
 
-    boolean gffTags = false;
 
 
     /**

@@ -37,7 +37,7 @@ import java.io.IOException;
  */
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
-     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;
     protected boolean spliceJunctions;
 
@@ -61,9 +61,13 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     public Object readHeader(LineReader reader) {
         String line;
         try {
-            while ((line = reader.readLine()) != null && (line.startsWith("#") || line.startsWith("track")) ||
-                    line.startsWith("browser")) {
-                readHeaderLine(line);
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#") || line.startsWith("track") ||
+                        line.startsWith("browser")) {
+                    readHeaderLine(line);
+                } else {
+                    break;
+                }
             }
             return header;
         } catch (IOException e) {
