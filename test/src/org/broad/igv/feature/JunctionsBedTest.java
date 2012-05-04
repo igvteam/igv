@@ -33,7 +33,7 @@ public class JunctionsBedTest {
 
 
     /**
-     * Purpose of this test is to insure that a cufllinks "junctions.bed" file is parsed as a junction file, as
+     * Purpose of this test is to insure that a cufflinks "junctions.bed" file is parsed as a junction file, as
      * opposed to a plain bed file.
      *
      * @throws Exception

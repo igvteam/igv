@@ -2384,6 +2384,9 @@ public class IGV {
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
+                    if (igvArgs.getLocusString() != null) {
+                        goToLocus(igvArgs.getLocusString());
+                    }
                     if (igvArgs.getBatchFile() != null) {
                         LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
                     }
