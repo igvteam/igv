@@ -24,7 +24,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -98,11 +97,8 @@ public class TestUtils {
      * @throws IOException
      */
     public static IGV startGUI(String genomeFile) throws IOException {
-        boolean headless = checkHeadlessEnvironment();
-        if (headless) {
-            System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
-        }
-        org.junit.Assume.assumeTrue(!headless);
+        assumeNotHeadless();
+
         setUpTestEnvironment();
         Globals.setHeadless(false);
         IGV igv;
@@ -136,9 +132,13 @@ public class TestUtils {
         igv.doRestoreSession(sessionPath, null, false);
     }
 
-    public static boolean checkHeadlessEnvironment() {
+    public static void assumeNotHeadless() {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        return ge.isHeadless();
+        boolean headless = ge.isHeadless();
+        if (headless) {
+            System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
+        }
+        org.junit.Assume.assumeTrue(!headless);
     }
 
     /**

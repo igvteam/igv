@@ -11,6 +11,7 @@
 
 package org.broad.igv.util;
 
+import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
@@ -19,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.*;
-import java.util.regex.Pattern;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -75,12 +75,25 @@ public class ParsingUtilsTest {
         String blankColumnLine = "a\tb\t\td\t";
         String[] tokens = Globals.tabPattern.split(blankColumnLine);
         int nTokens = tokens.length;
-        assertEquals(5, nTokens);
+        assertEquals(4, nTokens);
         assertEquals("a", tokens[0]);
         assertEquals("b", tokens[1]);
         assertEquals("", tokens[2]);
         assertEquals("d", tokens[3]);
-        assertEquals("", tokens[2]);
+    }
+
+    @Test
+    public void testSplit3() {
+        String blankColumnLine = "\ta\t\tb\t\t\td\t";
+        String[] tokens = Globals.tabPattern.split(blankColumnLine);
+        int nTokens = tokens.length;
+        String[] expTokens = new String[]{"", "a", "", "b", "", "", "d"};
+        assertEquals(expTokens.length, nTokens);
+        int ii = 0;
+        for (String exp : expTokens) {
+            Assert.assertEquals(exp, tokens[ii]);
+            ii++;
+        }
     }
 
 
