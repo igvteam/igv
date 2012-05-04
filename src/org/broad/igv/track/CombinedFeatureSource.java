@@ -55,11 +55,18 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         this.operation = operation;
     }
 
-    private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream){
+    /**
+     * Stream will be closed after data written
+     *
+     * @param features
+     * @param outputStream
+     * @return
+     */
+    private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream) {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
         IGVBEDCodec codec = new IGVBEDCodec();
         int numLines = 0;
-        while(features.hasNext()){
+        while (features.hasNext()) {
             String data = codec.encode(features.next());
             writer.println(data);
             numLines++;
@@ -90,9 +97,9 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         //Write data to bedtools
         int numA = writeFeaturesToStream(iterA, pr.getOutputStream());
 
-        try{
+        try {
             pr.waitFor();
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
             throw new IOException(e);
         }
@@ -108,10 +115,10 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         String line;
         Feature feat;
         while ((line = in.readLine()) != null) {
-            if(operation == Operation.WINDOW){
+            if (operation == Operation.WINDOW) {
                 String[] closest = splitDualFeatures(line, 3)[1];
                 feat = codec.decode(closest);
-            }else{
+            } else {
                 feat = codec.decode(line);
             }
             featuresList.add(feat);
@@ -137,25 +144,25 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
      * Certain bedtools commands output features side by side
      * e.g.
      * chr1 5   10  chr1    8   20
-     *
+     * <p/>
      * might be one line, the first 3 columns representing data from file A
      * and the second 3 representing data from file B
+     *
      * @param input
      * @param colsPerFeat Number of columns each feature should have.
      *                    input must have >= 2x this number. Extra columns
      *                    are ignored.
-     * @return
-     *  A 2-D string array. First index is length 2, second is the number of
-     *  columns each feature has. out[0] is the first feature, out[1] is the second
+     * @return A 2-D string array. First index is length 2, second is the number of
+     *         columns each feature has. out[0] is the first feature, out[1] is the second
      */
-    private String[][] splitDualFeatures(String input, int colsPerFeat){
+    private String[][] splitDualFeatures(String input, int colsPerFeat) {
         String[] tokens = Globals.singleTabMultiSpacePattern.split(input);
 
-        assert tokens.length == colsPerFeat*2;
+        assert tokens.length == colsPerFeat * 2;
 
         String[] feat1 = new String[colsPerFeat];
         String[] feat2 = new String[colsPerFeat];
-        for(int cc=0; cc < colsPerFeat; cc++){
+        for (int cc = 0; cc < colsPerFeat; cc++) {
             feat1[cc] = tokens[cc];
             feat2[cc] = tokens[cc + colsPerFeat];
         }
@@ -173,13 +180,13 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
      * @param input
      * @return
      */
-    private String[] convertBedToolsOutToBed(String[] input){
-        if(input.length < 3){
+    private String[] convertBedToolsOutToBed(String[] input) {
+        if (input.length < 3) {
             throw new IllegalArgumentException("Input array has only " + input.length + " columns, need at least 3");
         }
 
         //No score data
-        if(input.length == 3){
+        if (input.length == 3) {
             return input;
         }
 

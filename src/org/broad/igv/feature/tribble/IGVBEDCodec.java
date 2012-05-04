@@ -254,7 +254,7 @@ public class IGVBEDCodec extends UCSCCodec {
      * Encode a feature as a BED string.
      *
      * @param feature - feature to encode
-     * @return the encodec string
+     * @return the encoded string
      */
     public String encode(Feature feature) {
 

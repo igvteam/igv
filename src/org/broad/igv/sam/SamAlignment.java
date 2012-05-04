@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -33,7 +26,8 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -85,27 +79,26 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * Converts a DNA integer value to its reverse compliment integer value.
      */
     protected static final char NT2COMP[] = {
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'T', 'N', 'G',  'N', 'N', 'N', 'C',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'A', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'T', 'N', 'G',  'N', 'N', 'N', 'C',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'A', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',
-        'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N',  'N', 'N', 'N', 'N'
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'T', 'N', 'G', 'N', 'N', 'N', 'C', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'A', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'T', 'N', 'G', 'N', 'N', 'N', 'C', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'A', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
+            'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
     };
 
     // Default constructor to support unit tests
-    SamAlignment() {
-    }
+    //SamAlignment() {}
 
 
     public SamAlignment(SAMRecord record) {
@@ -286,7 +279,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 int i;
                 this.incorporations = new boolean[this.flowSignals.length];
                 // go to the end of the signals
-                for (i=readBases.length-1;0<=i;i--) {
+                for (i = readBases.length - 1; 0 <= i; i--) {
                     while (this.flowOrder.charAt(this.flowOrderIndex) != NT2COMP[readBases[i]]) {
                         this.flowOrderIndex++;
                         this.flowSignalsIndex++;
@@ -376,7 +369,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         }
                     } else {
                         for (j = this.prevFlowSignalsStart; j <= this.prevFlowSignalsEnd; j++) {
-                            blockFlowSignals[idx][0][j-this.prevFlowSignalsStart] = this.flowSignals[j];
+                            blockFlowSignals[idx][0][j - this.prevFlowSignalsStart] = this.flowSignals[j];
                         }
                     }
                 } else {
@@ -394,7 +387,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         }
                     } else {
                         for (j = nextFlowSignalsStart; j <= nextFlowSignalsEnd; j++) {
-                            blockFlowSignals[idx][2][j-nextFlowSignalsStart] = this.flowSignals[j];
+                            blockFlowSignals[idx][2][j - nextFlowSignalsStart] = this.flowSignals[j];
                         }
                     }
                 } else {
@@ -407,7 +400,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 idx++; // next base
             }
             return blockFlowSignals;
-        } 
+        }
     }
 
     /**
@@ -418,7 +411,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @param readBases
      * @param readBaseQualities
      */
-    void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
+    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
         createAlignmentBlocks(cigarString, readBases, readBaseQualities, null, null, -1);
     }
 
@@ -429,12 +422,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @param cigarString
      * @param readBases
      * @param readBaseQualities
-     * @param flowSignals from the FZ tag, null if not present
-     * @param flowOrder from the RG.FO header tag, null if not present
+     * @param flowSignals       from the FZ tag, null if not present
+     * @param flowOrder         from the RG.FO header tag, null if not present
      * @param flowOrderStart
      */
-    void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
-            short[] flowSignals, String flowOrder, int flowOrderStart) {
+    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
+                                       short[] flowSignals, String flowOrder, int flowOrderStart) {
 
         boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
 
@@ -547,7 +540,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     } else {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
-                    
+
                     if (null != fBlockHelper) {
                         blockFlowSignals = fBlockHelper.createBlockFlowSignals(readBases, fromIdx, op.nBases);
                         block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, blockFlowSignals, this);
@@ -592,7 +585,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     } else {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
-                    
+
                     if (null != fBlockHelper) {
                         blockFlowSignals = fBlockHelper.createBlockFlowSignals(readBases, fromIdx, op.nBases);
                         block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, blockFlowSignals, this);
@@ -723,6 +716,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return library;
     }
 
+    public SAMRecord getRecord() {
+        return this.record;
+    }
+
     @Override
     public String toString() {
         return record.getSAMString();
@@ -785,7 +782,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
                 buf.append("<br>" + tag.tag + " = ");
-                
+
                 if (tag.value.getClass().isArray()) { // ignore array types
                     buf.append("[not shown]<br>");
                     continue;
@@ -899,22 +896,20 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         Object attribute = record.getAttribute("ZF"); // NB: from a TMAP optional tag
         if (null == attribute) {
             return -1;
-        }
-        else {
-            return (Integer)attribute;
+        } else {
+            return (Integer) attribute;
         }
     }
 
-   /**
-     * @param record the SAM record
-     * @param flowOrder the flow order corresponding to this read
+    /**
+     * @param record      the SAM record
+     * @param flowOrder   the flow order corresponding to this read
      * @param keySequence sequence the key sequence corresponding to this read
      * @return the flow signals in 100x format (SFF), only if they exist (FZ tag),
-     * if the key sequence and flow order are found in the read group header tag 
-     * (RG.KS and RG.FO).  Note: the array proceeds in the sequencing direction. 
+     *         if the key sequence and flow order are found in the read group header tag
+     *         (RG.KS and RG.FO).  Note: the array proceeds in the sequencing direction.
      */
-    public short[] getFlowSignals(SAMRecord record, String flowOrder, String keySequence)
-    {
+    public short[] getFlowSignals(SAMRecord record, String flowOrder, String keySequence) {
         short[] r = null;
         int i;
         int startFlow, keySignalOverlap;
@@ -931,48 +926,42 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         // get the # of bases that the first base in the read overlaps with the last base(s) in the key
         if (this.readNegativeStrandFlag) {
-            firstBase = (char)NT2COMP[record.getReadBases()[record.getReadLength()-1]];
-        }
-        else {
-            firstBase = (char)record.getReadBases()[0];
+            firstBase = (char) NT2COMP[record.getReadBases()[record.getReadLength() - 1]];
+        } else {
+            firstBase = (char) record.getReadBases()[0];
         }
         keySignalOverlap = 0;
-        for (i=keySequence.length()-1; 0<=i && keySequence.charAt(i) == firstBase; i--) { 
+        for (i = keySequence.length() - 1; 0 <= i && keySequence.charAt(i) == firstBase; i--) {
             keySignalOverlap += 100;
         }
 
         Object attribute = record.getAttribute("FZ");
         if (null == attribute) {
             return null;
-        }
-        else if (attribute instanceof short[]) {
-            short[] signals = (short[])attribute;
-            r = new short[signals.length-startFlow];
-            for (i=startFlow;i<signals.length;i++) {
-                r[i-startFlow] = signals[i];
+        } else if (attribute instanceof short[]) {
+            short[] signals = (short[]) attribute;
+            r = new short[signals.length - startFlow];
+            for (i = startFlow; i < signals.length; i++) {
+                r[i - startFlow] = signals[i];
             }
-        }
-        else if (attribute instanceof int[]) {
+        } else if (attribute instanceof int[]) {
             int[] signals = (int[]) attribute;
-            r = new short[signals.length-startFlow];
+            r = new short[signals.length - startFlow];
             System.arraycopy(signals, startFlow, r, 0, r.length);
-        }
-        else if (attribute instanceof byte[]) {
-            byte[] signals = (byte[])attribute;
-            r = new short[signals.length-startFlow];
-            for (i=startFlow;i<signals.length;i++) {
-                r[i-startFlow] = signals[i];
+        } else if (attribute instanceof byte[]) {
+            byte[] signals = (byte[]) attribute;
+            r = new short[signals.length - startFlow];
+            for (i = startFlow; i < signals.length; i++) {
+                r[i - startFlow] = signals[i];
             }
-        }
-        else {
+        } else {
             return null;
         }
         // Subtract the key's contribution to the first base
         if (0 < keySignalOverlap && 0 < r.length) {
             if (r[0] <= keySignalOverlap) {
                 r[0] = 0;
-            }
-            else {
+            } else {
                 r[0] -= keySignalOverlap;
             }
         }

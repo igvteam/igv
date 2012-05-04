@@ -109,7 +109,7 @@ public class CombinedFeatureSourceTest {
 
     }
 
-    public List<Feature> tstOperation(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception{
+    public List<Feature> tstOperationBED(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
         String pathA = TestUtils.DATA_DIR + "bed/test.bed";
         String pathB = TestUtils.DATA_DIR + "bed/test2.bed";
         IgvTools igvTools = new IgvTools();
@@ -123,7 +123,7 @@ public class CombinedFeatureSourceTest {
         Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         List<Feature> featureList = new ArrayList(10);
 
-        while(features.hasNext()){
+        while (features.hasNext()) {
             featureList.add(features.next());
         }
         assertEquals("Unexpected number of features in result of " + operation, expectedNumFeatures, featureList.size());
@@ -131,7 +131,7 @@ public class CombinedFeatureSourceTest {
     }
 
     @Test
-    public void testOperations() throws Exception {
+    public void testOperationsBED() throws Exception {
         Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(4);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 4);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 2);
@@ -139,26 +139,26 @@ public class CombinedFeatureSourceTest {
         expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 9);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 3);
 
-        for(Map.Entry<CombinedFeatureSource.Operation, Integer> entry: expectedNumFeatures.entrySet()){
-            tstOperation(entry.getKey(), entry.getValue());
+        for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
+            tstOperationBED(entry.getKey(), entry.getValue());
         }
     }
 
     /**
      * Test to make sure we are parsing the 2nd files features
+     *
      * @throws Exception
      */
     @Test
-    public void testWindow() throws Exception{
-        List<Feature> features = tstOperation(CombinedFeatureSource.Operation.WINDOW, 9);
+    public void testWindow() throws Exception {
+        List<Feature> features = tstOperationBED(CombinedFeatureSource.Operation.WINDOW, 9);
 
         Set<Integer> startsSet = new HashSet<Integer>(Arrays.asList(100, 150, 175));
         Set<Integer> endsSet = new HashSet<Integer>(Arrays.asList(101, 201, 375));
-        for(Feature feat: features){
+        for (Feature feat : features) {
             assertTrue("Feature start not found in expected set", startsSet.contains(feat.getStart()));
             assertTrue("Feature end not found in expected set", endsSet.contains(feat.getEnd()));
         }
-
     }
 
 }
