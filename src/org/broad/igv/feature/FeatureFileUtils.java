@@ -19,11 +19,11 @@ package org.broad.igv.feature;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.tribble.Feature;
+
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * chromosome
@@ -46,13 +46,83 @@ import java.util.Set;
  */
 public class FeatureFileUtils {
 
+    /**
+     * Create a "canonical" gene file from an annotation UCSC refseq type annotation file.  The "canonical" file
+     * represents all the isoforms of a gene as a single feature containing the union of all exons from the
+     * splice forms for the gene.  This might or might not represent an actual transcript (although it usually does).
+     *
+     * @param iFile
+     * @param outputFile
+     */
+    static void createCanonicalGeneFile(String iFile, String outputFile) throws IOException {
 
-    public static void main(String[] args) throws IOException {
-        //String gffFile = "/Users/jrobinso/celegans/current.gff3";
-        //String outputDir = "/Users/jrobinso/celegans";
-        //splitGFFFileByType(gffFile, outputDir);
-        covertProbeMapToBedFile("/Users/jrobinso/IGV/TestData/expression/HG-U133_PLUS_2.mapping.txt",
-                "/Users/jrobinso/IGV/TestData/expression/HG-U133_PLUS_2.mapping.bed");
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = new BufferedReader(new FileReader(iFile));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(iFile, null);
+            List<Feature> features = parser.loadFeatures(br, null);
+            IGVBEDCodec codec = new IGVBEDCodec();
+
+
+            Map<String, List<BasicFeature>> genes = new HashMap<String, List<BasicFeature>>();
+            for (Feature f : features) {
+
+                BasicFeature transcript = (BasicFeature) f;
+                String geneName = transcript.getName();
+
+                List<BasicFeature> genelist = genes.get(geneName);
+                if (genelist == null) {
+                    genelist = new ArrayList<BasicFeature>();
+                    genes.put(geneName, genelist);
+                }
+
+                // Loop through genes with this name to find one that overlaps
+                boolean foundOverlap = false;
+                for (BasicFeature gene : genelist) {
+                    if (gene.overlaps(transcript)) {
+                        gene.setThickStart(Math.min(gene.getThickStart(), transcript.getThickStart()));
+                        gene.setThickEnd(Math.max(gene.getThickEnd(), transcript.getThickEnd()));
+                        mergeExons(gene, transcript.getExons());
+                        foundOverlap = true;
+                        break;
+                    }
+                }
+                if (!foundOverlap) {
+                    genelist.add(transcript);
+
+                }
+
+            }
+
+            for (List<BasicFeature> geneList : genes.values()) {
+                for (BasicFeature gene : geneList) {
+                    pw.println(codec.encode(gene));
+                }
+            }
+        } finally {
+            if (br != null) br.close();
+            if (pw != null) pw.close();
+        }
+
+
+    }
+
+
+    private static void mergeExons(BasicFeature gene, List<Exon> exons) {
+        Set<IExon> exonProxies = new HashSet<IExon>(gene.getExons());
+        for (Exon exon : gene.getExons()) {
+            exonProxies.add(Exon.getExonProxy(exon));
+        }
+        for (Exon exon : exons) {
+            IExon proxy = Exon.getExonProxy(exon);
+            if (!exonProxies.contains(proxy)) {
+                gene.addExon(exon);
+            }
+        }
+        FeatureUtils.sortFeatureList(gene.getExons());
     }
 
     static void covertProbeMapToBedFile(String probeMapFile, String bedFile) throws

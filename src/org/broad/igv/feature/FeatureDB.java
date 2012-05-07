@@ -23,6 +23,7 @@ import com.jidesoft.utils.SortedList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 
@@ -90,7 +91,7 @@ public class FeatureDB {
     public static boolean put(String name, NamedFeature feature) {
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
-            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
                 return false;
             }
