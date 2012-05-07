@@ -24,7 +24,7 @@ import org.broad.tribble.util.SeekableStream;
  * @author jrobinso
  * @date Jun 22, 2011
  */
-public class RPTreeNodeProxy implements RPTreeNode {
+public class RPTreeNodeProxy  {
 
     public SeekableStream fis;
     public long fileOffset;
@@ -40,35 +40,4 @@ public class RPTreeNodeProxy implements RPTreeNode {
         this.chromId = chromId;
     }
 
-    public boolean isLeaf() {
-        throw new UnsupportedOperationException("Not implemented -- this should never be called on a node proxy");
-    }
-
-    public RPChromosomeRegion getChromosomeBounds() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public int compareRegions(RPChromosomeRegion chromosomeRegion) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public int getItemCount() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public RPTreeNodeItem getItem(int index) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public boolean insertItem(RPTreeNodeItem item) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public boolean deleteItem(int index) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void printItems() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 }

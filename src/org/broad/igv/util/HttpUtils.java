@@ -71,6 +71,7 @@ public class HttpUtils {
         synchronized (HttpUtils.class) {
             org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
             instance = new HttpUtils();
+            instance.disableCertificateValidation();
             CookieHandler.setDefault(new CookieManager());
         }
     }
@@ -135,23 +136,29 @@ public class HttpUtils {
      */
     public static boolean testByteRange() {
 
+        log.info("Testing range-byte request");
         try {
-            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
-            byte[] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
-                    'T', 'T', 'T', 'A', 'G', 'T', 'A', 'G', 'A', 'G', 'T'};
+            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
+            byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
+                    'G', 'A', 'G', 'A', 'G', 'G'};
 
 
             SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
-            str.seek(161032764);
-            byte[] buffer = new byte[expectedBytes.length];
-            str.read(buffer, 0, expectedBytes.length);
+            str.seek(25350000);
+            byte[] buffer = new byte[80000];
+            str.read(buffer);
+
+//            for(int i=0; i<expectedBytes.length; i++) {
+//
+//            }
 
             for (int i = 0; i < expectedBytes.length; i++) {
                 if (buffer[i] != expectedBytes[i]) {
-                    log.info("Byte range test failed -- problem with client network environment.");
+                    log.info("Range-byte test failed -- problem with client network environment.");
                     return false;
                 }
             }
+            log.info("Range-byte request succeeded");
             return true;
         } catch (IOException e) {
             log.error("Error while testing byte range " + e.getMessage());
@@ -162,14 +169,9 @@ public class HttpUtils {
     }
 
 
+
     public static boolean useByteRange(URL url) {
 
-        // Get explicit user setting
-        boolean userByteRangeSetting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-        if (!userByteRangeSetting) {
-            // No means no!
-            return false;
-        }
 
         // We can test byte-range success for broad hosted data. We can't know if they work or not in other
         // environments (e.g. intranets)
@@ -178,11 +180,13 @@ public class HttpUtils {
             if (!byteRangeTested) {
                 byteRangeTestSuccess = testByteRange();
                 byteRangeTested = true;   // <= to prevent testing again
+
             }
             return byteRangeTestSuccess;
         } else {
             return true;
         }
+
 
     }
 
@@ -501,8 +505,8 @@ public class HttpUtils {
 
         // Install the all-trusting trust manager
         try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (NoSuchAlgorithmException e) {
         } catch (KeyManagementException e) {
@@ -578,7 +582,7 @@ public class HttpUtils {
 
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
-            //conn.setRequestProperty("Accept", "application/json,text/plain");
+            conn.setRequestProperty("Accept", "application/json,text/plain");
 
         }
 

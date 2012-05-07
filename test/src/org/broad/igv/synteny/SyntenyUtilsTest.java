@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.synteny;
@@ -21,6 +14,7 @@ package org.broad.igv.synteny;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,10 +27,10 @@ import static org.junit.Assert.assertNotNull;
  */
 public class SyntenyUtilsTest {
 
-    String testMappings = TestUtils.DATA_DIR + "/igv/hg18_to_mm8.regions";
+    String testMappings = TestUtils.DATA_DIR + "igv/hg18_to_mm8.regions";
 
     @Test
-    public void testLoadMappings() {
+    public void testLoadMappings() throws IOException {
 
         //region R:chr2:chr2:D10 chr2 139839284 176464687 + chr2 39414197 74293149 +
 
@@ -47,8 +41,9 @@ public class SyntenyUtilsTest {
         String mouseChr = "chr2";
         int mousePosition = 39414197;
 
-        Map<String, List<SyntenyMapping>> mappings = SyntenyUtils.loadMappings(testMappings, false);
-        SyntenyMapping mapping = SyntenyUtils.getMappingContaining(mappings.get(humanChr), humanPosition);
+
+        Map<String, List<Mapping>> mappings = SyntenyUtils.loadMappings(testMappings, false);
+        Mapping mapping = SyntenyUtils.getMappingContaining(mappings.get(humanChr), humanPosition);
         assertNotNull(mapping);
 
         double toPosition = mapping.mapPosition(humanPosition);

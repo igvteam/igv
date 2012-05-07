@@ -19,9 +19,9 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -140,5 +140,46 @@ public class CompressionUtils {
         byte[] compressedData = bos.toByteArray();
         return compressedData;
 
+    }
+
+    /**
+     * Copy data from srcPath to destPath, ungzipping if necessary.
+     * destPath is overwritten if it exists
+     *
+     * @param srcPath
+     * @param destPath If null, strip gz from inputFile
+     * @return Where the ungipped file was written to. If destPath != null,
+     *         this will be destPath.
+     */
+    public static String ungzipFile(String srcPath, String destPath) throws IOException {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        if (destPath == null) {
+            if (srcPath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                destPath = srcPath.substring(0, srcPath.length() - Globals.GZIP_FILE_EXTENSION.length());
+            } else {
+                throw new IllegalArgumentException(srcPath + " does not have a gzip extension and destPath is null. Don't know where to write out");
+            }
+        }
+        try {
+            inputStream = ParsingUtils.openInputStream(srcPath);
+            outputStream = new FileOutputStream(destPath, false);
+            int buffersize = 4096;
+            byte[] buffer = new byte[buffersize];
+
+            int len = inputStream.read(buffer);
+            while (len > 0) {
+                outputStream.write(buffer, 0, len);
+                len = inputStream.read(buffer);
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        } finally {
+            if (inputStream != null) inputStream.close();
+            if (outputStream != null) outputStream.close();
+        }
+        return destPath;
     }
 }

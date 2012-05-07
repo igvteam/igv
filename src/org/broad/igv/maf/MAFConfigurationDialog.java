@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * NOTE: This is hardcoded for the human 44-way files!  Generalize for release 2.2.
  * @author jrobinso
  */
 public class MAFConfigurationDialog extends javax.swing.JDialog {

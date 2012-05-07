@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -52,6 +45,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
     private static Logger log = Logger.getLogger(IGV.class);
     protected int startBase = 0;
+    boolean gffTags = false;
 
     /* An object to collection track properties, if specified in the feature file. */
     protected TrackProperties trackProperties = null;
@@ -86,7 +80,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         return CodecFactory.getCodec(tmp, genome);
     }
 
-    boolean gffTags = false;
 
 
     /**
@@ -190,7 +183,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param reader
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
         return loadFeatures(reader, -1);
     }
 
@@ -273,16 +266,11 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             }
         }
 
-        //parsingComplete(features);
-        if (IGV.hasInstance() || Globals.isTesting()) {
+        // TODO -- why is this test here?  This will break igvtools processing of expression files
+        //if (IGV.hasInstance() || Globals.isTesting()) {
             FeatureDB.addFeatures(features);
-        }
+        //}
         return features;
-    }
-
-    protected void parsingComplete(List<Feature> features) {
-
-        // Default -- do nothing.
     }
 
     abstract protected Feature parseLine(String nextLine);

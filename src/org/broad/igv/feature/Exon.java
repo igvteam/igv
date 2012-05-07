@@ -1,27 +1,23 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
-
 
 package org.broad.igv.feature;
 
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -31,7 +27,7 @@ import org.broad.igv.track.WindowFunction;
  *
  * @author jrobinso
  */
-public class Exon extends AbstractFeature {
+public class Exon extends AbstractFeature implements IExon {
 
     /**
      * The index of the exon relative to the start codon.  The exon with the start
@@ -46,12 +42,11 @@ public class Exon extends AbstractFeature {
     private int codingStart;
     private int codingEnd;
     private AminoAcidSequence aminoAcidSequence;
-    boolean utr = false;
+    private boolean utr = false;
 
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
     // to either the beginning or end of the exon, depending on the strand
     private int mrnaBase = -1;
-
 
     public void setMrnaBase(int base) {
         this.mrnaBase = base;
@@ -207,6 +202,67 @@ public class Exon extends AbstractFeature {
 
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public static IExon getExonProxy(IExon exon) {
+        InvocationHandler handler = new ExonLocHandler(exon);
+        IExon eProx = (IExon) Proxy.newProxyInstance(IExon.class.getClassLoader(),
+                new Class[]{IExon.class},
+                handler);
+        return eProx;
+    }
+
+    private static class ExonLocHandler implements InvocationHandler {
+
+        private IExon parent;
+        private int hashCode = 0;
+
+        public ExonLocHandler(IExon parent) {
+            this.parent = parent;
+        }
+
+        private boolean equals(IExon parent, Object inother) {
+            if (inother == null || !(inother instanceof IExon)) {
+                return false;
+            }
+            IExon other = (IExon) inother;
+            boolean eq = parent.getChr().equals(other.getChr());
+            eq &= parent.getStart() == other.getStart();
+            eq &= parent.getEnd() == other.getEnd();
+            eq &= parent.getCdStart() == other.getCdStart();
+            eq &= parent.getCdEnd() == other.getCdEnd();
+            eq &= parent.getStrand() == other.getStrand();
+            return eq;
+        }
+
+        private int hashCode(IExon parent) {
+            if (hashCode != 0) {
+                return hashCode;
+            }
+
+            String conc = parent.getChr() + parent.getStrand().toString() + parent.getStart();
+            conc += parent.getEnd();
+            conc += parent.getCdStart();
+            conc += parent.getCdEnd();
+            int hc = conc.hashCode();
+
+            if (hc == 0) {
+                hc = 1;
+            }
+            hashCode = hc;
+            return hc;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("hashCode")) {
+                return hashCode(parent);
+            } else if (method.getName().equals("equals")) {
+                return equals(parent, args[0]);
+            } else {
+                return method.invoke(parent, args);
+            }
+        }
     }
 
 }

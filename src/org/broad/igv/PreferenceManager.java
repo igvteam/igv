@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -29,7 +22,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.PropertyManager;
@@ -41,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-
-import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
 /**
  * Manages user preferences.
@@ -83,8 +73,10 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SHOW_DUPLICATES = "SAM.SHOW_DUPLICATES";
     public static final String SAM_SHOW_SOFT_CLIPPED = "SAM.SHOW_SOFT_CLIPPED";
     public static final String SAM_FLAG_UNMAPPED_PAIR = "SAM.FLAG_UNMAPPED_PAIR";
-    public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS";
-    public static final String SAM_MAX_READS = "SAM.MAX_READS";
+    public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS"; // Sampling count
+    public static final String SAM_SAMPLING_WINDOW = "SAM.SAMPLING_WINDOW";
+    public static final String SAM_DOWNSAMPLE_READS = "SAM.DOWNSAMPLE_READS";
+
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
@@ -106,6 +98,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String PORT_NUMBER = "PORT_NUMBER";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     final public static String FRAME_BOUNDS_KEY = "IGV.Bounds";
+    final public static String FRAME_STATE_KEY = "IGV.Frame.ExtendedState";
     final public static String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
     final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
@@ -123,6 +116,8 @@ public class PreferenceManager implements PropertyManager {
     final static public String LAST_SESSION_DIRECTORY = "LAST_SESSION_DIRECTORY";
     final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
     final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
+
+    final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
     final public static String MUTATION_MISSENSE_COLOR_KEY = "MUTATION_MISSENSE_COLOR_KEY";
     final public static String MUTATION_NONSENSE_COLOR_KEY = "MUTATION_NONSENSE_COLOR_KEY";
@@ -161,8 +156,6 @@ public class PreferenceManager implements PropertyManager {
 
     final public static String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
-    final public static String USE_BYTE_RANGE = "UseHttpByteRange";
-
     public static final String FLANKING_REGION = "FLAKING_REGIONS";
 
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
@@ -179,6 +172,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
     final public static String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
     final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
+    final public static String GWAS_SHOW_AXIS = "GWAS_SHOW_AXIS";
 
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
     public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
@@ -193,12 +187,18 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
 
+    public static final String CBIO_MUTATION_THRESHOLD = "CBIO_MUTATION_THRESHOLD";
+    public static final String CBIO_AMPLIFICATION_THRESHOLD = "CBIO_AMPLIFICATION_THRESHOLD";
+    public static final String CBIO_DELETION_THRESHOLD = "CBIO_DELETION_THRESHOLD";
+    public static final String CBIO_EXPRESSION_UP_THRESHOLD = "CBIO_EXPRESSION_UP_THRESHOLD";
+    public static final String CBIO_EXPRESSION_DOWN_THRESHOLD = "CBIO_EXPRESSION_DOWN_THRESHOLD";
+
 
     public static final String DB_ENABLED = "DB_ENABLED";
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
-    final public static String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
+    final public static String DEFAULT_GENOME_URL = "http://www.broadinstitute.org/igv/projects/genomes/genomes.txt";
     final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
 
@@ -356,7 +356,6 @@ public class PreferenceManager implements PropertyManager {
         booleanCache.clear();
         objectCache.clear();
     }
-
 
     public void put(String key, String value) {
         preferences.put(key, value);
@@ -538,7 +537,7 @@ public class PreferenceManager implements PropertyManager {
 
         File directory = null;
 
-        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, Globals.getUserDirectory().getAbsolutePath());
+        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             directory = new File(lastFilePath);
@@ -562,7 +561,7 @@ public class PreferenceManager implements PropertyManager {
 
         File genomeImportDirectory = null;
 
-        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, Globals.getUserDirectory().getAbsolutePath());
+        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             genomeImportDirectory = new File(lastFilePath);
@@ -625,6 +624,7 @@ public class PreferenceManager implements PropertyManager {
      */
     public void overrideDataServerURL(String url) {
         preferences.putOverride(DATA_SERVER_URL_KEY, url);
+        clearCaches();
     }
 
     /**
@@ -636,6 +636,7 @@ public class PreferenceManager implements PropertyManager {
      */
     public void override(String key, String value) {
         preferences.putOverride(key, value);
+        clearCaches();
     }
 
     public void loadOverrides(String overridePropertyFilePath) {
@@ -757,7 +758,7 @@ public class PreferenceManager implements PropertyManager {
                 return cs;
 
             case DNA_METHYLATION:
-                cs = new ContinuousColorScale(0.0, 1, Color.lightGray, Color.RED.darker());
+                cs = new ContinuousColorScale(0, 1, new Color(0, 150, 0), Color.RED);
                 cs.setNoDataColor(Color.WHITE);
                 return cs;
 
@@ -780,34 +781,20 @@ public class PreferenceManager implements PropertyManager {
      * Original labels:  Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown
      * Nico's labels:   Synonymous, Missense, Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
      */
-    public void setMutationColorScheme(ColorTable colorScheme) {
+    public void resetMutationColorScheme() {
 
-        String indel = getcommaSeparatedRGBString(colorScheme.get("Indel"));
-        String missense = getcommaSeparatedRGBString(colorScheme.get("Missense"));
-        String nonsense = getcommaSeparatedRGBString(colorScheme.get("Nonsense"));
-        String spliceSite = getcommaSeparatedRGBString(colorScheme.get("Splice_site"));
-        String synonymous = getcommaSeparatedRGBString(colorScheme.get("Synonymous"));
-        String targetedRegion = getcommaSeparatedRGBString(colorScheme.get("Targeted_Region"));
-        String unknown = getcommaSeparatedRGBString(colorScheme.get("Unknown"));
-
-        // nico
-        String truncating = getcommaSeparatedRGBString(colorScheme.get("Truncating"));
-        String nonCodingTranscript = getcommaSeparatedRGBString(colorScheme.get("Non-coding_Transcript"));
-        String otherAAChanging = getcommaSeparatedRGBString(colorScheme.get("Other_AA_changing"));
-        String otherLikelyNeutral = getcommaSeparatedRGBString(colorScheme.get("Other_likely_neutral"));
-
-        put(MUTATION_INDEL_COLOR_KEY, indel);
-        put(MUTATION_MISSENSE_COLOR_KEY, missense);
-        put(MUTATION_NONSENSE_COLOR_KEY, nonsense);
-        put(MUTATION_SPLICE_SITE_COLOR_KEY, spliceSite);
-        put(MUTATION_SYNONYMOUS_COLOR_KEY, synonymous);
-        put(MUTATION_TARGETED_REGION_COLOR_KEY, targetedRegion);
-        put(MUTATION_UNKNOWN_COLOR_KEY, unknown);
-
-        put("MUTATION_Truncating_COLOR", truncating);
-        put("MUTATION_Non-coding_Transcript_COLOR", nonCodingTranscript);
-        put("MUTATION_Other_AA_changing_COLOR", otherAAChanging);
-        put("MUTATION_Other_likely_neutral_COLOR", otherLikelyNeutral);
+        remove(MUTATION_INDEL_COLOR_KEY);
+        remove(MUTATION_MISSENSE_COLOR_KEY);
+        remove(MUTATION_NONSENSE_COLOR_KEY);
+        remove(MUTATION_SPLICE_SITE_COLOR_KEY);
+        remove(MUTATION_SYNONYMOUS_COLOR_KEY);
+        remove(MUTATION_TARGETED_REGION_COLOR_KEY);
+        remove(MUTATION_UNKNOWN_COLOR_KEY);
+        remove("MUTATION_Truncating_COLOR");
+        remove("MUTATION_Non-coding_Transcript_COLOR");
+        remove("MUTATION_Other_AA_changing_COLOR");
+        remove("MUTATION_Other_likely_neutral_COLOR");
+        remove(MUTATION_COLOR_TABLE);
     }
 
     /**
@@ -818,6 +805,17 @@ public class PreferenceManager implements PropertyManager {
      */
     public PaletteColorTable getMutationColorScheme() {
 
+        String colorTableString = get(MUTATION_COLOR_TABLE);
+        if (colorTableString != null) {
+            PaletteColorTable pallete = new PaletteColorTable();
+            pallete.restoreMapFromString(colorTableString);
+            return pallete;
+        } else {
+            return getLegacyMutationColorScheme();
+        }
+    }
+
+    private PaletteColorTable getLegacyMutationColorScheme() {
         String indelColor = get(MUTATION_INDEL_COLOR_KEY);
         String missenseColor = get(MUTATION_MISSENSE_COLOR_KEY);
         String nonsenseColor = get(MUTATION_NONSENSE_COLOR_KEY);
@@ -905,7 +903,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SHOW_REGION_BARS, "false");
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");
-        defaultValues.put(USE_BYTE_RANGE, "true");
+
         defaultValues.put(OVERLAY_MUTATION_TRACKS, "true");
         defaultValues.put(SHOW_ORPHANED_MUTATIONS, "true");
         defaultValues.put(COLOR_MUTATIONS, "false");
@@ -939,8 +937,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHADE_BASES, ShadeBasesOption.QUALITY.toString());
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
+        defaultValues.put(SAM_DOWNSAMPLE_READS, "true");
+        defaultValues.put(SAM_SAMPLING_WINDOW, "50");
         defaultValues.put(SAM_MAX_LEVELS, "100");
-        defaultValues.put(SAM_MAX_READS, "500000");
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
         defaultValues.put(SAM_FILTER_URL, null);
@@ -971,7 +970,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SEARCH_ZOOM, "true");
 
 
-        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
+        defaultValues.put(GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
         defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
 
@@ -995,6 +994,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_ALTERNATING_COLORS, "false");
         defaultValues.put(GWAS_PRIMARY_COLOR, "69,101,183");
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
+        defaultValues.put(GWAS_SHOW_AXIS, "true");
 
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
@@ -1029,7 +1029,13 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
 
-
+        defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
+        
+        defaultValues.put(CBIO_MUTATION_THRESHOLD, "1");
+        defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");
+        defaultValues.put(CBIO_DELETION_THRESHOLD, "0.9");
+        defaultValues.put(CBIO_EXPRESSION_UP_THRESHOLD, "0.1");
+        defaultValues.put(CBIO_EXPRESSION_DOWN_THRESHOLD, "0.1");
     }
 
     /**
@@ -1038,7 +1044,11 @@ public class PreferenceManager implements PropertyManager {
      * @param s
      */
     public void setPrefsFile(String s) {
-        this.preferences.setPrefFileName(s);
-        this.preferences.loadUserPreferences();
+        if (preferences == null) {
+            preferences = new IGVPreferences(new File(s));
+        } else {
+            preferences.setPrefFile(new File(s));
+        }
     }
+
 }

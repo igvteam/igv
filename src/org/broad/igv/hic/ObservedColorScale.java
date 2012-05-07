@@ -30,11 +30,13 @@ import java.util.Map;
  */
 public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
 
-    Map<Integer, Color> colorCache = new Hashtable<Integer,Color>();
+    private int colorTableSize = 100;
+    Color [] colorCache = new Color[colorTableSize];  // Array instead of map for efficiency
 
     private int minCount = 0;
     private int maxCount = 200;
     private Color background;
+    private float[] backgroundColorComponents;
 
 
     public Color getColor(float score) {
@@ -43,20 +45,17 @@ public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
             return background;
         }
 
-        float alpha = (float) Math.max(0.05f, Math.min(1.0f, score / maxCount));
-
-
-        float[] comps = background.getColorComponents(null);
-
-        int idx = (int) (100 * alpha);
-        Color c = colorCache.get(idx);
+        final float v = score / maxCount;
+        float alpha = v < 0.05f ? 0.05f : (v > 1.0f ? 1.0f : v);   // Math.min and Math.max taking significant time
+        int idx = (int) ((colorTableSize - 1) * alpha);
+        Color c = colorCache[idx];
         if (c == null) {
             float rAlpha = Math.max(0.05f, Math.min(1.0f, 0.01f * idx));
-            float red = ((1 - rAlpha) * comps[0] + rAlpha);
-            float green = ((1 - rAlpha) * comps[1]);
-            float blue = ((1 - rAlpha) * comps[2]);
+            float red = ((1 - rAlpha) * backgroundColorComponents[0] + rAlpha);
+            float green = ((1 - rAlpha) * backgroundColorComponents[1]);
+            float blue = ((1 - rAlpha) * backgroundColorComponents[2]);
             c = new Color(red, green, blue);
-            colorCache.put(idx, c);
+            colorCache[idx] = c;
         }
         return c;
     }
@@ -100,6 +99,7 @@ public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
 
     public void setBackground(Color background) {
         this.background = background;
+        backgroundColorComponents = background.getColorComponents(null);
     }
 
     public void setRange(int min, int max) {

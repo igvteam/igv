@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2012 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NON-INFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.sam;
@@ -33,6 +26,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.tribble.Feature;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -56,7 +50,16 @@ public class CachingQueryReader {
     /**
      * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
      */
-    private static boolean corruptIndex = false;
+    private boolean corruptIndex = false;
+
+    private float visibilityWindow = 16;    // Visibility window,  in KB
+    private String cachedChr = "";
+    private int tileSize;
+    private AlignmentReader reader;
+    private boolean cancel = false;
+    private LRUCache<Integer, AlignmentTile> cache;
+    private boolean pairedEnd = false;
+
 
     // Map of read group -> paired end stats
 
@@ -72,15 +75,6 @@ public class CachingQueryReader {
         log.debug("Readers canceled");
         activeReaders.clear();
     }
-
-
-    private float visibilityWindow = 16;    // Visibility window,  in KB
-    private String cachedChr = "";
-    private int tileSize;
-    private AlignmentReader reader;
-    private boolean cancel = false;
-    private LRUCache<Integer, AlignmentTile> cache;
-    private boolean pairedEnd = false;
 
 
     public CachingQueryReader(AlignmentReader reader) {
@@ -119,12 +113,8 @@ public class CachingQueryReader {
         reader.close();
     }
 
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         return reader.getSequenceNames();
-    }
-
-    public SAMFileHeader getHeader() throws IOException {
-        return reader.getHeader();
     }
 
     public CloseableIterator<Alignment> iterator() {
@@ -138,17 +128,16 @@ public class CachingQueryReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end,
                                               List<AlignmentCounts> counts,
                                               List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                              int maxReadDepth, Map<String, PEStats> peStats,
+                                              List<DownsampledInterval> downsampledIntervals,
+                                              AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                              Map<String, PEStats> peStats,
                                               AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         // Get the tiles covering this interval
         int startTile = (start + 1) / getTileSize(sequence);
         int endTile = end / getTileSize(sequence);    // <= inclusive
 
-        // Be a bit conservative with maxReadDepth (get a few more reads than we think necessary)
-        int readDepthPlus = (int) (1.1 * maxReadDepth);
-
-        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats, bisulfiteContext);
+        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, downsampleOptions, peStats, bisulfiteContext);
         if (tiles.size() == 0) {
             return EmptyAlignmentIterator.getInstance();
         }
@@ -170,6 +159,7 @@ public class CachingQueryReader {
         for (AlignmentTile t : tiles) {
             alignments.addAll(t.getContainedRecords());
             counts.add(t.getCounts());
+            downsampledIntervals.addAll(t.getDownsampledIntervals());
 
             if (spliceJunctionFeatures != null) {
                 List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
@@ -177,14 +167,16 @@ public class CachingQueryReader {
             }
         }
 
-        // Since we added in 2 passes we need to sort
+        // Since we added in 2 passes, and downsampled,  we need to sort
         Collections.sort(alignments, new AlignmentSorter());
 
         return new TiledIterator(start, end, alignments);
     }
 
-    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth,
-                                        Map<String, PEStats> peStats, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile,
+                                        AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                        Map<String, PEStats> peStats,
+                                        AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         if (!seq.equals(cachedChr)) {
             cache.clear();
@@ -202,7 +194,7 @@ public class CachingQueryReader {
                 int start = t * tileSize;
                 int end = start + tileSize;
 
-                tile = new AlignmentTile(seq, t, start, end, maxReadDepth, bisulfiteContext);
+                tile = new AlignmentTile(t, start, end, downsampleOptions, bisulfiteContext);
             }
 
             tiles.add(tile);
@@ -330,12 +322,14 @@ public class CachingQueryReader {
 
                 // Loop over tiles this read overlaps
                 for (int i = idx0; i <= idx1; i++) {
-                    AlignmentTile t = tiles.get(i);
+                    AlignmentTile t = null;
+                    t = tiles.get(i);
                     t.addRecord(record);
                 }
 
                 alignmentCount++;
-                if (alignmentCount % 1000 == 0) {
+                int interval = Globals.isTesting() ? 100000 : 1000;
+                if (alignmentCount % interval == 0) {
                     if (cancel) return false;
                     MessageUtils.setStatusBarMessage("Reads loaded: " + alignmentCount);
                     if (checkMemory() == false) {
@@ -354,6 +348,7 @@ public class CachingQueryReader {
                         peStats.put(lb, stats);
                     }
                     stats.update(record);
+
                 }
             }
             // End iteration over alignments
@@ -393,8 +388,7 @@ public class CachingQueryReader {
                     "<br>This is often caused by a corrupt index file.");
             return false;
 
-        } catch (Throwable e) {
-
+        } catch (IOException e) {
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
         } finally {
@@ -534,32 +528,28 @@ public class CachingQueryReader {
         private AlignmentCounts counts;
         private List<Alignment> containedRecords;
         private List<Alignment> overlappingRecords;
+        private List<DownsampledInterval> downsampledIntervals;
         private List<SpliceJunctionFeature> containedSpliceJunctionFeatures;
         private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
-        int maxDepth;
-        int maxBucketSize;
-        int e1 = -1;  // End position of current sampling bucket
-        int minStart = -1; //Start location where the reads go deeper than maxDepth
-        int numAfterMinStart = -1; //To capture the number of alignments which pile up at a given start location
-        private int lastStart;
-        //int depthCount;
-
-        private Map<String, Alignment> currentBucket;
-        private Map<String, Alignment> currentMates;
-        private List<Alignment> overflows;
-        private Set<String> pairedReadNames;
+        private boolean downsample;
+        private int samplingWindowSize;
+        private int samplingDepth;
+        private SamplingBucket currentSamplingBucket;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
 
 
-        AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        AlignmentTile(int tileNumber, int start, int end,
+                      AlignmentDataManager.DownsampleOptions downsampleOptions,
+                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.tileNumber = tileNumber;
             this.start = start;
             this.end = end;
             containedRecords = new ArrayList(16000);
             overlappingRecords = new ArrayList();
+            downsampledIntervals = new ArrayList();
 
             // Use a sparse array for large regions
             if ((end - start) > 100000) {
@@ -569,14 +559,13 @@ public class CachingQueryReader {
             }
 
             // Set the max depth, and the max depth of the sampling bucket.
-            this.maxDepth = Math.max(1, maxDepth);
-            if (maxDepth < 1000) {
-                maxBucketSize = 10 * maxDepth;
-            } else if (maxDepth < 10000) {
-                maxBucketSize = 5 * maxDepth;
-            } else {
-                maxBucketSize = 2 * maxDepth;
+            if (downsampleOptions == null) {
+                // Use default settings (from preferences)
+                downsampleOptions = new AlignmentDataManager.DownsampleOptions();
             }
+            this.downsample = downsampleOptions.isDownsample();
+            this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
+            this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
@@ -585,11 +574,6 @@ public class CachingQueryReader {
                 spliceJunctionHelper = new SpliceJunctionHelper();
             }
 
-
-            currentBucket = new HashMap(maxBucketSize);
-            currentMates = new HashMap(maxBucketSize);
-            pairedReadNames = new HashSet(maxDepth);
-            overflows = new LinkedList<Alignment>();
         }
 
         public int getTileNumber() {
@@ -610,148 +594,71 @@ public class CachingQueryReader {
         /**
          * Add an alignment record to this tile.  This record is not necessarily retained after down-sampling.
          *
-         * @param record
+         * @param alignment
          */
-        public void addRecord(Alignment record) {
+        public void addRecord(Alignment alignment) {
 
-            if (record.getStart() >= e1) {
-                emptyBucket();
-                e1 = record.getEnd();
-                ignoredCount = 0;
+            counts.incCounts(alignment);
+
+            if (downsample) {
+                final int alignmentStart = alignment.getAlignmentStart();
+                if (currentSamplingBucket == null || alignmentStart >= currentSamplingBucket.end) {
+                    if (currentSamplingBucket != null) {
+                        emptyBucket();
+                    }
+                    int end = alignmentStart + samplingWindowSize;
+                    currentSamplingBucket = new SamplingBucket(alignmentStart, end);
+                }
+
+                if (spliceJunctionHelper != null) {
+                    spliceJunctionHelper.addAlignment(alignment);
+                }
+
+                currentSamplingBucket.add(alignment);
             } else {
-                e1 = Math.min(e1, record.getEnd());
+                allocateAlignment(alignment);
             }
-
-            counts.incCounts(record);
-
-            if (spliceJunctionHelper != null) {
-                spliceJunctionHelper.addAlignment(record);
-            }
-
-            if (currentBucket.size() >= maxDepth && minStart < 0) {
-                minStart = record.getStart();
-            }
-
-            if (currentBucket.size() > maxBucketSize) {
-                ignoredCount++;
-                return;
-            }
-
-            if (minStart >= 0 || record.getStart() == lastStart) {
-                numAfterMinStart++;
-            } else {
-                numAfterMinStart = 1;
-            }
-            lastStart = record.getStart();
-
-            final String readName = record.getReadName();
-            if (!currentBucket.containsKey(readName)) {
-                currentBucket.put(readName, record);
-            } else if (!currentMates.containsKey(readName)) {
-                currentMates.put(readName, record);
-            } else {
-                overflows.add(record);
-            }
-
         }
-
 
         private void emptyBucket() {
-
-            List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : sampledRecords) {
-                int aStart = alignment.getStart();
-                int aEnd = alignment.getEnd();
-                if ((aStart >= start) && (aStart < end)) {
-                    containedRecords.add(alignment);
-                } else if ((aEnd > start) && (aStart < start)) {
-                    overlappingRecords.add(alignment);
-                }
+            if (currentSamplingBucket == null) {
+                return;
             }
-            currentBucket.clear();
-            currentMates.clear();
-            overflows.clear();
-            lastStart = -1;
-            minStart = -1;
-            numAfterMinStart = 0;
+            //List<Alignment> sampledRecords = sampleCurrentBucket();
+            for (Alignment alignment : currentSamplingBucket.getAlignments()) {
+                allocateAlignment(alignment);
+            }
+
+            if (currentSamplingBucket.isSampled()) {
+                DownsampledInterval interval = new DownsampledInterval(currentSamplingBucket.start,
+                        currentSamplingBucket.end, currentSamplingBucket.downsampledCount);
+                downsampledIntervals.add(interval);
+            }
+
+            currentSamplingBucket = null;
+
         }
 
-
-        /**
-         * Sample the current bucket of alignments to achieve the desired depth.
-         *
-         * @return Sorted list of alignments to be retained
-         */
-        private List<Alignment> sampleCurrentBucket() {
-
-            List<Alignment> sampledList = new ArrayList(maxDepth);
-            if (currentBucket.size() + currentMates.size() + overflows.size() < maxDepth) {
-                sampledList.addAll(currentBucket.values());
-                sampledList.addAll(currentMates.values());
-                sampledList.addAll(overflows);
-            } else {
-
-                // First pull out any mates of reads sampled from previous buckets
-                List<String> added = new ArrayList(pairedReadNames.size());
-                for (String readName : pairedReadNames) {
-                    if (currentBucket.containsKey(readName)) {
-                        sampledList.add(currentBucket.get(readName));
-                        currentBucket.remove(readName);
-                        added.add(readName);
-                    }
-                }
-                pairedReadNames.removeAll(added);
-
-                List<String> keys = new LinkedList(currentBucket.keySet());
-                int total_size = keys.size() + overflows.size();
-                //Fraction of the alignments in the excessive coverage region to keep
-                float frac_keep = (float) (numAfterMinStart + maxDepth - total_size) / (numAfterMinStart);
-                frac_keep = frac_keep > 0.0f ? frac_keep : 2.0f;
-                while (sampledList.size() < maxDepth && keys.size() > 0) {
-                    String key = keys.remove(0);
-                    Alignment a = currentBucket.remove(key);
-
-                    //If the alignment starts outside a region of excessive coverage,
-                    //we include it. Otherwise, we sample.
-                    //boolean keep = a.getStart() < minStart;
-                    boolean keep = !(counts.getTotalCount(a.getStart()) > maxDepth || counts.getTotalCount(a.getEnd()) > maxDepth);
-                    keep |= (frac_keep >= 1) || RAND.nextFloat() < frac_keep;
-                    if (keep) {
-                        sampledList.add(a);
-
-                        // If this alignment is paired,  add its mate to the list, or if its mate is not present
-                        // in this bucket record the read name.
-                        if (a.isPaired() && a.getMate().isMapped()) {
-                            Alignment m = currentMates.remove(key);
-                            if (m != null) {
-                                sampledList.add(m);
-                            } else {
-                                pairedReadNames.add(key);
-                            }
-                        }
-                    }
-                }
-
-                //If there's still room,  sample the "overflows"
-                //TODO Probably the wrong order in which to do this
-                while (sampledList.size() < maxDepth && (overflows.size() > 0)) {
-                    sampledList.add(overflows.remove(RAND.nextInt(overflows.size())));
-                }
+        private void allocateAlignment(Alignment alignment) {
+            int aStart = alignment.getStart();
+            int aEnd = alignment.getEnd();
+            if ((aStart >= start) && (aStart < end)) {
+                containedRecords.add(alignment);
+            } else if ((aEnd > start) && (aStart < start)) {
+                overlappingRecords.add(alignment);
             }
-            // Since we added in 2 passes we need to sort
-            Collections.sort(sampledList, new AlignmentSorter());
-
-            return sampledList;
         }
-
 
         public List<Alignment> getContainedRecords() {
             return containedRecords;
         }
 
-
         public List<Alignment> getOverlappingRecords() {
             return overlappingRecords;
+        }
+
+        public List<DownsampledInterval> getDownsampledIntervals() {
+            return downsampledIntervals;
         }
 
         public boolean isLoaded() {
@@ -764,10 +671,7 @@ public class CachingQueryReader {
             if (loaded) {
                 // Empty any remaining alignments in the current bucket
                 emptyBucket();
-                currentBucket = null;
-                currentMates = null;
-                pairedReadNames = null;
-                overflows = null;
+                currentSamplingBucket = null;
                 finalizeSpliceJunctions();
             }
         }
@@ -800,11 +704,94 @@ public class CachingQueryReader {
         public List<SpliceJunctionFeature> getOverlappingSpliceJunctionFeatures() {
             return overlappingSpliceJunctionFeatures;
         }
+
+
+        private class SamplingBucket {
+            int start;
+            int end;
+            int downsampledCount = 0;
+            List<Alignment> alignments;
+
+
+            private SamplingBucket(int start, int end) {
+                this.start = start;
+                this.end = end;
+                alignments = new ArrayList(samplingDepth);
+            }
+
+
+            public void add(Alignment alignment) {
+                // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
+                // If we have the mate in the bucket already, always keep it.
+                if (alignments.size() < samplingDepth) {
+                    alignments.add(alignment);
+                } else {
+                    double samplingProb = ((double) samplingDepth) / (samplingDepth + downsampledCount + 1);
+                    if (RAND.nextDouble() < samplingProb) {
+                        int idx = (int) (RAND.nextDouble() * (alignments.size() - 1));
+                        // Replace random record with this one
+                        alignments.set(idx, alignment);
+                    }
+                    downsampledCount++;
+
+                }
+
+            }
+
+            public List<Alignment> getAlignments() {
+                return alignments;
+            }
+
+            public boolean isSampled() {
+                return downsampledCount > 0;
+            }
+
+            public int getDownsampledCount() {
+                return downsampledCount;
+            }
+        }
     }
 
     private static class AlignmentSorter implements Comparator<Alignment> {
         public int compare(Alignment alignment, Alignment alignment1) {
             return alignment.getStart() - alignment1.getStart();
+        }
+    }
+
+
+    public static class DownsampledInterval implements Feature {
+        private int start;
+        private int end;
+        private int count;
+
+        public DownsampledInterval(int start, int end, int count) {
+            this.start = start;
+            this.end = end;
+            this.count = count;
+        }
+
+        public String toString() {
+            return start + "-" + end + " (" + count + ")";
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public String getChr() {
+            return null;
+        }
+
+        public String getValueString() {
+            return "Interval [" + start + "-" + end + "] <br>" + count + " reads removed.";
         }
     }
 

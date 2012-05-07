@@ -57,6 +57,7 @@ import java.util.*;
 public class ExpressionFileParser {
 
     private static Logger log = Logger.getLogger(ExpressionFileParser.class);
+    private static final int MAX_ERROR_COUNT = 200;
 
     public enum FileType {
 
@@ -80,6 +81,7 @@ public class ExpressionFileParser {
     // For effecient lookup, data column name -> index
     Map<String, Integer> dataColumnIndexMap;
 
+    int errorCount = 0;
 
     /**
      * Test to determine if the path referes to a GCT file.  The GCT specification requires that the first line
@@ -152,9 +154,15 @@ public class ExpressionFileParser {
 
     public static FileType determineType(ResourceLocator dataFileLocator) {
         String fn = dataFileLocator.getPath().toLowerCase();
-        if (fn.endsWith(".txt") || fn.endsWith(".tab") || fn.endsWith(".xls") || fn.endsWith(".gz")) {
-            fn = fn.substring(0, fn.lastIndexOf("."));
+        if (fn.endsWith(".gz")) {
+            int l = fn.length() - 3;
+            fn = fn.substring(0, l);
         }
+        if (fn.endsWith(".txt")) {
+            int l = fn.length() - 4;
+            fn = fn.substring(0, l);
+        }
+
         //TODO genomespace hack
         if (dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")) {
             fn = ".gct";
@@ -214,10 +222,10 @@ public class ExpressionFileParser {
 
             // Loop through the data rows
 
-            String[] tokens = new String[formatDescriptor.totalColumnCount];
             while ((nextLine = reader.readLine()) != null) {
 
-                int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                int nTokens = tokens.length;
                 String probeId = new String(tokens[probeColumn]);
                 float[] values = new float[nDataColumns];
 
@@ -279,11 +287,6 @@ public class ExpressionFileParser {
 
             dataset.setLongestFeatureMap(longestProbeMap);
 
-            if ((dataset == null) || dataset.isEmpty()) {
-                String genomeId = genome == null ? "" : genome.getId();
-                throw new ProbeMappingException(dataFileLocator.getPath(), genomeId);
-            }
-
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);
         } catch (InterruptedException e) {
@@ -331,6 +334,14 @@ public class ExpressionFileParser {
 
                 }
             }
+        } else {
+            if (errorCount < MAX_ERROR_COUNT) {
+                log.info("Probe: '" + probeId + "' could not be mapped to a genomic position.");
+            } else if (errorCount == MAX_ERROR_COUNT) {
+                log.info("Maximum probe mapping warning count exceeded.  Further mapping errors will not be logged");
+            }
+            errorCount++;
+
         }
     }
 

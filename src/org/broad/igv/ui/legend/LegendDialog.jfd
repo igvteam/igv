@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_26" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -43,30 +43,11 @@
         <class>com.jformdesigner.runtime.NullConstraints</class> 
         <void method="setProperty"> 
          <string>x</string> 
-         <int>392</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Copy Number</string> 
-        </void> 
-        <void property="name"> 
-         <string>cnLabel</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>10</int> 
+         <int>325</int> 
         </void> 
         <void method="setProperty"> 
          <string>y</string> 
-         <int>40</int> 
+         <int>0</int> 
         </void> 
        </object> 
       </void> 
@@ -74,185 +55,633 @@
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JPanel</string> 
         <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
+         <class>com.jformdesigner.runtime.NullLayout</class> 
         </object> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-        </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new org.broad.igv.ui.legend.HeatmapLegendPanel(TrackType.COPY_NUMBER);</string> 
-         </void> 
-        </void> 
         <void property="name"> 
-         <string>copyNoCanvas</string> 
+         <string>panel1</string> 
         </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>38</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>height</string> 
-         <int>62</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>590</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Expression</string> 
-        </void> 
-        <void property="name"> 
-         <string>legendLabel1</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>10</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>120</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>minimumSize</string> 
-         <object class="java.awt.Dimension"> 
-          <int>100</int> 
-          <int>100</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Copy Number</string> 
+          </void> 
+          <void property="name"> 
+           <string>cnLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>7</int> 
+          </void> 
          </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:483:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:60:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new org.broad.igv.ui.legend.HeatmapLegendPanel(TrackType.COPY_NUMBER);</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>copyNoCanvas</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>7</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new HeatmapLegendPanel(TrackType.DNA_METHYLATION);</string> 
-         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Expression</string> 
+          </void> 
+          <void property="name"> 
+           <string>legendLabel1</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+         </object> 
         </void> 
-        <void property="name"> 
-         <string>methylationCanvas</string> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:483:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:60:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>100</int> 
+            <int>100</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new HeatmapLegendPanel(TrackType.DNA_METHYLATION);</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>methylationCanvas</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>247</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+         </object> 
         </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>272</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:483:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:60:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new LohLegendPanel();</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>lohCanvas</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>327</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>height</string> 
-         <int>62</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>LOH</string> 
+          </void> 
+          <void property="name"> 
+           <string>legendLabel2</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>327</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>45</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Methylation</string> 
+          </void> 
+          <void property="name"> 
+           <string>jLabel2</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>247</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>590</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:483:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:60:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new HeatmapLegendPanel(TrackType.GENE_EXPRESSION);</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>expressionCanvas</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+         </object> 
         </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:485:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:62:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new MutationLegendPanel();</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>mutationCanvas</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>407</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new LohLegendPanel();</string> 
-         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Mutation</string> 
+          </void> 
+          <void property="name"> 
+           <string>legendLabel3</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>430</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+         </object> 
         </void> 
-        <void property="name"> 
-         <string>lohCanvas</string> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>RNAi</string> 
+          </void> 
+          <void property="name"> 
+           <string>legendLabel4</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>167</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>0</int> 
+          </void> 
+         </object> 
         </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>350</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormContainer"> 
+          <string>javax.swing.JPanel</string> 
+          <object class="com.jformdesigner.model.FormLayoutManager"> 
+           <class>org.jdesktop.layout.GroupLayout</class> 
+           <void method="setProperty"> 
+            <string>$horizontalGroup</string> 
+            <string>par l {space :0:483:x}</string> 
+           </void> 
+           <void method="setProperty"> 
+            <string>$verticalGroup</string> 
+            <string>par l {space :0:60:x}</string> 
+           </void> 
+          </object> 
+          <void method="setProperty"> 
+           <string>border</string> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.customCreateCode</string> 
+            <string>new HeatmapLegendPanel(TrackType.RNAI);</string> 
+           </void> 
+          </void> 
+          <void property="name"> 
+           <string>rnaiPanel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>167</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>62</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>485</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>height</string> 
-         <int>62</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>copyNumberButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>copyNumberButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>7</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>expressionButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>expressionButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>87</int> 
+          </void> 
+         </object> 
         </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>590</int> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>rnaiButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>rnaiButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>167</int> 
+          </void> 
+         </object> 
         </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>LOH</string> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>methylationButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>methylationButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>247</int> 
+          </void> 
+         </object> 
         </void> 
-        <void property="name"> 
-         <string>legendLabel2</string> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>lohButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>lohButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>327</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Edit</string> 
+          </void> 
+          <void property="name"> 
+           <string>mutationButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>mutationButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>620</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>424</int> 
+          </void> 
+         </object> 
         </void> 
        </object> 
        <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -263,224 +692,15 @@
         </void> 
         <void method="setProperty"> 
          <string>y</string> 
-         <int>375</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>45</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Methylation</string> 
-        </void> 
-        <void property="name"> 
-         <string>jLabel2</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>10</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>285</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-        </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new HeatmapLegendPanel(TrackType.GENE_EXPRESSION);</string> 
-         </void> 
-        </void> 
-        <void property="name"> 
-         <string>expressionCanvas</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>116</int> 
+         <int>30</int> 
         </void> 
         <void method="setProperty"> 
          <string>height</string> 
-         <int>62</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
+         <int>495</int> 
         </void> 
         <void method="setProperty"> 
          <string>width</string> 
-         <int>590</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-        </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new MutationLegendPanel();</string> 
-         </void> 
-        </void> 
-        <void property="name"> 
-         <string>mutationCanvas</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>428</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>height</string> 
-         <int>62</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>590</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Mutation</string> 
-        </void> 
-        <void property="name"> 
-         <string>legendLabel3</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>10</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>455</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JLabel</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>RNAi</string> 
-        </void> 
-        <void property="name"> 
-         <string>legendLabel4</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>10</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>200</int> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormContainer"> 
-        <string>javax.swing.JPanel</string> 
-        <object class="com.jformdesigner.model.FormLayoutManager"> 
-         <class>org.jdesktop.layout.GroupLayout</class> 
-         <void method="setProperty"> 
-          <string>$horizontalGroup</string> 
-          <string>par l {space :0:588:x}</string> 
-         </void> 
-         <void method="setProperty"> 
-          <string>$verticalGroup</string> 
-          <string>par l {space :0:60:x}</string> 
-         </void> 
-        </object> 
-        <void method="setProperty"> 
-         <string>border</string> 
-         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-        </void> 
-        <void method="auxiliary"> 
-         <void method="setProperty"> 
-          <string>JavaCodeGenerator.customCreateCode</string> 
-          <string>new HeatmapLegendPanel(TrackType.RNAI);</string> 
-         </void> 
-        </void> 
-        <void property="name"> 
-         <string>rnaiPanel</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>com.jformdesigner.runtime.NullConstraints</class> 
-        <void method="setProperty"> 
-         <string>y</string> 
-         <int>194</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>height</string> 
-         <int>62</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>x</string> 
-         <int>120</int> 
-        </void> 
-        <void method="setProperty"> 
-         <string>width</string> 
-         <int>590</int> 
+         <int>720</int> 
         </void> 
        </object> 
       </void> 

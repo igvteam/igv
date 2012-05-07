@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.renderer;
 
@@ -33,6 +26,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +72,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     int blockHeight = BLOCK_HEIGHT;
     int thinBlockHeight = THIN_BLOCK_HEIGHT;
+
+    //Map from Exon to y offset
+    //Could use more coordinates, but they are all contained in the Exon
+    private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -139,7 +137,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             for (int i = 0; i < featureArray.length; i++) {
 
                 IGVFeature feature = featureArray[i];
-
 
                 // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
@@ -371,6 +368,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 colorToggle = !colorToggle;
             }
 
+            int curYOffset = yOffset;
+//            IExon pExon = Exon.getExonProxy(exon);
+//            if(exonMap.containsKey(pExon)){
+//                curYOffset= exonMap.get(pExon);
+//            }else{
+//                exonMap.put(pExon, yOffset);
+//            }
 
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
@@ -385,20 +389,19 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         getPixelFromChromosomeLocation(exon.getChr(),
                                 exon.getCdEnd(), theOrigin, locationScale)));
 
-
                 // Entire exon is UTR
                 if (exon.isUTR()) {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;
-                    blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                    blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
 
                 } else {// Exon contains 5' UTR -- draw non-coding part
                     if (pCdStart > pStart) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pCdStart, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -406,7 +409,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pCdEnd, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pEnd = pCdEnd;
                     }
 
@@ -415,18 +418,18 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = Math.max(2, pClippedEnd - pClippedStart);
-                        blockGraphics.fillRect(pClippedStart, yOffset - blockHeight / 2, pClippedWidth, blockHeight);
+                        blockGraphics.fillRect(pClippedStart, curYOffset - blockHeight / 2, pClippedWidth, blockHeight);
 
                     }
                 }
 
                 Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.white);
-                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, yOffset, mode, arrowGraphics);
+                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, curYOffset, mode, arrowGraphics);
 
 
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
-                            yOffset, exon, trackRectangle);
+                            curYOffset, exon, trackRectangle);
                 }
 
             }
@@ -676,4 +679,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return (int) Math.round((chromosomeLocation - origin) / locationScale);
     }
 
+    public void reset() {
+        exonMap.clear();
+    }
 }

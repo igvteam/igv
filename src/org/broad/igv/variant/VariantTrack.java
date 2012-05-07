@@ -61,6 +61,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
+    private static final Color SELECTED_BAND_COLOR = new Color(210, 210, 210);
     private static final Color borderGray = new Color(200, 200, 200);
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
@@ -219,15 +220,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
                     String alignmentPath = tokens[1];
                     boolean isAbsolute;
-                    if(alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
+                    if (alignmentPath.startsWith("http://") || alignmentPath.startsWith("ftp:")) {
                         isAbsolute = true;
-                    }
-                    else {
+                    } else {
                         String absolutePath = (new File(alignmentPath)).getAbsolutePath();
                         String prefix = absolutePath.substring(0, 3);
                         isAbsolute = alignmentPath.startsWith(prefix);
                     }
-                    if(!isAbsolute) {
+                    if (!isAbsolute) {
                         alignmentPath = FileUtils.getAbsolutePath(alignmentPath, bamListPath);
                     }
 
@@ -336,7 +336,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @return
      */
     public int getHeight() {
-
         int sampleCount = allSamples.size();
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
@@ -345,8 +344,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             int margins = groupCount * 3;
             return variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         }
-
     }
+
 
     /**
      * Set the height of the track.
@@ -756,11 +755,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             } else {
                 g2D.setColor(BAND2_COLOR);
                 coloredLast = true;
-
             }
 
             if (bandRectangle.intersects(visibleRectangle)) {
                 if (!supressFill) {
+                    if (selectedSamples.contains(sample) && hasAlignmentFiles()) {
+                        g2D.setColor(SELECTED_BAND_COLOR);
+                    }
                     g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
                 }
 
@@ -772,11 +773,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         g2D.setColor(Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
                     }
-                    if (selectedSamples.contains(sample)) {
-                        g2D.setColor(Color.green);
-                        int d = bandRectangle.height;
-                        g2D.fillRect(bandRectangle.x + bandRectangle.width - 17, bandRectangle.y, 15, d);
-                    }
+
 
                 } else if (type == BackgroundType.ATTRIBUTE) {
 
@@ -1199,7 +1196,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (e.isMetaDown() || e.isControlDown()) {
             if (sampleAtPosition != null) {
                 if (selectedSamples.contains(sampleAtPosition)) {
-                //    selectedSamples.remove(sampleAtPosition);
+                    //    selectedSamples.remove(sampleAtPosition);
                 } else {
                     selectedSamples.add(sampleAtPosition);
                 }
@@ -1403,6 +1400,32 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         LongRunningTask.submit(runnable);
     }
 
+    /**
+     * Return the nextLine or previous feature relative to the center location.
+     * <p/>
+     * Loop through "next feature from super implementation until first non-filtered variant is found.
+     *
+     * @param chr
+     * @param center
+     * @param forward
+     * @return
+     * @throws java.io.IOException
+     */
+    @Override
+    public Feature nextFeature(String chr, double center, boolean forward, ReferenceFrame frame) throws IOException {
+
+        if (getHideFiltered()) {
+            Feature f;
+            while ((f = super.nextFeature(chr, center, forward, frame)) != null) {
+                if (!(f instanceof Variant) || !((Variant) f).isFiltered()) {
+                    return f;
+                }
+            }
+            return null;
+        } else {
+            return super.nextFeature(chr, center, forward, frame);
+        }
+    }
 
     static class SampleBounds {
         int top;

@@ -23,7 +23,10 @@
 package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.AminoAcid;
+import org.broad.igv.feature.AminoAcidManager;
+import org.broad.igv.feature.AminoAcidSequence;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
@@ -32,7 +35,10 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.SOLIDUtils;
 
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jrobinso
@@ -69,6 +75,9 @@ public class SequenceRenderer {
 
     //are we rendering positive or negative strand?
     protected Strand strand = Strand.POSITIVE;
+
+    //Have we successfully downloaded sequence info?
+    private boolean hasSequence = true;
 
     public SequenceRenderer() {
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
@@ -121,8 +130,12 @@ public class SequenceRenderer {
             }
 
             byte[] seq = genome.getSequence(chr, start, end);
-            if(seq == null) {
+            if (seq == null) {
+                log.error("Unable to get sequence at " + chr + ":" + start + "-" + end);
+                this.hasSequence = false;
                 return;
+            } else {
+                this.hasSequence = true;
             }
 
             //The combined height of sequence and (optionally) colorspace bands
@@ -303,6 +316,10 @@ public class SequenceRenderer {
 
     public void setStrand(Strand strand) {
         this.strand = strand;
+    }
+
+    public boolean hasSequence() {
+        return this.hasSequence;
     }
 
 

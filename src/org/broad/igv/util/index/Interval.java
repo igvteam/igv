@@ -32,6 +32,9 @@ public class Interval implements Comparable {
 
 
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (this == other)
             return true;
         if (this.getClass().equals(other.getClass())) {

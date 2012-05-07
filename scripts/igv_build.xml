@@ -1,19 +1,12 @@
 <!--
-  ~ Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   ~
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
-  ~
-  ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
-  ~ WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
-  ~ WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-  ~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
-  ~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
-  ~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
-  ~ OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
-  ~ ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
-  ~ THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
-  ~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
   -->
 
 <project name="IGV" default="build" basedir="../.">
@@ -23,7 +16,7 @@
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
-    <property name="use.bcel" value="true"/>
+    <property name="include.libs" value="true"/>
 
     <import file="../build.xml"/>
 
@@ -48,6 +41,8 @@
                  keystore="${keystore}"/>
         <signjar jar="${dist.dir}batik-codec.jar" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
+        <signjar jar="${dist.dir}goby-io-igv.jar" alias="${alias}" keypass="${key-password}"
+                 storepass="${store-password}" keystore="${keystore}"/>
     </target>
 
     <fileset id="scripts" dir="${scripts.dir}">
@@ -64,30 +59,31 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
             <fileset file="${dist.dir}batik-codec.jar"/>
+            <fileset file="${dist.dir}goby-io-igv.jar"/>
         </copy>
     </target>
 
     <!--Macro for creating zipped archive, used by bin and src/bin-->
     <macrodef name="archive">
-        <attribute name="bin.dir"/>
+        <attribute name="bin.dirname"/>
         <attribute name="zip.dest"/>
         <attribute name="update" default="no"/>
 
+
         <sequential>
 
-            <mkdir dir="@{bin.dir}"/>
-
             <!-- Copy files to directory -->
-            <copy todir="@{bin.dir}" file="${dist.dir}/igv.jar"/>
-            <copy todir="@{bin.dir}" file="${dist.dir}/batik-codec.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}igv.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}batik-codec.jar"/>
+            <copy todir="${tmp.dir}/@{bin.dirname}" file="${dist.dir}goby-io-igv.jar"/>
 
-            <zip destfile="@{zip.dest}" update="@{update}">
-                <zipfileset dir="@{bin.dir}" filemode="755">
+            <zip destfile="@{zip.dest}" update="@{update}" duplicate="fail">
+                <zipfileset dir="${tmp.dir}" filemode="755">
                     <include name="**/igv.sh"/>
                     <include name="**/igv.command"/>
                     <include name="**/igv.bat"/>
                 </zipfileset>
-                <zipfileset dir="@{bin.dir}">
+                <zipfileset dir="${tmp.dir}">
                     <exclude name="**/igv.sh"/>
                     <exclude name="**/igv.command"/>
                     <exclude name="**/igv.bat"/>
@@ -109,7 +105,7 @@
             <fileset refid="scripts"/>
         </copy>
 
-        <archive bin.dir="${tmp.dir}/${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
+        <archive bin.dirname="${bin.archive.name}" zip.dest="${bin.archive.zip}"/>
     </target>
 
 
@@ -123,6 +119,7 @@
         <!-- Copy scripts and docs -->
         <copy todir="${tmp.dir}/${src.archive.name}">
             <fileset file="build.xml"/>
+            <fileset file="build_macros.xml"/>
             <fileset dir="${basedir}">
                 <include name="docs/*"/>
                 <!--include name="test/src/**/*"/>
@@ -137,21 +134,16 @@
         <copy todir="${tmp.dir}/${src.archive.name}/src">
             <fileset dir="${src.dir}"/>
         </copy>
+
         <replace file="${tmp.dir}/${src.archive.name}/build.xml" token="@version" value="${version}"/>
-        <replace file="${tmp.dir}/${src.archive.name}/src/resources/about.properties" token="@VERSION"
-                 value="${version}"/>
-        <replace file="${tmp.dir}/${src.archive.name}/src/resources/about.properties" token="@BUILD"
-                 value="${build-number}"/>
-        <replace file="${tmp.dir}/${src.archive.name}/src/resources/about.properties" token="@TIMESTAMP"
-                 value="${timestamp}"/>
-        <replace file="${tmp.dir}/${src.archive.name}/src/resources/about.properties"
-                 token="@DEFAULT_MASTER_RESOURCE_URL" value="${data-server-url}"/>
+        <write_version targetFile="${tmp.dir}/${src.archive.name}/src/resources/about.properties"/>
+
         <copy todir="${tmp.dir}/${src.archive.name}/lib">
             <fileset dir="${lib.dir}"/>
         </copy>
 
 
-        <archive bin.dir="${tmp.dir}/${src.archive.name}" zip.dest="${src.archive.zip}" update="yes"/>
+        <archive bin.dirname="${src.archive.name}" zip.dest="${src.archive.zip}"/>
     </target>
 
 

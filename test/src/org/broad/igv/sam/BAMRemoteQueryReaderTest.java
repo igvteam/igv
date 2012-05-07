@@ -59,8 +59,7 @@ public class BAMRemoteQueryReaderTest {
 
     @Before
     public void setUp() {
-        //Web requests don't seem to work with this false
-        preferenceManager.override(PreferenceManager.USE_BYTE_RANGE, "" + true);
+
     }
 
     /**

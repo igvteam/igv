@@ -201,11 +201,6 @@ public class AffectiveGenome implements Genome {
     public void addChrAliases(Map<String, String> aliases) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
-
-    public void setChromosomeMap(LinkedHashMap<String, Chromosome> chromMap, boolean chromosomesAreOrdered) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public void loadUserDefinedAliases() {
         //To change body of implemented methods use File | Settings | File Templates.
     }

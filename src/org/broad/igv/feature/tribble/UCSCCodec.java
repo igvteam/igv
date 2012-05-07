@@ -21,6 +21,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.GFFParser;
+import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
@@ -36,10 +37,9 @@ import java.io.IOException;
  */
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
-    protected String[] tokens = new String[50];
-
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;
+    protected boolean spliceJunctions;
 
     FeatureFileHeader header;
 
@@ -54,7 +54,6 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     @Deprecated
     protected final int startOffsetValue = 0;
 
-
     /**
      * @param reader
      * @return
@@ -62,9 +61,13 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     public Object readHeader(LineReader reader) {
         String line;
         try {
-            while ((line = reader.readLine()) != null && (line.startsWith("#") || line.startsWith("track")) ||
-                    line.startsWith("browser")) {
-                readHeaderLine(line);
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#") || line.startsWith("track") ||
+                        line.startsWith("browser")) {
+                    readHeaderLine(line);
+                } else {
+                    break;
+                }
             }
             return header;
         } catch (IOException e) {
@@ -100,6 +103,12 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
             ParsingUtils.parseTrackLine(line, tp);
             header.setTrackProperties(tp);
             gffTags = tp.isGffTags();
+
+            Class rendererClass = tp.getRendererClass();
+            if (rendererClass != null && rendererClass.isAssignableFrom(SpliceJunctionRenderer.class)) {
+                spliceJunctions = true;
+            }
+
         } else if (line.toLowerCase().contains("#gfftags")) {
             gffTags = true;
         } else {

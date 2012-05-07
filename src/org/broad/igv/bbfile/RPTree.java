@@ -554,29 +554,30 @@ public class RPTree {
             fis.seek(fileOffset);
             fis.readFully(buffer);
 
-            if (isLowToHigh)
+            if (isLowToHigh) {
                 lbdis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
-            else
+            } else {
                 bdis = new DataInputStream(new ByteArrayInputStream(buffer));
+            }
 
             // find node type
             byte type;
-            if (isLowToHigh)
+            if (isLowToHigh) {
                 type = lbdis.readByte();
-            else
+            } else {
                 type = bdis.readByte();
-
+            }
 
             boolean isLeaf;
             int itemSize;
             if (type == 1) {
                 isLeaf = true;
                 itemSize = RPTREE_NODE_LEAF_ITEM_SIZE;
-                thisNode = new RPTreeLeafNode();
+                thisNode = new RPTreeNode(true);
             } else {
                 isLeaf = false;
                 itemSize = RPTREE_NODE_CHILD_ITEM_SIZE;
-                thisNode = new RPTreeChildNode();
+                thisNode = new RPTreeNode(false);
             }
             //nodeCount++;
 
@@ -601,7 +602,6 @@ public class RPTree {
             int startChromID, endChromID;
             int startBase, endBase;
             for (int item = 0; item < itemCount; ++item) {
-
 
                 // always extract the bounding rectangle
                 if (isLowToHigh) {
@@ -641,19 +641,18 @@ public class RPTree {
                     // Recursive call to read next child node
                     // The test on chromIds is designed to stop the descent when the tree reaches the level of an
                     // individual chromosome.  These are loaded later on demand.
-                    RPTreeNode childNode;
+
+                    RPTreeChildNodeItem childNodeItem;
                     if (startChromID != endChromID || forceDescend) {
-                        childNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, forceDescend);
+                        RPTreeNode childNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, forceDescend);
+                        childNodeItem = new RPTreeChildNodeItem(startChromID, startBase, endChromID,
+                                endBase, childNode);
                     } else {
-                        childNode = new RPTreeNodeProxy(fis, nodeOffset, isLowToHigh, startChromID);
+                        RPTreeNodeProxy proxy = new RPTreeNodeProxy(fis, nodeOffset, isLowToHigh, startChromID);
+                        childNodeItem = new RPTreeChildNodeItem(startChromID, startBase, endChromID,
+                                endBase, proxy);
                     }
-
-
-                    // insert child node item
-                    thisNode.insertItem(new RPTreeChildNodeItem(startChromID, startBase, endChromID,
-                            endBase, childNode));
-
-
+                    thisNode.insertItem(childNodeItem);
                 }
 
                 fileOffset += itemSize;

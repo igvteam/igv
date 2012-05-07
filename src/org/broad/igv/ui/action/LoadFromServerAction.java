@@ -61,7 +61,6 @@ public class LoadFromServerAction extends MenuAction {
     public LoadFromServerAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
     }
 
 

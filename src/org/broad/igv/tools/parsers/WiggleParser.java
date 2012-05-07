@@ -19,6 +19,7 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
@@ -187,9 +188,6 @@ public class WiggleParser {
      */
     public void parse() throws IOException {
 
-
-        String[] tokens = new String[10];
-
         lastPosition = 0;
         unsortedChromosomes = new HashSet();
 
@@ -243,7 +241,8 @@ public class WiggleParser {
                 } else {
 
                     // Must be data
-                    int nTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+                    String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
+                    int nTokens = tokens.length;
                     if (nTokens == 0) {
                         continue;
                     }

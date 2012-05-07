@@ -99,7 +99,7 @@ public class ParsingUtils {
                 log.error("Error with gzip stream", ex);
                 throw new RuntimeException(
                         "There was a server error loading file: " + locator.getTrackName() +
-                                ". Please report to igv-help@broadinstitute.org");
+                                ". Please report to igv-team@broadinstitute.org");
 
             }
 
@@ -203,32 +203,6 @@ public class ParsingUtils {
             }
         }
 
-    }
-
-    /**
-     * Helper to call through to Tribble ParsingUtils
-     *
-     * @param aString the string to split
-     * @param tokens  an array to hold the parsed tokens
-     * @param delim   character that delimits tokens
-     * @return the number of tokens parsed
-     * @see org.broad.tribble.util.ParsingUtils
-     */
-
-    public static int split(String aString, String[] tokens, char delim) {
-        return org.broad.tribble.util.ParsingUtils.split(aString, tokens, delim);
-    }
-
-    /**
-     * Helper to call through to Tribble ParsingUtils
-     *
-     * @param aString the string to split
-     * @param tokens  an array to hold the parsed tokens
-     * @return the number of tokens parsed
-     * @see org.broad.tribble.util.ParsingUtils
-     */
-    public static int splitWhitespace(String aString, String[] tokens) {
-        return org.broad.tribble.util.ParsingUtils.splitWhitespace(aString, tokens);
     }
 
     /**
@@ -345,7 +319,7 @@ public class ParsingUtils {
                             if (value.equals("bar")) {
                                 trackProperties.setRendererClass(BarChartRenderer.class);
                             } else if (value.equals("points")) {
-                                trackProperties.setRendererClass(ScatterplotRenderer.class);
+                                trackProperties.setRendererClass(PointsRenderer.class);
                                 trackProperties.setWindowingFunction(WindowFunction.none);
                             } else if (value.equals("line")) {
                                 trackProperties.setRendererClass(LineplotRenderer.class);

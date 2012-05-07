@@ -1,129 +1,192 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+ * Created by JFormDesigner on Wed Apr 11 16:44:25 EDT 2012
  */
 
 package org.broad.igv.feature.genome;
 
-import org.broad.igv.Globals;
+import java.awt.event.*;
+
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.OkCancelDialog;
+import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FileUtils;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
-
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
- * @author eflakes
+ * @author Stan Diamond
  */
-public class GenomeBuilderDialog extends OkCancelDialog {
+public class GenomeBuilderDialog extends JDialog {
 
-    private GenomeBuilderPane builderPane;
-    private File genomeArchiveFile = null;
+    boolean canceled;
+    File archiveFile;
 
-    public GenomeBuilderDialog(IGV igv, boolean modal) {
-
-        super(igv.getMainFrame(), modal);
-        builderPane = new GenomeBuilderPane(igv);
-        setTitle("Import Genome");
-
-        setSize(800, 500);
-
-        JPanel contentPane = getDialogPanel();
-        contentPane.add(builderPane);
-        setResizable(false);
-        setLocationRelativeTo(igv.getMainFrame());
-        setOkButtonText(" Save ");
+    public GenomeBuilderDialog(Frame owner, IGV igv) {
+        super(owner);
+        setModal(true);
+        initComponents();
+        this.panel1.setIgv(igv);
     }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public File getArchiveFile() {
+        return archiveFile;
+    }
+
+    private void okButtonActionPerformed(ActionEvent e) {
+        boolean valid = validateFields();
+        if (valid) {
+            archiveFile = chooseArchiveFile();
+            canceled = (archiveFile == null);
+            setVisible(false);
+            dispose();
+        }
+    }
+
+    private void cancelButtonActionPerformed(ActionEvent e) {
+        canceled = true;
+        setVisible(false);
+        dispose();
+    }
+
+    private File chooseArchiveFile() {
+        File dir = PreferenceManager.getInstance().getLastGenomeImportDirectory();
+        File initFile = new File(getGenomeId() + ".genome");
+        return FileDialogUtils.chooseFile("Save .genome file", dir, initFile, FileDialog.SAVE);
+    }
+
+    private boolean validateFields() {
+        StringBuffer errors = new StringBuffer();
+        String id = getGenomeId();
+        String name = getGenomeDisplayName();
+        String fastaFile = getFastaFileName();
+        if (id == null || id.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("Unique ID is required");
+        }
+        if (name == null || name.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("Descriptive name is required");
+        }
+        if (fastaFile == null || fastaFile.length() == 0) {
+            errors.append(errors.length() == 0 ? "<html>" : "<br>");
+            errors.append("FASTA file is required");
+        }
+        if (errors.length() == 0) {
+            return true;
+        } else {
+            MessageUtils.showMessage(errors.toString());
+            return false;
+        }
+
+    }
+
+    private void initComponents() {
+        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
+        dialogPane = new JPanel();
+        contentPanel = new JPanel();
+        panel1 = new GenomeBuilderPane();
+        buttonBar = new JPanel();
+        okButton = new JButton();
+        cancelButton = new JButton();
+
+        //======== this ========
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+
+        //======== dialogPane ========
+        {
+            dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setLayout(new BorderLayout());
+
+            //======== contentPanel ========
+            {
+                contentPanel.setLayout(new BorderLayout());
+                contentPanel.add(panel1, BorderLayout.CENTER);
+            }
+            dialogPane.add(contentPanel, BorderLayout.CENTER);
+
+            //======== buttonBar ========
+            {
+                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                buttonBar.setLayout(new GridBagLayout());
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+
+                //---- okButton ----
+                okButton.setText("OK");
+                okButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                //---- cancelButton ----
+                cancelButton.setText("Cancel");
+                cancelButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
+            }
+            dialogPane.add(buttonBar, BorderLayout.SOUTH);
+        }
+        contentPane.add(dialogPane, BorderLayout.CENTER);
+        setSize(870, 430);
+        setLocationRelativeTo(getOwner());
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
+    private JPanel dialogPane;
+    private JPanel contentPanel;
+    private GenomeBuilderPane panel1;
+    private JPanel buttonBar;
+    private JButton okButton;
+    private JButton cancelButton;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public String getCytobandFileName() {
-        return builderPane.getCytobandFileName();
-    }
-
-    public String getFastaFileName() {
-        return builderPane.getFastaFileName();
-    }
-
-    public String getChrAliasFileName() {
-        return builderPane.getChrAliasFileName();
-    }
-
-    public String getGenomeId() {
-        return builderPane.getGenomeId();
-    }
-
-    public String getGenomeDisplayName() {
-        return builderPane.getGenomeDisplayName();
+        return panel1.getCytobandFileName();
     }
 
     public String getRefFlatFileName() {
-        return builderPane.getRefFlatFileName();
+        return panel1.getRefFlatFileName();
     }
 
-    public String getGenomeArchiveLocation() {
-        return builderPane.getGenomeArchiveLocation();
+    public String getFastaFileName() {
+        return panel1.getFastaFileName();
+    }
+
+    public String getChrAliasFileName() {
+        return panel1.getChrAliasFileName();
+    }
+
+
+    public String getGenomeDisplayName() {
+        return panel1.getGenomeDisplayName();
+    }
+
+    public String getGenomeId() {
+        return panel1.getGenomeId();
     }
 
     public String getArchiveFileName() {
-        return builderPane.getArchiveFileName();
-    }
-
-    public String getSequenceLocation() {
-
-        String name = getFastaFileName();
-        if (name != null && !name.trim().equals("")) {
-            return getGenomeId() ;
-        } else {
-            return null;
-        }
-    }
-
-    public String getSequenceLocationOverride() {
-        String seqLocation = builderPane.getSequenceURL();
-        if(seqLocation == null && seqLocation.trim().length() == 0) {
-            return null;
-        }
-        return seqLocation;
-
-    }
-
-    @Override
-    public boolean cancelButtonClicked(ActionEvent event) {
-        return true;
-    }
-
-    @Override
-    public boolean okButtonClicked(ActionEvent event) {
-
-        boolean isOk = builderPane.validateSelection();
-
-        // Passed validation now get genome location and check it
-        if (isOk) {
-
-            if (Globals.IS_MAC) {
-                genomeArchiveFile = builderPane.showGenomeArchiveDirectoryChooser();
-            } else {
-                genomeArchiveFile = builderPane.showGenomeArchiveDirectoryChooser();
-            }
-            if (genomeArchiveFile == null) {
-                isOk = false;
-            }
-        }
-        return isOk;
+        return panel1.getArchiveFileName();
     }
 }

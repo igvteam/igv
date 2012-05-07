@@ -626,7 +626,7 @@ public class IgvToolsGui extends JDialog {
                 outputField.setText(inputField.getText() + ".tdf");
             } else if (cmd.equals("sort")) {
                 String input = inputField.getText();
-                int ext = input.lastIndexOf(".");
+                int ext = input.indexOf (".");
                 if (ext > 0) {
                     String output = input.substring(0, ext) + ".sorted" + input.substring(ext);
                     outputField.setText(output);

@@ -1,12 +1,24 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.track;
 
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
+import org.broad.tribble.TribbleException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 
 /**
@@ -40,7 +53,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testLoadBEDIndexed() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
+        String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         TestUtils.createIndex(filepath);
         tstLoadFi(filepath, 1);
 
@@ -48,8 +61,8 @@ public class TrackLoaderTest {
 
     @Test
     public void testLoadBEDNotIndexed() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
-        if (TrackLoader.isIndexed(filepath)) {
+        String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
+        if (TrackLoader.isIndexed(filepath, null)) {
             File f = new File(filepath + ".idx");
             f.delete();
         }
@@ -58,32 +71,29 @@ public class TrackLoaderTest {
     }
 
 
-    @Test
+    @Test(expected = TribbleException.MalformedFeatureFile.class)
     public void testBEDCodec1() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
-        boolean found_ex = false;
-        try {
-            tstLoadFi(filepath, null);
-        } catch (DataLoadException ex) {
-            found_ex = true;
-        }
-        assertTrue(found_ex);
+        String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
+        tstLoadFi(filepath, null);
     }
 
     @Test
     public void testLoadSIF() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/sample/BRCA_sif.txt";
+        String filepath = TestUtils.DATA_DIR + "sample/BRCA_sif.txt";
         //Sample information file, shouldn't have tracks. Not a great test
         tstLoadFi(filepath, 0);
     }
 
     @Test
     public void testLoadGFF() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "/gff/simfeatures.gff3";
+        String filepath = TestUtils.DATA_DIR + "gff/simfeatures.gff3";
         TrackLoader loader = new TrackLoader();
         List<Track> tracks = loader.load(new ResourceLocator(filepath), TestUtils.loadGenome());
         assertEquals(1, tracks.size());
         FeatureTrack track = (FeatureTrack) tracks.get(0);
+
+        assertEquals("notmeaningful", track.getName());
+
         List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
         assertEquals(2, features.size());
         IGVFeature feat0 = (IGVFeature) features.get(0);
@@ -94,6 +104,32 @@ public class TrackLoaderTest {
         assertEquals(7563 - 1, feat1.getStart());
         assertEquals(7938, feat1.getEnd());
     }
+
+    @Test
+    public void testLoadGFFAliasedChrs() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/aliased.gff";
+        TrackLoader loader = new TrackLoader();
+        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
+        List<Track> tracks = loader.load(new ResourceLocator(filepath), genome);
+        assertEquals(1, tracks.size());
+        FeatureTrack track = (FeatureTrack) tracks.get(0);
+
+        assertEquals("aliased.gff", track.getName());
+
+        List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
+        assertEquals(56, features.size());
+
+        features = track.getFeatures("chr5", 0, Integer.MAX_VALUE);
+        assertEquals(16, features.size());
+
+        //Non-aliased
+        features = track.getFeatures("NC_007072.3", 0, Integer.MAX_VALUE);
+        assertEquals(30, features.size());
+    }
+
+
+
+
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
         Genome genome = TestUtils.loadGenome();
@@ -119,7 +155,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testBEDLoadsAliases() throws Exception {
-        tstLoadFi(TestUtils.DATA_DIR + "/bed/canFam2_alias.bed", 1);
+        tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1);
         String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
         for (String alias : aliases) {
             Feature feat = FeatureDB.getFeature(alias);

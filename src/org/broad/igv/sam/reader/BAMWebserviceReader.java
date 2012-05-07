@@ -35,6 +35,7 @@ import org.broad.igv.util.ResourceLocator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class BAMWebserviceReader implements AlignmentReader {
     String serverURL;
     String file;
     SAMFileHeader header;
+    List<String> sequenceNames;
 
     public BAMWebserviceReader(ResourceLocator locator) {
         this.serverURL = locator.getServerURL();
@@ -87,22 +89,24 @@ public class BAMWebserviceReader implements AlignmentReader {
         return header;
     }
 
-    public Set<String> getSequenceNames() {
-        SAMFileHeader header = getHeader();
-        if (header == null) {
-            return null;
-        }
-        Set<String> seqNames = new HashSet();
-        List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
-        if (records.size() > 0) {
-            boolean ensembleChrConventions = true;
-            for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
-                String chr = rec.getSequenceName();
-                seqNames.add(chr);
+    public List<String> getSequenceNames() {
+        if (sequenceNames == null) {
+            SAMFileHeader header = getHeader();
+            if (header == null) {
+                return null;
             }
+            sequenceNames = new ArrayList();
+            List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
+            if (records.size() > 0) {
+                boolean ensembleChrConventions = true;
+                for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
+                    String chr = rec.getSequenceName();
+                    sequenceNames.add(chr);
+                }
 
+            }
         }
-        return seqNames;
+        return sequenceNames;
     }
 
     private void loadHeader() {

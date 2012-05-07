@@ -20,6 +20,7 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,7 +72,9 @@ public class SearchCommandTest {
         aliases.put("xy:12", "chr1");
         aliases.put("aaa:bbb", "chr20");
 
-        genome.addChrAliases(aliases);
+        if (genome instanceof GenomeImpl) {
+            ((GenomeImpl) genome).addChrAliases(aliases);
+        }
 
         SearchCommand cmd;
 

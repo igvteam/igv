@@ -57,7 +57,6 @@ public class FilterTracksMenuAction extends MenuAction {
     public FilterTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
     }
 
     @Override

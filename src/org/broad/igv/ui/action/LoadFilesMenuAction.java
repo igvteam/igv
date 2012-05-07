@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -47,7 +46,6 @@ public class LoadFilesMenuAction extends MenuAction {
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
-        setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
     }
 
     @Override

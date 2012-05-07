@@ -22,11 +22,11 @@ public class DensityUtil {
 
     public static void main(String[] args) throws IOException {
 
-        String genomeID = "hg18";
+        String genomeID = "b37";
         List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
         calculate(chromosomes);
         read("/xchip/igv/dev/hic/testFiles/test.hic.densities");
-       // dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
+        // dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
 
     private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
@@ -48,9 +48,9 @@ public class DensityUtil {
     }
 
     private static void calculate(List<Chromosome> chromosomes) throws IOException {
-        String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
+        //    String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
 
-//        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt"};
+        String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt", "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 
 
         Map<String, Integer> chrIndexMap = new HashMap<String, Integer>();
@@ -72,22 +72,20 @@ public class DensityUtil {
         }
 
         for (String path : paths) {
-            AsciiPairIterator iter = new AsciiPairIterator(path);
+            PairIterator iter = (path.endsWith(".bin")) ?
+                    new BinPairIterator(path) :
+                    new AsciiPairIterator(path, chrIndexMap);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
-                if (pair.getChr1().equals(pair.getChr2())) {
+                if (pair.getChr1() == (pair.getChr2())) {
                     int dist = Math.abs(pair.getPos1() - pair.getPos2());
 
-
-                    String chrName1 = pair.getChr1();
-                    Integer index = chrIndexMap.get(chrName1);
-
-                    if (index != null) {   // Make sure we know this chromosome
-                        for (int z = 0; z < gridSizeArray.length; z++) {
-                            calcs[z].addDistance(index, dist);
-                        }
+                    int index = pair.getChr1();
+                    for (int z = 0; z < gridSizeArray.length; z++) {
+                        calcs[z].addDistance(index, dist);
                     }
                 }
+
             }
         }
         for (int z = 0; z < gridSizeArray.length; z++) {

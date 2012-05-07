@@ -46,7 +46,6 @@ public class FitDataToWindowMenuAction extends MenuAction {
     public FitDataToWindowMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
     }
 
     @Override

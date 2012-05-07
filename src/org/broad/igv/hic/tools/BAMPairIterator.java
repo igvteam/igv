@@ -25,6 +25,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author Jim Robinson
@@ -35,6 +36,8 @@ public class BAMPairIterator implements PairIterator {
     AlignmentPair nextPair = null;
     CloseableIterator<Alignment> iterator;
     private AlignmentReader reader;
+    // Map of name -> index
+    private Map<String, Integer> chromosomeOrdinals;
 
     public BAMPairIterator(String path) throws IOException {
 
@@ -58,10 +61,15 @@ public class BAMPairIterator implements PairIterator {
 
                     if ((alignment.getChr().equals(mate.getChr()) && alignment.getStart() < mate.getStart()) ||
                             (alignment.getChr().compareTo(mate.getChr()) < 0)) {
-                        nextPair = new AlignmentPair(alignment.getChr(), alignment.getStart(), mate.getChr(),
-                                mate.getStart());
+                        final String chrom1 = alignment.getChr();
+                         final String chrom2 = mate.getChr();
+                        if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
+                            int chr1 = chromosomeOrdinals.get(chrom1);
+                            int chr2 = chromosomeOrdinals.get(chrom2);
+                             nextPair = new AlignmentPair(chr1, alignment.getStart(), chr2, mate.getStart());
+                        }
+                        return;
                     }
-                    return;
                 }
             }
 

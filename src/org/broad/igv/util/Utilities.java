@@ -52,7 +52,6 @@ import java.util.zip.ZipOutputStream;
 public class Utilities {
 
     private static Logger log = Logger.getLogger(Utilities.class);
-    final static int ZIP_ENTRY_CHUNK_SIZE = 64000;
 
     public static String base64Encode(String str) {
         return Base64Coder.encodeString(str);
@@ -162,44 +161,6 @@ public class Utilities {
     }
 
     /**
-     * Build a ZipEntry.
-     *
-     * @param entryName
-     * @param bytes
-     * @param zipOutputStream
-     * @param isCompressed
-     * @return
-     * @throws java.io.IOException
-     * @throws java.io.IOException
-     */
-    public static ZipEntry createZipEntry(String entryName, byte[] bytes,
-                                          ZipOutputStream zipOutputStream, boolean isCompressed)
-            throws IOException, IOException {
-
-        ZipEntry zipEntry = new ZipEntry(entryName);
-
-        if (isCompressed) {
-            zipEntry.setMethod(ZipEntry.DEFLATED);
-        } else {
-            zipEntry.setMethod(ZipEntry.STORED);
-            zipEntry.setCompressedSize(bytes.length);
-            zipEntry.setSize(bytes.length);
-            zipEntry.setCrc(getCrc(bytes));
-        }
-
-        zipOutputStream.putNextEntry(zipEntry);
-
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(zipOutputStream);
-
-        bufferedOutputStream.write(bytes);
-        bufferedOutputStream.flush();
-
-        zipOutputStream.closeEntry();
-
-        return zipEntry;
-    }
-
-    /**
      * @param buffer
      * @return
      * @throws java.io.IOException
@@ -234,131 +195,6 @@ public class Utilities {
         return fileName;
     }
 
-    static public void createZipFile(File zipOutputFile, File[] inputFiles)
-            throws FileNotFoundException, IOException {
 
-        if (zipOutputFile == null) {
-            return;
-        }
-
-        if ((inputFiles == null) || (inputFiles.length == 0)) {
-            return;
-        }
-
-        ZipOutputStream zipOutputStream = null;
-
-        try {
-            zipOutputStream = new ZipOutputStream(new FileOutputStream(zipOutputFile));
-
-            for (File file : inputFiles) {
-
-                if (file == null) {
-                    continue;
-                }
-
-                long fileLength = file.length();
-
-                ZipEntry zipEntry = new ZipEntry(file.getName());
-
-                zipEntry.setSize(fileLength);
-                zipOutputStream.putNextEntry(zipEntry);
-
-                BufferedInputStream bufferedInputstream = null;
-
-                try {
-                    InputStream inputStream = new FileInputStream(file);
-
-                    bufferedInputstream = new BufferedInputStream(inputStream);
-
-                    int bytesRead = 0;
-                    byte[] data = new byte[ZIP_ENTRY_CHUNK_SIZE];
-
-                    while ((bytesRead = bufferedInputstream.read(data)) != -1) {
-                        zipOutputStream.write(data, 0, bytesRead);
-                    }
-                } finally {
-                    if (bufferedInputstream != null) {
-                        bufferedInputstream.close();
-                    }
-                }
-            }
-        } finally {
-            if (zipOutputStream != null) {
-                zipOutputStream.flush();
-                zipOutputStream.close();
-            }
-        }
-    }
-
-    public static File getFileFromURL(URL url) {
-        return getFileFromURLString(url.toExternalForm());
-    }
-
-    public static File getFileFromURLString(String urlText) {
-
-        File file = null;
-
-        try {
-            URL url = new URL(urlText);
-            URI uri = url.toURI();
-
-            file = new File(uri.getPath());
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(), e);
-        } catch (URISyntaxException e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return file;
-    }
-
-    final public static String[] fastSplit(String text, String delimeter) {
-
-        List<String> list = new ArrayList();
-
-        if (text == null || text.length() < 1) {
-            return new String[0];
-        }
-
-        while (true) {
-
-            int index = text.indexOf(delimeter);
-
-            // No more text to split
-            if (index == -1) {
-                if (text.length() > 0) {
-                    list.add(text);
-                }
-                break;
-            }
-
-            if (text.length() > 0) {
-
-                // Store text up to index
-                String newText = text.substring(0, index);
-
-                // Trim leading delimeters
-                while (newText.startsWith(delimeter)) {
-                    newText = newText.substring(1, newText.length());
-                }
-                if (newText.length() > 0) {
-                    list.add(newText);
-                }
-
-                // Reset the string to the remaining text
-                int length = text.length();
-                if (length > 1) {
-                    text = text.substring(index + 1, length);
-
-                    // Trim leading delimeters
-                    while (text.startsWith(delimeter)) {
-                        text = text.substring(1, text.length());
-                    }
-                }
-            }
-        }
-
-        return list.toArray(new String[list.size()]);
-    }
 
 }

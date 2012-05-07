@@ -24,15 +24,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.LocusScore;
 import org.broad.tribble.Feature;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.FeatureTrack;
-
-import java.awt.*;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * @author jrobinso

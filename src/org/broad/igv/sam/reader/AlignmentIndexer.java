@@ -17,6 +17,7 @@
  */
 package org.broad.igv.sam.reader;
 
+import org.broad.igv.Globals;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -91,8 +92,6 @@ public abstract class AlignmentIndexer {
         String lastChr = null;
         int lastAlignmentStart = 0;
 
-        String[] fields = new String[100];
-
         FeatureIndex featureIndex = new FeatureIndex(tileWidth);
         int recordCount = 0;
         long filePosition = 0;
@@ -114,7 +113,8 @@ public abstract class AlignmentIndexer {
 
             //int nBytes = nextLine.length();
             nextLine = nextLine.trim();
-            int nFields = ParsingUtils.split(nextLine, fields, '\t');
+            String[] fields = Globals.tabPattern.split(nextLine);
+            int nFields = fields.length;
             if (!nextLine.startsWith("@") && nFields > 3 && isMapped(fields)) {
 
                 String chr = getChromosome(fields);

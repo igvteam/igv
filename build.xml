@@ -1,22 +1,16 @@
 <!--
-~ Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
-~
-~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
-~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
-~
-~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
-~ WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
-~ WITH LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
-~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
-~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
-~ OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
-~ ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
-~ THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
-~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
--->
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
 
 <project name="IGV" default="all" basedir=".">
+    <import file="build_macros.xml"/>
 
     <property name="jar.name" value="igv.jar"/>
     <property name="main-class" value="org.broad.igv.ui.Main"/>
@@ -37,13 +31,6 @@
     <property name="jar.path" value="${dist.dir}${jar.name}"/>
     <property name="dist.lib.dir" value="${dist.dir}lib/"/>
 
-    <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
-    <property name="build-number" value="0"/>
-    <property name="version" value="user"/>
-    <!--Note: $$ translates to $, because $ is a special character-->
-    <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$$$_dataServerRegistry.txt"/>
-
-
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="docs.dir" value="${basedir}/docs"/>
 
@@ -61,17 +48,17 @@
     </target>
 
 
-    <!--We could use this to check for availability, and use BCEL by default.
-        Going to leave it up to the user though -->
-    <!--condition property="use.bcel">
+    <!-- Would like to be able to set bcel to true or false
+    This is easy in ant 1.8, but not earlier versions-->
+    <condition property="act.include.libs">
         <and>
             <available classname="org.apache.tools.ant.util.depend.bcel.FullAnalyzer"/>
-            <not><isset property="nobcel"/></not>
+            <istrue value="${include.libs}"/>
         </and>
-    </condition-->
+    </condition>
 
     <!-- Unzip jars to the tmp directory -->
-    <target name="prepare" if="use.bcel">
+    <target name="prepare" if="act.include.libs">
         <unzip dest="${tmp.dir}">
             <patternset>
                 <include name="**/*"/>
@@ -80,6 +67,7 @@
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
+                <exclude name="**/goby-io-igv.jar"/>
             </fileset>
         </unzip>
     </target>
@@ -100,18 +88,7 @@
         </copy>
 
         <antcall target="prepare"/>
-
-        <tstamp>
-            <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
-        </tstamp>
-
-        <echo message="Resource ${resource.dir}"/>
-        <echo message="Version ${version}"/>
-        <replace file="${resource.dir}about.properties" token="@VERSION" value="${version}"/>
-        <replace file="${resource.dir}about.properties" token="@BUILD" value="${build-number}"/>
-        <replace file="${resource.dir}about.properties" token="@TIMESTAMP" value="${timestamp}"/>
-        <replace file="${resource.dir}about.properties" token="@DEFAULT_MASTER_RESOURCE_URL"
-                 value="${data-server-url}"/>
+        <write_version targetFile="${resource.dir}about.properties"/>
 
         <condition property="compile.tests">
             <and>
@@ -151,10 +128,11 @@
                 </manifest>
             </jar>
             <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
+            <copy file="${lib.dir}goby-io-igv.jar" tofile="${dist.dir}goby-io-igv.jar" overwrite="true"/>
         </sequential>
     </macrodef>
 
-    <target name="build-all" depends="compile" unless="use.bcel" description="Build the IGV JAR, without using bcel">
+    <target name="build-small" depends="compile" unless="act.include.libs" description="Build the IGV JAR, without including libraries">
         <fileset dir="${tmp.dir}" id="files"/>
 
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
@@ -164,14 +142,14 @@
         <build includedFileset="files"/>
     </target>
 
-    <target name="build-small" depends="compile" if="use.bcel"
-            description="Build the IGV JAR using BCEL to take only required classes">
+    <target name="build-all" depends="compile" if="act.include.libs"
+            description="Build the IGV JAR, including libraries, using BCEL to take only required classes">
 
         <classfileset dir="${tmp.dir}" id="files">
             <root classname="${main-class}"/>
         </classfileset>
 
-        <property name="class-path" value="batic-codec.jar"/>
+        <property name="class-path" value="batic-codec.jar goby-io-igv.jar"/>
 
         <build includedFileset="files"/>
     </target>
@@ -188,7 +166,7 @@
     </path>
 
     <property name="test.reports" value="${basedir}/reports"/>
-    <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
+    <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
 
     <fileset dir="${testtmp.dir}" id="allfileset">
         <include name="**/*.class"/>
@@ -217,7 +195,7 @@
         <delete dir="${test.reports}"/>
         <mkdir dir="${test.reports}"/>
 
-        <junit haltonfailure="no" showoutput="no" printsummary="no" failureproperty="tests.failed" maxmemory="1500m">
+        <junit haltonfailure="no" showoutput="no" printsummary="on" failureproperty="tests.failed" maxmemory="1500m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>

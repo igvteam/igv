@@ -34,10 +34,12 @@ Header
   numberOfZooms
 
     --------------
-    MatrixZoomHeader // repeat for each zoom
+    MatrixZoomData  //repeat for each zoom
     --------------
+
     zoom
-    binSize     // in bp
+    sum           // Sum of counts over all records
+    binSize      // in bp
     blockBinCount   // in # bin columns
     columnCount
     numberOfBlocks
@@ -49,9 +51,7 @@ Header
       filePosition
       sizeInbytes
 
-    --------------
-    MatrixZoomData  //repeat for each zoom
-    --------------
+
 
       ----------
       Block         // repeat for each block

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -205,8 +198,8 @@ public class IgvTools {
     void run(String[] argv) {
 
         if (argv.length == 0) {
-            System.out.println("Error: No arguments provided");
             System.out.println(usageString());
+            System.out.println("Error: No arguments provided");
             return;
         }
 
@@ -239,7 +232,7 @@ public class IgvTools {
             parser.parse(argv);
         } catch (CmdLineParser.OptionException e) {
             System.err.println(e.getMessage());
-            System.out.println(usageString(command));
+            System.out.println("Enter igvtools help " + command + " for help on this command");
             return;
         }
 
@@ -254,7 +247,7 @@ public class IgvTools {
         String[] nonOptionArgs = parser.getRemainingArgs();
 
         try {
-            String basic_syntax = "Error in syntax. Expected: " + command + " [options] inputfile outputfile";
+            String basic_syntax = "Error in syntax. Enter igvtools help " + command + " for usage instructions.";
 
             // All remaining commands require an input file, and most need the file extension.  Do that here.
             validateArgsLength(nonOptionArgs, 2, "Error: No input file provided");
@@ -278,7 +271,7 @@ public class IgvTools {
 
             if (command.equals(CMD_COUNT) || command.equals(CMD_TILE) || command.equals(CMD_TOTDF)) {
                 // Parse out options common to both count and tile
-                validateArgsLength(nonOptionArgs, 4, usageString(command));
+                validateArgsLength(nonOptionArgs, 4, basic_syntax);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
                 String genomeId = nonOptionArgs[3];
@@ -312,7 +305,7 @@ public class IgvTools {
                 }
 
             } else if (command.equals(CMD_SORT)) {
-                validateArgsLength(nonOptionArgs, 3, usageString(command));
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String ofile = nonOptionArgs[2];
                 doSort(ifile, ofile, tmpDirName, maxRecords);
             } else if (command.equals(CMD_INDEX)) {
@@ -322,7 +315,7 @@ public class IgvTools {
                 String outputDir = (String) parser.getOptionValue(outputDirOption, null);
                 doIndex(ifile, outputDir, indexType, binSize);
             } else if (command.equals(CMD_FORMATEXP)) {
-                validateArgsLength(nonOptionArgs, 3, usageString(command));
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
@@ -351,11 +344,6 @@ public class IgvTools {
                 }
                 String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                 doGCTtoIGV(typeString, ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
-            } else if (command.equals("formatexp")) {
-                validateArgsLength(nonOptionArgs, 3, basic_syntax);
-                File inputFile = new File(nonOptionArgs[1]);
-                File outputFile = new File(nonOptionArgs[2]);
-                (new ExpressionFormatter()).convert(inputFile, outputFile);
             } else if (command.toLowerCase().equals("tdftobedgraph")) {
                 validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String ofile = nonOptionArgs[2];
@@ -394,7 +382,6 @@ public class IgvTools {
             }
         } catch (PreprocessingException e) {
             System.err.println(e.getMessage());
-            System.out.println(usageString(command));
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
@@ -500,7 +487,7 @@ public class IgvTools {
 
         if (!ifile.endsWith(".affective.csv")) validateIsTilable(typeString);
 
-        System.out.println("Tile.  File = " + ifile);
+        System.out.println("toTDF.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
         if (probeFile != null && probeFile.trim().length() > 0) {
             System.out.println("Probe file = " + probeFile);
@@ -730,6 +717,12 @@ public class IgvTools {
             System.out.println("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
+        
+        if(ifile.endsWith(".bam")){
+            String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
+            System.out.println(msg);
+            throw new PreprocessingException(msg);
+        }
 
         if (outputFileName == null) {
             outputFileName = ifile;
@@ -856,7 +849,7 @@ public class IgvTools {
 
     private void validateArgsLength(String[] nonOptionArgs, int len, String failMessage) throws PreprocessingException {
         if (nonOptionArgs.length < len) {
-            throw new PreprocessingException(failMessage + "\n" + usageString());
+            throw new PreprocessingException(failMessage + "\n");
         }
     }
 
@@ -865,8 +858,7 @@ public class IgvTools {
 
         String rootDir = FileUtils.getInstallDirectory();
 
-        final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
-                IGV.getInstance().getGenomeManager();
+        final GenomeManager genomeManager = GenomeManager.getInstance();
         Genome genome = genomeManager.getCurrentGenome();
         if (genome != null && genome.getId().equals(genomeFileOrID)) {
             return genome;
@@ -903,7 +895,7 @@ public class IgvTools {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 //Right now the parser adds these to the FeatureDB map
                 //May want to move that someplace else
-                List<Feature> features = parser.loadFeatures(reader);
+                List<Feature> features = parser.loadFeatures(reader, genome);
                 is.close();
             }
         }
@@ -919,17 +911,17 @@ public class IgvTools {
     private static void validateIsTilable(String typeString) {
 
         boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-        if (!(typeString.equals(".cn") ||
-                typeString.equals(".igv") ||
-                typeString.equals(".wig") ||
+        if (!(typeString.endsWith("cn") ||
+                typeString.endsWith("igv") ||
+                typeString.endsWith("wig") ||
                 // ifile.toLowerCase().endsWith("cpg.txt") ||
-                typeString.equals(".ewig") ||
-                typeString.equals(".cn") ||
-                typeString.equals(".snp") ||
-                typeString.equals(".xcn") ||
-                typeString.equals(".gct") ||
-                typeString.equals("mage-tab") ||
-                typeString.equals(".bedgraph") ||
+                typeString.endsWith("ewig") ||
+                typeString.endsWith("cn") ||
+                typeString.endsWith("snp") ||
+                typeString.endsWith("xcn") ||
+                typeString.endsWith("gct") ||
+                typeString.endsWith("mage-tab") ||
+                typeString.endsWith("bedgraph") ||
                 Preprocessor.isAlignmentFile(typeString) ||
                 affective)) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);

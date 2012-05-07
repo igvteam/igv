@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -22,6 +15,7 @@
  */
 package org.broad.igv.util;
 
+import java.io.*;
 import java.lang.instrument.Instrumentation;
 
 /**
@@ -65,5 +59,57 @@ public class RuntimeUtils {
         }
         return instrumentation.getObjectSize(o);
     }
+
+
+    /**
+     * Start an external process with the provided message
+     *
+     * See {@link Runtime#exec(String, String[], File)} for explanation of arguments
+     * @return
+     */
+    public static Process startExternalProcess(String msg, String[] envp, File dir){
+        Runtime run = Runtime.getRuntime();
+        Process pr = null;
+
+        try {
+            pr = run.exec(msg, envp, dir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally{
+            return pr;
+        }
+    }
+
+
+    public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {
+
+
+        Process pr = startExternalProcess(cmd, envp, dir);
+        try {
+            pr.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        InputStream inputStream = null;
+        String line = "";
+        try {
+            inputStream = pr.getInputStream();
+            BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            while ((line = buf.readLine()) != null) {
+                pw.println(line);
+            }
+            pw.close();
+            return writer.toString();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+
+            }
+        }
+    }
+
 
 }

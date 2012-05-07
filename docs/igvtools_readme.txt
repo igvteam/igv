@@ -69,7 +69,7 @@ do not work with BAM files.  For manipulating BAM files use samtools.
 ---------------------------------------------------------------------------
 Command "tile"
 ---------------------------------------------------------------------------
-This command is deprecated. Use "toTDF" instead.
+Warning: This command is deprecated. Use "toTDF" instead.
 
 ---------------------------------------------------------------------------
 Command "toTDF"
@@ -87,7 +87,7 @@ the list file.
 
 Usage:
 
-  igvtools tile [options]  [inputFile] [outputFile] [genome]
+  igvtools toTDF [options]  [inputFile] [outputFile] [genome]
 
 
 Required arguments:
@@ -124,7 +124,7 @@ Options:
 
 Example:
 
-      igvtoolsh tile -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
+      igvtoolsh toTDF -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
 
 
 Notes:
@@ -253,7 +253,14 @@ Usage:
 Command "formatexp"
 ---------------------------------------------------------------------------
 
-Format GCT or RES files for display
+Format GCT or RES files for display. This should only be used if the file has not previously been log-transformed and has no negative numbers. The module:
+
+1. Takes the log2 of the data.
+2. Computes the median and subtracts it from each log2 probe value (i.e., centers on the median).
+3. Computer the MAD (mean absolute deviation) using the definition here: http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
+4. Divides each log2 probe value by the MAD.
+
+Supported input file formats are: .gct and .res
 
 Usage:
 	

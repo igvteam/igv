@@ -1,0 +1,134 @@
+C:\java\jdk16\bin\java -Didea.launcher.port=7534 "-Didea.launcher.bin.path=C:\Program Files (x86)\JetBrains\IntelliJ IDEA 10.5.2\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files (x86)\JetBrains\IntelliJ IDEA 10.5.2\lib\idea_rt.jar;C:\Program Files (x86)\JetBrains\IntelliJ IDEA 10.5.2\plugins\junit\lib\junit-rt.jar;C:\java\jdk16\jre\lib\alt-rt.jar;C:\java\jdk16\jre\lib\alt-string.jar;C:\java\jdk16\jre\lib\charsets.jar;C:\java\jdk16\jre\lib\deploy.jar;C:\java\jdk16\jre\lib\javaws.jar;C:\java\jdk16\jre\lib\jce.jar;C:\java\jdk16\jre\lib\jsse.jar;C:\java\jdk16\jre\lib\management-agent.jar;C:\java\jdk16\jre\lib\plugin.jar;C:\java\jdk16\jre\lib\resources.jar;C:\java\jdk16\jre\lib\rt.jar;C:\java\jdk16\jre\lib\ext\dnsns.jar;C:\java\jdk16\jre\lib\ext\localedata.jar;C:\java\jdk16\jre\lib\ext\sunjce_provider.jar;C:\save\IntelliJ\goby\test-classes;C:\save\IntelliJ\goby\classes;C:\save\IntelliJ\goby\src;C:\save\IntelliJ\goby\lib\commons-logging-1.1.1.jar;C:\save\IntelliJ\goby\lib\xstream-1.3.1.jar;C:\save\IntelliJ\goby\lib\commons-io-1.4.jar;C:\save\IntelliJ\goby\lib\icb-utils.jar;C:\save\IntelliJ\goby\lib\JSAP-2.1.jar;C:\save\IntelliJ\goby\lib\edu.mssm.crover.cli.jar;C:\save\IntelliJ\goby\lib\squil.jar;C:\save\IntelliJ\goby\lib\log4j-1.2.15.jar;C:\save\IntelliJ\goby\lib\bdval-api.jar;C:\save\IntelliJ\goby\lib\tisim-api.jar;C:\save\IntelliJ\goby\lib\commons-configuration-1.6.jar;C:\save\IntelliJ\goby\lib\commons-collections-3.2.1.jar;C:\save\IntelliJ\goby\lib\commons-exec-1.0.1.jar;C:\save\IntelliJ\goby\lib\pj20091226.jar;C:\save\IntelliJ\goby\lib\JRI.jar;C:\save\IntelliJ\goby\lib\commons-lang-2.5.jar;C:\save\IntelliJ\goby\lib\commons-math-2.1.jar;C:\save\IntelliJ\goby\goby-spi.jar;C:\save\IntelliJ\goby\lib\dsiutils-1.0.12.jar;C:\save\IntelliJ\goby\lib\fastutil-6.3.jar;C:\save\IntelliJ\goby\lib\junitx-5.1.jar;C:\Program Files (x86)\JetBrains\IntelliJ IDEA 10.5.2\lib\junit-4.8.jar;C:\save\IntelliJ\goby\lib\easymock-3.0.jar;C:\save\IntelliJ\goby\lib\objenesis-1.2.jar;C:\save\IntelliJ\goby\lib\asm-4.0_RC1.jar;C:\save\IntelliJ\goby\lib\cglib-2.2.2.jar;C:\save\IntelliJ\goby\lib\protobuf-java-2.4.1.jar;C:\save\IntelliJ\goby\lib\picard-1.64.jar;C:\save\IntelliJ\goby\lib\sam-1.64.jar;C:\save\IntelliJ\goby\lib\commons-pool-1.6.jar;C:\save\IntelliJ\goby\lib\reflections-0.9.5.jar;C:\save\IntelliJ\goby\lib\guava-r08.jar;C:\save\IntelliJ\goby\lib\slf4j-api-1.6.1.jar;C:\save\IntelliJ\goby\lib\slf4j-nop-1.6.4.jar;C:\save\IntelliJ\goby\lib\javassist-3.12.1.GA.jar" com.intellij.rt.execution.application.AppMain com.intellij.rt.execution.junit.JUnitStarter -ideVersion5 -junit4 edu.cornell.med.icb.goby.readers.sam.TestSamRecordParser,testSamToCompactTrickCase17
+DEBUG SamRecordParser      - 
+------------------------------------
+Read Name=509.6.68.19057.157284
+Read length=100
+Cigar=6S23M1I6M1D16M1I47M
+MD:Z=3G4A7C4C1A2T2^T2C4T3A0G5C44
+             00000012345678901234567890123345678901234567890123456678901234567890123456789012345678901234567890123
+allRefBases =000000GCTGTCCTAGCCCAAACTTTACG-ATCTGGTAACAGGGTAGGAGAAT-GGCTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC
+allReadBases=TTACCCGCTTTCCTTGCCCAAATTTTAAGTTTCNGGAAAAGGGGAGGGAAATGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC
+             0987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210987654321
+readQualsStr=#######################################################ECGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHH
+allReadQuals=[0:2],[1:2],[2:2],[3:2],[4:2],[5:2],[6:2],[7:2],[8:2],[9:2],[10:2],[11:2],[12:2],[13:2],[14:2],[15:2],[16:2],[17:2],[18:2],[19:2],[20:2],[21:2],[22:2],[23:2],[24:2],[25:2],[26:2],[27:2],[28:2],[29:2],[30:2],[31:2],[32:2],[33:2],[34:2],[35:2],[36:2],[37:2],[38:2],[39:2],[40:2],[41:2],[42:2],[43:2],[44:2],[45:2],[46:2],[47:2],[48:2],[49:2],[50:2],[51:2],[52:2],[53:2],[54:2],[55:36],[56:34],[57:38],[58:38],[59:38],[60:38],[61:38],[62:38],[63:38],[64:38],[65:38],[66:38],[67:38],[68:38],[69:38],[70:38],[71:38],[72:38],[73:38],[74:38],[75:38],[76:38],[77:38],[78:38],[79:38],[80:38],[81:39],[82:39],[83:39],[84:39],[85:39],[86:39],[87:39],[88:39],[89:39],[90:39],[91:39],[92:39],[93:39],[94:39],[95:39],[96:39],[97:39],[98:39],[99:39]
+Alignment Start Position = 45881869
+Reverse strand? = true
+
+DEBUG SamRecordParser      - Cigar Ops:
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=S len=6 consumesReads=Yes consumesRefs=No
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=M len=23 consumesReads=Yes consumesRefs=Yes
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=I len=1 consumesReads=Yes consumesRefs=No
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=M len=6 consumesReads=Yes consumesRefs=Yes
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=D len=1 consumesReads=No consumesRefs=Yes
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=M len=16 consumesReads=Yes consumesRefs=Yes
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=I len=1 consumesReads=Yes consumesRefs=No
+DEBUG SamRecordParser      - --new cigar element--
+DEBUG SamRecordParser      -    op=M len=47 consumesReads=Yes consumesRefs=Yes
+DEBUG GobySamSegment       - 
+alignStart  =45881868
+queryPos    =6
+qAlignLen   =94
+tAlignLen   =93
+refPosition =1
+readIndex   =94
+                       1         2         3  ?    ? 4         5         6         7         8         9
+             01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234
+refBases    =GCTGTCCTAGCCCAAACTTTACG-ATCTGGTAACAGGGTAGGAGAAT-GGCTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC
+readBases   =GCTTTCCTTGCCCAAATTTTAAGTTTCNGG-AAAAGGGGAGGGAAATGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGTGACAGAGTGTCAC
+diff        =___X____X_______X____X_XX__X__X__X____X___XX___X__X____________________________________________
+                      1         2          3         4          5         6         7         8         9
+             12345678901234567890123345678901234567890123456678901234567890123456789012345678901234567890123
+             43210987654321098765432109876544321098765432109876543210987654321098765432109876543210987654321
+                 9         8         7          6         5         4         3         2         1
+readQuals   =[0:2],[1:2],[2:2],[3:2],[ 4:2],[ 5:2],[ 6:2],[ 7:2],[ 8:2],[ 9:2],[10:2],[11:2],[12:2],[13:2],[14:2],[15:2],[16:2],[17:2],[18:2],[19:2],[20:2],[21:2],[22:2],[23:2],[24:2],[25:2],[26:2],[27:2],[28:2],[29:2],[30:-1],[31:2],[32:2],[33:2],[34:2],[35:2],[36:2],[37:2],[38:2],[39:2],[40:2],[41:2],[42:2],[43:2],[44:2],[45:2],[46:2],[47:2],[48:2],[49:2],[50:36],[51:34],[52:38],[53:38],[54:38],[55:38],[56:38],[57:38],[58:38],[59:38],[60:38],[61:38],[62:38],[63:38],[64:38],[65:38],[66:38],[67:38],[68:38],[69:38],[70:38],[71:38],[72:38],[73:38],[74:38],[75:38],[76:39],[77:39],[78:39],[79:39],[80:39],[81:39],[82:39],[83:39],[84:39],[85:39],[86:39],[87:39],[88:39],[89:39],[90:39],[91:39],[92:39],[93:39],[94:39]
+allReadQuals=[6:2],[7:2],[8:2],[9:2],[10:2],[11:2],[12:2],[13:2],[14:2],[15:2],[16:2],[17:2],[18:2],[19:2],[20:2],[21:2],[22:2],[23:2],[24:2],[25:2],[26:2],[27:2],[28:2],[29:2],[30:2],[31:2],[32:2],[33:2],[34:2],[35:2],        [36:2],[37:2],[38:2],[39:2],[40:2],[41:2],[42:2],[43:2],[44:2],[45:2],[46:2],[47:2],[48:2],[49:2],[50:2],[51:2],[52:2],[53:2],[54:2],[55:36],[56:34],[57:38],[58:38],[59:38],[60:38],[61:38],[62:38],[63:38],[64:38],[65:38],[66:38],[67:38],[68:38],[69:38],[70:38],[71:38],[72:38],[73:38],[74:38],[75:38],[76:38],[77:38],[78:38],[79:38],[80:38],[81:39],[82:39],[83:39],[84:39],[85:39],[86:39],[87:39],[88:39],[89:39],[90:39],[91:39],[92:39],[93:39],[94:39],[95:39],[96:39],[97:39],[98:39],[99:39]
+             [0:2],[1:2],[2:2],[3:2],[4:2],[5:2],[6:2],[7:2],[8:2],[9:2],[10:2],[11:2],[12:2],[13:2],[14:2],[15:2],[16:2],[17:2],[18:2],[19:2],[20:2],[21:2],[22:2],[23:2],[24:2],[25:2],[26:2],[27:2],[28:2],[29:2],[30:-1],[31:2],[32:2],[33:2],[34:2],[35:2],[36:2],[37:2],[38:2],[39:2],[40:2],[41:2],[42:2],[43:2],[44:2],[45:2],[46:2],[47:2],[48:2],[49:2],[50:36],[51:34],[52:38],[53:38],[54:38],[55:38],[56:38],[57:38],[58:38],[59:38],[60:38],[61:38],[62:38],[63:38],[64:38],[65:38],[66:38],[67:38],[68:38],[69:38],[70:38],[71:38],[72:38],[73:38],[74:38],[75:38],[76:39],[77:39],[78:39],[79:39],[80:39],[81:39],[82:39],[83:39],[84:39],[85:39],[86:39],[87:39],[88:39],[89:39],[90:39],[91:39],[92:39],[93:39],[94:39]
+
+sequence_variations {
+  to: 'T'
+  from: 'G'
+  position: 4
+  readIndex: 91
+  toQuality: [2]
+sequence_variations {
+  to: 'T'
+  from: 'A'
+  position: 9
+  readIndex: 86
+  toQuality: [2]
+sequence_variations {
+  to: 'T'
+  from: 'C'
+  position: 17
+  readIndex: 78
+  toQuality: [2]
+sequence_variations {
+  to: 'A'
+  from: 'C'
+  position: 22
+  readIndex: 73
+  toQuality: [2]
+sequence_variations {
+  to: 'T'
+  from: '-'
+  position: 23
+  readIndex: 71
+  toQuality: [2]
+sequence_variations {
+  to: 'T'
+  from: 'A'
+  position: 24
+  readIndex: 70
+  toQuality: [2]
+sequence_variations {
+  to: 'N'
+  from: 'T'
+  position: 27
+  readIndex: 67
+  toQuality: [2]
+sequence_variations {
+  to: '-'
+  from: 'T'
+  position: 30
+  readIndex: 64
+  toQuality: []
+sequence_variations {
+  to: 'A'
+  from: 'C'
+  position: 33
+  readIndex: 62
+  toQuality: [2]
+sequence_variations {
+  to: 'G'
+  from: 'T'
+  position: 38
+  readIndex: 57
+  toQuality: [2]
+sequence_variations {
+  to: 'GA'
+  from: 'AG'
+  position: 42
+  readIndex: 53
+  toQuality: [2, 2]
+sequence_variations {
+  to: 'G'
+  from: '-'
+  position: 46
+  readIndex: 48
+  toQuality: [2]
+sequence_variations {
+  to: 'T'
+  from: 'C'
+  position: 49
+  readIndex: 45
+  toQuality: [36]
+
+
+Process finished with exit code 0

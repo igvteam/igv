@@ -1,0 +1,5 @@
+# head -1000 /Volumes/storage/hpcc/uec-00/bberman/BSseq/AACR10/MERGES.030510/methylCGsRich_normalM030510_chr11.txt | grep "+" | perl -ne 'use POSIX; chomp; @f=split(/\t/); if ($f[3]+$f[5]>0) {$m=$f[3]/($f[3]+$f[5]); print join("\t","chr11",$f[0],$f[0]+2, ".", sprintf("%d",ceil(($m*1000)-0.5)),".",sprintf("%0.3f",$m*100),$f[3]+$f[5])."\n"};' >> jhu-usc.edu_UCEC.IlluminaHiSeq_WGBS.Level_3.1.0.0.SAMPLE.bed
+
+bedSort jhu-usc.edu_UCEC.IlluminaHiSeq_WGBS.Level_3.1.0.0.hg18.SAMPLE.bed jhu-usc.edu_UCEC.IlluminaHiSeq_WGBS.Level_3.1.0.0.hg18.SAMPLE.bed
+
+bedToBigBed ./jhu-usc.edu_UCEC.IlluminaHiSeq_WGBS.Level_3.1.0.0.hg18.SAMPLE.bed ~/Dropbox/lib/hg18.chrom.sizes ./jhu-usc.edu_UCEC.IlluminaHiSeq_WGBS.Level_3.1.0.0.hg18.SAMPLE.bb -bedFields=6 -as=./BED6_2_BSSEQ.as

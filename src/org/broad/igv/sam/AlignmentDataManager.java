@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -54,7 +47,6 @@ public class AlignmentDataManager {
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
-    private int maxLevels;
 
     private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
@@ -68,7 +60,6 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -85,7 +76,7 @@ public class AlignmentDataManager {
      */
     private void initChrMap(Genome genome) {
         if (genome != null) {
-            Set<String> seqNames = reader.getSequenceNames();
+            List<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
                 for (String chr : seqNames) {
                     String alias = genome.getChromosomeAlias(chr);
@@ -97,11 +88,10 @@ public class AlignmentDataManager {
 
     public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
         this.experimentType = experimentType;
-        if(experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
+        if (experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
             showSpliceJunctions = false;
-        }
-        else {
-           showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        } else {
+            showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         }
     }
 
@@ -125,15 +115,6 @@ public class AlignmentDataManager {
         return reader.hasIndex();
     }
 
-    public int getMaxLevels() {
-        return maxLevels;
-    }
-
-    public void setMaxLevels(int maxLevels) {
-        clear();
-        this.maxLevels = maxLevels;
-    }
-
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
     }
@@ -144,7 +125,7 @@ public class AlignmentDataManager {
      *
      * @return
      */
-    public Set<String> getSequenceNames() {
+    public List<String> getSequenceNames() {
         return reader.getSequenceNames();
     }
 
@@ -174,7 +155,7 @@ public class AlignmentDataManager {
     }
 
 
-    public void setViewAsPairs(boolean option, AlignmentTrack.GroupOption groupByOption, String tag) {
+    public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
         if (option == this.viewAsPairs) {
             return;
         }
@@ -183,13 +164,12 @@ public class AlignmentDataManager {
         this.viewAsPairs = option;
 
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame, currentPairState, groupByOption, tag);
+            repackAlignments(frame, currentPairState, renderOptions);
         }
     }
 
+    private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState, AlignmentTrack.RenderOptions renderOptions) {
 
-    private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState,
-                                  AlignmentTrack.GroupOption groupByOption, String tag) {
         if (currentPairState == true) {
             AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
             if (loadedInterval == null) {
@@ -229,14 +209,12 @@ public class AlignmentDataManager {
                     alignments.iterator(),
                     loadedInterval.getEnd(),
                     viewAsPairs,
-                    groupByOption,
-                    tag,
-                    MAX_ROWS);
+                    renderOptions);
 
             loadedInterval.setAlignmentRows(tmp);
 
         } else {
-            repackAlignments(referenceFrame, groupByOption, tag);
+            repackAlignments(referenceFrame, renderOptions);
         }
     }
 
@@ -245,7 +223,7 @@ public class AlignmentDataManager {
      *
      * @param referenceFrame
      */
-    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption groupByOption, String tag) {
+    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.RenderOptions renderOptions) {
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) {
@@ -259,17 +237,14 @@ public class AlignmentDataManager {
         LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
                 loadedInterval.getEnd(),
-                viewAsPairs,
-                groupByOption,
-                tag,
-                MAX_ROWS);
+                viewAsPairs || renderOptions.isPairedArcView(),
+                renderOptions);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                                     AlignmentTrack.GroupOption groupByOption,
-                                                                                     String tag,
+                                                                                     AlignmentTrack.RenderOptions renderOptions,
                                                                                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final String genomeId = context.getGenomeId();
@@ -281,7 +256,7 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
-            loadAlignments(chr, start, end, groupByOption, tag, context, bisulfiteContext);
+            loadAlignments(chr, start, end, renderOptions, context, bisulfiteContext);
         }
 
         // If there is any overlap in the loaded interval and the requested interval return it.
@@ -299,8 +274,7 @@ public class AlignmentDataManager {
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
-                                            final AlignmentTrack.GroupOption groupByOption,
-                                            final String tag,
+                                            final AlignmentTrack.RenderOptions renderOptions,
                                             final RenderContext context,
                                             final AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
@@ -328,28 +302,30 @@ public class AlignmentDataManager {
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
+                DownsampleOptions downsampleOptions = new DownsampleOptions();
+
                 CloseableIterator<Alignment> iter = null;
                 try {
 
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
                     List<AlignmentCounts> counts = new ArrayList();
-
+                    List<CachingQueryReader.DownsampledInterval> downsampledIntervals = new ArrayList<CachingQueryReader.DownsampledInterval>();
                     List<SpliceJunctionFeature> spliceJunctions = null;
                     if (showSpliceJunctions) {
                         spliceJunctions = new ArrayList<SpliceJunctionFeature>();
                     }
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, maxLevels,
-                            peStats, bisulfiteContext);
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, downsampledIntervals,
+                            downsampleOptions, peStats, bisulfiteContext);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
                     LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, viewAsPairs, groupByOption, tag, maxLevels);
+                            intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                            alignmentRows, counts, spliceJunctions);
+                            alignmentRows, counts, spliceJunctions, downsampledIntervals);
 
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 
@@ -360,8 +336,8 @@ public class AlignmentDataManager {
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
                     if (context.getPanel() != null) {
-                        context.getPanel().invalidate();
-                        context.getPanel().repaint();
+                        //     context.getPanel().invalidate();
+                        //     context.getPanel().repaint();
                     }
 
                 } catch (Exception exception) {
@@ -452,6 +428,43 @@ public class AlignmentDataManager {
 
     public boolean isShowSpliceJunctions() {
         return showSpliceJunctions;
+    }
+
+    public static class DownsampleOptions {
+        private boolean downsample;
+        private int sampleWindowSize;
+        private int maxReadCount;
+
+        public DownsampleOptions() {
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            downsample = prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
+            sampleWindowSize = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
+            maxReadCount = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+        }
+
+        public boolean isDownsample() {
+            return downsample;
+        }
+
+        public void setDownsample(boolean downsample) {
+            this.downsample = downsample;
+        }
+
+        public int getSampleWindowSize() {
+            return sampleWindowSize;
+        }
+
+        public void setSampleWindowSize(int sampleWindowSize) {
+            this.sampleWindowSize = sampleWindowSize;
+        }
+
+        public int getMaxReadCount() {
+            return maxReadCount;
+        }
+
+        public void setMaxReadCount(int maxReadCount) {
+            this.maxReadCount = maxReadCount;
+        }
     }
 }
 

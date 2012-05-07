@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg18" locus="chr1:45881855-45881961" version="4">
+    <Resources>
+        <Resource path="/Volumes/Macintosh_HD_2/bug2/sorted-tricky-spliced-17.index"/>
+        <Resource path="/Volumes/Macintosh_HD_2/bug2/XAA-fail-qual.bam"/>
+    </Resources>
+    <Panel height="657" name="DataPanel" width="1484">
+        <Track altColor="0,0,178" autoScale="false" color="175,175,175" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;175,175,175" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="/Volumes/Macintosh_HD_2/bug2/sorted-tricky-spliced-17.index_coverage" name="sorted-tricky-spliced-17.index Coverage" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" color="0,0,178" colorOption="READ_STRAND" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="/Volumes/Macintosh_HD_2/bug2/sorted-tricky-spliced-17.index" name="sorted-tricky-spliced-17.index" showDataRange="true" sortByTag="" visible="true"/>
+        <Track altColor="0,0,178" autoScale="false" color="175,175,175" colorScale="ContinuousColorScale;0.0;10.0;255,255,255;175,175,175" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="/Volumes/Macintosh_HD_2/bug2/XAA-fail-qual.bam_coverage" name="XAA-fail-qual.bam Coverage" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" color="0,0,178" colorOption="READ_STRAND" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="/Volumes/Macintosh_HD_2/bug2/XAA-fail-qual.bam" name="XAA-fail-qual.bam" showDataRange="true" sortByTag="" visible="true"/>
+    </Panel>
+    <Panel height="93" name="FeaturePanel" width="1484">
+        <Track altColor="0,0,178" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" showDataRange="true" sortable="false" visible="true"/>
+        <Track altColor="0,0,178" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" showDataRange="true" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <PanelLayout dividerFractions="0.8705416116248349"/>
+</Session>

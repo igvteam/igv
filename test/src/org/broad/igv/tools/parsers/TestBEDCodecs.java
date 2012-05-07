@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.tools.parsers;
@@ -69,7 +62,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testLargeBedNoHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.noheader.sorted.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.noheader.sorted.bed";
         tstUnigeneBed(bedFile, new BEDCodec());
 
         tstUnigeneBed(bedFile, new IGVBEDCodec());
@@ -77,7 +70,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testLargeBedWithHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.withheader.sorted.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.withheader.sorted.bed";
         tstUnigeneBed(bedFile, new BEDCodec());
 
         tstUnigeneBed(bedFile, new IGVBEDCodec());
@@ -85,7 +78,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testLargeBedWeirdHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.weirdheader.sorted.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.weirdheader.sorted.bed";
         tstUnigeneBed(bedFile, new BEDCodec());
 
         tstUnigeneBed(bedFile, new IGVBEDCodec());
@@ -93,7 +86,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testLargeBedNoTrack() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.notrack.sorted.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/Unigene.notrack.sorted.bed";
         tstUnigeneBed(bedFile, new BEDCodec());
 
         tstUnigeneBed(bedFile, new IGVBEDCodec());
@@ -101,7 +94,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testGffTags() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/gene.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/gene.bed";
         Genome genome = TestUtils.loadGenome();
 
         FeatureCodec<Feature> codec1 = CodecFactory.getCodec(bedFile, genome);
@@ -132,7 +125,7 @@ public class TestBEDCodecs {
             startOffset = ((BEDCodec) codec).getStartOffset();
         }
 
-        String bedFile = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/intervalTest.bed";
 
         // Interval index
         TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
@@ -213,7 +206,7 @@ public class TestBEDCodecs {
 
     @Test
     public void testLength1Feature() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/snp_calls.bed";
+        String bedFile = TestUtils.DATA_DIR + "bed/snp_calls.bed";
         TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
         FeatureCodec codec = CodecFactory.getCodec(bedFile, null);
 

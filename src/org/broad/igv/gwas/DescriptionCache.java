@@ -19,8 +19,8 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.ParsingUtils;
 
 import java.util.ArrayList;
 
@@ -42,7 +42,7 @@ public class DescriptionCache {
 
     private ArrayList<String> chrs = new ArrayList<String>();
     private ArrayList<Integer> locations = new ArrayList<Integer>();
-    private ArrayList<Float> values = new ArrayList<Float>();
+    private ArrayList<Double> values = new ArrayList<Double>();
     private ArrayList<String> descriptions = new ArrayList<String>();
     // Storage for the header tokens
     private String[] headerTokens = new String[1000];
@@ -79,10 +79,7 @@ public class DescriptionCache {
 
     public void setHeaderTokens(String headerString) {
         headerString = headerString.trim();
-        //ParsingUtils.splitSpaces(headerString, this.headerTokens);
-        ParsingUtils.splitWhitespace(headerString, this.headerTokens);
-
-
+         this.headerTokens = Globals.singleTabMultiSpacePattern.split(headerString);
     }
 
 
@@ -94,7 +91,7 @@ public class DescriptionCache {
     }
 
 
-    public boolean add(String chr, int location, float value, String description) {
+    public boolean add(String chr, int location, double value, String description) {
 
         if (this.locations.size() >= this.maxSize) {
             this.locations.remove(0);
@@ -103,10 +100,10 @@ public class DescriptionCache {
             this.values.remove(0);
         }
 
-        return this.chrs.add(chr) & this.locations.add(location) & this.descriptions.add(description) & this.values.add(value);
+        return this.chrs.add(chr) && this.locations.add(location) && this.descriptions.add(description) && this.values.add(value);
     }
 
-    public String getDescription(String chr, int location, float value) {
+    public String getDescription(String chr, int location, double value) {
 
         String description = null;
 
@@ -127,7 +124,7 @@ public class DescriptionCache {
     }
 
 
-    public String getDescriptionString(String chr, int location, float value) {
+    public String getDescriptionString(String chr, int location, double value) {
 
         String description = this.getDescription(chr, location, value);
         String descriptionString = null;
@@ -135,10 +132,7 @@ public class DescriptionCache {
         if (description != null) {
             descriptionString = "";
             int headersSize = this.getHeaderTokens().length;
-            String[] tokens = new String[1000];
-
-            //ParsingUtils.splitSpaces(description, tokens);
-            ParsingUtils.splitWhitespace(description, tokens);
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(description);
 
             for (int i = 0; i < headersSize; i++) {
                 String tmpHeaderToken = this.getHeaderTokens()[i];

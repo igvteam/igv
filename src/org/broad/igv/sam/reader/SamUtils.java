@@ -26,6 +26,7 @@ import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.StringUtil;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.FileUtils;
@@ -89,7 +90,7 @@ public class SamUtils {
 
     private static File getUserIdxFile(File samFile) {
         File idxFile;
-        File samDir = new File(Globals.getIgvDirectory(), "sam");
+        File samDir = DirectoryManager.getSamDirectory();
         //Need the path information to distinguish like name indices in separate
         // directories.
         idxFile = new File(samDir, samFile.getName() + "_" + samFile.getParent().hashCode() + ".sai");

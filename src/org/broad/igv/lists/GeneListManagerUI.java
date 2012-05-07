@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -23,7 +16,7 @@
 package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -83,6 +76,9 @@ public class GeneListManagerUI extends JDialog {
         manager = GeneListManager.getInstance();
         initComponents();
         initLists();
+
+        boolean showViewNetwork = Boolean.parseBoolean(System.getProperty("showViewNetwork", "false"));
+        viewNetworkButton.setVisible(showViewNetwork);
     }
 
     private void initLists() {
@@ -282,7 +278,7 @@ public class GeneListManagerUI extends JDialog {
      */
     private void exportButtonActionPerformed(ActionEvent e) {
         if (selectedGroup != null) {
-            File userDir = Globals.getUserDirectory();
+            File userDir = DirectoryManager.getUserDirectory();
             File initFile = new File(selectedGroup + ".gmt");
             File glFile = FileDialogUtils.chooseFile("Save gene lists", userDir, initFile, FileDialogUtils.SAVE);
             if (glFile != null) {
@@ -330,9 +326,9 @@ public class GeneListManagerUI extends JDialog {
 
     private void viewNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
-
             GeneList geneList = geneLists.get(selectedList);
-            (new FilterGeneNetworkUI(IGV.getMainFrame(), geneList)).setVisible(true);
+            FilterGeneNetworkUI fgnUI = new FilterGeneNetworkUI(IGV.getMainFrame(), geneList);
+            fgnUI.setVisible(true);
         }
     }
 
@@ -574,19 +570,16 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                            "All"
+                                        "All"
                                     };
-
-                                    public int getSize() {
-                                        return values.length;
-                                    }
-
-                                    public Object getElementAt(int i) {
-                                        return values[i];
-                                    }
+                                    @Override
+                                    public int getSize() { return values.length; }
+                                    @Override
+                                    public Object getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {
+                                    @Override
                                     public void valueChanged(ListSelectionEvent e) {
                                         groupsValueChanged(e);
                                     }
@@ -604,6 +597,7 @@ public class GeneListManagerUI extends JDialog {
                                 importButton.setText("Import");
                                 importButton.setToolTipText("Import a .gmt file");
                                 importButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         importButtonActionPerformed(e);
                                     }
@@ -613,6 +607,7 @@ public class GeneListManagerUI extends JDialog {
                                 //---- exportButton ----
                                 exportButton.setText("Export");
                                 exportButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         exportButtonActionPerformed(e);
                                     }
@@ -623,6 +618,7 @@ public class GeneListManagerUI extends JDialog {
                                 deleteGroupButton.setText("Delete");
                                 deleteGroupButton.setEnabled(false);
                                 deleteGroupButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         deleteGroupButtonActionPerformed(e);
                                     }
@@ -654,6 +650,7 @@ public class GeneListManagerUI extends JDialog {
                                 //---- glJList ----
                                 glJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 glJList.addListSelectionListener(new ListSelectionListener() {
+                                    @Override
                                     public void valueChanged(ListSelectionEvent e) {
                                         listsValueChanged(e);
                                     }
@@ -676,6 +673,7 @@ public class GeneListManagerUI extends JDialog {
                                 newList.setIcon(null);
                                 newList.setText("New");
                                 newList.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         newListActionPerformed(e);
                                     }
@@ -685,6 +683,7 @@ public class GeneListManagerUI extends JDialog {
                                 //---- copyListButton ----
                                 copyListButton.setText("Copy");
                                 copyListButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         copyListButtonActionPerformed(e);
                                     }
@@ -695,6 +694,7 @@ public class GeneListManagerUI extends JDialog {
                                 editButton.setText("Edit");
                                 editButton.setEnabled(false);
                                 editButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         editButtonActionPerformed(e);
                                     }
@@ -706,6 +706,7 @@ public class GeneListManagerUI extends JDialog {
                                 deleteButton.setText("Delete");
                                 deleteButton.setEnabled(false);
                                 deleteButton.addActionListener(new ActionListener() {
+                                    @Override
                                     public void actionPerformed(ActionEvent e) {
                                         deleteButtonActionPerformed(e);
                                     }
@@ -751,9 +752,10 @@ public class GeneListManagerUI extends JDialog {
                 buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
                 //---- viewNetworkButton ----
-                viewNetworkButton.setText("View Network");
+                viewNetworkButton.setText("cBio Network");
                 viewNetworkButton.setVisible(false);
                 viewNetworkButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         viewNetworkButtonActionPerformed(e);
                     }
@@ -764,6 +766,7 @@ public class GeneListManagerUI extends JDialog {
                 loadButton.setText("Load");
                 loadButton.setEnabled(false);
                 loadButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         loadButtonActionPerformed(e);
                     }
@@ -773,6 +776,7 @@ public class GeneListManagerUI extends JDialog {
                 //---- closeButton ----
                 closeButton.setText("Close");
                 closeButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         closeButtonActionPerformed(e);
                     }

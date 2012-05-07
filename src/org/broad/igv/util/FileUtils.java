@@ -17,6 +17,7 @@
  */
 package org.broad.igv.util;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
@@ -29,38 +30,18 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author jrobinso
  */
 public class FileUtils {
+
+    private static final Logger log = Logger.getLogger(FileUtils.class);
+
     final public static String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    public static StringBuffer buffer = new StringBuffer();
-    private static Logger log = Logger.getLogger(FileUtils.class);
-
-
-    static Map<String, String> illegalChar = new HashMap();
-
-    static {
-        illegalChar.put("_qm_", "\\?");
-        illegalChar.put("_fbr_", "\\[");
-        illegalChar.put("_rbr_", "]");
-        illegalChar.put("_fsl_", "/");
-        illegalChar.put("_bsl_", "\\\\");
-        illegalChar.put("_eq_", "=");
-        illegalChar.put("_pl_", "\\+");
-        illegalChar.put("_lt_", "<");
-        illegalChar.put("_gt_", ">");
-        illegalChar.put("_co_", ":");
-        illegalChar.put("_sc_", ";");
-        illegalChar.put("_dq_", "\"");
-        illegalChar.put("_sq_", "'");
-        illegalChar.put("_st_", "\\*");
-        illegalChar.put("_pp_", "\\|");
-    }
-
-    static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
+    final public static String FILE_SEP = System.getProperty("file.separator");
+    final static String[] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
 
 
     /**
@@ -118,7 +99,8 @@ public class FileUtils {
         if (path == null) {
             return false;
         }
-        return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
+        return path.startsWith("http://") || path.startsWith("https://") ||
+                path.startsWith("ftp://");
     }
 
 
@@ -150,128 +132,98 @@ public class FileUtils {
         }
     }
 
-    static public String getRelativePath(File baseFile, String targetFile) {
-        return getRelativePath(baseFile, new File(targetFile));
-    }
-
-    static public String getRelativePath(File baseFile, File targetFile) {
-
-        if (!baseFile.isDirectory()) {
-            throw new RuntimeException(baseFile.getAbsolutePath() +
-                    " is not a directory!");
-        }
-
-        boolean isTargetAFile = targetFile.isFile();
-        File target = targetFile;
-        if (isTargetAFile) {
-            target = targetFile.getParentFile();
-        } else {
-            if (!targetFile.isDirectory()) {
-                throw new RuntimeException(targetFile.getAbsolutePath() +
-                        " is not a directory or file!");
-            }
-        }
-
-        String path = "???";
-        boolean isUsingRelativePath = true;
-        boolean isMoreTargetPath = true;
-        String delimeter = File.separator.equals("\\") ? "\\\\" : File.separator;
-        String path1 = baseFile.getAbsolutePath();
-        String path2 = target.getAbsolutePath();
-
-        if (!path1.equals(path2)) {
-
-            String[] basePath = path1.split(delimeter);
-            String[] targetPath = path2.split(delimeter);
-
-            // Compare paths
-            int i = 0;
-            for (; i < basePath.length; i++) {
-
-                if (i == basePath.length) { // No more path
-                    break; // No more path string to process
-                }
-
-                if (i == targetPath.length) { // No more path
-                    int levelsBack = basePath.length - i;
-                    path = completeTheRelativePath(levelsBack, targetPath, i);
-                    break; // No more path string to process
-                }
-
-                // Roots must match or we use the absolute path
-                if (i == 0) {
-                    if (!basePath[i].equals(targetPath[i])) {
-                        path = target.getAbsolutePath();
-                        isUsingRelativePath = false;
-                        break;// use default absolute path
-                    } else {
-                        path = "." + File.separator; // set a default path for same drive
-                    }
-                    continue;
-                }
-
-                // Nodes in path still match so keep looking
-                if (basePath[i].equals(targetPath[i])) {
-                    continue;
-                }
-
-                // Finally reached a point where path nodes don't match
-                int levelsBack = basePath.length - i;
-                path = completeTheRelativePath(levelsBack, targetPath, i);
-                isMoreTargetPath = false; // Target now completely processed
-                break;
-            }
-
-            if (isUsingRelativePath) {
-                if (isMoreTargetPath) {
-                    path += completeTheRelativePath(0, targetPath, i);
-                }
-            }
-        } else {
-            path = "." + File.separator;
-        }
-
-        if (isTargetAFile) {
-            if (isUsingRelativePath) {
-                path += targetFile.getName();
-            } else {
-                path = new File(path, targetFile.getName()).getAbsolutePath();
-            }
-        }
-        return path;
-    }
-
     /**
-     * Return the canonical path of the file.  If the canonical path cannot
-     * be computed return the absolute path.
+     * Get the relative path from one file to another, specifying the directory separator.
+     * If one of the provided resources does not exist, it is assumed to be a file unless it ends with '/' or
+     * '\'.
+     *
+     * @param targetPath    targetPath is calculated to this file
+     * @param basePath      basePath is calculated from this file
+     * @param pathSeparator directory separator. The platform default is not assumed so that we can test Unix behaviour when running on Windows (for example)
+     * @return
      */
-    static public String getCanonicalPath(File file) {
-        try {
-            return file.getCanonicalPath();
-        } catch (Exception e) {
-            return file.getAbsolutePath();
+    public static String getRelativePath(String basePath, String targetPath, String pathSeparator) {
+
+        // Normalize the paths
+        String normalizedTargetPath = FilenameUtils.normalizeNoEndSeparator(targetPath);
+        String normalizedBasePath = FilenameUtils.normalizeNoEndSeparator(basePath);
+
+        // Undo the changes to the separators made by normalization
+        if (pathSeparator.equals("/")) {
+            normalizedTargetPath = FilenameUtils.separatorsToUnix(normalizedTargetPath);
+            normalizedBasePath = FilenameUtils.separatorsToUnix(normalizedBasePath);
+
+        } else if (pathSeparator.equals("\\")) {
+            normalizedTargetPath = FilenameUtils.separatorsToWindows(normalizedTargetPath);
+            normalizedBasePath = FilenameUtils.separatorsToWindows(normalizedBasePath);
+
+        } else {
+            throw new IllegalArgumentException("Unrecognised dir separator '" + pathSeparator + "'");
         }
+
+        String[] base = normalizedBasePath.split(Pattern.quote(pathSeparator));
+        String[] target = normalizedTargetPath.split(Pattern.quote(pathSeparator));
+
+        // First get all the common elements. Store them as a string,
+        // and also count how many of them there are.
+        StringBuffer common = new StringBuffer();
+
+        int commonIndex = 0;
+        while (commonIndex < target.length && commonIndex < base.length
+                && target[commonIndex].equals(base[commonIndex])) {
+            common.append(target[commonIndex] + pathSeparator);
+            commonIndex++;
+        }
+
+        if (commonIndex == 0) {
+            // No single common path element. This most
+            // likely indicates differing drive letters, like C: and D:.
+            // These paths cannot be relativized.
+            return targetPath;
+        }
+
+        // The number of directories we have to backtrack depends on whether the base is a file or a dir
+        // For example, the relative path from
+        //
+        // /foo/bar/baz/gg/ff to /foo/bar/baz
+        //
+        // ".." if ff is a file
+        // "../.." if ff is a directory
+        //
+        // The following is a heuristic to figure out if the base refers to a file or dir. It's not perfect, because
+        // the resource referred to by this path may not actually exist, but it's the best I can do
+        boolean baseIsFile = true;
+
+        File baseResource = new File(normalizedBasePath);
+
+        if (baseResource.exists()) {
+            baseIsFile = baseResource.isFile();
+
+        } else if (basePath.endsWith(pathSeparator)) {
+            baseIsFile = false;
+        }
+
+        StringBuffer relative = new StringBuffer();
+
+        if (base.length != commonIndex) {
+            int numDirsUp = baseIsFile ? base.length - commonIndex - 1 : base.length - commonIndex;
+
+            for (int i = 0; i < numDirsUp; i++) {
+                relative.append(".." + pathSeparator);
+            }
+        }
+        relative.append(normalizedTargetPath.substring(common.length()));
+        return relative.toString();
     }
 
     static public String getPlatformIndependentPath(String path) {
         return path.replace('\\', '/');
     }
 
-    static private String completeTheRelativePath(int levelsBack,
-                                                  String[] targetPath, int startingIndexForTarget) {
 
-        // Complete the relative path
-        buffer.delete(0, buffer.length());
-        for (int j = 0; j < levelsBack; j++) {
-            buffer.append("..");
-            buffer.append(File.separator);
-        }
-
-        for (int k = startingIndexForTarget; k < targetPath.length; k++) {
-            buffer.append(targetPath[k]);
-            buffer.append(File.separator);
-        }
-        return buffer.toString();
+    // Convenience method
+    public static String getRelativePath(String basePath, String targetPath) {
+        return getRelativePath(basePath, targetPath, FILE_SEP);
     }
 
     /**
@@ -442,14 +394,6 @@ public class FileUtils {
         }
     }
 
-
-    static public String legalFileName(String string) {
-        for (Map.Entry<String, String> entry : illegalChar.entrySet()) {
-            string = string.replaceAll(entry.getValue(), entry.getKey());
-        }
-        return string;
-    }
-
     /**
      * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
      */
@@ -566,5 +510,21 @@ public class FileUtils {
             absolutePath = file.getAbsolutePath();
         }
         return absolutePath;
+    }
+
+    public static long getModifiedDate(String file) {
+        if (file.startsWith("http://") || file.startsWith("https://")) {
+            try {
+                String lastModified = HttpUtils.getInstance().getHeaderField(new URL(file), "Last-Modified");
+                return Integer.parseInt(lastModified);
+            } catch (Exception e) {
+                return 0;
+            }
+        } else if (file.startsWith("ftp://")) {
+            return 0;
+        } else {
+            File f = new File(file);
+            return f.exists() ? f.lastModified() : 0;
+        }
     }
 }

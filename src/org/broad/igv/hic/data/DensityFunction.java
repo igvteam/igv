@@ -14,16 +14,13 @@ import java.util.Map;
  */
 public class DensityFunction {
 
-
-    //String densityFile = "HumanAugust.densities.txt";
-    int[] positions;
-    double[] density;
-    int gridSize;
+    private double[] density;
+    //private int gridSize;
     private int nPoints;
-    Map<Integer, Double> normFactors;
+    private Map<Integer, Double> normFactors;
 
     public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
-        this.gridSize = gridSize;
+        //this.gridSize = gridSize;
         this.density = densities;
         this.nPoints = densities.length;
         this.normFactors = normFactors;
@@ -35,13 +32,13 @@ public class DensityFunction {
     
     public double getDensity(int chrIdx, int distance) {
 
-        double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
-        int grid = distance;
-        if (grid >= nPoints) {
+       double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
+
+        if (distance >= nPoints) {
 
             return density[nPoints - 1] / normFactor;
         } else {
-            return density[grid] / normFactor;
+            return density[distance] / normFactor;
         }
     }
 

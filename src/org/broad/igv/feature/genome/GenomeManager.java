@@ -26,10 +26,11 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
+import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -39,6 +40,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -57,7 +59,7 @@ public class GenomeManager {
 
     final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
 
-    private static GenomeDescriptor DEFAULT_GENOME;
+    private static GenomeManager theInstance;
 
     private Genome currentGenome;
 
@@ -65,20 +67,18 @@ public class GenomeManager {
     private List<GenomeListItem> cachedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
 
-    /**
-     * The IGV instance that owns this GenomeManager.  Can be null.
-     */
-    IGV igv;
 
-    public GenomeManager(IGV igv) {
-        // genomeDescriptorMap = new HashMap();
-        this.igv = igv;
+    public synchronized static GenomeManager getInstance() {
+        if (theInstance == null) {
+            theInstance = new GenomeManager();
+        }
+        return theInstance;
     }
 
-    public GenomeManager() {
-        //  genomeDescriptorMap = new HashMap();
-        this.igv = null;
+    private GenomeManager() {
+
     }
+
 
     public void setCurrentGenome(Genome currentGenome) {
         this.currentGenome = currentGenome;
@@ -99,7 +99,8 @@ public class GenomeManager {
 
         try {
             log.info("Loading genome: " + genomePath);
-            GenomeDescriptor genomeDescriptor = null;
+
+            GenomeImpl newGenome = null;
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
@@ -107,38 +108,43 @@ public class GenomeManager {
 
             if (genomePath.endsWith(".genome")) {
 
-                File archiveFile;
-                if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
-                    // We need a local copy, as there is no http zip file reader
-                    URL genomeArchiveURL = new URL(genomePath);
-                    String cachedFilename = Utilities.getFileNameFromURL(
-                            URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8"));
-                    if (!Globals.getGenomeCacheDirectory().exists()) {
-                        Globals.getGenomeCacheDirectory().mkdir();
-                    }
-                    archiveFile = new File(Globals.getGenomeCacheDirectory(), cachedFilename);
-                    refreshCache(archiveFile, genomeArchiveURL);
-                } else {
-                    archiveFile = new File(genomePath);
-                }
+                File archiveFile = getArchiveFile(genomePath);
 
-                genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-                LinkedHashMap<String, Chromosome> chromMap = loadCytobandFile(genomeDescriptor);
+                GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
                 Map<String, String> aliases = loadAliasFile(genomeDescriptor);
 
                 final String id = genomeDescriptor.getId();
                 final String displayName = genomeDescriptor.getName();
+
                 boolean isFasta = genomeDescriptor.isFasta();
-                currentGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
+                String[] fastaFiles = genomeDescriptor.getFastaFileNames();
+
+                newGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta, fastaFiles);
+                setCurrentGenome(newGenome);
+
                 log.info("Genome loaded.  id= " + id);
-                currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
-                if (aliases != null) currentGenome.addChrAliases(aliases);
-                if (!Globals.isHeadless()) {
-                    updateGeneTrack(genomeDescriptor);
+
+                if (genomeDescriptor.hasCytobands()) {
+                    LinkedHashMap<String, List<Cytoband>> cytobandMap = loadCytobandFile(genomeDescriptor);
+                    if (!isFasta) {
+                        newGenome.generateChromosomeMap(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
+                    }
+                    newGenome.setCytobands(cytobandMap);
                 }
 
 
+                if (aliases != null) newGenome.addChrAliases(aliases);
+                if (IGV.hasInstance() && !Globals.isHeadless()) {
+                    updateGeneTrack(genomeDescriptor);
+                }
+
+                genomeDescriptor.close();
+
+
+            } else if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                throw new GenomeException("IGV cannot readed gzipped fasta files.  Please un-gzip the file and try again.");
             } else {
+
                 // Assume its a fasta
                 String fastaPath = null;
                 String fastaIndexPath = null;
@@ -149,40 +155,28 @@ public class GenomeManager {
                     fastaPath = genomePath;
                     fastaIndexPath = genomePath + ".fai";
                 }
+
                 if (!FileUtils.resourceExists(fastaIndexPath)) {
-                    throw new RuntimeException("<html>No index found, fasta files must be indexed.<br>" +
-                            "Indexes can be created with samtools (http://samtools.sourceforge.net/)<br>" +
-                            "or Picard(http://picard.sourceforge.net/).");
+                    //Have to make sure we have a local copy of the fasta file
+                    //to index it
+                    File archiveFile = getArchiveFile(fastaPath);
+                    fastaPath = archiveFile.getAbsolutePath();
+                    fastaIndexPath = fastaPath + ".fai";
+
+                    log.info("Creating index file at " + fastaIndexPath);
+                    FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
+
                 }
+
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
+                if (HttpUtils.isURL(fastaPath)) {
+                    name = Utilities.getFileNameFromURL(fastaPath);
+                }
 
-                currentGenome = new GenomeImpl(id, name, fastaPath, true);
 
-                // Hack for illumina demo -- load the cytoband file
-//                File fastaFile = new File(fastaIndexPath);
-//                File cytobandFile = new File(fastaFile.getParent(), "b37_cytoband.txt");
-//                if (cytobandFile.exists()) {
-//
-//                    BufferedReader reader = new BufferedReader(new FileReader(cytobandFile));
-//                    LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
-//                    currentGenome.setChromosomeMap(chromMap, true);
-//                    reader.close();
-//                }
-//                File aliasFile = new File(fastaFile.getParent(), "b37_alias.tab");
-//                if(aliasFile.exists()) {
-//                    Map<String, String> aliases = loadAliasFile(genomeDescriptor);
-//                    if (aliases != null) currentGenome.addChrAliases(aliases);
-//                }
-//
-//                File geneFile = new File(fastaFile.getParent(), "refGene.txt");
-//                if (geneFile.exists()) {
-//                    AsciiLineReader reader = new AsciiLineReader(new FileInputStream(geneFile));
-//                    IGV.getInstance().createGeneTrack(currentGenome, reader,
-//                            geneFile.getAbsolutePath(), "Refseq genes", null);
-//                    reader.close();
-//                }
-//
+                newGenome = new GenomeImpl(id, name, fastaPath, true, null);
+                setCurrentGenome(newGenome);
 
                 log.info("Genome loaded.  id= " + id);
                 if (!Globals.isHeadless()) {
@@ -195,22 +189,44 @@ public class GenomeManager {
             }
 
             // Do this last so that user defined aliases have preference.
-            currentGenome.loadUserDefinedAliases();
+            newGenome.loadUserDefinedAliases();
 
             return currentGenome;
 
-        } catch (
-                SocketException e
-                )
-
-        {
+        } catch (SocketException e) {
             throw new GenomeServerException("Server connection error", e);
         }
 
     }
 
-    private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {
+    /**
+     * Returns a File of the provided genomePath. If the genomePath is a URL, it will be downloaded
+     * and saved in the genome cache directory.
+     *
+     * @param genomePath
+     * @return
+     * @throws MalformedURLException
+     * @throws UnsupportedEncodingException
+     */
+    private File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
+        File archiveFile;
+        if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
+            // We need a local copy, as there is no http zip file reader
+            URL genomeArchiveURL = new URL(genomePath);
+            final String tmp = URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8");
+            String cachedFilename = Utilities.getFileNameFromURL(tmp);
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                DirectoryManager.getGenomeCacheDirectory().mkdir();
+            }
+            archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
+            refreshCache(archiveFile, genomeArchiveURL);
+        } else {
+            archiveFile = new File(genomePath);
+        }
+        return archiveFile;
+    }
 
+    private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {
         InputStream geneStream = null;
         try {
             geneStream = genomeDescriptor.getGeneStream();
@@ -224,14 +240,12 @@ public class GenomeManager {
     }
 
     /**
-     * Load the cytoband file specified in the genome descriptor and return an ordered hash map of
-     * chromsome name -> chromosome.   This is a legacy method, kept for backward compatibiltiy of
-     * .genome files in which the chromosome lengths are specified in a cytoband file.
+     * Load the cytoband file specified in the genome descriptor.
      *
      * @param genomeDescriptor
-     * @return
+     * @return Cytobands as a map keyed by chromosome
      */
-    private LinkedHashMap<String, Chromosome> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
+    private LinkedHashMap<String, List<Cytoband>> loadCytobandFile(GenomeDescriptor genomeDescriptor) {
         InputStream is = null;
         try {
 
@@ -329,7 +343,7 @@ public class GenomeManager {
         } catch (Exception e) {
             log.error("Error refreshing genome cache. ", e);
             MessageUtils.showMessage(("An error was encountered refreshing the genome cache: " + e.getMessage() +
-                    "<br> If this problem persists please contact igv-help@broadinstitute.org"));
+                    "<br> If this problem persists please contact igv-team@broadinstitute.org"));
         }
 
     }
@@ -342,22 +356,19 @@ public class GenomeManager {
             throws IOException {
 
 
-        String zipFilePath = f.getAbsolutePath();
-
         if (!f.exists()) {
             log.error("Genome file: " + f.getAbsolutePath() + " does not exist.");
             return null;
         }
 
-
         GenomeDescriptor genomeDescriptor = null;
         Map<String, ZipEntry> zipEntries = new HashMap();
-        ZipFile zipFile = new ZipFile(zipFilePath);
+        ZipFile zipFile = new ZipFile(f);
 
-
-        ZipInputStream zipInputStream = null;
+        FileInputStream fileInputStream = null;
         try {
-            zipInputStream = new ZipInputStream(new FileInputStream(f));
+            fileInputStream = new FileInputStream(f);
+            ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
             ZipEntry zipEntry = zipInputStream.getNextEntry();
 
             while (zipEntry != null) {
@@ -369,14 +380,9 @@ public class GenomeManager {
                     Properties properties = new Properties();
                     properties.load(inputStream);
 
-                    // Cytoband
                     String cytobandZipEntryName = properties.getProperty(Globals.GENOME_ARCHIVE_CYTOBAND_FILE_KEY);
-
-                    // RefFlat
                     String geneFileName = properties.getProperty(Globals.GENOME_ARCHIVE_GENE_FILE_KEY);
-
                     String chrAliasFileName = properties.getProperty(Globals.GENOME_CHR_ALIAS_FILE_KEY);
-
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
                     if ((sequenceLocation != null) && !HttpUtils.getInstance().isURL(sequenceLocation)) {
@@ -385,23 +391,11 @@ public class GenomeManager {
                         if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
                             sequenceFolder = new File(sequenceLocation);
                         } else {
-                            File tempZipFile = new File(zipFilePath);
-                            sequenceFolder = new File(tempZipFile.getParent(), sequenceLocation);
+                            sequenceFolder = new File(f.getParent(), sequenceLocation);
 
                         }
                         sequenceLocation = sequenceFolder.getCanonicalPath();
                         sequenceLocation.replace('\\', '/');
-                    }
-
-
-                    int version = 0;
-                    String versionString = properties.getProperty(Globals.GENOME_ARCHIVE_VERSION_KEY);
-                    if (versionString != null) {
-                        try {
-                            version = Integer.parseInt(versionString);
-                        } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
-                        }
                     }
 
                     boolean chrNamesAltered = false;
@@ -410,7 +404,28 @@ public class GenomeManager {
                         try {
                             chrNamesAltered = Boolean.parseBoolean(chrNamesAlteredString);
                         } catch (Exception e) {
-                            log.error("Error parsing version string: " + versionString);
+                            log.error("Error parsing chrNamesAlteredString string: " + chrNamesAlteredString);
+                        }
+                    }
+
+                    boolean fasta = false;
+                    String fastaString = properties.getProperty("fasta");
+                    if (fastaString != null) {
+                        try {
+                            fasta = Boolean.parseBoolean(fastaString);
+                        } catch (Exception e) {
+                            log.error("Error parsing fastaString string: " + fastaString);
+                        }
+                    }
+
+
+                    boolean fastaDirectory = false;
+                    String fastaDirectoryString = properties.getProperty("fastaDirectory");
+                    if (fastaDirectoryString != null) {
+                        try {
+                            fastaDirectory = Boolean.parseBoolean(fastaString);
+                        } catch (Exception e) {
+                            log.error("Error parsing fastaDirectoryString string: " + fastaDirectoryString);
                         }
                     }
 
@@ -424,13 +439,14 @@ public class GenomeManager {
                         }
                     }
 
+                    String fastaFileNameString = properties.getProperty("fastaFiles");
+
                     String url = properties.getProperty(Globals.GENOME_URL_KEY);
 
 
                     // The new descriptor
                     genomeDescriptor = new GenomeZipDescriptor(
                             properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
-                            version,
                             chrNamesAltered,
                             properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
                             cytobandZipEntryName,
@@ -440,7 +456,10 @@ public class GenomeManager {
                             sequenceLocation,
                             zipFile,
                             zipEntries,
-                            chromosomesAreOrdered);
+                            chromosomesAreOrdered,
+                            fasta,
+                            fastaDirectory,
+                            fastaFileNameString);
 
                     if (url != null) {
                         genomeDescriptor.setUrl(url);
@@ -451,8 +470,8 @@ public class GenomeManager {
             }
         } finally {
             try {
-                if (zipInputStream != null) {
-                    zipInputStream.close();
+                if (fileInputStream != null) {
+                    fileInputStream.close();
                 }
             } catch (IOException ex) {
                 log.warn("Error closing imported genome zip stream!", ex);
@@ -509,7 +528,6 @@ public class GenomeManager {
                         genomeRecord = genomeRecord.trim();
 
                         String[] fields = genomeRecord.split("\t");
-
                         if ((fields != null) && (fields.length >= 3)) {
 
                             // Throw away records we don't want to see
@@ -518,41 +536,18 @@ public class GenomeManager {
                                     continue;
                                 }
                             }
-                            int version = 0;
-                            if (fields.length > 3) {
-                                try {
-                                    version = Integer.parseInt(fields[3]);
-                                } catch (Exception e) {
-                                    log.error("Error parsing genome version: " + fields[0], e);
-                                }
+
+                            try {
+                                String name = fields[0];
+                                String url = fields[1];
+                                String id = fields[2];
+                                GenomeListItem item = new GenomeListItem(name, url, id, false);
+                                serverGenomeArchiveList.add(item);
+                            } catch (Exception e) {
+                                log.error("Error reading a line from server genome list" + " line was: [" +
+                                        genomeRecord + "]", e);
                             }
 
-                            //String displayableName, String url, String id, int version, boolean isUserDefined
-                            String name = fields[0];
-                            String url = fields[1];
-                            String id = fields[2];
-
-                            boolean valid = true;
-                            if (url.length() == 0) {
-                                log.error("Genome entry : " + name + " has an empty URL string.  Check for extra tabs in the definition file: " +
-                                        PreferenceManager.getInstance().getGenomeListURL());
-                                valid = false;
-                            }
-                            // TODO -- more validation
-
-
-                            if (valid) {
-
-
-                                try {
-                                    GenomeListItem item = new GenomeListItem(fields[0], fields[1], fields[2], false);
-                                    serverGenomeArchiveList.add(item);
-                                } catch (Exception e) {
-                                    log.error(
-                                            "Error reading a line from server genome list" + " line was: [" + genomeRecord + "]",
-                                            e);
-                                }
-                            }
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
                         }
@@ -594,7 +589,7 @@ public class GenomeManager {
 
             userDefinedGenomeArchiveList = new LinkedList();
 
-            File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
             BufferedReader reader = null;
 
@@ -644,7 +639,7 @@ public class GenomeManager {
      */
     public void clearGenomeCache() {
 
-        File[] files = Globals.getGenomeCacheDirectory().listFiles();
+        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
         for (File file : files) {
             if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
                 file.delete();
@@ -667,11 +662,11 @@ public class GenomeManager {
         if (cachedGenomeArchiveList == null) {
             cachedGenomeArchiveList = new LinkedList();
 
-            if (!Globals.getGenomeCacheDirectory().exists()) {
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 return cachedGenomeArchiveList;
             }
 
-            File[] files = Globals.getGenomeCacheDirectory().listFiles();
+            File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
             for (File file : files) {
 
                 if (file.isDirectory()) {
@@ -765,7 +760,7 @@ public class GenomeManager {
             return;
         }
 
-        File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");
@@ -808,48 +803,39 @@ public class GenomeManager {
     /**
      * Create a genome archive (.genome) file.
      *
-     * @param genomeZipLocation              A File path to a directory in which the .genome
-     *                                       output file will be written.
-     * @param cytobandFileName               A File path to a file that contains cytoband data.
-     * @param refFlatFileName                A File path to a gene file.
-     * @param fastaFileName                  A File path to a FASTA file, a .gz file containing a
-     *                                       single FASTA file, or a directory containing ONLY FASTA files.
-     * @param relativeSequenceLocation       A relative path to the location
-     *                                       (relative to the .genome file to be created) where the sequence data for
-     *                                       the new genome will be written.
-     * @param genomeDisplayName              The unique user-readable name of the new genome.
-     * @param genomeId                       The id to be assigned to the genome.
-     * @param genomeFileName                 The file name (not path) of the .genome archive
-     *                                       file to be created.
-     * @param monitor                        A ProgressMonitor used to track progress - null,
-     *                                       if no progress updating is required.
-     * @param sequenceOutputLocationOverride
+     * @param genomeFile
+     * @param cytobandFileName  A File path to a file that contains cytoband data.
+     * @param refFlatFileName   A File path to a gene file.
+     * @param fastaFileName     A File path to a FASTA file, a .gz file containing a
+     *                          single FASTA file, or a directory containing ONLY FASTA files.
+     *                          (relative to the .genome file to be created) where the sequence data for
+     *                          the new genome will be written.
+     * @param genomeDisplayName The unique user-readable name of the new genome.
+     * @param genomeId          The id to be assigned to the genome.
+     * @param genomeFileName    The file name (not path) of the .genome archive
+     *                          file to be created.
+     * @param monitor           A ProgressMonitor used to track progress - null,
+     *                          if no progress updating is required.
      * @return GenomeListItem
      * @throws FileNotFoundException
      */
-    public GenomeListItem defineGenome(String genomeZipLocation,
+    public GenomeListItem defineGenome(File genomeFile,
                                        String cytobandFileName,
                                        String refFlatFileName,
                                        String fastaFileName,
                                        String chrAliasFileName,
-                                       String relativeSequenceLocation,
                                        String genomeDisplayName,
                                        String genomeId,
                                        String genomeFileName,
-                                       ProgressMonitor monitor,
-                                       String sequenceOutputLocationOverride)
+                                       ProgressMonitor monitor)
             throws IOException {
 
-        File zipFileLocation = null;
-        File fastaInputFile = null;
         File refFlatFile = null;
         File cytobandFile = null;
         File chrAliasFile = null;
-        File sequenceLocation;
 
-        if ((genomeZipLocation != null) && (genomeZipLocation.trim().length() != 0)) {
-            zipFileLocation = new File(genomeZipLocation);
-            PreferenceManager.getInstance().setLastGenomeImportDirectory(zipFileLocation);
+        if (genomeFile != null) {
+            PreferenceManager.getInstance().setLastGenomeImportDirectory(genomeFile.getParentFile());
         }
 
         if ((cytobandFileName != null) && (cytobandFileName.trim().length() != 0)) {
@@ -864,34 +850,17 @@ public class GenomeManager {
             chrAliasFile = new File(chrAliasFileName);
         }
 
-        if ((fastaFileName != null) && (fastaFileName.trim().length() != 0)) {
-            fastaInputFile = new File(fastaFileName);
-
-            // The sequence info only matters if we have FASTA
-            if ((relativeSequenceLocation != null) && (relativeSequenceLocation.trim().length() != 0)) {
-                sequenceLocation = new File(genomeZipLocation, relativeSequenceLocation);
-                if (!sequenceLocation.exists()) {
-                    sequenceLocation.mkdir();
-                }
-            }
-        }
-
         if (monitor != null) monitor.fireProgressChange(25);
 
-        File archiveFile = (new GenomeImporter()).createGenomeArchive(zipFileLocation,
-                genomeFileName, genomeId, genomeDisplayName, relativeSequenceLocation,
-                fastaInputFile, refFlatFile, cytobandFile, chrAliasFile,
-                sequenceOutputLocationOverride, monitor);
+        (new GenomeImporter()).createGenomeArchive(genomeFile, genomeId,
+                genomeDisplayName, fastaFileName, refFlatFile, cytobandFile, chrAliasFile);
 
         if (monitor != null) monitor.fireProgressChange(75);
 
-        if (archiveFile == null) {
-            return null;
-        } else {
-            GenomeListItem newItem = new GenomeListItem(genomeDisplayName, archiveFile.getAbsolutePath(), genomeId, true);
-            addUserDefineGenomeItem(newItem);
-            return newItem;
-        }
+        GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId, true);
+        addUserDefineGenomeItem(newItem);
+        return newItem;
+
     }
 
     public String getGenomeId() {

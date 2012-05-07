@@ -60,6 +60,12 @@ public class HiCTools {
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
+        } else if (args[0].equals("pairsToBin")) {
+            String ifile = args[1];
+            String ofile = args[2];
+            String genomeId = args[3];
+            List<Chromosome> chromosomes = loadChromosomes(genomeId);
+            AsciiToBinConverter.convert(ifile, ofile, chromosomes);
         } else if (args[0].equals("printmatrix")) {
             if (args.length < 5) {
                 System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize");
@@ -78,8 +84,13 @@ public class HiCTools {
 
 
         } else if (args[0].equals("pre")) {
-
-            String genomeId = args[3];
+            String genomeId = "";
+            try {
+                genomeId = args[3];
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.err.println("No genome ID given");
+                System.exit(0);
+            }
             List<Chromosome> chromosomes = loadChromosomes(genomeId);
 
             long genomeLength = 0;
@@ -100,6 +111,7 @@ public class HiCTools {
 
             preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
+            preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setLoadDensities(parser.getDensitiesOption());
             preprocessor.preprocess(files);
@@ -259,7 +271,7 @@ public class HiCTools {
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
 
-        zd.dump(tmp);
+        zd.dump();
     }
 
 
@@ -268,12 +280,14 @@ public class HiCTools {
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
         private Option loadDensititesOption = null;
+        private Option threadedOption = null;
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
-            countThresholdOption = addIntegerOption('t', "countThreshold");
+            countThresholdOption = addIntegerOption('m', "minCountThreshold");
             loadDensititesOption = addBooleanOption('o', "density");
+            threadedOption = addIntegerOption('t', "threads");
         }
 
         boolean getDiagonalsOption() {
@@ -298,7 +312,13 @@ public class HiCTools {
 
         int getCountThresholdOption() {
             Object opt = getOptionValue(countThresholdOption);
-            return opt == null ? -1 : ((Number) opt).intValue();
+            return opt == null ? 0 : ((Number) opt).intValue();
+        }
+
+        int getThreadedOption() {
+            Object opt = getOptionValue(threadedOption);
+            return opt == null ? 0 : ((Number) opt).intValue();
+
         }
     }
 

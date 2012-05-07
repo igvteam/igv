@@ -17,7 +17,7 @@
   ~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
   -->
 
-<project name="igvtools" basedir="../." default="create-zips">
+<project name="hictools" basedir="../." default="create-zips">
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="tmp.dir" value="tmp"/>
     <property name="main-class" value="org.broad.igv.hic.tools.HiCTools"/>
@@ -42,6 +42,10 @@
         <path id="library.classpath">
             <fileset id="jar.lib" dir="lib"/>
         </path>
+
+
+                <!-- Copy resource files to the tmp directory -->
+
         <!--
         <echo message="Version ${version}"/>
         <replace file="src/org/broad/igv/tools/IgvTools.java" token="@VERSION" value="${version}"/>
@@ -49,6 +53,7 @@
     </target>
 
     <target name="compile" depends="init">
+
         <delete dir="${tmp.dir}"/>
         <mkdir dir="${tmp.dir}"/>
         <javac debug="true" defaultexcludes="false" deprecation="true"
@@ -68,7 +73,12 @@
                 <root classname="org.apache.log4j.ConsoleAppender"/>
                 <rootfileset dir="${tmp.dir}" includes="org/apache/commons/logging/*.class"/>
             </classfileset>
-            <fileset dir="src" includes="resources/**, log4j.properties"/>
+            <fileset dir="src">
+                <exclude name="**/*.form"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.svn"/>
+                <exclude name="**/manifest.mf"/>
+            </fileset>
             <manifest>
                 <attribute name="Implementation-Title" value="${title}"/>
                 <attribute name="Main-Class" value="${main-class}"/>

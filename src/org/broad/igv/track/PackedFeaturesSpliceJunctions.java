@@ -182,7 +182,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
             if (lastAllocatedCount == allocatedCount) {
                 String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
                         ".<br>Not all features will be shown." +
-                        "<br>Please contact igv-help@broadinstitute.org";
+                        "<br>Please contact igv-team@broadinstitute.org";
 
                 log.error(msg);
                 MessageUtils.showMessage(msg);

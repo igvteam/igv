@@ -1,20 +1,13 @@
 <?xml version="1.0"?>
 <!--
-  ~ Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   ~
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
-  ~
-  ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
-  ~ WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
-  ~ WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-  ~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
-  ~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
-  ~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
-  ~ OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
-  ~ ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
-  ~ THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
-  ~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
   -->
 
 <project name="igvtools" basedir="../." default="create-zips">
@@ -28,6 +21,8 @@
     <property name="genome.dir" value="../server/web/resources/prod/"/>
     <property name="version" value="v0.0"/>
     <property name="build-number" value="0.0"/>
+
+    <import file="${basedir}/build_macros.xml"/>
 
 
     <target name="extract-classes">
@@ -45,11 +40,6 @@
         <path id="library.classpath">
             <fileset id="jar.lib" dir="lib"/>
         </path>
-        <echo message="Version ${version}"/>
-        <echo message="Build ${build-number}"/>
-        <replace file="src/org/broad/igv/tools/IgvTools.java" token="@VERSION" value="${version}"/>
-        <replace file="src/org/broad/igv/tools/IgvTools.java" token="@BUILD" value="${build-number}"/>
-
     </target>
 
     <target name="compile" depends="init">
@@ -77,6 +67,9 @@
         <antcall target="extract-classes"/>
         <delete dir="${ant.project.name}-dist"/>
         <mkdir dir="${ant.project.name}-dist"/>
+
+        <write_version targetFile="${tmp.dir}/resources/about.properties"/>
+
         <jar destfile="${ant.project.name}-dist/${jarname}.jar">
             <classfileset dir="${tmp.dir}">
                 <root classname="${main-class}"/>
@@ -85,7 +78,7 @@
                 <rootfileset dir="${tmp.dir}" includes="ncsa/hdf/hdf5lib/exceptions/*.class"/>
                 <rootfileset dir="${tmp.dir}" includes="org/broad/igv/itdf/*.class"/>
             </classfileset>
-            <fileset dir="src" includes="resources/**, log4j.properties"/>
+            <fileset dir="${tmp.dir}" includes="resources/**, log4j.properties"/>
             <fileset dir="." includes="docs/**"/>
             <manifest>
                 <attribute name="Implementation-Title" value="${title}"/>

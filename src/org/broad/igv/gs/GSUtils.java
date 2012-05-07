@@ -21,9 +21,10 @@ package org.broad.igv.gs;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,26 +32,10 @@ import java.util.List;
 /**
  * @author jrobinso
  * @date Jun 9, 2011
- * <p/>
- * <p/>
- * Prod servers
- * identityServerUrl=https://identity.genomespace.org/identityServer/basic
- * atmServer=https://atm.genomespace.org/atm
- * dmServer=https://dm.genomespace.org/datamanager
- * Test servers
- * identityServerUrl=https://identitytest.genomespace.org:8443/identityServer/basic
- * atmServer=https://atmtest.genomespace.org:8443/atm
- * dmServer=https://dmtest.genomespace.org:8444/datamanager
- * Dev servers
- * identityServerUrl=https://localhost:8443/identityServer/basic
- * atmServer=https://localhost:8443/atm
- * dmServer=https://dmtest.genomespace.org:8444/datamanager
+ *
  */
 public class GSUtils {
     static final Logger log = Logger.getLogger(GSUtils.class);
-
-    public static final String AUTH_TOKEN_COOKIE_NAME = "gs-token";
-    public static final String AUTH_TOKEN_COOKIE_DEFAULT_PATH = "/";
 
 
     /*
@@ -61,17 +46,6 @@ public class GSUtils {
     private static String usernameSaveFileName = ".gsusername";
     public static String gsUser = null;
     public static String gsToken = null;
-    public static String genomeSpaceIdentityServer;
-
-
-    private static String getCookieDomainPattern(String serverName) {
-        int firstDotIdx = serverName.indexOf(".");
-        if (firstDotIdx > 0 && (firstDotIdx != serverName.lastIndexOf("."))) {
-            return serverName.substring(serverName.indexOf("."));
-        } else {
-            return serverName;
-        }
-    }
 
     private static File getTokenSaveDir() {
         String userDir = System.getProperty("user.home");
@@ -182,6 +156,10 @@ public class GSUtils {
 
 
     public static void logout() {
+
+        gsToken = null;
+        gsUser = null;
+
         File userfile = getUsernameFile();
         if (userfile.exists()) {
             userfile.delete();
@@ -190,6 +168,23 @@ public class GSUtils {
         if (tokenFile.exists()) {
             tokenFile.delete();
         }
+
+        try {
+            URI gsURI = new URI(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER));
+            final CookieStore cookieStore = ((CookieManager) CookieManager.getDefault()).getCookieStore();
+            List<HttpCookie> cookies = new ArrayList<HttpCookie>(cookieStore.get(gsURI));
+            if (cookies != null) {
+                for (HttpCookie cookie : cookies) {
+                    final String name = cookie.getName();
+                    if (name.equals("gs-token") || name.equals("gs-username")) {
+                        cookieStore.remove(gsURI, cookie);
+                    }
+                }
+            }
+        } catch (URISyntaxException e) {
+           log.error("Error creating GS URI", e);
+        }
+
 
     }
 

@@ -68,7 +68,7 @@ public class RendererFactory {
             return MutationRenderer.class;
         } else if (typeName.equals(RendererType.SCATTER_PLOT.name()) ||
                 typeName.toUpperCase().equals("POINTS")) {
-            return ScatterplotRenderer.class;
+            return PointsRenderer.class;
         } else if (typeName.equals(RendererType.LINE_PLOT.name()) ||
                 typeName.toUpperCase().equals("LINE")) {
             return LineplotRenderer.class;
@@ -97,7 +97,7 @@ public class RendererFactory {
             rendererType = RendererType.HEATMAP;
         } else if (rendererClass.equals(MutationRenderer.class)) {
             rendererType = RendererType.MUTATION;
-        } else if (rendererClass.equals(ScatterplotRenderer.class)) {
+        } else if (rendererClass.equals(PointsRenderer.class)) {
             rendererType = RendererType.SCATTER_PLOT;
         } else if (rendererClass.equals(LineplotRenderer.class)) {
             rendererType = RendererType.LINE_PLOT;

@@ -1,27 +1,19 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -44,20 +36,17 @@ public class GWASParser {
     private int chrCol = -1;
     private int pCol = -1;
     private int SNPCol = -1;
+    Genome genome;
 
-
-    public ResourceLocator getLocator() {
-        return locator;
-    }
-
-    public void setLocator(ResourceLocator locator) {
-        this.locator = locator;
+    public static boolean isGWASFile(String typeString) {
+        return typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
+                typeString.endsWith(".qassoc") || typeString.endsWith(".gwas");
     }
 
 
-    public GWASParser(ResourceLocator locator) {
+    public GWASParser(ResourceLocator locator, Genome genome) {
         this.locator = locator;
-
+        this.genome = genome;
     }
 
     /**
@@ -73,10 +62,8 @@ public class GWASParser {
         headerString = headerString.trim();
 
 
-        String[] headers = new String[1000];
-
-        //int headersSize = ParsingUtils.splitSpaces(headerString, headers);
-        int headersSize = ParsingUtils.splitWhitespace(headerString, headers);
+        String[] headers = Globals.singleTabMultiSpacePattern.split(headerString);
+        int headersSize = headers.length;
 
         if (headersSize < 4)
             parsingSuccessful = false;
@@ -114,6 +101,8 @@ public class GWASParser {
 
 
     /**
+     * TODO -- This method is nearly identical to "parse()", and is apparently only used to support the popup text.
+     * <p/>
      * Parses and populates description cache from a GWAS result file. Cache will be filled with data points surrounding the given query data point.
      *
      * @param gData          GWASData object
@@ -130,7 +119,7 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+
         boolean hitFound = false;
         int cacheSize = gData.getDescriptionCache().getMaxSize();
 
@@ -157,21 +146,19 @@ public class GWASParser {
                 rowCounter++;
 
                 if (rowCounter >= searchStartRow) {
-                    String[] tokens = new String[1000];
-                    //ParsingUtils.splitSpaces(nextLine, tokens);
-                    ParsingUtils.splitWhitespace(nextLine, tokens);
+                    String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
 
                     if (tokens.length > 1) {
 
 
                         // Check if the p-value is NA
                         if (!tokens[pCol].trim().equals("NA")) {
-                            float p;
+                            double p;
 
                             try {
-                                p = Float.parseFloat(tokens[pCol].trim());
+                                p = Double.parseDouble(tokens[pCol].trim());
                                 // Transform to -log10
-                                p = (float) -log10((double) p);
+                                p = -log10(p);
 
 
                             } catch (NumberFormatException e) {
@@ -233,107 +220,6 @@ public class GWASParser {
 
     }
 
-    /**
-     * Find a description line from the result file for a single data point. This is more efficiently achieved using the DescriptionCache(), but could be useful for certain types of data sets.
-     *
-     * @param hitChr         Chromosome of the query data point
-     * @param hitLocation    Nucleotide location of the query data point
-     * @param searchStartRow Result file row where populating the cache will start
-     * @return
-     * @throws IOException
-     */
-    public String parseDescriptionLine(String hitChr, double hitLocation, int searchStartRow) throws IOException {
-
-
-        FileInputStream fs = null;
-
-        AsciiLineReader reader = null;
-        String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        boolean hitFound = false;
-        String resultLine = "";
-
-
-        try {
-            fs = new FileInputStream(locator.getPath());
-            fs.getChannel().position(0);
-            reader = new AsciiLineReader(fs);
-
-            // Parse header line
-            String headerLine = reader.readLine();
-            if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", reader.getCurrentLineNumber(), nextLine);
-
-            // Tokenize header for creation of tokenized descriptions
-            headerLine = headerLine.trim();
-            String[] headers = new String[1000];
-            //int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
-            int headersSize = ParsingUtils.splitWhitespace(headerLine, headers);
-
-
-            int rowCounter = 0;
-
-            while (!hitFound && (nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
-
-
-                nextLine = nextLine.trim();
-                rowCounter++;
-                if (rowCounter >= searchStartRow) {
-                    String[] tokens = new String[100];
-                    //ParsingUtils.splitSpaces(nextLine, tokens);
-                    ParsingUtils.splitWhitespace(nextLine, tokens);
-
-                    if (tokens.length > 1) {
-
-                        String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
-
-                        int start;
-
-                        try {
-                            start = Integer.parseInt(tokens[locationCol].trim());
-                        } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
-                        }
-
-                        if (chr.equals(hitChr) && start == hitLocation) {
-                            hitFound = true;
-                            for (int i = 0; i < headersSize; i++) {
-                                resultLine += headers[i] + ": " + tokens[i] + "<br>";
-
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            return resultLine;
-        } catch (
-                ParserException e
-                )
-
-        {
-            throw e;
-        } catch (
-                Exception e
-                )
-
-        {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
-            } else {
-                throw new RuntimeException(e);
-            }
-        } finally
-
-        {
-            reader.close();
-            fs.close();
-        }
-
-
-    }
-
     public GWASData parse() throws IOException {
 
 
@@ -341,8 +227,6 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
 
         try {
             fs = new FileInputStream(locator.getPath());
@@ -367,9 +251,7 @@ public class GWASParser {
                 nextLine = nextLine.trim();
                 rowCounter++;
 
-                String[] tokens = new String[100];
-                //ParsingUtils.splitSpaces(nextLine, tokens);
-                ParsingUtils.splitWhitespace(nextLine, tokens);
+                String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
 
                 if (tokens.length > 1) {
 
@@ -385,17 +267,19 @@ public class GWASParser {
                     }
 
                     // Check if the p-value is NA
-                    if (!tokens[pCol].trim().equals("NA")) {
-                        float p;
+                    if (!tokens[pCol].trim().equalsIgnoreCase("NA")) {
+                        double p;
 
                         try {
-                            p = Float.parseFloat(tokens[pCol].trim());
+                            p = Double.parseDouble(tokens[pCol]);
+                            if (p <= 0) {
+                                throw new NumberFormatException();
+                            }
                             // Transform to -log10
-                            p = (float) -log10((double) p);
-
+                            p = -log10(p);
 
                         } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            throw new ParserException("Column " + pCol + " must be a positive numeric value. Found " + tokens[pCol], reader.getCurrentLineNumber(), nextLine);
                         }
 
 
@@ -420,28 +304,15 @@ public class GWASParser {
 
 
             }
-
-
             return gData;
-        } catch (
-                ParserException e
-                )
 
-        {
-            throw e;
-        } catch (
-                Exception e
-                )
-
-        {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        } finally
-
-        {
+        } finally {
             reader.close();
             fs.close();
         }

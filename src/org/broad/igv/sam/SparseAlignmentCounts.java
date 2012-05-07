@@ -16,10 +16,6 @@ import java.util.List;
 public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(SparseAlignmentCounts.class);
-
-    int start;
-    int end;
-
     private int maxCount = 0;
 
     /**

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.track;
@@ -25,22 +18,23 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.*;
+import org.broad.igv.renderer.*;
+import org.broad.igv.ui.DataRangeDialog;
+import org.broad.igv.ui.HeatmapScaleDialog;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
-import org.broad.igv.renderer.*;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -201,7 +195,7 @@ public class TrackMenuUtils {
 
         final String[] labels = {"Heatmap", "Bar Chart", "Scatterplot", "Line Plot"};
         final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
-                ScatterplotRenderer.class, LineplotRenderer.class
+                PointsRenderer.class, LineplotRenderer.class
         };
 
         //JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
@@ -290,8 +284,8 @@ public class TrackMenuUtils {
 
         menu.add(getShowDataRangeItem(tracks));
 
-
-        //menu.add(getChangeKMPlotItem(tracks));
+        menu.addSeparator();
+        menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -341,7 +335,7 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    private static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks) {
+    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks) {
 
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //trackSettingsHeading.setFont(boldFont);
@@ -905,9 +899,7 @@ public class TrackMenuUtils {
                         details = details.replace("<br>", System.getProperty("line.separator"));
                         details += System.getProperty("line.separator") +
                                 f.getChr() + ":" + (f.getStart() + 1) + "-" + f.getEnd();
-                        StringSelection stringSelection = new StringSelection(details);
-                        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                        clipboard.setContents(stringSelection, null);
+                        StringUtils.copyTextToClipboard(details);
                     }
                 }
             }
@@ -922,18 +914,7 @@ public class TrackMenuUtils {
 
             public void actionPerformed(ActionEvent evt) {
                 Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                String chr = f.getChr();
-                int start = f.getStart();
-                int end = f.getEnd();
-                byte[] seqBytes = genome.getSequence(chr, start, end);
-                if (seqBytes == null) {
-                    MessageUtils.showMessage("Sequence not available");
-                } else {
-                    String sequence = new String(seqBytes);
-                    StringSelection stringSelection = new StringSelection(sequence);
-                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                    clipboard.setContents(stringSelection, null);
-                }
+                IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd());
             }
         });
         return item;
@@ -983,7 +964,6 @@ public class TrackMenuUtils {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Kaplan-Meier Plot...");
         item.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
 
                 // If one or fewer tracks are selected assume the intent is to use all tracks.  A right-click
@@ -994,6 +974,12 @@ public class TrackMenuUtils {
                 frame.setVisible(true);
             }
         });
+
+        // The Kaplan-Meier plot requires sample information, specifically survival, sample, and censure.  We
+        // can't know if these columns exist, but we can at least know if sample-info has been loaded.
+        // 3-4 columns always exist by default, more indicate at least some sample attributes are defined.
+        boolean sampleInfoLoaded = AttributeManager.getInstance().getAttributeNames().size() > 4;
+        item.setEnabled(sampleInfoLoaded);
         return item;
     }
 

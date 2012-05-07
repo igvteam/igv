@@ -362,7 +362,7 @@ public class ReferenceFrame {
         }
     }
 
-    private Genome getGenome() {
+    protected Genome getGenome() {
         return IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
@@ -536,7 +536,6 @@ public class ReferenceFrame {
     public Chromosome getChromosome() {
         Genome genome = getGenome();
         if (genome == null) {
-            log.error("Genome not loaded!");
             return null;
         }
 

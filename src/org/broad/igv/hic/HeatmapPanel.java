@@ -2,7 +2,6 @@ package org.broad.igv.hic;
 
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ObjectCache;
 
 import javax.swing.*;
@@ -18,27 +17,42 @@ import java.io.*;
  */
 public class HeatmapPanel extends JComponent implements Serializable {
 
-    private MainWindow mainWindow;
+
+    enum DragMode {NONE, PAN, ZOOM};
+
+    MainWindow mainWindow;
+    private HiC hic;
     private int imageTileWidth = 500;
     ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(100);
     private Rectangle zoomRectangle;
 
+    /**
+     * Chromosome boundaries in kbases for whole genome view.
+     */
+    private int[] chromosomeBoundaries;
+
     HeatmapRenderer renderer;
 
-    /**
-     * Empty constructor for form builder
-     */
-    public HeatmapPanel() {
-    }
-
-    public HeatmapPanel(MainWindow mainWindow) {
+    public HeatmapPanel(MainWindow mainWindow, HiC hic) {
         this.mainWindow = mainWindow;
-        renderer = new HeatmapRenderer(mainWindow);
+        this.hic = hic;
+        renderer = new HeatmapRenderer(mainWindow, hic);
         final HeatmapMouseHandler mouseHandler = new HeatmapMouseHandler();
         addMouseListener(mouseHandler);
         addMouseMotionListener(mouseHandler);
     }
 
+
+    public void setObservedRange(int min, int max) {
+        renderer.setObservedRange(min, max);
+        clearTileCache();
+        repaint();
+
+    }
+
+    public void setChromosomeBoundaries(int[] chromosomeBoundaries) {
+        this.chromosomeBoundaries = chromosomeBoundaries;
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -47,17 +61,17 @@ public class HeatmapPanel extends JComponent implements Serializable {
         g.clearRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
         // Same scale used for X & Y (square pixels)
-        if (mainWindow != null && mainWindow.zd != null) {
+        if (hic != null && hic.zd != null) {
 
-            final double scale = mainWindow.xContext.getScale();
+            final double scale = hic.xContext.getScale();
             if (scale <= 0) return;
 
             // Size of bins in base-pairs
-            int binSize = mainWindow.zd.getBinSize();
+            int binSize = hic.zd.getBinSize();
 
             // Origin in base-pairs
-            int originX = mainWindow.xContext.getOrigin();
-            int originY = mainWindow.yContext.getOrigin();
+            int originX = hic.xContext.getOrigin();
+            int originY = hic.yContext.getOrigin();
 
             // Bounds in bins
             int bLeft = (originX / binSize);
@@ -73,24 +87,26 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             // Pixels per bin -- used to scale image
             double pixelsPerBin = binSize / scale;
-
             for (int i = tLeft; i <= tRight; i++) {
                 for (int j = tTop; j <= tBottom; j++) {
 
-                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
+                    ImageTile tile = getImageTile(i, j, pixelsPerBin, hic.getDisplayOption());
                     if (tile != null) {
 
                         int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
                         int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
 
                         g.drawImage(tile.image, pxOffset, pyOffset, null);
+
+                        // Uncomment to see image boundaries (for debugging)
+                        //g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
                     }
 
                 }
             }
 
-            boolean isWholeGenome = (mainWindow.xContext.getChromosome().getName().equals("All") &&
-                    mainWindow.yContext.getChromosome().getName().equals("All"));
+            boolean isWholeGenome = (hic.xContext.getChromosome().getName().equals("All") &&
+                    hic.yContext.getChromosome().getName().equals("All"));
 
 
             // Draw grid
@@ -98,36 +114,25 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 Color color = g.getColor();
                 g.setColor(Color.lightGray);
 
-                Chromosome[] chromosomes = mainWindow.getChromosomes();
+                Chromosome[] chromosomes = hic.getChromosomes();
                 // Index 0 is whole genome
                 int xGenomeCoord = 0;
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     xGenomeCoord += (c.getSize() / 1000);
-                    int x = mainWindow.xContext.getScreenPosition(xGenomeCoord);
+                    int x = hic.xContext.getScreenPosition(xGenomeCoord);
                     g.drawLine(x, 0, x, getHeight());
                 }
                 int yGenomeCoord = 0;
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     yGenomeCoord += (c.getSize() / 1000);
-                    int y = mainWindow.yContext.getScreenPosition(yGenomeCoord);
+                    int y = hic.yContext.getScreenPosition(yGenomeCoord);
                     g.drawLine(0, y, getWidth(), y);
                 }
 
                 g.setColor(color);
             }
-
-
-            // Uncomment below to see grid (for debugging).
-            /*for (int i = tLeft; i <= tRight; i++) {
-                for (int j = tTop; j <= tBottom; j++) {
-                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
-                    int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
-                    int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
-                    g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
-                }
-            }*/
 
         }
 
@@ -136,17 +141,17 @@ public class HeatmapPanel extends JComponent implements Serializable {
         }
     }
 
-    public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
+    public Image getThumbnailImage(MatrixZoomData zd, int tw, int th, MainWindow.DisplayOption displayOption) {
 
-        int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-        int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+        int maxBinCountX = (hic.xContext.getChrLength() - hic.xContext.getOrigin()) / zd.getBinSize() + 1;
+        int maxBinCountY = (hic.yContext.getChrLength() - hic.yContext.getOrigin()) / zd.getBinSize() + 1;
 
         int wh = Math.max(maxBinCountX, maxBinCountY);
 
         BufferedImage image = (BufferedImage) createImage(wh, wh);
-        Graphics g = image.createGraphics();
-
-        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
+        Graphics2D g = image.createGraphics();
+        Rectangle clipBounds = new Rectangle(0, 0, wh, wh);
+        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, displayOption, g);
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
@@ -160,15 +165,15 @@ public class HeatmapPanel extends JComponent implements Serializable {
      * @param scaleFactor
      * @return
      */
-    private ImageTile getImageTile(int i, int j, double scaleFactor) {
-        String key = "_" + i + "_" + j;
+    private ImageTile getImageTile(int i, int j, double scaleFactor, MainWindow.DisplayOption displayOption) {
+        String key = "_" + i + "_" + j + "_" + displayOption;
         ImageTile tile = tileCache.get(key);
 
         if (tile == null) {
 
             // Image size can be smaller than tile width when zoomed out, or near the edges.
-            int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
-            int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+            int maxBinCountX = (hic.xContext.getChrLength() - hic.xContext.getOrigin()) / hic.zd.getBinSize() + 1;
+            int maxBinCountY = (hic.yContext.getChrLength() - hic.yContext.getOrigin()) / hic.zd.getBinSize() + 1;
 
             if (maxBinCountX < 0 || maxBinCountY < 0) return null;
 
@@ -180,7 +185,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             final int bx0 = i * imageTileWidth;
             final int by0 = j * imageTileWidth;
-            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, g2D);
+            renderer.render(bx0, by0, imageWidth, imageHeight, hic.zd, displayOption, g2D);
 
             if (scaleFactor > 0.999 && scaleFactor < 1.001) {
                 tile = new ImageTile(image, bx0, by0);
@@ -217,21 +222,22 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     class HeatmapMouseHandler extends MouseAdapter {
 
-        int dragMode = 0;  // 0 => none, 1 => pan,  2 => zoom
+
+        DragMode dragMode = DragMode.NONE;
         private Point lastMousePoint;
 
 
         @Override
         public void mousePressed(final MouseEvent e) {
 
-            if (mainWindow.isWholeGenome()) {
+            if (hic.isWholeGenome()) {
                 return;
             }
 
             if (e.isAltDown()) {
-                dragMode = 2;
+                dragMode = DragMode.ZOOM;
             } else {
-                dragMode = 1;
+                dragMode = DragMode.PAN;
                 setCursor(mainWindow.fistCursor);
             }
 
@@ -243,33 +249,33 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseReleased(final MouseEvent e) {
 
-            if (dragMode == 2 && zoomRectangle != null) {
+            if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
 
-                double xBP = mainWindow.xContext.getChromosomePosition(zoomRectangle.x);
-                double yBP = mainWindow.yContext.getChromosomePosition(zoomRectangle.y);
-                double wBP = zoomRectangle.width * mainWindow.xContext.getScale();
-                double hBP = zoomRectangle.height * mainWindow.yContext.getScale();
+                double xBP = hic.xContext.getChromosomePosition(zoomRectangle.x);
+                double yBP = hic.yContext.getChromosomePosition(zoomRectangle.y);
+                double wBP = zoomRectangle.width * hic.xContext.getScale();
+                double hBP = zoomRectangle.height * hic.yContext.getScale();
 
                 double newXScale = wBP / getWidth();
                 double newYScale = hBP / getHeight();
                 double newScale = Math.max(newXScale, newYScale);
 
-                mainWindow.zoomTo(xBP, yBP, newScale);
+                hic.zoomTo(xBP, yBP, newScale);
 
             }
 
-            dragMode = 0;
+            dragMode = DragMode.NONE;
             lastMousePoint = null;
             zoomRectangle = null;
             setCursor(Cursor.getDefaultCursor());
-            repaint();
+            //repaint();
         }
 
 
         @Override
         final public void mouseDragged(final MouseEvent e) {
 
-            if (mainWindow.zd == null || mainWindow.isWholeGenome()) {
+            if (hic.zd == null || hic.isWholeGenome()) {
                 return;
             }
 
@@ -281,7 +287,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             double deltaX = e.getX() - lastMousePoint.x;
             double deltaY = e.getY() - lastMousePoint.y;
             switch (dragMode) {
-                case 2:
+                case ZOOM:
 
                     Rectangle lastRectangle = zoomRectangle;
 
@@ -312,12 +318,11 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     break;
                 default:
 
-                    // Size i
-                    int dx = (int) (deltaX * mainWindow.xContext.getScale());
-                    int dy = (int) (deltaY * mainWindow.yContext.getScale());
+                    int dx = (int) (deltaX * hic.xContext.getScale());
+                    int dy = (int) (deltaY * hic.yContext.getScale());
                     lastMousePoint = e.getPoint();    // Always save the last Point
 
-                    mainWindow.moveBy(-dx, -dy);
+                    hic.moveBy(-dx, -dy);
 
             }
 
@@ -328,19 +333,18 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             if (!e.isPopupTrigger()) {
 
-                if (mainWindow.isWholeGenome()) {
-                    double xGenome = mainWindow.xContext.getChromosomePosition(e.getX());
-                    double yGenome = mainWindow.yContext.getChromosomePosition(e.getY());
+                if (hic.isWholeGenome()) {
+                    double xGenome = hic.xContext.getChromosomePosition(e.getX());
+                    double yGenome = hic.yContext.getChromosomePosition(e.getY());
 
                     Chromosome xChrom = null;
                     Chromosome yChrom = null;
-                    int[] boundaries = mainWindow.getChromosomeBoundaries();
-                    for (int i = 0; i < boundaries.length; i++) {
-                        if (xChrom == null && boundaries[i] > xGenome) {
-                            xChrom = mainWindow.getChromosomes()[i + 1];
+                    for (int i = 0; i < chromosomeBoundaries.length; i++) {
+                        if (xChrom == null && chromosomeBoundaries[i] > xGenome) {
+                            xChrom = hic.getChromosomes()[i + 1];
                         }
-                        if (yChrom == null && boundaries[i] > yGenome) {
-                            yChrom = mainWindow.getChromosomes()[i + 1];
+                        if (yChrom == null && chromosomeBoundaries[i] > yGenome) {
+                            yChrom = hic.getChromosomes()[i + 1];
                         }
                         if (xChrom != null && yChrom != null) {
                             mainWindow.setSelectedChromosomes(xChrom, yChrom);
@@ -349,27 +353,28 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
 
                 } else if (e.getClickCount() > 1) {
-                    int currentZoom = mainWindow.xContext.getZoom();
+                    int currentZoom = hic.xContext.getZoom();
                     final int newZoom = e.isAltDown()
                             ? Math.max(currentZoom - 1, 1)
                             : Math.min(11, currentZoom + 1);
 
-                    int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
-                    int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
-                    mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+                    int centerLocationX = (int) hic.xContext.getChromosomePosition(e.getX());
+                    int centerLocationY = (int) hic.yContext.getChromosomePosition(e.getY());
+                    hic.setZoom(newZoom, centerLocationX, centerLocationY, true);
+
                 } else {
 
                     //If IGV is running open on loci
                     if (e.isShiftDown()) {
 
-                        String chr1 = mainWindow.xContext.getChromosome().getName();
-                        int leftX = (int) mainWindow.xContext.getChromosomePosition(0);
-                        int wX = (int) (mainWindow.xContext.getScale() * getWidth());
+                        String chr1 = hic.xContext.getChromosome().getName();
+                        int leftX = (int) hic.xContext.getChromosomePosition(0);
+                        int wX = (int) (hic.xContext.getScale() * getWidth());
                         int rightX = leftX + wX;
 
-                        String chr2 = mainWindow.yContext.getChromosome().getName();
-                        int leftY = (int) mainWindow.yContext.getChromosomePosition(0);
-                        int wY = (int) (mainWindow.xContext.getScale() * getHeight());
+                        String chr2 = hic.yContext.getChromosome().getName();
+                        int leftY = (int) hic.yContext.getChromosomePosition(0);
+                        int wY = (int) (hic.xContext.getScale() * getHeight());
                         int rightY = leftY + wY;
 
                         String locus1 = "chr" + chr1 + ":" + leftX + "-" + rightX;
@@ -384,26 +389,25 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (mainWindow.xContext != null && mainWindow.zd != null) {
+            if (hic.xContext != null && hic.zd != null) {
 
-                if (mainWindow.isWholeGenome()) {
-                    double xGenome = mainWindow.xContext.getChromosomePosition(e.getX());
-                    double yGenome = mainWindow.yContext.getChromosomePosition(e.getY());
+                if (hic.isWholeGenome()) {
+                    double xGenome = hic.xContext.getChromosomePosition(e.getX());
+                    double yGenome = hic.yContext.getChromosomePosition(e.getY());
 
                     Chromosome xChrom = null;
                     Chromosome yChrom = null;
-                    int[] boundaries = mainWindow.getChromosomeBoundaries();
-                    for (int i = 0; i < boundaries.length; i++) {
-                        if (xChrom == null && boundaries[i] > xGenome) {
-                            xChrom = mainWindow.getChromosomes()[i + 1];
+                    for (int i = 0; i < chromosomeBoundaries.length; i++) {
+                        if (xChrom == null && chromosomeBoundaries[i] > xGenome) {
+                            xChrom = hic.getChromosomes()[i + 1];
                         }
-                        if (yChrom == null && boundaries[i] > yGenome) {
-                            yChrom = mainWindow.getChromosomes()[i + 1];
+                        if (yChrom == null && chromosomeBoundaries[i] > yGenome) {
+                            yChrom = hic.getChromosomes()[i + 1];
                         }
                         if (xChrom != null && yChrom != null) {
 
-                            int leftBoundaryX = xChrom.getIndex() == 1 ? 0 : boundaries[xChrom.getIndex() - 2];
-                            int leftBoundaryY = yChrom.getIndex() == 1 ? 0 : boundaries[yChrom.getIndex() - 2];
+                            int leftBoundaryX = xChrom.getIndex() == 1 ? 0 : chromosomeBoundaries[xChrom.getIndex() - 2];
+                            int leftBoundaryY = yChrom.getIndex() == 1 ? 0 : chromosomeBoundaries[yChrom.getIndex() - 2];
 
 
                             int xChromPos = (int) ((xGenome - leftBoundaryX) * 1000);
@@ -425,18 +429,18 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     }
 
                 } else {
-                    int posX = (int) (mainWindow.xContext.getChromosomePosition(e.getX()));
-                    int posY = (int) (mainWindow.yContext.getChromosomePosition(e.getY()));
+                    int posX = (int) (hic.xContext.getChromosomePosition(e.getX()));
+                    int posY = (int) (hic.yContext.getChromosomePosition(e.getY()));
 
                     //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
                     //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
                     StringBuffer txt = new StringBuffer();
                     txt.append("<html>");
-                    txt.append(mainWindow.xContext.getChromosome().getName());
+                    txt.append(hic.xContext.getChromosome().getName());
                     txt.append(":");
                     txt.append(String.valueOf(posX));
                     txt.append("<br>");
-                    txt.append(mainWindow.yContext.getChromosome().getName());
+                    txt.append(hic.yContext.getChromosome().getName());
                     txt.append(":");
                     txt.append(String.valueOf(posY));
                     setToolTipText(txt.toString());

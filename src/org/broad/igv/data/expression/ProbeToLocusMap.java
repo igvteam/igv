@@ -19,6 +19,7 @@ package org.broad.igv.data.expression;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.ui.util.MessageUtils;
@@ -133,9 +134,9 @@ public class ProbeToLocusMap {
 
     public void loadMapping(AsciiLineReader bufReader, Map<String, String[]> map) throws IOException {
         String line;
-        String[] result = new String[100];
         while ((line = bufReader.readLine()) != null) {
-            int nTokens = ParsingUtils.split(line, result, '\t');
+            String[] result = Globals.tabPattern.split(line);
+            int nTokens = result.length;
             if (nTokens != 2) {
                 continue;
             }

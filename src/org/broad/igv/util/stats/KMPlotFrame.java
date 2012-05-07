@@ -64,7 +64,7 @@ public class KMPlotFrame extends JFrame {
         XYDataset dataset = updateDataset();
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "",
-                "Months",
+                "Time",
                 "Survival",
                 dataset,
                 PlotOrientation.VERTICAL,
@@ -145,7 +145,7 @@ public class KMPlotFrame extends JFrame {
                     if (!participants.contains(participant)) {   // Don't add same participant twice.
                         participants.add(participant);
 
-                        // Get the survival time.  TODO -- we need to know the units,  just assuming days for now.
+                        // Get the survival time.
                         String survivalString = t.getAttributeValue(survivalColumn);
                         int survivalDays = Integer.parseInt(survivalString);
                         int survival = survivalDays;
@@ -188,18 +188,16 @@ public class KMPlotFrame extends JFrame {
                 int[] time = new int[pts.size()];
                 boolean[] censured = new boolean[pts.size()];
                 for (int i = 0; i < pts.size(); i++) {
-                    int months = Math.max(1, pts.get(i).time / 30);  // <=  TODO -- HARDCODED MONTH DATE
-                    time[i] = months;
+                    //int months = Math.max(1, pts.get(i).time / 30);  // <=  TODO -- HARDCODED MONTH DATE
+                    time[i] = pts.get(i).time;
                     censured[i] = pts.get(i).censured;
                 }
 
                 java.util.List<KaplanMeierEstimator.Interval> controlIntervals = KaplanMeierEstimator.compute(time, censured);
 
-                // TODO -- HANDLE CASE OF NO CATEGORIZATION
                 XYSeries series1 = new XYSeries(entry.getKey());
                 for (KaplanMeierEstimator.Interval interval : controlIntervals) {
-                    if (interval.getEnd() < 60)  // <= TODO -- WHATS THIS MAGIC NUMBER 60 ?
-                        series1.add(interval.getEnd(), interval.getCumulativeSurvival());
+                    series1.add(interval.getEnd(), interval.getCumulativeSurvival());
                 }
                 dataset.addSeries(series1);
             }

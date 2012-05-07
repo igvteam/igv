@@ -21,6 +21,7 @@ package org.broad.igv.tools.sort;
 import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
+import org.broad.igv.gwas.GWASParser;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
@@ -115,6 +116,8 @@ public abstract class Sorter {
             return new VCFSorter(inputFile, outputFile);
         } else if (shortFN.endsWith(".psl") || shortFN.endsWith(".pslx")) {
             return new BedSorter(inputFile, outputFile);
+        } else if (GWASParser.isGWASFile(shortFN)) {
+            return new GWASSorter(inputFile, outputFile);
         } else {
             System.out.println("Unknown file type or sorting not supported for: " + inputFile.getName());
             return null;

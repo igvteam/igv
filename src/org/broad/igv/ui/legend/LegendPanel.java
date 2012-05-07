@@ -65,7 +65,7 @@ abstract public class LegendPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                doUserPreferences();
+                edit();
             }
         };
         addMouseListener(mouseListener);
@@ -116,7 +116,7 @@ abstract public class LegendPanel extends JPanel {
     /**
      * Open the user preferences dialog
      */
-    abstract public void doUserPreferences();
+    abstract public void edit();
 
     /*
      * protected void setColorScheme(double minimum, double median, double maximum,

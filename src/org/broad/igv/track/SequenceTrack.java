@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 
@@ -25,12 +18,14 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -76,7 +71,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
-        Font font= FontManager.getFont(fontSize);
+        Font font = FontManager.getFont(fontSize);
         if (sequenceVisible) {
             graphics.setFont(font);
             graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);
@@ -105,7 +100,7 @@ public class SequenceTrack extends AbstractTrack {
         // Are we zoomed in far enough to show the sequence?  Scale is
         // in BP / pixel,  need at least 1 pixel  per bp in order to show sequence.
 
-        int resolutionThreshold =  PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
+        int resolutionThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
         // TODO -- this should be calculated from a "rescale" event
         boolean visible = FrameManager.getMinimumScale() < resolutionThreshold &&
                 !context.getChr().equals(Globals.CHR_ALL);
@@ -145,12 +140,12 @@ public class SequenceTrack extends AbstractTrack {
     @Override
     public void handleNameClick(final MouseEvent e) {
         if (arrowRect != null && arrowRect.contains(e.getPoint())) {
-            flipStrand(e.getSource());
+            flipStrand();
         }
 
     }
 
-    private void flipStrand(Object source) {
+    private void flipStrand() {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
         repaint();
         IGV.getInstance().clearSelections();
@@ -177,7 +172,7 @@ public class SequenceTrack extends AbstractTrack {
         m1.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                flipStrand(te.getMouseEvent().getSource());
+                flipStrand();
 
             }
         });
@@ -209,6 +204,18 @@ public class SequenceTrack extends AbstractTrack {
 
     public Renderer getRenderer() {
         return null;
+    }
+
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+        if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
+            return "Sequence info not found. Try enabling byte-range requests in preferences";
+        } else {
+            return null;
+        }
+    }
+
+    public Strand getStrand() {
+        return this.strand;
     }
 
 

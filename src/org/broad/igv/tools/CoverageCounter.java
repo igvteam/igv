@@ -248,10 +248,10 @@ public class CoverageCounter {
         try {
 
             if (interval == null) {
-                reader = getReader(alignmentFile, false);
+                reader = AlignmentReaderFactory.getReader(alignmentFile, false);
                 iter = reader.iterator();
             } else {
-                reader = getReader(alignmentFile, true);
+                reader = AlignmentReaderFactory.getReader(alignmentFile, true);
                 iter = reader.query(interval.getChr(), interval.getStart() - 1, interval.getEnd(), false);
             }
 
@@ -284,7 +284,7 @@ public class CoverageCounter {
                         if (counter != null) {
                             counter.closeBucketsBefore(alignment.getAlignmentStart() - tolerance, wigWriter);
                         }
-                    } else {
+                    } else {  // New chromosome
                         if (counter != null) {
                             counter.closeBucketsBefore(Integer.MAX_VALUE, wigWriter);
                         }
@@ -378,31 +378,6 @@ public class CoverageCounter {
         }
     }
 
-    private AlignmentReader getReader(String alignmentFile, boolean b) throws IOException {
-
-        boolean isList = alignmentFile.indexOf(",") > 0;
-        if (isList) {
-            String[] tokens = alignmentFile.split(",");
-            List<AlignmentReader> readers = new ArrayList(tokens.length);
-            for (String f : tokens) {
-                readers.add(AlignmentReaderFactory.getReader(f, b));
-            }
-            return new MergedAlignmentReader(readers);
-        } else {
-            if (!FileUtils.isRemote(alignmentFile)) {
-                File f = new File(alignmentFile);
-                if (f.isDirectory()) {
-                    List<AlignmentReader> readers = new ArrayList();
-                    for (File file : f.listFiles(new AlignmentFileFilter())) {
-                        readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), b));
-                    }
-                    return new MergedAlignmentReader(readers);
-                }
-            }
-            return AlignmentReaderFactory.getReader(alignmentFile, b);
-        }
-
-    }
 
     /**
      * The names of tracks which will be created by this parser

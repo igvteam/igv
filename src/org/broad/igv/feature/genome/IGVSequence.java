@@ -51,8 +51,7 @@ public class IGVSequence implements Sequence {
 
     public byte[] readSequence(String chr, int start, int end) {
 
-        String fn = chr + ".txt";
-        fn = getChrFileName(fn);
+        String fn = getChrFileName(chr);
         String seqFile = dirPath + fn;
 
         SeekableStream is = null;
@@ -81,12 +80,45 @@ public class IGVSequence implements Sequence {
     }
 
 
-    private String getChrFileName(String fn) {
-        String chrFN = chrFileNameCache.get(fn);
+    /**
+     * Get a "legal" chromosome file name from the chr name.  This method supports "old" style .genome
+     * files.
+     *
+     * @param chr
+     * @return
+     */
+    private String getChrFileName(String chr) {
+        String chrFN = chrFileNameCache.get(chr);
         if (chrFN == null) {
-            chrFN = FileUtils.legalFileName(fn);
-            chrFileNameCache.put(fn, chrFN);
+            chrFN = chr;
+            for (Map.Entry<String, String> entry : illegalChar.entrySet()) {
+                chrFN = chrFN.replaceAll(entry.getValue(), entry.getKey());
+            }
+            chrFN += ".txt";
+            chrFileNameCache.put(chr, chrFN);
         }
         return chrFN;
     }
+
+
+    static Map<String, String> illegalChar = new HashMap();
+
+    static {
+        illegalChar.put("_qm_", "\\?");
+        illegalChar.put("_fbr_", "\\[");
+        illegalChar.put("_rbr_", "]");
+        illegalChar.put("_fsl_", "/");
+        illegalChar.put("_bsl_", "\\\\");
+        illegalChar.put("_eq_", "=");
+        illegalChar.put("_pl_", "\\+");
+        illegalChar.put("_lt_", "<");
+        illegalChar.put("_gt_", ">");
+        illegalChar.put("_co_", ":");
+        illegalChar.put("_sc_", ";");
+        illegalChar.put("_dq_", "\"");
+        illegalChar.put("_sq_", "'");
+        illegalChar.put("_st_", "\\*");
+        illegalChar.put("_pp_", "\\|");
+    }
+
 }

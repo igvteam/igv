@@ -64,6 +64,7 @@ import java.util.Map;
 public class CoverageTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
+    public static final int TEN_MB = 10000000;
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
@@ -94,6 +95,7 @@ public class CoverageTrack extends AbstractTrack {
         super.setDataRange(new DataRange(0, 0, 60));
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
+        setMaximumHeight(40);
 
         setColor(coverageGrey);
 
@@ -343,9 +345,8 @@ public class CoverageTrack extends AbstractTrack {
                 final int intervalStart = alignmentCounts.getStart();
                 byte[] refBases = null;
 
-                // Dont try to compute mismatches for intervals > 2 MB
-                final int twoMB = 2000000;
-                if ((intervalEnd - intervalStart) < twoMB) {
+                // Dont try to compute mismatches for intervals > 10 MB
+                if ((intervalEnd - intervalStart) < TEN_MB) {
                     refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
                 }
 

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -68,29 +61,77 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
     static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
+    static final int DS_MARGIN_0 = 2;
+    static final int DOWNAMPLED_ROW_HEIGHT = 3;
+    static final int DS_MARGIN_2 = 5;
 
     public enum ShadeBasesOption {
         NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE;
     }
 
     public enum ExperimentType {
-        RNA, BISULFITE, OTHER
+        RNA, BISULFITE, OTHER;
+
+        static ExperimentType strToValue(String str) {
+             try {
+                 return valueOf(str);
+             }
+             catch(Exception e) {
+                 return ExperimentType.OTHER;
+             }
+         }
     }
 
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
+
+        static ColorOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return ColorOption.NONE;
+            }
+        }
     }
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
+
+        static SortOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return SortOption.START;
+            }
+        }
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE;
+
+        static GroupOption strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return GroupOption.NONE;
+            }
+        }
     }
 
     public enum BisulfiteContext {
-        CG, CHH, CHG, HCG, GCH, WCG
+        CG, CHH, CHG, HCG, GCH, WCG;
+
+        static BisulfiteContext strToValue(String str) {
+            try {
+                return valueOf(str);
+            }
+            catch(Exception e) {
+                return BisulfiteContext.CG;
+            }
+        }
     }
 
 
@@ -133,16 +174,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private FeatureRenderer renderer;
     private double minVisibleScale = 25;
-    private Rectangle renderedRect;
     private HashMap<String, Color> selectedReadNames = new HashMap();
     private int selectionColorIndex = 0;
-    private int minHeight = 100;
+    private int minHeight = 50;
     private AlignmentDataManager dataManager;
 
     private Genome genome;
 
     // The "parent" of the track (a DataPanel).  This field might be null at any given time.  It is updated each repaint.
-    DataPanel parent;
+    JComponent parent;
+    private Rectangle alignmentsRect;
+    private Rectangle downsampleRect;
 
 
     /**
@@ -157,6 +199,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         this.genome = genome;
         this.dataManager = dataManager;
+
+        minimumHeight = 50;
+        maximumHeight = Integer.MAX_VALUE;
 
         PreferenceManager prefs = PreferenceManager.getInstance();
 
@@ -226,15 +271,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void setHeight(int preferredHeight) {
         super.setHeight(preferredHeight);
-        minHeight = preferredHeight;
+        minimumHeight = preferredHeight;
     }
 
     @Override
     public int getHeight() {
-        // TODO -- what is the 20 for? JTR
+
+        if (parent != null &&
+                (parent instanceof DataPanel && ((DataPanel) parent).getFrame().getScale() > minVisibleScale)) {
+            return minimumHeight;
+        }
+
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN +
-                TOP_MARGIN);
+
+        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN +
+                DS_MARGIN_0 + DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2);
+
+
+        h = Math.min(maximumHeight, h);
         return h;
     }
 
@@ -258,28 +312,53 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             sequenceTrack.render(context, seqRect);
         }
 
-        // Top gap.  If there's a sequence track no gap is needed
-        int gap = (seqHeight > 0 ? seqHeight : 6);
-
-        rect.y += gap;
-        rect.height -= gap;
-        renderedRect = new Rectangle(rect);
+        // Top gap.
+        rect.y += DS_MARGIN_0;
 
         if (context.getScale() > minVisibleScale) {
+            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            GraphicUtils.drawCenteredText("Zoom in to see alignments.", context.getVisibleRect(), g);
+            GraphicUtils.drawCenteredText("Zoom in to see alignments.", visibleRect, g);
             return;
-
         }
 
-        renderAlignments(context, rect);
+        downsampleRect = new Rectangle(rect);
+        downsampleRect.height = DOWNAMPLED_ROW_HEIGHT;
+        renderDownsampledIntervals(context, downsampleRect);
+
+        alignmentsRect = new Rectangle(rect);
+        alignmentsRect.y += DOWNAMPLED_ROW_HEIGHT + DS_MARGIN_2;
+        renderAlignments(context, alignmentsRect);
+    }
+
+    private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
+
+        // Might be offscreen
+        if (!context.getVisibleRect().intersects(downsampleRect)) return;
+
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
+        if (loadedInterval == null) return;
+
+        Graphics2D g = context.getGraphic2DForColor(Color.black);
+        List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+        for (CachingQueryReader.DownsampledInterval interval : intervals) {
+            int x0 = context.bpToScreenPixel(interval.getStart());
+            int x1 = context.bpToScreenPixel(interval.getEnd());
+            int w = Math.max(1, x1 - x0);
+            // If there is room, leave a gap on one side
+            if (w > 5) w--;
+            // Greyscale from 0 -> 100 downsampled
+            //int gray = 200 - interval.getCount();
+            //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
+            g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
+        }
     }
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
         try {
             log.debug("Render features");
             Map<String, List<AlignmentInterval.Row>> groups =
-                    dataManager.getGroups(context, renderOptions.groupByOption, renderOptions.getGroupByTag(),
+                    dataManager.getGroups(context, renderOptions,
                             renderOptions.bisulfiteContext);
 
             Map<String, PEStats> peStats = dataManager.getPEStats();
@@ -295,12 +374,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             Rectangle visibleRect = context.getVisibleRect();
             final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
+            if (renderOptions.isPairedArcView()) {
+                maximumHeight = (int) inputRect.getHeight();
+                AlignmentRenderer.getInstance().clearCurveMaps();
+            } else {
+                maximumHeight = Integer.MAX_VALUE;
+            }
+
             // Divide rectangle into equal height levels
             double y = inputRect.getY();
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
-                int visHeight = context.getVisibleRect().height;
-                int depth = dataManager.getMaxLevels();
+                int visHeight = visibleRect.height;
+                int depth = dataManager.getNLevels();
                 squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = squishedHeight;
             }
@@ -320,15 +406,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     if ((visibleRect != null && y > visibleRect.getMaxY())) {
                         return;
                     }
+                    if (renderOptions.isPairedArcView()) {
+                        y = Math.min(getY() + getHeight(), visibleRect.getMaxY());
+                        y -= h;
+                    }
 
                     if (y + h > visibleRect.getY()) {
                         Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                        renderer.renderAlignments(row.alignments,
-                                context,
-                                rowRectangle,
-                                renderOptions,
-                                leaveMargin,
-                                selectedReadNames);
+                        renderer.renderAlignments(row.alignments, context, rowRectangle,
+                                inputRect, renderOptions, leaveMargin, selectedReadNames);
                     }
                     y += h;
                 }
@@ -354,7 +440,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void clearCaches() {
         dataManager.clear();
-        renderOptions = new RenderOptions();
     }
 
 
@@ -373,13 +458,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame, option, renderOptions.getGroupByTag());
+            dataManager.repackAlignments(referenceFrame, renderOptions);
         }
     }
 
 
     public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame, renderOptions.groupByOption, renderOptions.getGroupByTag());
+        dataManager.repackAlignments(referenceFrame, renderOptions);
     }
 
     /**
@@ -549,11 +634,35 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        Alignment feature = getAlignmentAt(position, y, frame);
-        if (feature == null) {
-            return null;
+        if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
+            AlignmentInterval iv = dataManager.getLoadedInterval(frame);
+            if (iv == null) {
+                return null;
+            } else {
+                List<CachingQueryReader.DownsampledInterval> intervals = iv.getDownsampledIntervals();
+                CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
+                        FeatureUtils.getFeatureAt(position, 0, intervals);
+                return interval == null ? null : interval.getValueString();
+            }
+        } else if (renderOptions.isPairedArcView()) {
+            Alignment feature = null;
+            //All alignments stacked at the bottom
+            double xloc = (position - frame.getOrigin()) / frame.getScale();
+            SortedSet<Shape> arcs = AlignmentRenderer.getInstance().curveOverlap(xloc);
+            int halfLength = 2;
+            int sideLength = 2 * halfLength;
+            for (Shape curve : arcs) {
+                if (curve.intersects(xloc - halfLength, y - halfLength, sideLength, sideLength)) {
+                    feature = AlignmentRenderer.getInstance().getAlignmentForCurve(curve);
+                    break;
+                }
+            }
+            return feature == null ? null : feature.getValueString(position, getWindowFunction());
+        } else {
+            Alignment feature = getAlignmentAt(position, y, frame);
+            return feature == null ? null : feature.getValueString(position, getWindowFunction());
+
         }
-        return feature.getValueString(position, getWindowFunction());
     }
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
@@ -570,7 +679,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 //            return null;
 //        }
 
-        int startY = renderedRect.y;
+        int startY = alignmentsRect.y;
         final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
         for (List<AlignmentInterval.Row> rows : groups.values()) {
@@ -712,13 +821,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-
-    public void setMaxDepth(int newMaxLevels) {
-        dataManager.setMaxLevels(newMaxLevels);
-        //dataManager.reload();
-        refresh();
-    }
-
     public void setViewAsPairs(boolean vAP) {
         // TODO -- generalize this test to all incompatible pairings
         if (vAP && renderOptions.groupByOption == GroupOption.STRAND) {
@@ -730,9 +832,30 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         }
 
-        dataManager.setViewAsPairs(vAP, renderOptions.groupByOption, renderOptions.getGroupByTag());
+        dataManager.setViewAsPairs(vAP, renderOptions);
         refresh();
     }
+
+    public boolean isPairedArcView() {
+        return this.renderOptions.isPairedArcView();
+    }
+
+    public void setPairedArcView(boolean option) {
+        if (option == this.isPairedArcView()) return;
+
+        //TODO This is dumb and bad UI design
+        //Should use a combo box or something
+        if (option) {
+            setViewAsPairs(false);
+        }
+
+        renderOptions.setPairedArcView(option);
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            dataManager.repackAlignments(frame, renderOptions);
+        }
+        refresh();
+    }
+
 
     public static class RenderOptions {
         ShadeBasesOption shadeBasesOption;
@@ -740,6 +863,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         boolean flagUnmappedPairs;
         boolean showAllBases;
         boolean showMismatches = true;
+
         private boolean computeIsizes;
         private int minInsertSize;
         private int maxInsertSize;
@@ -750,6 +874,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
+        private boolean pairedArcView = false;
         public boolean flagZeroQualityAlignments = true;
 
         Map<String, PEStats> peStats;
@@ -769,16 +894,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
-            colorOption = ColorOption.valueOf(prefs.get(PreferenceManager.SAM_COLOR_BY));
-            GroupOption groupByOption = null;
+            colorOption = ColorOption.strToValue(prefs.get(PreferenceManager.SAM_COLOR_BY));
+            groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+
 
             colorByTag = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
             sortByTag = prefs.get(PreferenceManager.SAM_SORT_BY_TAG);
             groupByTag = prefs.get(PreferenceManager.SAM_GROUP_BY_TAG);
 
             //updateColorScale();
+
+            peStats = new HashMap<String, PEStats>();
         }
 
         /*private void updateColorScale() {
@@ -872,15 +1000,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             value = attributes.get("colorOption");
             if (value != null) {
-                colorOption = ColorOption.valueOf(value);
+                colorOption = ColorOption.strToValue(value);
             }
             value = attributes.get("groupByOption");
             if (value != null) {
-                groupByOption = GroupOption.valueOf(value);
+                groupByOption = GroupOption.strToValue(value);
             }
             value = attributes.get("bisulfiteContextRenderOption");
             if (value != null) {
-                bisulfiteContext = BisulfiteContext.valueOf(value);
+                bisulfiteContext = BisulfiteContext.strToValue(value);
             }
             value = attributes.get("groupByTag");
             if (value != null) {
@@ -895,6 +1023,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 colorByTag = value;
             }
         }
+
+        public boolean isPairedArcView() {
+            return pairedArcView;
+        }
+
+        public void setPairedArcView(boolean pairedArcView) {
+            this.pairedArcView = pairedArcView;
+        }
+
 
         public int getMinInsertSize() {
             return minInsertSize;
@@ -1013,13 +1150,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addViewAsPairsMenuItem();
+
+            boolean viewPairArcsPresent = Boolean.parseBoolean(System.getProperty("pairedArcViewPresent", "false"));
+            if (viewPairArcsPresent) {
+                addViewPairedArcsMenuItem();
+            }
+
             addGoToMate(e);
             showMateRegion(e);
             addInsertSizeMenuItem();
 
             addSeparator();
             addPackMenuItem();
-            addCoverageDepthMenuItem();
+            //addCoverageDepthMenuItem();
             addShowCoverageItem();
             addLoadCoverageDataItem();
 
@@ -1361,7 +1504,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
                 });
             }
+            add(item);
+        }
 
+        public void addViewPairedArcsMenuItem() {
+            final JMenuItem item = new JCheckBoxMenuItem("View paired arcs");
+            item.setSelected(isPairedArcView());
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    boolean isPairedArcView = item.isSelected();
+                    setPairedArcView(isPairedArcView);
+                }
+            });
+            item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
 
@@ -1472,31 +1627,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-        public void addCoverageDepthMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    int maxLevels = dataManager.getMaxLevels();
-                    String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
-                    //Cancel button return null
-                    if (val == null) {
-                        return;
-                    }
-                    try {
-                        int newMaxLevels = Integer.parseInt(val);
-                        if (newMaxLevels != maxLevels) {
-                            setMaxDepth(newMaxLevels);
-                        }
-                    } catch (NumberFormatException ex) {
-                        MessageUtils.showMessage("Insert size must be an integer value: " + val);
-                    }
-
-                }
-            });
-            add(item);
-        }
+//        public void addCoverageDepthMenuItem() {
+//            // Change track height by attribute
+//            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
+//            item.addActionListener(new ActionListener() {
+//
+//                public void actionPerformed(ActionEvent aEvt) {
+//                    int maxLevels = dataManager.getDownsampleOptions().getMaxReadCount();
+//                    String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
+//                    //Cancel button return null
+//                    if (val == null) {
+//                        return;
+//                    }
+//                    try {
+//                        int newMaxLevels = Integer.parseInt(val);
+//                        if (newMaxLevels != maxLevels) {
+//                            setMaxDepth(newMaxLevels);
+//                        }
+//                    } catch (NumberFormatException ex) {
+//                        MessageUtils.showMessage("Insert size must be an integer value: " + val);
+//                    }
+//
+//                }
+//            });
+//            add(item);
+//        }
 
 
         public void addInsertSizeMenuItem() {

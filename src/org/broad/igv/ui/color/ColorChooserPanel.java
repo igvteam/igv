@@ -38,6 +38,7 @@ public class ColorChooserPanel extends JPanel implements Serializable {
         colorPanel.setBackground(selectedColor);
     }
 
+
     public Color getSelectedColor() {
         return selectedColor;
     }
@@ -48,11 +49,15 @@ public class ColorChooserPanel extends JPanel implements Serializable {
 
 
     private void changeButtonActionPerformed(ActionEvent e) {
-        changeColorAction(e);
+        changeColorAction();
 
     }
 
-    private void changeColorAction(ActionEvent e) {
+    private void colorPanelMouseClicked(MouseEvent e) {
+         changeColorAction();
+    }
+
+    private void changeColorAction() {
         JColorChooser colorChooser = new JColorChooser(selectedColor);
         JDialog dialog = JColorChooser.createDialog(this, "Dialog Title", true,
                 colorChooser, null, null);
@@ -62,54 +67,44 @@ public class ColorChooserPanel extends JPanel implements Serializable {
             setSelectedColor(c);
         }
 
+        ActionEvent evt = new ActionEvent(this, 0, "");
         for (ActionListener l : listeners) {
-            l.actionPerformed(e);
+            l.actionPerformed(evt);
         }
     }
 
-    private void colorPanelMouseClicked(MouseEvent e) {
-        // TODO add your code here
-    }
-
     private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
+
         colorPanel = new JPanel();
         changeButton = new JButton();
 
         //======== this ========
         setLayout(new GridBagLayout());
-        ((GridBagLayout)getLayout()).columnWidths = new int[] {30, 0, 0};
-        ((GridBagLayout)getLayout()).rowHeights = new int[] {0, 0};
-        ((GridBagLayout)getLayout()).columnWeights = new double[] {1.0, 1.0, 1.0E-4};
-        ((GridBagLayout)getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
+        ((GridBagLayout) getLayout()).columnWidths = new int[]{30, 0, 0};
+        ((GridBagLayout) getLayout()).rowHeights = new int[]{0, 0};
+        ((GridBagLayout) getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
+        ((GridBagLayout) getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
 
         //======== colorPanel ========
         {
-            colorPanel.setPreferredSize(new Dimension(20, 10));
+            colorPanel.setPreferredSize(new Dimension(20, 15));
+            colorPanel.setMinimumSize(new Dimension(20, 5));
+            colorPanel.setMaximumSize(new Dimension(20, 15));
             colorPanel.setFocusable(false);
             colorPanel.setBorder(LineBorder.createBlackLineBorder());
-            colorPanel.setMinimumSize(new Dimension(20, 10));
             colorPanel.setBackground(new Color(204, 204, 255));
             colorPanel.setLayout(null);
-
-            { // compute preferred size
-                Dimension preferredSize = new Dimension();
-                for(int i = 0; i < colorPanel.getComponentCount(); i++) {
-                    Rectangle bounds = colorPanel.getComponent(i).getBounds();
-                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+            colorPanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    colorPanelMouseClicked(mouseEvent);
                 }
-                Insets insets = colorPanel.getInsets();
-                preferredSize.width += insets.right;
-                preferredSize.height += insets.bottom;
-                colorPanel.setMinimumSize(preferredSize);
-                colorPanel.setPreferredSize(preferredSize);
-            }
+            });
+
         }
         add(colorPanel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
 
         //---- changeButton ----
         changeButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -121,8 +116,8 @@ public class ColorChooserPanel extends JPanel implements Serializable {
             }
         });
         add(changeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-            new Insets(0, 0, 0, 0), 0, 0));
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 

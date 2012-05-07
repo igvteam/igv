@@ -17,6 +17,7 @@
  */
 package org.broad.igv.repeats;
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -61,7 +62,6 @@ public class RepeatMaskSplitter {
 
         AsciiLineReader reader = null;
         HashMap<String, PrintWriter> writers = new HashMap();
-        String[] tokens = new String[20];
         try {
             String lastChr = "";
             reader = new AsciiLineReader(new FileInputStream(file));
@@ -69,7 +69,7 @@ public class RepeatMaskSplitter {
             reader.readLine();
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
-                ParsingUtils.split(nextLine, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
                 String chr = tokens[chrCol];
                 if (!chr.equals(lastChr)) {
                     closeWriters(writers);

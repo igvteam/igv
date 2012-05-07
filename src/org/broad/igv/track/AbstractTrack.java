@@ -80,6 +80,7 @@ public abstract class AbstractTrack implements Track {
 
     private int top;
     protected int minimumHeight = -1;
+    protected int maximumHeight = 1000;
 
     private TrackType trackType = TrackType.OTHER;
 
@@ -102,7 +103,6 @@ public abstract class AbstractTrack implements Track {
     private DataRange dataRange;
     protected int visibilityWindow = -1;
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
-    private int preferredHeight = 25;
     protected int height = -1;
     private final PreferenceManager prefMgr;
 
@@ -118,37 +118,20 @@ public abstract class AbstractTrack implements Track {
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator, String id) {
-        this.resourceLocator = dataResourceLocator;
-        this.id = id;
-        String drName = dataResourceLocator.getName();
-        this.name = drName != null ? drName : dataResourceLocator.getFileName();
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(dataResourceLocator, id, dataResourceLocator.getTrackName());
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator) {
-        this.resourceLocator = dataResourceLocator;
-        this.id = dataResourceLocator.getPath();
-        String drName = dataResourceLocator.getName();
-        this.name = drName != null ? drName : dataResourceLocator.getFileName();
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(dataResourceLocator, dataResourceLocator.getPath(), dataResourceLocator.getTrackName());
     }
 
     public AbstractTrack(String id) {
-        this.name = id;
-        this.id = id;
-        init();
-
-        prefMgr = PreferenceManager.getInstance();
+        this(null, id, id);
     }
 
 
     public AbstractTrack(String id, String name) {
-        this.name = name;
-        this.id = id;
-        init();
-        prefMgr = PreferenceManager.getInstance();
+        this(null, id, name);
     }
 
     private void init() {
@@ -368,6 +351,11 @@ public abstract class AbstractTrack implements Track {
         this.minimumHeight = minimumHeight;
     }
 
+    public void setMaximumHeight(int maximumHeight) {
+        this.maximumHeight = maximumHeight;
+    }
+
+
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
      *
@@ -377,6 +365,9 @@ public abstract class AbstractTrack implements Track {
         return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
     }
 
+    public int getMaximumHeight() {
+        return maximumHeight;
+    }
 
     public void setTrackType(TrackType type) {
         this.trackType = type;
@@ -435,7 +426,14 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setHeight(int height) {
-        this.height = Math.max(getMinimumHeight(), height);
+
+        if (height < getHeight()) {
+            if (this.getDisplayMode() == DisplayMode.EXPANDED) {
+                this.setDisplayMode(DisplayMode.SQUISHED);
+            }
+        }
+
+        this.height = Math.min(Math.max(getMinimumHeight(), height), getMaximumHeight());
     }
 
 
@@ -1052,10 +1050,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setSortable(boolean sortable) {
         this.sortable = sortable;
-    }
-
-    public void setPreferredHeight(int preferredHeight) {
-        this.preferredHeight = preferredHeight;
     }
 
     public boolean isDrawYLine() {

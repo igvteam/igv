@@ -20,10 +20,9 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -33,12 +32,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -181,6 +175,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         }
 
         regionTable.addMouseListener(new RegionTablePopupHandler());
+        updateButtonsEnabled();
     }
 
     private class SearchFieldDocumentListener implements DocumentListener {
@@ -398,6 +393,24 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         // TODO add your code here
     }
 
+    private void regionTableMouseClicked(MouseEvent e) {
+        //We update the state of associated buttons
+        //whenever the user clicks a mouse button
+        updateButtonsEnabled();
+    }
+
+    private void updateButtonsEnabled() {
+        boolean enableMutStates = regionTable.getSelectedRowCount() >= 1;
+        boolean enableZoomToRegion = regionTable.getSelectedRowCount() == 1;
+        removeButton.setEnabled(enableMutStates);
+        viewButton.setEnabled(enableMutStates);
+        checkBoxZoomWhenNav.setEnabled(enableZoomToRegion);
+    }
+
+    private void thisWindowActivated(WindowEvent e) {
+        synchRegions();
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -406,26 +419,32 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         contentPanel = new JPanel();
         panel3 = new JPanel();
         checkBoxShowAllChrs = new JCheckBox();
-        checkBoxZoomWhenNav = new JCheckBox();
+        addButton = new JButton();
+        removeButton = new JButton();
         scrollPane1 = new JScrollPane();
         regionTable = new JTable();
         panel1 = new JPanel();
         panel2 = new JPanel();
-        addRegionButton = new JButton();
-        removeSelectedButton = new JButton();
-        viewSelectedButton = new JButton();
+        viewButton = new JButton();
+        checkBoxZoomWhenNav = new JCheckBox();
         panel4 = new JPanel();
         label1 = new JLabel();
         textFieldSearch = new JTextField();
         clearSearchButton = new JButton();
         cancelAction = new CancelAction();
-        addRegionAction = new AddRegionAction();
+        addAction = new AddRegionAction();
         actionRemoveRegions = new RemoveSelectedRegionsAction();
         showAllChromosomesCheckboxAction = new ShowAllChromosomesCheckboxAction();
-        viewSelectedAction = new ViewSelectedAction();
+        viewAction = new ViewSelectedAction();
 
         //======== this ========
         setTitle("Regions of Interest");
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                thisWindowActivated(e);
+            }
+        });
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -441,20 +460,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                 //======== panel3 ========
                 {
                     panel3.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-                    panel3.setBorder(new LineBorder(Color.black));
+                    panel3.setBorder(LineBorder.createBlackLineBorder());
                     panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                     //---- checkBoxShowAllChrs ----
                     checkBoxShowAllChrs.setAction(showAllChromosomesCheckboxAction);
-                    checkBoxShowAllChrs.setToolTipText("View regions from all chromosomes (othrwise, current chromosome only)");
+                    checkBoxShowAllChrs.setToolTipText("View regions from all chromosomes (otherwise, current chromosome only)");
                     checkBoxShowAllChrs.setSelected(true);
                     panel3.add(checkBoxShowAllChrs);
 
-                    //---- checkBoxZoomWhenNav ----
-                    checkBoxZoomWhenNav.setText("Zoom to Region");
-                    checkBoxZoomWhenNav.setToolTipText("When navigating to a region, change zoom level?");
-                    checkBoxZoomWhenNav.setSelected(true);
-                    panel3.add(checkBoxZoomWhenNav);
+                    //---- addButton ----
+                    addButton.setAction(addAction);
+                    addButton.setText("Add");
+                    addButton.setActionCommand("Add");
+                    panel3.add(addButton);
+
+                    //---- removeButton ----
+                    removeButton.setAction(actionRemoveRegions);
+                    removeButton.setText("Remove");
+                    panel3.add(removeButton);
                 }
                 contentPanel.add(panel3, BorderLayout.NORTH);
 
@@ -495,6 +519,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                         cm.getColumn(3).setPreferredWidth(200);
                     }
                     regionTable.setAutoCreateRowSorter(true);
+                    regionTable.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            regionTableMouseClicked(e);
+                        }
+                    });
                     scrollPane1.setViewportView(regionTable);
                 }
                 contentPanel.add(scrollPane1, BorderLayout.CENTER);
@@ -505,29 +535,26 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //======== panel2 ========
                     {
-                        panel2.setBorder(new LineBorder(Color.black));
+                        panel2.setBorder(LineBorder.createBlackLineBorder());
                         panel2.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-                        //---- addRegionButton ----
-                        addRegionButton.setAction(addRegionAction);
-                        addRegionButton.setText("Add");
-                        panel2.add(addRegionButton);
+                        //---- viewButton ----
+                        viewButton.setText("View");
+                        viewButton.setAction(viewAction);
+                        viewButton.setActionCommand("View");
+                        panel2.add(viewButton);
 
-                        //---- removeSelectedButton ----
-                        removeSelectedButton.setAction(actionRemoveRegions);
-                        removeSelectedButton.setText("Remove Selected");
-                        panel2.add(removeSelectedButton);
-
-                        //---- viewSelectedButton ----
-                        viewSelectedButton.setText("View Selected");
-                        viewSelectedButton.setAction(viewSelectedAction);
-                        panel2.add(viewSelectedButton);
+                        //---- checkBoxZoomWhenNav ----
+                        checkBoxZoomWhenNav.setText("Zoom to Region");
+                        checkBoxZoomWhenNav.setToolTipText("When navigating to a region, change zoom level?");
+                        checkBoxZoomWhenNav.setSelected(true);
+                        panel2.add(checkBoxZoomWhenNav);
                     }
                     panel1.add(panel2);
 
                     //======== panel4 ========
                     {
-                        panel4.setBorder(new LineBorder(Color.black));
+                        panel4.setBorder(LineBorder.createBlackLineBorder());
                         panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                         //---- label1 ----
@@ -562,23 +589,23 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     private JPanel contentPanel;
     private JPanel panel3;
     private JCheckBox checkBoxShowAllChrs;
-    private JCheckBox checkBoxZoomWhenNav;
+    private JButton addButton;
+    private JButton removeButton;
     private JScrollPane scrollPane1;
     private JTable regionTable;
     private JPanel panel1;
     private JPanel panel2;
-    private JButton addRegionButton;
-    private JButton removeSelectedButton;
-    private JButton viewSelectedButton;
+    private JButton viewButton;
+    private JCheckBox checkBoxZoomWhenNav;
     private JPanel panel4;
     private JLabel label1;
     private JTextField textFieldSearch;
     private JButton clearSearchButton;
     private CancelAction cancelAction;
-    private AddRegionAction addRegionAction;
+    private AddRegionAction addAction;
     private RemoveSelectedRegionsAction actionRemoveRegions;
     private ShowAllChromosomesCheckboxAction showAllChromosomesCheckboxAction;
-    private ViewSelectedAction viewSelectedAction;
+    private ViewSelectedAction viewAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
@@ -603,7 +630,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         private AddRegionAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             // Generated using JFormDesigner non-commercial license
-            putValue(NAME, "Add Region");
+            putValue(NAME, "Add");
             putValue(SHORT_DESCRIPTION, "Add a new region");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -628,6 +655,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                 RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
                 IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
+            updateButtonsEnabled();
         }
     }
 
@@ -644,14 +672,14 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             int[] selectedRows = regionTable.getSelectedRows();
             if (selectedRows != null && selectedRows.length > 0) {
                 List<RegionOfInterest> selectedRegions = getSelectedRegions(selectedRows);
-                regionTable.clearSelection();
                 IGV.getInstance().getSession().removeRegionsOfInterest(selectedRegions);
-
+                synchRegions();
             } else {
                 //todo dhmay -- I don't fully understand this call.  Clean this up.
                 JOptionPane.showMessageDialog(IGV.getMainFrame(), "No regions have been selected for removal.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             }
+            updateButtonsEnabled();
         }
     }
 
@@ -660,7 +688,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         private ViewSelectedAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             // Generated using JFormDesigner non-commercial license
-            putValue(NAME, "View Selected");
+            putValue(NAME, "View");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
@@ -672,15 +700,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                 // Create an "on-the-fly" gene list
                 // TODO -- this is ineffecient (converting regions -> strings then back again)
                 List<String> loci = new ArrayList<String>(selectedRegions.size());
-                for (RegionOfInterest roi : selectedRegions) {
-                    loci.add(roi.getLocusString());
+                if (checkBoxZoomWhenNav.isSelected() || selectedRegions.size() >= 2 || FrameManager.isGeneListMode()) {
+                    for (RegionOfInterest roi : selectedRegions) {
+                        loci.add(roi.getLocusString());
+                    }
+                } else {
+                    //Need to preserve current zoom, iff checkbox not selected and only choosing 1
+                    RegionOfInterest roi = selectedRegions.get(0);
+                    ReferenceFrame.Range range = FrameManager.getDefaultFrame().getCurrentRange();
+                    int length = range.getLength();
+                    int start = roi.getCenter() - length / 2;
+                    int end = start + length;
+                    loci.add(new RegionOfInterest(roi.getChr(), start, end, roi.getDescription()).getLocusString());
                 }
                 GeneList geneList = new GeneList("Regions of Interest", loci, false);
                 IGV.getInstance().getSession().setCurrentGeneList(geneList);
-
                 IGV.getInstance().resetFrames();
 
             }
+            updateButtonsEnabled();
         }
     }
 
@@ -695,6 +733,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         public void actionPerformed(ActionEvent e) {
             // TODO add your code here
             synchRegions();
+            updateButtonsEnabled();
         }
     }
 
@@ -730,21 +769,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             if (length > MAX_SEQUENCE_LENGTH) {
                                 JOptionPane.showMessageDialog(RegionNavigatorDialog.this, "Region is to large to copy sequence data.");
                             } else {
-                                try {
-                                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                                    byte[] seqBytes = genome.getSequence(chr, start, end);
-                                    if (seqBytes == null) {
-                                        MessageUtils.showMessage("Sequence not available");
-                                    } else {
-                                        String sequence = new String(seqBytes);
-                                        copyTextToClipboard(sequence);
-                                    }
-
-                                } finally {
-                                    setCursor(Cursor.getDefaultCursor());
-                                }
-
+                                IGV.copySequenceToClipboard(IGV.getInstance().getGenomeManager().getCurrentGenome(),
+                                        chr, start, end);
                             }
                         }
                     });
@@ -756,7 +782,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             String details = chr + ":" + start + "-" + end;
                             if (desc != null && !desc.isEmpty())
                                 details = details + ", " + desc;
-                            copyTextToClipboard(details);
+                            StringUtils.copyTextToClipboard(details);
                         }
                     });
                     popupMenu.add(copyDetailsItem);
@@ -765,16 +791,6 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             }
         }
 
-        /**
-         * Copy a text string to the clipboard
-         *
-         * @param text
-         */
-        private void copyTextToClipboard(String text) {
-            StringSelection stringSelection = new StringSelection(text);
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
-        }
     }
 
 }

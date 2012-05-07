@@ -19,9 +19,11 @@
 package org.broad.igv.bbfile;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,10 +43,9 @@ import java.util.HashMap;
 * */
 public class BigBedDataBlock {
 
- private static Logger log = Logger.getLogger(BigBedDataBlock.class);
+    private static Logger log = Logger.getLogger(BigBedDataBlock.class);
 
     // Bed data block access variables   - for reading in bed records from a file
-    private SeekableStream fis;  // file input stream handle
     private long fileOffset;       // Bed data block file offset
     private long dataBlockSize;     // byte size for data block specified in the R+ leaf
     private boolean isLowToHigh;   // if true, data is low to high byte order; else high to low
@@ -56,7 +57,6 @@ public class BigBedDataBlock {
     // Provides uncompressed byte stream data reader
     private byte[] bedBuffer;  // buffer containing leaf block data uncompressed
     private int remDataSize;   // number of unread data bytes
-    private long dataSizeRead;     // number of bytes read from the decompressed mWigBuffer
 
     // byte stream readers
     private LittleEndianInputStream lbdis;    // low to high byte stream reader
@@ -64,7 +64,6 @@ public class BigBedDataBlock {
 
     // Bed data extraction members
     private ArrayList<BedFeature> bedFeatureList; // array of BigBed data
-    private int nItemsSelected;    // number of Bed features selected from this section
 
     /*
     *   Constructor for Bed data block reader.
@@ -77,8 +76,8 @@ public class BigBedDataBlock {
     *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
     * */
     public BigBedDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-            HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize){
-        this.fis = fis;
+                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
+
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
         this.isLowToHigh = isLowToHigh;
@@ -95,19 +94,19 @@ public class BigBedDataBlock {
 
             // decompress if necessary - the buffer size is 0 for uncompressed data
             // Note:  BBFile Table C specifies a decompression buffer size
-            if(uncompressBufSize > 0)
-              bedBuffer = BBCompressionUtils.decompress(buffer, uncompressBufSize);
+            if (uncompressBufSize > 0)
+                bedBuffer = CompressionUtils.decompress(buffer, uncompressBufSize);
             else
-              bedBuffer = buffer;    // use uncompressed read buffer directly
+                bedBuffer = buffer;    // use uncompressed read buffer directly
 
-       }catch(IOException ex) {
+        } catch (IOException ex) {
             String error = String.format("Error reading Bed data for leaf item %d \n");
             log.error(error, ex);
             throw new RuntimeException(error, ex);
-       }
+        }
 
         // wrap the bed buffer as an input stream
-        if(this.isLowToHigh)
+        if (this.isLowToHigh)
             lbdis = new LittleEndianInputStream(new ByteArrayInputStream(bedBuffer));
         else
             dis = new DataInputStream(new ByteArrayInputStream(bedBuffer));
@@ -133,11 +132,10 @@ public class BigBedDataBlock {
     *   since a zoom record count for the data block is not known.
     * */
     public ArrayList<BedFeature> getBedData(RPChromosomeRegion selectionRegion,
-                                                boolean contained) {
+                                            boolean contained) {
         int itemNumber = 0;
         int chromID, chromStart, chromEnd;
         String restOfFields;
-        int itemHitValue;
 
         // chromID + chromStart + chromEnd + rest 0 byte
         // 0 byte for "restOfFields" is always present for bed data
@@ -146,72 +144,69 @@ public class BigBedDataBlock {
         // allocate the bed feature array list
         bedFeatureList = new ArrayList<BedFeature>();
 
-        // check if all leaf items are selection hits
-        RPChromosomeRegion itemRegion = new RPChromosomeRegion( leafHitItem.getChromosomeBounds());
-        int leafHitValue = itemRegion.compareRegions(selectionRegion);
-        
         try {
-            for(int index = 0; remDataSize > 0; ++index) {
+            for (int index = 0; remDataSize >= minItemSize; ++index) {
                 itemNumber = index + 1;
 
                 // read in BigBed item fields - BBFile Table I
-                if(isLowToHigh){
+                if (isLowToHigh) {
                     chromID = lbdis.readInt();
-                    chromStart= lbdis.readInt();
+                    chromStart = lbdis.readInt();
                     chromEnd = lbdis.readInt();
                     restOfFields = lbdis.readString();
-                }
-                else{
+                } else {
                     chromID = dis.readInt();
-                    chromStart= dis.readInt();
+                    chromStart = dis.readInt();
                     chromEnd = dis.readInt();
-                    restOfFields = dis.readUTF();
+                    restOfFields = readHighToLowString();
                 }
 
-                if(leafHitValue == 0) {     // contained leaf region items always added
+                int leafHitValue = selectionRegion.compareRegions(chromID, chromStart, chromID, chromEnd);
+                if (leafHitValue == -2 || (contained && leafHitValue == -1)) {
+                    remDataSize -= (minItemSize + restOfFields.length());
+                    break;
+                }
+                if (leafHitValue == 2 || (contained && leafHitValue == 1)) {
+                    remDataSize -= (minItemSize + restOfFields.length());
+                    continue;
+                } else {
+                    remDataSize -= (minItemSize + restOfFields.length());
                     String chromosome = chromosomeMap.get(chromID);
-                    BedFeature bbItem = new BedFeature(itemNumber, chromosome,
-                         chromStart, chromEnd, restOfFields);
+                    BedFeature bbItem = new BedFeature(itemNumber, chromosome, chromStart, chromEnd, restOfFields);
                     bedFeatureList.add(bbItem);
                 }
-                else {                      // test for hit
-                    itemRegion = new RPChromosomeRegion(chromID, chromStart, chromID, chromEnd);
-                    itemHitValue = itemRegion.compareRegions(selectionRegion);
-
-                    // abs(itemHitValue) == 1 for intersection; itemHitValue == 0 for contained
-                    if(!contained && Math.abs(itemHitValue) < 2 ||
-                            itemHitValue == 0) {
-                        // add bed feature to item selection list
-                        String chromosome = chromosomeMap.get(chromID);
-                        BedFeature bbItem = new BedFeature(itemNumber, chromosome,
-                             chromStart, chromEnd, restOfFields);
-                        bedFeatureList.add(bbItem);
-                    }
-                }
-
-                // compute data block remainder from size of item read
-                // todo: check that restOfFields.length() does not also include 0 byte terminator
-                remDataSize -= minItemSize + restOfFields.length();
             }
 
-        }catch(IOException ex) {
-            log.error("Read error for Bed data item " + itemNumber);
+        } catch (IOException ex) {
+
+            log.error("Read error for Bed data item " + itemNumber, ex);
 
             // accept this as an end of block condition unless no items were read
-            if(itemNumber == 1)
-                throw new RuntimeException("Read error for Bed data item " + itemNumber);
+            if (itemNumber == 1)
+                throw new RuntimeException("Read error for Bed data item " + itemNumber, ex);
         }
 
         return bedFeatureList;
+    }
+
+    private String readHighToLowString() throws IOException {
+        String restOfFields;
+        ByteArrayOutputStream bis = new ByteArrayOutputStream(100);
+        byte b;
+        while ((b = (byte) dis.read()) != 0) {
+            bis.write(b);
+        }
+        restOfFields = new String(bis.toByteArray());
+        return restOfFields;
     }
 
     public void print() {
 
         log.debug("BigBed data for " + bedFeatureList.size() + " items");
 
-        for(int index = 0; index <= bedFeatureList.size(); ++index) {
+        for (int index = 0; index <= bedFeatureList.size(); ++index) {
             // BigBed data items print themselves
             bedFeatureList.get(index).print();
-         }
+        }
     }
 }

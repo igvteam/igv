@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -28,16 +21,14 @@ package org.broad.igv.ui;
 
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeBuilderDialog;
-import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
@@ -72,6 +63,7 @@ import java.lang.ref.SoftReference;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
@@ -84,7 +76,6 @@ public class IGV {
 
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
-    static List<IGV> instances = new LinkedList();
 
     // Window components
     private Frame mainFrame;
@@ -134,12 +125,8 @@ public class IGV {
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
-    private boolean startupComplete = false;
 
-
-    /**
-     *
-     */
+    // Listeners
     Collection<SoftReference<TrackGroupEventListener>> groupListeners =
             Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
 
@@ -162,19 +149,9 @@ public class IGV {
         return theInstance;
     }
 
-
-    public static IGV getFirstInstance() {
-        if (instances.isEmpty()) {
-            throw new RuntimeException("IGV has not been initialized.  Must call createInstance(Frame) first");
-        }
-        return instances.get(0);
-    }
-
-
     public static boolean hasInstance() {
         return theInstance != null;
     }
-
 
     public static JRootPane getRootPane() {
         return getInstance().rootPane;
@@ -191,9 +168,8 @@ public class IGV {
     private IGV(Frame frame) {
 
         theInstance = this;
-        instances.add(this);
 
-        genomeManager = new GenomeManager(this);
+        genomeManager = GenomeManager.getInstance();
 
         mainFrame = frame;
         mainFrame.addWindowListener(new WindowAdapter() {
@@ -208,9 +184,7 @@ public class IGV {
             }
 
             private void windowCloseEvent() {
-                instances.remove(this);
-                PreferenceManager.getInstance().setApplicationFrameBounds(rootPane.getBounds());
-
+                PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
             }
 
             @Override
@@ -261,7 +235,7 @@ public class IGV {
 
         }
         contentPane = new IGVContentPane(this);
-        menuBar = new IGVMenuBar();
+        menuBar = new IGVMenuBar(this);
 
         rootPane.setContentPane(contentPane);
         rootPane.setJMenuBar(menuBar);
@@ -276,12 +250,16 @@ public class IGV {
         // Set the application's previous location and size
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
+        int state = PreferenceManager.getInstance().getAsInt(PreferenceManager.FRAME_STATE_KEY);
+
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
                 applicationBounds.getMaxY() > screenBounds.getHeight()) {
             int width = Math.min(1150, (int) screenBounds.getWidth());
             int height = Math.min(800, (int) screenBounds.getHeight());
             applicationBounds = new Rectangle(0, 0, width, height);
         }
+
+        mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
 
         BAMHttpReader.cleanTempDir(BAMHttpReader.oneDay * 5);
@@ -422,14 +400,7 @@ public class IGV {
 
 
     public void selectGenomeFromList(String genome) {
-        try {
-            contentPane.getCommandBar().selectGenomeFromList(genome);
-        } catch (FileNotFoundException e) {
-            log.error("File not found while intializing genome!", e);
-        } catch (NoRouteToHostException e) {
-            log.error("Error while intializing genome!", e);
-        }
-
+        contentPane.getCommandBar().selectGenomeFromList(genome);
     }
 
 
@@ -440,10 +411,11 @@ public class IGV {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(this, true);
-
+            GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(mainFrame, this);
             genomeBuilderDialog.setVisible(true);
-            if (genomeBuilderDialog.isCanceled()) {
+
+            File genomeZipFile = genomeBuilderDialog.getArchiveFile();
+            if (genomeBuilderDialog.isCanceled() || genomeZipFile == null) {
                 return;
             }
 
@@ -451,21 +423,19 @@ public class IGV {
                 bar = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
             }
 
-            String genomeZipLocation = genomeBuilderDialog.getGenomeArchiveLocation();
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
             String refFlatFileName = genomeBuilderDialog.getRefFlatFileName();
             String fastaFileName = genomeBuilderDialog.getFastaFileName();
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
-            String relativeSequenceLocation = genomeBuilderDialog.getSequenceLocation();
-            String seqLocationOverride = genomeBuilderDialog.getSequenceLocationOverride();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
             String genomeFileName = genomeBuilderDialog.getArchiveFileName();
 
-            GenomeListItem genomeListItem = IGV.getInstance().getGenomeManager().defineGenome(
-                    genomeZipLocation, cytobandFileName, refFlatFileName,
-                    fastaFileName, chrAliasFile, relativeSequenceLocation, genomeDisplayName,
-                    genomeId, genomeFileName, monitor, seqLocationOverride);
+
+            GenomeListItem genomeListItem = getGenomeManager().defineGenome(
+                    genomeZipFile, cytobandFileName, refFlatFileName,
+                    fastaFileName, chrAliasFile, genomeDisplayName,
+                    genomeId, genomeFileName, monitor);
 
             if (genomeListItem != null) {
                 enableRemoveGenomes();
@@ -488,6 +458,9 @@ public class IGV {
 
             JOptionPane.showMessageDialog(mainFrame, "Failed to define the current genome " +
                     genomePath + "\n" + e.getMessage());
+        } catch (GenomeException e) {
+            log.error("Failed to define genome.", e);
+            MessageUtils.showMessage(e.getMessage());
         } catch (Exception e) {
             String genomePath = "";
             if (archiveFile != null) {
@@ -495,7 +468,7 @@ public class IGV {
             }
 
             log.error("Failed to define genome: " + genomePath, e);
-            MessageUtils.showMessage("Unexpected while importing a genome: " + e.getMessage());
+            MessageUtils.showMessage("Unexpected error while importing a genome: " + e.getMessage());
         } finally {
             if (bar != null) {
                 bar.close();
@@ -537,7 +510,7 @@ public class IGV {
         try {
             File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
             if (importDirectory == null) {
-                PreferenceManager.getInstance().setLastGenomeImportDirectory(Globals.getUserDirectory());
+                PreferenceManager.getInstance().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
             }
 
             // Display the dialog
@@ -577,6 +550,9 @@ public class IGV {
         }
 
         Genome genome = getGenomeManager().loadGenome(path, monitor);
+        //If genome loading cancelled
+        if (genome == null) return;
+
         final String name = genome.getDisplayName();
         final String id = genome.getId();
 
@@ -585,6 +561,10 @@ public class IGV {
 
         contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
         contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+
+        // Reset the session (unload all tracks)
+        resetSession(null);
+
 
     }
 
@@ -804,7 +784,7 @@ public class IGV {
         });
     }
 
-    final public void doExitApplication() {
+    final public void saveStateForExit() {
 
         // Store recent sessions
         if (!getRecentSessionList().isEmpty()) {
@@ -828,6 +808,9 @@ public class IGV {
             PreferenceManager.getInstance().setRecentSessions(recentSessions);
         }
 
+        // Save application location and size
+        PreferenceManager.getInstance().setApplicationFrameBounds(mainFrame.getBounds());
+        PreferenceManager.getInstance().put(PreferenceManager.FRAME_STATE_KEY, "" + mainFrame.getExtendedState());
 
     }
 
@@ -1120,6 +1103,8 @@ public class IGV {
             PreferenceManager.getInstance().clear();
             boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);
             doShowAttributeDisplay(isShow);
+            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+            prefs.remove(DirectoryManager.IGV_DIR_USERPREF);
             doRefresh();
 
         } catch (Exception e) {
@@ -1218,96 +1203,105 @@ public class IGV {
 
     }
 
+    /**
+     * Load a session file, possibly asynchronously (if on the event dispatch thread).
+     *
+     * @param sessionPath
+     * @param locus
+     * @param merge
+     */
+    public void doRestoreSession(final String sessionPath,
+                                 final String locus,
+                                 final boolean merge) {
 
-    final public void doRestoreSession(final String sessionPath,
-                                       final String locus,
-                                       final boolean merge) {
-
-        SwingWorker worker = new SwingWorker() {
-
-            CursorToken cursorToken = null;
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                InputStream inputStream = null;
-                try {
-
-                    cursorToken = WaitCursorManager.showWaitCursor();
-
-                    if (!merge) {
-                        // Do this first, it closes all open SeekableFileStreams.
-                        resetSession(sessionPath);
-                    }
-
-                    setStatusBarMessage("Opening session...");
-                    inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-
-                    boolean isUCSC = sessionPath.endsWith(".session");
-                    final SessionReader sessionReader = isUCSC ?
-                            new UCSCSessionReader(IGV.this) :
-                            new IGVSessionReader(IGV.this);
-
-                    sessionReader.loadSession(inputStream, session, sessionPath);
-
-                    String searchText = locus == null ? session.getLocus() : locus;
-
-                    // NOTE: Nothing to do if chr == all
-                    if (!FrameManager.isGeneListMode() && searchText != null &&
-                            !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
-                        goToLocus(searchText);
-                    }
-
-
-                    mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-                    LRUCache.clearCaches();
-
-
-                    double[] dividerFractions = session.getDividerFractions();
-                    if (dividerFractions != null) {
-                        contentPane.getMainPanel().setDividerFractions(dividerFractions);
-                    }
-                    session.clearDividerLocations();
-
-                    //If there's a RegionNavigatorDialog, kill it.
-                    //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-                    RegionNavigatorDialog.destroyActiveInstance();
-
-                    if (!getRecentSessionList().contains(sessionPath)) {
-                        getRecentSessionList().addFirst(sessionPath);
-                    }
-
-
-                    doRefresh();
-                } catch (Exception e) {
-                    String message = "Failed to load session! : " + sessionPath;
-                    log.error(message, e);
-                    MessageUtils.showMessage(message + ": " + e.getMessage());
-
-                } finally {
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException iOException) {
-                            log.error("Error closing session stream", iOException);
-                        }
-                        resetStatusMessage();
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                if (cursorToken != null) {
-                    WaitCursorManager.removeWaitCursor(cursorToken);
-                }
+        Runnable runnable = new Runnable() {
+            public void run() {
+                restoreSessionSynchronous(sessionPath, locus, merge);
             }
         };
 
-        worker.execute();
-
+        if (SwingUtilities.isEventDispatchThread()) {
+            LongRunningTask.submit(runnable);
+        } else {
+            runnable.run();
+        }
 
     }
+
+    /**
+     * Load a session file in the current thread.  This should not be called from the event dispatch thread.
+     *
+     * @param merge
+     * @param sessionPath
+     * @param locus
+     * @return true if successful
+     */
+    public boolean restoreSessionSynchronous(String sessionPath, String locus, boolean merge) {
+        InputStream inputStream = null;
+        try {
+            if (!merge) {
+                // Do this first, it closes all open SeekableFileStreams.
+                resetSession(sessionPath);
+            }
+
+            setStatusBarMessage("Opening session...");
+            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+
+            boolean isUCSC = sessionPath.endsWith(".session");
+            final SessionReader sessionReader = isUCSC ?
+                    new UCSCSessionReader(this) :
+                    new IGVSessionReader(this);
+
+            sessionReader.loadSession(inputStream, session, sessionPath);
+
+            String searchText = locus == null ? session.getLocus() : locus;
+
+            // NOTE: Nothing to do if chr == all
+            if (!FrameManager.isGeneListMode() && searchText != null &&
+                    !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
+                goToLocus(searchText);
+            }
+
+
+            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+            LRUCache.clearCaches();
+
+
+            double[] dividerFractions = session.getDividerFractions();
+            if (dividerFractions != null) {
+                contentPane.getMainPanel().setDividerFractions(dividerFractions);
+            }
+            session.clearDividerLocations();
+
+            //If there's a RegionNavigatorDialog, kill it.
+            //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+            RegionNavigatorDialog.destroyActiveInstance();
+
+            if (!getRecentSessionList().contains(sessionPath)) {
+                getRecentSessionList().addFirst(sessionPath);
+            }
+            doRefresh();
+            return true;
+
+        } catch (Exception e) {
+            log.error("Error loading session", e);
+            String message = "Error loading session session : <br>&nbsp;&nbsp;" + sessionPath + "<br>" +
+                    e.getMessage();
+            MessageUtils.showMessage(message);
+            return false;
+
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException iOException) {
+                    log.error("Error closing session stream", iOException);
+                }
+                resetStatusMessage();
+            }
+        }
+    }
+
 
     /**
      * Reset the default status message, which is the number of tracks loaded.
@@ -1495,9 +1489,9 @@ public class IGV {
                             }
                             panel.addTracks(tracks);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         log.error("Error loading tracks", e);
-                        messages.append(e.getMessage());
+                        messages.append("Error loading " + locator + ": " + e.getMessage());
                     }
                 }
             };
@@ -1544,7 +1538,7 @@ public class IGV {
                         lastSlashIdx = fn.lastIndexOf("\\");
                     }
                     if (lastSlashIdx > 0) {
-                        fn = fn.substring(lastSlashIdx);
+                        fn = fn.substring(lastSlashIdx + 1);
                     }
                     track.setAttributeValue("NAME", track.getName());
                     track.setAttributeValue("DATA FILE", fn);
@@ -1685,21 +1679,16 @@ public class IGV {
 
 
     public void sortAlignmentTracks(AlignmentTrack.SortOption option, String tag) {
-        for (Track t : getAllTracks(false)) {
-            if (t instanceof AlignmentTrack) {
-                for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    double center = frame.getCenter();
-                    ((AlignmentTrack) t).sortRows(option, frame, center, tag);
-                }
-            }
-        }
+        sortAlignmentTracks(option, null, tag);
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, double location, String tag) {
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, Double location, String tag) {
+        double actloc;
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
                 for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).sortRows(option, frame, location, tag);
+                    actloc = location != null ? location : frame.getCenter();
+                    ((AlignmentTrack) t).sortRows(option, frame, actloc, tag);
                 }
             }
         }
@@ -1992,7 +1981,7 @@ public class IGV {
                 MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
                         "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
             } else {
-                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
+                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader, genome);
                 String name = geneTrackName;
                 if (name == null) name = "Genes";
 
@@ -2000,7 +1989,6 @@ public class IGV {
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
-                geneFeatureTrack.setPreferredHeight(35);
                 geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
                 geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
@@ -2269,21 +2257,16 @@ public class IGV {
             log.debug("startUp");
         }
 
-        SwingWorker worker = new StartupWorker(igvArgs);
-        worker.execute();
-    }
-
-    public boolean isStartupComplete() {
-        return startupComplete;
+        LongRunningTask.submit(new StartupRunnable(igvArgs));
     }
 
     /**
      * Swing worker class to startup IGV
      */
-    public class StartupWorker extends SwingWorker {
+    public class StartupRunnable implements Runnable {
         Main.IGVArgs igvArgs;
 
-        StartupWorker(Main.IGVArgs args) {
+        StartupRunnable(Main.IGVArgs args) {
             this.igvArgs = args;
 
         }
@@ -2295,8 +2278,7 @@ public class IGV {
          * @throws Exception
          */
         @Override
-        protected Object doInBackground() throws Exception {
-
+        public void run() {
 
             final ProgressMonitor monitor = new ProgressMonitor();
             final ProgressBar progressBar = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
@@ -2335,56 +2317,49 @@ public class IGV {
                 final ProgressBar bar2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
                 indefMonitor.start();
 
-                try {
 
-                    if (log.isDebugEnabled()) {
-                        log.debug("Calling restore session");
+                if (log.isDebugEnabled()) {
+                    log.debug("Calling restore session");
+                }
+
+
+                if (igvArgs.getSessionFile() != null) {
+                    boolean success = false;
+                    if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
+                        boolean merge = false;
+                        success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
+                    } else {
+                        File sf = new File(igvArgs.getSessionFile());
+                        if (sf.exists()) {
+                            success = restoreSessionSynchronous(sf.getAbsolutePath(), igvArgs.getLocusString(), false);
+                        }
+                    }
+                    if (!success) {
+                        String genomeId = preferenceManager.getDefaultGenome();
+                        contentPane.getCommandBar().selectGenomeFromList(genomeId);
+
+                    }
+                } else if (igvArgs.getDataFileString() != null) {
+                    // Not an xml file, assume its a list of data files
+                    String[] tokens = igvArgs.getDataFileString().split(",");
+                    String[] names = null;
+                    if (igvArgs.getName() != null) {
+                        names = igvArgs.getName().split(",");
                     }
 
-
-                    if (igvArgs.getSessionFile() != null) {
-                        if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
-                            boolean merge = false;
-                            doRestoreSession(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
-                        } else {
-                            File sf = new File(igvArgs.getSessionFile());
-                            if (sf.exists()) {
-                                doRestoreSession(sf, igvArgs.getLocusString());
-                            }
+                    String indexFile = igvArgs.getIndexFile();
+                    List<ResourceLocator> locators = new ArrayList();
+                    int idx = 0;
+                    for (String p : tokens) {
+                        ResourceLocator rl = new ResourceLocator(p);
+                        if (names != null && idx < names.length) {
+                            rl.setName(names[idx]);
                         }
-                    } else if (igvArgs.getDataFileString() != null) {
-                        // Not an xml file, assume its a list of data files
-                        String[] tokens = igvArgs.getDataFileString().split(",");
-                        String[] names = null;
-                        if (igvArgs.getName() != null) {
-                            names = igvArgs.getName().split(",");
-                        }
-
-                        String indexFile = igvArgs.getIndexFile();
-                        List<ResourceLocator> locators = new ArrayList();
-                        int idx = 0;
-                        for (String p : tokens) {
-                            ResourceLocator rl = new ResourceLocator(p);
-                            if (names != null && idx < names.length) {
-                                rl.setName(names[idx]);
-                            }
-                            rl.setIndexPath(indexFile);
-                            locators.add(rl);
-                            idx++;
-                        }
-                        loadResources(locators);
+                        rl.setIndexPath(indexFile);
+                        locators.add(rl);
+                        idx++;
                     }
-
-
-                } catch (Exception ex) {
-                    String tmp = igvArgs.getSessionFile() != null ? igvArgs.getSessionFile() : igvArgs.getDataFileString();
-                    JOptionPane.showMessageDialog(mainFrame, "<html>Error loading session: " + tmp + "<br>" + ex.toString());
-                    log.error("Error loading session: " + tmp, ex);
-
-                    // Session load failed, load default genome
-                    String genomeId = preferenceManager.getDefaultGenome();
-                    contentPane.getCommandBar().selectGenomeFromList(genomeId);
-
+                    loadResources(locators);
                 }
 
 
@@ -2406,32 +2381,44 @@ public class IGV {
                 CommandListener.start(port);
             }
 
-
-            startupComplete = true;
-
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
                     if (igvArgs.getLocusString() != null) {
                         goToLocus(igvArgs.getLocusString());
                     }
+                    if (igvArgs.getBatchFile() != null) {
+                        LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+                    }
 
                 }
             });
 
 
-            return null;
         }
+    }
 
 
-        /**
-         * Called when the background thread is complete (IGV window is open and data loaded).
-         */
-        @Override
-        protected void done() {
-            if (igvArgs.getBatchFile() != null) {
-                LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
+    public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
+        try {
+            IGV.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            byte[] seqBytes = genome.getSequence(chr, start, end);
+
+            if (seqBytes == null) {
+                MessageUtils.showMessage("Sequence not available. Try enabling http byte-range requests");
+            } else {
+                String sequence = new String(seqBytes);
+                //TODO This will complement sequence if sequence track is flipped
+                //Might be un-intuitive to user if they do it from region dialog
+//                SequenceTrack sequenceTrack = IGV.getInstance().getSequenceTrack();
+//                if(sequenceTrack != null && sequenceTrack.getStrand() == Strand.NEGATIVE){
+//                    sequence = AminoAcidManager.getNucleotideComplement(sequence);
+//                }
+                StringUtils.copyTextToClipboard(sequence);
             }
+
+        } finally {
+            IGV.getMainFrame().setCursor(Cursor.getDefaultCursor());
         }
     }
 

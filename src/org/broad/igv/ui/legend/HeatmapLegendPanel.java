@@ -84,7 +84,7 @@ public class HeatmapLegendPanel extends LegendPanel {
     /**
      * Method description
      */
-    public void doUserPreferences() {
+    public void edit() {
 
         UIUtilities.invokeOnEventThread(new Runnable() {
 

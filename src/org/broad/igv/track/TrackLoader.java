@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.track;
@@ -38,6 +31,7 @@ import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
@@ -52,6 +46,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
+import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
@@ -160,7 +155,7 @@ public class TrackLoader {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
-            } else if (isIndexed(path)) {
+            } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // VCF files must be indexed.
@@ -203,9 +198,7 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bedz")) {
-                loadIndexedBedzFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
+            }  else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".list")) {
@@ -221,9 +214,6 @@ public class TrackLoader {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
                 loadGobyCountsArchive(locator, newTracks, genome);
-            } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
-                    typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
-                loadPslFile(locator, newTracks, genome);
             } else if (GFFParser.isGFF(locator.getPath())) {
                 loadGFFfile(locator, newTracks, genome);
             } else if (AbstractFeatureParser.canParse(locator.getPath())) {
@@ -236,16 +226,17 @@ public class TrackLoader {
                 if (MutationParser.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome);
                 } else {
-                    loadMAFTrack(locator, newTracks);
+                    loadMAFTrack(locator, newTracks, genome);
                 }
+            } else if (typeString.endsWith(".maf.dict")) {
+                loadMAFTrack(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
-                    typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
-                loadGWASFile(locator, newTracks);
+            } else if (GWASParser.isGWASFile(typeString)) {
+                loadGWASFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (path.contains("Participant") && path.endsWith(".csv")) {
@@ -283,9 +274,7 @@ public class TrackLoader {
 
 
             return newTracks;
-        } catch (DataLoadException dle) {
-            throw dle;
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error(e);
             e.printStackTrace();
             throw new DataLoadException(e.getMessage(), path);
@@ -351,7 +340,6 @@ public class TrackLoader {
 
                 if (ffh.getTrackType() == TrackType.REPMASK) {
                     t.setHeight(15);
-                    t.setPreferredHeight(15);
                 }
             }
             newTracks.add(t);
@@ -359,13 +347,7 @@ public class TrackLoader {
 
     }
 
-    /**
-     * Load the input file as a BED or Attribute (Sample Info) file.  First assume
-     * it is a BED file,  if no features are found load as an attribute file.
-     *
-     * @param locator
-     * @param newTracks
-     */
+
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
@@ -395,26 +377,6 @@ public class TrackLoader {
         newTracks.addAll(parser.loadTracks(locator, genome));
     }
 
-    /**
-     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
-     *
-     * @param locator
-     * @param newTracks
-     */
-    private void loadPslFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        PSLParser featureParser = new PSLParser();
-        List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
-        newTracks.addAll(tracks);
-        for (FeatureTrack t : tracks) {
-            t.setMinimumHeight(10);
-            t.setHeight(30);
-            t.setPreferredHeight(30);
-            t.setDisplayMode(Track.DisplayMode.EXPANDED);
-
-        }
-
-    }
 
     /**
      * Load the input file as a feature, mutation, or maf (multiple alignment) file.
@@ -427,12 +389,6 @@ public class TrackLoader {
         GFFParser featureParser = new GFFParser(locator.getPath());
         List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
-        for (FeatureTrack track : tracks) {
-            track.setName(locator.getTrackName());
-            track.setRendererClass(IGVFeatureRenderer.class);
-            track.setHeight(45);
-        }
-
     }
 
     /**
@@ -471,25 +427,9 @@ public class TrackLoader {
             this.loadMutFile(locator, newTracks, genome);
         } else if (WiggleParser.isWiggle(locator)) {
             loadWigFile(locator, newTracks, genome);
-        } else if (locator.getPath().toLowerCase().contains(".maf")) {
-            loadMAFTrack(locator, newTracks);
+        } else if (locator.getPath().toLowerCase().contains(".maf") || locator.getPath().toLowerCase().endsWith(".maf.dict")) {
+            loadMAFTrack(locator, newTracks, genome);
         }
-    }
-
-    /**
-     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
-     *
-     * @param locator
-     * @param newTracks
-     */
-    private void loadIndexedBedzFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-
-        File featureFile = new File(locator.getPath());
-        File indexFile = new File(locator.getPath() + ".sai");
-        FeatureSource src = new IndexedBEDFeatureSource(featureFile, indexFile, genome);
-        Track t = new FeatureTrack(locator, src);
-        newTracks.add(t);
-
     }
 
     /**
@@ -501,9 +441,9 @@ public class TrackLoader {
      */
 
 
-    private void loadGWASFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadGWASFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        GWASParser gwasParser = new GWASParser(locator);
+        GWASParser gwasParser = new GWASParser(locator, genome);
         GWASData gwasData = gwasParser.parse();
 
         GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser);
@@ -521,18 +461,17 @@ public class TrackLoader {
             String path = locator.getPath();
             for (RNAIDataSource ds : dataSources) {
                 String trackId = path + "_" + ds.getName();
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds, genome);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
 
                 // Set attributes.
                 track.setAttributeValue("SCREEN", ds.getScreen());
                 track.setHeight(80);
-                track.setPreferredHeight(80);
                 newTracks.add(track);
             }
         }
     }
 
-    private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal()) {
             if (!checkSize(locator.getPath())) {
@@ -542,40 +481,42 @@ public class TrackLoader {
 
         ExpressionFileParser parser = null;
         ExpressionDataset ds = null;
-
-        String fName = locator.getTrackName();
-
-        // TODO -- handle remote resource
-        try {
-            parser = new ExpressionFileParser(locator, null, genome);
-        } catch (IOException e) {
-            log.error("Error creating GCT parser.", e);
-            throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());
-        }
+        parser = new ExpressionFileParser(locator, null, genome);
         ds = parser.createDataset();
-        ds.setName(fName);
-        ds.setNormalized(true);
-        ds.setLogValues(true);
+        if (ds.isEmpty()) {
+            String message = "The probes in the file <br>&nbsp;&nbsp;&nbsp;" + locator.getPath() + "<br>" +
+                    "could not be mapped to genomic positions.  This can be corrected by specify a probe mapping<br>" +
+                    "file from the Preferences window (Probes tab), or by specifing the genomic positions in the<br>" +
+                    "expression data file.  Please see the user guide for more details.";
+            MessageUtils.showMessage(message);
 
-        /*
-         * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
-         * OverlappingProcessor proc = new OverlappingProcessor(ds);
-         * proc.setZoomMax(0);
-         * proc.process(outputFile.getAbsolutePath());
-         * loadH5File(outputFile, messages, attributeList, group);
-         */
+        } else {
+            ds.setName(locator.getTrackName());
+            ds.setNormalized(true);
+            ds.setLogValues(true);
 
-        // Counter for generating ID
-        TrackProperties trackProperties = ds.getTrackProperties();
-        String path = locator.getPath();
-        for (String trackName : ds.getTrackNames()) {
-            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
-            String trackId = path + "_" + trackName;
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
-            track.setRendererClass(HeatmapRenderer.class);
-            track.setProperties(trackProperties);
-            newTracks.add(track);
+            /*
+            * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
+            * OverlappingProcessor proc = new OverlappingProcessor(ds);
+            * proc.setZoomMax(0);
+            * proc.process(outputFile.getAbsolutePath());
+            * loadH5File(outputFile, messages, attributeList, group);
+            */
+
+            // Counter for generating ID
+            TrackProperties trackProperties = ds.getTrackProperties();
+            String path = locator.getPath();
+            for (String trackName : ds.getTrackNames()) {
+                DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
+                String trackId = path + "_" + trackName;
+                Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                track.setRendererClass(HeatmapRenderer.class);
+                track.setProperties(trackProperties);
+                newTracks.add(track);
+            }
         }
+
+
     }
 
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
@@ -598,16 +539,15 @@ public class TrackLoader {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             track.setProperties(trackProperties);
 
             if (type == TrackType.ALLELE_FREQUENCY) {
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
                 track.setHeight(40);
-                track.setPreferredHeight(40);
             }
             newTracks.add(track);
         }
@@ -706,7 +646,7 @@ public class TrackLoader {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackId, ds, genome);
 
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (label == null || multiTrack) ? heading : label;
             track.setName(displayName);
@@ -723,7 +663,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    public void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
@@ -763,7 +703,7 @@ public class TrackLoader {
             final DataSource dataSource = locator.getPath().endsWith(".counts") ?
                     new GobyCountArchiveDataSource(locator) :
                     new TDFDataSource(reader, trackNumber, heading, genome);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -778,7 +718,7 @@ public class TrackLoader {
 
     }
 
-    private void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         String trackName = locator.getTrackName();
         String trackId = locator.getPath();
@@ -789,15 +729,29 @@ public class TrackLoader {
         BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
 
         if (reader.isBigWigFile()) {
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
             newTracks.add(track);
         } else if (reader.isBigBedFile()) {
-            FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
-            newTracks.add(track);
+
+            if (locator.getPath().contains("RRBS_cpgMethylation") ||
+                    locator.getPath().contains("BiSeq_cpgMethylation") ||
+                    (reader.getAutoSql() != null && reader.getAutoSql().startsWith("table BisulfiteSeq"))) {
+                loadMethylTrack(locator, reader, newTracks, genome);
+            } else {
+                FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
+                newTracks.add(track);
+            }
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
     }
+
+    private void loadMethylTrack(ResourceLocator locator, BBFileReader reader, List<Track> newTracks, Genome genome) throws IOException {
+
+        MethylTrack track = new MethylTrack(locator, reader, genome);
+        newTracks.add(track);
+    }
+
 
     private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
@@ -811,8 +765,7 @@ public class TrackLoader {
         String trackName = locator.getFileName();
         final DataSource dataSource = new GobyCountArchiveDataSource(locator);
 
-        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                dataSource, genome);
+        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
         newTracks.add(track);
 
@@ -876,7 +829,7 @@ public class TrackLoader {
         for (RNAIDataSource ds : dataSources) {
             String name = ds.getName();
             String trackId = path + "_" + name;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds);
 
             // Set attributes.  This "hack" is neccessary to register these attributes with the
             // attribute manager to get displayed.
@@ -885,7 +838,6 @@ public class TrackLoader {
                 track.setAttributeValue("CONDITION", ds.getCondition());
             }
             track.setHeight(80);
-            track.setPreferredHeight(80);
             //track.setDataRange(new DataRange(-3, 0, 3));
             newTracks.add(track);
         }
@@ -903,8 +855,8 @@ public class TrackLoader {
         (new RNAIHairpinParser(locator.getPath())).parse();
     }
 
-    private void loadMAFTrack(ResourceLocator locator, List<Track> newTracks) {
-        MAFTrack t = new MAFTrack(locator);
+    private void loadMAFTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        MAFTrack t = new MAFTrack(locator, genome);
         t.setName("Multiple Alignments");
         newTracks.add(t);
     }
@@ -933,7 +885,7 @@ public class TrackLoader {
 
             // Check that alignments we loaded actually match some data.  Many BAM files will contain some sequences
             // not represented in the genome, buf if there are no matches warn the user.
-            Set<String> seqNames = dataManager.getSequenceNames();
+            List<String> seqNames = dataManager.getSequenceNames();
             if (seqNames != null && seqNames.size() > 0) {
                 if (!checkSequenceNames(locator.getPath(), genome, seqNames)) {
                     return;
@@ -952,7 +904,6 @@ public class TrackLoader {
             alignmentTrack.setName(dsName);
             if (isBed) {
                 alignmentTrack.setRenderer(new BedRenderer());
-                alignmentTrack.setPreferredHeight(40);
                 alignmentTrack.setHeight(40);
             }
 
@@ -993,7 +944,7 @@ public class TrackLoader {
                 SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator,
                         alignmentTrack.getName() + " Junctions", dataManager, genome);
                 spliceJunctionTrack.setHeight(60);
-                spliceJunctionTrack.setPreferredHeight(60);
+
                 spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
                 newTracks.add(spliceJunctionTrack);
                 alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
@@ -1016,7 +967,7 @@ public class TrackLoader {
      * @param seqNames
      * @return true if there is at least one sequence match, false otherwise
      */
-    private boolean checkSequenceNames(String filename, Genome genome, Set<String> seqNames) {
+    private boolean checkSequenceNames(String filename, Genome genome, List<String> seqNames) {
         boolean atLeastOneMatch = false;
         for (String seqName : seqNames) {
             if (genome.getChromosome(seqName) != null) {
@@ -1081,7 +1032,8 @@ public class TrackLoader {
         TrackProperties props = ds.getTrackProperties();
 
         // The "freq" track.  TODO - make this optional
-        if (ds.getSampleNames().size() > 1) {
+        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                ds.getSampleNames().size() > 4) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = "CNV Summary";
@@ -1092,7 +1044,7 @@ public class TrackLoader {
         for (String trackName : ds.getDataHeadings()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
 
@@ -1115,7 +1067,8 @@ public class TrackLoader {
             TrackProperties props = ds.getTrackProperties();
 
             // The "freq" track.  TODO - make this optional
-            if (ds.getSampleNames().size() > 1) {
+            if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                    ds.getSampleNames().size() > 4) {
                 FreqData fd = new FreqData(ds, genome);
                 String freqTrackId = path;
                 String freqTrackName = "CNV Summary";
@@ -1126,7 +1079,7 @@ public class TrackLoader {
             for (String trackName : ds.getDataHeadings()) {
                 String trackId = path + "_" + trackName;
                 SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
                 track.setRendererClass(HeatmapRenderer.class);
                 track.setTrackType(ds.getType());
 
@@ -1148,17 +1101,19 @@ public class TrackLoader {
         String path = locator.getPath();
 
         // The "freq" track.  Make this optional?
-        FreqData fd = new FreqData(ds, genome);
-        String freqTrackId = path;
-        String freqTrackName = "CNV Summary";
-        CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-        newTracks.add(freqTrack);
-
+        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+                ds.getSampleNames().size() > 4) {
+            FreqData fd = new FreqData(ds, genome);
+            String freqTrackId = path;
+            String freqTrackName = "CNV Summary";
+            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            newTracks.add(freqTrack);
+        }
 
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             newTracks.add(track);
@@ -1199,13 +1154,11 @@ public class TrackLoader {
             track.setRendererClass(CosmicFeatureRenderer.class);
             track.setMinimumHeight(2);
             track.setHeight(20);
-            track.setPreferredHeight(20);
             track.setDisplayMode(Track.DisplayMode.EXPANDED);
         } else {
             track.setRendererClass(IGVFeatureRenderer.class);
             track.setMinimumHeight(35);
             track.setHeight(45);
-            track.setPreferredHeight(45);
         }
         currentTracks.add(track);
     }
@@ -1216,10 +1169,10 @@ public class TrackLoader {
     }
 
 
-    public static boolean isIndexed(String path) {
+    public static boolean isIndexed(String path, Genome genome) {
 
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
-        if (!isIndexable(path)) {
+        if (!isIndexable(path, genome)) {
             return false;
         }
 
@@ -1253,16 +1206,14 @@ public class TrackLoader {
      * @param path
      * @return
      */
-    private static boolean isIndexable(String path) {
+    private static boolean isIndexable(String path, Genome genome) {
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
 
-        return fn.endsWith(".vcf4") || fn.endsWith(".vcf") || fn.endsWith(".bed") || fn.endsWith(".repmask") ||
-                fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx") ||
-                fn.endsWith(".gvf") || fn.endsWith(".gtf");
+        return CodecFactory.getCodec(path, genome) != null;
     }
 
 

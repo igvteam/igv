@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_29" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -69,8 +69,8 @@
           </void> 
           <void method="auxiliary"> 
            <void method="setProperty"> 
-            <string>JavaCodeGenerator.variableModifiers</string> 
-            <int>0</int> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
            </void> 
           </void> 
          </object> 
@@ -97,7 +97,7 @@
           <void method="setProperty"> 
            <string>maximumSize</string> 
            <object class="java.awt.Dimension"> 
-            <int>100</int> 
+            <int>80</int> 
             <int>28</int> 
            </object> 
           </void> 
@@ -148,7 +148,7 @@
           <void method="setProperty"> 
            <string>maximumSize</string> 
            <object class="java.awt.Dimension"> 
-            <int>100</int> 
+            <int>80</int> 
             <int>28</int> 
            </object> 
           </void> 
@@ -186,27 +186,89 @@
           </void> 
           <void method="setProperty"> 
            <string>maximumSize</string> 
-           <object class="java.awt.Dimension"> 
+           <object id="Dimension0" class="java.awt.Dimension"> 
             <int>20</int> 
             <int>29</int> 
            </object> 
           </void> 
           <void method="setProperty"> 
            <string>minimumSize</string> 
-           <object class="java.awt.Dimension"> 
+           <object id="Dimension1" class="java.awt.Dimension"> 
             <int>20</int> 
             <int>29</int> 
            </object> 
           </void> 
           <void method="setProperty"> 
            <string>preferredSize</string> 
-           <object class="java.awt.Dimension"> 
+           <object id="Dimension2" class="java.awt.Dimension"> 
             <int>20</int> 
             <int>29</int> 
            </object> 
           </void> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>Delete this filter</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>margin</string> 
+           <object class="java.awt.Insets"> 
+            <int>2</int> 
+            <int>2</int> 
+            <int>2</int> 
+            <int>2</int> 
+           </object> 
+          </void> 
           <void property="name"> 
            <string>delRow</string> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
+           </void> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>+</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>maximumSize</string> 
+           <object idref="Dimension0"/> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object idref="Dimension1"/> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object idref="Dimension2"/> 
+          </void> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>Add a new filter</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>margin</string> 
+           <object class="java.awt.Insets"> 
+            <int>2</int> 
+            <int>2</int> 
+            <int>2</int> 
+            <int>2</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>addRow</string> 
+          </void> 
+          <void method="auxiliary"> 
+           <void method="setProperty"> 
+            <string>JavaCodeGenerator.variableGetter</string> 
+            <boolean>true</boolean> 
+           </void> 
           </void> 
          </object> 
         </void> 

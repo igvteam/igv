@@ -18,6 +18,7 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.Globals;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,42 +37,10 @@ public class StringUtilsTest {
 
     public void testBreakQuotedString() throws Exception {
 
-        long t0 = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
-            String quotedString = "abc,def,\"" + Math.random() + "\"";
-            List<String> tokens = StringUtils.breakQuotedString(quotedString, ',');
-            //assertEquals(3, tokens.size());
-        }
-        System.out.println("" + (System.currentTimeMillis() - t0));
+        String quotedString = "abc,def,\"beforeComma" + "," + "afterComma\"";
+        List<String> tokens = StringUtils.breakQuotedString(quotedString, ',');
+        assertEquals(3, tokens.size());
 
-        t0 = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
-            String quotedString = "abc,def," + Math.random();
-            quotedString.split(",");
-            //assertEquals(3, tokens.size());
-        }
-        System.out.println("" + (System.currentTimeMillis() - t0));
-
-
-        t0 = System.currentTimeMillis();
-        String [] tokens = new String[10];
-        for (int i = 0; i < 100000; i++) {
-            String quotedString = "abc\tdef\t" + Math.random();
-            ParsingUtils.split(quotedString, tokens, '\t');
-            quotedString.split(",");
-            //assertEquals(3, tokens.size());
-        }
-        System.out.println("" + (System.currentTimeMillis() - t0));
-
-
-
-        t0 = System.currentTimeMillis();
-        for (int i = 0; i < 100000; i++) {
-            String quotedString = "abc\tdef\t" + Math.random();
-            ParsingUtils.split(quotedString, tokens, '\t');
-            quotedString.split(",");
-            //assertEquals(3, tokens.size());
-        }
-        System.out.println("" + (System.currentTimeMillis() - t0));
     }
+
 }

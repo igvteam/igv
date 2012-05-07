@@ -1,14 +1,22 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.LineplotRenderer;
-import org.broad.igv.renderer.ScatterplotRenderer;
-import org.broad.igv.renderer.XYPlotRenderer;
-import org.broad.igv.tdf.TDFDataSource;
+import org.broad.igv.renderer.PointsRenderer;
+
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.Track;
@@ -19,7 +27,6 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.io.*;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -101,7 +108,7 @@ public class AffectiveUtils {
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
             final DataSource dataSource = new AffectiveDataSource(reader, trackNumber, heading, genome);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -114,10 +121,10 @@ public class AffectiveUtils {
                 track.setDataRange(new DataRange(0, 1.5f));
             } else if (trackName.equals("Battery")) {
                 track.setDataRange(new DataRange(-1, 0, 1));
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
             } else if (trackName.endsWith("Celsius")) {
                 track.setDataRange(new DataRange(20, 30));
-                track.setRendererClass(ScatterplotRenderer.class);
+                track.setRendererClass(PointsRenderer.class);
             } else if (trackName.startsWith("EDA")) {
                 track.setDataRange(new DataRange(0, 10));
                 track.setColor(new Color(0, 150, 0));
@@ -127,7 +134,6 @@ public class AffectiveUtils {
             newTracks.add(track);
             trackNumber++;
         }
-
 
 
     }

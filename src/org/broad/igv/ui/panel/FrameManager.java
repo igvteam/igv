@@ -1,23 +1,17 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureDB;
@@ -42,11 +36,16 @@ public class FrameManager {
     private static ReferenceFrame defaultFrame;
 
     static {
-        defaultFrame = new ReferenceFrame("genome");
-        frames.add(defaultFrame);
+        //TODO This is a hack.
+        if (!Globals.isHeadless()) {
+            frames.add(getDefaultFrame());
+        }
     }
 
     public static ReferenceFrame getDefaultFrame() {
+        if(defaultFrame == null){
+            defaultFrame = new ReferenceFrame("genome");
+        }
         return defaultFrame;
     }
 
@@ -69,11 +68,11 @@ public class FrameManager {
         if (searchString != null) {
             Locus locus = getLocus(searchString, 0);
             if (locus != null) {
-                defaultFrame.setInterval(locus);
+                getDefaultFrame().setInterval(locus);
             }
         }
-        frames.add(defaultFrame);
-        defaultFrame.recordHistory();
+        frames.add(getDefaultFrame());
+        getDefaultFrame().recordHistory();
     }
 
 
@@ -82,7 +81,7 @@ public class FrameManager {
         frames.clear();
 
         if (gl == null) {
-            frames.add(defaultFrame);
+            frames.add(getDefaultFrame());
         } else {
             int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
             List<String> lociNotFound = new ArrayList();
@@ -93,7 +92,7 @@ public class FrameManager {
                     lociNotFound.add(loci.get(0));
                 } else {
                     IGV.getInstance().getSession().setCurrentGeneList(null);
-                    defaultFrame.jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
+                    getDefaultFrame().jumpTo(locus.getChr(), locus.getStart(), locus.getEnd());
                 }
             } else {
                 for (String searchString : gl.getLoci()) {

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2012 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NON-INFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -78,15 +71,11 @@ public class CachingQueryReaderTest {
 
         ResourceLocator loc = new ResourceLocator(testFile);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        SAMFileHeader expectedHeader = reader.getHeader();
         reader.close();
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        SAMFileHeader header = cachingReader.getHeader();
         cachingReader.close();
-
-        assertTrue(header.equals(expectedHeader));
     }
 
     @Test
@@ -140,8 +129,10 @@ public class CachingQueryReaderTest {
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -160,12 +151,21 @@ public class CachingQueryReaderTest {
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
 
+            if (i % 2 == 0 && rec.isPaired()) {
+                //Check that paired reads are together
+
+                System.out.println(rec.getReadName());
+
+                System.out.println(result.get(i + 1).getReadName());
+                //assertEquals(rec.getReadName(), result.get(i+1).getReadName());
+            }
+
             if (contained) {
                 assertTrue(rec.getStart() >= start);
             } else {
                 //All we require is some overlap
-                boolean overlap = rec.getStart() >= start && rec.getStart() <= end;
-                overlap |= start >= rec.getStart() && start <= rec.getEnd();
+                boolean overlap = rec.getStart() >= start && rec.getStart() < end;
+                overlap |= start >= rec.getStart() && start < rec.getEnd();
                 assertTrue(overlap);
             }
             assertEquals(sequence, rec.getChr());
@@ -182,7 +182,7 @@ public class CachingQueryReaderTest {
     @Test
     public void testQueryLargeFile() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
-        String path = TestUtils.LARGE_DATA_DIR + "/ABCD_igvSample.bam";
+        String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
@@ -194,7 +194,7 @@ public class CachingQueryReaderTest {
         int end = start + 1;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence, start, end, expSize * 5, expSize);
+        tstSize(cachingReader, sequence, start, end, (int) (expSize * 1.6), expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Edge location, downsampled
@@ -203,26 +203,31 @@ public class CachingQueryReaderTest {
         end = start + 1;
         expSize = 165;
 
-        tstSize(cachingReader, sequence, start, end, expSize + 2, expSize);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
         sequence = "chr12";
-        start = 56815674;
+        start = 56815675 - 1;
         end = start + 1;
 
         expSize = 3288;
 
-        tstSize(cachingReader, sequence, start, end, expSize * 5, expSize);
+        reader = AlignmentReaderFactory.getReader(loc);
+        cachingReader = new CachingQueryReader(reader);
+
+        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
-
-
     }
 
     @Test
     public void testQueryPiledUp() throws Exception {
         PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "5");
-        String path = TestUtils.DATA_DIR + "/aligned/pileup.sorted.aligned";
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_DOWNSAMPLE_READS, "false");
+        String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
@@ -241,7 +246,7 @@ public class CachingQueryReaderTest {
         cachingReader = new CachingQueryReader(reader);
 
         tstSize(cachingReader, sequence, start, end, expSize * 100, expSize);
-        //tstQuery(path, sequence, start, end, false, 10000);
+        tstQuery(path, sequence, start, end, false, 10000);
 
         //Center, deep coverage region
         sequence = "chr1";
@@ -272,8 +277,10 @@ public class CachingQueryReaderTest {
     }
 
     public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize) {
+
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {
@@ -282,6 +289,76 @@ public class CachingQueryReaderTest {
 
         assertEquals(expSize, result.size());
         return result;
+    }
+
+    /**
+     * Test that sampling keeps pairs together. Note that this test requires a lot of memory (2Gb on this devs machine)
+     * Pairs are only definitely kept together if they end up on the same tile, so we need 1 big tile.
+     *
+     * @throws Exception
+     */
+    @Ignore
+    @Test
+    public void testKeepPairs() throws Exception {
+        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SOLID.bam";
+
+
+        String sequence = "1";
+        int start = 1;
+        int end = 2000;
+        int maxDepth = 2;
+        String max_vis = PreferenceManager.getInstance().get(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "" + (end - start));
+
+        try {
+            ResourceLocator loc = new ResourceLocator(path);
+            AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
+            CachingQueryReader cachingReader = new CachingQueryReader(reader);
+            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+
+            CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
+                    new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
+            int count = 0;
+            Map<String, Integer> pairedReads = new HashMap<String, Integer>();
+            while (iter.hasNext()) {
+                Alignment al = iter.next();
+                assertNotNull(al);
+                count++;
+
+                if (al.isPaired() && al.getMate().isMapped()) {
+                    //Mate may not be part of the query.
+                    //Make sure it's within bounds
+                    int mateStart = al.getMate().getStart();
+                    //All we require is some overlap
+                    boolean overlap = mateStart >= start && mateStart < end;
+                    if (overlap) {
+                        Integer rdCnt = pairedReads.get(al.getReadName());
+                        rdCnt = rdCnt != null ? rdCnt + 1 : 1;
+                        pairedReads.put(al.getReadName(), rdCnt);
+                    }
+                }
+            }
+
+            assertTrue(count > 0);
+
+            //Note: CachingQueryReader will not line alignments up properly if they land in different tiles
+            int countmissing = 0;
+            for (String readName : pairedReads.keySet()) {
+                int val = pairedReads.get(readName);
+                countmissing += 2 == val ? 0 : 1;
+                if (val != 2) {
+                    System.out.println("Read " + readName + " has val " + val);
+                }
+            }
+
+            //System.out.println("Number of paired reads: " + pairedReads.size());
+            assertTrue("No pairs in test data set", pairedReads.size() > 0);
+            assertEquals("Missing " + countmissing + " out of " + pairedReads.size() + " pairs", 0, countmissing);
+        } catch (Exception e) {
+            PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, max_vis);
+            throw e;
+        }
+
     }
 
     /**
@@ -303,22 +380,25 @@ public class CachingQueryReaderTest {
         int end = 3000;
         int maxDepth = 500;
 
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
         CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), maxDepth, null, null);
+                new ArrayList(), new ArrayList<CachingQueryReader.DownsampledInterval>(), downsampleOptions, null, null);
         int count = 0;
         while (iter.hasNext()) {
-            assertNotNull(iter.next());
+            Alignment al = iter.next();
+            assertNotNull(al);
             count++;
         }
 
         assertTrue(count > 0);
 
-
     }
 
+    /**
+     * Sorts by: read name, start, end
+     */
     private class StartEndSorter implements Comparator<Alignment> {
 
-        @Override
         public int compare(Alignment o1, Alignment o2) {
             Alignment al1 = (Alignment) o1;
             Alignment al2 = (Alignment) o2;
@@ -486,12 +566,10 @@ public class CachingQueryReaderTest {
             this.longseach = longseach;
         }
 
-        @Override
         public boolean hasNext() {
             return counter < length;
         }
 
-        @Override
         public long[] next() {
             if (!hasNext()) {
                 return null;
@@ -502,12 +580,10 @@ public class CachingQueryReaderTest {
             return arr;
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("Can't remove");
         }
 
-        @Override
         public Iterator<long[]> iterator() {
             return this;
         }

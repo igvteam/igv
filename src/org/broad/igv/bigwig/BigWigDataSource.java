@@ -1,26 +1,22 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.bigwig;
 
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
-import org.broad.igv.data.*;
+import org.broad.igv.data.AbstractDataSource;
+import org.broad.igv.data.BasicScore;
+import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureSource;
@@ -54,24 +50,30 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     private BBZoomLevels levels;
 
     // Feature visibility window (for bigBed)
-    int featureVisiblityWindow = -1;
+    private int featureVisiblityWindow = -1;
+
     private List<LocusScore> wholeGenomeScores;
 
-    // Lookup table to support chromosome aliasing.  TODO -- move this up to a higher level, to share
+    // Lookup table to support chromosome aliasing.
     private Map<String, String> chrNameMap = new HashMap();
 
+    private RawDataInterval currentInterval = null;
 
+
+    private double dataMin = 0;
+    private double dataMax = 100;
 
     public BigWigDataSource(BBFileReader reader, Genome genome) throws IOException {
         super(genome);
 
         this.reader = reader;
         levels = reader.getZoomLevels();
+        initMinMax();
 
         // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
         // TODO -- something smarter, like scaling by actual density
         if (levels.getZoomHeaderCount() > 0) {
-            BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0);
+            BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0); // Highest res
             featureVisiblityWindow = firstLevel.getReductionLevel() * 2000;
         }
 
@@ -84,16 +86,45 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                 }
             }
         }
-
     }
 
 
+    /**
+     * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
+     */
+    private void initMinMax() {
+        final int oneMB = 1000000;
+        int z = getZoomLevelForScale(oneMB).getZoomLevel();
+
+        ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
+        int n = 0;
+        double[] values = new double[10000];
+        if (zlIter.hasNext()) {
+            while (zlIter.hasNext()) {
+                ZoomDataRecord rec = zlIter.next();
+                values[n] = (rec.getMeanVal());
+                n++;
+                if (n >= 10000) {
+                    break;
+                }
+            }
+            dataMin = StatUtils.percentile(values, 0, n, 10);
+
+            // Peg the scale at 100, this seems arbitrary but it maintains some compatibility with earlier releases
+            // for 'large-valued' data, but corrects scaling problems for small-valued data.
+            dataMax = Math.min(100, StatUtils.percentile(values, 0, n, 90));
+        } else {
+            dataMin = 0;
+            dataMax = 100;
+        }
+    }
+
     public double getDataMax() {
-        return 100;
+        return dataMax;
     }
 
     public double getDataMin() {
-        return 0;
+        return dataMin;
     }
 
     public TrackType getTrackType() {
@@ -141,7 +172,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     /**
      * Return the zoom level that most closely matches the given resolution.  Resolution is in BP / Pixel.
-     *  
      *
      * @param resolution
      * @return
@@ -192,7 +222,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                 ZoomDataRecord rec = zlIter.next();
 
                 float v = getValue(rec);
-
                 BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), v);
                 scores.add(bs);
             }
@@ -219,9 +248,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         }
         return v;
     }
-
-
-    RawDataInterval currentInterval = null;
 
 
     @Override
@@ -261,13 +287,11 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     private List<LocusScore> getWholeGenomeScores() {
 
-
         if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
             if (wholeGenomeScores == null) {
                 double scale = genome.getLength() / screenWidth;
                 wholeGenomeScores = new ArrayList<LocusScore>();
                 for (Chromosome chr : genome.getChromosomes()) {
-
 
                     BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
 
@@ -280,15 +304,17 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
                     ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
                             lowestResHeader.getZoomLevel(), querySeq, 0, querySeq, end, false);
+
                     while (zlIter.hasNext()) {
                         ZoomDataRecord rec = zlIter.next();
+
+                        float value = getValue(rec);
                         int genomeStart = genome.getGenomeCoordinate(chrName, rec.getChromStart());
                         if (genomeStart < lastGenomeEnd) {
                             continue;
                         }
 
                         int genomeEnd = genome.getGenomeCoordinate(chrName, rec.getChromEnd());
-                        float value = getValue(rec);
                         wholeGenomeScores.add(new BasicScore(genomeStart, genomeEnd, value));
                         lastGenomeEnd = genomeEnd;
                     }
@@ -440,10 +466,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             int cdEnd = Integer.parseInt(restOfFields[4]);
 
             int exonCount = Integer.parseInt(restOfFields[6]);
-            String[] exonSizes = new String[exonCount];
-            String[] startsBuffer = new String[exonCount];
-            ParsingUtils.split(restOfFields[7], exonSizes, ',');
-            ParsingUtils.split(restOfFields[8], startsBuffer, ',');
+            String[] exonSizes = Globals.commaPattern.split(restOfFields[7]);
+            String[] startsBuffer = Globals.commaPattern.split(restOfFields[8]);
 
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
 

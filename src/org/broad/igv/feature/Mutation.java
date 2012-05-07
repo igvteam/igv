@@ -90,7 +90,7 @@ public class Mutation implements IGVFeature {
 
     // TODO -- experimental, note this only works for hg18 FIX
     public String getOMAUrl() {
-        String genome = IGV.getFirstInstance().getGenomeManager().getGenomeId();
+        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
         String url = "http://mutationassessor.org/v1/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 

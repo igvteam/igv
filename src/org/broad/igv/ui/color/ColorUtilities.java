@@ -43,6 +43,8 @@ public class ColorUtilities {
 
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
 
+    private static Map<Integer, Color> grayscaleColors = new HashMap();
+
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
     private static Map<String, ColorPalette> palettes;
@@ -340,5 +342,14 @@ public class ColorUtilities {
             log.error("Error loading color palletes", e);
             return null;
         }
+    }
+    public static synchronized Color getGrayscaleColor(int gray) {
+        gray = Math.max(0, Math.min(255, gray));
+        Color c = grayscaleColors.get(gray);
+        if (c == null) {
+            c = new Color(gray, gray, gray);
+            grayscaleColors.put(gray, c);
+        }
+        return c;
     }
 }

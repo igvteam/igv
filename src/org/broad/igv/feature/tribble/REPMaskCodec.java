@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -30,15 +31,33 @@ import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Basically BED format with some columns rearranged
+ * <p/> Columns, from UCSC documentation
+ * <p/>
+ * 0  bin	585	smallint(5) unsigned	Indexing field to speed chromosome range queries.
+ * 1  swScore	1504	int(10) unsigned	Smith Waterman alignment score
+ * 2  milliDiv	13	int(10) unsigned	Base mismatches in parts per thousand
+ * 3  milliDel	4	int(10) unsigned	Bases deleted in parts per thousand
+ * 4  milliIns	13	int(10) unsigned	Bases inserted in parts per thousand
+ * 5  genoName	chr1	varchar(255)	Genomic sequence name
+ * 6  genoStart	10000	int(10) unsigned	Start in genomic sequence
+ * 7  genoEnd	10468	int(10) unsigned	End in genomic sequence
+ * 8  genoLeft	-249240153	int(11)	-#bases after match in genomic sequence
+ * 9  strand	+	char(1)	Relative orientation + or -
+ * 10 repName	(CCCTAA)n	varchar(255)	Name of repeat
+ * 11 repClass	Simple_repeat	varchar(255)	Class of repeat
+ * 12 repFamily	Simple_repeat	varchar(255)	Family of repeat
+ * 13 repStart	1	int(11)	Start (if strand is +) or -#bases after match (if strand is -) in repeat sequence
+ * 14 repEnd	463	int(11)	End in repeat sequence
+ * 15 repLeft	0	int(11)	-#bases after match (if strand is +) or start (if strand is -) in repeat sequence
+ * 16 id	1	char(1)	First digit of id field in RepeatMasker .out file. Best ignored.
  */
 public class REPMaskCodec implements FeatureCodec {
 
-    // Declare a  array once, to be reused.
-    String[] tokens = new String[15];
-    int startBase = 0;
     FeatureFileHeader header;
     Genome genome;
 
@@ -74,8 +93,7 @@ public class REPMaskCodec implements FeatureCodec {
                 }
             }
             return header;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
     }
@@ -94,11 +112,20 @@ public class REPMaskCodec implements FeatureCodec {
      * @return true if potentialInput can be parsed, false otherwise
      */
     public boolean canDecode(String path) {
-        return true;
+        return true; // Optimisitic!
     }
 
+    /**
+     * Return an abbreviated feature, containing only location information.  Used for indexing.
+     * @param line
+     * @return
+     */
     public Feature decodeLoc(String line) {
-        return decode(line);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+        String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
+        int start = Integer.parseInt(tokens[6]);
+        int end = Integer.parseInt(tokens[7]);
+        return new BasicFeature(chr, start, end);
     }
 
     public BasicFeature decode(String nextLine) {
@@ -107,49 +134,41 @@ public class REPMaskCodec implements FeatureCodec {
             return null;
         }
 
-        int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
+        String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
+        int tokenCount = tokens.length;
 
-        // The first 3 columns are non optional for BED.  We will relax this
-        // and only require 2.
-
-        if (tokenCount < 2) {
+        if (tokenCount < 15) {
             return null;
         }
 
-        String chr = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
-        int start = Integer.parseInt(tokens[1]) - startBase;
-
-        int end = start + 1;
-        if (tokenCount > 2) {
-            end = Integer.parseInt(tokens[2]);
-        }
-
+        String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
+        int start = Integer.parseInt(tokens[6]);
+        int end = Integer.parseInt(tokens[7]);
         BasicFeature feature = new BasicFeature(chr, start, end);
 
-        // The rest of the columns are optional.  Stop parsing upon encountering
-        // a non-expected value
-
-        // Strand
-        if (tokenCount > 3) {
-            String strandString = tokens[3].trim();
-            char strand = (strandString.length() == 0)  ? ' ' : strandString.charAt(0);
-
-            if (strand == '-') {
-                feature.setStrand(Strand.NEGATIVE);
-            } else if (strand == '+') {
-                feature.setStrand(Strand.POSITIVE);
-            } else {
-                feature.setStrand(Strand.NONE);
-            }
+        String strandString = tokens[3].trim();
+        char strand = (strandString.length() == 0) ? ' ' : strandString.charAt(0);
+        if (strand == '-') {
+            feature.setStrand(Strand.NEGATIVE);
+        } else if (strand == '+') {
+            feature.setStrand(Strand.POSITIVE);
+        } else {
+            feature.setStrand(Strand.NONE);
         }
+        String name = tokens[10];
+        feature.setName(name);
+        feature.setIdentifier(name);
 
-        // Name
-        if (tokenCount > 4) {
-            String name = tokens[4].replaceAll("\"", "");
-            feature.setName(name);
-            feature.setIdentifier(name);
-        }
-
+        Map<String, String> attributes = new LinkedHashMap<String, String>();
+        attributes.put("Smith Waterman score", tokens[1]);
+        attributes.put("base mismatches per thousand", tokens[2]);
+        attributes.put("bases deleted per thousand", tokens[3]);
+        attributes.put("bases inserted per thousand", tokens[4]);
+        attributes.put("repeat class", tokens[11]);
+        attributes.put("repeat family", tokens[12]);
+        attributes.put("repeat start", tokens[13]);
+        attributes.put("repeat end", tokens[14]);
+        feature.setAttributes(attributes);
 
         return feature;
     }

@@ -28,6 +28,7 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,9 +38,7 @@ public interface AlignmentReader {
 
     void close() throws IOException;
 
-    Set<String> getSequenceNames();
-
-    SAMFileHeader getHeader() throws IOException;
+    List<String> getSequenceNames();
 
     CloseableIterator<Alignment> iterator();
 

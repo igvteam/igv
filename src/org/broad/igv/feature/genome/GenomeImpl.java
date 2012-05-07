@@ -29,6 +29,7 @@ package org.broad.igv.feature.genome;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.ui.util.MessageUtils;
@@ -59,7 +60,7 @@ public class GenomeImpl implements Genome {
     SequenceHelper sequenceHelper;
 
 
-    public GenomeImpl(String id, String displayName, String sequencePath, boolean fasta) throws IOException {
+    public GenomeImpl(String id, String displayName, String sequencePath, boolean fasta, String[] fastaFiles) throws IOException {
         this.id = id;
         this.displayName = displayName;
         chrAliasTable = new HashMap();
@@ -67,19 +68,38 @@ public class GenomeImpl implements Genome {
         if (sequencePath == null) {
             sequenceHelper = null;
         } else if (!fasta) {
+            // Legacy genomes
             sequenceHelper = new SequenceHelper(sequencePath);
+        } else if (fastaFiles != null) {
+            FastaDirectorySequence sequence = new FastaDirectorySequence(sequencePath, fastaFiles);
+            sequenceHelper = new SequenceHelper(sequence);
+            chromosomeNames = new ArrayList();
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+                chromosomeNames.addAll(fastaSequence.getChromosomeNames());
+            }
+            Collections.sort(chromosomeNames, new ChromosomeComparator());
+            chromosomeMap = new LinkedHashMap();
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+                chromosomeNames.addAll(fastaSequence.getChromosomeNames());
+            }
+            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+                for (String chr : fastaSequence.getChromosomeNames()) {
+                    int length = fastaSequence.getChromosomeLength(chr);
+                    chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
+                }
+            }
+            updateChromosomeAliases();
 
         } else {
-
-            FastaSequence sequence = new FastaSequence(sequencePath);
-            sequenceHelper = new SequenceHelper(sequence);
-
-            chromosomeNames = new ArrayList(sequence.getChromosomeNames());
+            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
+            sequenceHelper = new SequenceHelper(fastaSequence);
+            chromosomeNames = new ArrayList(fastaSequence.getChromosomeNames());
             chromosomeMap = new LinkedHashMap(chromosomeNames.size());
             for (String chr : chromosomeNames) {
-                int length = sequence.getChromosomeLength(chr);
+                int length = fastaSequence.getChromosomeLength(chr);
                 chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
             }
+            updateChromosomeAliases();
         }
 
     }
@@ -91,7 +111,7 @@ public class GenomeImpl implements Genome {
         } else {
             if (chrAliasTable.containsKey(str)) {
                 return chrAliasTable.get(str);
-            }else{
+            } else {
                 chrAliasTable.put(str, str);
                 return str;
             }
@@ -100,7 +120,7 @@ public class GenomeImpl implements Genome {
 
     public void loadUserDefinedAliases() {
 
-        File aliasFile = new File(Globals.getGenomeCacheDirectory(), id + "_alias.tab");
+        File aliasFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + "_alias.tab");
 
         if (aliasFile.exists()) {
             if (chrAliasTable == null) chrAliasTable = new HashMap();
@@ -141,14 +161,11 @@ public class GenomeImpl implements Genome {
     }
 
 
-    public void setChromosomeMap(LinkedHashMap<String, Chromosome> chromosomeMap, boolean chromosomesAreOrdered) {
-        this.chromosomeMap = chromosomeMap;
-        this.chromosomeNames = new LinkedList<String>(chromosomeMap.keySet());
-        if (!chromosomesAreOrdered) {
-            Collections.sort(chromosomeNames, new ChromosomeComparator());
-        }
+    /**
+     * Update the chromosome alias table with common variations
+     */
+    private void updateChromosomeAliases() {
 
-        // Update the chromosome alias table with common variations
         for (String name : chromosomeNames) {
             if (name.startsWith("gi|")) {
                 // NCBI
@@ -199,8 +216,6 @@ public class GenomeImpl implements Genome {
 
             }
         }
-
-
     }
 
     /**
@@ -349,6 +364,47 @@ public class GenomeImpl implements Genome {
 
     public byte getReference(String chr, int pos) {
         return sequenceHelper.getBase(chr, pos);
+    }
+
+
+    public void setCytobands(LinkedHashMap<String, List<Cytoband>> chrCytoMap) {
+
+        for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
+            String chr = entry.getKey();
+            List<Cytoband> cytobands = entry.getValue();
+
+            Chromosome chromosome = chromosomeMap.get(chr);
+            if (chromosome != null) {
+                ((ChromosomeImpl) chromosome).setCytobands(cytobands);
+            }
+        }
+
+    }
+
+    /**
+     * Generate chromosomes from the list of cytobands.  This method is provided for backward compatibility for
+     * pre V2.1 genomes.
+     *
+     * @param chrCytoMap
+     * @param chromosomesAreOrdered
+     */
+    public void generateChromosomeMap(LinkedHashMap<String, List<Cytoband>> chrCytoMap, boolean chromosomesAreOrdered) {
+
+        chromosomeMap = new LinkedHashMap<String, Chromosome>();
+        for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
+            String chr = entry.getKey();
+            List<Cytoband> cytobands = entry.getValue();
+
+            int length = cytobands.get(cytobands.size() - 1).getEnd();
+            final ChromosomeImpl chromosome = new ChromosomeImpl(chr, length);
+            chromosomeMap.put(chr, chromosome);
+        }
+
+        this.chromosomeNames = new LinkedList<String>(chromosomeMap.keySet());
+        if (!chromosomesAreOrdered) {
+            Collections.sort(chromosomeNames, new ChromosomeComparator());
+        }
+        updateChromosomeAliases();
     }
 
     /**

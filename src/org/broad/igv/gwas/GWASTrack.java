@@ -34,6 +34,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
@@ -80,7 +81,7 @@ public class GWASTrack extends AbstractTrack {
     //private String displayName = "GWAS Track";
     private String displayName = null;
     private boolean drawYAxis = true;
-
+    private boolean showAxis = true;
 
     String getDisplayName() {
         return displayName;
@@ -123,6 +124,7 @@ public class GWASTrack extends AbstractTrack {
         this.singleColor = prefs.getAsBoolean(PreferenceManager.GWAS_SINGLE_COLOR);
         this.alternatingColors = prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS);
         this.useChrColors = prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS);
+        this.showAxis = prefs.getAsBoolean(PreferenceManager.GWAS_SHOW_AXIS);
 
         this.gData = gData;
         this.parser = parser;
@@ -130,12 +132,7 @@ public class GWASTrack extends AbstractTrack {
 
     }
 
-    /**
-     * Render GWAS data
-     *
-     * @param context
-     * @param arect
-     */
+
     public void render(RenderContext context, Rectangle arect) {
 
         Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
@@ -210,7 +207,7 @@ public class GWASTrack extends AbstractTrack {
                 }
 
                 IntArrayList locations = this.gData.getLocations().get(chr);
-                FloatArrayList values = this.gData.getValues().get(chr);
+                DoubleArrayList values = this.gData.getValues().get(chr);
 
                 int size = locations.size();
 
@@ -232,9 +229,9 @@ public class GWASTrack extends AbstractTrack {
                         break;
 
                     // Based on value of the data point, calculate Y-coordinate
-                    float dataY = values.get(j);
+                    double dataY = values.get(j);
 
-                    if (!Float.isNaN(dataY)) {
+                    if (!Double.isNaN(dataY)) {
 
                         int xPointSize = (int) Math.ceil(dataY / pointSizeScale);
 
@@ -294,7 +291,9 @@ public class GWASTrack extends AbstractTrack {
             }
 
         // Draw the legend axis
-        this.renderAxis(context, arect);
+        if (showAxis) {
+            this.renderAxis(context, arect);
+        }
 
     }
 
@@ -366,7 +365,6 @@ public class GWASTrack extends AbstractTrack {
             }
         }
     }
-
 
     int computeYPixelValue(Rectangle drawingRect, DataRange axisDefinition, double dataY) {
 
@@ -442,7 +440,7 @@ public class GWASTrack extends AbstractTrack {
 
         String textValue = "";
 
-        float value = this.gData.getValues().get(chr).get(index);
+        double value = this.gData.getValues().get(chr).get(index);
         int hitLocation = this.gData.getLocations().get(chr).get(index);
         int rowIndex = gData.getCumulativeChrLocation(chr) + index;
 
@@ -483,9 +481,6 @@ public class GWASTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-
-        String textValue = "";
-
         int location = (int) position;
 
         // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen
@@ -503,10 +498,8 @@ public class GWASTrack extends AbstractTrack {
         int index = findIndex(chr, y, location, maxDistance);
 
         // If there is a data point at the given location, fetch description
-        if (index != -1)
-            textValue += getDescription(chr, index);
+        return index >= 0 ? getDescription(chr, index) : null;
 
-        return textValue;
     }
 
     /**
@@ -555,20 +548,39 @@ public class GWASTrack extends AbstractTrack {
         popupMenu.add(addMaxPointSizeItem(popupMenu));
 
         popupMenu.addSeparator();
+        addShowAxisItem(popupMenu);
 
         return popupMenu;
     }
 
 
+    /**
+     * @param menu
+     * @return
+     */
+    public JMenuItem addShowAxisItem(JPopupMenu menu) {
+        final JCheckBoxMenuItem axisItem = new JCheckBoxMenuItem("Show axis");
+        axisItem.setSelected(showAxis);
+        axisItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showAxis = axisItem.isSelected();
+                PreferenceManager.getInstance().put(PreferenceManager.GWAS_SHOW_AXIS, String.valueOf(showAxis));
+                IGV.getInstance().repaintDataPanels();
+
+            }
+        });
+        menu.add(axisItem);
+        return axisItem;
+    }
+
     public JMenuItem addChrColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JCheckBoxMenuItem("Chromosome color", useChrColors);
-
         colorItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 singleColor = false;
                 useChrColors = true;
                 alternatingColors = false;
+                updateColorPreferences();
                 IGV.getInstance().repaintDataPanels();
 
             }
@@ -580,16 +592,13 @@ public class GWASTrack extends AbstractTrack {
 
     public JMenuItem addAlternatingColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JCheckBoxMenuItem("Alternating color", alternatingColors);
-
         colorItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 singleColor = false;
                 useChrColors = false;
                 alternatingColors = true;
+                updateColorPreferences();
                 IGV.getInstance().repaintDataPanels();
-
-
             }
         });
         menu.add(colorItem);
@@ -606,6 +615,7 @@ public class GWASTrack extends AbstractTrack {
                 singleColor = true;
                 useChrColors = false;
                 alternatingColors = false;
+                updateColorPreferences();
                 IGV.getInstance().repaintDataPanels();
 
             }
@@ -613,50 +623,45 @@ public class GWASTrack extends AbstractTrack {
         menu.add(colorItem);
 
         return colorItem;
+    }
+
+
+    private void updateColorPreferences() {
+        PreferenceManager.getInstance().put(PreferenceManager.GWAS_SINGLE_COLOR, String.valueOf(singleColor));
+        PreferenceManager.getInstance().put(PreferenceManager.GWAS_USE_CHR_COLORS, String.valueOf(useChrColors));
+        PreferenceManager.getInstance().put(PreferenceManager.GWAS_ALTERNATING_COLORS, String.valueOf(alternatingColors));
     }
 
 
     public JMenuItem addPrimaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set primary color...");
-
         colorItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-
-                Color color = UIUtilities.showColorChooserDialog(
-                        "Set primary color",
-                        primaryColor);
-
+                Color color = UIUtilities.showColorChooserDialog("Set primary color", primaryColor);
                 if (color != null) {
                     primaryColor = color;
+                    String colorString = ColorUtilities.colorToString(primaryColor);
+                    PreferenceManager.getInstance().put(PreferenceManager.GWAS_PRIMARY_COLOR, colorString);
+                    IGV.getInstance().repaintDataPanels();
                 }
-
-                IGV.getInstance().repaintDataPanels();
-
             }
         });
         menu.add(colorItem);
-
         return colorItem;
     }
 
+
     public JMenuItem addSecondaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set alternating color...");
-
-
         colorItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-
-                Color color = UIUtilities.showColorChooserDialog(
-                        "Set alternating color",
-                        secondaryColor);
-
+                Color color = UIUtilities.showColorChooserDialog("Set alternating color", secondaryColor);
                 if (color != null) {
                     secondaryColor = color;
+                    String colorString = ColorUtilities.colorToString(secondaryColor);
+                    PreferenceManager.getInstance().put(PreferenceManager.GWAS_SECONDARY_COLOR, colorString);
+                    IGV.getInstance().repaintDataPanels();
                 }
-
-                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -668,50 +673,31 @@ public class GWASTrack extends AbstractTrack {
 
     public JMenuItem addMinPointSizeItem(JPopupMenu menu) {
         JMenuItem menuItem = new JMenuItem("Set minimum point size...");
-
-
         menuItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-
-
                 changeMinPointSizeValue();
-
-
             }
         });
         menu.add(menuItem);
-
         return menuItem;
     }
 
     public JMenuItem addMaxPointSizeItem(JPopupMenu menu) {
         JMenuItem menuItem = new JMenuItem("Set maximum point size...");
-
-
         menuItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-
-
                 changeMaxPointSizeValue();
-
-
             }
         });
         menu.add(menuItem);
-
         return menuItem;
     }
 
     private void changeMinPointSizeValue() {
 
         int value = this.minPointSize;
-
-
         String tmpValue = JOptionPane.showInputDialog(
                 IGV.getMainFrame(), "Minimum point size in pixels (1-20):", String.valueOf(value));
-
         if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
 
             try {
@@ -720,10 +706,11 @@ public class GWASTrack extends AbstractTrack {
                     JOptionPane.showMessageDialog(IGV.getMainFrame(),
                             "Minimum point size must be an integer number between 1 and 20.");
                 } else {
-                    if (value > this.maxPointSize)
+                    if (value > this.maxPointSize) {
                         this.maxPointSize = value;
-
+                    }
                     this.minPointSize = value;
+                    updatePointSizePreferences();
                     IGV.getInstance().repaintDataPanels();
                 }
 
@@ -737,8 +724,6 @@ public class GWASTrack extends AbstractTrack {
     private void changeMaxPointSizeValue() {
 
         int value = this.maxPointSize;
-
-
         String tmpValue = JOptionPane.showInputDialog(
                 IGV.getMainFrame(), "Maximum point size in pixels (1-20):",
                 String.valueOf(value));
@@ -751,10 +736,11 @@ public class GWASTrack extends AbstractTrack {
                     JOptionPane.showMessageDialog(IGV.getMainFrame(),
                             "Maximum point size must be an integer number between 1 and 20.");
                 } else {
-                    if (value < this.minPointSize)
+                    if (value < this.minPointSize) {
                         this.minPointSize = value;
-
+                    }
                     this.maxPointSize = value;
+                    updatePointSizePreferences();
                     IGV.getInstance().repaintDataPanels();
                 }
 
@@ -765,11 +751,13 @@ public class GWASTrack extends AbstractTrack {
         }
     }
 
-    // Needed to compile
+    private void updatePointSizePreferences() {
+        PreferenceManager.getInstance().put(PreferenceManager.GWAS_MIN_POINT_SIZE, String.valueOf(minPointSize));
+        PreferenceManager.getInstance().put(PreferenceManager.GWAS_MAX_POINT_SIZE, String.valueOf(maxPointSize));
 
-    public GWASTrack(ResourceLocator dataResourceLocator, String id, String name) {
-        super(dataResourceLocator, id, name);
+
     }
+
 
     public void setWindowFunction(WindowFunction type) {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -820,52 +808,52 @@ public class GWASTrack extends AbstractTrack {
         super.restorePersistentState(attributes);
 
         String tmp = attributes.get("minPointSize");
-        if(tmp != null) {
-           minPointSize = Integer.parseInt(tmp);
+        if (tmp != null) {
+            minPointSize = Integer.parseInt(tmp);
         }
         tmp = attributes.get("maxPointSize");
-        if(tmp != null) {
-           maxPointSize = Integer.parseInt("tmp");
+        if (tmp != null) {
+            maxPointSize = Integer.parseInt("tmp");
         }
         tmp = attributes.get("useChrColors");
-        if(tmp != null) {
-           useChrColors = Boolean.parseBoolean(tmp);
+        if (tmp != null) {
+            useChrColors = Boolean.parseBoolean(tmp);
         }
         tmp = attributes.get("singleColor");
-        if(tmp != null) {
-           singleColor = Boolean.parseBoolean(tmp);
+        if (tmp != null) {
+            singleColor = Boolean.parseBoolean(tmp);
         }
         tmp = attributes.get("alternatingColors");
-        if(tmp != null) {
-           alternatingColors = Boolean.parseBoolean(tmp);
+        if (tmp != null) {
+            alternatingColors = Boolean.parseBoolean(tmp);
         }
         tmp = attributes.get("primaryColor");
-        if(tmp != null) {
-           primaryColor = ColorUtilities.stringToColor(tmp);
+        if (tmp != null) {
+            primaryColor = ColorUtilities.stringToColor(tmp);
         }
         tmp = attributes.get("secondaryColor");
-        if(tmp != null) {
-           secondaryColor = primaryColor = ColorUtilities.stringToColor(tmp);
+        if (tmp != null) {
+            secondaryColor = primaryColor = ColorUtilities.stringToColor(tmp);
         }
         tmp = attributes.get("trackMinY");
-        if(tmp != null) {
-           trackMinY = Double.parseDouble(tmp);
+        if (tmp != null) {
+            trackMinY = Double.parseDouble(tmp);
         }
         tmp = attributes.get("maxY");
-        if(tmp != null) {
-           maxY = Double.parseDouble(tmp);
+        if (tmp != null) {
+            maxY = Double.parseDouble(tmp);
         }
         tmp = attributes.get("scale");
-        if(tmp != null) {
-           scale = Double.parseDouble(tmp);
+        if (tmp != null) {
+            scale = Double.parseDouble(tmp);
         }
         tmp = attributes.get("displayName");
-        if(tmp != null) {
-           displayName = tmp;
+        if (tmp != null) {
+            displayName = tmp;
         }
         tmp = attributes.get("drawYAxis");
-        if(tmp != null) {
-           drawYAxis = Boolean.parseBoolean(tmp);
+        if (tmp != null) {
+            drawYAxis = Boolean.parseBoolean(tmp);
         }
     }
 }

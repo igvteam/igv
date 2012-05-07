@@ -46,10 +46,13 @@ public class AlignmentInterval extends Locus {
     private List<AlignmentCounts> counts;
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions;
+    private List<CachingQueryReader.DownsampledInterval> downsampledIntervals;
 
-
-    public AlignmentInterval(String chr, int start, int end, LinkedHashMap<String, List<Row>> groupedAlignmentRows,
-                             List<AlignmentCounts> counts, List<SpliceJunctionFeature> spliceJunctions) {
+    public AlignmentInterval(String chr, int start, int end,
+                             LinkedHashMap<String, List<Row>> groupedAlignmentRows,
+                             List<AlignmentCounts> counts,
+                             List<SpliceJunctionFeature> spliceJunctions,
+                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals) {
 
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
@@ -62,6 +65,7 @@ public class AlignmentInterval extends Locus {
         }
 
         this.spliceJunctions = spliceJunctions;
+        this.downsampledIntervals = downsampledIntervals;
 
         // Force caclulation of splice junctions
         boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -255,6 +259,10 @@ public class AlignmentInterval extends Locus {
 
     public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
         return spliceJunctions;
+    }
+
+    public List<CachingQueryReader.DownsampledInterval> getDownsampledIntervals() {
+        return downsampledIntervals;
     }
 
     public static class Row {

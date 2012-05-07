@@ -1,24 +1,18 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.GeneTrackRenderer;
@@ -157,7 +151,7 @@ public class GFFParser implements FeatureParser {
         try {
             reader = ParsingUtils.openBufferedReader(locator);
 
-            List<org.broad.tribble.Feature> features = loadFeatures(reader);
+            List<org.broad.tribble.Feature> features = loadFeatures(reader, genome);
 
             FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
             track.setName(locator.getTrackName());
@@ -191,18 +185,16 @@ public class GFFParser implements FeatureParser {
     }
 
 
-    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
         List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
-        int lineNumber=0;
+        int lineNumber = 0;
         try {
 
-            Genome genome = null;
-            if (IGV.hasInstance()) {
-                IGV.getInstance().getGenomeManager().getCurrentGenome();
+            if (IGV.hasInstance() && genome == null) {
+                genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             }
             Set<String> featuresToHide = new HashSet();
-            String[] tokens = new String[200];
 
             while ((line = reader.readLine()) != null) {
 
@@ -239,8 +231,8 @@ public class GFFParser implements FeatureParser {
                     continue;
                 }
 
-
-                int nTokens = ParsingUtils.split(line, tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(line);
+                int nTokens = tokens.length;
 
                 // GFF files have 9 tokens
                 if (nTokens < 9) {
@@ -258,7 +250,6 @@ public class GFFParser implements FeatureParser {
                 if (ignoredTypes.contains(featureType)) {
                     continue;
                 }
-
 
                 String chromosome = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
 
@@ -285,9 +276,6 @@ public class GFFParser implements FeatureParser {
                 LinkedHashMap<String, String> attributes = new LinkedHashMap();
                 //attributes.put("Type", featureType);
                 helper.parseAttributes(attributeString, attributes);
-
-                String description = getDescription(attributes, featureType);
-
                 String id = helper.getID(attributes);
 
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
@@ -323,7 +311,6 @@ public class GFFParser implements FeatureParser {
                     for (String pid : parentIds) {
 
                         Exon exon = new Exon(chromosome, start, end, strand);
-                        exon.setDescription(description);
                         exon.setAttributes(attributes);
                         exon.setUTR(utrTerms.contains(featureType));
 
@@ -348,7 +335,6 @@ public class GFFParser implements FeatureParser {
                 } else {
                     BasicFeature f = new BasicFeature(chromosome, start, end, strand);
                     f.setName(getName(attributes));
-                    f.setDescription(description);
                     f.setAttributes(attributes);
 
                     if (attributes.containsKey("color")) {
@@ -367,7 +353,7 @@ public class GFFParser implements FeatureParser {
                         if (featureType.equals("gene")) {
                             geneCache.put(id, f);
                             if (featuresToHide.contains(featureType)) {
-                               if (IGV.hasInstance()) FeatureDB.addFeature(f);
+                                if (IGV.hasInstance()) FeatureDB.addFeature(f);
                             } else {
                                 features.add(f);
                             }
@@ -413,41 +399,6 @@ public class GFFParser implements FeatureParser {
         return features;
     }
 
-    public static String getDescription(Map<String, String> attributes) {
-        return getDescription(attributes, null);
-    }
-
-
-    static String getDescription(Map<String, String> attributes, String type) {
-        // 30 attributes is the maximum visible on a typical screen
-        int max = 30;
-        int count = 0;
-
-        // Reset buffer.
-        buf.setLength(0);
-        if (type != null) {
-            buf.append(type);
-            buf.append("<br>");
-        }
-        for (Map.Entry<String, String> att : attributes.entrySet()) {
-
-            //if (!ignoreAttributes.contains(att.getKey())) {
-            String attValue = att.getValue().replaceAll(";", "<br>");
-            buf.append(att.getKey());
-            buf.append(" = ");
-            buf.append(attValue);
-            buf.append("<br>");
-            if (++count > max) {
-                buf.append("...");
-                break;
-            }
-
-            //}
-        }
-        String description = buf.toString();
-
-        return description;
-    }
 
     private Strand convertStrand(String strandString) {
         Strand strand = Strand.NONE;
@@ -488,12 +439,11 @@ public class GFFParser implements FeatureParser {
         String ext = "." + gffFile.substring(gffFile.length() - 4);
 
         Map<String, PrintWriter> writers = new HashMap();
-        String[] tokens = new String[20];
 
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {
-                int nTokens = ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
 
                 // GFF files have 9 columns
                 String type = tokens[2];
@@ -513,14 +463,13 @@ public class GFFParser implements FeatureParser {
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (nextLine.startsWith("#")) {
-                ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
-
                 // GFF files have 9 columns
                 for (PrintWriter pw : writers.values()) {
                     pw.println(nextLine);
                 }
             } else {
-                int nTokens = ParsingUtils.split(nextLine.trim().replaceAll("\"", ""), tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
+                int nTokens = tokens.length;
                 String type = tokens[2];
                 if (geneParts.contains(type)) {
                     type = "gene";

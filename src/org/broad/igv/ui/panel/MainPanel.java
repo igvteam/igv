@@ -27,13 +27,10 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -74,14 +71,14 @@ public class MainPanel extends JPanel implements Paintable {
         initComponents();
 
         //Load IGV logo
-        try {
-            BufferedImage logo = ImageIO.read(getClass().getResource("resources/IGV_64.png"));
-            JLabel picLabel = new JLabel(new ImageIcon(logo));
-            picLabel.setVerticalAlignment(SwingConstants.CENTER);
-            nameHeaderPanel.add(picLabel);
-        } catch (IOException e) {
-            //pass
-        }
+//        try {
+//            BufferedImage logo = ImageIO.read(getClass().getResource("resources/IGV_64.png"));
+//            JLabel picLabel = new JLabel(new ImageIcon(logo));
+//            picLabel.setVerticalAlignment(SwingConstants.CENTER);
+//            nameHeaderPanel.add(picLabel);
+//        } catch (IOException e) {
+//            //pass
+//        }
 
         addComponentListener(new ComponentListener() {
 

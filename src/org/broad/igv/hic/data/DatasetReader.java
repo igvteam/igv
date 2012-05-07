@@ -3,6 +3,8 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
@@ -10,7 +12,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
+/**    1334372501047
  * @author jrobinso
  * @date Aug 17, 2010
  */
@@ -22,13 +24,13 @@ public class DatasetReader {
     private long totalCount;
     private DensityFunction densityFunction;
     private Dataset dataset;
+    private int version;
 
     public DatasetReader(SeekableStream stream) {
         this.stream = stream;
         masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
         dataset     = new Dataset(this);
-
-    }
+      }
 
     public Dataset read() throws FileNotFoundException {
 
@@ -48,11 +50,15 @@ public class DatasetReader {
             }
             dataset.setChromosomes(chromosomes);
 
-            // Read attribute dictionary.  This is currently not used
+            // Read attribute dictionary.  Can contain arbitrary # of attributes as key-value pairs, including version
+            version = 0;  // <= assumption
             int nAttributes = dis.readInt();
             for (int i = 0; i < nAttributes; i++) {
                 String key = dis.readString();
                 String value = dis.readString();
+                if(key.equals("Version")) {
+                    version = Integer.parseInt(value);
+                }
             }
 
             readMasterIndex(masterIndexPos);
@@ -67,6 +73,9 @@ public class DatasetReader {
 
     }
 
+    public int getVersion() {
+        return version;
+    }
 
     private Map<String, Preprocessor.IndexEntry> readMasterIndex(long position) throws IOException {
 
@@ -136,27 +145,12 @@ public class DatasetReader {
         int c2 = dis.readInt();
         int nZooms = dis.readInt();
 
+        Chromosome chr1 = dataset.getChromosomes()[c1];
+        Chromosome chr2 = dataset.getChromosomes()[c2];
 
         MatrixZoomData[] zd = new MatrixZoomData[nZooms];
         for (int i = 0; i < nZooms; i++) {
-            int zoom = dis.readInt();
-            int binSize = dis.readInt();
-            int blockSize = dis.readInt();
-            int blockColumnCount = dis.readInt();
-
-
-            int nBlocks = dis.readInt();
-            Map<Integer, Preprocessor.IndexEntry> blockIndex = new HashMap(nBlocks);
-
-            for (int b = 0; b < nBlocks; b++) {
-                int blockNumber = dis.readInt();
-                long filePosition = dis.readLong();
-                int blockSizeInBytes = dis.readInt();
-                blockIndex.put(blockNumber, new Preprocessor.IndexEntry(filePosition, blockSizeInBytes));
-            }
-
-            zd[i] = new MatrixZoomData(c1, c2, binSize, blockSize, blockColumnCount, zoom, blockIndex, this);
-
+            zd[i] = new MatrixZoomData(chr1, chr2, this, dis);
         }
 
         Matrix m = new Matrix(c1, c2, zd);

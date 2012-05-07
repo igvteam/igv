@@ -76,7 +76,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
 
         // Disable tooltip if any modifier control key is pressed
-        if (event.getKeyCode() == KeyEvent.VK_CONTROL || event.getKeyCode() == KeyEvent.VK_ALT ) {
+        if (event.getKeyCode() == KeyEvent.VK_CONTROL || event.getKeyCode() == KeyEvent.VK_ALT) {
             boolean flag = !(event.isControlDown() || event.isAltDown() || event.isMetaDown());
             ToolTipManager.sharedInstance().setEnabled(flag);
         }
@@ -104,6 +104,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke prevKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK, false);
         final KeyStroke toolsKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK, false);
         final KeyStroke regionKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK, false);
+        final KeyStroke regionCenterKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
 
         //dhmay adding 20101222
         final KeyStroke nextExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
@@ -189,6 +190,26 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             }
         };
 
+        final Action regionCenterAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                setEnabled(false); // stop any other events from interfering
+                if (FrameManager.isGeneListMode()) {
+                    return;
+                }
+                int center = (int)  FrameManager.getDefaultFrame().getCenter();
+                RegionOfInterest regionOfInterest =
+                        new RegionOfInterest(
+                                FrameManager.getDefaultFrame().getChrName(),
+                                center,
+                                center + 1,
+                                null);
+                // TODO -- get this ugly reference to IGV out of here
+                IGV.getInstance().addRegionOfInterest(regionOfInterest);
+                setEnabled(true);
+            }
+        };
+
         final Action backAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -209,7 +230,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 if (ScatterPlotUtils.hasPlottableTracks()) {
                     ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
                     String chr = defaultFrame.getChrName();
-                    int  start = (int) defaultFrame.getOrigin();
+                    int start = (int) defaultFrame.getOrigin();
                     int end = (int) defaultFrame.getEnd();
                     int zoom = defaultFrame.getZoom();
                     ScatterPlotUtils.openPlot(chr, start, end, zoom);
@@ -232,6 +253,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("tools", toolAction);
         getInputMap().put(regionKey, "region");
         getActionMap().put("region", regionAction);
+        getInputMap().put(regionCenterKey, "regionCenter");
+        getActionMap().put("regionCenter", regionCenterAction);
         getInputMap().put(statusWindowKey, "statusWindow");
         getActionMap().put("statusWindow", statusWindowAction);
         getInputMap().put(scatterplotKey, "statusWindow");

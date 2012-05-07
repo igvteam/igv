@@ -70,11 +70,36 @@ public class LegendDialog extends JDialog {
 
     }
 
+    private void copyNumberButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel)copyNoCanvas).edit();
+    }
+
+    private void expressionButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel) expressionCanvas).edit();
+    }
+
+    private void rnaiButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel) rnaiPanel).edit();
+    }
+
+    private void methylationButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel) methylationCanvas).edit();
+    }
+
+    private void lohButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel) lohCanvas).edit();
+    }
+
+    private void mutationButtonActionPerformed(ActionEvent e) {
+        ((LegendPanel) mutationCanvas).edit();
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         jLabel1 = new JLabel();
+        panel1 = new JPanel();
         cnLabel = new JLabel();
         copyNoCanvas = new org.broad.igv.ui.legend.HeatmapLegendPanel(TrackType.COPY_NUMBER);
         legendLabel1 = new JLabel();
@@ -87,6 +112,12 @@ public class LegendDialog extends JDialog {
         legendLabel3 = new JLabel();
         legendLabel4 = new JLabel();
         rnaiPanel = new HeatmapLegendPanel(TrackType.RNAI);
+        copyNumberButton = new JButton();
+        expressionButton = new JButton();
+        rnaiButton = new JButton();
+        methylationButton = new JButton();
+        lohButton = new JButton();
+        mutationButton = new JButton();
         resetToDefault = new JButton();
         okButton = new JButton();
         jLabel3 = new JLabel();
@@ -100,146 +131,227 @@ public class LegendDialog extends JDialog {
         jLabel1.setFont(new Font("Lucida Sans", Font.BOLD, 18));
         jLabel1.setText("Legends");
         contentPane.add(jLabel1);
-        jLabel1.setBounds(new Rectangle(new Point(392, 0), jLabel1.getPreferredSize()));
+        jLabel1.setBounds(new Rectangle(new Point(325, 0), jLabel1.getPreferredSize()));
 
-        //---- cnLabel ----
-        cnLabel.setText("Copy Number");
-        contentPane.add(cnLabel);
-        cnLabel.setBounds(new Rectangle(new Point(10, 40), cnLabel.getPreferredSize()));
-
-        //======== copyNoCanvas ========
+        //======== panel1 ========
         {
-            copyNoCanvas.setBorder(null);
+            panel1.setLayout(null);
 
-            GroupLayout copyNoCanvasLayout = new GroupLayout(copyNoCanvas);
-            copyNoCanvas.setLayout(copyNoCanvasLayout);
-            copyNoCanvasLayout.setHorizontalGroup(
-                copyNoCanvasLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            copyNoCanvasLayout.setVerticalGroup(
-                copyNoCanvasLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
+            //---- cnLabel ----
+            cnLabel.setText("Copy Number");
+            panel1.add(cnLabel);
+            cnLabel.setBounds(new Rectangle(new Point(0, 7), cnLabel.getPreferredSize()));
+
+            //======== copyNoCanvas ========
+            {
+                copyNoCanvas.setBorder(null);
+
+                GroupLayout copyNoCanvasLayout = new GroupLayout(copyNoCanvas);
+                copyNoCanvas.setLayout(copyNoCanvasLayout);
+                copyNoCanvasLayout.setHorizontalGroup(
+                    copyNoCanvasLayout.createParallelGroup()
+                        .add(0, 483, Short.MAX_VALUE)
+                );
+                copyNoCanvasLayout.setVerticalGroup(
+                    copyNoCanvasLayout.createParallelGroup()
+                        .add(0, 60, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(copyNoCanvas);
+            copyNoCanvas.setBounds(110, 7, 485, 62);
+
+            //---- legendLabel1 ----
+            legendLabel1.setText("Expression");
+            panel1.add(legendLabel1);
+            legendLabel1.setBounds(new Rectangle(new Point(0, 87), legendLabel1.getPreferredSize()));
+
+            //======== methylationCanvas ========
+            {
+                methylationCanvas.setMinimumSize(new Dimension(100, 100));
+                methylationCanvas.setBorder(null);
+
+                GroupLayout methylationCanvasLayout = new GroupLayout(methylationCanvas);
+                methylationCanvas.setLayout(methylationCanvasLayout);
+                methylationCanvasLayout.setHorizontalGroup(
+                    methylationCanvasLayout.createParallelGroup()
+                        .add(0, 483, Short.MAX_VALUE)
+                );
+                methylationCanvasLayout.setVerticalGroup(
+                    methylationCanvasLayout.createParallelGroup()
+                        .add(0, 60, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(methylationCanvas);
+            methylationCanvas.setBounds(110, 247, 485, 62);
+
+            //======== lohCanvas ========
+            {
+                lohCanvas.setBorder(null);
+
+                GroupLayout lohCanvasLayout = new GroupLayout(lohCanvas);
+                lohCanvas.setLayout(lohCanvasLayout);
+                lohCanvasLayout.setHorizontalGroup(
+                    lohCanvasLayout.createParallelGroup()
+                        .add(0, 483, Short.MAX_VALUE)
+                );
+                lohCanvasLayout.setVerticalGroup(
+                    lohCanvasLayout.createParallelGroup()
+                        .add(0, 60, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(lohCanvas);
+            lohCanvas.setBounds(110, 327, 485, 62);
+
+            //---- legendLabel2 ----
+            legendLabel2.setText("LOH");
+            panel1.add(legendLabel2);
+            legendLabel2.setBounds(0, 327, 45, legendLabel2.getPreferredSize().height);
+
+            //---- jLabel2 ----
+            jLabel2.setText("Methylation");
+            panel1.add(jLabel2);
+            jLabel2.setBounds(new Rectangle(new Point(0, 247), jLabel2.getPreferredSize()));
+
+            //======== expressionCanvas ========
+            {
+                expressionCanvas.setBorder(null);
+
+                GroupLayout expressionCanvasLayout = new GroupLayout(expressionCanvas);
+                expressionCanvas.setLayout(expressionCanvasLayout);
+                expressionCanvasLayout.setHorizontalGroup(
+                    expressionCanvasLayout.createParallelGroup()
+                        .add(0, 483, Short.MAX_VALUE)
+                );
+                expressionCanvasLayout.setVerticalGroup(
+                    expressionCanvasLayout.createParallelGroup()
+                        .add(0, 60, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(expressionCanvas);
+            expressionCanvas.setBounds(110, 87, 485, 62);
+
+            //======== mutationCanvas ========
+            {
+                mutationCanvas.setBorder(null);
+
+                GroupLayout mutationCanvasLayout = new GroupLayout(mutationCanvas);
+                mutationCanvas.setLayout(mutationCanvasLayout);
+                mutationCanvasLayout.setHorizontalGroup(
+                    mutationCanvasLayout.createParallelGroup()
+                        .add(0, 485, Short.MAX_VALUE)
+                );
+                mutationCanvasLayout.setVerticalGroup(
+                    mutationCanvasLayout.createParallelGroup()
+                        .add(0, 62, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(mutationCanvas);
+            mutationCanvas.setBounds(110, 407, 485, 62);
+
+            //---- legendLabel3 ----
+            legendLabel3.setText("Mutation");
+            panel1.add(legendLabel3);
+            legendLabel3.setBounds(new Rectangle(new Point(0, 430), legendLabel3.getPreferredSize()));
+
+            //---- legendLabel4 ----
+            legendLabel4.setText("RNAi");
+            panel1.add(legendLabel4);
+            legendLabel4.setBounds(new Rectangle(new Point(0, 167), legendLabel4.getPreferredSize()));
+
+            //======== rnaiPanel ========
+            {
+                rnaiPanel.setBorder(null);
+
+                GroupLayout rnaiPanelLayout = new GroupLayout(rnaiPanel);
+                rnaiPanel.setLayout(rnaiPanelLayout);
+                rnaiPanelLayout.setHorizontalGroup(
+                    rnaiPanelLayout.createParallelGroup()
+                        .add(0, 483, Short.MAX_VALUE)
+                );
+                rnaiPanelLayout.setVerticalGroup(
+                    rnaiPanelLayout.createParallelGroup()
+                        .add(0, 60, Short.MAX_VALUE)
+                );
+            }
+            panel1.add(rnaiPanel);
+            rnaiPanel.setBounds(110, 167, 485, 62);
+
+            //---- copyNumberButton ----
+            copyNumberButton.setText("Edit");
+            copyNumberButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    copyNumberButtonActionPerformed(e);
+                }
+            });
+            panel1.add(copyNumberButton);
+            copyNumberButton.setBounds(new Rectangle(new Point(620, 7), copyNumberButton.getPreferredSize()));
+
+            //---- expressionButton ----
+            expressionButton.setText("Edit");
+            expressionButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    expressionButtonActionPerformed(e);
+                }
+            });
+            panel1.add(expressionButton);
+            expressionButton.setBounds(new Rectangle(new Point(620, 87), expressionButton.getPreferredSize()));
+
+            //---- rnaiButton ----
+            rnaiButton.setText("Edit");
+            rnaiButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    rnaiButtonActionPerformed(e);
+                }
+            });
+            panel1.add(rnaiButton);
+            rnaiButton.setBounds(new Rectangle(new Point(620, 167), rnaiButton.getPreferredSize()));
+
+            //---- methylationButton ----
+            methylationButton.setText("Edit");
+            methylationButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    methylationButtonActionPerformed(e);
+                }
+            });
+            panel1.add(methylationButton);
+            methylationButton.setBounds(new Rectangle(new Point(620, 247), methylationButton.getPreferredSize()));
+
+            //---- lohButton ----
+            lohButton.setText("Edit");
+            lohButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    lohButtonActionPerformed(e);
+                }
+            });
+            panel1.add(lohButton);
+            lohButton.setBounds(new Rectangle(new Point(620, 327), lohButton.getPreferredSize()));
+
+            //---- mutationButton ----
+            mutationButton.setText("Edit");
+            mutationButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mutationButtonActionPerformed(e);
+                }
+            });
+            panel1.add(mutationButton);
+            mutationButton.setBounds(new Rectangle(new Point(620, 424), mutationButton.getPreferredSize()));
+
+            { // compute preferred size
+                Dimension preferredSize = new Dimension();
+                for(int i = 0; i < panel1.getComponentCount(); i++) {
+                    Rectangle bounds = panel1.getComponent(i).getBounds();
+                    preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                    preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                }
+                Insets insets = panel1.getInsets();
+                preferredSize.width += insets.right;
+                preferredSize.height += insets.bottom;
+                panel1.setMinimumSize(preferredSize);
+                panel1.setPreferredSize(preferredSize);
+            }
         }
-        contentPane.add(copyNoCanvas);
-        copyNoCanvas.setBounds(120, 38, 590, 62);
-
-        //---- legendLabel1 ----
-        legendLabel1.setText("Expression");
-        contentPane.add(legendLabel1);
-        legendLabel1.setBounds(new Rectangle(new Point(10, 120), legendLabel1.getPreferredSize()));
-
-        //======== methylationCanvas ========
-        {
-            methylationCanvas.setMinimumSize(new Dimension(100, 100));
-            methylationCanvas.setBorder(null);
-
-            GroupLayout methylationCanvasLayout = new GroupLayout(methylationCanvas);
-            methylationCanvas.setLayout(methylationCanvasLayout);
-            methylationCanvasLayout.setHorizontalGroup(
-                methylationCanvasLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            methylationCanvasLayout.setVerticalGroup(
-                methylationCanvasLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
-        }
-        contentPane.add(methylationCanvas);
-        methylationCanvas.setBounds(120, 272, 590, 62);
-
-        //======== lohCanvas ========
-        {
-            lohCanvas.setBorder(null);
-
-            GroupLayout lohCanvasLayout = new GroupLayout(lohCanvas);
-            lohCanvas.setLayout(lohCanvasLayout);
-            lohCanvasLayout.setHorizontalGroup(
-                lohCanvasLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            lohCanvasLayout.setVerticalGroup(
-                lohCanvasLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
-        }
-        contentPane.add(lohCanvas);
-        lohCanvas.setBounds(120, 350, 590, 62);
-
-        //---- legendLabel2 ----
-        legendLabel2.setText("LOH");
-        contentPane.add(legendLabel2);
-        legendLabel2.setBounds(10, 375, 45, legendLabel2.getPreferredSize().height);
-
-        //---- jLabel2 ----
-        jLabel2.setText("Methylation");
-        contentPane.add(jLabel2);
-        jLabel2.setBounds(new Rectangle(new Point(10, 285), jLabel2.getPreferredSize()));
-
-        //======== expressionCanvas ========
-        {
-            expressionCanvas.setBorder(null);
-
-            GroupLayout expressionCanvasLayout = new GroupLayout(expressionCanvas);
-            expressionCanvas.setLayout(expressionCanvasLayout);
-            expressionCanvasLayout.setHorizontalGroup(
-                expressionCanvasLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            expressionCanvasLayout.setVerticalGroup(
-                expressionCanvasLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
-        }
-        contentPane.add(expressionCanvas);
-        expressionCanvas.setBounds(120, 116, 590, 62);
-
-        //======== mutationCanvas ========
-        {
-            mutationCanvas.setBorder(null);
-
-            GroupLayout mutationCanvasLayout = new GroupLayout(mutationCanvas);
-            mutationCanvas.setLayout(mutationCanvasLayout);
-            mutationCanvasLayout.setHorizontalGroup(
-                mutationCanvasLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            mutationCanvasLayout.setVerticalGroup(
-                mutationCanvasLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
-        }
-        contentPane.add(mutationCanvas);
-        mutationCanvas.setBounds(120, 428, 590, 62);
-
-        //---- legendLabel3 ----
-        legendLabel3.setText("Mutation");
-        contentPane.add(legendLabel3);
-        legendLabel3.setBounds(new Rectangle(new Point(10, 455), legendLabel3.getPreferredSize()));
-
-        //---- legendLabel4 ----
-        legendLabel4.setText("RNAi");
-        contentPane.add(legendLabel4);
-        legendLabel4.setBounds(new Rectangle(new Point(10, 200), legendLabel4.getPreferredSize()));
-
-        //======== rnaiPanel ========
-        {
-            rnaiPanel.setBorder(null);
-
-            GroupLayout rnaiPanelLayout = new GroupLayout(rnaiPanel);
-            rnaiPanel.setLayout(rnaiPanelLayout);
-            rnaiPanelLayout.setHorizontalGroup(
-                rnaiPanelLayout.createParallelGroup()
-                    .add(0, 588, Short.MAX_VALUE)
-            );
-            rnaiPanelLayout.setVerticalGroup(
-                rnaiPanelLayout.createParallelGroup()
-                    .add(0, 60, Short.MAX_VALUE)
-            );
-        }
-        contentPane.add(rnaiPanel);
-        rnaiPanel.setBounds(120, 194, 590, 62);
+        contentPane.add(panel1);
+        panel1.setBounds(10, 30, 720, 495);
 
         //---- resetToDefault ----
         resetToDefault.setText("Reset to default");
@@ -287,6 +399,7 @@ public class LegendDialog extends JDialog {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JLabel jLabel1;
+    private JPanel panel1;
     private JLabel cnLabel;
     private JPanel copyNoCanvas;
     private JLabel legendLabel1;
@@ -299,6 +412,12 @@ public class LegendDialog extends JDialog {
     private JLabel legendLabel3;
     private JLabel legendLabel4;
     private JPanel rnaiPanel;
+    private JButton copyNumberButton;
+    private JButton expressionButton;
+    private JButton rnaiButton;
+    private JButton methylationButton;
+    private JButton lohButton;
+    private JButton mutationButton;
     private JButton resetToDefault;
     private JButton okButton;
     private JLabel jLabel3;

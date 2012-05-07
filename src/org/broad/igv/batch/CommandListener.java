@@ -264,7 +264,7 @@ public class CommandListener implements Runnable {
                 String name = params.get("name");
 
                 if (genomeID != null) {
-                    IGV.getFirstInstance().selectGenomeFromList(genomeID);
+                    IGV.getInstance().selectGenomeFromList(genomeID);
                 }
                 if (genomeID != null) genomeID = URLDecoder.decode(genomeID, "UTF-8");
                 if (mergeValue != null) mergeValue = URLDecoder.decode(mergeValue, "UTF-8");
@@ -291,7 +291,7 @@ public class CommandListener implements Runnable {
             }
         } else if (command.equals("/reload") || command.equals("/goto")) {
             String locus = params.get("locus");
-            IGV.getFirstInstance().goToLocus(locus);
+            IGV.getInstance().goToLocus(locus);
         } else {
             return ("ERROR Unknown command: " + command);
         }

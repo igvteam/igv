@@ -57,7 +57,6 @@ public class SetTrackHeightMenuAction extends MenuAction {
     public SetTrackHeightMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
-        setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
     }
 
     /**

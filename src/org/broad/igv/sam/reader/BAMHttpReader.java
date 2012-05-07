@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.sam.reader;
@@ -26,7 +19,7 @@ import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableStream;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
@@ -38,10 +31,7 @@ import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -63,6 +53,7 @@ public class BAMHttpReader implements AlignmentReader {
     SAMFileHeader header;
     File indexFile;
     SAMFileReader reader;
+    List<String> sequenceNames;
 
     public BAMHttpReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.url = new URL(locator.getPath());
@@ -98,20 +89,22 @@ public class BAMHttpReader implements AlignmentReader {
         return indexFile != null && indexFile.exists();
     }
 
-    public Set<String> getSequenceNames() {
-        SAMFileHeader header = getHeader();
-        if (header == null) {
-            return null;
-        }
-        Set<String> seqNames = new HashSet();
-        List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
-        if (records.size() > 0) {
-            for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
-                String chr = rec.getSequenceName();
-                seqNames.add(chr);
+    public List<String> getSequenceNames() {
+        if (sequenceNames == null) {
+            SAMFileHeader header = getHeader();
+            if (header == null) {
+                return null;
+            }
+            sequenceNames = new ArrayList();
+            List<SAMSequenceRecord> records = header.getSequenceDictionary().getSequences();
+            if (records.size() > 0) {
+                for (SAMSequenceRecord rec : header.getSequenceDictionary().getSequences()) {
+                    String chr = rec.getSequenceName();
+                    sequenceNames.add(chr);
+                }
             }
         }
-        return seqNames;
+        return sequenceNames;
     }
 
 
@@ -176,7 +169,7 @@ public class BAMHttpReader implements AlignmentReader {
         if (timeLimit == null) {
             timeLimit = oneDay;
         }
-        File dir = Globals.getBamIndexCacheDirectory();
+        File dir = DirectoryManager.getCacheDirectory();
         File[] files = dir.listFiles();
 
         long time = System.currentTimeMillis();
@@ -213,7 +206,7 @@ public class BAMHttpReader implements AlignmentReader {
     private File getTmpIndexFile(String bamURL) throws IOException {
         File indexFile = indexFileCache.get(bamURL);
         if (indexFile == null) {
-            indexFile = File.createTempFile("index_", ".bai", Globals.getBamIndexCacheDirectory());
+            indexFile = File.createTempFile("index_", ".bai", DirectoryManager.getCacheDirectory());
             indexFile.deleteOnExit();
             indexFileCache.put(bamURL, indexFile);
         }

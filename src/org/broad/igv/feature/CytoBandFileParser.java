@@ -26,7 +26,9 @@ import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Class description
@@ -74,26 +76,23 @@ public class CytoBandFileParser {
      * @param reader
      * @return
      */
-    public static LinkedHashMap<String, Chromosome> loadData(BufferedReader reader) {
+    public static LinkedHashMap<String, List<Cytoband>> loadData(BufferedReader reader) {
 
-        LinkedHashMap<String, Chromosome> dataMap = new LinkedHashMap<String, Chromosome>();
+        LinkedHashMap<String, List<Cytoband>> dataMap = new LinkedHashMap<String, List<Cytoband>>();
         try {
 
             String nextLine;
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
                 String[] data = nextLine.split("\t");
                 String chr = data[0].trim();
-                Chromosome chromosome = dataMap.get(chr);
-                if (chromosome == null) {
-                    chromosome = new ChromosomeImpl(chr);
-                    dataMap.put(chr, chromosome);
+                List<Cytoband> cytobands = dataMap.get(chr);
+                if (cytobands == null) {
+                    cytobands = new ArrayList<Cytoband>();
+                    dataMap.put(chr, cytobands);
                 }
-                if (chromosome instanceof ChromosomeImpl) {
-                    Cytoband cytoData = new Cytoband(chr);
-                    parseData(data, cytoData);
-                    ((ChromosomeImpl) chromosome).addCytoband(cytoData);
-                }
-
+                Cytoband cytoData = new Cytoband(chr);
+                parseData(data, cytoData);
+                cytobands.add(cytoData);
             }
 
             reader.close();

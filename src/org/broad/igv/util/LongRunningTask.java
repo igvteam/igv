@@ -22,10 +22,14 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
+import org.broad.igv.ui.util.MessageUtils;
 
+import javax.swing.*;
 import java.util.concurrent.*;
 
 /**
+ * Utility class for executing long running tasks in their own thread (i.e. not on the swing event thread).
+ *
  * @author jrobinso
  */
 public class LongRunningTask implements Callable {
@@ -38,25 +42,13 @@ public class LongRunningTask implements Callable {
     Runnable runnable;
 
     public static Future submit(Runnable runnable) {
-        if (Globals.isBatch() || !IGV.getInstance().isStartupComplete()) {
+        if (Globals.isBatch() || !SwingUtilities.isEventDispatchThread()) {
             runnable.run();
             return null;
         } else {
 
             return threadExecutor.submit(new LongRunningTask(runnable));
         }
-    }
-
-
-    /**
-     * Schedule a task for execution in the future.
-     *
-     * @param runnable
-     * @param time
-     * @return
-     */
-    public static Future schedule(Runnable runnable, long time) {
-        return schedule.schedule(new LongRunningTask(runnable), time, TimeUnit.MILLISECONDS);
     }
 
     public LongRunningTask(Runnable runnable) {
@@ -70,6 +62,7 @@ public class LongRunningTask implements Callable {
             runnable.run();
             return null;
         } catch (Exception e) {
+            MessageUtils.showMessage("<html>Unexpected error: " + e.getMessage() + ".<br>See igv.log for more details");
             log.error("Exception running task", e);
             return null;
         } finally {

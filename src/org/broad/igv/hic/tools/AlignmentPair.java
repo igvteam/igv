@@ -24,19 +24,19 @@ package org.broad.igv.hic.tools;
  */
 public class AlignmentPair {
 
-    private String chr1;
+    private int chr1;
     private int pos1;
-    private String chr2;
+    private int chr2;
     private int pos2;
 
-    public AlignmentPair(String chr1, int pos1, String chr2, int pos2) {
+    public AlignmentPair(int chr1, int pos1, int chr2, int pos2) {
         this.chr1 = chr1;
         this.pos1 = pos1;
         this.chr2 = chr2;
         this.pos2 = pos2;
     }
 
-    public String getChr1() {
+    public int getChr1() {
         return chr1;
     }
 
@@ -44,7 +44,7 @@ public class AlignmentPair {
         return pos1;
     }
 
-    public String getChr2() {
+    public int getChr2() {
         return chr2;
     }
 

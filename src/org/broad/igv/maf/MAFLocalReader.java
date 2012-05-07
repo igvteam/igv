@@ -22,11 +22,14 @@
  */
 package org.broad.igv.maf;
 
+import edu.mit.broad.prodinfo.genomicplot.ParseException;
 import edu.mit.broad.prodinfo.multiplealignment.MAFAlignment;
 import edu.mit.broad.prodinfo.multiplealignment.MAFIO;
 import edu.mit.broad.prodinfo.multiplealignment.MultipleAlignment.AlignedSequence;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,26 +44,21 @@ public class MAFLocalReader implements MAFReader {
     MAFIO mafIO;
     List<String> sequenceIds;
 
-    public MAFLocalReader(String mafFileName) {
+    public MAFLocalReader(String mafFileName) throws IOException, ParseException {
         mafFile = mafFileName;
-        try {
-            mafIO = new MAFIO(mafFile, false);
-            MAFAlignment maf = mafIO.load(mafFile);
-            sequenceIds = maf.getAlignedSequenceIds();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        mafIO = new MAFIO(mafFile, false);
     }
 
-    public List<String> getSequenceIds() {
+    /**
+     * Return the sequence names, as in species (not chromosomes).
+     *
+     * @return
+     */
+    public List<String> getChrNames() {
         return sequenceIds;
     }
 
-    public MAFTile loadTile(
-            String seq,
-            int start,
-            int end,
-            List<String> species) {
+    public MAFTile loadTile(String seq, int start, int end, List<String> species) {
         try {
 
             MAFAlignment maf = mafIO.load(species, start, end);
@@ -76,16 +74,13 @@ public class MAFLocalReader implements MAFReader {
             int[] gapAdjustedCoordinates = new int[end - start];
             for (int i = start; i < end; i++) {
                 int idx = i - start;
-                gapAdjustedCoordinates[idx] = refSeq.getGapAdjustedCoordinate(
-                        idx);
+                gapAdjustedCoordinates[idx] = refSeq.getGapAdjustedCoordinate(idx);
             }
 
             Map<String, String> bases = new HashMap();
             for (String seqId : maf.getAlignedSequenceIds()) {
-                bases.put(seqId,
-                        maf.getAlignedSequence(seqId).getSequenceBases());
+                bases.put(seqId, maf.getAlignedSequence(seqId).getSequenceBases());
             }
-
 
             return new MAFTile(start, end, bases, gapAdjustedCoordinates, refSeq.getId());
 

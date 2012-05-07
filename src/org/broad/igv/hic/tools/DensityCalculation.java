@@ -30,28 +30,25 @@ import java.util.*;
  */
 public class DensityCalculation {
 
-    private static Logger log = Logger.getLogger(DensityCalculation.class);
-
     private int gridSize;
     private int numberOfBins;
-    private double[] actualDistances;
-    private double[] possibleDistances;
+    private double[] actualDistances;    // genome wide
+    private double[] possibleDistances;  // genome wide
     private double[] densityAvg;
     private List<Chromosome>  chromosomes;
 
-    int totalCounts;
-    // Map of chromosome index -> total count for that chromosome
-    Map<Integer, Integer> chromosomeCounts;
+    /** Map of chromosome index -> total count for that chromosome    */
+    private Map<Integer, Integer> chromosomeCounts;
 
-    // Map of chromosome index -> "normalization factor", essentially a fudge factor to make
-    // the "expected total"  == observed total
+    /** Map of chromosome index -> "normalization factor", essentially a fudge factor to make
+      * the "expected total"  == observed total */
     private LinkedHashMap<Integer, Double> normalizationFactors;
 
     /**
      * Instantiate a DensityCalculation.  This constructor is used to compute the "expected" density from pair data.
      *
-     * @param chromosomes
-     * @param gridSize
+     * @param chromosomes List of chromosomes, mainly used for size
+     * @param gridSize    Grid size, used for binning appropriately
      */
     DensityCalculation(List<Chromosome> chromosomes, int gridSize) {
 
@@ -73,9 +70,9 @@ public class DensityCalculation {
 
 
     /**
-     * Read a previously calculaed density calculation from an input stream.
+     * Read a previously calculated density calculation from an input stream.
      *
-     * @param les
+     * @param les Stream to read from
      */
     public DensityCalculation(LittleEndianInputStream les) {
         try {
@@ -88,14 +85,12 @@ public class DensityCalculation {
 
 
     /**
-     * Add an observed distance.  This is called for each pair in the dataset
+     * Add an observed distance.  This is called for each pair in the data set
      *
-     * @param chr
-     * @param dist
+     * @param chr  Chromosome where observed, so can increment count
+     * @param dist Distance observed
      */
     public void addDistance(Integer chr, int dist) {
-
-        totalCounts++;
 
         Integer count = chromosomeCounts.get(chr);
         if (count == null) {
@@ -104,24 +99,37 @@ public class DensityCalculation {
             chromosomeCounts.put(chr, count + 1);
         }
         int bin = dist / gridSize;
+
         actualDistances[bin]++;
 
     }
 
     /**
-     * Compute the "density" -- port of python function getDensityControls()
+     * Compute the "density" -- port of python function getDensityControls().
+     * The density is a measure of the average distribution of counts genome-wide for a ligated molecule.
+     * The density will decrease as distance from the center diagonal increases.
+     * First compute "possible distances" for each bin.
+     * "possible distances" provides a way to normalize the counts. Basically it's the number of
+     * slots available in the diagonal.  The sum along the diagonal will then be the count at that distance,
+     * an "expected" or average uniform density.
      */
     public void computeDensity() {
         double[] density;
 
-        // Compute "possible distances" for each bin.  I'm not sure I'm buying this but that's what the Python does.
+
         possibleDistances = new double[numberOfBins];
+
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
             int nChrBins = chr.getSize() / gridSize;
+
+            // this is not actually the true "possible", which would count everything, but is off by a factor
+            // of binSize, essentially.  it makes the numbers more reasonable and is what the Python code does.
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);
             }
+
+
         }
         // Compute the non-smoothed "density",  which is the actual count / possible count for each bin
 
@@ -138,7 +146,8 @@ public class DensityCalculation {
         // Smooth (1)
         final int smoothingWidow1 = 15000000;
         int start = smoothingWidow1 / gridSize;
-        int window = 5 * (2000000 / gridSize);
+        int window = (int) (5 * (2000000f / gridSize));
+        if (window == 0) window = 1;
         for (int i = start; i < numberOfBins; i++) {
             int kMin = i - window;
             int kMax = Math.min(i + window, numberOfBins);
@@ -151,7 +160,7 @@ public class DensityCalculation {
 
         // Smooth (2)
         start = 70000000 / gridSize;
-        window = 20 * (2000000 / gridSize);
+        window = (int)(20 * (2000000f / gridSize));
         for (int i = start; i < numberOfBins; i++) {
             int kMin = i - window;
             int kMax = Math.min(i + window, numberOfBins);
@@ -176,68 +185,80 @@ public class DensityCalculation {
                 continue;
             }
 
+
             int len = chr.getSize();
             int nGrids = len / gridSize + 1;
             double expectedCount = 0;
             for (int n = 0; n < nGrids; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
-                    // Skip.  Not sure why we should have these actually.
-                    // Neva: it's because sometimes possible dists is 0
-                } else {
+                    System.err.println("Density was NaN, this shouldn't happen.");
+                }
+                else {
+                    // this is the sum of the diagonal for this particular chromosome.
+                    // the value in each bin is multiplied by the length of the diagonal to get expected count
                     expectedCount += (nGrids - n) * v;
                 }
             }
 
             double observedCount = (double) chromosomeCounts.get(chr.getIndex());
-
             double f = expectedCount / observedCount;
-            System.out.println(chr.getName() + "\t" + f);
 
             normalizationFactors.put(chr.getIndex(), f);
         }
     }
 
-
+    /**
+     * Debugging method that prints out everything.
+     * @param chrIndex Chromosome to print.
+     */
     private void printDensities(int chrIndex) {
         double norm = normalizationFactors.get(chrIndex);
 
-        int center = gridSize / 2;
+        long center = gridSize / 2;
+        System.out.println(gridSize);
         for (int i = 0; i < numberOfBins; i++) {
-            System.out.println(center
-                    + "\t" + actualDistances[i]
+
+            System.out.println(center/1000000f + "M " +
+                    actualDistances[i]
                     + "\t" + possibleDistances[i]
                     // + "\t" + density[i]
-                    + "\t" + densityAvg[i]
-                    + "\t" + densityAvg[i] * norm);
+                    + "\t" + densityAvg[i]     + "\t" + norm
+                    + "\t" + densityAvg[i] / norm);
             center += gridSize;
         }
 
     }
 
-
+    /**
+     * Accessor for grid size
+     * @return The grid size
+     */
     public int getGridSize() {
         return gridSize;
     }
 
+    /**
+     * Accessor for the normalization factors
+     * @return  The normalization factors
+     */
     public LinkedHashMap<Integer, Double> getNormalizationFactors() {
         return normalizationFactors;
     }
 
-    public int getNumberOfBins() {
-        return numberOfBins;
-    }
-
+    /**
+     * Accessor for the densities
+     * @return The densities
+     */
     public double[] getDensityAvg() {
         return densityAvg;
     }
 
-
     /**
      * Output the density calculation to a binary file.
      *
-     * @param os
-     * @throws IOException
+     * @param os      Stream to output to
+     * @throws IOException    If error while writing
      */
     public void outputBinary(LittleEndianOutputStream os) throws IOException {
 
@@ -261,21 +282,21 @@ public class DensityCalculation {
             Integer idx = chr.getIndex();
             Double normFactor = normalizationFactors.get(idx);
             os.writeInt(idx);
-            os.writeDouble(normFactor == null ? 0 : normFactor.doubleValue());
+            os.writeDouble(normFactor == null ? 0 : normFactor);
         }
 
         // Expected value (densityAvg)
         os.writeInt(densityAvg.length);
-        for (int i = 0; i < densityAvg.length; i++) {
-            os.writeDouble(densityAvg[i]);
+        for (double aDensityAvg : densityAvg) {
+            os.writeDouble(aDensityAvg);
         }
     }
 
     /**
      * Read the contents of a previously saved calculation.
      *
-     * @param is
-     * @throws IOException
+     * @param is  Stream to read
+     * @throws IOException      If error while reading stream
      */
     public void read(LittleEndianInputStream is) throws IOException {
         gridSize = is.readInt();
@@ -304,7 +325,6 @@ public class DensityCalculation {
 
 
     }
-
 
 }
 

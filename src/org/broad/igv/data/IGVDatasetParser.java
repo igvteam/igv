@@ -229,7 +229,6 @@ public class IGVDatasetParser {
             int updateCount = 5000;
             int count = 0;
             long lastPosition = 0;
-            String[] tokens = new String[headings.length + 100];
             while ((nextLine = reader.readLine()) != null) {
 
                 if (igv != null && ++count % updateCount == 0) {
@@ -237,7 +236,8 @@ public class IGVDatasetParser {
                 }
                 // Distance since last sample
 
-                int nTokens = ParsingUtils.split(nextLine.trim(), tokens, '\t');
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                int nTokens = tokens.length;
                 if (nTokens > 0) {
                     String thisChr = genome.getChromosomeAlias(tokens[chrColumn]);
                     if (chrSummary == null || !thisChr.equals(chrSummary.getName())) {
@@ -408,13 +408,12 @@ public class IGVDatasetParser {
             String chromosome = chrSummary.getName();
             boolean chromosomeStarted = false;
             String nextLine = reader.readLine();
-            String[] tokens = new String[dataHeaders.length + 100];
 
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
                 if (!nextLine.startsWith("#")) {
                     try {
-                        int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                        String[] tokens = Globals.tabPattern.split(nextLine);
                         String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
                         if (thisChromosome.equals(chromosome)) {
                             chromosomeStarted = true;

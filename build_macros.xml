@@ -1,0 +1,39 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<project name="macrodefs">
+
+    <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
+    <property name="build-number" value="0"/>
+    <property name="version" value="user"/>
+    <!--Note: $$ translates to $, because $ is a special character-->
+    <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$$$_dataServerRegistry.txt"/>
+
+    <macrodef name="write_version">
+        <attribute name="targetFile"/>
+
+        <sequential>
+
+            <tstamp>
+                <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
+            </tstamp>
+
+            <echo message="Target File: @{targetFile}"/>
+            <echo message="Version ${version}"/>
+            <echo message="Build ${build-number}"/>
+            <replace file="@{targetFile}" token="@VERSION" value="${version}"/>
+            <replace file="@{targetFile}" token="@BUILD" value="${build-number}"/>
+            <replace file="@{targetFile}" token="@TIMESTAMP" value="${timestamp}"/>
+            <replace file="@{targetFile}" token="@DEFAULT_MASTER_RESOURCE_URL" value="${data-server-url}"/>
+
+        </sequential>
+    </macrodef>
+</project>

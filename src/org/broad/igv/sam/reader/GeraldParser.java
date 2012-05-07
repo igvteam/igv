@@ -24,6 +24,7 @@ package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentUtils;
@@ -60,7 +61,6 @@ public class GeraldParser implements AlignmentParser {
     private static final int MATE_STRAND_COLUMN = 20;
     private static final int READ_STRAND_COLUMN = 13;
     private static final int REQUIRED_EXPORT_COLUMNS = PASSING_FILTER_COLUMN + 1;
-    private String[] fields = new String[REQUIRED_EXPORT_COLUMNS];
     SolexaQualityConverter solexaToPhredQualityConverter = SolexaQualityConverter.getSingleton();
     //Genome genome;
     /**
@@ -98,8 +98,8 @@ public class GeraldParser implements AlignmentParser {
 
     private GeraldAlignment createGeraldAlignment(String nextLine) {
 
-
-        int nTokens = ParsingUtils.split(nextLine, fields, '\t');
+        String[] fields = Globals.tabPattern.split(nextLine);
+        int nTokens = fields.length;
         // TODO -- what to do if nTokens < 22?
         StringBuffer readName = new StringBuffer(20);
         for (int c = 0; c < READ_NAME_COLUMN; c++) {
@@ -188,7 +188,7 @@ public class GeraldParser implements AlignmentParser {
 
     static synchronized void loadChrMap() {
         seqChrMap = new HashMap();
-        File samDir = new File(Globals.getIgvDirectory(), "sam");
+        File samDir = DirectoryManager.getSamDirectory();
         if (samDir.exists()) {
             File mapFile = new File(samDir, "sequence.map");
             if (!mapFile.exists()) {

@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.cbio;
@@ -21,7 +14,9 @@ package org.broad.igv.cbio;
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.track.RegionScoreType;
@@ -30,7 +25,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.*;
 import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.Pseudograph;
+import org.jgrapht.graph.DirectedMultigraph;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -46,9 +41,9 @@ import java.util.zip.GZIPOutputStream;
  * User: jacob
  * Date: 2012/01/31
  */
-public class GeneNetwork extends Pseudograph<Node, Node> {
+public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
-    private Logger logger = Logger.getLogger(GeneNetwork.class);
+    private Logger log = Logger.getLogger(GeneNetwork.class);
 
     public static final String NODE_TAG = "node";
     public static final String EDGE_TAG = "edge";
@@ -59,12 +54,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     /**
      * URL that cbio will use when service is released
      */
-    public static String REAL_URL = "http://www.cbioportal.org/public-portal/webservice.do";
+    static final String REAL_URL = "http://www.cbioportal.org/public-portal/network.do";
     /**
      * URL they use for testing
      */
-    public static String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
-    public static String BASE_URL = TEST_URL;
+    static final String TEST_URL = "http://awabi.cbio.mskcc.org/public-portal/network.do";
+    static String BASE_URL = REAL_URL;
     //    static{
 //        InputStream is = NetworkAnnotator.class.getResourceAsStream("resources/url.txt");
 //        BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -105,17 +100,52 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         attributeMap.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
     }
 
+    /**
+     * The thresholds determine whether a particular sample is altered in that fashion.
+     * The number is calculated using track.getRegionScore
+     *
+     * Mutation will be the number of mutations in a given gene (integer)
+     *
+     * For the others, we take the numerical value that has been read from the data source,
+     * and average it over the region of each gene.
+     *
+     */
     static {
         float max_val = 2 << 10;
-        float[] typ_bounds = new float[]{0.1f, max_val};
-        bounds.put("PERCENT_MUTATED", typ_bounds);
-        bounds.put("PERCENT_CNA_AMPLIFIED", typ_bounds);
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", typ_bounds);
-        bounds.put("PERCENT_MRNA_WAY_UP", typ_bounds);
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -0.1f});
+
+        float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD));
+        bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
+
+        //See GISTIC supplement, page 20
+        float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD));
+        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{amp, max_val});
+
+        float del = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_DELETION_THRESHOLD));
+        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{del, max_val});
+
+        //See GISTIC supplement, page 5, just gives greater than or less than 0
+        float expUp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD));
+        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{expUp, max_val});
+
+        float expDown = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD));
+        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -expDown});
+
+
     }
 
     public static final String PERCENT_ALTERED = "PERCENT_ALTERED";
+
+
+    private String sourcePath;
+
+    /**
+     * Generally for testing. The path from which data was loaded.
+     *
+     * @return
+     */
+    String getSourcePath() {
+        return sourcePath;
+    }
 
 //    protected KeyFactory edgeKeyFactory;
 //    protected KeyFactory vertexKeyFactory;
@@ -206,6 +236,33 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
     }
 
     /**
+     * Return the set of edges connected to this node, whose neighbors
+     * are not filtered out. If this node is filtered out, will
+     * return the empty set.
+     *
+     * @param n
+     * @return
+     */
+    public Set<Node> edgesOfFiltered(Node n) {
+        if (rejectedNodes.contains(n)) {
+            return new HashSet<Node>(0);
+        }
+        Set<Node> filteredEdges = new HashSet<Node>(this.edgesOf(n).size());
+        for (Node edge : this.outgoingEdgesOf(n)) {
+            if (!rejectedNodes.contains(this.getEdgeTarget(edge)) && !rejectedEdges.contains(edge)) {
+                filteredEdges.add(edge);
+            }
+        }
+
+        for (Node edge : this.incomingEdgesOf(n)) {
+            if (!rejectedNodes.contains(this.getEdgeSource(edge)) && !rejectedEdges.contains(edge)) {
+                filteredEdges.add(edge);
+            }
+        }
+        return filteredEdges;
+    }
+
+    /**
      * Actually apply filters irrevocably, removing edges
      * and nodes from the graph
      *
@@ -255,28 +312,65 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return this.filterNodes(min_connections) > 0;
     }
 
-    public static GeneNetwork getFromCBIO(Iterable<String> geneList) {
+    /**
+     * Hash the url to get a file name, locate it in temp directory
+     *
+     * @param url
+     * @return
+     */
+    static File getCachedFile(String url) {
+        String cachedFileName = Math.abs(url.hashCode()) + "_tmp.xml";
+        File cachedFile = new File(DirectoryManager.getCacheDirectory(), cachedFileName);
+        return cachedFile;
+    }
+
+    static String getURLForGeneList(Iterable<String> geneList) {
         String query = HttpUtils.buildURLString(geneList, "+");
         String url = BASE_URL + "?" + GENE_LIST + "=" + query + "&" + common_parms;
-        GeneNetwork network = new GeneNetwork();
-        if (network.loadNetwork(url) > 0) {
-            return network;
-        } else {
-            return null;
+        return url;
+    }
+
+    public static GeneNetwork getFromCBIO(Iterable<String> geneList) throws IOException {
+        String url = getURLForGeneList(geneList);
+
+        File cachedFile = getCachedFile(url);
+        if (cachedFile.exists()) {
+            url = cachedFile.getAbsolutePath();
         }
+
+        GeneNetwork network = new GeneNetwork();
+        network.loadNetwork(url);
+        return network;
     }
 
     /**
      * Load graphml data from provide path.
      *
      * @param path
+     * @throws IOException If something went wrong loading data.
+     *                     Note we wrap other exception types in this.
      */
-    public int loadNetwork(String path) {
+    public int loadNetwork(String path) throws IOException {
         String error = null;
         int numNodes = -1;
         try {
             InputStream cbioStream = ParsingUtils.openInputStreamGZ(new ResourceLocator(path));
+            this.sourcePath = path;
             Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
+
+            //Cache the file
+            if (HttpUtils.isURL(path)) {
+                File cacheFile = getCachedFile(path);
+                try {
+                    this.exportDocument(document, cacheFile.getAbsolutePath());
+                } catch (IOException e) {
+                    //No biggy, we just don't cache the file
+                    log.error("Error caching file: " + e);
+                    cacheFile.delete();
+                }
+                cacheFile.deleteOnExit();
+            }
+
             this.origDocument = document;
 
             //Read schema from top and save it
@@ -305,21 +399,12 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             }
 
             numNodes = this.vertexSet().size();
-
-        } catch (IOException e) {
-            error = e.getMessage();
         } catch (ParserConfigurationException e) {
-            error = e.getMessage();
+            throw new IOException(e.getMessage());
         } catch (SAXException e) {
-            error = e.getMessage();
-        } finally {
-            if (error != null) {
-                logger.error(error);
-                return -1;
-            } else {
-                return numNodes;
-            }
+            throw new IOException(e.getMessage());
         }
+        return numNodes;
     }
 
     /**
@@ -491,28 +576,39 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
         return count;
     }
 
-
     /**
      * Write document to XML at outputFile. File is deleted if there
      * is an error writing out. If the outputFile has a .gz extension,
      * the output is gzipped.
      *
-     * @param outputFile
+     * @param document   The Document to write out
+     * @param outputPath
      * @return success
      * @throws java.io.IOException
      */
-    public int exportGraph(String outputFile) throws IOException {
-        boolean gzip = outputFile.endsWith(".gz");
+    private int exportDocument(Document document, String outputPath) throws IOException {
+        boolean gzip = outputPath.endsWith(".gz");
 
-        String xmlString = Utilities.getString(this.createDocument());
+        String xmlString = Utilities.getString(document);
 
-        OutputStream stream = new FileOutputStream(outputFile);
+        OutputStream stream = new FileOutputStream(outputPath);
         int count = writeEncodedString(xmlString, stream, gzip, false);
 
         stream.flush();
         stream.close();
 
         return count;
+    }
+
+    /**
+     * Calls {@link #exportDocument} with the Document created from {@link #createDocument}
+     *
+     * @param outputFile
+     * @return
+     * @throws IOException
+     */
+    int exportGraph(String outputFile) throws IOException {
+        return exportDocument(this.createDocument(), outputFile);
     }
 
     public String outputForcBioView() throws IOException {
@@ -541,8 +637,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
             }
             outputStream.flush();
         } catch (IOException e) {
-            logger.error("Error writing cBio stub form to " + outPath);
-            logger.error(e.getMessage());
+            log.error("Error writing cBio stub form to " + outPath);
+            log.error(e.getMessage());
         } finally {
             if (reader != null) {
                 reader.close();
@@ -620,6 +716,7 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
                 }
             }
         }
+        String frameName = frame != null ? frame.getName() : null;
 
         ScoreData<String, Float> results = new ScoreData(RegionScoreType.values().length);
 
@@ -668,18 +765,8 @@ public class GeneNetwork extends Pseudograph<Node, Node> {
 
                     samplesForType.add(sample);
 
-                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
-                        System.out.println(sample);
-                    }
-
                     float score = track.getRegionScore(feat.getChr(), featStart, featEnd, zoom,
-                            type, frame.getName(), tracks);
-
-
-                    if (attr.equals("PERCENT_MRNA_WAY_DOWN") && name.equals("BCL2")) {
-                        System.out.println(score);
-                    }
-
+                            type, frameName, tracks);
 
                     if (score >= curBounds[0] && score <= curBounds[1] && !Float.isNaN(score)) {
                         alteredSamplesForType.add(sample);

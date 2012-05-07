@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.sam;
 
@@ -22,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
@@ -37,9 +31,10 @@ import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.QuadCurve2D;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -50,6 +45,8 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
+    // A "dummy" reference for soft-clipped reads.
+    private static byte[] softClippedReference = new byte[1000];
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
@@ -86,7 +83,11 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static AlignmentRenderer instance;
 
-    public static FeatureRenderer getInstance() {
+    private TreeSet<Shape> arcsByStart;
+    private TreeSet<Shape> arcsByEnd;
+    private HashMap<Shape, Alignment> curveMap;
+
+    public static AlignmentRenderer getInstance() {
         if (instance == null) {
             instance = new AlignmentRenderer();
         }
@@ -97,6 +98,25 @@ public class AlignmentRenderer implements FeatureRenderer {
     private AlignmentRenderer() {
         this.prefs = PreferenceManager.getInstance();
         initializeTagColors();
+        curveMap = new HashMap<Shape, Alignment>();
+
+        arcsByStart = new TreeSet<Shape>(new Comparator<Shape>() {
+
+            public int compare(Shape o1, Shape o2) {
+                double x1 = o1.getBounds().getMinX();
+                double x2 = o2.getBounds().getMinX();
+                return (int) Math.signum(x1 - x2);
+            }
+        });
+
+        arcsByEnd = new TreeSet<Shape>(new Comparator<Shape>() {
+
+            public int compare(Shape o1, Shape o2) {
+                double x1 = o1.getBounds().getMaxX();
+                double x2 = o2.getBounds().getMaxX();
+                return (int) Math.signum(x1 - x2);
+            }
+        });
     }
 
     private void initializeTagColors() {
@@ -174,14 +194,13 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     public void renderAlignments(List<Alignment> alignments,
                                  RenderContext context,
-                                 Rectangle rect,
-                                 AlignmentTrack.RenderOptions renderOptions,
+                                 Rectangle rowRect,
+                                 Rectangle trackRect, RenderOptions renderOptions,
                                  boolean leaveMargin,
                                  Map<String, Color> selectedReadNames) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        Rectangle screenRect = context.getVisibleRect();
         Font font = FontManager.getFont(10);
 
         if ((alignments != null) && (alignments.size() > 0)) {
@@ -190,15 +209,14 @@ public class AlignmentRenderer implements FeatureRenderer {
             //int insertSizeThreshold = renderOptions.insertSizeThreshold;
 
             for (Alignment alignment : alignments) {
-
                 // Compute the start and dend of the alignment in pixels
                 double pixelStart = ((alignment.getStart() - origin) / locScale);
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
                 // If the any part of the feature fits in the track rectangle draw  it
-                if (pixelEnd < rect.x) {
+                if (pixelEnd < rowRect.x) {
                     continue;
-                } else if (pixelStart > rect.getMaxX()) {
+                } else if (pixelStart > rowRect.getMaxX()) {
                     break;
                 }
 
@@ -213,23 +231,22 @@ public class AlignmentRenderer implements FeatureRenderer {
                     g.setFont(font);
 
                     int w = Math.max(1, (int) (pixelWidth));
-                    int h = (int) Math.max(1, rect.getHeight() - 2);
-                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
+                    int h = (int) Math.max(1, rowRect.getHeight() - 2);
+                    int y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
                 } else if (alignment instanceof PairedAlignment) {
-                    drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames, font);
+                    drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
-                    drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                    drawAlignment(alignment, rowRect, trackRect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
                 }
-
             }
 
             // Optionally draw a border around the center base
             boolean showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
-            final int bottom = rect.y + rect.height;
+            final int bottom = rowRect.y + rowRect.height;
             if (locScale < 5 && showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
@@ -237,9 +254,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int centerRightP = (int) ((center + 1) / locScale);
                 //float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
                 Graphics2D gBlack = context.getGraphic2DForColor(Color.black); //new Color(0, 0, 0, transparency));
-                GraphicUtils.drawDottedDashLine(gBlack, centerLeftP, rect.y, centerLeftP, bottom);
+                GraphicUtils.drawDottedDashLine(gBlack, centerLeftP, rowRect.y, centerLeftP, bottom);
                 if ((centerRightP - centerLeftP > 2)) {
-                    GraphicUtils.drawDottedDashLine(gBlack, centerRightP, rect.y, centerRightP, bottom);
+                    GraphicUtils.drawDottedDashLine(gBlack, centerRightP, rowRect.y, centerRightP, bottom);
                 }
             }
         }
@@ -308,7 +325,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * Draw a pair of alignments as a single "template".
      *
      * @param pair
-     * @param rect
+     * @param rowRect
      * @param context
      * @param renderOptions
      * @param leaveMargin
@@ -317,7 +334,8 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     private void drawPairedAlignment(
             PairedAlignment pair,
-            Rectangle rect,
+            Rectangle rowRect,
+            Rectangle trackRect,
             RenderContext context,
             AlignmentTrack.RenderOptions renderOptions,
             boolean leaveMargin,
@@ -325,30 +343,68 @@ public class AlignmentRenderer implements FeatureRenderer {
             Font font) {
 
         double locScale = context.getScale();
-        Color alignmentColor = getAlignmentColor(pair.firstAlignment, renderOptions);
-        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
-        g.setFont(font);
-        drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
 
+        Color alignmentColor1;
+        Color alignmentColor2 = null;
+        if (renderOptions.isPairedArcView()) {
+            renderOptions.setColorOption(ColorOption.INSERT_SIZE);
+            alignmentColor1 = getAlignmentColor(pair, renderOptions);
+            alignmentColor2 = alignmentColor1;
+        } else {
+            alignmentColor1 = getAlignmentColor(pair.firstAlignment, renderOptions);
+        }
+
+        Graphics2D g = context.getGraphic2DForColor(alignmentColor1);
+        g.setFont(font);
+        drawAlignment(pair.firstAlignment, rowRect, trackRect, g, context, alignmentColor1, renderOptions, leaveMargin, selectedReadNames);
+
+        //If the paired alignment is in memory, we draw it.
+        //However, we get the coordinates from the first alignment
         if (pair.secondAlignment != null) {
 
-            alignmentColor = getAlignmentColor(pair.secondAlignment, renderOptions);
-            g = context.getGraphic2DForColor(alignmentColor);
+            if (alignmentColor2 == null) {
+                alignmentColor2 = getAlignmentColor(pair.secondAlignment, renderOptions);
+            }
+            g = context.getGraphic2DForColor(alignmentColor2);
 
-            drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+            drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
+        }
 
-            Graphics2D gLine = context.getGraphic2DForColor(grey1);
-            double origin = context.getOrigin();
-            int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
-            startX = Math.max(rect.x, startX);
+        Graphics2D gLine = context.getGraphic2DForColor(grey1);
+        double origin = context.getOrigin();
+        int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
+        int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
 
-            int endX = (int) ((pair.secondAlignment.getStart() - origin) / locScale);
-            endX = Math.min(rect.x + rect.width, endX);
+        int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+        int y = (int) (rowRect.getY());
 
-            int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
-            int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
+
+        if (renderOptions.isPairedArcView()) {
+            int relation = compareToBounds(pair, renderOptions);
+            if (relation <= -1 || relation >= +1) {
+                return;
+            }
+            GeneralPath path = new GeneralPath(GeneralPath.WIND_NON_ZERO, 4);
+            int curveHeight = (int) Math.log(endX - startX) * h;
+
+            double botY = y + h / 2;
+            double topY = y + h / 2 - curveHeight;
+            double midX = (endX + startX) / 2;
+
+            path.moveTo(startX, botY);
+            path.quadTo(midX, topY, endX, botY);
+            path.quadTo(midX, topY - 2, startX, botY);
+            path.closePath();
+            arcsByStart.add(path);
+            arcsByEnd.add(path);
+            curveMap.put(path, pair);
+            gLine.setColor(alignmentColor2);
+
+            gLine.draw(path);
+        } else {
+            startX = Math.max(rowRect.x, startX);
+            endX = Math.min(rowRect.x + rowRect.width, endX);
             gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
-
         }
 
     }
@@ -357,7 +413,8 @@ public class AlignmentRenderer implements FeatureRenderer {
      * Draw a (possibly gapped) alignment
      *
      * @param alignment
-     * @param rect
+     * @param rowRect
+     * @param trackRect
      * @param g
      * @param context
      * @param alignmentColor
@@ -367,7 +424,8 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     private void drawAlignment(
             Alignment alignment,
-            Rectangle rect,
+            Rectangle rowRect,
+            Rectangle trackRect,
             Graphics2D g,
             RenderContext context,
             Color alignmentColor,
@@ -381,7 +439,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
-            drawSimpleAlignment(alignment, rect, g, context, renderOptions.flagUnmappedPairs);
+            drawSimpleAlignment(alignment, rowRect, g, context, renderOptions.flagUnmappedPairs);
             return;
         }
 
@@ -400,15 +458,13 @@ public class AlignmentRenderer implements FeatureRenderer {
         Graphics2D terminalGrpahics = context.getGraphic2DForColor(Color.DARK_GRAY);
 
         boolean isZeroQuality = alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments;
-
+        int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+        int y = (int) (rowRect.getY());
 
         for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
             blockNumber++;
             int x = (int) ((aBlock.getStart() - origin) / locScale);
             int w = (int) Math.ceil(aBlock.getBases().length / locScale);
-            int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
-            int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
-
 
             // If we're zoomed in and this is a large block clip a pixel off each end.  TODO - why?
             if (highZoom && w > 10) {
@@ -417,7 +473,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
 
             // If block is out of view skip -- this is important in the case of PacBio and other platforms with very long reads
-            if (x + w >= rect.x && x <= rect.getMaxX()) {
+            if (x + w >= rowRect.x && x <= rowRect.getMaxX()) {
 
                 Shape blockShape = null;
 
@@ -428,19 +484,19 @@ public class AlignmentRenderer implements FeatureRenderer {
                         int arrowLength = Math.min(5, w / 6);
 
                         // Don't draw off edge of clipping rect
-                        if (x < rect.x && (x + w) > (rect.x + rect.width)) {
-                            x = rect.x;
-                            w = rect.width;
+                        if (x < rowRect.x && (x + w) > (rowRect.x + rowRect.width)) {
+                            x = rowRect.x;
+                            w = rowRect.width;
                             arrowLength = 0;
-                        } else if (x < rect.x) {
-                            int delta = rect.x - x;
-                            x = rect.x;
+                        } else if (x < rowRect.x) {
+                            int delta = rowRect.x - x;
+                            x = rowRect.x;
                             w -= delta;
                             if (alignment.isNegativeStrand()) {
                                 arrowLength = 0;
                             }
-                        } else if ((x + w) > (rect.x + rect.width)) {
-                            w -= ((x + w) - (rect.x + rect.width));
+                        } else if ((x + w) > (rowRect.x + rowRect.width)) {
+                            w -= ((x + w) - (rowRect.x + rowRect.width));
                             if (!alignment.isNegativeStrand()) {
                                 arrowLength = 0;
                             }
@@ -499,12 +555,12 @@ public class AlignmentRenderer implements FeatureRenderer {
             if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 if (renderOptions.showMismatches || renderOptions.showAllBases) {
-                    drawBases(context, rect, aBlock, alignmentColor, renderOptions);
+                    drawBases(context, rowRect, aBlock, alignmentColor, renderOptions);
                 }
             }
 
             // Draw connecting lines between blocks, if in view
-            if (lastBlockEnd > Integer.MIN_VALUE && x > rect.x) {
+            if (lastBlockEnd > Integer.MIN_VALUE && x > rowRect.x) {
                 Graphics2D gLine;
                 Stroke stroke;
                 int gapIdx = blockNumber - 1;
@@ -519,8 +575,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                     gLine.setStroke(thickStroke);
                 }
 
-                int startX = Math.max(rect.x, lastBlockEnd);
-                int endX = Math.min(rect.x + rect.width, x);
+                int startX = Math.max(rowRect.x, lastBlockEnd);
+                int endX = Math.min(rowRect.x + rowRect.width, x);
 
                 gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
                 gLine.setStroke(stroke);
@@ -528,7 +584,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             lastBlockEnd = x + w;
 
             // Next block cannot start before lastBlockEnd.  If its out of view we are done.
-            if (lastBlockEnd > rect.getMaxX()) {
+            if (lastBlockEnd > rowRect.getMaxX()) {
                 break;
             }
 
@@ -536,8 +592,23 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         // Render insertions if locScale ~ 0.25 (base level)
         if (locScale < 0.25) {
-            drawInsertions(origin, rect, locScale, alignment, context);
+            drawInsertions(origin, rowRect, locScale, alignment, context);
         }
+
+
+        //Draw straight line up for viewing arc pairs, if mate on a different chromosome
+        if (renderOptions.isPairedArcView()) {
+            try {
+                Graphics2D gLine = context.getGraphic2DForColor(alignmentColor);
+                if (!alignment.getChr().equalsIgnoreCase(alignment.getMate().getChr())) {
+                    gLine.drawLine(lastBlockEnd, y + h / 2, lastBlockEnd, (int) trackRect.getMinY());
+                }
+
+            } catch (NullPointerException e) {
+                //Don't have the info, don't plot anything
+            }
+        }
+
     }
 
 
@@ -576,7 +647,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         int start = block.getStart();
         int end = start + read.length;
-        byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
+        byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
 
         if (read != null && read.length > 0 && reference != null) {
@@ -610,11 +681,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int idx = loc - start;
 
                 // Is this base a mismatch?  Note '=' means indicates a match by definition
-                // If we do not have a valid reference we assume a match.  Soft clipped
-                // bases are considered mismatched by definition
+                // If we do not have a valid reference we assume a match.
                 boolean misMatch;
                 if (isSoftClipped) {
-                    misMatch = true;  // <= by definition, any matches are coincidence
+                    // Goby will return '=' characters when the soft-clip happens to match the reference.
+                    // It could actually be useful to see which part of the soft clipped bases match, to help detect
+                    // cases when an aligner clipped too much.
+                    final byte readbase = read[idx];
+                    misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
                 } else {
                     final byte refbase = reference[idx];
                     final byte readbase = read[idx];
@@ -793,10 +867,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        String lb = alignment.getLibrary();
-        if (lb == null) lb = "null";
-        PEStats peStats = renderOptions.peStats.get(lb);
-
         Color c = alignment.getDefaultColor();
         switch (renderOptions.getColorOption()) {
             case BISULFITE:
@@ -821,24 +891,21 @@ public class AlignmentRenderer implements FeatureRenderer {
                             alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
-                        if (readDistance > 0) {
-                            int minThreshold = renderOptions.getMinInsertSize();
-                            int maxThreshold = renderOptions.getMaxInsertSize();
-                            if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
-                                if (peStats != null) {
-                                    minThreshold = peStats.getMinThreshold();
-                                    maxThreshold = peStats.getMaxThreshold();
-                                }
 
-                            }
-
-                            if (readDistance < minThreshold) {
-                                c = smallISizeColor;
-                            } else if (readDistance > maxThreshold) {
-                                c = largeISizeColor;
-                            }
-                            //return renderOptions.insertSizeColorScale.getColor(readDistance);
+                        int minThreshold = renderOptions.getMinInsertSize();
+                        int maxThreshold = renderOptions.getMaxInsertSize();
+                        PEStats peStats = getPEStats(alignment, renderOptions);
+                        if (renderOptions.isComputeIsizes() && peStats != null) {
+                            minThreshold = peStats.getMinThreshold();
+                            maxThreshold = peStats.getMaxThreshold();
                         }
+
+                        if (readDistance < minThreshold) {
+                            c = smallISizeColor;
+                        } else if (readDistance > maxThreshold) {
+                            c = largeISizeColor;
+                        }
+                        //return renderOptions.insertSizeColorScale.getColor(readDistance);
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());
                         if (c == null) {
@@ -850,7 +917,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 break;
             case PAIR_ORIENTATION:
-                c = getOrientationColor(alignment, peStats);
+                c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
                 break;
             case READ_STRAND:
                 if (alignment.isNegativeStrand()) {
@@ -909,6 +976,65 @@ public class AlignmentRenderer implements FeatureRenderer {
         return c;
     }
 
+    private PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
+        String lb = alignment.getLibrary();
+        if (lb == null) lb = "null";
+        PEStats peStats = null;
+        if (renderOptions.peStats != null) {
+            peStats = renderOptions.peStats.get(lb);
+        }
+        return peStats;
+    }
+
+    /**
+     * Returns -1 if alignment distance is less than minimum,
+     * 0 if within bounds, and +1 if above maximum.
+     *
+     * @param alignment
+     * @return
+     */
+    private int compareToBounds(Alignment alignment, RenderOptions renderOptions) {
+        int minThreshold = renderOptions.getMinInsertSize();
+        int maxThreshold = renderOptions.getMaxInsertSize();
+        PEStats peStats = getPEStats(alignment, renderOptions);
+        if (renderOptions.isComputeIsizes() && peStats != null) {
+            minThreshold = peStats.getMinThreshold();
+            maxThreshold = peStats.getMaxThreshold();
+        }
+
+        int dist = Math.abs(alignment.getInferredInsertSize());
+        try {
+            PairedAlignment pa = (PairedAlignment) alignment;
+            if (!pa.firstAlignment.getChr().equals(pa.firstAlignment.getMate().getChr())) {
+                System.out.println(dist);
+            }
+        } catch (ClassCastException e) {
+            //pass
+        }
+        if (dist < minThreshold) return -1;
+        if (dist > maxThreshold) return +1;
+        return 0;
+    }
+
+    /**
+     * Assuming we want to color a pair of alignments based on their distance,
+     * this returns an appropriate color
+     *
+     * @param pair
+     * @return
+     */
+    private static Color getColorRelDistance(PairedAlignment pair) {
+        if (pair.secondAlignment == null) {
+            return grey1;
+        }
+
+        int dist = Math.abs(pair.getInferredInsertSize());
+        double logDist = Math.log(dist);
+        Color minColor = smallISizeColor;
+        Color maxColor = largeISizeColor;
+        ContinuousColorScale colorScale = new ContinuousColorScale(0, 20, minColor, maxColor);
+        return colorScale.getColor((float) logDist);
+    }
 
     /**
      * @return
@@ -924,10 +1050,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 PEStats.Orientation libraryOrientation = peStats.getOrientation();
                 switch (libraryOrientation) {
                     case FR:
-                        if (!alignment.isSmallInsert()) {
-                            // if the isize < read length the reads might overlap, invalidating this test
-                            c = frOrientationColors.get(pairOrientation);
-                        }
+                        //if (!alignment.isSmallInsert()) {
+                        // if the isize < read length the reads might overlap, invalidating this test
+                        c = frOrientationColors.get(pairOrientation);
+                        //}
                         break;
                     case RF:
                         c = rfOrientationColors.get(pairOrientation);
@@ -951,4 +1077,22 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     }
 
+    public SortedSet<Shape> curveOverlap(double x) {
+        QuadCurve2D tcurve = new QuadCurve2D.Double();
+        tcurve.setCurve(x, 0, x, 0, x, 0);
+        SortedSet overlap = new TreeSet(arcsByStart.headSet(tcurve, true));
+        overlap.retainAll(arcsByEnd.tailSet(tcurve, true));
+        return overlap;
+    }
+
+
+    public Alignment getAlignmentForCurve(Shape curve) {
+        return curveMap.get(curve);
+    }
+
+    public void clearCurveMaps() {
+        curveMap.clear();
+        arcsByStart.clear();
+        arcsByEnd.clear();
+    }
 }

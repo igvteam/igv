@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.cbio;
@@ -29,7 +22,6 @@ import org.jgrapht.VertexFactory;
 import org.jgrapht.generate.WheelGraphGenerator;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,7 +54,7 @@ import static org.junit.Assert.*;
  */
 public class GeneNetworkTest {
 
-    private static String testpath = TestUtils.DATA_DIR + "/tp53network.xml";
+    private static String testpath = TestUtils.DATA_DIR + "tp53network.xml";
     private GeneNetwork network;
 
     @Before
@@ -74,6 +66,7 @@ public class GeneNetworkTest {
     @After
     public void tearDown() throws Exception {
         network = null;
+        GeneNetwork.BASE_URL = GeneNetwork.REAL_URL;
         TestUtils.clearOutputDir();
     }
 
@@ -112,6 +105,17 @@ public class GeneNetworkTest {
         network.loadNetwork(testpath);
         boolean removed = network.filterNodes(tPred) > 0;
         assertTrue(removed);
+
+        //Test that we can get the filtered edges of a node
+        Set<Node> keptNodes = new HashSet<Node>();
+        for (Node n : network.vertexSetFiltered()) {
+            for (Node e : network.edgesOfFiltered(n)) {
+                keptNodes.add(network.getEdgeSource(e));
+                keptNodes.add(network.getEdgeTarget(e));
+            }
+        }
+        assertEquals(network.vertexSetFiltered().size(), keptNodes.size());
+        assertTrue("Soft filtering not performed", keptNodes.size() < network.vertexSet().size());
     }
 
     /**
@@ -120,7 +124,6 @@ public class GeneNetworkTest {
      *
      * @throws Exception
      */
-    @Ignore
     @Test
     public void testDownloadCBIO() throws Exception {
         String[] gene_list = new String[]{"egfr", "brca1", "jun"};
@@ -128,20 +131,33 @@ public class GeneNetworkTest {
         assertNotNull(anno);
     }
 
+    /**
+     * Load some data from cbio.
+     * Checks that we are looking at the right urls
+     *
+     * @throws Exception
+     */
+    @Test(expected = IOException.class)
+    public void testDownloadCBIOFail() throws Exception {
+        String[] gene_list = new String[]{"egfr", "brca1", "jun"};
+        GeneNetwork.BASE_URL += "MAKEITFAIL";
+        GeneNetwork anno = GeneNetwork.getFromCBIO(Arrays.asList(gene_list));
+    }
+
     @Test
     public void testOutputNoGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         //String networkPath = testpath;
         assertTrue(network.loadNetwork(networkPath) > 0);
-        String outPath = TestUtils.DATA_DIR + "/out/test.xml";
+        String outPath = TestUtils.DATA_DIR + "out/test.xml";
         tstOutputNetwork(network, outPath);
     }
 
     @Test
     public void testOutputGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);
-        String outPath = TestUtils.DATA_DIR + "/out/test.xml.gz";
+        String outPath = TestUtils.DATA_DIR + "out/test.xml.gz";
         tstOutputNetwork(network, outPath);
     }
 
@@ -176,11 +192,11 @@ public class GeneNetworkTest {
         TestUtils.setUpHeadless();
         Genome genome = TestUtils.loadGenome();
 
-        String networkPath = TestUtils.DATA_DIR + "/egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);
 
         //Load some tracks
-        String dataPath = TestUtils.DATA_DIR + "/seg/Broad.080528.subtypes.seg.gz";
+        String dataPath = TestUtils.DATA_DIR + "seg/Broad.080528.subtypes.seg.gz";
         ResourceLocator locator = new ResourceLocator(dataPath);
         List<Track> tracks = new TrackLoader().load(locator, genome);
         network.annotateAll(tracks);
@@ -210,7 +226,7 @@ public class GeneNetworkTest {
     @Test
     public void testFilterGraph() throws Exception {
         GeneNetwork geneNetwork = new GeneNetwork();
-        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "/egfr_brca1.xml.gz") > 0);
+        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "egfr_brca1.xml.gz") > 0);
 
         final String badname = "NA";
 
@@ -276,7 +292,7 @@ public class GeneNetworkTest {
 
     @Test
     public void testOutputForcBioView() throws Exception {
-        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "/tp53network.xml") > 0);
+        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "tp53network.xml") > 0);
         String outPath = network.outputForcBioView();
 
         //Now attempt to read back in
@@ -301,6 +317,24 @@ public class GeneNetworkTest {
             assertEquals(outLines[count], line);
             count++;
         }
+    }
+
+    @Test
+    public void testCaching() throws Exception{
+        String[] geneArray = new String[]{"sox1", "brca1", "DIRAS3"};
+        List<String> geneList = Arrays.asList(geneArray);
+        GeneNetwork anno = GeneNetwork.getFromCBIO(geneList);
+
+        assertTrue(HttpUtils.isURL(anno.getSourcePath()));
+
+        //Check that cached file exists
+        String url = GeneNetwork.getURLForGeneList(geneList);
+        File cachedFile = GeneNetwork.getCachedFile(url);
+        assertTrue(cachedFile.exists());
+
+        //This one should be loaded from local file
+        GeneNetwork anno2 = GeneNetwork.getFromCBIO(geneList);
+        assertFalse(HttpUtils.isURL(anno2.getSourcePath()));
     }
 
     public static class SimpleVertexFactory implements VertexFactory<Node> {
