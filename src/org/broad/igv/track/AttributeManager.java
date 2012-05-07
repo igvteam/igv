@@ -63,43 +63,43 @@ public class AttributeManager {
     /**
      * The set of currently loaded attribute resource files
      */
-    Set<ResourceLocator> loadedResources = new HashSet();
+    Set<ResourceLocator> loadedResources = Collections.synchronizedSet(new HashSet());
 
 
     /**
      * Sample table. Key is sample name, identifying a "row" in the table.  Value is a map of column name / value
      * pairs.   (e.g.  {TCGA-001  ->  { (gender->male),  (treated -> true), etc}}
      */
-    LinkedHashMap<String, Map<String, String>> attributeMap = new LinkedHashMap();
+    Map<String, Map<String, String>> attributeMap = Collections.synchronizedMap(new LinkedHashMap());
 
 
     /**
      * Map of track id -> sample name.
      */
-    Map<String, String> trackSampleMappings = new HashMap<String, String>();
+    Map<String, String> trackSampleMappings = Collections.synchronizedMap(new HashMap<String, String>());
 
     /**
      * List of attribute names.  The list
      * is kept so the keys may be fetched in the order they were added.
      */
-    LinkedHashMap<String, String> attributeNames = new LinkedHashMap();
+    Map<String, String> attributeNames = Collections.synchronizedMap(new LinkedHashMap());
 
     /**
      * Column meta data (column == attributeKey).
      */
-    Map<String, ColumnMetaData> columnMetaData = new HashMap();
+    Map<String, ColumnMetaData> columnMetaData = Collections.synchronizedMap(new HashMap());
 
 
     /**
      * The complete set of unique attribute values per attribute key.  This is useful in
      * assigning unique colors
      */
-    Map<String, Set<String>> uniqueAttributeValues;
+    Map<String, Set<String>> uniqueAttributeValues = Collections.synchronizedMap(new HashMap());
 
     /**
      * Maps symbolic (discrete) attribute values to colors. Key is a composite of attribute name and value
      */
-    Map<String, Color> colorMap = new Hashtable();
+    Map<String, Color> colorMap = Collections.synchronizedMap(new HashMap());
 
     /**
      * Map of attribute column name -> color scale.   For numeric columns.
@@ -112,7 +112,6 @@ public class AttributeManager {
 
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
-        uniqueAttributeValues = new HashMap();
         //hiddenAttributes.add("NAME");
         //hiddenAttributes.add("DATA FILE");
         //hiddenAttributes.add("DATA TYPE");
