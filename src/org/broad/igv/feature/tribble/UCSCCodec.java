@@ -25,6 +25,7 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
@@ -35,7 +36,7 @@ import java.io.IOException;
  * @author jrobinso
  * @date Aug 5, 2010
  */
-public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
+public abstract class UCSCCodec extends AsciiFeatureCodec {
 
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;
@@ -53,6 +54,10 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
      */
     @Deprecated
     protected final int startOffsetValue = 0;
+
+    protected UCSCCodec(Class myClass) {
+        super(myClass);
+    }
 
     /**
      * @param reader
@@ -121,7 +126,4 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
         return decode(line);
     }
 
-    public Class getFeatureType() {
-        return BasicFeature.class;
-    }
 }

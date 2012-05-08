@@ -40,10 +40,12 @@ public class IGVBEDCodec extends UCSCCodec {
     Genome genome;
 
     public IGVBEDCodec() {
+        super(BasicFeature.class);
         this.genome = null;
     }
 
     public IGVBEDCodec(Genome genome) {
+        super(BasicFeature.class);
         this.genome = genome;
     }
 

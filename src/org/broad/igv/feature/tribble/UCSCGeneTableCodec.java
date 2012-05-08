@@ -39,6 +39,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
 
 
     public UCSCGeneTableCodec(Type type, Genome genome) {
+        super(BasicFeature.class);
 
         this.genome = genome;
         this.type = type;
