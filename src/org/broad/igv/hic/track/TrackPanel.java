@@ -25,9 +25,6 @@ import java.util.ArrayList;
  */
 public class TrackPanel extends JPanel {
 
-    static int trackHeight = 25;
-
-
     HiC hic;
     java.util.List<Track> tracks;
     Genome genome;
@@ -35,13 +32,33 @@ public class TrackPanel extends JPanel {
     public TrackPanel(HiC hiC) {
         this.hic = hiC;
         tracks = new ArrayList();
+        setAutoscrolls(true);
         test();
     }
 
     public void addTrack(Track track) {
-        tracks.add(track);
+        if (track != null && !tracks.contains(track)) {
+            tracks.add(track);
+        }
     }
 
+    /**
+     * Returns the current height of this component.
+     * This method is preferable to writing
+     * <code>component.getBounds().height</code>, or
+     * <code>component.getSize().height</code> because it doesn't cause any
+     * heap allocations.
+     *
+     * @return the current height of this component
+     */
+    @Override
+    public int getHeight() {
+        int h = 0;
+        for (Track t : tracks) {
+            h += t.getHeight();
+        }
+        return h;
+    }
 
     //   public RenderContext(String genomeId, JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
 
@@ -53,15 +70,16 @@ public class TrackPanel extends JPanel {
 
 
         Rectangle rect = getBounds();
-        rect.height = trackHeight;
 
         for (Track track : tracks) {
-            track.setHeight(trackHeight);
-            if (hic.xContext != null) {
-                RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, rect, genome);
-                track.render(context, getBounds());
+            if (track.getHeight() > 0) {
+                rect.height = track.getHeight();
+                if (hic.xContext != null) {
+                    RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, rect, genome);
+                    track.render(context, rect);
+                }
+                rect.y += rect.height;
             }
-            rect.y += trackHeight;
         }
 
     }
@@ -80,6 +98,8 @@ public class TrackPanel extends JPanel {
             (new TrackLoader()).loadBWFile(new ResourceLocator(testURL), tracks, genome);
 
             // eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
+            Track track = tracks.get(0);
+            track.setHeight(40);
             addTrack(tracks.get(0));
 
         } catch (IOException e) {

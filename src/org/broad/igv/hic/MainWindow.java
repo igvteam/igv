@@ -964,7 +964,9 @@ public class MainWindow extends JFrame {
         JPanel panel2_5 = new JPanel();
         panel2_5.setLayout(new BorderLayout());
         panel2_5.add(rulerPanel2, BorderLayout.SOUTH);
-        panel2_5.add(trackPanel, BorderLayout.NORTH);
+
+        trackPanelScrollpane = new JScrollPane(trackPanel);
+        panel2_5.add(trackPanelScrollpane, BorderLayout.NORTH);
 
 
         panel3.add(panel2_5, BorderLayout.NORTH);
@@ -1134,26 +1136,21 @@ public class MainWindow extends JFrame {
         viewEigenvector = new JCheckBoxMenuItem("Eigenvector track");
         viewEigenvector.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                updateEigenvectorTrack();
+                if(viewEigenvector.isSelected()) {
+                    if(eigenvectorTrack == null) {
+                        eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
+                    }
+                    trackPanel.addTrack(eigenvectorTrack);
+                    trackPanelScrollpane.invalidate();
+                    updateEigenvectorTrack();
+                }
+                else {
+                }
             }
         });
         viewEigenvector.setEnabled(false);
         viewMenu.add(viewEigenvector);
 
-        viewDNAseI = new JCheckBoxMenuItem("DNAseI track");
-        viewDNAseI.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent e) {
-                showDNAseI = viewDNAseI.isSelected();
-                if (showEigenvector || showDNAseI) {
-                    trackPanel.setVisible(true);
-                } else {
-                    trackPanel.setVisible(false);
-                }
-            }
-        });
-        viewDNAseI.setEnabled(false);
-        viewMenu.add(viewDNAseI);
 
         menuBar1.add(viewMenu);
         contentPane.add(menuBar1, BorderLayout.NORTH);
@@ -1172,6 +1169,7 @@ public class MainWindow extends JFrame {
     private RangeSlider colorRangeSlider;
     private JSlider resolutionSlider;
 
+    private JScrollPane trackPanelScrollpane;
     private TrackPanel trackPanel;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;
