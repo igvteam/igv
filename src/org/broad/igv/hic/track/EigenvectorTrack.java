@@ -1,4 +1,4 @@
-package org.broad.igv.hic;
+package org.broad.igv.hic.track;
 
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;

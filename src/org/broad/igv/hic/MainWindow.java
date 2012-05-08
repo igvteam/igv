@@ -16,18 +16,15 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
+import org.broad.igv.hic.track.EigenvectorTrack;
+import org.broad.igv.hic.track.TrackPanel;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
@@ -54,7 +51,6 @@ public class MainWindow extends JFrame {
     // The "model" object containing the state for this instance.
     HiC hic;
     private EigenvectorTrack eigenvectorTrack;
-
 
 
     public static Cursor fistCursor;
@@ -336,7 +332,7 @@ public class MainWindow extends JFrame {
     }
 
     private void displayOptionComboBoxActionPerformed(ActionEvent e) {
-        hic.setDisplayOption((DisplayOption)(displayOptionComboBox.getSelectedItem()));
+        hic.setDisplayOption((DisplayOption) (displayOptionComboBox.getSelectedItem()));
     }
 
 
@@ -688,43 +684,7 @@ public class MainWindow extends JFrame {
     private void initComponents() {
         JPanel mainPanel = new JPanel();
         JPanel toolbarPanel = new JPanel();
-        JPanel chrSelectionPanel = new JPanel();
-        JPanel panel10 = new JPanel();
-        JLabel label3 = new JLabel();
-        JPanel panel9 = new JPanel();
-        JPanel panel2_5 = new JPanel();
-        trackPanel = new JPanel();
-        chrBox1 = new JComboBox();
-        chrBox2 = new JComboBox();
-        JideButton refreshButton = new JideButton();
-        JPanel displayOptionPanel = new JPanel();
-        JPanel panel14 = new JPanel();
-        JLabel label4 = new JLabel();
-        JPanel panel1 = new JPanel();
-        displayOptionComboBox = new JComboBox();
-        JPanel colorRangePanel = new JPanel();
-        JPanel panel11 = new JPanel();
-        JLabel colorRangeLabel = new JLabel();
-        colorRangeSlider = new RangeSlider();
-        JLabel resolutionLabel = new JLabel();
-        JPanel resolutionPanel = new JPanel();
-        JPanel panel12 = new JPanel();
-        JPanel panel2 = new JPanel();
-        resolutionSlider = new JSlider();
-        panel3 = new JPanel();
-        rulerPanel2 = new HiCRulerPanel(hic);
-        heatmapPanel = new HeatmapPanel(this, hic);
-        rulerPanel1 = new HiCRulerPanel(hic);
-        JPanel panel8 = new JPanel();
-        thumbnailPanel = new ThumbnailPanel(this, hic);
-        xPlotPanel = new JPanel();
-        yPlotPanel = new JPanel();
-        JMenuBar menuBar1 = new JMenuBar();
-        JMenu fileMenu = new JMenu();
-        JMenu viewMenu = new JMenu();
-        JMenuItem loadFromURL = new JMenuItem();
-        JMenuItem getEigenvector = new JMenuItem();
-        final JCheckBoxMenuItem viewDNAseI;
+
 
         //======== this ========
 
@@ -735,24 +695,30 @@ public class MainWindow extends JFrame {
         toolbarPanel.setBorder(null);
         toolbarPanel.setLayout(new GridLayout());
 
+
+        JPanel chrSelectionPanel = new JPanel();
         chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
         chrSelectionPanel.setMinimumSize(new Dimension(130, 57));
         chrSelectionPanel.setPreferredSize(new Dimension(130, 57));
         chrSelectionPanel.setLayout(new BorderLayout());
 
+        JPanel panel10 = new JPanel();
         panel10.setBackground(new Color(204, 204, 204));
         panel10.setLayout(new BorderLayout());
 
+        JLabel label3 = new JLabel();
         label3.setText("Chromosomes");
         label3.setHorizontalAlignment(SwingConstants.CENTER);
         panel10.add(label3, BorderLayout.CENTER);
 
         chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
 
+        JPanel panel9 = new JPanel();
         panel9.setBackground(new Color(238, 238, 238));
         panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
         //---- chrBox1 ----
+        chrBox1 = new JComboBox();
         chrBox1.setModel(new DefaultComboBoxModel(new String[]{
                 "All"
         }));
@@ -764,6 +730,7 @@ public class MainWindow extends JFrame {
         panel9.add(chrBox1);
 
         //---- chrBox2 ----
+        chrBox2 = new JComboBox();
         chrBox2.setModel(new DefaultComboBoxModel(new String[]{
                 "All"
         }));
@@ -775,6 +742,7 @@ public class MainWindow extends JFrame {
         panel9.add(chrBox2);
 
         //---- refreshButton ----
+        JideButton refreshButton = new JideButton();
         refreshButton.setIcon(new ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));
         refreshButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -788,6 +756,9 @@ public class MainWindow extends JFrame {
         toolbarPanel.add(chrSelectionPanel);
 
         //======== displayOptionPanel ========
+        JPanel displayOptionPanel = new JPanel();
+        JPanel panel1 = new JPanel();
+        displayOptionComboBox = new JComboBox();
 
         displayOptionPanel.setBackground(new Color(238, 238, 238));
         displayOptionPanel.setBorder(LineBorder.createGrayLineBorder());
@@ -795,10 +766,12 @@ public class MainWindow extends JFrame {
 
         //======== panel14 ========
 
+        JPanel panel14 = new JPanel();
         panel14.setBackground(new Color(204, 204, 204));
         panel14.setLayout(new BorderLayout());
 
         //---- label4 ----
+        JLabel label4 = new JLabel();
         label4.setText("Show");
         label4.setHorizontalAlignment(SwingConstants.CENTER);
         panel14.add(label4, BorderLayout.CENTER);
@@ -827,6 +800,9 @@ public class MainWindow extends JFrame {
 
         //======== colorRangePanel ========
 
+        JPanel colorRangePanel = new JPanel();
+        JLabel colorRangeLabel = new JLabel();
+        colorRangeSlider = new RangeSlider();
         colorRangePanel.setBorder(LineBorder.createGrayLineBorder());
         colorRangePanel.setMinimumSize(new Dimension(96, 70));
         colorRangePanel.setPreferredSize(new Dimension(202, 70));
@@ -835,6 +811,7 @@ public class MainWindow extends JFrame {
 
         //======== panel11 ========
 
+        JPanel panel11 = new JPanel();
         panel11.setBackground(new Color(204, 204, 204));
         panel11.setLayout(new BorderLayout());
 
@@ -884,11 +861,15 @@ public class MainWindow extends JFrame {
 
         //======== resolutionPanel ========
 
+        JLabel resolutionLabel = new JLabel();
+        JPanel resolutionPanel = new JPanel();
+
         resolutionPanel.setBorder(LineBorder.createGrayLineBorder());
         resolutionPanel.setLayout(new BorderLayout());
 
         //======== panel12 ========
 
+        JPanel panel12 = new JPanel();
         panel12.setBackground(new Color(204, 204, 204));
         panel12.setLayout(new BorderLayout());
 
@@ -902,9 +883,11 @@ public class MainWindow extends JFrame {
 
         //======== panel2 ========
 
+        JPanel panel2 = new JPanel();
         panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
         //---- resolutionSlider ----
+        resolutionSlider = new JSlider();
         resolutionSlider.setMaximum(8);
         resolutionSlider.setMajorTickSpacing(1);
         resolutionSlider.setPaintTicks(true);
@@ -955,57 +938,48 @@ public class MainWindow extends JFrame {
 
         mainPanel.add(toolbarPanel, BorderLayout.NORTH);
 
-        panel2_5.setLayout(new BorderLayout());
 
+
+        //======== panel3 ========
+
+        trackPanel = new TrackPanel(hic);
         trackPanel.setMaximumSize(new Dimension(4000, 50));
         trackPanel.setPreferredSize(new Dimension(1, 50));
         trackPanel.setMinimumSize(new Dimension(1, 50));
         trackPanel.setBorder(null);
         trackPanel.setVisible(false);
-        trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
 
 
-        eigenvectorPanel = new TrackPanel(hic);
-        eigenvectorPanel.setMaximumSize(new Dimension(4000, 50));
-        eigenvectorPanel.setPreferredSize(new Dimension(1, 50));
-        eigenvectorPanel.setMinimumSize(new Dimension(1, 50));
-        eigenvectorPanel.setBorder(null);
-        trackPanel.add(eigenvectorPanel);
 
-
-        try {
-            String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
-            Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
-
-            String testURL = "http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseGm06990RawRep1.bigWig";
-            java.util.List<Track> tracks = new ArrayList();
-            (new TrackLoader()).loadBWFile(new ResourceLocator(testURL),tracks, genome);
-
-           // eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
-            eigenvectorPanel.setTrack(tracks.get(0)); //    eigenvectorTrack); //
-            eigenvectorPanel.setGenome(genome);
-            trackPanel.setVisible(true);
-
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
-
-        panel2_5.add(trackPanel, BorderLayout.NORTH);
-
-        //======== panel3 ========
-
+        final JPanel panel3 = new JPanel();
         panel3.setLayout(new HiCLayout());
 
         //---- rulerPanel2 ----
+        rulerPanel2 = new HiCRulerPanel(hic);
         rulerPanel2.setMaximumSize(new Dimension(4000, 50));
         rulerPanel2.setMinimumSize(new Dimension(1, 50));
         rulerPanel2.setPreferredSize(new Dimension(1, 50));
         rulerPanel2.setBorder(null);
+
+        JPanel panel2_5 = new JPanel();
+        panel2_5.setLayout(new BorderLayout());
         panel2_5.add(rulerPanel2, BorderLayout.SOUTH);
+        panel2_5.add(trackPanel, BorderLayout.NORTH);
+
+
         panel3.add(panel2_5, BorderLayout.NORTH);
 
+
+        //---- rulerPanel1 ----
+        rulerPanel1 = new HiCRulerPanel(hic);
+        rulerPanel1.setMaximumSize(new Dimension(50, 4000));
+        rulerPanel1.setPreferredSize(new Dimension(50, 500));
+        rulerPanel1.setBorder(null);
+        rulerPanel1.setMinimumSize(new Dimension(50, 1));
+        panel3.add(rulerPanel1, BorderLayout.WEST);
+
         //---- heatmapPanel ----
+        heatmapPanel = new HeatmapPanel(this, hic);
         heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
         heatmapPanel.setMaximumSize(new Dimension(500, 500));
         heatmapPanel.setMinimumSize(new Dimension(500, 500));
@@ -1013,67 +987,68 @@ public class MainWindow extends JFrame {
         heatmapPanel.setBackground(new Color(238, 238, 238));
         panel3.add(heatmapPanel, BorderLayout.CENTER);
 
-        //---- rulerPanel1 ----
-        rulerPanel1.setMaximumSize(new Dimension(50, 4000));
-        rulerPanel1.setPreferredSize(new Dimension(50, 500));
-        rulerPanel1.setBorder(null);
-        rulerPanel1.setMinimumSize(new Dimension(50, 1));
-        panel3.add(rulerPanel1, BorderLayout.WEST);
 
         //======== panel8 ========
 
-        panel8.setMaximumSize(new Dimension(120, 100));
-        panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
-        panel8.setLayout(null);
+        JPanel rightSidePanel = new JPanel();
+        rightSidePanel.setMaximumSize(new Dimension(120, 100));
+        rightSidePanel.setBorder(new EmptyBorder(0, 10, 0, 0));
+        rightSidePanel.setLayout(null);
 
         //---- thumbnailPanel ----
+        thumbnailPanel = new ThumbnailPanel(this, hic);
         thumbnailPanel.setMaximumSize(new Dimension(100, 100));
         thumbnailPanel.setMinimumSize(new Dimension(100, 100));
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-        panel8.add(thumbnailPanel);
         thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
+        rightSidePanel.add(thumbnailPanel);
 
         //======== xPlotPanel ========
 
+        xPlotPanel = new JPanel();
         xPlotPanel.setPreferredSize(new Dimension(250, 100));
         xPlotPanel.setLayout(null);
 
-        panel8.add(xPlotPanel);
+        rightSidePanel.add(xPlotPanel);
         xPlotPanel.setBounds(10, 100, xPlotPanel.getPreferredSize().width, 228);
 
         //======== yPlotPanel ========
 
+        yPlotPanel = new JPanel();
         yPlotPanel.setPreferredSize(new Dimension(250, 100));
         yPlotPanel.setLayout(null);
 
-        panel8.add(yPlotPanel);
+        rightSidePanel.add(yPlotPanel);
         yPlotPanel.setBounds(10, 328, yPlotPanel.getPreferredSize().width, 228);
 
         // compute preferred size
         Dimension preferredSize = new Dimension();
-        for (int i = 0; i < panel8.getComponentCount(); i++) {
-            Rectangle bounds = panel8.getComponent(i).getBounds();
+        for (int i = 0; i < rightSidePanel.getComponentCount(); i++) {
+            Rectangle bounds = rightSidePanel.getComponent(i).getBounds();
             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
         }
-        Insets insets = panel8.getInsets();
+        Insets insets = rightSidePanel.getInsets();
         preferredSize.width += insets.right;
         preferredSize.height += insets.bottom;
-        panel8.setMinimumSize(preferredSize);
-        panel8.setPreferredSize(preferredSize);
+        rightSidePanel.setMinimumSize(preferredSize);
+        rightSidePanel.setPreferredSize(preferredSize);
 
 
-        panel3.add(panel8, BorderLayout.EAST);
+        panel3.add(rightSidePanel, BorderLayout.EAST);
 
         mainPanel.add(panel3, BorderLayout.CENTER);
 
         contentPane.add(mainPanel, BorderLayout.CENTER);
 
         //======== menuBar1 ========
+        JMenuBar menuBar1 = new JMenuBar();
+
         //======== fileMenu ========
-        fileMenu.setText("File");
+        JMenu fileMenu = new JMenu("File");
+
 
         //---- loadMenuItem ----
         JMenuItem loadMenuItem = new JMenuItem();
@@ -1086,6 +1061,10 @@ public class MainWindow extends JFrame {
         fileMenu.add(loadMenuItem);
 
         //---- loadFromURL ----
+        JMenuItem loadFromURL = new JMenuItem();
+        JMenuItem getEigenvector = new JMenuItem();
+        final JCheckBoxMenuItem viewDNAseI;
+
         loadFromURL.setText("Load from URL ...");
         loadFromURL.setName("loadFromURL");
         loadFromURL.addActionListener(new ActionListener() {
@@ -1150,7 +1129,8 @@ public class MainWindow extends JFrame {
 
         //======== viewMenu ========
 
-        viewMenu.setText("View");
+        JMenu viewMenu = new JMenu("View");
+
         viewEigenvector = new JCheckBoxMenuItem("Eigenvector track");
         viewEigenvector.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -1191,9 +1171,8 @@ public class MainWindow extends JFrame {
     private JComboBox displayOptionComboBox;
     private RangeSlider colorRangeSlider;
     private JSlider resolutionSlider;
-    private JPanel panel3;
-    private JPanel trackPanel;
-    private TrackPanel eigenvectorPanel;
+
+    private TrackPanel trackPanel;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
@@ -1212,6 +1191,7 @@ public class MainWindow extends JFrame {
         DisplayOption(String value) {
             this.value = value;
         }
+
         public String toString() {
             return value;
         }

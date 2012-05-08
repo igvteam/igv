@@ -17,7 +17,7 @@ public class HiC {
 
     MainWindow.DisplayOption displayOption;
     Dataset dataset;
-    Context xContext;
+    public Context xContext;
     Context yContext;
     Matrix matrix;
     MatrixZoomData zd;
