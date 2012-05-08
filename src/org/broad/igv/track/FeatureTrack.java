@@ -17,6 +17,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -694,7 +695,7 @@ public class FeatureTrack extends AbstractTrack {
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
 
 
-        FeatureRenderer renderer =  getRenderer();
+        FeatureRenderer renderer = getRenderer();
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
@@ -752,7 +753,7 @@ public class FeatureTrack extends AbstractTrack {
                     featuresLoading = true;
 
                     int maxEnd = end;
-                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     if (genome != null) {
                         Chromosome c = genome.getChromosome(chr);
                         if (c != null) maxEnd = Math.max(c.getLength(), end);
@@ -828,7 +829,7 @@ public class FeatureTrack extends AbstractTrack {
             if (f == null) {
                 int binSize = source.getFeatureWindowSize();
 
-                final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                final Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 if (forward == true) {
                     // Forward
                     int nextStart = packedFeatures.getEnd();

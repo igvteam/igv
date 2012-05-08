@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -528,7 +529,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 RenderContext context, IGVFeature gene, double locationScale,
                                 int yOffset, Exon exon, Rectangle trackRectangle) {
 
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         AminoAcidSequence aaSequence = exon.getAminoAcidSequence(genome);
         if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
             Rectangle aaRect = new Rectangle(pStart, yOffset - blockHeight / 2, 1, blockHeight);

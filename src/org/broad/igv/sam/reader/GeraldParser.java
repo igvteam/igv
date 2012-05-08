@@ -71,7 +71,7 @@ public class GeraldParser implements AlignmentParser {
 
     public GeraldParser() {
         //this.genome = genome;
-        //   genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        //   genome = GenomeManager.getInstance().getCurrentGenome();
     }
 
     public GeraldAlignment readNextRecord(AsciiLineReader reader) {

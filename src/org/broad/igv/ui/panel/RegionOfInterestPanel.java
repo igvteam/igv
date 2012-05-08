@@ -18,6 +18,7 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -81,7 +82,7 @@ public class RegionOfInterestPanel extends JPanel {
 
             // This is ugly, but neccessary the way the "whole genome" is treated as another chromosome
             if (frame.getChrName().equals(Globals.CHR_ALL)) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 regionStart = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionStart);
                 regionEnd = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionEnd);
             }
@@ -165,7 +166,7 @@ public class RegionOfInterestPanel extends JPanel {
                     }
 
                     public void run() {
-                        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
                         IGV.copySequenceToClipboard(genome, roi.getChr(), roi.getStart(), roi.getEnd());
                     }
                 });

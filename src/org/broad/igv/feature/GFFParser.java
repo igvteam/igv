@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -191,9 +192,8 @@ public class GFFParser implements FeatureParser {
         int lineNumber = 0;
         try {
 
-            if (IGV.hasInstance() && genome == null) {
-                genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            }
+            genome = GenomeManager.getInstance().getCurrentGenome();
+
             Set<String> featuresToHide = new HashSet();
 
             while ((line = reader.readLine()) != null) {

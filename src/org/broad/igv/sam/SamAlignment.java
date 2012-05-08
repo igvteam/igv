@@ -21,6 +21,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -108,7 +109,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.record = record;
 
         String refName = record.getReferenceName();
-        Genome genome = Globals.isHeadless() ? null : IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.

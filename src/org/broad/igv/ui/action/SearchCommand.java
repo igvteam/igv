@@ -26,6 +26,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -73,8 +74,7 @@ public class SearchCommand implements Command {
 
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
-        this(referenceFrame, searchString,
-                IGV.getInstance().getGenomeManager().getCurrentGenome());
+        this(referenceFrame, searchString, GenomeManager.getInstance().getCurrentGenome());
     }
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString, boolean recordHistory) {

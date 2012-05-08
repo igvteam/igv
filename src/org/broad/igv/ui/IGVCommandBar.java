@@ -312,7 +312,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 serverSideItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
             } else {
 
-                final GenomeManager genomeManager = IGV.getInstance().getGenomeManager();
+                final GenomeManager genomeManager = GenomeManager.getInstance();
                 try {
                     serverSideItemList = genomeManager.getServerGenomeArchiveList(excludedArchivesUrls);
                 } catch (Exception e) {
@@ -347,7 +347,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     void updateChromosomeDropdown() {
 
-        final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) return;
 
         List<String> tmp = new LinkedList(genome.getChromosomeNames());
@@ -591,7 +591,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
         // See if this genome is already loaded
-        String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        String currentGenomeId = GenomeManager.getInstance().getGenomeId();
         if (currentGenomeId != null && genomeId != null && genomeId.equalsIgnoreCase(currentGenomeId)) {
             return;
         }
@@ -990,7 +990,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
             IGV.getInstance().setGeneList(null);
         }

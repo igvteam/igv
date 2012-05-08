@@ -26,6 +26,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
@@ -186,7 +187,7 @@ public class FeatureCollectionSource implements FeatureSource {
         float[] values = new float[nBins];
         Arrays.fill(values, 0);
 
-        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         double step = ((double) currentGenome.getLength() / 1000) / nBins;
         for (int i = 0; i < nBins; i++) {
             starts[i] = (int) (i * step);

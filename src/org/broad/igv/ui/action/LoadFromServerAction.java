@@ -25,6 +25,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.UIConstants;
@@ -70,7 +71,7 @@ public class LoadFromServerAction extends MenuAction {
         mainFrame.setStatusBarMessage("Loading ...");
 
         String urlString = PreferenceManager.getInstance().getDataServerURL();
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genomeId = GenomeManager.getInstance().getGenomeId();
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         try {
             InputStream is = null;

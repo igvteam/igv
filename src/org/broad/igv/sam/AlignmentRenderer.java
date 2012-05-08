@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
@@ -639,7 +640,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         double origin = context.getOrigin();
         String chr = context.getChr();
         //String genomeId = context.getGenomeId();
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();

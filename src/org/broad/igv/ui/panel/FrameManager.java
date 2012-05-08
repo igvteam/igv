@@ -18,6 +18,7 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
@@ -188,7 +189,7 @@ public class FrameManager {
             } else {
                 locus = null;
                 if (IGV.hasInstance()) {
-                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     if (genome != null) {
                         Chromosome chromsome = genome.getChromosome(searchString);
                         if (chromsome != null) {

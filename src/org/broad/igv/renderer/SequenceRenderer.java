@@ -28,6 +28,7 @@ import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.AminoAcidSequence;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -104,7 +105,7 @@ public class SequenceRenderer {
             double origin = context.getOrigin();
             String chr = context.getChr();
             //String genomeId = context.getGenomeId();
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             //The location of the first base that is loaded, which may include padding around what's visible
             int start = Math.max(0, (int) origin - 1);

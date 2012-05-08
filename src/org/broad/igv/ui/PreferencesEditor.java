@@ -26,6 +26,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
@@ -2301,7 +2302,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void clearGenomeCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearGenomeCacheButtonActionPerformed
-        IGV.getInstance().getGenomeManager().clearGenomeCache();
+        GenomeManager.getInstance().clearGenomeCache();
         JOptionPane.showMessageDialog(this, "<html>Cached genomes have been removed.");
     }
 

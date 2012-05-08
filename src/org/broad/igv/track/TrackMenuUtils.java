@@ -18,6 +18,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.HeatmapScaleDialog;
@@ -913,7 +914,7 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 IGV.copySequenceToClipboard(genome, f.getChr(), f.getStart(), f.getEnd());
             }
         });

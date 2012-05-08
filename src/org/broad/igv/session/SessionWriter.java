@@ -21,6 +21,7 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
@@ -109,7 +110,7 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.VERSION.getText(), String.valueOf(CURRENT_VERSION));
 
-            String genome = IGV.getInstance().getGenomeManager().getGenomeId();
+            String genome = GenomeManager.getInstance().getGenomeId();
             if (genome != null) {
                 globalElement.setAttribute(SessionAttribute.GENOME.getText(), genome);
             }

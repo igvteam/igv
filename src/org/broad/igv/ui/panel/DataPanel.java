@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
@@ -117,7 +118,7 @@ public class DataPanel extends JComponent implements Paintable {
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle damageRect = clipBounds == null ? getVisibleRect() : clipBounds.intersection(getVisibleRect());
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
-            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+            String genomeId = GenomeManager.getInstance().getGenomeId();
 
             context = new RenderContextImpl(genomeId, this, graphics2D, frame, this.getVisibleRect());
 
@@ -219,7 +220,7 @@ public class DataPanel extends JComponent implements Paintable {
         RenderContext context = null;
         try {
 
-            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+            String genomeId = GenomeManager.getInstance().getGenomeId();
 
             context = new RenderContextImpl(genomeId, null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());

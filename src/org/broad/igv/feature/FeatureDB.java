@@ -121,7 +121,7 @@ public class FeatureDB {
     /*
         String key = name.toUpperCase();
 
-        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
             NamedFeature currentFeature = featureMap.get(key);
             if (currentFeature == null) {
@@ -278,7 +278,7 @@ public class FeatureDB {
         String nm = name.toUpperCase();
 
         if (!Globals.isHeadless() && currentGenome == null) {
-            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            currentGenome = GenomeManager.getInstance().getCurrentGenome();
         }
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
@@ -327,7 +327,7 @@ public class FeatureDB {
     public static Map<Integer, BasicFeature> getMutationNT(String name, int startPosition, String refNT, Genome currentGenome) {
         String nm = name.toUpperCase();
         if (!Globals.isHeadless() && currentGenome == null) {
-            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            currentGenome = GenomeManager.getInstance().getCurrentGenome();
         }
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
