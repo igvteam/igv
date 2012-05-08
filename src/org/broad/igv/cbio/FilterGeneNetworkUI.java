@@ -539,100 +539,115 @@ public class FilterGeneNetworkUI extends JDialog {
                 thresholds.setBorder(new EmptyBorder(12, 12, 12, 12));
                 thresholds.setPreferredSize(new Dimension(550, 196));
                 thresholds.setMinimumSize(new Dimension(550, 196));
-                thresholds.setLayout(new BorderLayout());
+                thresholds.setLayout(null);
 
                 //======== contentPanel ========
                 {
-                    contentPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout) contentPanel.getLayout()).columnWidths = new int[]{0, 0, 0, 0, 0, 0};
-                    ((GridBagLayout) contentPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0};
-                    ((GridBagLayout) contentPanel.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 1.0, 1.0, 1.0E-4};
-                    ((GridBagLayout) contentPanel.getLayout()).rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0E-4};
+                    contentPanel.setLayout(null);
 
                     //---- label1 ----
                     label1.setText("Mutation:");
                     label1.setHorizontalAlignment(SwingConstants.RIGHT);
                     label1.setLabelFor(mutInput);
-                    contentPanel.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(label1);
+                    label1.setBounds(new Rectangle(new Point(50, 85), label1.getPreferredSize()));
 
                     //---- mutInput ----
                     mutInput.setText("1");
                     mutInput.setAutoscrolls(false);
                     mutInput.setMinimumSize(new Dimension(34, 28));
                     mutInput.setPreferredSize(new Dimension(45, 28));
-                    contentPanel.add(mutInput, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(mutInput);
+                    mutInput.setBounds(new Rectangle(new Point(130, 80), mutInput.getPreferredSize()));
 
                     //---- label2 ----
                     label2.setText("Amplification:");
                     label2.setHorizontalAlignment(SwingConstants.RIGHT);
                     label2.setLabelFor(ampInput);
-                    contentPanel.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(label2);
+                    label2.setBounds(new Rectangle(new Point(25, 120), label2.getPreferredSize()));
 
                     //---- ampInput ----
                     ampInput.setText("0.7");
                     ampInput.setMinimumSize(new Dimension(34, 28));
                     ampInput.setPreferredSize(new Dimension(45, 28));
-                    contentPanel.add(ampInput, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(ampInput);
+                    ampInput.setBounds(new Rectangle(new Point(130, 110), ampInput.getPreferredSize()));
 
                     //---- label3 ----
                     label3.setText("Deletion:");
                     label3.setHorizontalAlignment(SwingConstants.RIGHT);
                     label3.setLabelFor(delInput);
-                    contentPanel.add(label3, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(label3);
+                    label3.setBounds(new Rectangle(new Point(60, 140), label3.getPreferredSize()));
 
                     //---- delInput ----
                     delInput.setText("0.7");
                     delInput.setMinimumSize(new Dimension(34, 28));
                     delInput.setPreferredSize(new Dimension(45, 28));
                     delInput.setMaximumSize(new Dimension(50, 2147483647));
-                    contentPanel.add(delInput, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(delInput);
+                    delInput.setBounds(new Rectangle(new Point(320, 110), delInput.getPreferredSize()));
 
                     //---- label4 ----
                     label4.setText("Expression Up:");
                     label4.setHorizontalAlignment(SwingConstants.RIGHT);
                     label4.setLabelFor(expUpInput);
-                    contentPanel.add(label4, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(label4);
+                    label4.setBounds(new Rectangle(new Point(225, 115), label4.getPreferredSize()));
 
                     //---- expUpInput ----
                     expUpInput.setText("0.1");
                     expUpInput.setMinimumSize(new Dimension(34, 28));
                     expUpInput.setPreferredSize(new Dimension(35, 28));
-                    contentPanel.add(expUpInput, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(expUpInput);
+                    expUpInput.setBounds(130, 135, 45, expUpInput.getPreferredSize().height);
 
                     //---- label7 ----
                     label7.setText("Expression Down:");
                     label7.setHorizontalAlignment(SwingConstants.RIGHT);
                     label7.setLabelFor(expDownInput);
-                    contentPanel.add(label7, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(label7);
+                    label7.setBounds(new Rectangle(new Point(205, 140), label7.getPreferredSize()));
 
                     //---- expDownInput ----
                     expDownInput.setText("0.1");
                     expDownInput.setPreferredSize(new Dimension(45, 28));
                     expDownInput.setMinimumSize(new Dimension(34, 28));
                     expDownInput.setMaximumSize(new Dimension(50, 2147483647));
-                    contentPanel.add(expDownInput, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 5), 0, 0));
+                    contentPanel.add(expDownInput);
+                    expDownInput.setBounds(new Rectangle(new Point(320, 135), expDownInput.getPreferredSize()));
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                            Rectangle bounds = contentPanel.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = contentPanel.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        contentPanel.setMinimumSize(preferredSize);
+                        contentPanel.setPreferredSize(preferredSize);
+                    }
                 }
-                thresholds.add(contentPanel, BorderLayout.CENTER);
+                thresholds.add(contentPanel);
+                contentPanel.setBounds(12, 12, 503, 276);
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for (int i = 0; i < thresholds.getComponentCount(); i++) {
+                        Rectangle bounds = thresholds.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = thresholds.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    thresholds.setMinimumSize(preferredSize);
+                    thresholds.setPreferredSize(preferredSize);
+                }
             }
             tabbedPane.addTab("Thresholds", thresholds);
 
