@@ -5,8 +5,12 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -56,5 +60,24 @@ public class AsciiToBinConverter {
         }
 
 
+    }
+    
+    public static void convertBack(String inputPath, String outputFile) throws IOException {
+        
+        PrintWriter pw = null;
+        try {
+            File f = new File(outputFile);
+            FileWriter fw = new FileWriter (f);
+            pw = new PrintWriter (fw);
+            BinPairIterator iter = new BinPairIterator(inputPath);
+            while (iter.hasNext()) {
+                AlignmentPair pair = iter.next();
+                pw.println("R1\t" + pair.getChr1() + "\t" + pair.getPos1() + "\tS1\tR2\t" +pair.getChr2() + "\t" + pair.getPos2() +"\t" + "S2");
+
+            }
+        }
+        finally {
+            pw.close();
+        }
     }
 }
