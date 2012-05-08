@@ -33,13 +33,12 @@ public class TrackPanel extends JPanel {
         this.hic = hiC;
         tracks = new ArrayList();
         setAutoscrolls(true);
-        test();
     }
 
     public void addTrack(Track track) {
-        if (track != null && !tracks.contains(track)) {
+       // if (track != null && !tracks.contains(track)) {
             tracks.add(track);
-        }
+       // }
     }
 
     /**
@@ -58,6 +57,22 @@ public class TrackPanel extends JPanel {
             h += t.getHeight();
         }
         return h;
+    }
+
+    /**
+     * If the <code>preferredSize</code> has been set to a
+     * non-<code>null</code> value just returns it.
+     * If the UI delegate's <code>getPreferredSize</code>
+     * method returns a non <code>null</code> value then return that;
+     * otherwise defer to the component's layout manager.
+     *
+     * @return the value of the <code>preferredSize</code> property
+     * @see #setPreferredSize
+     * @see javax.swing.plaf.ComponentUI
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(500, getHeight());
     }
 
     //   public RenderContext(String genomeId, JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {

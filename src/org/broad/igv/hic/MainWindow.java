@@ -16,31 +16,41 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
+import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.TrackPanel;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.*;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
 import slider.RangeSlider;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.*;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author James Robinson
@@ -939,16 +949,7 @@ public class MainWindow extends JFrame {
         mainPanel.add(toolbarPanel, BorderLayout.NORTH);
 
 
-
         //======== panel3 ========
-
-        trackPanel = new TrackPanel(hic);
-        trackPanel.setMaximumSize(new Dimension(4000, 50));
-        trackPanel.setPreferredSize(new Dimension(1, 50));
-        trackPanel.setMinimumSize(new Dimension(1, 50));
-        trackPanel.setBorder(null);
-        trackPanel.setVisible(false);
-
 
 
         final JPanel panel3 = new JPanel();
@@ -965,9 +966,23 @@ public class MainWindow extends JFrame {
         panel2_5.setLayout(new BorderLayout());
         panel2_5.add(rulerPanel2, BorderLayout.SOUTH);
 
-        trackPanelScrollpane = new JScrollPane(trackPanel);
-        panel2_5.add(trackPanelScrollpane, BorderLayout.NORTH);
+        trackPanel = new TrackPanel(hic);
+        trackPanel.setMaximumSize(new Dimension(4000, 50));
+        trackPanel.setPreferredSize(new Dimension(1, 50));
+        trackPanel.setMinimumSize(new Dimension(1, 50));
+        trackPanel.setBorder(null);
 
+//        trackPanelScrollpane = new JScrollPane();
+//        trackPanelScrollpane.getViewport().add(trackPanel);
+//        trackPanelScrollpane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+//        trackPanelScrollpane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+//        trackPanelScrollpane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+//        trackPanelScrollpane.setBackground(new java.awt.Color(237, 237, 237));
+//        trackPanelScrollpane.setVisible(false);
+//        panel2_5.add(trackPanelScrollpane, BorderLayout.NORTH);
+//
+        trackPanel.setVisible(false);
+        panel2_5.add(trackPanel, BorderLayout.NORTH);
 
         panel3.add(panel2_5, BorderLayout.NORTH);
 
@@ -1133,24 +1148,27 @@ public class MainWindow extends JFrame {
 
         JMenu viewMenu = new JMenu("View");
 
-        viewEigenvector = new JCheckBoxMenuItem("Eigenvector track");
+        viewEigenvector = new JCheckBoxMenuItem("Track Panel");
         viewEigenvector.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                if(viewEigenvector.isSelected()) {
-                    if(eigenvectorTrack == null) {
+                if (viewEigenvector.isSelected()) {
+                    if (eigenvectorTrack == null) {
                         eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
                     }
                     trackPanel.addTrack(eigenvectorTrack);
-                    trackPanelScrollpane.invalidate();
+                    trackPanel.setVisible(true);
                     updateEigenvectorTrack();
-                }
-                else {
+                } else {
+                    trackPanel.setVisible(false);
                 }
             }
         });
         viewEigenvector.setEnabled(false);
         viewMenu.add(viewEigenvector);
 
+        JMenuItem loadItem = new JMenuItem("Load...");
+        loadItem.addActionListener(new LoadTrackAction());
+        viewMenu.add(loadItem);
 
         menuBar1.add(viewMenu);
         contentPane.add(menuBar1, BorderLayout.NORTH);
@@ -1169,8 +1187,8 @@ public class MainWindow extends JFrame {
     private RangeSlider colorRangeSlider;
     private JSlider resolutionSlider;
 
-    private JScrollPane trackPanelScrollpane;
-    private TrackPanel trackPanel;
+    //private JScrollPane trackPanelScrollpane;
+    TrackPanel trackPanel;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
@@ -1193,6 +1211,228 @@ public class MainWindow extends JFrame {
         public String toString() {
             return value;
         }
+
+    }
+
+
+    class LoadTrackAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+
+            String urlString = PreferenceManager.getInstance().getDataServerURL();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            if (genome == null) {
+                String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
+                try {
+                    genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+            }
+            String genomeId = genome.getId();
+
+            String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
+            try {
+                InputStream is = null;
+                LinkedHashSet<String> nodeURLs = null;
+                try {
+                    is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                    nodeURLs = getResourceUrls(bufferedReader);
+                } catch (IOException e) {
+                    MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
+                    //log.error("Error loading genome registry file", e);
+                    return;
+
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            // log.error("Error closing input stream", e);
+                        }
+                    }
+                }
+
+                if (nodeURLs == null || nodeURLs.isEmpty()) {
+                    MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
+                } else {
+
+
+                    List<ResourceLocator> locators = loadNodes(nodeURLs);
+                    if (locators != null) {
+                        for (ResourceLocator locator : locators) {
+                            java.util.List<Track> tracks = (new TrackLoader()).load(locator, genome);
+                            for (Track track : tracks) {
+                                track.setHeight(40);
+                                trackPanel.addTrack(tracks.get(0));
+                            }
+                        }
+                    }
+                }
+
+
+            } finally {
+
+            }
+        }
+
+
+        public List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
+
+            if ((xmlUrls == null) || xmlUrls.isEmpty()) {
+                // log.error("No datasets are available from this server for the current genome (");
+                return null;
+            }
+
+            StringBuffer buffer = new StringBuffer();
+            boolean xmlParsingError = false;
+            try {
+
+                buffer.append("<html>The following urls could not be processed due to load failures:<br>");
+
+                Document masterDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+                Element rootNode = masterDocument.createElement("Global");
+                rootNode.setAttribute("name", "Available Datasets");
+                rootNode.setAttribute("version", "1");
+
+                masterDocument.appendChild(rootNode);
+
+                // Merge all documents into one xml document for processing
+                for (String url : xmlUrls) {
+
+                    // Skip urls that have previously failed due to authorization
+                    //if (failedURLs.contains(url)) {
+                    //    continue;
+                    // }
+
+                    try {
+                        InputStream is = null;
+                        Document xmlDocument = null;
+                        try {
+                            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
+                            xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
+                        } catch (java.net.SocketTimeoutException e) {
+                            xmlParsingError = true;
+                            buffer.append("Error. Connection time out reading: " + url.toString());
+                            continue;
+                        } catch (SAXParseException e) {
+                            //log.error("Invalid XML resource: " + url, e);
+
+                            xmlParsingError = true;
+                            buffer.append(url);
+                            buffer.append("<br><i>");
+                            if (url.toString().contains("iwww.broad")) {
+                                buffer.append("File could not be loaded from the Broad Intranet");
+                            } else {
+                                buffer.append(e.getMessage());
+                            }
+                            buffer.append("");
+                            continue;
+                        } catch (FileNotFoundException e) {
+
+                            String message = "Could not find file represented by " + url.toString();
+                            //  log.error(message, e);
+
+                            xmlParsingError = true;
+                            buffer.append(url);
+                            buffer.append("\t  [");
+                            buffer.append(e.getMessage());
+                            buffer.append("]\n");
+                            continue;
+                        } catch (IOException e) {
+                            String msg = "Error accessing dataset list: " + e.toString();
+
+                            MessageUtils.showMessage(msg);
+                            // log.error("Error accessing URL: " + url, e);
+                        } finally {
+                            if (is != null) is.close();
+                        }
+
+                        if (xmlDocument != null) {
+                            NodeList elements = xmlDocument.getElementsByTagName("Global");
+                            Element global = (Element) elements.item(0);
+                            NodeList nodes = global.getChildNodes();
+                            Element categoryNode = masterDocument.createElement("Category");
+                            categoryNode.setAttribute("name", global.getAttribute("name"));
+                            categoryNode.setAttribute("hyperlink", global.getAttribute("hyperlink"));
+                            rootNode.appendChild(categoryNode);
+                            int size = nodes.getLength();
+                            for (int i = 0; i < size; i++) {
+                                categoryNode.appendChild(masterDocument.importNode(nodes.item(i), true));
+                            }
+                        }
+                    } catch (Exception e) {
+                        String message = "Cannot create an XML Document from " + url.toString();
+                        //log.error(message, e);
+                        continue;
+                    }
+
+                }
+                if (xmlParsingError) {
+                    JOptionPane.showMessageDialog(MainWindow.this, buffer.toString());
+                }
+
+
+                /**
+                 * Resource Tree
+                 */
+                LinkedHashSet<ResourceLocator> selectedLocators =
+                        ResourceTree.getInstance().showResourceTreeDialog(MainWindow.this,
+                                masterDocument, "Available Datasets");
+
+                List<ResourceLocator> newLoadList = new ArrayList();
+
+                if (selectedLocators != null) {
+                    for (ResourceLocator locator : selectedLocators) {
+
+                        // Don't reload data that is already loaded
+                        // if (IGV.getInstance().getDataResourceLocators().contains(locator)) {
+                        //    continue;
+                        //}
+
+                        newLoadList.add(locator);
+                    }
+                }
+
+                return newLoadList;
+
+            } catch (Exception e) {
+                // log.error("Could not load information from server", e);
+                return null;
+            } finally {
+                if (xmlParsingError) {
+                    //    log.error(buffer.toString());
+                }
+            }
+        }
+
+        /**
+         * Returns the complete list of URLs from the master registry file.
+         *
+         * @param bufferedReader
+         * @return
+         * @throws java.net.MalformedURLException
+         * @throws java.io.IOException
+         */
+        private LinkedHashSet<String> getResourceUrls(BufferedReader bufferedReader)
+                throws IOException {
+
+            LinkedHashSet<String> xmlFileUrls = new LinkedHashSet();
+            while (true) {
+                String xmlFileUrl = bufferedReader.readLine();
+                if ((xmlFileUrl == null) || (xmlFileUrl.trim().length() == 0)) {
+                    break;
+                }
+                xmlFileUrl = xmlFileUrl.trim();
+                xmlFileUrls.add(xmlFileUrl);
+            }
+
+            return xmlFileUrls;
+        }
+
 
     }
 
