@@ -507,39 +507,6 @@ public class FilterGeneNetworkUI extends JDialog {
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 0), 0, 0));
 
-                //======== scrollPane1 ========
-                {
-
-                    //---- geneTable ----
-                    geneTable.setAutoCreateRowSorter(true);
-                    scrollPane1.setViewportView(geneTable);
-                }
-                dialogPane.add(scrollPane1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
-                //======== panel3 ========
-                {
-                    panel3.setLayout(null);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel3.getComponentCount(); i++) {
-                            Rectangle bounds = panel3.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel3.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel3.setMinimumSize(preferredSize);
-                        panel3.setPreferredSize(preferredSize);
-                    }
-                }
-                dialogPane.add(panel3, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
-
                 //======== buttonBar ========
                 {
                     buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));

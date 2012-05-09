@@ -36,7 +36,7 @@ import java.io.IOException;
  * @author jrobinso
  * @date Aug 5, 2010
  */
-public abstract class UCSCCodec extends AsciiFeatureCodec {
+public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> {
 
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
     protected boolean gffTags = false;

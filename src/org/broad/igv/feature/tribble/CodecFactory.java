@@ -23,6 +23,8 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.variant.vcf.VCFVariant;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.util.BlockCompressedInputStream;
 import org.broad.tribble.util.SeekableStreamFactory;
@@ -105,7 +107,7 @@ public class CodecFactory {
      * @param path Path to the VCF file.  Can be a file path, or URL
      * @return
      */
-    private static FeatureCodec getVCFCodec(String path) {
+    private static AsciiFeatureCodec getVCFCodec(String path) {
 
         BufferedReader reader = null;
 

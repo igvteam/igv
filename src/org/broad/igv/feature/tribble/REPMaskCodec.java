@@ -57,7 +57,7 @@ import java.util.Map;
  * 15 repLeft	0	int(11)	-#bases after match (if strand is +) or start (if strand is -) in repeat sequence
  * 16 id	1	char(1)	First digit of id field in RepeatMasker .out file. Best ignored.
  */
-public class REPMaskCodec extends AsciiFeatureCodec {
+public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
 
     FeatureFileHeader header;
     Genome genome;

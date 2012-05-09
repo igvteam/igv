@@ -55,7 +55,7 @@ import java.util.Map;
  * Parent can *only* be used to indicate a partof
  * relationship.
  */
-public class GFFCodec extends AsciiFeatureCodec {
+public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     private static Logger log = Logger.getLogger(GFFCodec.class);
 

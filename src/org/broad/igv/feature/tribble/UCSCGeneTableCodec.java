@@ -14,7 +14,7 @@ import java.util.List;
  * @author Jim Robinson
  * @date 11/19/11
  */
-public class UCSCGeneTableCodec extends UCSCCodec {
+public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
 
     private int nameColumn = 0;
     private int idColumn = 1;
@@ -72,7 +72,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
      * @return Return the Feature encoded by the line,  or null if the line does not represent a feature (e.g. is
      *         a comment)
      */
-    public Feature decode(String line) {
+    public BasicFeature decode(String line) {
         if (line.startsWith("#")) {
             //Header line
             readHeaderLine(line);

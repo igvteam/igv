@@ -53,19 +53,20 @@ import org.broad.tribble.Feature;
  * 20. qStarts - Comma-separated list of starting positions of each block in query
  * 21. tStarts - Comma-separated list of starting positions of each block in target
  */
-public class PSLCodec extends UCSCCodec {
+public class PSLCodec extends UCSCCodec<BasicFeature> {
 
     Genome genome;
 
-
-    public PSLCodec() {
+    public PSLCodec(){
+        this(null);
     }
 
     public PSLCodec(Genome genome) {
+        super(BasicFeature.class);
         this.genome = genome;
     }
 
-    public Feature decode(String line) {
+    public BasicFeature decode(String line) {
 
         BasicFeature f = null;
         try {

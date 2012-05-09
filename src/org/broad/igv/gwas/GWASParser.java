@@ -122,6 +122,7 @@ public class GWASParser {
 
         boolean hitFound = false;
         int cacheSize = gData.getDescriptionCache().getMaxSize();
+        int rowCounter = 0;
 
         try {
             fs = new FileInputStream(locator.getPath());
@@ -131,11 +132,11 @@ public class GWASParser {
             // Parse header line
             String headerLine = reader.readLine();
             if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", reader.getCurrentLineNumber(), nextLine);
+                throw new ParserException("Error while parsing header line.", 0, nextLine);
 
             gData.getDescriptionCache().setHeaderTokens(headerLine);
 
-            int rowCounter = 0;
+
             // Number of lines to cache after the hit (tries to estimate that half of the cache will be filled with data from data before the query data point, and half with data after the query data point
             int cacheAfter = cacheSize / 2;
             int cacheCounter = 0;
@@ -162,7 +163,7 @@ public class GWASParser {
 
 
                             } catch (NumberFormatException e) {
-                                throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                                throw new ParserException("Column " + pCol + " must be a numeric value.", rowCounter, nextLine);
                             }
 
 
@@ -174,7 +175,7 @@ public class GWASParser {
                             try {
                                 start = Integer.parseInt(tokens[locationCol].trim());
                             } catch (NumberFormatException e) {
-                                throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                                throw new ParserException("Column " + locationCol + " must be a numeric value.", rowCounter, nextLine);
                             }
 
                             // See if chr and nucleotide position match to our query data point
@@ -204,8 +205,8 @@ public class GWASParser {
                 )
 
         {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && rowCounter != 0) {
+                throw new ParserException(e.getMessage(), e, rowCounter, nextLine);
             } else {
                 throw new RuntimeException(e);
             }
@@ -227,6 +228,7 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
+        int rowCounter = 0;
 
         try {
             fs = new FileInputStream(locator.getPath());
@@ -237,11 +239,10 @@ public class GWASParser {
             // Parse header line
             String headerLine = reader.readLine();
             if (!parseHeader(headerLine))
-                throw new ParserException("Error while parsing header line.", reader.getCurrentLineNumber(), nextLine);
+                throw new ParserException("Error while parsing header line.", 0, nextLine);
 
             GWASData gData = new GWASData();
 
-            int rowCounter = 0;
             int indexCounter = 0;
             int addedValuesCounter = 0;
 
@@ -263,7 +264,7 @@ public class GWASParser {
                     try {
                         start = Integer.parseInt(tokens[locationCol].trim());
                     } catch (NumberFormatException e) {
-                        throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                        throw new ParserException("Column " + locationCol + " must be a numeric value.", rowCounter, nextLine);
                     }
 
                     // Check if the p-value is NA
@@ -279,7 +280,7 @@ public class GWASParser {
                             p = -log10(p);
 
                         } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + pCol + " must be a positive numeric value. Found " + tokens[pCol], reader.getCurrentLineNumber(), nextLine);
+                            throw new ParserException("Column " + pCol + " must be a positive numeric value. Found " + tokens[pCol], rowCounter, nextLine);
                         }
 
 
@@ -307,8 +308,8 @@ public class GWASParser {
             return gData;
 
         } catch (Exception e) {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && rowCounter != 0) {
+                throw new ParserException(e.getMessage(), e, rowCounter, nextLine);
             } else {
                 throw new RuntimeException(e);
             }
