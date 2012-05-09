@@ -156,7 +156,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             return null;
         }
 
-        String[] tokens = Globals.tabPattern.split(line);
+        String[] tokens = Globals.tabPattern.split(line, -1);
         int nTokens = tokens.length;
 
         // GFF files have 9 tokens

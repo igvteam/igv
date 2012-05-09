@@ -135,7 +135,7 @@ public class ProbeToLocusMap {
     public void loadMapping(AsciiLineReader bufReader, Map<String, String[]> map) throws IOException {
         String line;
         while ((line = bufReader.readLine()) != null) {
-            String[] result = Globals.tabPattern.split(line);
+            String[] result = Globals.tabPattern.split(line, -1);
             int nTokens = result.length;
             if (nTokens != 2) {
                 continue;

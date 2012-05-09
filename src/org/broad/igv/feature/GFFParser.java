@@ -231,7 +231,7 @@ public class GFFParser implements FeatureParser {
                     continue;
                 }
 
-                String[] tokens = Globals.tabPattern.split(line);
+                String[] tokens = Globals.tabPattern.split(line, -1);
                 int nTokens = tokens.length;
 
                 // GFF files have 9 tokens
@@ -443,7 +443,7 @@ public class GFFParser implements FeatureParser {
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
 
                 // GFF files have 9 columns
                 String type = tokens[2];
@@ -468,8 +468,7 @@ public class GFFParser implements FeatureParser {
                     pw.println(nextLine);
                 }
             } else {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
-                int nTokens = tokens.length;
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
                 String type = tokens[2];
                 if (geneParts.contains(type)) {
                     type = "gene";

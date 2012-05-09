@@ -75,7 +75,7 @@ public class DotAlignedParser implements AlignmentParser {
 
 
         try {
-            String[] fields = Globals.tabPattern.split(nextLine);
+            String[] fields = Globals.tabPattern.split(nextLine, -1);
             int nTokens = fields.length;
 
             if (nTokens <= END_COLUMN) {

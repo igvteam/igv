@@ -82,7 +82,7 @@ public class RNAIGCTDatasetParser {
             // Parse column headings
             int skip = 1;
 
-            String[] tokens = Globals.tabPattern.split(headerLine);
+            String[] tokens = Globals.tabPattern.split(headerLine, -1);
             int nTokens = tokens.length;
 
             String description = (nTokens > descriptionColumn)
@@ -100,7 +100,7 @@ public class RNAIGCTDatasetParser {
 
             HashMap<String, HashMap<String, Float>> sampleGeneScoreMap = new HashMap();
             while ((nextLine = reader.readLine()) != null) {
-                tokens = Globals.tabPattern.split(nextLine);
+                tokens = Globals.tabPattern.split(nextLine, -1);
                 nTokens = tokens.length;
                 String probeId = new String(tokens[0]);
                 float[] values = new float[nColumns];

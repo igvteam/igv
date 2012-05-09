@@ -224,7 +224,7 @@ public class ExpressionFileParser {
 
             while ((nextLine = reader.readLine()) != null) {
 
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
                 String probeId = new String(tokens[probeColumn]);
                 float[] values = new float[nDataColumns];

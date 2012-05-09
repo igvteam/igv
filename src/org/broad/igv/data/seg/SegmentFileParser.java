@@ -119,7 +119,7 @@ public class SegmentFileParser implements SegFileParser {
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
                 if (nTokens > 4) {
                     int start;

@@ -201,7 +201,7 @@ public class GeneToLocusHelper {
                 if (nextLine.startsWith("#") || nextLine.startsWith("browser") || nextLine.startsWith("track")) {
                     continue;
                 }
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 if (tokens.length > 3) {
                     try {
                         String chr = tokens[0];

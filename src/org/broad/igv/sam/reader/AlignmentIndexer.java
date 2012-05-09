@@ -113,7 +113,7 @@ public abstract class AlignmentIndexer {
 
             //int nBytes = nextLine.length();
             nextLine = nextLine.trim();
-            String[] fields = Globals.tabPattern.split(nextLine);
+            String[] fields = Globals.tabPattern.split(nextLine, -1);
             int nFields = fields.length;
             if (!nextLine.startsWith("@") && nFields > 3 && isMapped(fields)) {
 

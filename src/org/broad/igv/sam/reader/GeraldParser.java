@@ -90,7 +90,7 @@ public class GeraldParser implements AlignmentParser {
 
     private GeraldAlignment createGeraldAlignment(String nextLine) {
 
-        String[] fields = Globals.tabPattern.split(nextLine);
+        String[] fields = Globals.tabPattern.split(nextLine, -1);
         int nTokens = fields.length;
         // TODO -- what to do if nTokens < 22?
         StringBuffer readName = new StringBuffer(20);

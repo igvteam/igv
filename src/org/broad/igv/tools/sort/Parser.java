@@ -61,7 +61,7 @@ public class Parser {
     public SortableRecord createRecord(String nextLine) {
         String[] fields = splitOnWhiteSpace ?
                 Globals.singleTabMultiSpacePattern.split(nextLine) :
-                Globals.tabPattern.split(nextLine);
+                Globals.tabPattern.split(nextLine, -1);
 
         String chr = fields[chrCol];
 

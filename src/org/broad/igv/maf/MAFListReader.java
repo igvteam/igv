@@ -58,7 +58,7 @@ public class MAFListReader implements MAFReader {
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
                 if (nextLine.startsWith("#")) continue;
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 if (tokens.length != 2) {
                     log.info("Skipping line: " + nextLine);
                 } else {
