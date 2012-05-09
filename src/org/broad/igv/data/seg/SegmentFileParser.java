@@ -85,12 +85,14 @@ public class SegmentFileParser implements SegFileParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
+        int lineNumber = 0;
         try {
             reader = ParsingUtils.openAsciiReader(locator);
 
             // Parse comments, if any
             nextLine = reader.readLine();
             while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
+                lineNumber++;
                 if (nextLine.length() > 0) {
                     parseComment(nextLine, dataset);
                 }
@@ -118,6 +120,7 @@ public class SegmentFileParser implements SegFileParser {
             }
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+                lineNumber++;
 
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
@@ -128,13 +131,13 @@ public class SegmentFileParser implements SegFileParser {
                         start = ParsingUtils.parseInt(tokens[startColumn].trim());
                     } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (startColumn + 1) + " must contain a numeric value.",
-                                reader.getCurrentLineNumber(), nextLine);
+                                lineNumber, nextLine);
                     }
                     try {
                         end = ParsingUtils.parseInt(tokens[endColumn].trim());
                     } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (endColumn + 1) + " must contain a numeric value.",
-                                reader.getCurrentLineNumber(), nextLine);
+                                lineNumber, nextLine);
                     }
 
                     String chr = tokens[chrColumn].trim();
@@ -180,8 +183,8 @@ public class SegmentFileParser implements SegFileParser {
         } catch (ParserException pe) {
             throw pe;
         } catch (Exception e) {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && lineNumber != 0) {
+                throw new ParserException(e.getMessage(), e, lineNumber, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

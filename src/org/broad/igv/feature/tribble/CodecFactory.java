@@ -54,7 +54,7 @@ public class CodecFactory {
 //    }
 
 
-    public static FeatureCodec getCodec(String path, Genome genome) {
+    public static AsciiFeatureCodec getCodec(String path, Genome genome) {
 
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
