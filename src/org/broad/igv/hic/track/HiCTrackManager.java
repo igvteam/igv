@@ -93,8 +93,7 @@ public class HiCTrackManager {
                             loadedTracks.addAll(tracks);
                         }
                     }
-                    parent.pack();
-                    parent.repaint();
+                    parent.updateTrackPanel();
 
                 }
             };

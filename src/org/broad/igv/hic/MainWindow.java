@@ -350,16 +350,16 @@ public class MainWindow extends JFrame {
 
     private void updateEigenvectorTrack() {
         boolean show = viewEigenvector.isSelected();
-        if(show) {
+        if (show) {
             trackPanel.setEigenvectorTrack(eigenvectorTrack);
         }
-        trackPanel.setVisible(show);
         if (show && hic.zd != null) {
             double[] rv = hic.getEigenvector(0);
             if (rv != null) {
                 updateEigenvectorTrack(rv, hic.zd.getBinSize());
             }
         }
+        updateTrackPanel();
     }
 
     public void updateEigenvectorTrack(double[] eigenvector, double binSize) {
@@ -431,6 +431,17 @@ public class MainWindow extends JFrame {
         };
 
         return threadExecutor.submit(wrapper);
+    }
+
+    public void updateTrackPanel() {
+        if (HiCTrackManager.getLoadedTracks().size() > 0 || viewEigenvector.isSelected()) {
+            trackPanel.setVisible(true);
+        } else {
+            trackPanel.setVisible(false);
+        }
+        pack();
+        repaint();
+
     }
 
     /**
@@ -1151,20 +1162,21 @@ public class MainWindow extends JFrame {
 
         //======== viewMenu ========
 
-        JMenu viewMenu = new JMenu("View");
+        JMenu viewMenu = new JMenu("Tracks");
 
-        viewEigenvector = new JCheckBoxMenuItem("Track Panel");
+        viewEigenvector = new JCheckBoxMenuItem("View Eigenvector...");
         viewEigenvector.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (viewEigenvector.isSelected()) {
                     if (eigenvectorTrack == null) {
                         eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
                     }
-                    trackPanel.setEigenvectorTrack(eigenvectorTrack);
-                    trackPanel.setVisible(true);
                     updateEigenvectorTrack();
                 } else {
-                    trackPanel.setVisible(false);
+                    trackPanel.setEigenvectorTrack(null);
+                    if (HiCTrackManager.getLoadedTracks().isEmpty()) {
+                        trackPanel.setVisible(false);
+                    }
                 }
             }
         });
@@ -1172,7 +1184,13 @@ public class MainWindow extends JFrame {
         viewMenu.add(viewEigenvector);
 
         JMenuItem loadItem = new JMenuItem("Load...");
-        loadItem.addActionListener(new LoadTrackAction());
+        loadItem.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                HiCTrackManager.openLoadDialog(MainWindow.this);
+            }
+
+        });
         viewMenu.add(loadItem);
 
         menuBar1.add(viewMenu);
@@ -1216,17 +1234,6 @@ public class MainWindow extends JFrame {
         public String toString() {
             return value;
         }
-
-    }
-
-
-    class LoadTrackAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-            HiCTrackManager.openLoadDialog(MainWindow.this);
-            repaint();
-        }
-
 
     }
 
