@@ -4,10 +4,12 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.HiCRenderContext;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -75,8 +77,6 @@ public class TrackPanel extends JPanel {
         return new Dimension(500, getHeight());
     }
 
-    //   public RenderContext(String genomeId, JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
-
     protected void paintComponent(Graphics graphics) {
 
         java.util.List<Track> tracks = new ArrayList<Track>(HiCTrackManager.getLoadedTracks());
@@ -93,6 +93,7 @@ public class TrackPanel extends JPanel {
                 if (hic.xContext != null) {
                     RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, rect, genome);
                     track.render(context, rect);
+                    renderName(track, rect, graphics);
                 }
                 rect.y += rect.height;
             }
@@ -103,6 +104,13 @@ public class TrackPanel extends JPanel {
 
         }
 
+    }
+
+    private void renderName(Track track, Rectangle rect, Graphics graphics) {
+        Font font = FontManager.getFont(8);
+        graphics.setFont(font);
+        graphics.setColor(track.getColor());
+        GraphicUtils.drawRightJustifiedText(track.getName(), rect.x + rect.width - 10, rect.y + 15, graphics);
     }
 
 }

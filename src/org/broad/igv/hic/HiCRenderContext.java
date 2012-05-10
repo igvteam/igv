@@ -1,6 +1,8 @@
 package org.broad.igv.hic;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -20,6 +22,7 @@ public class HiCRenderContext implements RenderContext {
     Context context;
     Rectangle visibleRect;
     ReferenceFrame referenceFrame;
+    int igvZoom = 0;
 
     private Map<Color, Graphics2D> graphicCacheByColor;
 
@@ -31,12 +34,14 @@ public class HiCRenderContext implements RenderContext {
         this.context = context;
         this.visibleRect = visibleRect;
         this.referenceFrame = new HiCReferenceFrame("HiC", genome);
-
         this.graphicCacheByColor = new HashMap();
+
+        int chrLength = context.getChrLength();
+        igvZoom = getIGVZoom(context.getScale(), chrLength);
     }
 
     public Color getBackgroundColor() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public String getChr() {
@@ -48,7 +53,7 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public double getEndLocation() {
-        return context.getChromosomePosition(500);  //To change body of implemented methods use File | Settings | File Templates.
+        return context.getChromosomePosition(parent.getWidth());
     }
 
     public double getScale() {
@@ -68,7 +73,7 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public int getZoom() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return igvZoom;
     }
 
     public String getGenomeId() {
@@ -100,6 +105,17 @@ public class HiCRenderContext implements RenderContext {
             g.dispose();
         }
         graphicCacheByColor.clear();
+    }
+
+
+    // Translate a hi-c zoom level to an IGV zoom level
+    private static int getIGVZoom(double scale, double chrLength) {
+
+
+        double log2 = Math.log(2);
+
+        return (int) (Math.log((chrLength / 700) / scale) / log2);
+
     }
 
     /**
