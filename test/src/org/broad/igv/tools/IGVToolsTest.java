@@ -533,9 +533,10 @@ public class IGVToolsTest {
         String outputFileND = TestUtils.DATA_DIR + "out/" + inputFiname + "_nodups" + ".tdf";
         String outputFileWithDup = TestUtils.DATA_DIR + "out/" + inputFiname + "_withdups" + ".tdf";
 
-        String chr = "1";
+        String queryChr = "1";
+
         int pos = 9718611;
-        String queryStr = chr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
+        String queryStr = queryChr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
         String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
         igvTools.run(cmd_nodups.split("\\s+"));
 
@@ -546,15 +547,19 @@ public class IGVToolsTest {
         assertTrue((new File(outputFileWithDup).exists()));
 
         Genome genome = TestUtils.loadGenome();
-        int noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
-        int dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+
+        //Have to read back in using aliased chromosome names
+        String readChr = genome.getChromosomeAlias(queryChr);
+
+        int noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
+        int dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
 
         assertEquals(noDupCount + 4, dupCount);
 
         //No dups at this location
         pos += 80;
-        noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
-        dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+        noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
+        dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
         assertEquals(noDupCount, dupCount);
 
     }
