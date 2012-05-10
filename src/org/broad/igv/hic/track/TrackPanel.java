@@ -26,20 +26,13 @@ import java.util.ArrayList;
 public class TrackPanel extends JPanel {
 
     HiC hic;
-    java.util.List<Track> tracks;
     Genome genome;
 
     public TrackPanel(HiC hiC) {
         this.hic = hiC;
-        tracks = new ArrayList();
         setAutoscrolls(true);
     }
 
-    public void addTrack(Track track) {
-       // if (track != null && !tracks.contains(track)) {
-            tracks.add(track);
-       // }
-    }
 
     /**
      * Returns the current height of this component.
@@ -53,7 +46,7 @@ public class TrackPanel extends JPanel {
     @Override
     public int getHeight() {
         int h = 0;
-        for (Track t : tracks) {
+        for (Track t : HiCTrackManager.getLoadedTracks()) {
             h += t.getHeight();
         }
         return h;
@@ -79,6 +72,7 @@ public class TrackPanel extends JPanel {
 
     protected void paintComponent(Graphics graphics) {
 
+        java.util.List<Track> tracks = new ArrayList<Track>(HiCTrackManager.getLoadedTracks());
         if (tracks == null || tracks.isEmpty()) {
             return;
         }
@@ -115,7 +109,7 @@ public class TrackPanel extends JPanel {
             // eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
             Track track = tracks.get(0);
             track.setHeight(40);
-            addTrack(tracks.get(0));
+            HiCTrackManager.addTrack(tracks.get(0));
 
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

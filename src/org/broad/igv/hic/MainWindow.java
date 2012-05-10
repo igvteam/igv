@@ -22,6 +22,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
+import org.broad.igv.hic.track.HiCTrackManager;
 import org.broad.igv.hic.track.TrackPanel;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
@@ -71,6 +72,7 @@ public class MainWindow extends JFrame {
     //private int len;
     private boolean showEigenvector = false;
     private boolean showDNAseI = false;
+    private JPanel hiCPanel;
 
     // private DisplayOption displayOption = DisplayOption.OBSERVED;
 
@@ -949,11 +951,11 @@ public class MainWindow extends JFrame {
         mainPanel.add(toolbarPanel, BorderLayout.NORTH);
 
 
-        //======== panel3 ========
+        //======== hiCPanel ========
 
 
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new HiCLayout());
+        final JPanel hiCPanel = new JPanel();
+        hiCPanel.setLayout(new HiCLayout());
 
         //---- rulerPanel2 ----
         rulerPanel2 = new HiCRulerPanel(hic);
@@ -984,7 +986,7 @@ public class MainWindow extends JFrame {
         trackPanel.setVisible(false);
         panel2_5.add(trackPanel, BorderLayout.NORTH);
 
-        panel3.add(panel2_5, BorderLayout.NORTH);
+        hiCPanel.add(panel2_5, BorderLayout.NORTH);
 
 
         //---- rulerPanel1 ----
@@ -993,7 +995,7 @@ public class MainWindow extends JFrame {
         rulerPanel1.setPreferredSize(new Dimension(50, 500));
         rulerPanel1.setBorder(null);
         rulerPanel1.setMinimumSize(new Dimension(50, 1));
-        panel3.add(rulerPanel1, BorderLayout.WEST);
+        hiCPanel.add(rulerPanel1, BorderLayout.WEST);
 
         //---- heatmapPanel ----
         heatmapPanel = new HeatmapPanel(this, hic);
@@ -1002,7 +1004,7 @@ public class MainWindow extends JFrame {
         heatmapPanel.setMinimumSize(new Dimension(500, 500));
         heatmapPanel.setPreferredSize(new Dimension(500, 500));
         heatmapPanel.setBackground(new Color(238, 238, 238));
-        panel3.add(heatmapPanel, BorderLayout.CENTER);
+        hiCPanel.add(heatmapPanel, BorderLayout.CENTER);
 
 
         //======== panel8 ========
@@ -1054,9 +1056,9 @@ public class MainWindow extends JFrame {
         rightSidePanel.setPreferredSize(preferredSize);
 
 
-        panel3.add(rightSidePanel, BorderLayout.EAST);
+        hiCPanel.add(rightSidePanel, BorderLayout.EAST);
 
-        mainPanel.add(panel3, BorderLayout.CENTER);
+        mainPanel.add(hiCPanel, BorderLayout.CENTER);
 
         contentPane.add(mainPanel, BorderLayout.CENTER);
 
@@ -1101,7 +1103,7 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 BufferedImage image = (BufferedImage) createImage(1000, 1000);
                 Graphics g = image.createGraphics();
-                panel3.paint(g);
+                hiCPanel.paint(g);
 
                 JFileChooser fc = new JFileChooser();
                 fc.showSaveDialog(null);
@@ -1155,7 +1157,7 @@ public class MainWindow extends JFrame {
                     if (eigenvectorTrack == null) {
                         eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
                     }
-                    trackPanel.addTrack(eigenvectorTrack);
+                    HiCTrackManager.addTrack(eigenvectorTrack);
                     trackPanel.setVisible(true);
                     updateEigenvectorTrack();
                 } else {
@@ -1218,219 +1220,8 @@ public class MainWindow extends JFrame {
     class LoadTrackAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-
-            String urlString = PreferenceManager.getInstance().getDataServerURL();
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            if (genome == null) {
-                String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
-                try {
-                    genome = GenomeManager.getInstance().loadGenome(genomePath, null);
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
-            }
-            String genomeId = genome.getId();
-
-            String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
-            try {
-                InputStream is = null;
-                LinkedHashSet<String> nodeURLs = null;
-                try {
-                    is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                    nodeURLs = getResourceUrls(bufferedReader);
-                } catch (IOException e) {
-                    MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
-                    //log.error("Error loading genome registry file", e);
-                    return;
-
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // log.error("Error closing input stream", e);
-                        }
-                    }
-                }
-
-                if (nodeURLs == null || nodeURLs.isEmpty()) {
-                    MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
-                } else {
-
-
-                    List<ResourceLocator> locators = loadNodes(nodeURLs);
-                    if (locators != null) {
-                        for (ResourceLocator locator : locators) {
-                            java.util.List<Track> tracks = (new TrackLoader()).load(locator, genome);
-                            for (Track track : tracks) {
-                                track.setHeight(40);
-                                trackPanel.addTrack(tracks.get(0));
-                            }
-                        }
-                    }
-                }
-
-
-            } finally {
-
-            }
-        }
-
-
-        public List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
-
-            if ((xmlUrls == null) || xmlUrls.isEmpty()) {
-                // log.error("No datasets are available from this server for the current genome (");
-                return null;
-            }
-
-            StringBuffer buffer = new StringBuffer();
-            boolean xmlParsingError = false;
-            try {
-
-                buffer.append("<html>The following urls could not be processed due to load failures:<br>");
-
-                Document masterDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-
-                Element rootNode = masterDocument.createElement("Global");
-                rootNode.setAttribute("name", "Available Datasets");
-                rootNode.setAttribute("version", "1");
-
-                masterDocument.appendChild(rootNode);
-
-                // Merge all documents into one xml document for processing
-                for (String url : xmlUrls) {
-
-                    // Skip urls that have previously failed due to authorization
-                    //if (failedURLs.contains(url)) {
-                    //    continue;
-                    // }
-
-                    try {
-                        InputStream is = null;
-                        Document xmlDocument = null;
-                        try {
-                            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
-                            xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-                        } catch (java.net.SocketTimeoutException e) {
-                            xmlParsingError = true;
-                            buffer.append("Error. Connection time out reading: " + url.toString());
-                            continue;
-                        } catch (SAXParseException e) {
-                            //log.error("Invalid XML resource: " + url, e);
-
-                            xmlParsingError = true;
-                            buffer.append(url);
-                            buffer.append("<br><i>");
-                            if (url.toString().contains("iwww.broad")) {
-                                buffer.append("File could not be loaded from the Broad Intranet");
-                            } else {
-                                buffer.append(e.getMessage());
-                            }
-                            buffer.append("");
-                            continue;
-                        } catch (FileNotFoundException e) {
-
-                            String message = "Could not find file represented by " + url.toString();
-                            //  log.error(message, e);
-
-                            xmlParsingError = true;
-                            buffer.append(url);
-                            buffer.append("\t  [");
-                            buffer.append(e.getMessage());
-                            buffer.append("]\n");
-                            continue;
-                        } catch (IOException e) {
-                            String msg = "Error accessing dataset list: " + e.toString();
-
-                            MessageUtils.showMessage(msg);
-                            // log.error("Error accessing URL: " + url, e);
-                        } finally {
-                            if (is != null) is.close();
-                        }
-
-                        if (xmlDocument != null) {
-                            NodeList elements = xmlDocument.getElementsByTagName("Global");
-                            Element global = (Element) elements.item(0);
-                            NodeList nodes = global.getChildNodes();
-                            Element categoryNode = masterDocument.createElement("Category");
-                            categoryNode.setAttribute("name", global.getAttribute("name"));
-                            categoryNode.setAttribute("hyperlink", global.getAttribute("hyperlink"));
-                            rootNode.appendChild(categoryNode);
-                            int size = nodes.getLength();
-                            for (int i = 0; i < size; i++) {
-                                categoryNode.appendChild(masterDocument.importNode(nodes.item(i), true));
-                            }
-                        }
-                    } catch (Exception e) {
-                        String message = "Cannot create an XML Document from " + url.toString();
-                        //log.error(message, e);
-                        continue;
-                    }
-
-                }
-                if (xmlParsingError) {
-                    JOptionPane.showMessageDialog(MainWindow.this, buffer.toString());
-                }
-
-
-                /**
-                 * Resource Tree
-                 */
-                LinkedHashSet<ResourceLocator> selectedLocators =
-                        ResourceTree.getInstance().showResourceTreeDialog(MainWindow.this,
-                                masterDocument, "Available Datasets");
-
-                List<ResourceLocator> newLoadList = new ArrayList();
-
-                if (selectedLocators != null) {
-                    for (ResourceLocator locator : selectedLocators) {
-
-                        // Don't reload data that is already loaded
-                        // if (IGV.getInstance().getDataResourceLocators().contains(locator)) {
-                        //    continue;
-                        //}
-
-                        newLoadList.add(locator);
-                    }
-                }
-
-                return newLoadList;
-
-            } catch (Exception e) {
-                // log.error("Could not load information from server", e);
-                return null;
-            } finally {
-                if (xmlParsingError) {
-                    //    log.error(buffer.toString());
-                }
-            }
-        }
-
-        /**
-         * Returns the complete list of URLs from the master registry file.
-         *
-         * @param bufferedReader
-         * @return
-         * @throws java.net.MalformedURLException
-         * @throws java.io.IOException
-         */
-        private LinkedHashSet<String> getResourceUrls(BufferedReader bufferedReader)
-                throws IOException {
-
-            LinkedHashSet<String> xmlFileUrls = new LinkedHashSet();
-            while (true) {
-                String xmlFileUrl = bufferedReader.readLine();
-                if ((xmlFileUrl == null) || (xmlFileUrl.trim().length() == 0)) {
-                    break;
-                }
-                xmlFileUrl = xmlFileUrl.trim();
-                xmlFileUrls.add(xmlFileUrl);
-            }
-
-            return xmlFileUrls;
+            HiCTrackManager.openLoadDialog(MainWindow.this);
+            repaint();
         }
 
 
