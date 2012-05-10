@@ -27,12 +27,16 @@ public class TrackPanel extends JPanel {
 
     HiC hic;
     Genome genome;
+    Track eigenvectorTrack;
 
     public TrackPanel(HiC hiC) {
         this.hic = hiC;
         setAutoscrolls(true);
     }
 
+    public void setEigenvectorTrack(Track eigenvectorTrack) {
+        this.eigenvectorTrack = eigenvectorTrack;
+    }
 
     /**
      * Returns the current height of this component.
@@ -48,6 +52,9 @@ public class TrackPanel extends JPanel {
         int h = 0;
         for (Track t : HiCTrackManager.getLoadedTracks()) {
             h += t.getHeight();
+        }
+        if(eigenvectorTrack != null) {
+            h += eigenvectorTrack.getHeight();
         }
         return h;
     }
@@ -89,6 +96,11 @@ public class TrackPanel extends JPanel {
                 }
                 rect.y += rect.height;
             }
+        }
+        if(eigenvectorTrack != null) {
+            RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, rect, genome);
+            eigenvectorTrack.render(context, rect);
+
         }
 
     }

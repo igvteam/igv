@@ -68,7 +68,9 @@ public class CategoryPanel extends JPanel {
         listPanel = new JPanel();
         listPanel.setLayout(new GridLayout(0, 4));
         for (ResourceLocator loc : locatorList) {
-            JCheckBox cb = new JCheckBox(loc.getTrackName());
+            final String trackName = loc.getTrackName();
+            JCheckBox cb = new JCheckBox(trackName);
+            cb.setSelected(loadedTrackNames.contains(trackName));
             listPanel.add(cb);
         }
         this.add(listPanel);

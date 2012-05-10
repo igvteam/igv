@@ -350,6 +350,9 @@ public class MainWindow extends JFrame {
 
     private void updateEigenvectorTrack() {
         boolean show = viewEigenvector.isSelected();
+        if(show) {
+            trackPanel.setEigenvectorTrack(eigenvectorTrack);
+        }
         trackPanel.setVisible(show);
         if (show && hic.zd != null) {
             double[] rv = hic.getEigenvector(0);
@@ -1157,7 +1160,7 @@ public class MainWindow extends JFrame {
                     if (eigenvectorTrack == null) {
                         eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
                     }
-                    HiCTrackManager.addTrack(eigenvectorTrack);
+                    trackPanel.setEigenvectorTrack(eigenvectorTrack);
                     trackPanel.setVisible(true);
                     updateEigenvectorTrack();
                 } else {
