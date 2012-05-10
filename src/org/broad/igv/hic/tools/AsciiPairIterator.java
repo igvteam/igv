@@ -64,7 +64,20 @@ public class AsciiPairIterator implements PairIterator {
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens = tokens.length;
-                if (nTokens < 10) {
+                if (nTokens == 6) {
+                    String chrom1 = getInternedString(tokens[1]);
+                    String chrom2 = getInternedString(tokens[4]);
+                    if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
+                        int chr1 = chromosomeOrdinals.get(chrom1);
+                        int chr2 = chromosomeOrdinals.get(chrom2);
+                        int pos1 = Integer.parseInt(tokens[2]);
+                        int pos2 = Integer.parseInt(tokens[5]);
+                        nextPair = new AlignmentPair(chr1, pos1, chr2, pos2);
+                        return;
+                    }
+
+                }
+                else if (nTokens < 10) {
                     String chrom1 = getInternedString(tokens[1]);
                     String chrom2 = getInternedString(tokens[5]);
 
