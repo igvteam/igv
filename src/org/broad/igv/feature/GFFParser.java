@@ -26,6 +26,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
@@ -276,6 +277,7 @@ public class GFFParser implements FeatureParser {
                 LinkedHashMap<String, String> attributes = new LinkedHashMap();
                 //attributes.put("Type", featureType);
                 helper.parseAttributes(attributeString, attributes);
+
                 String id = helper.getID(attributes);
 
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
@@ -374,7 +376,7 @@ public class GFFParser implements FeatureParser {
 
             // Create and add IGV genes
             for (GFF3Transcript transcript : transcriptCache.values()) {
-                BasicFeature igvTranscript = transcript.createTranscript();
+                Feature igvTranscript = transcript.createTranscript();
                 if (igvTranscript != null) {
                     features.add(igvTranscript);
                 }
@@ -556,27 +558,12 @@ public class GFFParser implements FeatureParser {
             this.end = Math.max(this.end, end);
         }
 
-        void appendDescription(String desc, Map<String, String> atts) {
-            if (description == null) {
-                description = "<html>";
-            } else {
-                description += "<br>---------<br>";
-            }
-            description += desc;
-
-            if (attributes == null) {
-                attributes = atts;
-            } else {
-                attributes.putAll(atts);
-            }
-        }
-
         /**
          * Create a transcript from its constituitive parts. "
          *
          * @return
          */
-        BasicFeature createTranscript() {
+        Feature createTranscript() {
 
             Strand strand = Strand.NONE;
             String name = null;
@@ -607,6 +594,7 @@ public class GFFParser implements FeatureParser {
 
             if (transcript == null) {
                 // transcript is implied
+
                 transcript = new BasicFeature(chr, start, end, strand);
                 transcript.setIdentifier(id);
                 transcript.setName(name == null ? id : name);
@@ -623,6 +611,13 @@ public class GFFParser implements FeatureParser {
                 transcript.setDescription("Transcript<br>" + transcript.getDescription() + "<br>--------<br>Gene<br>" + gene.getDescription());
 
                 // mRNA.setName(gene.getName());
+            }
+
+            // If the feature consists of a single exon just return it
+            if(exons.size() == 1) {
+                Exon exon = exons.iterator().next();
+                transcript.setAttributes(exon.getAttributes());
+                return transcript;
             }
 
             for (Exon exon : exons) {

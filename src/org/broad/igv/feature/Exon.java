@@ -192,7 +192,11 @@ public class Exon extends AbstractFeature implements IExon {
             msg += "<br>Amino acid number: " + aaNumber;
         }
         msg += "<br>" + getLocusString();
-        if (description != null) msg += description;
+        if (description != null) msg += "<br>" + description;
+        if (attributes != null) {
+        msg += getAttributeString();
+        }
+
         return msg;
     }
 
