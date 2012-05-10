@@ -80,7 +80,7 @@ public class TrackPanel extends JPanel {
     protected void paintComponent(Graphics graphics) {
 
         java.util.List<Track> tracks = new ArrayList<Track>(HiCTrackManager.getLoadedTracks());
-        if (tracks == null || tracks.isEmpty()) {
+        if ((tracks == null || tracks.isEmpty()) && eigenvectorTrack == null) {
             return;
         }
 
@@ -105,26 +105,4 @@ public class TrackPanel extends JPanel {
 
     }
 
-    public void setGenome(Genome genome) {
-        this.genome = genome;
-    }
-
-    private void test() {
-        try {
-            String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
-            Genome genome = GenomeManager.getInstance().loadGenome(genomePath, null);
-
-            String testURL = "http://www.broadinstitute.org/igvdata/encode/hg19/uwDnase/wgEncodeUwDnaseGm06990RawRep1.bigWig";
-            java.util.List<Track> tracks = new ArrayList();
-            (new TrackLoader()).loadBWFile(new ResourceLocator(testURL), tracks, genome);
-
-            // eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
-            Track track = tracks.get(0);
-            track.setHeight(40);
-            HiCTrackManager.addTrack(tracks.get(0));
-
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
 }

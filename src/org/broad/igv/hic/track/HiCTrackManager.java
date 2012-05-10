@@ -54,7 +54,7 @@ public class HiCTrackManager {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) {
-            String genomePath = "/Users/jrobinso/igv/genomes/hg19.genome";
+            String genomePath = "http://igvdata.broadinstitute.org/genomes/hg19.genome";
             try {
                 genome = GenomeManager.getInstance().loadGenome(genomePath, null);
             } catch (IOException e) {
