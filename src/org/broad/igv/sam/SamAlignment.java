@@ -895,11 +895,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      */
     public int getFlowSignalsStart(SAMRecord record) {
         Object attribute = record.getAttribute("ZF"); // NB: from a TMAP optional tag
-        if (null == attribute) {
-            return -1;
-        } else {
-            return (Integer) attribute;
+        int toRet = -1;
+        if(attribute != null && attribute instanceof Integer){
+            toRet = (Integer) attribute;
         }
+        return toRet;
     }
 
     /**
