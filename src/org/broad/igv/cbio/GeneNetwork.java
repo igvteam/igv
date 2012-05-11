@@ -754,6 +754,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
+                    if (!track.isVisible()) {
+                        continue;
+                    }
                     String sample = track.getSample();
 
                     //If track is wrong type, or if sample has already been marked altered,
