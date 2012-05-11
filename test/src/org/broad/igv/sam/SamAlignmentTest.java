@@ -18,11 +18,18 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.sam.reader.AlignmentReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Iterator;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -117,6 +124,27 @@ public class SamAlignmentTest {
 //            assertEquals("idx=" + i, adjustedBases[i], instance.getBase(i));
 //        }
 
+    }
+
+    /**
+     * Test handling of IonTorrent flow signal tags
+     * Should be read if available, not cause error if wrong format
+     */
+    @Test
+    public void testFlowSignalTags() throws Exception{
+        String inpath = TestUtils.DATA_DIR + "sam/zf_tags.sam";
+        AlignmentReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(inpath));
+        Iterator<Alignment> iter = reader.iterator();
+
+        int[] expFlowStarts = new int[]{-1, 5, -1};
+        int row = 0;
+        while(iter.hasNext()){
+            SamAlignment alignment = (SamAlignment) iter.next();
+
+            assertEquals(expFlowStarts[row], alignment.getFlowSignalsStart());
+
+            row++;
+        }
     }
 
 }
