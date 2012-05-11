@@ -123,8 +123,7 @@ public class SAMWriterTest {
 
             SAMWriter writer = new SAMWriter(shi.header);
 
-            boolean bam = false;
-            outpath.endsWith(".bam");
+            boolean bam = outpath.endsWith(".bam");
 
             if (!outStream) {
                 writer.writeToFile(outFile, shi.alignments);

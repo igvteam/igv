@@ -39,9 +39,7 @@ public class SAMWriter {
 
         SAMFileWriterImpl writer;
         if (bam) {
-            //BAMFileWriter can't take null argument for File.
-            //Have sent in a patch. May 4 2012
-            writer = new BAMFileWriter(stream, new File(""));
+            writer = new BAMFileWriter(stream, null);
         } else {
             writer = new SAMTextWriter(stream);
         }
