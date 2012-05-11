@@ -19,6 +19,10 @@
         <int>22</int> 
        </object> 
       </void> 
+      <void method="setProperty"> 
+       <string>alwaysOnTop</string> 
+       <boolean>true</boolean> 
+      </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JTabbedPane</string> 
