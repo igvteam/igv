@@ -23,6 +23,10 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.Utilities;
+import org.fest.swing.fixture.ComponentFixture;
+import org.fest.swing.fixture.FrameFixture;
+import org.fest.swing.fixture.JComboBoxFixture;
+import org.fest.swing.fixture.JPanelFixture;
 import org.junit.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -115,6 +119,44 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
         }
 
         return count;
+    }
+
+    @Test
+    public void testLoadSession() throws Exception{
+        //Pretty basic, but at some point loading this view
+        //gave a class cast exception
+        String sessionPath = TestUtils.DATA_DIR + "sessions/CCLE_testSession_chr2.xml";
+        IGV igv = TestUtils.startGUI();
+
+        TestUtils.loadSession(igv, sessionPath);
+
+        assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
+        assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
+
+        int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
+        assertTrue(rangeDiff < 3);
+
+        TestUtils.stopGUI();
+    }
+
+
+    /**
+     * Basic test showing usage of FEST and checking combo box
+     * @throws Exception
+     */
+    @Test
+    public void scratchTestFEST() throws Exception{
+        //Starts with hg18
+        IGV igv = TestUtils.startGUI();
+
+        FrameFixture frame = new FrameFixture(IGV.getMainFrame());
+        JPanelFixture contentFixture = frame.panel("contentPane");
+
+        JPanelFixture commandBar = frame.panel("igvCommandBar");
+        JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
+
+        String[] chromos = commandBar.comboBox("chromosomeComboBox").contents();
+        assertEquals(26, chromos.length);
     }
 
 }
