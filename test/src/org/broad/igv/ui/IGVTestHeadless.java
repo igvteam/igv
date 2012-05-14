@@ -140,23 +140,4 @@ public class IGVTestHeadless extends AbstractHeadlessTest{
     }
 
 
-    /**
-     * Basic test showing usage of FEST and checking combo box
-     * @throws Exception
-     */
-    @Test
-    public void scratchTestFEST() throws Exception{
-        //Starts with hg18
-        IGV igv = TestUtils.startGUI();
-
-        FrameFixture frame = new FrameFixture(IGV.getMainFrame());
-        JPanelFixture contentFixture = frame.panel("contentPane");
-
-        JPanelFixture commandBar = frame.panel("igvCommandBar");
-        JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
-
-        String[] chromos = commandBar.comboBox("chromosomeComboBox").contents();
-        assertEquals(26, chromos.length);
-    }
-
 }
