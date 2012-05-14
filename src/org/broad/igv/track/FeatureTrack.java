@@ -342,12 +342,11 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
-     * Get all features this track contains.
-     * Intended for testing
+     * Get all features within the specified locus
      *
      * @return
      */
-    List<Feature> getFeatures(String chr, int start, int end) {
+    public List<Feature> getFeatures(String chr, int start, int end) {
         List<Feature> features = new ArrayList<Feature>();
         try {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
