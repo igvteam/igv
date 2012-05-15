@@ -23,7 +23,6 @@ import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -370,7 +369,13 @@ public class AlignmentRenderer implements FeatureRenderer {
             drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
         }
 
-        Graphics2D gLine = context.getGraphic2DForColor(grey1);
+        Color lineColor = grey1;
+
+        if (alignmentColor1.equals(alignmentColor2) || pair.secondAlignment == null) {
+            lineColor = alignmentColor1;
+        }
+        Graphics2D gLine = context.getGraphic2DForColor(lineColor);
+
         double origin = context.getOrigin();
         int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
         int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
