@@ -24,10 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * A feature source which combines results from other feature sources.
+ * Currently uses bedtools to combine results
  * User: jacob
  * Date: 2012/05/01
  */
-public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource {
+public class CombinedFeatureSource implements FeatureSource {
 
     private static Logger log = Logger.getLogger(CombinedFeatureSource.class);
 
@@ -77,7 +79,16 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         return numLines;
     }
 
-    //TODO Cache
+    /**
+     * Perform the actual combination operation between the constituent data
+     * sources. This implementation re-runs the operation each call.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @return
+     * @throws IOException
+     */
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
         Iterator<Feature> iterA = sourceA.getFeatures(chr, start, end);
@@ -86,8 +97,6 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
         //First we need to write out the features in B to a file
         File outFile = File.createTempFile("featuresB", ".bed", null);
         outFile.deleteOnExit();
-
-        //Write data to temporary file
         int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFile));
 
         //Start bedtools process
@@ -199,7 +208,7 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
 
     @Override
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null; //TODO
+        return null;
     }
 
     @Override
@@ -211,7 +220,6 @@ public class CombinedFeatureSource implements org.broad.igv.track.FeatureSource 
     public void setFeatureWindowSize(int size) {
         featureWindowSize = size;
     }
-
 
     public enum Operation {
         //We use these bed flags to ensure output will be in bed format, even
