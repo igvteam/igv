@@ -870,8 +870,6 @@ public class TrackLoader {
 
         try {
             String dsName = locator.getTrackName();
-            String fn = locator.getPath().toLowerCase();
-            boolean isBed = fn.endsWith(".bedz") || fn.endsWith(".bed") || fn.endsWith(".bed.gz");
 
             // If the user tried to load the index,  look for the file (this is a common mistake)
             if (locator.getPath().endsWith(".sai") || locator.getPath().endsWith(".bai")) {
@@ -891,7 +889,7 @@ public class TrackLoader {
                 }
             }
 
-            if (locator.getPath().toLowerCase().endsWith(".bam") || locator.getPath().toLowerCase().endsWith(".bam.hg19")) {
+            if (locator.getPath().toLowerCase().endsWith(".bam")) {
                 if (!dataManager.hasIndex()) {
                     MessageUtils.showMessage("<html>Could not load index file for: " +
                             locator.getPath() + "<br>  An index file is required for SAM & BAM files.");
@@ -901,20 +899,14 @@ public class TrackLoader {
 
             AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
-            if (isBed) {
-                alignmentTrack.setRenderer(new BedRenderer());
-                alignmentTrack.setHeight(40);
-            }
+
 
             // Create coverage track
             CoverageTrack covTrack = new CoverageTrack(locator, alignmentTrack.getName() + " Coverage", genome);
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             alignmentTrack.setCoverageTrack(covTrack);
-            if (!isBed) {
-                covTrack.setDataManager(dataManager);
-                dataManager.setCoverageTrack(covTrack);
-            }
+
 
             // Search for precalculated coverage data   -- DON'T DO THIS FOR CGI READER
             String covPath = locator.getCoverage();

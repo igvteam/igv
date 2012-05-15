@@ -187,13 +187,16 @@ public class PeakTrackMenu extends IGVPopupMenu {
                     XYSeries series = new XYSeries(track.getName());
                     float[] scores = peak.getTimeScores();
                     if (scores.length == 4) {
-                        series.add(0, scores[0]);
-                        series.add(30, scores[1]);
-                        series.add(60, scores[2]);
-                        series.add(120, scores[3]);
+                        float t0 = scores[0] + 10;
+
+                        series.add(0, (scores[0] + 10) / t0);
+                        series.add(30, (scores[1] + 10) / t0);
+                        series.add(60, (scores[2] + 10) / t0);
+                        series.add(120, (scores[3] + 10) / t0);
                     }
                     data.addSeries(series);
-                    colors.add(track.getColor());
+                    Color c = track.getName().contains("Pol") ? Color.black : track.getColor();
+                    colors.add(c);
                 }
             }
         }
@@ -216,10 +219,15 @@ public class PeakTrackMenu extends IGVPopupMenu {
         chartPanel.setPreferredSize(new java.awt.Dimension(400, 400));
         chartPanel.setSize(new java.awt.Dimension(400, 400));
 
+
         XYItemRenderer renderer = chart.getXYPlot().getRenderer();
         for (int i = 0; i < colors.size(); i++) {
             renderer.setSeriesPaint(i, colors.get(i));
         }
+
+        chartPanel.setBackground(Color.white);
+        chart.getXYPlot().setBackgroundPaint(Color.white);
+        chart.getXYPlot().setRangeGridlinePaint(Color.black);
 
 
         PeakTimePlotFrame frame = new PeakTimePlotFrame(chartPanel);

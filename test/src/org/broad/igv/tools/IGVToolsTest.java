@@ -428,7 +428,7 @@ public class IGVToolsTest {
      */
     @Test
     public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
+        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
         tstCountBamList(listPath);
     }
 
@@ -440,7 +440,7 @@ public class IGVToolsTest {
      */
     @Test
     public void testMergedBam() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
+        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
         AlignmentReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(listPath), false);
 
         Set<String> visitedChromosomes = new HashSet();

@@ -91,9 +91,6 @@ public class PeakCommandBar extends JPanel {
     }
     */
 
-    private void colorByFoldChangeCBActionPerformed(ActionEvent e) {
-    }
-
     private void colorByActionPeformed(ActionEvent e) {
         if (colorByChangeButton.isSelected()) {
             PeakTrack.setShadeOption(PeakTrack.ColorOption.FOLD_CHANGE);

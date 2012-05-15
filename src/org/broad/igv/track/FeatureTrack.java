@@ -342,7 +342,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
-     * Get all features within the specified locus
+     * Get all features this track contains.
      *
      * @return
      */
@@ -663,7 +663,7 @@ public class FeatureTrack extends AbstractTrack {
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             loadFeatures(chr, start, end, context);
-            if (!IGV.getInstance().isExportingSnapshot()) {
+            if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
                 // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
                 return;
             }
@@ -774,7 +774,11 @@ public class FeatureTrack extends AbstractTrack {
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 
-                    IGV.getInstance().layoutMainPanel();
+
+                    if(IGV.hasInstance()) {
+                        // TODO -- WHY IS THIS HERE????
+                        IGV.getInstance().layoutMainPanel();
+                    }
                     if (context.getPanel() != null) context.getPanel().repaint();
                 } catch (Throwable e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load

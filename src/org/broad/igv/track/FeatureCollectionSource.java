@@ -59,21 +59,6 @@ public class FeatureCollectionSource implements FeatureSource {
         sampleGenomeFeatures();
     }
 
-    /**
-     * NOTE:  This constructor assumes that feature lists are sorted.
-     *
-     * @param features
-     */
-    public FeatureCollectionSource(Map<String, List<Feature>> features, Genome genome) {
-        this.genome = genome;
-        this.featureMap = features;
-        coverageData = new CoverageDataSource(genome);
-        coverageData.computeGenomeCoverage();
-        sampleGenomeFeatures();
-
-    }
-
-
     public Class getFeatureClass() {
         return IGVFeature.class;
     }

@@ -68,6 +68,7 @@ public class IGVPopupMenu extends JPopupMenu {
             for(IGVPopupMenu inst : instances) {
                 inst.setVisible(false);
             }
+            instances.clear();
         }
     }
 
