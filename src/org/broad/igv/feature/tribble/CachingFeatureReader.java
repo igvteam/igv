@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 
@@ -26,7 +19,9 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureReader;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -112,12 +107,12 @@ public class CachingFeatureReader implements FeatureReader {
             recordCount += t.getContainedRecords().size();
         }
 
-        List<Feature> alignments = new ArrayList(recordCount);
-        alignments.addAll(tiles.get(0).getOverlappingRecords());
+        List<Feature> features = new ArrayList(recordCount);
+        features.addAll(tiles.get(0).getOverlappingRecords());
         for (Bin t : tiles) {
-            alignments.addAll(t.getContainedRecords());
+            features.addAll(t.getContainedRecords());
         }
-        return new BinIterator(start, end, alignments);
+        return new BinIterator(start, end, features);
     }
 
 
@@ -196,7 +191,7 @@ public class CachingFeatureReader implements FeatureReader {
             while (iter != null && iter.hasNext()) {
                 Feature record = iter.next();
 
-                // Range of tile indeces that this alignment contributes to.
+                // Range of tile indices that this feature contributes to.
                 int aStart = record.getStart();
                 int aEnd = record.getEnd();
                 int idx0 = 0;
@@ -230,13 +225,11 @@ public class CachingFeatureReader implements FeatureReader {
             return true;
 
         } catch (IOException e) {
-            log.error("IOError loading alignment data", e);
+            log.error("IOError loading feature data", e);
 
             // TODO -- do something about this,  how do we want to handle this exception?
             throw new RuntimeException(e);
-        }
-
-        finally {
+        } finally {
             if (iter != null) {
                 //iter.close();
             }
@@ -294,22 +287,21 @@ public class CachingFeatureReader implements FeatureReader {
     }
 
     /**
-     * TODO -- this is a pointeless class.  It would make sense if it actually took tiles, instead of the collection
-     * TODO -- of alignments.
+     *
      */
     public class BinIterator implements CloseableTribbleIterator {
 
-        Iterator<Feature> currentSamIterator;
+        Iterator<Feature> currentFeatureIterator;
         int end;
         Feature nextRecord;
         int start;
-        List<Feature> alignments;
+        List<Feature> features;
 
-        BinIterator(int start, int end, List<Feature> alignments) {
-            this.alignments = alignments;
+        BinIterator(int start, int end, List<Feature> features) {
+            this.features = features;
             this.start = start;
             this.end = end;
-            currentSamIterator = alignments.iterator();
+            currentFeatureIterator = features.iterator();
             advanceToFirstRecord();
         }
 
@@ -346,8 +338,8 @@ public class CachingFeatureReader implements FeatureReader {
         }
 
         private void advance() {
-            if (currentSamIterator.hasNext()) {
-                nextRecord = currentSamIterator.next();
+            if (currentFeatureIterator.hasNext()) {
+                nextRecord = currentFeatureIterator.next();
                 if (nextRecord.getStart() > end) {
                     nextRecord = null;
                 }
