@@ -1,6 +1,7 @@
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.Globals;
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -24,12 +25,13 @@ public class DMUtilsTest {
     @Before
     public void setup() {
         Globals.setTesting(true);
-        HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
+       // HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
+        GSUtils.clearGSToken();
     }
 
     @After
     public void teardown() {
-        HttpUtils.getInstance().resetAuthenticator();
+ //       HttpUtils.getInstance().resetAuthenticator();
     }
 
     @Test
