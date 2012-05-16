@@ -38,7 +38,10 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author jrobinso
@@ -331,28 +334,14 @@ public class TrackMenuUtils {
         //Track analysis
         if (tracks.size() == 2) {
 
-            Map<CombinedFeatureSource.Operation, String[]> operationMap = new HashMap<CombinedFeatureSource.Operation, String[]>(5);
-            //Map from operation -> (Label on menu, track label when displayed)
-            operationMap.put(CombinedFeatureSource.Operation.INTERSECT, new String[]{"Intersect", "Intersection"});
-            operationMap.put(CombinedFeatureSource.Operation.SUBTRACT, new String[]{"Subtract", "Difference"});
-            operationMap.put(CombinedFeatureSource.Operation.COVERAGE, new String[]{"Coverage", "Coverage"});
-            JMenu analysisMenu = new JMenu("Analysis Options");
-            for (Map.Entry<CombinedFeatureSource.Operation, String[]> entry : operationMap.entrySet()) {
-                try {
-                    JMenuItem item = new JMenuItem(entry.getValue()[0]);
-                    item.addActionListener(new AnalysisActionListener(entry.getKey(), entry.getValue()[1], tracks));
-                    analysisMenu.add(item);
-                } catch (IllegalArgumentException e) {
-                    //Do nothing, just don't add to menu
-                    analysisMenu = null;
-                    break;
+            JMenuItem item = new JMenuItem("Analysis");
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    (new AnalysisDialog(IGV.getMainFrame(), tracks.iterator())).setVisible(true);
                 }
-            }
-
-
-            if (analysisMenu != null) {
-                featurePopupMenu.add(analysisMenu);
-            }
+            });
+            featurePopupMenu.add(item);
         }
 
         //--------------------//
@@ -1034,48 +1023,6 @@ public class TrackMenuUtils {
             }
         });
         return item;
-    }
-
-
-    private static class AnalysisActionListener implements ActionListener {
-
-        private CombinedFeatureSource.Operation operation;
-        private String name;
-        private Collection<Track> tracks;
-
-        public AnalysisActionListener(CombinedFeatureSource.Operation operation, String name, Collection<Track> tracks) {
-            if (tracks.size() != 2) {
-                throw new IllegalArgumentException("tracks must be size 2");
-            }
-            this.operation = operation;
-            this.name = name;
-            this.tracks = tracks;
-
-            //Check that tracks are correct type
-            for (Track t : tracks) {
-                if (!(t instanceof FeatureTrack)) {
-                    throw new IllegalArgumentException("Tracks must be FeatureTracks");
-                }
-            }
-
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            //We do not run on separate thread, because analysis isn't performed
-            //until track actually rendered. Maybe should change that behavior
-
-            Iterator<Track> trackIter = tracks.iterator();
-            FeatureTrack track1 = (FeatureTrack) trackIter.next();
-            FeatureTrack track2 = (FeatureTrack) trackIter.next();
-
-            CombinedFeatureSource source = new CombinedFeatureSource(track1.source, track2.source,
-                    operation);
-            Track newTrack = new FeatureTrack(track1.getId() + track2.getId(), name, source);
-            IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
-        }
-
-
     }
 
 }
