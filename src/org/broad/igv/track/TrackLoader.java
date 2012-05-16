@@ -35,6 +35,7 @@ import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
@@ -98,7 +99,7 @@ public class TrackLoader {
      */
     public List<Track> load(ResourceLocator locator, IGV igv) {
         this.igv = igv;
-        Genome genome = igv != null ? igv.getGenomeManager().getCurrentGenome() : null;
+        Genome genome = igv != null ? GenomeManager.getInstance().getCurrentGenome() : null;
         return load(locator, genome);
     }
 
@@ -198,7 +199,7 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai") || typeString.equals("alist")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            }  else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
+            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".list")) {
@@ -906,7 +907,8 @@ public class TrackLoader {
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             alignmentTrack.setCoverageTrack(covTrack);
-
+            covTrack.setDataManager(dataManager);
+            dataManager.setCoverageTrack(covTrack);
 
             // Search for precalculated coverage data   -- DON'T DO THIS FOR CGI READER
             String covPath = locator.getCoverage();
