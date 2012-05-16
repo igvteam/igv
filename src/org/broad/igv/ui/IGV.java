@@ -1857,11 +1857,9 @@ public class IGV {
 
     }
 
-    public void setTrackSelections(Set<Track> selectedTracks) {
-        for (Track t : getAllTracks(true)) {
-            if (selectedTracks.contains(t)) {
-                t.setSelected(true);
-            }
+    public void setTrackSelections(Iterable<Track> selectedTracks) {
+        for (Track t : selectedTracks) {
+            t.setSelected(true);
         }
     }
 
@@ -1885,11 +1883,9 @@ public class IGV {
         }
     }
 
-    public void toggleTrackSelections(Set<Track> selectedTracks) {
-        for (Track t : getAllTracks(true)) {
-            if (selectedTracks.contains(t)) {
-                t.setSelected(!t.isSelected());
-            }
+    public void toggleTrackSelections(Iterable<Track> selectedTracks) {
+        for (Track t : selectedTracks) {
+            t.setSelected(!t.isSelected());
         }
     }
 
