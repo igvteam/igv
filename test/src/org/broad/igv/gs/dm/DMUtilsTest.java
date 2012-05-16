@@ -25,8 +25,8 @@ public class DMUtilsTest {
     @Before
     public void setup() {
         Globals.setTesting(true);
-       // HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
         GSUtils.clearGSToken();
+        HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 
     @After
