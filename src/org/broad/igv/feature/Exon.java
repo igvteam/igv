@@ -52,6 +52,13 @@ public class Exon extends AbstractFeature implements IExon {
         this.mrnaBase = base;
     }
 
+    /**
+     * Get amino acid number based on genomic coordinate.
+     * Genome coordinate MUST be 0-based
+     *
+     * @param genomeCoordinate
+     * @return
+     */
     public int getAminoAcidNumber(int genomeCoordinate) {
         if (mrnaBase < 0) {
             return -1;
@@ -60,7 +67,7 @@ public class Exon extends AbstractFeature implements IExon {
             throw new IndexOutOfBoundsException();
         }
         if (getStrand() == Strand.POSITIVE) {
-            int mrnaCoord = mrnaBase + (genomeCoordinate - codingStart) - 1;
+            int mrnaCoord = mrnaBase + (genomeCoordinate - codingStart);
             return mrnaCoord < 0 ? -1 : mrnaCoord / 3 + 1;
 
         } else if (getStrand() == Strand.NEGATIVE) {
@@ -194,7 +201,7 @@ public class Exon extends AbstractFeature implements IExon {
         msg += "<br>" + getLocusString();
         if (description != null) msg += "<br>" + description;
         if (attributes != null) {
-        msg += getAttributeString();
+            msg += getAttributeString();
         }
 
         return msg;
