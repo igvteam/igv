@@ -65,7 +65,7 @@ public class CombinedFeatureSource implements FeatureSource {
      * @return
      */
     private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream) {
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
         int numLines = 0;
         if (features != null) {
@@ -97,24 +97,27 @@ public class CombinedFeatureSource implements FeatureSource {
         Iterator<Feature> iterA = sourceA.getFeatures(chr, start, end);
         Iterator<Feature> iterB = sourceB.getFeatures(chr, start, end);
 
-        //First we need to write out the features in B to a file
-        File outFile = File.createTempFile("featuresB", ".bed", null);
-        outFile.deleteOnExit();
-        int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFile));
+        //First we need to write out the features in A&B to a file
+        //There are size limits on pipes so we don't use stdin
+        File outFileA = File.createTempFile("featuresA", ".bed", null);
+        File outFileB = File.createTempFile("featuresB", ".bed", null);
+        outFileA.deleteOnExit();
+        outFileB.deleteOnExit();
+
+        int numA = writeFeaturesToStream(iterA, new FileOutputStream(outFileA));
+        int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFileB));
 
         //Start bedtools process
-        String cmd = BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFile.getAbsolutePath() + " -a stdin";
+        String cmd = BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFileB.getAbsolutePath() + " -a " + outFileA.getAbsolutePath();
         Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
 
-        //Write data to bedtools
-        int numA = writeFeaturesToStream(iterA, pr.getOutputStream());
-
-        try {
-            pr.waitFor();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            throw new IOException(e);
-        }
+        //This is un-necessary I believe, and occasionally will hang
+//        try {
+//            pr.waitFor();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            throw new IOException(e);
+//        }
 
         //Read back in the data which bedtools output
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
