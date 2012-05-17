@@ -66,12 +66,15 @@ public class CombinedFeatureSource implements FeatureSource {
      */
     private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream) {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
-        IGVBEDCodec codec = new IGVBEDCodec();
+
         int numLines = 0;
-        while (features.hasNext()) {
-            String data = codec.encode(features.next());
-            writer.println(data);
-            numLines++;
+        if (features != null) {
+            IGVBEDCodec codec = new IGVBEDCodec();
+            while (features.hasNext()) {
+                String data = codec.encode(features.next());
+                writer.println(data);
+                numLines++;
+            }
         }
         writer.flush();
         writer.close();

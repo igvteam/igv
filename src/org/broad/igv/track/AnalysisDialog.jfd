@@ -16,21 +16,21 @@ new FormModel {
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
 						"x": 140
 						"y": 35
-						"width": 145
+						"width": 190
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "operation"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
 						"x": 140
 						"y": 75
-						"width": 150
+						"width": 190
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "track2Box"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
 						"x": 140
 						"y": 115
-						"width": 150
+						"width": 190
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "resultName"

@@ -13,18 +13,22 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureParser;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -97,7 +101,7 @@ public class FeatureDirSource implements FeatureSource {
     }
 
     public List<LocusScore> getCoverageScores(String chr, int i, int i1, int zoom) {
-        return null; 
+        return null;
     }
 
     public int getFeatureWindowSize() {
@@ -111,7 +115,7 @@ public class FeatureDirSource implements FeatureSource {
 
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
         List<Feature> features = getFeatures(chr);
-        return features == null ? null : features.iterator();
+        return features == null ? Collections.<Feature>emptyList().iterator() : features.iterator();
     }
 
     private void setRootDir(String path) {

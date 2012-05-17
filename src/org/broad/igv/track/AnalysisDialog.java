@@ -35,8 +35,8 @@ public class AnalysisDialog extends JDialog {
         initComponents();
 
         operation.setModel(new DefaultComboBoxModel(CombinedFeatureSource.Operation.values()));
-        track1Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(false).toArray()));
-        track2Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(false).toArray()));
+        track1Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(true).toArray()));
+        track2Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(true).toArray()));
         track1Box.setRenderer(new TrackComboBoxRenderer());
         track2Box.setRenderer(new TrackComboBoxRenderer());
 
@@ -96,11 +96,11 @@ public class AnalysisDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
                 contentPanel.add(track1Box);
-                track1Box.setBounds(140, 35, 145, track1Box.getPreferredSize().height);
+                track1Box.setBounds(140, 35, 190, track1Box.getPreferredSize().height);
                 contentPanel.add(operation);
-                operation.setBounds(140, 75, 150, operation.getPreferredSize().height);
+                operation.setBounds(140, 75, 190, operation.getPreferredSize().height);
                 contentPanel.add(track2Box);
-                track2Box.setBounds(140, 115, 150, track2Box.getPreferredSize().height);
+                track2Box.setBounds(140, 115, 190, track2Box.getPreferredSize().height);
 
                 //---- resultName ----
                 resultName.setText("analysis");
