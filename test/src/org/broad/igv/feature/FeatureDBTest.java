@@ -19,9 +19,7 @@
 package org.broad.igv.feature;
 
 import junit.framework.AssertionFailedError;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.TestUtils;
-import org.junit.After;
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,25 +34,21 @@ import static junit.framework.Assert.*;
  * User: jacob
  * Date: 2011/12/15
  */
-public class FeatureDBTest {
-
+public class FeatureDBTest extends AbstractHeadlessTest {
 
     public static final int LARGE = 500;
 
     private static final String CHECK_STR = "ABC";
     private static boolean reload = false;
-    private static Genome genome;
 
     public static void main(String[] args) {
 
 
     }
 
-
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
+        AbstractHeadlessTest.setUpClass();
         reload = false;
     }
 
@@ -71,11 +65,6 @@ public class FeatureDBTest {
         if (reload) {
             setUpClass();
         }
-    }
-
-    @After
-    public void tearDown() {
-        //FeatureDB.clearFeatures();
     }
 
     @Test

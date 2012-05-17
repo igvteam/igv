@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
@@ -19,8 +20,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -31,17 +30,7 @@ import static junit.framework.Assert.assertEquals;
  * User: jacob
  * Date: 2012/03/08
  */
-public class UCSCGeneTableCodecTest {
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
+public class UCSCGeneTableCodecTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadGenePred() throws Exception {

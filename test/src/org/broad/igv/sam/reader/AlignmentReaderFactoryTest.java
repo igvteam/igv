@@ -11,11 +11,10 @@
 
 package org.broad.igv.sam.reader;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.tools.IGVToolsTest;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,18 +26,7 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012/03/01
  */
-public class AlignmentReaderFactoryTest {
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
-
+public class AlignmentReaderFactoryTest extends AbstractHeadlessTest {
 
     @Test
     public void testGetMergedReader() throws Exception {

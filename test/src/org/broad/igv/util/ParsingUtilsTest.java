@@ -12,6 +12,7 @@
 package org.broad.igv.util;
 
 import junit.framework.Assert;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
@@ -28,14 +29,14 @@ import static org.junit.Assert.assertEquals;
  * User: jrobinso
  * Date: Feb 8, 2010
  */
-public class ParsingUtilsTest {
+public class ParsingUtilsTest extends AbstractHeadlessTest {
 
     public final static String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
     public final static int numChars = characters.length();
 
     @Before
-    public void setUp() {
-        TestUtils.setUpHeadless();
+    public void setUp() throws Exception{
+        super.setUp();
         Globals.CONNECT_TIMEOUT = 5 * 60 * 1000;
     }
 

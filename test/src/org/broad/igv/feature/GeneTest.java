@@ -22,8 +22,7 @@
  */
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.TestUtils;
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,13 +35,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author jrobinso
  */
-public class GeneTest {
+public class GeneTest  extends AbstractHeadlessTest {
 
 
     static BasicFeature egfr;
 
     static BasicFeature GTPBP6;
-    private static Genome genome;
 
     public GeneTest() {
 
@@ -62,8 +60,7 @@ public class GeneTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
+        AbstractHeadlessTest.setUpClass();
         egfr = (BasicFeature) FeatureDB.getFeature("egfr");
         GTPBP6 = (BasicFeature) FeatureDB.getFeature("GTPBP6");
 

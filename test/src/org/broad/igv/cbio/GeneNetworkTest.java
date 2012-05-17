@@ -13,7 +13,7 @@ package org.broad.igv.cbio;
 
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.*;
@@ -52,14 +52,13 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012/02/02
  */
-public class GeneNetworkTest {
+public class GeneNetworkTest extends AbstractHeadlessTest {
 
     private static String testpath = TestUtils.DATA_DIR + "tp53network.xml";
     private GeneNetwork network;
 
     @Before
     public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
         network = new GeneNetwork();
     }
 
@@ -67,7 +66,6 @@ public class GeneNetworkTest {
     public void tearDown() throws Exception {
         network = null;
         GeneNetwork.BASE_URL = GeneNetwork.REAL_URL;
-        TestUtils.clearOutputDir();
     }
 
     public static void main(String[] args) throws IOException {
@@ -189,8 +187,6 @@ public class GeneNetworkTest {
 
     @Test
     public void testAnnotateAll() throws Exception {
-        TestUtils.setUpHeadless();
-        Genome genome = TestUtils.loadGenome();
 
         String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);

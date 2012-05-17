@@ -15,8 +15,8 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 /**
  * @author jrobinso
  */
-public class CachingQueryReaderTest {
+public class CachingQueryReaderTest extends AbstractHeadlessTest {
 
     String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
     String sequence = "chr1";
@@ -42,23 +42,6 @@ public class CachingQueryReaderTest {
     private boolean contained = false;
 
     public CachingQueryReaderTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**

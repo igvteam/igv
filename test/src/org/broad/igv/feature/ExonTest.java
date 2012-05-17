@@ -11,10 +11,7 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.BeforeClass;
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -23,21 +20,7 @@ import static junit.framework.Assert.assertEquals;
  * User: jacob
  * Date: 2012/05/17
  */
-public class ExonTest {
-
-    static Genome genome;
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
+public class ExonTest extends AbstractHeadlessTest {
 
     @Test
     public void testGetAminoAcidNumberPos() throws Exception {

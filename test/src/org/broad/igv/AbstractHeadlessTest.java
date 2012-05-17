@@ -9,32 +9,41 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv;
 
-import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.Test;
+import org.junit.*;
 
-import java.io.IOException;
 
 /**
- * @author jrobinso
- * @date Oct 13, 2010
+ * General setup/takedown for headless tests
+ * User: jacob
+ * Date: 2012/05/17
  */
-public class FreqDataTest extends AbstractHeadlessTest {
+@Ignore
+public class AbstractHeadlessTest {
 
-    @Test
-    public void test() throws IOException {
+    protected static Genome genome;
 
-        Genome genome = TestUtils.loadGenome();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
+        genome = TestUtils.loadGenome();
+    }
 
-        String segfile = TestUtils.DATA_DIR + "seg/canFam2_hg18.seg";
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        TestUtils.clearOutputDir();
+    }
 
+    @Before
+    public void setUp() throws Exception{
 
-        SegmentedDataSet sd = new SegmentedAsciiDataSet(new ResourceLocator(segfile), genome);
+    }
 
-        FreqData fd = new FreqData(sd, genome);
+    @After
+    public void tearDown() throws Exception{
+
     }
 }

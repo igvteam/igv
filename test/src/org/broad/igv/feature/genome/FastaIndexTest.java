@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import static junit.framework.Assert.*;
  * Time: 7:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FastaIndexTest {
+public class FastaIndexTest extends AbstractHeadlessTest {
 
     static String indexPath = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa.fai";
     private FastaIndex index;
@@ -75,8 +76,6 @@ public class FastaIndexTest {
 
     @Before
     public void setUp() throws IOException {
-        TestUtils.setUpHeadless();
-
         index = new FastaIndex(indexPath);
     }
 

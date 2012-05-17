@@ -11,6 +11,7 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
@@ -48,7 +49,7 @@ import java.util.*;
 
 import static junit.framework.Assert.*;
 
-public class IGVToolsTest {
+public class IGVToolsTest extends AbstractHeadlessTest {
 
     IgvTools igvTools;
 
@@ -57,7 +58,6 @@ public class IGVToolsTest {
 
     @Before
     public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
         igvTools = new IgvTools();
     }
 
@@ -66,10 +66,6 @@ public class IGVToolsTest {
         igvTools = null;
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        TestUtils.clearOutputDir();
-    }
 
     @Test
     public void testIndexSam() throws Exception {

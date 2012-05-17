@@ -16,8 +16,7 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.tools.IgvTools;
-import org.broad.igv.util.TestUtils;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
@@ -28,12 +27,10 @@ import static junit.framework.Assert.assertNotNull;
 /**
  * @author jrobinso
  */
-public class TestLoadGeneManager {
+public class TestLoadGeneManager extends AbstractHeadlessTest {
 
     @Test
     public void main() throws IOException {
-        TestUtils.setUpHeadless();
-        IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18.unittest.genome", true);
         Feature feature = FeatureDB.getFeature("EGFR");
         assertNotNull(feature);
     }

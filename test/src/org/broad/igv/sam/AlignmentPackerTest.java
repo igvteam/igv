@@ -17,12 +17,10 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -34,18 +32,9 @@ import static junit.framework.Assert.assertTrue;
 /**
  * @author jrobinso
  */
-public class AlignmentPackerTest {
+public class AlignmentPackerTest extends AbstractHeadlessTest {
 
     public AlignmentPackerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     /**
