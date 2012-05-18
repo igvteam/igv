@@ -11,13 +11,12 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,25 +29,14 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 
-public class CoverageCounterTest {
+public class CoverageCounterTest extends AbstractHeadlessTest {
 
     static PreferenceManager preferenceManager;
-    static Genome genome;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
+        AbstractHeadlessTest.setUpClass();
         preferenceManager = PreferenceManager.getInstance();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        //TestUtils.clearOutputDir();
-    }
-
-    @Before
-    public void setUp() {
     }
 
     /**

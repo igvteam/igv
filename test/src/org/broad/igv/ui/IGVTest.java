@@ -148,7 +148,9 @@ public class IGVTest {
 
         assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
         assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
-        assertEquals(FrameManager.getDefaultFrame().getChromosomeLength(), FrameManager.getDefaultFrame().getCurrentRange().getEnd());
+
+        int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
+        assertTrue(rangeDiff < 3);
 
         TestUtils.stopGUI();
     }

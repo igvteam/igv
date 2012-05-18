@@ -15,11 +15,9 @@
  */
 package org.broad.igv.data;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -33,23 +31,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author jrobinso
  */
-public class IGVDatasetTest {
+public class IGVDatasetTest extends AbstractHeadlessTest {
 
     String cnFile = TestUtils.DATA_DIR + "igv/MIP_44.cn";
-    static Genome genome;
-
-    public IGVDatasetTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     /**
      * Test loading a dataset and accessing some random data cells

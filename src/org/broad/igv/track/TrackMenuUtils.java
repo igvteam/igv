@@ -329,7 +329,24 @@ public class TrackMenuUtils {
 
         featurePopupMenu.addSeparator();
         featurePopupMenu.add(getChangeFeatureWindow(tracks));
+
+        //---------------------//
+        //Track analysis
+        if (tracks.size() == 2) {
+
+            JMenuItem item = new JMenuItem("Analysis");
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    (new AnalysisDialog(IGV.getMainFrame(), tracks.iterator())).setVisible(true);
+                }
+            });
+            featurePopupMenu.add(item);
+        }
+
+        //--------------------//
     }
+
 
     /**
      * Popup menu with items applicable to both feature and data tracks

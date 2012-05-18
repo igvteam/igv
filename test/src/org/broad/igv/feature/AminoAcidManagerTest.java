@@ -22,10 +22,7 @@
  */
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -38,22 +35,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author jrobinso
  */
-public class AminoAcidManagerTest {
+public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
-
-    private static Genome genome;
 
     public AminoAcidManagerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     /**

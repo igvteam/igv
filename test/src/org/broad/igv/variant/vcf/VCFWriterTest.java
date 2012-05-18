@@ -11,7 +11,7 @@
 
 package org.broad.igv.variant.vcf;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -20,8 +20,6 @@ import org.broad.tribble.FeatureCodec;
 import org.broadinstitute.sting.utils.codecs.vcf.StandardVCFWriter;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFWriter;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,21 +31,7 @@ import java.io.File;
  */
 // TODO We don't have the necessary dependencies
 @Ignore
-public class VCFWriterTest {
-
-    Genome genome;
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
+public class VCFWriterTest extends AbstractHeadlessTest {
 
     @Test
     public void testWriteHeader() throws Exception {

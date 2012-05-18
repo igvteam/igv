@@ -505,6 +505,10 @@
                 <string>mutInput</string> 
                </object> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Minimum number of mutations found</string> 
+              </void> 
               <void property="name"> 
                <string>label1</string> 
               </void> 
@@ -517,7 +521,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>85</int> 
+               <int>30</int> 
               </void> 
              </object> 
             </void> 
@@ -558,7 +562,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>80</int> 
+               <int>25</int> 
               </void> 
              </object> 
             </void> 
@@ -579,6 +583,10 @@
                 <string>ampInput</string> 
                </object> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Amplification score, on a log-normalized scale</string> 
+              </void> 
               <void property="name"> 
                <string>label2</string> 
               </void> 
@@ -591,7 +599,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>120</int> 
+               <int>75</int> 
               </void> 
              </object> 
             </void> 
@@ -628,7 +636,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>110</int> 
+               <int>70</int> 
               </void> 
              </object> 
             </void> 
@@ -649,6 +657,10 @@
                 <string>delInput</string> 
                </object> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Deletion score, on a log-normalized scale</string> 
+              </void> 
               <void property="name"> 
                <string>label3</string> 
               </void> 
@@ -657,11 +669,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>60</int> 
+               <int>55</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>140</int> 
+               <int>125</int> 
               </void> 
              </object> 
             </void> 
@@ -705,7 +717,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>110</int> 
+               <int>70</int> 
               </void> 
              </object> 
             </void> 
@@ -726,6 +738,10 @@
                 <string>expUpInput</string> 
                </object> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Expression score, log-normalized scale</string> 
+              </void> 
               <void property="name"> 
                <string>label4</string> 
               </void> 
@@ -734,11 +750,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>225</int> 
+               <int>210</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>115</int> 
+               <int>75</int> 
               </void> 
              </object> 
             </void> 
@@ -775,7 +791,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>135</int> 
+               <int>120</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -800,6 +816,10 @@
                 <string>expDownInput</string> 
                </object> 
               </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Expression score, log-normalized scale</string> 
+              </void> 
               <void property="name"> 
                <string>label7</string> 
               </void> 
@@ -808,11 +828,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>205</int> 
+               <int>190</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>140</int> 
+               <int>125</int> 
               </void> 
              </object> 
             </void> 
@@ -856,7 +876,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>135</int> 
+               <int>120</int> 
               </void> 
              </object> 
             </void> 
@@ -869,7 +889,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>12</int> 
+             <int>115</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -877,7 +897,60 @@
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
-             <int>276</int> 
+             <int>173</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JPanel</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>com.jformdesigner.runtime.NullLayout</class> 
+            </object> 
+            <void property="name"> 
+             <string>panel2</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>55</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>25</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>The score a given track must have to be considered &quot;altered&quot;</string> 
+            </void> 
+            <void property="name"> 
+             <string>label5</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>30</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>5</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>420</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>55</int> 
             </void> 
            </object> 
           </void> 

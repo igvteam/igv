@@ -11,14 +11,12 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,21 +31,8 @@ import static org.junit.Assert.assertTrue;
  * Date: 2012/05/01
  */
 @Ignore
-public class CombinedFeatureSourceTest {
+public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
-    Genome genome;
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
 
     @Test
     public void testBedToolsPath() throws Exception {

@@ -18,12 +18,11 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,33 +33,13 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author jrobinso
  */
-public class SamAlignmentTest {
+public class SamAlignmentTest extends AbstractHeadlessTest {
 
     /**
      * Constructs ...
      */
     public SamAlignmentTest() {
     }
-
-    /**
-     * Method description
-     *
-     * @throws Exception
-     */
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-    }
-
-    /**
-     * Method description
-     *
-     * @throws Exception
-     */
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
 
     /**
      * Test of adjustReads method, of class SamAlignment.

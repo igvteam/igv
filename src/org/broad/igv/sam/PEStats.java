@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.sam;
@@ -29,7 +22,9 @@ public class PEStats {
 
     private static Logger log = Logger.getLogger(PEStats.class);
 
-    public enum Orientation {FR, RF, FF};
+    public enum Orientation {FR, RF, FF}
+
+    ;
 
     private static int MAX = 10000;
     String library;
@@ -44,6 +39,17 @@ public class PEStats {
     int rfCount = 0;
 
     Orientation orientation = null;
+
+
+    /**
+     * For paired arc view which are outside of the midrange
+     * TODO Allow user to set?
+     */
+    private static final int minOutlierInsertSizePercentile = 95;
+    private static final int maxOutlierInsertSizePercentile = 5;
+
+    private int minOutlierInsertSize = minThreshold;
+    private int maxOutlierInsertSize = maxThreshold;
 
     public PEStats(String library) {
         this.library = library;
@@ -82,8 +88,11 @@ public class PEStats {
     public void compute(double minPercentile, double maxPercentile) {
 
         if (nPairs > 100 && insertSizes != null) {
-            minThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, minPercentile);
-            maxThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, maxPercentile);
+            minThreshold = computePercentile(minPercentile);
+            maxThreshold = computePercentile(maxPercentile);
+
+            minOutlierInsertSize = computePercentile(minOutlierInsertSizePercentile);
+            maxOutlierInsertSize = computePercentile(maxOutlierInsertSizePercentile);
 
             //log.info(library + "  " + nPairs + "  " + minThreshold + "  " + maxThreshold + " fr =" + frCount +
             //        "  ff = " + ffCount + "  rf = " + rfCount);
@@ -99,17 +108,27 @@ public class PEStats {
     }
 
     public Orientation getOrientation() {
-        if(orientation == null) {
-           if(ffCount > frCount && ffCount > rfCount) {
-               orientation = Orientation.FF;
-           }
-            else if(rfCount > frCount && rfCount > ffCount) {
-               orientation = Orientation.RF;
-           }
-            else {
-               orientation = Orientation.FR;
-           }
+        if (orientation == null) {
+            if (ffCount > frCount && ffCount > rfCount) {
+                orientation = Orientation.FF;
+            } else if (rfCount > frCount && rfCount > ffCount) {
+                orientation = Orientation.RF;
+            } else {
+                orientation = Orientation.FR;
+            }
         }
         return orientation;
+    }
+
+    private int computePercentile(double percentile) {
+        return (int) StatUtils.percentile(insertSizes, 0, nPairs, percentile);
+    }
+
+    int getMinOutlierInsertSize() {
+        return minOutlierInsertSize;
+    }
+
+    int getMaxOutlierInsertSize() {
+        return maxOutlierInsertSize;
     }
 }

@@ -341,6 +341,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             Map<String, Color> selectedReadNames,
             Font font) {
 
+        //Only plot outliers
+        if (renderOptions.isPairedArcView() && getOutlierStatus(pair, renderOptions) == 0) {
+            return;
+        }
+
         double locScale = context.getScale();
 
         Color alignmentColor1;
@@ -938,6 +943,31 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     /**
+     * Determine if alignment insert size is outside max or min
+     * range for outliers.
+     *
+     * @param alignment
+     * @param renderOptions
+     * @return -1 if unknown (stats not computed), 0 if not
+     *         an outlier, 1 if outlier
+     */
+    private int getOutlierStatus(Alignment alignment, RenderOptions renderOptions) {
+        PEStats peStats = getPEStats(alignment, renderOptions);
+        if (renderOptions.isComputeIsizes() && peStats != null) {
+            int minThreshold = peStats.getMinOutlierInsertSize();
+            int maxThreshold = peStats.getMaxOutlierInsertSize();
+            int dist = Math.abs(alignment.getInferredInsertSize());
+            if (dist >= minThreshold || dist <= maxThreshold) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    /**
      * Returns -1 if alignment distance is less than minimum,
      * 0 if within bounds, and +1 if above maximum.
      *
@@ -954,14 +984,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         int dist = Math.abs(alignment.getInferredInsertSize());
-        try {
-            PairedAlignment pa = (PairedAlignment) alignment;
-            if (!pa.firstAlignment.getChr().equals(pa.firstAlignment.getMate().getChr())) {
-                System.out.println(dist);
-            }
-        } catch (ClassCastException e) {
-            //pass
-        }
+
         if (dist < minThreshold) return -1;
         if (dist > maxThreshold) return +1;
         return 0;
