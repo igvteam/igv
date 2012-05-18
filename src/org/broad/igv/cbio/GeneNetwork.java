@@ -677,8 +677,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 continue;
             }
 
-            float rel_data = data.getPercentAltered();
-            if (rel_data == 0 && !Globals.isTesting()) {
+            float relData = data.getPercentAltered();
+            if (relData == 0 && !Globals.isTesting()) {
                 continue;
             }
 
@@ -780,8 +780,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             allSamples.addAll(samplesForType);
             anyAlteration.addAll(alteredSamplesForType);
 
-            float percentAltered = ((float) alteredSamplesForType.size()) / samplesForType.size();
-            results.put(attr, percentAltered);
+            float fractionAltered = ((float) alteredSamplesForType.size()) / samplesForType.size();
+            results.put(attr, fractionAltered);
         }
 
         results.setPercentAltered(((float) anyAlteration.size()) / allSamples.size());
@@ -805,9 +805,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
          * and upregulated would be counted once.
          */
         private float percentAltered;
-
-        public ScoreData() {
-        }
 
         public ScoreData(int size) {
             super(size);
