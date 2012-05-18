@@ -17,14 +17,12 @@ package org.broad.igv.cbio;
 
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.util.IndefiniteProgressMonitor;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.ProgressBar;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 import org.w3c.dom.Node;
@@ -34,13 +32,17 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 
@@ -269,6 +271,8 @@ public class FilterGeneNetworkUI extends JDialog {
             network.pruneGraph();
         }
 
+        totNumGenes.setText("Total Genes: " + network.vertexSetFiltered().size());
+
         this.listModel.markDirty();
     }
 
@@ -375,6 +379,21 @@ public class FilterGeneNetworkUI extends JDialog {
         }
     }
 
+    private void saveButtonActionPerformed(ActionEvent e) {
+        File outPath = FileDialogUtils.chooseFile("Save table to...", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
+        if(outPath != null){
+            try{
+                saveTable(outPath);
+            }catch(FileNotFoundException exc){
+                MessageUtils.showMessage(exc.getMessage());
+            }
+        }
+    }
+
+    private void exportButtonActionPerformed(ActionEvent e) {
+        // TODO add your code here
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -383,14 +402,17 @@ public class FilterGeneNetworkUI extends JDialog {
         panel1 = new JPanel();
         addRow = new JButton();
         contentPane = new JPanel();
+        scrollPane1 = new JScrollPane();
+        geneTable = new JTable();
+        panel3 = new JPanel();
         buttonBar = new JPanel();
+        totNumGenes = new JLabel();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
         refFilter = new JButton();
         cancelButton = new JButton();
         helpButton = new JButton();
-        scrollPane1 = new JScrollPane();
-        geneTable = new JTable();
+        saveButton = new JButton();
         thresholds = new JPanel();
         contentPanel = new JPanel();
         label1 = new JLabel();
@@ -408,7 +430,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
         //======== this ========
         setMinimumSize(new Dimension(600, 22));
-        setAlwaysOnTop(true);
+        setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
         Container contentPane2 = getContentPane();
         contentPane2.setLayout(new BorderLayout());
 
@@ -430,9 +452,9 @@ public class FilterGeneNetworkUI extends JDialog {
                 dialogPane.setPreferredSize(new Dimension(443, 300));
                 dialogPane.setLayout(new GridBagLayout());
                 ((GridBagLayout)dialogPane.getLayout()).columnWidths = new int[] {0, 0};
-                ((GridBagLayout)dialogPane.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0};
+                ((GridBagLayout)dialogPane.getLayout()).rowHeights = new int[] {0, 0, 0, 0, 0, 0};
                 ((GridBagLayout)dialogPane.getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
-                ((GridBagLayout)dialogPane.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0, 0.0, 1.0E-4};
+                ((GridBagLayout)dialogPane.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0, 0.0, 0.0, 1.0E-4};
 
                 //======== panel1 ========
                 {
@@ -470,6 +492,39 @@ public class FilterGeneNetworkUI extends JDialog {
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
 
+                //======== scrollPane1 ========
+                {
+
+                    //---- geneTable ----
+                    geneTable.setAutoCreateRowSorter(true);
+                    scrollPane1.setViewportView(geneTable);
+                }
+                dialogPane.add(scrollPane1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
+                //======== panel3 ========
+                {
+                    panel3.setLayout(null);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel3.getComponentCount(); i++) {
+                            Rectangle bounds = panel3.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel3.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel3.setMinimumSize(preferredSize);
+                        panel3.setPreferredSize(preferredSize);
+                    }
+                }
+                dialogPane.add(panel3, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
                 //======== buttonBar ========
                 {
                     buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
@@ -477,10 +532,16 @@ public class FilterGeneNetworkUI extends JDialog {
                     ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 80};
                     ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
+                    //---- totNumGenes ----
+                    totNumGenes.setText("Total Genes: #");
+                    buttonBar.add(totNumGenes, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 5, 5), 0, 0));
+
                     //---- keepIsolated ----
                     keepIsolated.setText("Keep Isolated Genes");
                     keepIsolated.setVisible(false);
-                    buttonBar.add(keepIsolated, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0,
+                    buttonBar.add(keepIsolated, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 5), 0, 0));
 
@@ -493,7 +554,7 @@ public class FilterGeneNetworkUI extends JDialog {
                             okButtonActionPerformed(e);
                         }
                     });
-                    buttonBar.add(okButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    buttonBar.add(okButton, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
 
@@ -508,7 +569,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     });
                     buttonBar.add(refFilter, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                        new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- cancelButton ----
                     cancelButton.setText("Cancel");
@@ -518,29 +579,30 @@ public class FilterGeneNetworkUI extends JDialog {
                             cancelButtonActionPerformed(e);
                         }
                     });
-                    buttonBar.add(cancelButton, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
+                    buttonBar.add(cancelButton, new GridBagConstraints(3, 4, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                     //---- helpButton ----
                     helpButton.setText("Help");
                     helpButton.setVisible(false);
                     buttonBar.add(helpButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                        new Insets(0, 0, 5, 0), 0, 0));
+
+                    //---- saveButton ----
+                    saveButton.setText("Save Table");
+                    saveButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            saveButtonActionPerformed(e);
+                        }
+                    });
+                    buttonBar.add(saveButton, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
                 }
                 dialogPane.add(buttonBar, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
-
-                //======== scrollPane1 ========
-                {
-
-                    //---- geneTable ----
-                    geneTable.setAutoCreateRowSorter(true);
-                    scrollPane1.setViewportView(geneTable);
-                }
-                dialogPane.add(scrollPane1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }
@@ -709,14 +771,17 @@ public class FilterGeneNetworkUI extends JDialog {
     private JPanel panel1;
     private JButton addRow;
     private JPanel contentPane;
+    private JScrollPane scrollPane1;
+    private JTable geneTable;
+    private JPanel panel3;
     private JPanel buttonBar;
+    private JLabel totNumGenes;
     private JCheckBox keepIsolated;
     private JButton okButton;
     private JButton refFilter;
     private JButton cancelButton;
     private JButton helpButton;
-    private JScrollPane scrollPane1;
-    private JTable geneTable;
+    private JButton saveButton;
     private JPanel thresholds;
     private JPanel contentPanel;
     private JLabel label1;
@@ -733,6 +798,38 @@ public class FilterGeneNetworkUI extends JDialog {
     private JLabel label5;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
+
+    /**
+     * Export the current table to a tab-delimited file.
+     * String exported should be the same as what user sees
+     * @param outFile
+     * @throws IOException
+     */
+    private void saveTable(File outFile) throws FileNotFoundException{
+        PrintWriter writer = new PrintWriter(outFile);
+        TableModel model = geneTable.getModel();
+        String delimiter = "\t";
+
+        //Write header
+        String header = model.getColumnName(0);
+        for(int col=1; col < model.getColumnCount(); col++){
+            header += delimiter + model.getColumnName(col);
+        }
+
+        writer.println(header);
+
+        for(int row = 0; row < model.getRowCount(); row++){
+            String rowStr = "" + model.getValueAt(row, 0);
+            for(int col = 1; col < model.getColumnCount(); col++){
+                rowStr += delimiter + model.getValueAt(row, col);
+            }
+
+            writer.println(rowStr);
+        }
+
+        writer.flush();
+        writer.close();
+    }
 
     private class GraphListModel extends AbstractTableModel {
 

@@ -381,8 +381,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
             NodeList nodes = document.getElementsByTagName(NODE_TAG);
             //Generate the graph itself. First add the nodes, then the edges
-            nodeTable = new HashMap<String, Node>(nodes.getLength());
-            for (int nn = 0; nn < nodes.getLength(); nn++) {
+            int docNodes = nodes.getLength();
+            nodeTable = new HashMap<String, Node>(docNodes);
+            for (int nn = 0; nn < docNodes; nn++) {
                 Node node = nodes.item(nn);
                 String label = node.getAttributes().getNamedItem("id").getTextContent();
                 nodeTable.put(label, node);
@@ -390,7 +391,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             }
 
             NodeList edges = document.getElementsByTagName(EDGE_TAG);
-            for (int ee = 0; ee < edges.getLength(); ee++) {
+            int docEdges = edges.getLength();
+            for (int ee = 0; ee < docEdges; ee++) {
                 Node edge = edges.item(ee);
                 NamedNodeMap attrs = edge.getAttributes();
                 String source = attrs.getNamedItem("source").getTextContent();
