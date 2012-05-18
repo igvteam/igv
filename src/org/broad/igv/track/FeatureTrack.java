@@ -775,12 +775,12 @@ public class FeatureTrack extends AbstractTrack {
                     }
 
 
-                    if(IGV.hasInstance()) {
+                    if (IGV.hasInstance()) {
                         // TODO -- WHY IS THIS HERE????
                         IGV.getInstance().layoutMainPanel();
                     }
                     if (context.getPanel() != null) context.getPanel().repaint();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
                     PackedFeatures pf = new PackedFeatures(chr, start, end);

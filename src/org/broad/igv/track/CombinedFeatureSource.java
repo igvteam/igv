@@ -37,7 +37,7 @@ public class CombinedFeatureSource implements FeatureSource {
     private FeatureSource sourceB;
     private Operation operation;
 
-    private int featureWindowSize = 1000000;
+    private int featureWindowSize = -1;
 
     //Note: This must be the FULL path. Having bedtools on your systems path
     //is not sufficient
@@ -217,9 +217,19 @@ public class CombinedFeatureSource implements FeatureSource {
         return null;
     }
 
+    /**
+     * If this track has not had it's feature window size set,
+     * we use the minimum of the sources
+     *
+     * @return
+     */
     @Override
     public int getFeatureWindowSize() {
-        return featureWindowSize;
+        if (featureWindowSize < 0) {
+            return Math.min(sourceA.getFeatureWindowSize(), sourceB.getFeatureWindowSize());
+        } else {
+            return featureWindowSize;
+        }
     }
 
     @Override

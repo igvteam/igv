@@ -19,13 +19,14 @@ import org.broad.tribble.Feature;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 
 /**
  * Class to handle caching data from any source of features
- * Subclasses must override rawQuery
+ * Subclasses must override queryRaw
  *
  * @author jrobinso
  * @date Jun 24, 2010
@@ -90,7 +91,7 @@ public abstract class AbstractCacher {
         List<Bin> tiles = getBins(chr, startBin, endBin);
 
         if (tiles.size() == 0) {
-            return null;
+            return Collections.<Feature>emptyList().iterator();
         }
 
         // Count total # of records
@@ -110,13 +111,19 @@ public abstract class AbstractCacher {
 
     /**
      * Return loaded tiles that span the query interval.
+     * <p/>
+     * We synchronize this method because different threads might be using
+     * the same source. Synchronizing here ensures that data
+     * is loaded as few times as possible (first caller loads it into the cache,
+     * the second caller accesses it from there) as well as preventing bugs stemming
+     * from multiple thread access
      *
      * @param seq
      * @param startBin
      * @param endBin
      * @return
      */
-    private List<Bin> getBins(String seq, int startBin, int endBin) {
+    private synchronized List<Bin> getBins(String seq, int startBin, int endBin) {
 
         List<Bin> tiles = new ArrayList(endBin - startBin + 1);
         List<Bin> tilesToLoad = new ArrayList(endBin - startBin + 1);
@@ -176,7 +183,6 @@ public abstract class AbstractCacher {
         int featureCount = 0;
         long t0 = System.currentTimeMillis();
         try {
-
 
             iter = queryRaw(seq, start, end);
 
