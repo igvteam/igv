@@ -255,6 +255,10 @@ public class RulerPanel extends JPanel {
         final FontMetrics fontMetrics = g.getFontMetrics();
         for (String chrName : chrNames) {
             Chromosome c = genome.getChromosome(chrName);
+            if (c == null) {
+                log.info("Chromosome '" + chrName + "' not found");
+                continue;
+            }
             int chrLength = c.getLength();
 
             int x = (int) (offset / (locationUnit * frame.getScale()));
