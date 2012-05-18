@@ -1,6 +1,7 @@
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.HttpUtils;
 import org.junit.After;
@@ -9,6 +10,7 @@ import org.junit.Test;
 
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -31,13 +33,15 @@ public class DMUtilsTest {
 
     @After
     public void teardown() {
- //       HttpUtils.getInstance().resetAuthenticator();
+        //       HttpUtils.getInstance().resetAuthenticator();
     }
 
     @Test
-    public void testListDefaultDirectory() throws Exception {
+    public void testListPeronsalDirectory() throws Exception {
 
-        GSDirectoryListing dirListing = DMUtils.listDefaultDirectory();
+        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
+                DMUtils.PERSONAL_DIRECTORY);
+        GSDirectoryListing dirListing = DMUtils.getDirectoryListing(defaultURL);
         assertNotNull("Directory listing", dirListing);
 
         List<GSFileMetadata> gsFiles = dirListing.getContents();
@@ -48,7 +52,7 @@ public class DMUtilsTest {
         for (GSFileMetadata fileMetadata : gsFiles) {
             if (fileMetadata.getName().equals(testFileName)) {
                 found = true;
-                String path = "/users/igvtest/" + testFileName;
+                String path = "/Home/igvtest/" + testFileName;
                 assertEquals("Test file path", path, fileMetadata.getPath());
             }
         }

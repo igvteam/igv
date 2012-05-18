@@ -75,7 +75,7 @@ public class GSFileBrowser extends JDialog {
         super(owner);
         setModal(true);
         initComponents();
-        init();
+        init(mode);
         // For now single selection
         this.fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.mode = mode;
@@ -87,7 +87,7 @@ public class GSFileBrowser extends JDialog {
 
     }
 
-    void init() throws JSONException, IOException {
+    void init(Mode mode) throws JSONException, IOException {
 
         if (folderIcon == null) {
             folderIcon = new ImageIcon(getClass().getResource("/images/Folder-icon.png"));
@@ -117,8 +117,9 @@ public class GSFileBrowser extends JDialog {
         };
         fileList.addMouseListener(mouseListener);
 
+        String rootdirectory = mode == Mode.OPEN ? DMUtils.DEFAULT_DIRECTORY : DMUtils.PERSONAL_DIRECTORY;
         URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
-                DMUtils.DIRECTORY_SERVICE);
+                rootdirectory);
         fetchContents(defaultURL);
     }
 

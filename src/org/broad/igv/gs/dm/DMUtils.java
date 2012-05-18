@@ -44,13 +44,14 @@ public class DMUtils {
 
     private static Logger log = Logger.getLogger(DMUtils.class);
     private static final String UPLOAD_SERVICE = "uploadurl";
-    public static final String DIRECTORY_SERVICE = "defaultdirectory";
+    public static final String DEFAULT_DIRECTORY = "defaultdirectory";
+    public static final String PERSONAL_DIRECTORY = "personaldirectory";
 
 
     public static GSDirectoryListing listDefaultDirectory() {
         try {
             URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
-                    DIRECTORY_SERVICE);
+                    DEFAULT_DIRECTORY);
             return getDirectoryListing(defaultURL);
         } catch (Exception e) {
             throw new RuntimeException(e);
