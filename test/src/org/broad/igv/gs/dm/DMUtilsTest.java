@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.gs.dm;
 
 import org.broad.igv.Globals;
@@ -13,9 +24,7 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.*;
 
 /**
  * @author Jim Robinson
@@ -37,7 +46,7 @@ public class DMUtilsTest {
     }
 
     @Test
-    public void testListPeronsalDirectory() throws Exception {
+    public void testListPersonalDirectory() throws Exception {
 
         URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
                 DMUtils.PERSONAL_DIRECTORY);
