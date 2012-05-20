@@ -36,7 +36,7 @@ public class DMUtilsTest {
     @Before
     public void setup() {
         Globals.setTesting(true);
-        GSUtils.clearGSToken();
+        GSUtils.logout();
         HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 

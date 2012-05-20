@@ -579,11 +579,9 @@ public class HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
             conn.setRequestProperty("Accept", "application/json,text/plain");
-
         }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
@@ -701,6 +699,10 @@ public class HttpUtils {
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
             boolean isGenomeSpace = GSUtils.isGenomeSpace(url);
+            if(isGenomeSpace) {
+                // If we are being challenged by GS the token must be bad/expired
+                GSUtils.logout();
+            }
 
             LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), isProxyChallenge);
             dlg.setVisible(true);
