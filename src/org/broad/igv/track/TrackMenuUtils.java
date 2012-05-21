@@ -332,7 +332,8 @@ public class TrackMenuUtils {
 
         //---------------------//
         //Track analysis
-        if (tracks.size() == 2) {
+        boolean enableAnalysis = Boolean.parseBoolean(System.getProperty("enable.analysis", "false"));
+        if (enableAnalysis && tracks.size() == 2) {
 
             JMenuItem item = new JMenuItem("Analysis");
             item.addActionListener(new ActionListener() {
