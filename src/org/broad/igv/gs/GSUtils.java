@@ -117,7 +117,6 @@ public class GSUtils {
         }
         if (gsUser == null || !gsUser.equals(newUser)) {
             gsUser = newUser;
-            BufferedWriter bw = null;
 
             File gsDir = getTokenSaveDir();
             if (!gsDir.isDirectory()) {
@@ -159,7 +158,16 @@ public class GSUtils {
 
         gsToken = null;
         gsUser = null;
-         clearGSToken();
+        gsToken = null;
+        File userfile = getUsernameFile();
+        if (userfile.exists()) {
+            userfile.delete();
+        }
+        File tokenFile = getTokenFile();
+        if (tokenFile.exists()) {
+            tokenFile.delete();
+        }
+
 
         try {
             URI gsURI = new URI(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER));
@@ -177,21 +185,6 @@ public class GSUtils {
            log.error("Error creating GS URI", e);
         }
     }
-
-
-
-    public static void clearGSToken() {
-        File userfile = getUsernameFile();
-        if (userfile.exists()) {
-            userfile.delete();
-        }
-        File tokenFile = getTokenFile();
-        if (tokenFile.exists()) {
-            tokenFile.delete();
-        }
-
-    }
-
 
     private static void writeToFile(String line, File aFile) {
         BufferedWriter bw = null;

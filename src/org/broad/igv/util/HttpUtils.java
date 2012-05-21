@@ -41,9 +41,8 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -72,7 +71,7 @@ public class HttpUtils {
             org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
             instance = new HttpUtils();
             instance.disableCertificateValidation();
-            CookieHandler.setDefault(new CookieManager());
+            CookieHandler.setDefault(new IGVCookieManager());
         }
     }
 
@@ -167,7 +166,6 @@ public class HttpUtils {
             return true;
         }
     }
-
 
 
     public static boolean useByteRange(URL url) {
@@ -579,11 +577,9 @@ public class HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
             conn.setRequestProperty("Accept", "application/json,text/plain");
-
         }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
@@ -601,26 +597,6 @@ public class HttpUtils {
             return conn;
         } else {
             int code = conn.getResponseCode();
-            if (code >= 200 && code < 300) {
-                // A genome-space hack.  We want to catch redirects from the identity server to grab the cookie
-                // and write it to the .gstoken file.  This is required for the GS single-sign on model
-                if (GSUtils.isGenomeSpace(url)) {
-                    try {
-                        java.util.List<HttpCookie> cookies = ((CookieManager) CookieManager.getDefault()).getCookieStore().get(url.toURI());
-                        if (cookies != null) {
-                            for (HttpCookie cookie : cookies) {
-                                if (cookie.getName().equals("gs-token")) {
-                                    GSUtils.setGSToken(cookie.getValue());
-                                } else if (cookie.getName().equals("gs-username")) {
-                                    GSUtils.setGSUser(cookie.getValue());
-                                }
-                            }
-                        }
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
@@ -701,6 +677,10 @@ public class HttpUtils {
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
             boolean isGenomeSpace = GSUtils.isGenomeSpace(url);
+            if (isGenomeSpace) {
+                // If we are being challenged by GS the token must be bad/expired
+                GSUtils.logout();
+            }
 
             LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), isProxyChallenge);
             dlg.setVisible(true);
@@ -736,5 +716,39 @@ public class HttpUtils {
 
     }
 
+
+    /**
+     * Extension of CookieManager that grabs cookies from the GenomeSpace identity server to store locally.
+     * This is to support the GenomeSpace "single sign-on". Examples ...
+     * gs-username=igvtest; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
+     * gs-token=HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
+     */
+
+    static class IGVCookieManager extends CookieManager {
+
+
+        @Override
+        public void put(URI uri, Map<String, List<String>> stringListMap) throws IOException {
+            if (uri.toString().startsWith(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_IDENTITY_SERVER))) {
+                List<String> cookies = stringListMap.get("Set-Cookie");
+                if (cookies != null) {
+                    for (String cstring : cookies) {
+                        String[] tokens = Globals.equalPattern.split(cstring);
+                        if (tokens.length >= 2) {
+                            String cookieName = tokens[0];
+                            String[] vTokens = Globals.semicolonPattern.split(tokens[1]);
+                            String value = vTokens[0];
+                            if (cookieName.equals("gs-token")) {
+                                GSUtils.setGSToken(value);
+                            } else if (cookieName.equals("gs-username")) {
+                                GSUtils.setGSUser(value);
+                            }
+                        }
+                    }
+                }
+            }
+            super.put(uri, stringListMap);
+        }
+    }
 
 }
