@@ -584,6 +584,22 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
     }
 
+
+    public Collection<String> getSelectableGenomeIDs() {
+
+        Set<String> ids = new HashSet<String>();
+        if (genomeComboBox != null) {
+            for (int i = 0; i < genomeComboBox.getItemCount(); i++) {
+                Object object = genomeComboBox.getItemAt(i);
+                if (object instanceof GenomeListItem) {
+                    GenomeListItem genomeListItem = (GenomeListItem) object;
+                    ids.add(genomeListItem.getId());
+                }
+            }
+        }
+        return ids;
+    }
+
     /**
      * Called from session loading,  command line listener, startup code
      */
