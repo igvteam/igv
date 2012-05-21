@@ -733,10 +733,11 @@ public class HttpUtils {
                 List<String> cookies = stringListMap.get("Set-Cookie");
                 if (cookies != null) {
                     for (String cstring : cookies) {
-                        String[] tokens = Globals.equalPattern.split(cstring, 2);
+                        String[] tokens = Globals.equalPattern.split(cstring);
                         if (tokens.length >= 2) {
                             String cookieName = tokens[0];
-                            String value = tokens[1];
+                            String[] vTokens = Globals.semicolonPattern.split(tokens[1]);
+                            String value = vTokens[0];
                             if (cookieName.equals("gs-token")) {
                                 GSUtils.setGSToken(value);
                             } else if (cookieName.equals("gs-username")) {
