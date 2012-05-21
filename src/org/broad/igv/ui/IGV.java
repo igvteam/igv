@@ -404,6 +404,10 @@ public class IGV {
         contentPane.getCommandBar().selectGenomeFromList(genome);
     }
 
+    public Collection<String> getSelectableGenomeIDs() {
+        return contentPane.getCommandBar().getSelectableGenomeIDs();
+    }
+
 
     public void doDefineGenome(ProgressMonitor monitor) {
 
