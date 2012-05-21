@@ -42,7 +42,6 @@ public class TrackLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
         trackLoader = new TrackLoader();
     }
 
@@ -56,7 +55,13 @@ public class TrackLoaderTest {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         TestUtils.createIndex(filepath);
         tstLoadFi(filepath, 1);
+    }
 
+    @Test
+    public void testLoadBEDtxt() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed.txt";
+        TestUtils.createIndex(filepath);
+        tstLoadFi(filepath, 1);
     }
 
     @Test
