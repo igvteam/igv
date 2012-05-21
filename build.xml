@@ -68,6 +68,7 @@
                 <include name="**/*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
                 <exclude name="**/goby-io-igv.jar"/>
+                <exclude name="**/*AppleJavaExtensions.jar"/>
             </fileset>
         </unzip>
     </target>
@@ -102,7 +103,7 @@
 
     <!-- We compile IGV and the tests separately, because we only want
     to include the main classes in the JAR and so it's easier to run
-    tests later.. -->
+    tests later. -->
     <target name="compile" depends="init" description="Compile main source files to temp directory">
         <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
             <classpath refid="@jars"/>
@@ -167,7 +168,7 @@
 
     <target name="all" depends="build, clean"/>
 
-    <!-- Run all tests with ant. Work in progress. -->
+    <!-- Run all tests with ant -->
     <path id="test.classpath">
         <path refid="@jars"/>
         <pathelement location="${testtmp.dir}"/>
