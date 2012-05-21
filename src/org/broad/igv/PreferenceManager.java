@@ -183,6 +183,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String GENOME_SPACE_ENABLE = "GENOME_SPACE_ENABLE";
     public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
+    public static final String GENOME_SPACE_IDENTITY_SERVER = "GENOME_SPACE_IDENTITY_SERVER";
 
     public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
 
@@ -1005,6 +1006,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENOME_SPACE_ENABLE, "false");
         defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dm.genomespace.org/datamanager/v1.0/");
         defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atm.genomespace.org/atm/v1.0/");
+        defaultValues.put(GENOME_SPACE_IDENTITY_SERVER, "https://identitydev.genomespace.org:8444/identityServer/basic");
 
         // Affective computing mode
         defaultValues.put(AFFECTIVE_ENABLE, "false");
