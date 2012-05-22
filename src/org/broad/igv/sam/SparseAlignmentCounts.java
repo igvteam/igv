@@ -17,6 +17,8 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(SparseAlignmentCounts.class);
     private int maxCount = 0;
+    List<Integer> indeces;
+
 
     /**
      * Map of genomic position -> index of count arrays
@@ -80,8 +82,12 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
         return end;
     }
 
-    public PositionIterator getPositionIterator() {
-        return new SparsePositionIterator();
+    public int getNumberOfPoints() {
+        return indeces == null ? 0 : indeces.size();
+    }
+
+    public int getPosition(int idx) {
+        return indeces.get(idx);
     }
 
 
@@ -410,28 +416,10 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
             list.set(idx, delta);
         }
     }
+    public void finish() {
+        indeces = new ArrayList<Integer>(indexMap.keySet());
+        Collections.sort(indeces);
 
-    class SparsePositionIterator implements PositionIterator {
-        List<Integer> indeces;
-        int idx;
-
-        SparsePositionIterator() {
-            indeces = new ArrayList<Integer>(indexMap.keySet());
-            Collections.sort(indeces);
-            idx = 0;
-        }
-
-        public int nextPosition() {
-            if (idx < indeces.size()) {
-                final Integer val = indeces.get(idx);
-                idx++;
-                return val;
-            } else {
-                return -1;
-            }
-
-        }
     }
-
 
 }

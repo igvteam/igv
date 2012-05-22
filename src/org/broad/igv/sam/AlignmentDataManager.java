@@ -294,11 +294,9 @@ public class AlignmentDataManager {
 
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
-                // Expand start and end to facilitate panning, but by no more than
-                // 1 tile size or 8kb  a tile size, whichever is less
-                // DON'T expand mitochondria
+                // Expand start and end to facilitate panning
 
-                int expandLength = Math.min(8000, reader.getTileSize(chr) / 2);
+                int expandLength = reader.getTileSize(chr) / 2;
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
@@ -336,8 +334,8 @@ public class AlignmentDataManager {
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
                     if (context.getPanel() != null) {
-                        //     context.getPanel().invalidate();
-                        //     context.getPanel().repaint();
+                             context.getPanel().invalidate();
+                             context.getPanel().repaint();
                     }
 
                 } catch (Exception exception) {

@@ -204,8 +204,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
-            //final SAMPreferences prefs = PreferenceManager.getInstance().getSAMPreferences();
-            //int insertSizeThreshold = renderOptions.insertSizeThreshold;
+            int lastPixelDrawn = -1;
 
             for (Alignment alignment : alignments) {
                 // Compute the start and dend of the alignment in pixels
@@ -225,7 +224,16 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
                 if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (pixelWidth >= 1))) {
+
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+
+                    // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
+                    // and it is the default color, skip drawing.
+                    if (pixelEnd <= lastPixelDrawn && alignmentColor == alignment.getDefaultColor()) {
+                        continue;
+                    }
+
+
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
 
@@ -233,6 +241,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     int h = (int) Math.max(1, rowRect.getHeight() - 2);
                     int y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
+                    lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
                     drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else {
