@@ -139,7 +139,12 @@ public class FastaIndexTest extends AbstractHeadlessTest {
         FastaIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
         int tAbasesPL = 58;
 
-        int tAbytesPL = tAbasesPL + 1;
+        //We assume that the test file will have LF line endings
+        //regardless of the platform it's on. May change this in the future.
+        //git default checkouts may change line endings
+        int bytesAtEnd = 1;//Globals.IS_WINDOWS ? 2 : 1;
+
+        int tAbytesPL = tAbasesPL + bytesAtEnd;
 
         assertEquals(tAbasesPL, entry.getBasesPerLine());
         assertEquals(tAbytesPL, entry.getBytesPerLine());
@@ -151,7 +156,7 @@ public class FastaIndexTest extends AbstractHeadlessTest {
         entry = index.getIndexEntry(tG);
 
         int tGbasesPL = 56;
-        int tGbytesPL = tGbasesPL + 1;
+        int tGbytesPL = tGbasesPL + bytesAtEnd;
         assertEquals(tGbasesPL, entry.getBasesPerLine());
         assertEquals(tGbytesPL, entry.getBytesPerLine());
         //Starting position is from tA start + tA length + length of header line
