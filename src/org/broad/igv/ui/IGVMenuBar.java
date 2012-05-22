@@ -12,7 +12,6 @@
 package org.broad.igv.ui;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -68,7 +67,7 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu viewMenu;
     IGV igv;
 
-    public void showAboutDialog(){
+    public void showAboutDialog() {
         (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
     }
 
@@ -83,11 +82,12 @@ public class IGVMenuBar extends JMenuBar {
 
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
-        if(Globals.IS_MAC){
-            try{
+        if (Globals.IS_MAC) {
+            try {
                 OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[]) null));
-            }catch (Exception e){
-                log.error("Error setting about handler", e);
+                OSXAdapter.setQuitHandler(ShutdownThread.class, ShutdownThread.class.getDeclaredMethod("runS", (Class[]) null));
+            } catch (Exception e) {
+                log.error("Error setting apple-specific about and quit handlers", e);
             }
 
         }
@@ -604,15 +604,15 @@ public class IGVMenuBar extends JMenuBar {
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.add(new JSeparator());
-         menuAction = new MenuAction("Logout") {
-             @Override
-             public void actionPerformed(ActionEvent e) {
-                 GSUtils.logout();
-                 if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
-                     doExitApplication();
-                 }
-             }
-         };
+        menuAction = new MenuAction("Logout") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GSUtils.logout();
+                if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
+                    doExitApplication();
+                }
+            }
+        };
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
