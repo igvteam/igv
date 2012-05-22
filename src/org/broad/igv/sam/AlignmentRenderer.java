@@ -381,6 +381,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             g = context.getGraphic2DForColor(alignmentColor2);
 
             drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
+        }else{
+            return;
         }
 
         Color lineColor = grey1;
