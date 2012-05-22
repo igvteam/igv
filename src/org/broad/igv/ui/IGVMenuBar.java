@@ -11,9 +11,7 @@
 
 package org.broad.igv.ui;
 
-import com.apple.eawt.AboutHandler;
-import com.apple.eawt.AppEvent;
-import com.apple.eawt.Application;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -82,15 +80,16 @@ public class IGVMenuBar extends JMenuBar {
         //from the command bar does what we want.
         //With the stub library AppleJavaExtensions included, it should
         //build on all platforms
-        if(Globals.IS_MAC){
-            Application application = Application.getApplication();
-            application.setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AppEvent.AboutEvent aboutEvent) {
-                    (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
-                }
-            });
-        }
+//        if(Globals.IS_MAC){
+//
+//            Application application = Application.getApplication();
+//            application.setAboutHandler(new AboutHandler() {
+//                @Override
+//                public void handleAbout(AppEvent.AboutEvent aboutEvent) {
+//                    (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+//                }
+//            });
+//        }
 
     }
 
