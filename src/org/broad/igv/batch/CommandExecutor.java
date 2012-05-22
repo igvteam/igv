@@ -17,6 +17,7 @@
 package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
@@ -27,10 +28,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
-import org.broad.igv.util.LRUCache;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.RuntimeUtils;
-import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.*;
 
 import java.awt.*;
 import java.io.File;
@@ -125,6 +123,10 @@ public class CommandExecutor {
                     return this.setSamplingReadCount(param1);
                 } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
                     return this.setSleepInterval(param1);
+                } else if (cmd.equalsIgnoreCase("setCredentials")) {
+                    return this.setCredentials(param1, param2);
+                } else if (cmd.equalsIgnoreCase("clearCredentials")) {
+                    return this.clearCredentials();
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
@@ -169,12 +171,12 @@ public class CommandExecutor {
 
     private String setSamplingWindowSize(String windowSize) {
         try {
-             Integer.parseInt(windowSize);
-             PreferenceManager.getInstance().override(PreferenceManager.SAM_SAMPLING_WINDOW, String.valueOf(windowSize));
-             return "OK";
-         } catch (NumberFormatException e) {
-              return "ERROR: SAMPLING WINDOW IS NOT A NUMBER: " + windowSize;
-         }
+            Integer.parseInt(windowSize);
+            PreferenceManager.getInstance().override(PreferenceManager.SAM_SAMPLING_WINDOW, String.valueOf(windowSize));
+            return "OK";
+        } catch (NumberFormatException e) {
+            return "ERROR: SAMPLING WINDOW IS NOT A NUMBER: " + windowSize;
+        }
 
     }
 
@@ -184,7 +186,7 @@ public class CommandExecutor {
             PreferenceManager.getInstance().override(PreferenceManager.SAM_MAX_LEVELS, String.valueOf(samplingReadCount));
             return "OK";
         } catch (NumberFormatException e) {
-             return "ERROR: SAMPLING READ COUNT IS NOT A NUMBER: " + samplingReadCount;
+            return "ERROR: SAMPLING READ COUNT IS NOT A NUMBER: " + samplingReadCount;
         }
 
     }
@@ -210,6 +212,17 @@ public class CommandExecutor {
         } catch (NumberFormatException e) {
             return "ERROR - sleep interval value ('" + param1 + ".) must be an integer number";
         }
+    }
+
+    private String setCredentials(String param1, String param2) {
+        HttpUtils.getInstance().setDefaultUserName(param1);
+        HttpUtils.getInstance().setDefaultPassword(param2);
+        return "OK";
+    }
+
+    private String clearCredentials() {
+        HttpUtils.getInstance().clearDefaultCredentials();
+        return "OK";
     }
 
 

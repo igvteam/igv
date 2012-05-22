@@ -62,6 +62,8 @@ public class HttpUtils {
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
+    private String defaultUserName = null;
+    private char [] defaultPassword = null;
 
     /**
      *  Create the single instance  and register the cookie manager
@@ -633,6 +635,19 @@ public class HttpUtils {
         return conn;
     }
 
+    public void setDefaultPassword(String defaultPassword) {
+        this.defaultPassword = defaultPassword.toCharArray();
+    }
+
+    public void setDefaultUserName(String defaultUserName) {
+        this.defaultUserName = defaultUserName;
+    }
+
+    public void  clearDefaultCredentials() {
+        this.defaultPassword = null;
+        this.defaultUserName = null;
+    }
+
     public static class ProxySettings {
         boolean auth = false;
         String user;
@@ -663,6 +678,10 @@ public class HttpUtils {
          */
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
+
+            if(defaultUserName != null && defaultPassword != null) {
+                return new PasswordAuthentication(defaultUserName, defaultPassword);
+            }
 
             RequestorType type = getRequestorType();
             URL url = this.getRequestingURL();
