@@ -11,6 +11,7 @@
 
 package org.broad.igv.ui;
 
+import apple.dts.samplecode.osxadapter.OSXAdapter;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -67,6 +68,10 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu viewMenu;
     IGV igv;
 
+    public void showAboutDialog(){
+        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+    }
+
     public IGVMenuBar(IGV igv) {
         this.igv = igv;
         setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
@@ -78,19 +83,14 @@ public class IGVMenuBar extends JMenuBar {
 
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
-        //With the stub library AppleJavaExtensions included, it should
-        //build on all platforms
-//        if(Globals.IS_MAC){
-//
-//            Application application = Application.getApplication();
-//            application.setAboutHandler(new AboutHandler() {
-//                @Override
-//                public void handleAbout(AppEvent.AboutEvent aboutEvent) {
-//                    (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
-//                }
-//            });
-//        }
+        if(Globals.IS_MAC){
+            try{
+                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[]) null));
+            }catch (Exception e){
+                log.error("Error setting about handler", e);
+            }
 
+        }
     }
 
     private List<AbstractButton> createMenus() {
