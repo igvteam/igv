@@ -39,10 +39,6 @@ public class CombinedFeatureSource implements FeatureSource {
 
     private int featureWindowSize = -1;
 
-    //Note: This must be the FULL path. Having bedtools on your systems path
-    //is not sufficient
-    static String BEDtoolsPath = "/usr/local/bin/bedtools";
-
     /**
      * If known, it is recommended that sourceA be the larger of the two. sourceB will
      * be loaded into memory by BEDTools.
@@ -108,7 +104,7 @@ public class CombinedFeatureSource implements FeatureSource {
         int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFileB));
 
         //Start bedtools process
-        String cmd = BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFileB.getAbsolutePath() + " -a " + outFileA.getAbsolutePath();
+        String cmd = Globals.BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFileB.getAbsolutePath() + " -a " + outFileA.getAbsolutePath();
         Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
 
         //This is un-necessary I believe, and occasionally will hang

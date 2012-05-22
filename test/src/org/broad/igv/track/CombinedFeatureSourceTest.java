@@ -36,7 +36,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testBedToolsPath() throws Exception {
-        String cmd = CombinedFeatureSource.BEDtoolsPath;
+        String cmd = Globals.BEDtoolsPath;
         String resp = RuntimeUtils.executeShellCommand(cmd, null, null);
         String line0 = resp.split("\n")[0];
         assertEquals("bedtools: flexible tools for genome arithmetic and DNA sequence analysis.", line0.trim());
