@@ -157,12 +157,13 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     }
 
-    public boolean isMismatch(int pos, char ref, String chr, float snpThreshold) {
+    public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold) {
 
         Set<Integer> filteredSnps = knownSnps == null ? null : knownSnps.get(chr);
         if (filteredSnps == null || !filteredSnps.contains(pos + 1)) {
             float threshold = snpThreshold * getTotalQuality(pos);
             if (ref > 0) {
+                if(ref < 96) ref += 32;  // a fast "toLowercase"
                 for (char c : nucleotides) {
                     if (c != ref && c != 'n' && getQuality(pos, (byte) c) > threshold) {
                         return true;

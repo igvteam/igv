@@ -36,15 +36,17 @@ public interface AlignmentCounts {
 
     int getEnd();
 
+    int getNumberOfPoints();
+
     int getMaxCount();
 
     String getValueStringAt(int pos);
 
-    PositionIterator getPositionIterator();
-
-    public boolean isMismatch(int pos, char ref, String chr, float snpThreshold);
+    public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold);
 
     BisulfiteCounts getBisulfiteCounts();
+
+    void finish();
 
 
     static interface PositionIterator {
