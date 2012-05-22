@@ -129,6 +129,24 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         }
     }
 
+
+    @Test
+    public void testIntersectBED() throws Exception {
+        List<Feature> actFeatures = tstOperationBED(CombinedFeatureSource.Operation.INTERSECT, 4);
+        String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
+        FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
+        Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
+        int ind = 0;
+        while (expFeatures.hasNext()) {
+            Feature expFeature = expFeatures.next();
+            Feature actFeature = actFeatures.get(ind);
+            assertEquals(expFeature.getStart(), actFeature.getStart());
+            assertEquals(expFeature.getEnd(), actFeature.getEnd());
+            ind++;
+        }
+
+    }
+
     /**
      * Test to make sure we are parsing the 2nd files features
      *

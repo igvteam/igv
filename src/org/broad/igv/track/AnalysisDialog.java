@@ -15,6 +15,7 @@
 
 package org.broad.igv.track;
 
+import java.awt.event.*;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
@@ -39,6 +40,13 @@ public class AnalysisDialog extends JDialog {
         track2Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(true).toArray()));
         track1Box.setRenderer(new TrackComboBoxRenderer());
         track2Box.setRenderer(new TrackComboBoxRenderer());
+
+        ItemListener listener = new SetOutputTrackNameListener();
+        track1Box.addItemListener(listener);
+        track2Box.addItemListener(listener);
+        operation.addItemListener(listener);
+
+        setOutputTrackName();
 
     }
 
@@ -67,7 +75,6 @@ public class AnalysisDialog extends JDialog {
         IGV.getInstance().repaint();
     }
 
-
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -76,8 +83,9 @@ public class AnalysisDialog extends JDialog {
         track1Box = new JComboBox();
         operation = new JComboBox();
         track2Box = new JComboBox();
-        resultName = new JTextField();
         label1 = new JLabel();
+        scrollPane1 = new JScrollPane();
+        resultName = new JTextArea();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -96,25 +104,27 @@ public class AnalysisDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
                 contentPanel.add(track1Box);
-                track1Box.setBounds(140, 35, 190, track1Box.getPreferredSize().height);
+                track1Box.setBounds(50, 35, 190, track1Box.getPreferredSize().height);
                 contentPanel.add(operation);
-                operation.setBounds(140, 75, 190, operation.getPreferredSize().height);
+                operation.setBounds(50, 75, 190, operation.getPreferredSize().height);
                 contentPanel.add(track2Box);
-                track2Box.setBounds(140, 115, 190, track2Box.getPreferredSize().height);
-
-                //---- resultName ----
-                resultName.setText("analysis");
-                contentPanel.add(resultName);
-                resultName.setBounds(140, 170, 155, resultName.getPreferredSize().height);
+                track2Box.setBounds(50, 115, 190, track2Box.getPreferredSize().height);
 
                 //---- label1 ----
                 label1.setText("Result Track Name");
                 contentPanel.add(label1);
-                label1.setBounds(5, 175, 128, label1.getPreferredSize().height);
+                label1.setBounds(50, 150, 128, label1.getPreferredSize().height);
+
+                //======== scrollPane1 ========
+                {
+                    scrollPane1.setViewportView(resultName);
+                }
+                contentPanel.add(scrollPane1);
+                scrollPane1.setBounds(50, 180, 175, 35);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -132,8 +142,8 @@ public class AnalysisDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -143,9 +153,9 @@ public class AnalysisDialog extends JDialog {
                         okButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -156,8 +166,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -174,8 +184,9 @@ public class AnalysisDialog extends JDialog {
     private JComboBox track1Box;
     private JComboBox operation;
     private JComboBox track2Box;
-    private JTextField resultName;
     private JLabel label1;
+    private JScrollPane scrollPane1;
+    private JTextArea resultName;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -189,6 +200,21 @@ public class AnalysisDialog extends JDialog {
             Track track = (Track) value;
             String toShow = track.getName();
             return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private void setOutputTrackName(){
+        String name = ((Track) track1Box.getSelectedItem()).getName();
+        name += " " + operation.getSelectedItem() + " ";
+        name += ((Track) track2Box.getSelectedItem()).getName();
+        resultName.setText(name);
+    }
+
+    private class SetOutputTrackNameListener implements ItemListener{
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            setOutputTrackName();
         }
     }
 }
