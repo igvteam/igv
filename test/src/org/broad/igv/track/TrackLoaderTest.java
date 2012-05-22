@@ -43,6 +43,7 @@ public class TrackLoaderTest {
     @Before
     public void setUp() throws Exception {
         trackLoader = new TrackLoader();
+        TestUtils.setUpHeadless();
     }
 
     @AfterClass
@@ -54,14 +55,14 @@ public class TrackLoaderTest {
     public void testLoadBEDIndexed() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         TestUtils.createIndex(filepath);
-        tstLoadFi(filepath, 1);
+        tstLoadFi(filepath, 1, true);
     }
 
     @Test
     public void testLoadBEDtxt() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed.txt";
         TestUtils.createIndex(filepath);
-        tstLoadFi(filepath, 1);
+        tstLoadFi(filepath, 1, true);
     }
 
     @Test
@@ -71,7 +72,7 @@ public class TrackLoaderTest {
             File f = new File(filepath + ".idx");
             f.delete();
         }
-        tstLoadFi(filepath, 1);
+        tstLoadFi(filepath, 1, false);
 
     }
 
@@ -79,14 +80,14 @@ public class TrackLoaderTest {
     @Test(expected = TribbleException.MalformedFeatureFile.class)
     public void testBEDCodec1() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
-        tstLoadFi(filepath, null);
+        tstLoadFi(filepath, null, false);
     }
 
     @Test
     public void testLoadSIF() throws Exception {
         String filepath = TestUtils.DATA_DIR + "sample/BRCA_sif.txt";
         //Sample information file, shouldn't have tracks. Not a great test
-        tstLoadFi(filepath, 0);
+        tstLoadFi(filepath, 0, false);
     }
 
     @Test
@@ -136,14 +137,23 @@ public class TrackLoaderTest {
 
 
 
-    private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
+    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, boolean makeIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();
-        return tstLoadFi(filepath, expected_tracks, genome);
+        return tstLoadFi(filepath, expected_tracks, genome, makeIndex);
     }
 
-    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome) throws Exception {
+    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome, boolean makeIndex) throws Exception {
         ResourceLocator locator = new ResourceLocator(filepath);
 
+        //Try creating an index
+        //UI would ask for confirmation
+        if(makeIndex){
+            try{
+                TestUtils.createIndex(filepath);
+            }catch(Exception e){
+
+            }
+        }
         List<Track> tracks = trackLoader.load(locator, genome);
         if (expected_tracks != null) {
             assertEquals(expected_tracks.intValue(), tracks.size());
@@ -160,7 +170,7 @@ public class TrackLoaderTest {
 
     @Test
     public void testBEDLoadsAliases() throws Exception {
-        tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1);
+        tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1, false);
         String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
         for (String alias : aliases) {
             Feature feat = FeatureDB.getFeature(alias);
@@ -179,7 +189,7 @@ public class TrackLoaderTest {
     public void testFilesHeadless() throws Exception {
         Genome genome = TestUtils.loadGenome();
         for (String finame : filenames) {
-            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome);
+            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
         }
     }
 
@@ -194,7 +204,7 @@ public class TrackLoaderTest {
         finames.add(ex_filename);
 
         for (String finame : finames) {
-            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome);
+            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
         }
         TestUtils.stopGUI();
     }

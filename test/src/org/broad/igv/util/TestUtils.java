@@ -148,7 +148,7 @@ public class TestUtils {
      * @throws IOException
      */
     public static void createIndex(String file) throws IOException {
-        createIndex(file, IgvTools.LINEAR_INDEX, 1000);
+        createIndex(file, IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
     }
 
     /**
