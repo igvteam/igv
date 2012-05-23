@@ -40,6 +40,31 @@ public class CombinedFeatureSource implements FeatureSource {
     private int featureWindowSize = -1;
 
     /**
+     * Checks the global bedtools path, to see if bedtools
+     * is actually there. Check is 2-fold:
+     * First, we check if path exists.
+     * If so, we run version command
+     *
+     * @return
+     */
+    public static boolean checkBEDToolsPathValid() throws IOException {
+        String path = Globals.BEDtoolsPath;
+        File bedtoolsFile = new File(path);
+        boolean pathValid = bedtoolsFile.isFile();
+        if (pathValid && !bedtoolsFile.canExecute()) {
+            log.debug(path + " exists but is not executable. ");
+            return false;
+        }
+
+        String cmd = path + " --version";
+        String resp = RuntimeUtils.executeShellCommand(cmd, null, null);
+        String line0 = resp.split("\n")[0].toLowerCase();
+        pathValid &= line0.contains("bedtools v");
+        pathValid &= !line0.contains("command not found");
+        return pathValid;
+    }
+
+    /**
      * If known, it is recommended that sourceA be the larger of the two. sourceB will
      * be loaded into memory by BEDTools.
      *
@@ -126,18 +151,17 @@ public class CombinedFeatureSource implements FeatureSource {
         String line;
         Feature feat;
         while ((line = in.readLine()) != null) {
-            if (operation == Operation.WINDOW) {
+            if (operation == Operation.WINDOW || operation == Operation.CLOSEST) {
                 String[] closest = splitDualFeatures(line, 3)[1];
+                //If not found, bedtools returns -1 for positions
+                if (closest[1].trim().equalsIgnoreCase("-1")) {
+                    continue;
+                }
                 feat = codec.decode(closest);
             } else {
                 feat = codec.decode(line);
             }
             featuresList.add(feat);
-//            if(operation == Operation.CLOSEST){
-//                //If not found, bedtools returns -1 for positions
-//                if(closest[1].trim().equalsIgnoreCase("-1")){
-//                    continue;
-//                }
         }
 
         in.close();
@@ -240,8 +264,7 @@ public class CombinedFeatureSource implements FeatureSource {
         INTERSECT("intersect -bed"),
         SUBTRACT("subtract"),
         //Identify the "closest" feature in file B for each feature in file A
-        //IGV doesn't have a meaningful way to display this
-        //CLOSEST("closest"),
+        CLOSEST("closest"),
         //TODO include -d option
         WINDOW("window -bed"),
         COVERAGE("coverage");

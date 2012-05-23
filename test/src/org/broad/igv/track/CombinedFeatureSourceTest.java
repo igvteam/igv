@@ -17,7 +17,8 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
-import org.junit.Ignore;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
@@ -30,9 +31,14 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/05/01
  */
-@Ignore
 public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        AbstractHeadlessTest.setUpClass();
+        boolean haveBedTools = CombinedFeatureSource.checkBEDToolsPathValid();
+        Assume.assumeTrue(haveBedTools);
+    }
 
     @Test
     public void testBedToolsPath() throws Exception {
@@ -120,7 +126,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(4);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 4);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 2);
-        //expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 6);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 6);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 9);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 3);
 
@@ -143,6 +149,36 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
             assertEquals(expFeature.getStart(), actFeature.getStart());
             assertEquals(expFeature.getEnd(), actFeature.getEnd());
             ind++;
+        }
+
+    }
+
+    @Test
+    public void testClosestBED() throws Exception {
+        List<Feature> actFeatures = tstOperationBED(CombinedFeatureSource.Operation.CLOSEST, 6);
+        String expectedPath = TestUtils.DATA_DIR + "bed/closest_res.bed";
+        BufferedReader reader = new BufferedReader(new FileReader(expectedPath));
+        int ind = 0;
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+
+            String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+
+            String expChr = tokens[3];
+            int expStart = Integer.parseInt(tokens[4]);
+            int expEnd = Integer.parseInt(tokens[5]);
+
+            if (expChr.equalsIgnoreCase(".")) {
+                continue;
+            }
+
+            Feature actFeature = actFeatures.get(ind);
+            assertEquals(expChr, actFeature.getChr());
+            assertEquals(expStart, actFeature.getStart());
+            assertEquals(expEnd, actFeature.getEnd());
+
+            ind++;
+
         }
 
     }
