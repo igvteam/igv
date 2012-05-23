@@ -85,6 +85,7 @@ public class FastaIndexedSequenceTest {
     public void testPaddedReference() throws Exception {
 
         String fasta = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        FastaUtils.createIndexFile(fasta, fasta + ".fai");
         String expectedSequence = "atcaccattaccac******AAcggtgcgggctgacgcgtacaggaaacacagaaaaaag";
         String chr = "NC_000913_bb";
         int start = 240;
@@ -98,7 +99,7 @@ public class FastaIndexedSequenceTest {
     }
 
 
-    // TODO -- add some insertions, what are we testing?
+    // TODO -- add some assertions, what are we testing?
     @Test
     public void testPaddedReference2() throws Exception {
 

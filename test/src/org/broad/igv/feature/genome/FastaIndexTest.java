@@ -142,7 +142,7 @@ public class FastaIndexTest extends AbstractHeadlessTest {
         //We assume that the test file will have LF line endings
         //regardless of the platform it's on. May change this in the future.
         //git default checkouts may change line endings
-        int bytesAtEnd = 1;//Globals.IS_WINDOWS ? 2 : 1;
+        int bytesAtEnd = TestUtils.getBytesAtEnd(inPath);
 
         int tAbytesPL = tAbasesPL + bytesAtEnd;
 
