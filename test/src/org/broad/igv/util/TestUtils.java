@@ -17,13 +17,13 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * @author jrobinso
@@ -191,5 +191,24 @@ public class TestUtils {
                 }
             }
         }
+    }
+
+    /**
+     * Returns either 1 or 2, representing the number of
+     * bytes used to end a line. Reads only from first line of a file
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    public static int getBytesAtEnd(String filePath) throws IOException{
+        InputStream is = new FileInputStream(filePath);
+        AsciiLineReader reader = new AsciiLineReader(is);
+        String line = reader.readLine();
+        int bytesThisLine = (int) reader.getPosition();
+
+        reader.close();
+
+        return bytesThisLine - line.length();
+
     }
 }

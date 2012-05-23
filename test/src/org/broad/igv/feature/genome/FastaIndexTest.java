@@ -142,13 +142,13 @@ public class FastaIndexTest extends AbstractHeadlessTest {
         //We assume that the test file will have LF line endings
         //regardless of the platform it's on. May change this in the future.
         //git default checkouts may change line endings
-        int bytesAtEnd = 1;//Globals.IS_WINDOWS ? 2 : 1;
+        int bytesAtEnd = TestUtils.getBytesAtEnd(inPath);
 
         int tAbytesPL = tAbasesPL + bytesAtEnd;
 
         assertEquals(tAbasesPL, entry.getBasesPerLine());
         assertEquals(tAbytesPL, entry.getBytesPerLine());
-        assertEquals(10, entry.getPosition());
+        assertEquals(9 + bytesAtEnd, entry.getPosition());
         int tAsize = 7 * tAbasesPL + 29;
         assertEquals(tAsize, entry.getSize());
         assertEquals(tA, entry.getContig());
@@ -162,7 +162,7 @@ public class FastaIndexTest extends AbstractHeadlessTest {
         //Starting position is from tA start + tA length + length of header line
         //Since "size" is number of bases, and "position" is bytes, this
         //may look weird
-        long tGpos = tAsize + 8 + index.getIndexEntry(tA).getPosition() + 10;
+        long tGpos = tAsize + 8*bytesAtEnd + index.getIndexEntry(tA).getPosition() + 9 + bytesAtEnd;
         assertEquals(tGpos, entry.getPosition());
         int tGsize = 5 * tGbasesPL + 26;
         assertEquals(tGsize, entry.getSize());
