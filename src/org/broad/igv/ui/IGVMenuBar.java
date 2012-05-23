@@ -24,6 +24,8 @@ import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.track.AnalysisDialog;
+import org.broad.igv.track.CombinedFeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -336,6 +338,18 @@ public class IGVMenuBar extends JMenuBar {
                 IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
             }
         });
+
+        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
+        analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+        analysisDialog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
+            }
+        });
+        if (Globals.BEDtoolsAnalysisEnabled) {
+            menuItems.add(analysisDialog);
+        }
 
         //menuItems.add(exportData);
 

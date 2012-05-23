@@ -100,9 +100,20 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     }
 
-    public List<Feature> tstOperationBED(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
+    private List<Feature> tstOperationBED3(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
         String pathA = TestUtils.DATA_DIR + "bed/test.bed";
         String pathB = TestUtils.DATA_DIR + "bed/test2.bed";
+        return tstOperationBED(pathA, pathB, operation, expectedNumFeatures);
+    }
+
+    private List<Feature> tstOperationBED6(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
+        String pathA = TestUtils.DATA_DIR + "bed/H3K4me1_sample_bed6.bed";
+        String pathB = TestUtils.DATA_DIR + "bed/H3K4me3_sample_bed6.bed";
+        return tstOperationBED(pathA, pathB, operation, expectedNumFeatures);
+    }
+
+    private List<Feature> tstOperationBED(String pathA, String pathB,
+                                          CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
         IgvTools igvTools = new IgvTools();
         igvTools.doIndex(pathA, 1, 16000);
         igvTools.doIndex(pathB, 1, 16000);
@@ -122,8 +133,8 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testOperationsBED() throws Exception {
-        Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(4);
+    public void testOperationsBED3() throws Exception {
+        Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(6);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 4);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 2);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 6);
@@ -132,14 +143,29 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         expectedNumFeatures.put(CombinedFeatureSource.Operation.MULTIINTER, 3);
 
         for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
-            tstOperationBED(entry.getKey(), entry.getValue());
+            tstOperationBED3(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Test
+    public void testOperationsBED6() throws Exception {
+        Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(6);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 5);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 18);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 19);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 12);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 14);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.MULTIINTER, 3);
+
+        for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
+            tstOperationBED6(entry.getKey(), entry.getValue());
         }
     }
 
 
     @Test
     public void testIntersectBED() throws Exception {
-        List<Feature> actFeatures = tstOperationBED(CombinedFeatureSource.Operation.INTERSECT, 4);
+        List<Feature> actFeatures = tstOperationBED3(CombinedFeatureSource.Operation.INTERSECT, 4);
         String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
         FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
         Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
@@ -156,7 +182,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testClosestBED() throws Exception {
-        List<Feature> actFeatures = tstOperationBED(CombinedFeatureSource.Operation.CLOSEST, 6);
+        List<Feature> actFeatures = tstOperationBED3(CombinedFeatureSource.Operation.CLOSEST, 6);
         String expectedPath = TestUtils.DATA_DIR + "bed/closest_res.bed";
         BufferedReader reader = new BufferedReader(new FileReader(expectedPath));
         int ind = 0;
@@ -216,7 +242,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
      */
     @Test
     public void testWindow() throws Exception {
-        List<Feature> features = tstOperationBED(CombinedFeatureSource.Operation.WINDOW, 9);
+        List<Feature> features = tstOperationBED3(CombinedFeatureSource.Operation.WINDOW, 9);
 
         Set<Integer> startsSet = new HashSet<Integer>(Arrays.asList(100, 150, 175));
         Set<Integer> endsSet = new HashSet<Integer>(Arrays.asList(101, 201, 375));

@@ -20,10 +20,7 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.Feature;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * A feature source which combines results from other feature sources.
@@ -46,7 +43,7 @@ public class CombinedFeatureSource implements FeatureSource {
      *
      * @return
      */
-    public static boolean checkBEDToolsPathValid() throws IOException {
+    public static boolean checkBEDToolsPathValid() {
         String path = Globals.BEDtoolsPath;
         File bedtoolsFile = new File(path);
         boolean pathValid = bedtoolsFile.isFile();
@@ -56,11 +53,32 @@ public class CombinedFeatureSource implements FeatureSource {
         }
 
         String cmd = path + " --version";
-        String resp = RuntimeUtils.executeShellCommand(cmd, null, null);
+        String resp;
+        try {
+            resp = RuntimeUtils.executeShellCommand(cmd, null, null);
+        } catch (IOException e) {
+            log.error(e);
+            return false;
+        }
         String line0 = resp.split("\n")[0].toLowerCase();
         pathValid &= line0.contains("bedtools v");
         pathValid &= !line0.contains("command not found");
         return pathValid;
+    }
+
+    public CombinedFeatureSource(Collection<Track> tracks, Operation operation) {
+        List<FeatureSource> sources = new ArrayList<FeatureSource>(tracks.size());
+        for (Track t : tracks) {
+            if (t instanceof FeatureTrack) {
+                sources.add(((FeatureTrack) t).source);
+            }
+        }
+
+        init(sources.toArray(new FeatureSource[0]), operation);
+    }
+
+    public CombinedFeatureSource(FeatureSource[] sources, Operation operation) {
+        init(sources, operation);
     }
 
     /**
@@ -70,7 +88,7 @@ public class CombinedFeatureSource implements FeatureSource {
      * @param sources
      * @param operation How the two sources will be combined
      */
-    public CombinedFeatureSource(FeatureSource[] sources, Operation operation) {
+    private void init(FeatureSource[] sources, Operation operation) {
         this.sources = sources;
         this.operation = operation;
         if (sources.length != 2 && operation != Operation.MULTIINTER) {
@@ -88,19 +106,28 @@ public class CombinedFeatureSource implements FeatureSource {
     private int writeFeaturesToStream(Iterator<Feature> features, OutputStream outputStream) {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
-        int numLines = 0;
+        int allNumCols = -1;
+        Map<String, Integer> props = new HashMap<String, Integer>(2);
         if (features != null) {
             IGVBEDCodec codec = new IGVBEDCodec();
             while (features.hasNext()) {
                 String data = codec.encode(features.next());
+
                 writer.println(data);
-                numLines++;
+
+                //We require consistency of output
+                int tmpNumCols = data.split("\t").length;
+                if (allNumCols < 0) {
+                    allNumCols = tmpNumCols;
+                } else {
+                    assert tmpNumCols == allNumCols;
+                }
             }
         }
         writer.flush();
         writer.close();
 
-        return numLines;
+        return allNumCols;
     }
 
     /**
@@ -110,19 +137,21 @@ public class CombinedFeatureSource implements FeatureSource {
      * @param chr
      * @param start
      * @param end
-     * @return
+     * @return LinkedHashMap from TempFileName -> number of columns in data file
+     *         A LinkedHashMap has a predictable iteration order, which will be the same as the
+     *         insertion order, which will be the order of sources
      * @throws IOException
      */
-    private List<String> createTempFiles(String chr, int start, int end) throws IOException {
-        List<String> tempFiles = new ArrayList<String>(sources.length);
+    private LinkedHashMap<String, Integer> createTempFiles(String chr, int start, int end) throws IOException {
+        LinkedHashMap<String, Integer> tempFiles = new LinkedHashMap<String, Integer>(sources.length);
         for (FeatureSource source : sources) {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
 
             File outFile = File.createTempFile("features", ".bed", null);
             outFile.deleteOnExit();
 
-            int num = writeFeaturesToStream(iter, new FileOutputStream(outFile));
-            tempFiles.add(outFile.getAbsolutePath());
+            int numCols = writeFeaturesToStream(iter, new FileOutputStream(outFile));
+            tempFiles.put(outFile.getAbsolutePath(), numCols);
         }
         return tempFiles;
     }
@@ -141,13 +170,14 @@ public class CombinedFeatureSource implements FeatureSource {
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
         String cmd = Globals.BEDtoolsPath + " " + this.operation.getCmd();
-        List<String> tempFiles = createTempFiles(chr, start, end);
+        LinkedHashMap<String, Integer> tempFiles = createTempFiles(chr, start, end);
+        String[] fiNames = tempFiles.keySet().toArray(new String[0]);
         if (operation == Operation.MULTIINTER) {
             assert tempFiles.size() >= 2;
-            cmd += " -i " + StringUtils.join(tempFiles, " ");
+            cmd += " -i " + StringUtils.join(tempFiles.keySet(), " ");
         } else {
             assert tempFiles.size() == 2;
-            cmd += " -b " + tempFiles.get(1) + " -a " + tempFiles.get(0);
+            cmd += " -b " + fiNames[1] + " -a " + fiNames[0];
         }
 
         //Start bedtools process
@@ -171,16 +201,19 @@ public class CombinedFeatureSource implements FeatureSource {
 
         String line;
         Feature feat;
+        int numCols0 = tempFiles.get(fiNames[0]);
+        int numCols1 = tempFiles.get(fiNames[1]);
         while ((line = in.readLine()) != null) {
+            String[] tokens = line.split("\t");
             if (operation == Operation.WINDOW || operation == Operation.CLOSEST) {
-                String[] closest = splitDualFeatures(line, 3)[1];
+
+                String[] closest = Arrays.copyOfRange(tokens, numCols0, numCols0 + numCols1);
                 //If not found, bedtools returns -1 for positions
                 if (closest[1].trim().equalsIgnoreCase("-1")) {
                     continue;
                 }
                 feat = codec.decode(closest);
             } else if (operation == Operation.MULTIINTER) {
-                String[] tokens = line.split("\t");
                 //We only look at regions common to ALL inputs
                 //Columns: chr \t start \t \end \t # of files which contained this feature \t comma-separated list files +many more
                 int numRegions = Integer.parseInt(tokens[3]);
@@ -190,7 +223,7 @@ public class CombinedFeatureSource implements FeatureSource {
                 String[] intersection = Arrays.copyOf(tokens, 3);
                 feat = codec.decode(intersection);
             } else {
-                feat = codec.decode(line);
+                feat = codec.decode(tokens);
             }
             featuresList.add(feat);
         }
@@ -214,24 +247,19 @@ public class CombinedFeatureSource implements FeatureSource {
      * might be one line, the first 3 columns representing data from file A
      * and the second 3 representing data from file B
      *
-     * @param input
-     * @param colsPerFeat Number of columns each feature should have.
-     *                    input must have >= 2x this number. Extra columns
-     *                    are ignored.
-     * @return A 2-D string array. First index is length 2, second is the number of
+     * @param tokens
+     * @param colsFeat1 Number of columns feature 1 has
+     * @param colsFeat2 Number of columns feature 2 has
+     * @return A 2-D string array. First index is length 2, second is length = the number of
      *         columns each feature has. out[0] is the first feature, out[1] is the second
      */
-    private String[][] splitDualFeatures(String input, int colsPerFeat) {
-        String[] tokens = Globals.singleTabMultiSpacePattern.split(input);
+    private String[][] splitDualFeatures(String[] tokens, int colsFeat1, int colsFeat2) {
 
-        assert tokens.length == colsPerFeat * 2;
+        assert tokens.length >= colsFeat1 + colsFeat2;
 
-        String[] feat1 = new String[colsPerFeat];
-        String[] feat2 = new String[colsPerFeat];
-        for (int cc = 0; cc < colsPerFeat; cc++) {
-            feat1[cc] = tokens[cc];
-            feat2[cc] = tokens[cc + colsPerFeat];
-        }
+        String[] feat1 = Arrays.copyOf(tokens, colsFeat1);
+        String[] feat2 = Arrays.copyOfRange(tokens, colsFeat1, colsFeat1 + colsFeat2);
+
 
         String[][] out = new String[][]{feat1, feat2};
         return out;
