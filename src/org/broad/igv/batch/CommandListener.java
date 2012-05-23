@@ -208,6 +208,7 @@ public class CommandListener implements Runnable {
     private static final String CONTENT_LENGTH = "Content-Length: ";
     private static final String CONTENT_TYPE_TEXT_HTML = "text/html";
     private static final String CONNECTION_CLOSE = "Connection: close";
+    private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
 
     private void sendHTTPResponse(PrintWriter out, String result) {
 
@@ -216,6 +217,8 @@ public class CommandListener implements Runnable {
             out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
             out.print(CRNL);
             out.print(CONTENT_LENGTH + (result.length()));
+            out.print(CRNL);
+            out.print(NO_CACHE);
             out.print(CRNL);
             out.print(CONNECTION_CLOSE);
             out.print(CRNL);
