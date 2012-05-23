@@ -116,11 +116,11 @@ public class DataPanel extends JComponent implements Paintable {
         try {
 
             Rectangle clipBounds = g.getClipBounds();
-            final Rectangle damageRect = clipBounds == null ? getVisibleRect() : clipBounds.intersection(getVisibleRect());
+            final Rectangle visibleRect = getVisibleRect();
+            final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
-            String genomeId = GenomeManager.getInstance().getGenomeId();
 
-            context = new RenderContextImpl(genomeId, this, graphics2D, frame, this.getVisibleRect());
+            context = new RenderContextImpl(this, graphics2D, frame, visibleRect);
 
             if (IS_MAC) {
                 this.applyMacPerformanceHints((Graphics2D) g);
@@ -220,9 +220,7 @@ public class DataPanel extends JComponent implements Paintable {
         RenderContext context = null;
         try {
 
-            String genomeId = GenomeManager.getInstance().getGenomeId();
-
-            context = new RenderContextImpl(genomeId, null, g, frame, rect);
+            context = new RenderContextImpl(null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
             int height = rect.height;

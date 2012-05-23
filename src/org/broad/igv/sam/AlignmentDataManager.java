@@ -247,7 +247,6 @@ public class AlignmentDataManager {
                                                                                      AlignmentTrack.RenderOptions renderOptions,
                                                                                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-        final String genomeId = context.getGenomeId();
         final String chr = context.getChr();
         final int start = (int) context.getOrigin();
         final int end = (int) context.getEndLocation() + 1;

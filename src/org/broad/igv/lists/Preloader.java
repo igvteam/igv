@@ -49,7 +49,7 @@ public class Preloader {
                     if (track.isVisible()) {
                         if (track instanceof DataTrack) {
                             DataTrack dt = (DataTrack) track;
-                            RenderContext context = new RenderContextImpl(genomeId, null, null, frame, null);
+                            RenderContext context = new RenderContextImpl(null, null, frame, null);
                             int start = Math.max(0, locus.getStart() - flankingRegion);
                             int end = locus.getEnd() + flankingRegion;
                             dt.load(context, locus.getChr(), start, end, frame.getZoom());
