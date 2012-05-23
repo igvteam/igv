@@ -79,7 +79,7 @@ public class AnalysisDialog extends JDialog {
 
         FeatureTrack track1 = (FeatureTrack) track1Box.getSelectedItem();
         FeatureTrack track2 = (FeatureTrack) track2Box.getSelectedItem();
-        CombinedFeatureSource source = new CombinedFeatureSource(track1.source, track2.source,
+        CombinedFeatureSource source = new CombinedFeatureSource(new FeatureSource[]{track1.source, track2.source},
                 (CombinedFeatureSource.Operation) operation.getSelectedItem());
         Track newTrack = new FeatureTrack(track1.getId() + track2.getId(), resultName.getText(), source);
         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);

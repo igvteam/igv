@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
@@ -20,6 +21,7 @@ import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,11 +35,8 @@ public class CombinedFeatureSource implements FeatureSource {
 
     private static Logger log = Logger.getLogger(CombinedFeatureSource.class);
 
-    private FeatureSource sourceA;
-    private FeatureSource sourceB;
+    private FeatureSource[] sources;
     private Operation operation;
-
-    private int featureWindowSize = -1;
 
     /**
      * Checks the global bedtools path, to see if bedtools
@@ -65,17 +64,18 @@ public class CombinedFeatureSource implements FeatureSource {
     }
 
     /**
-     * If known, it is recommended that sourceA be the larger of the two. sourceB will
+     * If known, it is recommended that source[0] be the larger of the two. sources[1] will
      * be loaded into memory by BEDTools.
      *
-     * @param sourceA
-     * @param sourceB
+     * @param sources
      * @param operation How the two sources will be combined
      */
-    public CombinedFeatureSource(FeatureSource sourceA, FeatureSource sourceB, Operation operation) {
-        this.sourceA = sourceA;
-        this.sourceB = sourceB;
+    public CombinedFeatureSource(FeatureSource[] sources, Operation operation) {
+        this.sources = sources;
         this.operation = operation;
+        if (sources.length != 2 && operation != Operation.MULTIINTER) {
+            throw new IllegalArgumentException("sources must be length 2 for operation " + operation);
+        }
     }
 
     /**
@@ -104,6 +104,30 @@ public class CombinedFeatureSource implements FeatureSource {
     }
 
     /**
+     * Write out data from feature sources within the specified interval
+     * to temporary files.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @return
+     * @throws IOException
+     */
+    private List<String> createTempFiles(String chr, int start, int end) throws IOException {
+        List<String> tempFiles = new ArrayList<String>(sources.length);
+        for (FeatureSource source : sources) {
+            Iterator<Feature> iter = source.getFeatures(chr, start, end);
+
+            File outFile = File.createTempFile("features", ".bed", null);
+            outFile.deleteOnExit();
+
+            int num = writeFeaturesToStream(iter, new FileOutputStream(outFile));
+            tempFiles.add(outFile.getAbsolutePath());
+        }
+        return tempFiles;
+    }
+
+    /**
      * Perform the actual combination operation between the constituent data
      * sources. This implementation re-runs the operation each call.
      *
@@ -115,21 +139,18 @@ public class CombinedFeatureSource implements FeatureSource {
      */
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
-        Iterator<Feature> iterA = sourceA.getFeatures(chr, start, end);
-        Iterator<Feature> iterB = sourceB.getFeatures(chr, start, end);
 
-        //First we need to write out the features in A&B to a file
-        //There are size limits on pipes so we don't use stdin
-        File outFileA = File.createTempFile("featuresA", ".bed", null);
-        File outFileB = File.createTempFile("featuresB", ".bed", null);
-        outFileA.deleteOnExit();
-        outFileB.deleteOnExit();
-
-        int numA = writeFeaturesToStream(iterA, new FileOutputStream(outFileA));
-        int numB = writeFeaturesToStream(iterB, new FileOutputStream(outFileB));
+        String cmd = Globals.BEDtoolsPath + " " + this.operation.getCmd();
+        List<String> tempFiles = createTempFiles(chr, start, end);
+        if (operation == Operation.MULTIINTER) {
+            assert tempFiles.size() >= 2;
+            cmd += " -i " + StringUtils.join(tempFiles, " ");
+        } else {
+            assert tempFiles.size() == 2;
+            cmd += " -b " + tempFiles.get(1) + " -a " + tempFiles.get(0);
+        }
 
         //Start bedtools process
-        String cmd = Globals.BEDtoolsPath + " " + this.operation.getCmd() + " -b " + outFileB.getAbsolutePath() + " -a " + outFileA.getAbsolutePath();
         Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
 
         //This is un-necessary I believe, and occasionally will hang
@@ -144,7 +165,7 @@ public class CombinedFeatureSource implements FeatureSource {
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
         BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
-        List<Feature> featuresList = new ArrayList<Feature>(numA + numB);
+        List<Feature> featuresList = new ArrayList<Feature>();
         IGVBEDCodec codec = new IGVBEDCodec();
 
 
@@ -158,6 +179,16 @@ public class CombinedFeatureSource implements FeatureSource {
                     continue;
                 }
                 feat = codec.decode(closest);
+            } else if (operation == Operation.MULTIINTER) {
+                String[] tokens = line.split("\t");
+                //We only look at regions common to ALL inputs
+                //Columns: chr \t start \t \end \t # of files which contained this feature \t comma-separated list files +many more
+                int numRegions = Integer.parseInt(tokens[3]);
+                if (numRegions < sources.length) {
+                    continue;
+                }
+                String[] intersection = Arrays.copyOf(tokens, 3);
+                feat = codec.decode(intersection);
             } else {
                 feat = codec.decode(line);
             }
@@ -245,16 +276,16 @@ public class CombinedFeatureSource implements FeatureSource {
      */
     @Override
     public int getFeatureWindowSize() {
-        if (featureWindowSize < 0) {
-            return Math.min(sourceA.getFeatureWindowSize(), sourceB.getFeatureWindowSize());
-        } else {
-            return featureWindowSize;
+        int featureWindowSize = Integer.MAX_VALUE;
+        for (FeatureSource source : sources) {
+            featureWindowSize = Math.min(featureWindowSize, source.getFeatureWindowSize());
         }
+        return featureWindowSize;
     }
 
     @Override
     public void setFeatureWindowSize(int size) {
-        featureWindowSize = size;
+        //no-op
     }
 
     public enum Operation {
@@ -267,7 +298,8 @@ public class CombinedFeatureSource implements FeatureSource {
         CLOSEST("closest"),
         //TODO include -d option
         WINDOW("window -bed"),
-        COVERAGE("coverage");
+        COVERAGE("coverage"),
+        MULTIINTER("multiinter");
 
 
         private String cmd;

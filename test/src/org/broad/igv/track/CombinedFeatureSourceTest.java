@@ -110,7 +110,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         FeatureSource sourceB = new TribbleFeatureSource(pathB, genome);
 
 
-        CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(sourceA, sourceB, operation);
+        CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(new FeatureSource[]{sourceA, sourceB}, operation);
         Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         List<Feature> featureList = new ArrayList(10);
 
@@ -129,6 +129,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
         expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 6);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 9);
         expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 3);
+        expectedNumFeatures.put(CombinedFeatureSource.Operation.MULTIINTER, 3);
 
         for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
             tstOperationBED(entry.getKey(), entry.getValue());
@@ -180,6 +181,31 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
             ind++;
 
         }
+
+    }
+
+    @Test
+    public void testMultiinterBED() throws Exception {
+        String[] bedfiles = new String[]{"test.bed", "test2.bed", "isect_res.bed"};
+        List<FeatureSource> sources = new ArrayList<FeatureSource>(bedfiles.length);
+        for (String bedfile : bedfiles) {
+            sources.add(new TribbleFeatureSource(TestUtils.DATA_DIR + "bed/" + bedfile, genome));
+        }
+
+        CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(sources.toArray(new FeatureSource[0]),
+                CombinedFeatureSource.Operation.MULTIINTER);
+        Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
+        int ind = 0;
+        int[] expStarts = new int[]{100, 200, 300};
+        int[] expEnds = new int[]{101, 201, 301};
+        while (features.hasNext()) {
+            Feature feat = features.next();
+            assertEquals(expStarts[ind], feat.getStart());
+            assertEquals(expEnds[ind], feat.getEnd());
+            ind++;
+        }
+
+        assertEquals(3, ind);
 
     }
 
