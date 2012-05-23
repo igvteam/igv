@@ -139,7 +139,7 @@ public class HttpUtils {
 
         log.info("Testing range-byte request");
         try {
-            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
+            String testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
             byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                     'G', 'A', 'G', 'A', 'G', 'G'};
 
