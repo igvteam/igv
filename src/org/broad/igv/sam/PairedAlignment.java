@@ -44,7 +44,7 @@ public class PairedAlignment implements Alignment {
     public PairedAlignment(Alignment firstAlignment) {
         this.firstAlignment = firstAlignment;
         this.start = firstAlignment.getStart();
-        this.end = firstAlignment.getEnd() + Math.abs(firstAlignment.getInferredInsertSize());
+        this.end = firstAlignment.getEnd() ;
         this.chr = firstAlignment.getChr();
     }
 
@@ -73,14 +73,6 @@ public class PairedAlignment implements Alignment {
     }
 
     public int getEnd() {
-        if (end == 0) {
-            //guess at end from isize information
-            if (secondAlignment == null) {
-                end = firstAlignment.getAlignmentEnd() + Math.abs(firstAlignment.getInferredInsertSize());
-            } else {
-                end = secondAlignment.getAlignmentEnd();
-            }
-        }
 
         return end;
     }
