@@ -63,21 +63,13 @@ public class RuntimeUtils {
 
     /**
      * Start an external process with the provided message
-     *
+     * <p/>
      * See {@link Runtime#exec(String, String[], File)} for explanation of arguments
+     *
      * @return
      */
-    public static Process startExternalProcess(String msg, String[] envp, File dir){
-        Runtime run = Runtime.getRuntime();
-        Process pr = null;
-
-        try {
-            pr = run.exec(msg, envp, dir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally{
-            return pr;
-        }
+    public static Process startExternalProcess(String msg, String[] envp, File dir) throws IOException {
+        return Runtime.getRuntime().exec(msg, envp, dir);
     }
 
 
