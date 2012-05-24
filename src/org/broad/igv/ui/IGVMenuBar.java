@@ -340,7 +340,6 @@ public class IGVMenuBar extends JMenuBar {
         });
 
         JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
-        analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
         analysisDialog.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -348,6 +347,7 @@ public class IGVMenuBar extends JMenuBar {
             }
         });
         if (Globals.BEDtoolsAnalysisEnabled) {
+            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
             menuItems.add(analysisDialog);
         }
 
