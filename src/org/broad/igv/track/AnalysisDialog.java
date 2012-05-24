@@ -15,7 +15,6 @@
 
 package org.broad.igv.track;
 
-import java.awt.event.*;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
@@ -23,7 +22,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author User #2
@@ -36,8 +39,8 @@ public class AnalysisDialog extends JDialog {
         initComponents();
 
         operation.setModel(new DefaultComboBoxModel(CombinedFeatureSource.Operation.values()));
-        track1Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(true).toArray()));
-        track2Box.setModel(new DefaultComboBoxModel(IGV.getInstance().getAllTracks(true).toArray()));
+        track1Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
+        track2Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
         track1Box.setRenderer(new TrackComboBoxRenderer());
         track2Box.setRenderer(new TrackComboBoxRenderer());
 
@@ -48,6 +51,17 @@ public class AnalysisDialog extends JDialog {
 
         setOutputTrackName();
 
+    }
+
+    private List<FeatureTrack> getFeatureTracks(List<Track> tracks) {
+
+        List<FeatureTrack> featureTracks = new ArrayList<FeatureTrack>();
+        for (Track t : tracks) {
+            if (t instanceof FeatureTrack) {
+                featureTracks.add((FeatureTrack) t);
+            }
+        }
+        return featureTracks;
     }
 
     public AnalysisDialog(Frame owner, Iterator<Track> tracks) {
@@ -65,7 +79,7 @@ public class AnalysisDialog extends JDialog {
 
         FeatureTrack track1 = (FeatureTrack) track1Box.getSelectedItem();
         FeatureTrack track2 = (FeatureTrack) track2Box.getSelectedItem();
-        CombinedFeatureSource source = new CombinedFeatureSource(track1.source, track2.source,
+        CombinedFeatureSource source = new CombinedFeatureSource(new FeatureSource[]{track1.source, track2.source},
                 (CombinedFeatureSource.Operation) operation.getSelectedItem());
         Track newTrack = new FeatureTrack(track1.getId() + track2.getId(), resultName.getText(), source);
         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
@@ -124,7 +138,7 @@ public class AnalysisDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -142,8 +156,8 @@ public class AnalysisDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -154,8 +168,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -166,8 +180,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -203,14 +217,14 @@ public class AnalysisDialog extends JDialog {
         }
     }
 
-    private void setOutputTrackName(){
+    private void setOutputTrackName() {
         String name = ((Track) track1Box.getSelectedItem()).getName();
         name += " " + operation.getSelectedItem() + " ";
         name += ((Track) track2Box.getSelectedItem()).getName();
         resultName.setText(name);
     }
 
-    private class SetOutputTrackNameListener implements ItemListener{
+    private class SetOutputTrackNameListener implements ItemListener {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
