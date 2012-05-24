@@ -61,7 +61,7 @@ public class ByteRangeTest {
 
     @Test
     public void test2() throws Exception {
-        assertTrue(HttpUtils.testByteRange());
+        assertTrue(HttpUtils.testByteRange("www.broadinstitute.org"));
     }
 
     @Test

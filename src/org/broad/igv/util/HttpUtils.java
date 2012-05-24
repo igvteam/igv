@@ -55,15 +55,15 @@ public class HttpUtils {
 
     private static Logger log = Logger.getLogger(HttpUtils.class);
 
-    public static boolean byteRangeTested = false;
-    public static boolean byteRangeTestSuccess = false;
     private static HttpUtils instance;
+
+    private Map<String, Boolean> byteRangeTestMap;
 
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
     private String defaultUserName = null;
-    private char [] defaultPassword = null;
+    private char[] defaultPassword = null;
 
     /**
      *  Create the single instance  and register the cookie manager
@@ -89,6 +89,7 @@ public class HttpUtils {
      */
     private HttpUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
+        byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
     public static boolean isURL(String string) {
@@ -128,6 +129,29 @@ public class HttpUtils {
         }
     }
 
+    public boolean useByteRange(URL url) {
+
+        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
+        // environments (e.g. intranets)
+        final String host = url.getHost();
+        if (host.contains("broadinstitute.org")) {
+            // Test broad urls for successful byte range requests.
+            if (byteRangeTestMap.containsKey(host)) {
+                return byteRangeTestMap.get(host);
+            } else {
+                log.info("Testing range-byte request on host: " + host);
+                boolean byteRangeTestSuccess = testByteRange(host);
+                byteRangeTestMap.put(host, byteRangeTestSuccess);
+                return byteRangeTestSuccess;
+
+            }
+        } else {
+            // No test for non-Broad hosts yet.  Let's be optimisitic
+            return true;
+        }
+    }
+
+
     /**
      * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
      * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
@@ -135,16 +159,18 @@ public class HttpUtils {
      *
      * @return
      */
-    public static boolean testByteRange() {
+    public static boolean testByteRange(String host) {
 
         log.info("Testing range-byte request");
         try {
-            String testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
+            String testURL = host.startsWith("www.broadinstitute.org") ?
+                    "/igvdata/annotations/seq/hg19/chr12.txt" :
+                    "/genomes/seq/hg19/chr12.txt" ;
             byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                     'G', 'A', 'G', 'A', 'G', 'G'};
 
 
-            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
+            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL("http://" + host + testURL)));
             str.seek(25350000);
             byte[] buffer = new byte[80000];
             str.read(buffer);
@@ -169,26 +195,6 @@ public class HttpUtils {
         }
     }
 
-
-    public static boolean useByteRange(URL url) {
-
-
-        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
-        // environments (e.g. intranets)
-        if (url.getHost().contains("broadinstitute.org")) {
-            // Test broad urls for successful byte range requests.
-            if (!byteRangeTested) {
-                byteRangeTestSuccess = testByteRange();
-                byteRangeTested = true;   // <= to prevent testing again
-
-            }
-            return byteRangeTestSuccess;
-        } else {
-            return true;
-        }
-
-
-    }
 
     public void shutdown() {
         // Do any cleanup required here
@@ -643,7 +649,7 @@ public class HttpUtils {
         this.defaultUserName = defaultUserName;
     }
 
-    public void  clearDefaultCredentials() {
+    public void clearDefaultCredentials() {
         this.defaultPassword = null;
         this.defaultUserName = null;
     }
@@ -679,9 +685,6 @@ public class HttpUtils {
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
 
-            if(defaultUserName != null && defaultPassword != null) {
-                return new PasswordAuthentication(defaultUserName, defaultPassword);
-            }
 
             RequestorType type = getRequestorType();
             URL url = this.getRequestingURL();
@@ -691,6 +694,10 @@ public class HttpUtils {
                 if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                     return new PasswordAuthentication(proxySettings.user, proxySettings.pw.toCharArray());
                 }
+            }
+
+            if (defaultUserName != null && defaultPassword != null) {
+                return new PasswordAuthentication(defaultUserName, defaultPassword);
             }
 
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
