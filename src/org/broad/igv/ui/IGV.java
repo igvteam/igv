@@ -2426,7 +2426,7 @@ public class IGV {
      * Wrapper for igv.wait(timeout)
      *
      * @param timeout
-     * @return True if method completed before timeout, otherwise false
+     * @return True if method completed before timeout or interruption, otherwise false
      */
     public boolean waitForNotify(long timeout) {
         boolean completed = false;
@@ -2434,8 +2434,9 @@ public class IGV {
             while (!completed) {
                 try {
                     this.wait(timeout);
-                } catch (InterruptedException e) {
                     completed = true;
+                } catch (InterruptedException e) {
+
                 }
                 break;
             }
