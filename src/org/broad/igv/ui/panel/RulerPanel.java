@@ -34,6 +34,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeImpl;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -233,7 +234,7 @@ public class RulerPanel extends JPanel {
 
         g.setFont(chrFont);
 
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) {
             log.info("No genome found with id: " + genome.getId());
             PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
@@ -254,6 +255,10 @@ public class RulerPanel extends JPanel {
         final FontMetrics fontMetrics = g.getFontMetrics();
         for (String chrName : chrNames) {
             Chromosome c = genome.getChromosome(chrName);
+            if (c == null) {
+                log.info("Chromosome '" + chrName + "' not found");
+                continue;
+            }
             int chrLength = c.getLength();
 
             int x = (int) (offset / (locationUnit * frame.getScale()));
@@ -471,7 +476,7 @@ public class RulerPanel extends JPanel {
                 s = Math.max(0.0, s);
                 String chr = null;
                 if (isWholeGenomeView()) {
-                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
                     ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
 

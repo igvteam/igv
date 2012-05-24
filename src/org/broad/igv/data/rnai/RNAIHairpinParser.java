@@ -70,7 +70,7 @@ public class RNAIHairpinParser {
             while ((nextLine = reader.readLine()) != null) {
                 if (!nextLine.startsWith("#")) {
 
-                    String[] tokens = Globals.tabPattern.split(nextLine);
+                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
                     int nTokens = tokens.length;
                     if (nTokens > 11) {
                         try {

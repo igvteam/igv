@@ -19,6 +19,7 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -39,7 +40,7 @@ public class Preloader {
 
         Collection<Track> trackList = IGV.getInstance().getAllTracks(true);
         int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genomeId = GenomeManager.getInstance().getGenomeId();
         for (ReferenceFrame frame : FrameManager.getFrames()) {
             Locus locus = frame.getInitialLocus();
             if (locus != null) {
@@ -48,7 +49,7 @@ public class Preloader {
                     if (track.isVisible()) {
                         if (track instanceof DataTrack) {
                             DataTrack dt = (DataTrack) track;
-                            RenderContext context = new RenderContextImpl(genomeId, null, null, frame, null);
+                            RenderContext context = new RenderContextImpl(null, null, frame, null);
                             int start = Math.max(0, locus.getStart() - flankingRegion);
                             int end = locus.getEnd() + flankingRegion;
                             dt.load(context, locus.getChr(), start, end, frame.getZoom());

@@ -42,11 +42,11 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
-    private IGV mainFrame;
+    private IGV igv;
 
-    public LoadFromURLMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public LoadFromURLMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
     }
 
     @Override
@@ -61,13 +61,13 @@ public class LoadFromURLMenuAction extends MenuAction {
                     try {
                         boolean merge = false;
                         String locus = null;
-                        mainFrame.doRestoreSession(url, locus, merge);
+                        igv.doRestoreSession(url, locus, merge);
                     } catch (Exception ex) {
                         MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                     }
                 } else {
                     ResourceLocator rl = new ResourceLocator(url.trim());
-                    mainFrame.loadTracks(Arrays.asList(rl));
+                    igv.loadTracks(Arrays.asList(rl));
 
                 }
             }
@@ -77,14 +77,14 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());
                 rl.setType("das");
-                mainFrame.loadTracks(Arrays.asList(rl));
+                igv.loadTracks(Arrays.asList(rl));
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL to .genome or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 try {
-                    mainFrame.loadGenome(url.trim(), null);
+                    igv.loadGenome(url.trim(), null);
                 } catch (IOException e1) {
                     MessageUtils.showMessage("Error loading genome: " + e1.getMessage());
                 }

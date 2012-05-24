@@ -21,6 +21,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -49,6 +50,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public static final char HARD_CLIP = 'H';
     public static final char PADDING = 'P';
     public static final char ZERO_GAP = 'O';
+
+    private static final String FLOW_SIGNAL_TAG = "ZF";
     private int start;  // <= Might differ from alignment start if soft clipping is considered
     private int end;    // ditto
     private int alignmentStart;
@@ -108,7 +111,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.record = record;
 
         String refName = record.getReferenceName();
-        Genome genome = Globals.isHeadless() ? null : IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
         // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
@@ -128,8 +131,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.readLength = record.getReadLength();
         this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
-        setMatePair(record, genome);
-        setPairOrientation(record);
+        setMatePair(genome);
+        setPairOrientation();
         setPairStrands();
 
         SAMFileHeader header = record.getHeader();
@@ -148,7 +151,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
 
         createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(),
-                getFlowSignals(record, flowOrder, keySequence), flowOrder, this.getFlowSignalsStart(record));
+                getFlowSignals(flowOrder, keySequence), flowOrder, this.getFlowSignalsStart());
 
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
@@ -162,7 +165,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }      // End constructor
 
 
-    private void setMatePair(SAMRecord record, Genome genome) {
+    private void setMatePair(Genome genome) {
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
@@ -177,7 +180,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     }
 
-    private void setPairOrientation(SAMRecord record) {
+    private void setPairOrientation() {
         if (record.getReadPairedFlag() &&
                 !readUnmappedFlag &&
                 !record.getMateUnmappedFlag() &&
@@ -735,27 +738,26 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     /**
-     * @param record the SAM record
      * @return start index in the flow signal as specified by the ZF tag, or -1 if not present
+     * or non-numeric
      */
-    public int getFlowSignalsStart(SAMRecord record) {
-        Object attribute = record.getAttribute("ZF"); // NB: from a TMAP optional tag
-        if (null == attribute) {
-            return -1;
-        } else {
-            return (Integer) attribute;
+    public int getFlowSignalsStart() {
+        Object attribute = record.getAttribute(FLOW_SIGNAL_TAG); // NB: from a TMAP optional tag
+        int toRet = -1;
+        if(attribute != null && attribute instanceof Integer){
+            toRet = (Integer) attribute;
         }
+        return toRet;
     }
 
     /**
-     * @param record      the SAM record
      * @param flowOrder   the flow order corresponding to this read
      * @param keySequence sequence the key sequence corresponding to this read
      * @return the flow signals in 100x format (SFF), only if they exist (FZ tag),
      *         if the key sequence and flow order are found in the read group header tag
      *         (RG.KS and RG.FO).  Note: the array proceeds in the sequencing direction.
      */
-    public short[] getFlowSignals(SAMRecord record, String flowOrder, String keySequence) {
+    public short[] getFlowSignals(String flowOrder, String keySequence) {
         short[] r = null;
         int i;
         int startFlow, keySignalOverlap;
@@ -765,7 +767,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             return null;
         }
 
-        startFlow = this.getFlowSignalsStart(record);
+        startFlow = this.getFlowSignalsStart();
         if (startFlow < 0) {
             return null;
         }

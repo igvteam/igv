@@ -11,14 +11,11 @@
 
 package org.broad.igv.gwas;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.FloatArrayList;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;
@@ -30,19 +27,7 @@ import static junit.framework.Assert.assertTrue;
  * User: jacob
  * Date: 2012/04/18
  */
-public class GWASParserTest {
-    Genome genome;
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
+public class GWASParserTest extends AbstractHeadlessTest {
 
     @Test
     public void testParse() throws Exception {

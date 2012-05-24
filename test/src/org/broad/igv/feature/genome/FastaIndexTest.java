@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import static junit.framework.Assert.*;
  * Time: 7:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FastaIndexTest {
+public class FastaIndexTest extends AbstractHeadlessTest {
 
     static String indexPath = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa.fai";
     private FastaIndex index;
@@ -75,8 +76,6 @@ public class FastaIndexTest {
 
     @Before
     public void setUp() throws IOException {
-        TestUtils.setUpHeadless();
-
         index = new FastaIndex(indexPath);
     }
 
@@ -140,11 +139,16 @@ public class FastaIndexTest {
         FastaIndex.FastaSequenceIndexEntry entry = index.getIndexEntry(tA);
         int tAbasesPL = 58;
 
-        int tAbytesPL = tAbasesPL + 1;
+        //We assume that the test file will have LF line endings
+        //regardless of the platform it's on. May change this in the future.
+        //git default checkouts may change line endings
+        int bytesAtEnd = TestUtils.getBytesAtEnd(inPath);
+
+        int tAbytesPL = tAbasesPL + bytesAtEnd;
 
         assertEquals(tAbasesPL, entry.getBasesPerLine());
         assertEquals(tAbytesPL, entry.getBytesPerLine());
-        assertEquals(10, entry.getPosition());
+        assertEquals(9 + bytesAtEnd, entry.getPosition());
         int tAsize = 7 * tAbasesPL + 29;
         assertEquals(tAsize, entry.getSize());
         assertEquals(tA, entry.getContig());
@@ -152,13 +156,13 @@ public class FastaIndexTest {
         entry = index.getIndexEntry(tG);
 
         int tGbasesPL = 56;
-        int tGbytesPL = tGbasesPL + 1;
+        int tGbytesPL = tGbasesPL + bytesAtEnd;
         assertEquals(tGbasesPL, entry.getBasesPerLine());
         assertEquals(tGbytesPL, entry.getBytesPerLine());
         //Starting position is from tA start + tA length + length of header line
         //Since "size" is number of bases, and "position" is bytes, this
         //may look weird
-        long tGpos = tAsize + 8 + index.getIndexEntry(tA).getPosition() + 10;
+        long tGpos = tAsize + 8*bytesAtEnd + index.getIndexEntry(tA).getPosition() + 9 + bytesAtEnd;
         assertEquals(tGpos, entry.getPosition());
         int tGsize = 5 * tGbasesPL + 26;
         assertEquals(tGsize, entry.getSize());

@@ -17,6 +17,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -342,11 +343,10 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Get all features this track contains.
-     * Intended for testing
      *
      * @return
      */
-    List<Feature> getFeatures(String chr, int start, int end) {
+    public List<Feature> getFeatures(String chr, int start, int end) {
         List<Feature> features = new ArrayList<Feature>();
         try {
             Iterator<Feature> iter = source.getFeatures(chr, start, end);
@@ -663,7 +663,7 @@ public class FeatureTrack extends AbstractTrack {
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             loadFeatures(chr, start, end, context);
-            if (!IGV.getInstance().isExportingSnapshot()) {
+            if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
                 // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
                 return;
             }
@@ -694,7 +694,7 @@ public class FeatureTrack extends AbstractTrack {
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
 
 
-        FeatureRenderer renderer =  getRenderer();
+        FeatureRenderer renderer = getRenderer();
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
@@ -752,7 +752,7 @@ public class FeatureTrack extends AbstractTrack {
                     featuresLoading = true;
 
                     int maxEnd = end;
-                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     if (genome != null) {
                         Chromosome c = genome.getChromosome(chr);
                         if (c != null) maxEnd = Math.max(c.getLength(), end);
@@ -774,9 +774,13 @@ public class FeatureTrack extends AbstractTrack {
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 
-                    IGV.getInstance().layoutMainPanel();
+
+                    if (IGV.hasInstance()) {
+                        // TODO -- WHY IS THIS HERE????
+                        IGV.getInstance().layoutMainPanel();
+                    }
                     if (context.getPanel() != null) context.getPanel().repaint();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
                     PackedFeatures pf = new PackedFeatures(chr, start, end);
@@ -828,7 +832,7 @@ public class FeatureTrack extends AbstractTrack {
             if (f == null) {
                 int binSize = source.getFeatureWindowSize();
 
-                final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                final Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 if (forward == true) {
                     // Forward
                     int nextStart = packedFeatures.getEnd();

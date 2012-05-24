@@ -236,7 +236,7 @@ public class IGVDatasetParser {
                 }
                 // Distance since last sample
 
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
                 if (nTokens > 0) {
                     String thisChr = genome.getChromosomeAlias(tokens[chrColumn]);
@@ -413,7 +413,7 @@ public class IGVDatasetParser {
 
                 if (!nextLine.startsWith("#")) {
                     try {
-                        String[] tokens = Globals.tabPattern.split(nextLine);
+                        String[] tokens = Globals.tabPattern.split(nextLine, -1);
                         String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
                         if (thisChromosome.equals(chromosome)) {
                             chromosomeStarted = true;

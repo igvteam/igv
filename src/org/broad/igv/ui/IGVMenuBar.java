@@ -11,27 +11,32 @@
 
 package org.broad.igv.ui;
 
+import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.track.AnalysisDialog;
+import org.broad.igv.track.CombinedFeatureSource;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
-import org.broad.igv.ui.util.HistoryMenu;
-import org.broad.igv.ui.util.MenuAndToolbarUtils;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.LongRunningTask;
+import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -39,9 +44,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
@@ -60,6 +69,10 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu viewMenu;
     IGV igv;
 
+    public void showAboutDialog() {
+        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+    }
+
     public IGVMenuBar(IGV igv) {
         this.igv = igv;
         setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
@@ -69,6 +82,17 @@ public class IGVMenuBar extends JMenuBar {
             add(menu);
         }
 
+        //This is for Macs, so showing the about dialog
+        //from the command bar does what we want.
+        if (Globals.IS_MAC) {
+            try {
+                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[]) null));
+                OSXAdapter.setQuitHandler(ShutdownThread.class, ShutdownThread.class.getDeclaredMethod("runS", (Class[]) null));
+            } catch (Exception e) {
+                log.error("Error setting apple-specific about and quit handlers", e);
+            }
+
+        }
     }
 
     private List<AbstractButton> createMenus() {
@@ -302,6 +326,33 @@ public class IGVMenuBar extends JMenuBar {
 
 
         MenuAction dataMenuAction = new MenuAction("Tracks", null, KeyEvent.VK_K);
+
+        JMenuItem exportData = new JMenuItem("Export Features");
+        exportData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File outFile = FileDialogUtils.chooseFile("Save Visible Data",
+                        PreferenceManager.getInstance().getLastTrackDirectory(),
+                        new File("visibleData.bed"),
+                        FileDialogUtils.SAVE);
+                IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
+            }
+        });
+
+        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
+        analysisDialog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
+            }
+        });
+        if (Globals.BEDtoolsAnalysisEnabled) {
+            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+            menuItems.add(analysisDialog);
+        }
+
+        //menuItems.add(exportData);
+
         return MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
     }
 
@@ -566,14 +617,17 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new GSOpenSessionMenuAction("Load session from GenomeSpace...", IGV.getInstance());
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-//        menu.add(new JSeparator());
-//        menuAction = new MenuAction("Logout") {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                GSUtils.logout();
-//            }
-//        };
-//        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menu.add(new JSeparator());
+        menuAction = new MenuAction("Logout") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GSUtils.logout();
+                if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
+                    doExitApplication();
+                }
+            }
+        };
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
 
@@ -776,5 +830,32 @@ public class IGVMenuBar extends JMenuBar {
             System.exit(0);
         }
 
+    }
+
+    /**
+     * Write visible data to a file
+     * TODO Move to own action class, thread
+     */
+    private static final void exportVisibleData(String outPath, Collection<Track> tracks) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(outPath);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        ReferenceFrame.Range range = FrameManager.getDefaultFrame().getCurrentRange();
+        for (Track track : tracks) {
+            if (track instanceof FeatureTrack) {
+                FeatureTrack fTrack = (FeatureTrack) track;
+                List<Feature> features = fTrack.getFeatures(range.getChr(), range.getStart(), range.getEnd());
+                IGVBEDCodec codec = new IGVBEDCodec();
+                for (Feature feat : features) {
+                    String featString = codec.encode(feat);
+                    writer.println(featString);
+                }
+            }
+        }
+        writer.flush();
+        writer.close();
     }
 }

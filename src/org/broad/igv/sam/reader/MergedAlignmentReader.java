@@ -18,8 +18,9 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class MergedAlignmentReader implements AlignmentReader {
 
     List<AlignmentReader> readers;
     List<String> sequenceNames;
-    Map<String, Integer> sequenceNameIndex;
+    Map<String, Integer> chrNameIndex;
 
     public MergedAlignmentReader(List<AlignmentReader> readers) {
         this.readers = readers;
@@ -74,9 +75,13 @@ public class MergedAlignmentReader implements AlignmentReader {
             names.addAll(reader.getSequenceNames());
         }
         sequenceNames = new ArrayList<String>(names);
-        sequenceNameIndex = new HashMap<String, Integer>(sequenceNames.size());
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        chrNameIndex = new HashMap<String, Integer>(sequenceNames.size());
         for (int i = 0; i < sequenceNames.size(); i++) {
-            sequenceNameIndex.put(sequenceNames.get(i), i);
+            final String seqName = sequenceNames.get(i);
+            String chr = genome == null ? seqName : genome.getChromosomeAlias(seqName);
+            chrNameIndex.put(chr, i);
         }
     }
 
@@ -181,8 +186,8 @@ public class MergedAlignmentReader implements AlignmentReader {
                 Alignment a1 = wrapper1.nextRecord;
                 Alignment a2 = wrapper2.nextRecord;
 
-                int idx1 = sequenceNameIndex.get(a1.getChr());
-                int idx2 = sequenceNameIndex.get(a2.getChr());
+                Integer idx1 = chrNameIndex.get(a1.getChr());
+                Integer idx2 = chrNameIndex.get(a2.getChr());
                 if (idx1 > idx2) {
                     return 1;
                 } else if (idx1 < idx2) {

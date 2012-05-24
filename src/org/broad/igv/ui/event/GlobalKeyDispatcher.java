@@ -27,6 +27,7 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.variant.VariantTrack;
@@ -389,7 +390,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 if (f != null) {
-                    String chr = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeAlias(f.getChr());
+                    String chr = GenomeManager.getInstance().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
                     if (!chr.equals(vc.getChrName())) {
                         // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.

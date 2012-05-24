@@ -26,9 +26,9 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
 import java.io.File;
@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
 /**
  * @author jrobinso
  */
-public class BAMHttpQueryReaderTest {
+public class BAMHttpQueryReaderTest extends AbstractHeadlessTest {
 
     //private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/test/index_test.bam";
     private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
@@ -48,7 +48,7 @@ public class BAMHttpQueryReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
+        AbstractHeadlessTest.setUpClass();
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
     }
 

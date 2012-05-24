@@ -1,4 +1,4 @@
-package org.broad.igv.hic;
+package org.broad.igv.hic.track;
 
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
@@ -57,10 +57,9 @@ public class EigenvectorTrack extends AbstractTrack {
 
                 int myh = (int) ((data[i] / dataMax) * h);
                 if (data[i] > 0) {
-                    g2d.fillRect(lastXPixel, h - myh, (xPixel - lastXPixel), myh);
+                    g2d.fillRect(lastXPixel, rect.y + h - myh, (xPixel - lastXPixel), myh);
                 } else {
-                    System.out.println(h + " " + myh);
-                    g2d.fillRect(lastXPixel, h, xPixel - lastXPixel, -myh);
+                    g2d.fillRect(lastXPixel, rect.y + h, xPixel - lastXPixel, -myh);
                 }
             }
             lastXPixel = xPixel;

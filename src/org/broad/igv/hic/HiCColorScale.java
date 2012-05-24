@@ -36,12 +36,10 @@ public class HiCColorScale implements org.broad.igv.renderer.ColorScale {
 
     public void setMin(float min) {
         this.min = min;
-        System.out.println(min);
     }
 
     public void setMax(float max) {
         this.max = max;
-        System.out.println(max);
     }
 
     public Color getColor(float score) {

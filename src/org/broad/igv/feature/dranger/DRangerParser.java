@@ -77,7 +77,7 @@ public class DRangerParser {
             reader = ParsingUtils.openAsciiReader(locator);
             setColumns(reader.readLine());
             while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 int nTokens = tokens.length;
                 if (nTokens > pos2Column) {
                     int index = Integer.parseInt(tokens[numColumn]);

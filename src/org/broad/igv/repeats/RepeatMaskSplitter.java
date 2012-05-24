@@ -69,7 +69,7 @@ public class RepeatMaskSplitter {
             reader.readLine();
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = Globals.tabPattern.split(nextLine);
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 String chr = tokens[chrCol];
                 if (!chr.equals(lastChr)) {
                     closeWriters(writers);

@@ -42,8 +42,9 @@ public class PeakTimePlotFrame extends JFrame {
     public PeakTimePlotFrame(ChartPanel chartPanel) {
         initComponents();
 
-
-        setContentPane(chartPanel);
+        getContentPane().add(new PeakCommandBar(), BorderLayout.NORTH);
+        getContentPane().add(chartPanel, BorderLayout.CENTER);
+       // setContentPane(chartPanel);
     }
 
 
@@ -79,7 +80,7 @@ public class PeakTimePlotFrame extends JFrame {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(495, 370);
+        setSize(495, 455);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }

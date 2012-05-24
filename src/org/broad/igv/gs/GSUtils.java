@@ -117,7 +117,6 @@ public class GSUtils {
         }
         if (gsUser == null || !gsUser.equals(newUser)) {
             gsUser = newUser;
-            BufferedWriter bw = null;
 
             File gsDir = getTokenSaveDir();
             if (!gsDir.isDirectory()) {
@@ -159,7 +158,7 @@ public class GSUtils {
 
         gsToken = null;
         gsUser = null;
-
+        gsToken = null;
         File userfile = getUsernameFile();
         if (userfile.exists()) {
             userfile.delete();
@@ -168,6 +167,7 @@ public class GSUtils {
         if (tokenFile.exists()) {
             tokenFile.delete();
         }
+
 
         try {
             URI gsURI = new URI(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER));
@@ -184,10 +184,7 @@ public class GSUtils {
         } catch (URISyntaxException e) {
            log.error("Error creating GS URI", e);
         }
-
-
     }
-
 
     private static void writeToFile(String line, File aFile) {
         BufferedWriter bw = null;
@@ -210,6 +207,5 @@ public class GSUtils {
     public static boolean isGenomeSpace(URL url) {
         return url.getHost().contains("genomespace");
     }
-
 
 }

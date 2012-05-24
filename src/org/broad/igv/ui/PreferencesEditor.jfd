@@ -5363,7 +5363,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>343</int> 
+             <int>495</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -5396,7 +5396,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>345</int> 
+             <int>495</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -5427,11 +5427,225 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>310</int> 
+             <int>460</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
              <int>105</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Tooltip initial delay (ms)</string> 
+            </void> 
+            <void property="name"> 
+             <string>label24</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>295</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>185</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Tooltip reshow delay (ms)</string> 
+            </void> 
+            <void property="name"> 
+             <string>label25</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>185</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>23</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>327</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Tooltip dismiss delay (ms)</string> 
+            </void> 
+            <void property="name"> 
+             <string>label26</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>185</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>16</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>45</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>365</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void property="name"> 
+             <string>toolTipInitialDelayField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>toolTipInitialDelayFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>toolTipInitialDelayFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>265</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>289</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>455</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void property="name"> 
+             <string>tooltipReshowDelayField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>tooltipReshowDelayFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>tooltipReshowDelayFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>455</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>28</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>265</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>324</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JTextField</string> 
+            <void property="name"> 
+             <string>tooltipDismissDelayField</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>tooltipDismissDelayFieldActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.FocusListener</string> 
+              <string>focusLost</string> 
+              <string>tooltipDismissDelayFieldFocusLost</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>455</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>28</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>265</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>359</int> 
             </void> 
            </object> 
           </void> 

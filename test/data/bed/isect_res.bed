@@ -1,0 +1,5 @@
+#Result of intersection between test.bed and test2.bed, no options
+chr1	100	101
+chr1	200	201
+chr1	200	201
+chr1	300	301

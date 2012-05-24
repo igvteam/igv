@@ -11,11 +11,9 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.TestUtils;
 import org.jgrapht.ext.GmlExporter;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -30,17 +28,7 @@ import static junit.framework.Assert.assertTrue;
  * Date: 2012/03/28
  */
 @Ignore
-public class AlternativeSpliceGraphTest {
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        Genome genome = TestUtils.loadGenome();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
+public class AlternativeSpliceGraphTest extends AbstractHeadlessTest {
 
     @Test
     public void initTest() throws Exception {

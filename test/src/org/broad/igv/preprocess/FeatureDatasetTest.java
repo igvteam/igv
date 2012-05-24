@@ -15,9 +15,9 @@
  */
 package org.broad.igv.preprocess;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author jrobinso
  */
-public class FeatureDatasetTest {
+public class FeatureDatasetTest extends AbstractHeadlessTest {
 
     static String file = TestUtils.DATA_DIR + "gct/affy_human_mod.gct";
     static ExpressionDataset dataset;
@@ -40,8 +40,7 @@ public class FeatureDatasetTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        Genome genome = TestUtils.loadGenome();
+        AbstractHeadlessTest.setUpClass();
         ExpressionFileParser parser = new ExpressionFileParser(new File(file), null, genome);
 
         dataset = parser.createDataset();
@@ -49,6 +48,7 @@ public class FeatureDatasetTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        AbstractHeadlessTest.tearDownClass();
         dataset = null;
     }
 

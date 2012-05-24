@@ -175,7 +175,7 @@ public class ResourceTree {
 
             dialog.setResizable(true);
             dialog.pack();
-            dialog.setLocationRelativeTo(IGV.getMainFrame());
+            dialog.setLocationRelativeTo(parent);
             dialog.setVisible(true);
 
             return  optionPane.isCanceled() ? null :  locators;
@@ -212,11 +212,12 @@ public class ResourceTree {
         tree.setCellEditor(new ResourceEditor(tree));
         tree.setEditable(true);
 
-        Set<ResourceLocator> loadedResources = IGV.getInstance().getDataResourceLocators();
+        Set<ResourceLocator> loadedResources = IGV.hasInstance() ?
+                IGV.getInstance().getDataResourceLocators() : Collections.<ResourceLocator>emptySet();
         loadedResources.addAll(AttributeManager.getInstance().getLoadedResources());
 
         // Build and attach descentants of the root node to the tree
-        processNode(rootNode, rootElement, getLoadedResources());
+        processNode(rootNode, rootElement, loadedResources);
 
         // Get the previously checked leaf nodes.  The nodes are stored as
 
@@ -1291,8 +1292,7 @@ public class ResourceTree {
     }
 
     static private Set<ResourceLocator> getLoadedResources() {
-        Set<ResourceLocator> loadedResources =
-                IGV.getInstance().getDataResourceLocators();
+        Set<ResourceLocator> loadedResources = IGV.getInstance().getDataResourceLocators();
         loadedResources.addAll(AttributeManager.getInstance().getLoadedResources());
         return loadedResources;
     }

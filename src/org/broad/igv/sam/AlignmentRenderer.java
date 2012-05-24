@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
@@ -23,7 +24,6 @@ import org.broad.igv.sam.AlignmentTrack.RenderOptions;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -205,8 +205,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
-            //final SAMPreferences prefs = PreferenceManager.getInstance().getSAMPreferences();
-            //int insertSizeThreshold = renderOptions.insertSizeThreshold;
+            int lastPixelDrawn = -1;
 
             for (Alignment alignment : alignments) {
                 // Compute the start and dend of the alignment in pixels
@@ -226,7 +225,16 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
                 if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (pixelWidth >= 1))) {
+
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+
+                    // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
+                    // and it is the default color, skip drawing.
+                    if (pixelEnd <= lastPixelDrawn && alignmentColor == alignment.getDefaultColor()) {
+                        continue;
+                    }
+
+
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
 
@@ -234,6 +242,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     int h = (int) Math.max(1, rowRect.getHeight() - 2);
                     int y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
+                    lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
                     drawPairedAlignment((PairedAlignment) alignment, rowRect, trackRect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else {
@@ -342,6 +351,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             Map<String, Color> selectedReadNames,
             Font font) {
 
+        //Only plot outliers
+        if (renderOptions.isPairedArcView() && getOutlierStatus(pair, renderOptions) == 0) {
+            return;
+        }
+
         double locScale = context.getScale();
 
         Color alignmentColor1;
@@ -368,9 +382,17 @@ public class AlignmentRenderer implements FeatureRenderer {
             g = context.getGraphic2DForColor(alignmentColor2);
 
             drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
+        }else{
+            return;
         }
 
-        Graphics2D gLine = context.getGraphic2DForColor(grey1);
+        Color lineColor = grey1;
+
+        if (alignmentColor1.equals(alignmentColor2) || pair.secondAlignment == null) {
+            lineColor = alignmentColor1;
+        }
+        Graphics2D gLine = context.getGraphic2DForColor(lineColor);
+
         double origin = context.getOrigin();
         int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
         int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
@@ -640,7 +662,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         double origin = context.getOrigin();
         String chr = context.getChr();
         //String genomeId = context.getGenomeId();
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();
@@ -987,6 +1009,31 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     /**
+     * Determine if alignment insert size is outside max or min
+     * range for outliers.
+     *
+     * @param alignment
+     * @param renderOptions
+     * @return -1 if unknown (stats not computed), 0 if not
+     *         an outlier, 1 if outlier
+     */
+    private int getOutlierStatus(Alignment alignment, RenderOptions renderOptions) {
+        PEStats peStats = getPEStats(alignment, renderOptions);
+        if (renderOptions.isComputeIsizes() && peStats != null) {
+            int minThreshold = peStats.getMinOutlierInsertSize();
+            int maxThreshold = peStats.getMaxOutlierInsertSize();
+            int dist = Math.abs(alignment.getInferredInsertSize());
+            if (dist >= minThreshold || dist <= maxThreshold) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    /**
      * Returns -1 if alignment distance is less than minimum,
      * 0 if within bounds, and +1 if above maximum.
      *
@@ -1003,14 +1050,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
 
         int dist = Math.abs(alignment.getInferredInsertSize());
-        try {
-            PairedAlignment pa = (PairedAlignment) alignment;
-            if (!pa.firstAlignment.getChr().equals(pa.firstAlignment.getMate().getChr())) {
-                System.out.println(dist);
-            }
-        } catch (ClassCastException e) {
-            //pass
-        }
+
         if (dist < minThreshold) return -1;
         if (dist > maxThreshold) return +1;
         return 0;

@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -25,6 +26,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
@@ -191,9 +193,8 @@ public class GFFParser implements FeatureParser {
         int lineNumber = 0;
         try {
 
-            if (IGV.hasInstance() && genome == null) {
-                genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            }
+            genome = GenomeManager.getInstance().getCurrentGenome();
+
             Set<String> featuresToHide = new HashSet();
 
             while ((line = reader.readLine()) != null) {
@@ -231,7 +232,7 @@ public class GFFParser implements FeatureParser {
                     continue;
                 }
 
-                String[] tokens = Globals.tabPattern.split(line);
+                String[] tokens = Globals.tabPattern.split(line, -1);
                 int nTokens = tokens.length;
 
                 // GFF files have 9 tokens
@@ -276,6 +277,7 @@ public class GFFParser implements FeatureParser {
                 LinkedHashMap<String, String> attributes = new LinkedHashMap();
                 //attributes.put("Type", featureType);
                 helper.parseAttributes(attributeString, attributes);
+
                 String id = helper.getID(attributes);
 
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
@@ -374,7 +376,7 @@ public class GFFParser implements FeatureParser {
 
             // Create and add IGV genes
             for (GFF3Transcript transcript : transcriptCache.values()) {
-                BasicFeature igvTranscript = transcript.createTranscript();
+                Feature igvTranscript = transcript.createTranscript();
                 if (igvTranscript != null) {
                     features.add(igvTranscript);
                 }
@@ -443,7 +445,7 @@ public class GFFParser implements FeatureParser {
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
 
                 // GFF files have 9 columns
                 String type = tokens[2];
@@ -468,8 +470,7 @@ public class GFFParser implements FeatureParser {
                     pw.println(nextLine);
                 }
             } else {
-                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""));
-                int nTokens = tokens.length;
+                String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
                 String type = tokens[2];
                 if (geneParts.contains(type)) {
                     type = "gene";
@@ -557,27 +558,12 @@ public class GFFParser implements FeatureParser {
             this.end = Math.max(this.end, end);
         }
 
-        void appendDescription(String desc, Map<String, String> atts) {
-            if (description == null) {
-                description = "<html>";
-            } else {
-                description += "<br>---------<br>";
-            }
-            description += desc;
-
-            if (attributes == null) {
-                attributes = atts;
-            } else {
-                attributes.putAll(atts);
-            }
-        }
-
         /**
          * Create a transcript from its constituitive parts. "
          *
          * @return
          */
-        BasicFeature createTranscript() {
+        Feature createTranscript() {
 
             Strand strand = Strand.NONE;
             String name = null;
@@ -608,6 +594,7 @@ public class GFFParser implements FeatureParser {
 
             if (transcript == null) {
                 // transcript is implied
+
                 transcript = new BasicFeature(chr, start, end, strand);
                 transcript.setIdentifier(id);
                 transcript.setName(name == null ? id : name);
@@ -624,6 +611,13 @@ public class GFFParser implements FeatureParser {
                 transcript.setDescription("Transcript<br>" + transcript.getDescription() + "<br>--------<br>Gene<br>" + gene.getDescription());
 
                 // mRNA.setName(gene.getName());
+            }
+
+            // If the feature consists of a single exon just return it
+            if(exons.size() == 1) {
+                Exon exon = exons.iterator().next();
+                transcript.setAttributes(exon.getAttributes());
+                return transcript;
             }
 
             for (Exon exon : exons) {

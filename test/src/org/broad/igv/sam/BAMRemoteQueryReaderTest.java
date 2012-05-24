@@ -23,12 +23,11 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.BAMWebserviceReader;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -41,25 +40,19 @@ import static org.junit.Assert.assertTrue;
  * @author jrobinso
  */
 @Ignore
-public class BAMRemoteQueryReaderTest {
+public class BAMRemoteQueryReaderTest extends AbstractHeadlessTest {
 
     public BAMRemoteQueryReaderTest() {
     }
 
     static PreferenceManager preferenceManager;
-    static boolean useByteRange;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
+        AbstractHeadlessTest.setUpClass();
         Globals.READ_TIMEOUT = 5 * 30 * 1000;
         Globals.CONNECT_TIMEOUT = 5 * 30 * 1000;
         preferenceManager = PreferenceManager.getInstance();
-    }
-
-    @Before
-    public void setUp() {
-
     }
 
     /**

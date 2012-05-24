@@ -11,13 +11,11 @@
 
 package org.broad.igv.tools.converters;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -29,21 +27,7 @@ import static junit.framework.Assert.assertTrue;
  * User: jacob
  * Date: 2012/03/19
  */
-public class ExpressionFormatterTest {
-
-    Genome genome;
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        genome = null;
-    }
+public class ExpressionFormatterTest extends AbstractHeadlessTest {
 
     @Test
     public void testConvertGCT() throws Exception {

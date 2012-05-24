@@ -37,7 +37,6 @@ import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ReadmeParser;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
@@ -717,8 +716,8 @@ public class IgvTools {
             System.out.println("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
-        
-        if(ifile.endsWith(".bam")){
+
+        if (ifile.endsWith(".bam")) {
             String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
             System.out.println(msg);
             throw new PreprocessingException(msg);
@@ -795,7 +794,7 @@ public class IgvTools {
             if (outputFile != null) {
                 idxFile = outputFile.getAbsolutePath();
             } else {
-                idxFile = ifile = ".idx";
+                idxFile = ifile + ".idx";
             }
             LittleEndianOutputStream stream = null;
             try {

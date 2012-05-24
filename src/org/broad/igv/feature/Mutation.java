@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.track.WindowFunction;
@@ -90,7 +91,7 @@ public class Mutation implements IGVFeature {
 
     // TODO -- experimental, note this only works for hg18 FIX
     public String getOMAUrl() {
-        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
+        String genome = GenomeManager.getInstance().getGenomeId();
         String url = "http://mutationassessor.org/v1/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 

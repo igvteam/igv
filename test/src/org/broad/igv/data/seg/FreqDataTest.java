@@ -11,11 +11,10 @@
 
 package org.broad.igv.data.seg;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -24,17 +23,7 @@ import java.io.IOException;
  * @author jrobinso
  * @date Oct 13, 2010
  */
-public class FreqDataTest {
-    @Before
-    public void setUp() throws Exception {
-
-        TestUtils.setUpHeadless();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
+public class FreqDataTest extends AbstractHeadlessTest {
 
     @Test
     public void test() throws IOException {

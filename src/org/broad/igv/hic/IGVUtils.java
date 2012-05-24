@@ -56,16 +56,25 @@ public class IGVUtils {
         }
     }
 
+
+    /**
+     * Send instructions to IGV to open or adjust views on the 2 loci.
+     *
+     * @param locus1
+     * @param locus2
+     */
     public static void sendToIGV(final String locus1, final String locus2) {
 
         Runnable runnable = new Runnable() {
             public void run() {
 
+                if (locus1.startsWith(Globals.CHR_ALL) || locus1.startsWith("chrAll")) {
+                    return;
+                }
+
                 // Same JVM?
                 if (IGV.hasInstance()) {
-                    GeneList geneList = new GeneList("HiC", Arrays.asList(locus1, locus2), false);
-                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
-                    IGV.getInstance().resetFrames();
+                    IGV.getInstance().goToLociList(Arrays.asList(locus1, locus2));
 
                 } else {
 

@@ -23,6 +23,7 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -175,7 +176,7 @@ public class VariantListNavigator extends JDialog {
                 finally {
                     Runnable runnable = new Runnable() {
                         public void run() {
-                            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                            Genome genome = GenomeManager.getInstance().getCurrentGenome();
                             String chr = genome == null ? variant.chr : genome.getChromosomeAlias(variant.chr);
                             String locus = chr + ":" + variant.position;
                             IGV.getInstance().goToLocus(locus);

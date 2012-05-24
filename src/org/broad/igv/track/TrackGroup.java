@@ -44,12 +44,16 @@ import java.util.List;
 public class TrackGroup {
 
     private static Logger log = Logger.getLogger(TrackGroup.class);
+
     /**
      * Key used to group tracks (e.g. SAMPLE_ID).
      */
     private String name;
+
     private boolean drawBorder = true;
+
     private List<Track> tracks;
+
     private boolean selected;
 
 

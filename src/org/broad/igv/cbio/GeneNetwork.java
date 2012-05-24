@@ -381,8 +381,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
             NodeList nodes = document.getElementsByTagName(NODE_TAG);
             //Generate the graph itself. First add the nodes, then the edges
-            nodeTable = new HashMap<String, Node>(nodes.getLength());
-            for (int nn = 0; nn < nodes.getLength(); nn++) {
+            int docNodes = nodes.getLength();
+            nodeTable = new HashMap<String, Node>(docNodes);
+            for (int nn = 0; nn < docNodes; nn++) {
                 Node node = nodes.item(nn);
                 String label = node.getAttributes().getNamedItem("id").getTextContent();
                 nodeTable.put(label, node);
@@ -390,7 +391,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             }
 
             NodeList edges = document.getElementsByTagName(EDGE_TAG);
-            for (int ee = 0; ee < edges.getLength(); ee++) {
+            int docEdges = edges.getLength();
+            for (int ee = 0; ee < docEdges; ee++) {
                 Node edge = edges.item(ee);
                 NamedNodeMap attrs = edge.getAttributes();
                 String source = attrs.getNamedItem("source").getTextContent();
@@ -677,8 +679,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 continue;
             }
 
-            float rel_data = data.getPercentAltered();
-            if (rel_data == 0 && !Globals.isTesting()) {
+            float relData = data.getPercentAltered();
+            if (relData == 0 && !Globals.isTesting()) {
                 continue;
             }
 
@@ -754,6 +756,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 int featStart = feat.getStart();
                 int featEnd = feat.getEnd();
                 for (Track track : tracks) {
+                    if (!track.isVisible()) {
+                        continue;
+                    }
                     String sample = track.getSample();
 
                     //If track is wrong type, or if sample has already been marked altered,
@@ -777,8 +782,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             allSamples.addAll(samplesForType);
             anyAlteration.addAll(alteredSamplesForType);
 
-            float percentAltered = ((float) alteredSamplesForType.size()) / samplesForType.size();
-            results.put(attr, percentAltered);
+            float fractionAltered = ((float) alteredSamplesForType.size()) / samplesForType.size();
+            results.put(attr, fractionAltered);
         }
 
         results.setPercentAltered(((float) anyAlteration.size()) / allSamples.size());
@@ -802,9 +807,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
          * and upregulated would be counted once.
          */
         private float percentAltered;
-
-        public ScoreData() {
-        }
 
         public ScoreData(int size) {
             super(size);

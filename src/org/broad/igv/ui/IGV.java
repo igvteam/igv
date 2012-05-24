@@ -63,6 +63,7 @@ import java.lang.ref.SoftReference;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
@@ -401,6 +402,10 @@ public class IGV {
 
     public void selectGenomeFromList(String genome) {
         contentPane.getCommandBar().selectGenomeFromList(genome);
+    }
+
+    public Collection<String> getSelectableGenomeIDs() {
+        return contentPane.getCommandBar().getSelectableGenomeIDs();
     }
 
 
@@ -1856,11 +1861,9 @@ public class IGV {
 
     }
 
-    public void setTrackSelections(Set<Track> selectedTracks) {
-        for (Track t : getAllTracks(true)) {
-            if (selectedTracks.contains(t)) {
-                t.setSelected(true);
-            }
+    public void setTrackSelections(Iterable<Track> selectedTracks) {
+        for (Track t : selectedTracks) {
+            t.setSelected(true);
         }
     }
 
@@ -1884,11 +1887,9 @@ public class IGV {
         }
     }
 
-    public void toggleTrackSelections(Set<Track> selectedTracks) {
-        for (Track t : getAllTracks(true)) {
-            if (selectedTracks.contains(t)) {
-                t.setSelected(!t.isSelected());
-            }
+    public void toggleTrackSelections(Iterable<Track> selectedTracks) {
+        for (Track t : selectedTracks) {
+            t.setSelected(!t.isSelected());
         }
     }
 
@@ -2251,13 +2252,13 @@ public class IGV {
     // Startup
 
 
-    public void startUp(Main.IGVArgs igvArgs) {
+    public Future startUp(Main.IGVArgs igvArgs) {
 
         if (log.isDebugEnabled()) {
             log.debug("startUp");
         }
 
-        LongRunningTask.submit(new StartupRunnable(igvArgs));
+        return LongRunningTask.submit(new StartupRunnable(igvArgs));
     }
 
     /**
@@ -2393,8 +2394,6 @@ public class IGV {
 
                 }
             });
-
-
         }
     }
 
@@ -2420,6 +2419,29 @@ public class IGV {
         } finally {
             IGV.getMainFrame().setCursor(Cursor.getDefaultCursor());
         }
+    }
+
+
+    /**
+     * Wrapper for igv.wait(timeout)
+     *
+     * @param timeout
+     * @return True if method completed before timeout or interruption, otherwise false
+     */
+    public boolean waitForNotify(long timeout) {
+        boolean completed = false;
+        synchronized (this) {
+            while (!completed) {
+                try {
+                    this.wait(timeout);
+                    completed = true;
+                } catch (InterruptedException e) {
+
+                }
+                break;
+            }
+        }
+        return completed;
     }
 
 

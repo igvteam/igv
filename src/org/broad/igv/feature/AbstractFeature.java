@@ -20,6 +20,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.util.List;
@@ -194,6 +195,14 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
     public boolean contains(double location) {
         return location >= getStart() && location < getEnd();
     }
+
+    public boolean overlaps(Feature anotherFeature) {
+
+        return end >= anotherFeature.getStart() && start <= anotherFeature.getEnd() &&
+                chromosome.equals(anotherFeature.getChr());
+
+    }
+
 
     /**
      * @param name the name to set

@@ -155,6 +155,13 @@ public class IGVBEDCodec extends UCSCCodec {
             }
         }
 
+        // Thick ends
+        if(tokenCount > 7) {
+            feature.setThickStart(Integer.parseInt(tokens[6]) - startOffsetValue);
+            feature.setThickEnd(Integer.parseInt(tokens[7]));
+        }
+
+
         // Color
         if (tokenCount > 8) {
             String colorString = tokens[8];

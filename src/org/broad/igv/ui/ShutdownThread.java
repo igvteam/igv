@@ -32,6 +32,18 @@ public class ShutdownThread extends Thread {
     private static Logger log = Logger.getLogger(ShutdownThread.class);
 
 
+    public static void runS() {
+        // Cleanup jnlp files
+        if (Globals.IS_MAC) {
+            FileUtils.cleanupJnlpFiles();
+        }
+
+        DBManager.shutdown();
+        CommandListener.halt();
+        cleanupBamIndexCache();
+        IGV.getInstance().saveStateForExit();
+    }
+
     @Override
     public void run() {
 

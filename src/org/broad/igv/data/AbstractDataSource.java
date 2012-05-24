@@ -108,7 +108,7 @@ public abstract class AbstractDataSource implements DataSource {
     //{
     //
     //    if (getTrackType() == TrackType.GENE_EXPRESSION) {
-    //        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+    //        String genomeId = GenomeManager.getInstance().getGenomeId();
     //        GeneManager gm = GeneManager.getGeneManager(genomeId);
     //        return (gm == null) ? 1000000 : gm.getLongestGeneLength(chr);
     //    } else {

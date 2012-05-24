@@ -41,9 +41,8 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -56,13 +55,15 @@ public class HttpUtils {
 
     private static Logger log = Logger.getLogger(HttpUtils.class);
 
-    public static boolean byteRangeTested = false;
-    public static boolean byteRangeTestSuccess = false;
     private static HttpUtils instance;
+
+    private Map<String, Boolean> byteRangeTestMap;
 
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
+    private String defaultUserName = null;
+    private char[] defaultPassword = null;
 
     /**
      *  Create the single instance  and register the cookie manager
@@ -72,7 +73,7 @@ public class HttpUtils {
             org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
             instance = new HttpUtils();
             instance.disableCertificateValidation();
-            CookieHandler.setDefault(new CookieManager());
+            CookieHandler.setDefault(new IGVCookieManager());
         }
     }
 
@@ -88,6 +89,7 @@ public class HttpUtils {
      */
     private HttpUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
+        byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
     public static boolean isURL(String string) {
@@ -127,6 +129,29 @@ public class HttpUtils {
         }
     }
 
+    public boolean useByteRange(URL url) {
+
+        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
+        // environments (e.g. intranets)
+        final String host = url.getHost();
+        if (host.contains("broadinstitute.org")) {
+            // Test broad urls for successful byte range requests.
+            if (byteRangeTestMap.containsKey(host)) {
+                return byteRangeTestMap.get(host);
+            } else {
+                log.info("Testing range-byte request on host: " + host);
+                boolean byteRangeTestSuccess = testByteRange(host);
+                byteRangeTestMap.put(host, byteRangeTestSuccess);
+                return byteRangeTestSuccess;
+
+            }
+        } else {
+            // No test for non-Broad hosts yet.  Let's be optimisitic
+            return true;
+        }
+    }
+
+
     /**
      * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
      * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
@@ -134,16 +159,18 @@ public class HttpUtils {
      *
      * @return
      */
-    public static boolean testByteRange() {
+    public static boolean testByteRange(String host) {
 
         log.info("Testing range-byte request");
         try {
-            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
+            String testURL = host.startsWith("www.broadinstitute.org") ?
+                    "/igvdata/annotations/seq/hg19/chr12.txt" :
+                    "/genomes/seq/hg19/chr12.txt" ;
             byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                     'G', 'A', 'G', 'A', 'G', 'G'};
 
 
-            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
+            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL("http://" + host + testURL)));
             str.seek(25350000);
             byte[] buffer = new byte[80000];
             str.read(buffer);
@@ -168,27 +195,6 @@ public class HttpUtils {
         }
     }
 
-
-
-    public static boolean useByteRange(URL url) {
-
-
-        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
-        // environments (e.g. intranets)
-        if (url.getHost().contains("broadinstitute.org")) {
-            // Test broad urls for successful byte range requests.
-            if (!byteRangeTested) {
-                byteRangeTestSuccess = testByteRange();
-                byteRangeTested = true;   // <= to prevent testing again
-
-            }
-            return byteRangeTestSuccess;
-        } else {
-            return true;
-        }
-
-
-    }
 
     public void shutdown() {
         // Do any cleanup required here
@@ -579,11 +585,9 @@ public class HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
             conn.setRequestProperty("Accept", "application/json,text/plain");
-
         }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
@@ -601,26 +605,6 @@ public class HttpUtils {
             return conn;
         } else {
             int code = conn.getResponseCode();
-            if (code >= 200 && code < 300) {
-                // A genome-space hack.  We want to catch redirects from the identity server to grab the cookie
-                // and write it to the .gstoken file.  This is required for the GS single-sign on model
-                if (GSUtils.isGenomeSpace(url)) {
-                    try {
-                        java.util.List<HttpCookie> cookies = ((CookieManager) CookieManager.getDefault()).getCookieStore().get(url.toURI());
-                        if (cookies != null) {
-                            for (HttpCookie cookie : cookies) {
-                                if (cookie.getName().equals("gs-token")) {
-                                    GSUtils.setGSToken(cookie.getValue());
-                                } else if (cookie.getName().equals("gs-username")) {
-                                    GSUtils.setGSUser(cookie.getValue());
-                                }
-                            }
-                        }
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
@@ -657,6 +641,19 @@ public class HttpUtils {
         return conn;
     }
 
+    public void setDefaultPassword(String defaultPassword) {
+        this.defaultPassword = defaultPassword.toCharArray();
+    }
+
+    public void setDefaultUserName(String defaultUserName) {
+        this.defaultUserName = defaultUserName;
+    }
+
+    public void clearDefaultCredentials() {
+        this.defaultPassword = null;
+        this.defaultUserName = null;
+    }
+
     public static class ProxySettings {
         boolean auth = false;
         String user;
@@ -688,6 +685,7 @@ public class HttpUtils {
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
 
+
             RequestorType type = getRequestorType();
             URL url = this.getRequestingURL();
 
@@ -698,9 +696,17 @@ public class HttpUtils {
                 }
             }
 
+            if (defaultUserName != null && defaultPassword != null) {
+                return new PasswordAuthentication(defaultUserName, defaultPassword);
+            }
+
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
             boolean isGenomeSpace = GSUtils.isGenomeSpace(url);
+            if (isGenomeSpace) {
+                // If we are being challenged by GS the token must be bad/expired
+                GSUtils.logout();
+            }
 
             LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), isProxyChallenge);
             dlg.setVisible(true);
@@ -736,5 +742,39 @@ public class HttpUtils {
 
     }
 
+
+    /**
+     * Extension of CookieManager that grabs cookies from the GenomeSpace identity server to store locally.
+     * This is to support the GenomeSpace "single sign-on". Examples ...
+     * gs-username=igvtest; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
+     * gs-token=HnR9rBShNO4dTXk8cKXVJT98Oe0jWVY+; Domain=.genomespace.org; Expires=Mon, 21-Jul-2031 03:27:23 GMT; Path=/
+     */
+
+    static class IGVCookieManager extends CookieManager {
+
+
+        @Override
+        public void put(URI uri, Map<String, List<String>> stringListMap) throws IOException {
+            if (uri.toString().startsWith(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_IDENTITY_SERVER))) {
+                List<String> cookies = stringListMap.get("Set-Cookie");
+                if (cookies != null) {
+                    for (String cstring : cookies) {
+                        String[] tokens = Globals.equalPattern.split(cstring);
+                        if (tokens.length >= 2) {
+                            String cookieName = tokens[0];
+                            String[] vTokens = Globals.semicolonPattern.split(tokens[1]);
+                            String value = vTokens[0];
+                            if (cookieName.equals("gs-token")) {
+                                GSUtils.setGSToken(value);
+                            } else if (cookieName.equals("gs-username")) {
+                                GSUtils.setGSUser(value);
+                            }
+                        }
+                    }
+                }
+            }
+            super.put(uri, stringListMap);
+        }
+    }
 
 }

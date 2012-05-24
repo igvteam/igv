@@ -19,10 +19,9 @@
 package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.util.TestUtils;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -37,15 +36,7 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2011/12/19
  */
-public class SearchCommandTest {
-
-    private static Genome genome;
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-    }
+public class SearchCommandTest extends AbstractHeadlessTest {
 
     @Test
     public void testSingleChromosomes() throws Exception {
@@ -89,9 +80,7 @@ public class SearchCommandTest {
         String[] queries = new String[]{"X:100-1000", "Y:100-1000", "Y:12", "1\t 100", "X\t50", "X\t50\t500"};
         tstFeatureTypes(queries, SearchCommand.ResultType.LOCUS);
 
-        genome = null;
-        setUp();
-
+        genome = TestUtils.loadGenome();
     }
 
     @Test

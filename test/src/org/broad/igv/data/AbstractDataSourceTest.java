@@ -11,13 +11,12 @@
 
 package org.broad.igv.data;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -32,17 +31,7 @@ import static org.junit.Assert.assertTrue;
  * Time: 7:17:32 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AbstractDataSourceTest {
-
-
-    @Before
-    public void setUp() {
-        TestUtils.setUpHeadless();
-    }
-
-    @After
-    public void tearDown() {
-    }
+public class AbstractDataSourceTest  extends AbstractHeadlessTest {
 
     /**
      * # When viewed as a heatmap this feature shows a 1-pixel break at position 23,314,405  when the

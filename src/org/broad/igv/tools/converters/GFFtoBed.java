@@ -24,8 +24,6 @@ import java.util.List;
 /**
  * Convert a GFF to a BED file, keeping the column 9 attribute tags.
  *
- * Note:  This actually works for any feature format -> BED,  a good test would be BED -> BED.
- *
  * @author Jim Robinson
  * @date 2/5/12
  */
@@ -46,7 +44,7 @@ public class GFFtoBed {
             codec.setGffTags(true);
 
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            pw.println("##gffTags");
+            pw.println("#gffTags");
             for(Feature feature : features) {
 
                 BasicFeature bf = (BasicFeature) feature;

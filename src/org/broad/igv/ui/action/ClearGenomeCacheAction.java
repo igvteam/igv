@@ -25,6 +25,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
@@ -62,7 +63,7 @@ public class ClearGenomeCacheAction extends MenuAction {
                     "Clear the genome cache ?", "Clear the genome cache ?",
                     JOptionPane.YES_NO_OPTION));
             if (option == JOptionPane.YES_OPTION) {
-                IGV.getInstance().getGenomeManager().clearGenomeCache();
+                GenomeManager.getInstance().clearGenomeCache();
                 UIUtilities.invokeOnEventThread(new Runnable() {
                     public void run() {
                         IGV.getInstance().rebuildGenomeDropdownList(null);

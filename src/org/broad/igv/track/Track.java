@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
  *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * This software is licensed under the terms of the GNU Lesser General  License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
@@ -41,9 +41,6 @@ import java.util.List;
  * @author jrobinso
  */
 public interface Track extends Persistable {
-    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> names, List<MouseableRegion> mouseRegions);
-
-    String getNameValueString(int y);
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED
@@ -56,7 +53,7 @@ public interface Track extends Persistable {
      *
      * @return
      */
-    public String getId();
+    String getId();
 
     /**
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
@@ -65,7 +62,7 @@ public interface Track extends Persistable {
      * @param context the render context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    public void render(RenderContext context, Rectangle rect);
+    void render(RenderContext context, Rectangle rect);
 
     /**
      * Render the track as an overlay, presumably on another track.
@@ -73,7 +70,7 @@ public interface Track extends Persistable {
      * @param context the render context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    public void overlay(RenderContext context, Rectangle rect);
+    void overlay(RenderContext context, Rectangle rect);
 
     /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
@@ -84,91 +81,97 @@ public interface Track extends Persistable {
      * @param trackRectangle   the track bounds, relative to the enclosing DataPanel bounds.
      * @param visibleRectangle
      */
-    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
+    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
 
-    public void setName(String name);
+    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+                          List<String> names, List<MouseableRegion> mouseRegions);
 
-    public String getName();
+
+    void setName(String name);
+
+    String getName();
+
+    String getNameValueString(int y);
 
     String getSample();
 
-    public void setUrl(String url);
+    void setUrl(String url);
 
-    public ResourceLocator getResourceLocator();
+    ResourceLocator getResourceLocator();
 
-    public void setAttributeValue(String key, String value);
+    void setAttributeValue(String key, String value);
 
-    public String getAttributeValue(String attributeKey);
+    String getAttributeValue(String attributeKey);
 
-    public void setVisible(boolean isVisible);
+    void setVisible(boolean isVisible);
 
-    public boolean isVisible();
+    boolean isVisible();
 
-    public void setOverlayed(boolean overlayVisible);
+    void setOverlayed(boolean overlayVisible);
 
-    public TrackType getTrackType();
+    TrackType getTrackType();
 
-    public void setHeight(int preferredHeight);
+    void setHeight(int preferredHeight);
 
-    public void setY(int top);
+    void setY(int top);
 
-    public int getY();
+    int getY();
 
-    public void setColorScale(ContinuousColorScale colorScale);
+    void setColorScale(ContinuousColorScale colorScale);
 
-    public ContinuousColorScale getColorScale();
+    ContinuousColorScale getColorScale();
 
-    public int getHeight();
+    int getHeight();
 
-    public int getMinimumHeight();
+    int getMinimumHeight();
 
-    public void setDataRange(DataRange axisDefinition);
+    void setDataRange(DataRange axisDefinition);
 
     boolean hasDataRange();
 
-    public DataRange getDataRange();
+    DataRange getDataRange();
 
-    public Color getColor();
+    Color getColor();
 
-    public void setColor(Color color);
+    void setColor(Color color);
 
-    public Color getAltColor();
+    Color getAltColor();
 
-    public void setAltColor(Color color);
+    void setAltColor(Color color);
 
-    public void setWindowFunction(WindowFunction type);
+    void setWindowFunction(WindowFunction type);
 
-    public WindowFunction getWindowFunction();
+    WindowFunction getWindowFunction();
 
-    public void setRendererClass(Class rc);
+    void setRendererClass(Class rc);
 
-    public Renderer getRenderer();
+    Renderer getRenderer();
 
-    public void setSelected(boolean selected);
+    void setSelected(boolean selected);
 
-    public boolean isSelected();
+    boolean isSelected();
 
-    public boolean isSortable();
+    boolean isSortable();
 
-    public boolean isShowDataRange();
+    boolean isShowDataRange();
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame);
+    String getValueStringAt(String chr, double position, int y, ReferenceFrame frame);
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName);
+    float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName);
 
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName, List<Track> tracks);
+    float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName, List<Track> tracks);
 
-    public void setFontSize(int h);
+    void setFontSize(int h);
 
-    public int getFontSize();
+    int getFontSize();
 
-    public boolean handleDataClick(TrackClickEvent e);
+    boolean handleDataClick(TrackClickEvent e);
 
-    public void handleNameClick(MouseEvent e);
+    void handleNameClick(MouseEvent e);
 
-    public Collection<WindowFunction> getAvailableWindowFunctions();
+    Collection<WindowFunction> getAvailableWindowFunctions();
 
-    public void setProperties(TrackProperties trackProperties);
+    void setProperties(TrackProperties trackProperties);
 
     Feature getFeatureAtMousePosition(TrackClickEvent e);
 

@@ -11,37 +11,20 @@
 
 package org.broad.igv.tools.parsers;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.broad.igv.util.TestUtils.loadGenome;
-
 /**
  * @author jrobinso
  * @date Oct 9, 2010
  */
-public class GCTtoIGVConverterTest {
-
-    Genome genome;
-
-    @Before
-    public void setUp() throws IOException {
-        TestUtils.setUpHeadless();
-        genome = loadGenome();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
+public class GCTtoIGVConverterTest extends AbstractHeadlessTest {
 
     @Test
     public void testDescriptionMapping() throws IOException {

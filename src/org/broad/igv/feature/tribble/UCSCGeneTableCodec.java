@@ -116,6 +116,10 @@ public class UCSCGeneTableCodec extends UCSCCodec {
         gene.setName(name);
         gene.setIdentifier(identifier);
 
+        if(tokenCount > 7) {
+            gene.setThickStart(Integer.parseInt(tokens[6]) - startOffsetValue);
+            gene.setThickEnd(Integer.parseInt(tokens[7]));
+        }
 
         // Coding information is optional
         if (tokenCount > 8) {

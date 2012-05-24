@@ -326,6 +326,7 @@ public class GeneListManagerUI extends JDialog {
 
     private void viewNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
+            this.closeButton.doClick();
             GeneList geneList = geneLists.get(selectedList);
             FilterGeneNetworkUI fgnUI = new FilterGeneNetworkUI(IGV.getMainFrame(), geneList);
             fgnUI.setVisible(true);

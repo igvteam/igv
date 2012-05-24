@@ -5,6 +5,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -43,7 +44,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         this.end = end;
 
         if(!Globals.isHeadless() && bisulfiteContext != null){
-            bisulfiteCounts = new BisulfiteCounts(bisulfiteContext,IGV.getInstance().getGenomeManager().getCurrentGenome());
+            bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, GenomeManager.getInstance().getCurrentGenome());
         }
 
     }
@@ -156,12 +157,13 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     }
 
-    public boolean isMismatch(int pos, char ref, String chr, float snpThreshold) {
+    public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold) {
 
         Set<Integer> filteredSnps = knownSnps == null ? null : knownSnps.get(chr);
         if (filteredSnps == null || !filteredSnps.contains(pos + 1)) {
             float threshold = snpThreshold * getTotalQuality(pos);
             if (ref > 0) {
+                if(ref < 96) ref += 32;  // a fast "toLowercase"
                 for (char c : nucleotides) {
                     if (c != ref && c != 'n' && getQuality(pos, (byte) c) > threshold) {
                         return true;

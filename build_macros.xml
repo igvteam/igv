@@ -14,6 +14,7 @@
     <!-- build specific properties.  Generally set through Jenkins, command line, or properties file-->
     <property name="build-number" value="0"/>
     <property name="version" value="user"/>
+    <property name="vendor" value="user"/>
     <!--Note: $$ translates to $, because $ is a special character-->
     <property name="data-server-url" value="http://www.broadinstitute.org/igvdata/$$$$_dataServerRegistry.txt"/>
 

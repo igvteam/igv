@@ -11,6 +11,7 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
@@ -48,7 +49,7 @@ import java.util.*;
 
 import static junit.framework.Assert.*;
 
-public class IGVToolsTest {
+public class IGVToolsTest extends AbstractHeadlessTest {
 
     IgvTools igvTools;
 
@@ -57,7 +58,6 @@ public class IGVToolsTest {
 
     @Before
     public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
         igvTools = new IgvTools();
     }
 
@@ -66,10 +66,6 @@ public class IGVToolsTest {
         igvTools = null;
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        TestUtils.clearOutputDir();
-    }
 
     @Test
     public void testIndexSam() throws Exception {
@@ -428,7 +424,7 @@ public class IGVToolsTest {
      */
     @Test
     public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
+        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
         tstCountBamList(listPath);
     }
 
@@ -440,7 +436,7 @@ public class IGVToolsTest {
      */
     @Test
     public void testMergedBam() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "bam/test.bam.list";
+        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
         AlignmentReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(listPath), false);
 
         Set<String> visitedChromosomes = new HashSet();
@@ -533,9 +529,10 @@ public class IGVToolsTest {
         String outputFileND = TestUtils.DATA_DIR + "out/" + inputFiname + "_nodups" + ".tdf";
         String outputFileWithDup = TestUtils.DATA_DIR + "out/" + inputFiname + "_withdups" + ".tdf";
 
-        String chr = "1";
+        String queryChr = "1";
+
         int pos = 9718611;
-        String queryStr = chr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
+        String queryStr = queryChr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
         String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
         igvTools.run(cmd_nodups.split("\\s+"));
 
@@ -546,15 +543,19 @@ public class IGVToolsTest {
         assertTrue((new File(outputFileWithDup).exists()));
 
         Genome genome = TestUtils.loadGenome();
-        int noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
-        int dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+
+        //Have to read back in using aliased chromosome names
+        String readChr = genome.getChromosomeAlias(queryChr);
+
+        int noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
+        int dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
 
         assertEquals(noDupCount + 4, dupCount);
 
         //No dups at this location
         pos += 80;
-        noDupCount = (int) getCount(outputFileND, chr, 23, pos, genome);
-        dupCount = (int) getCount(outputFileWithDup, chr, 23, pos, genome);
+        noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
+        dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
         assertEquals(noDupCount, dupCount);
 
     }

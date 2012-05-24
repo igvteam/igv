@@ -12,12 +12,11 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.SAMFileHeader;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
@@ -31,17 +30,7 @@ import static junit.framework.Assert.assertEquals;
  * User: jacob
  * Date: 2012/05/04
  */
-public class SAMWriterTest {
-    @Before
-    public void setUp() throws Exception {
-        TestUtils.setUpHeadless();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        //TODO
-    }
-
+public class SAMWriterTest extends AbstractHeadlessTest {
 
     private String[] getTestPaths() {
         File indir = new File(TestUtils.DATA_DIR + "sam/");
@@ -123,8 +112,7 @@ public class SAMWriterTest {
 
             SAMWriter writer = new SAMWriter(shi.header);
 
-            boolean bam = false;
-            outpath.endsWith(".bam");
+            boolean bam = outpath.endsWith(".bam");
 
             if (!outStream) {
                 writer.writeToFile(outFile, shi.alignments);
