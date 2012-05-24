@@ -232,7 +232,26 @@ public class CommandExecutor {
         }
         String result;
         String genomeID = param1;
-        igv.selectGenomeFromList(genomeID);
+
+        if (igv.getGenomeIds().contains(genomeID)) {
+            igv.selectGenomeFromList(genomeID);
+        } else {
+            String genomePath = genomeID;
+            if (!ParsingUtils.pathExists(genomePath)) {
+                String workingDirectory = (new File("tmp")).getParent();
+                genomePath = FileUtils.getAbsolutePath(genomeID,  workingDirectory);
+            }
+            if (ParsingUtils.pathExists(genomePath)) {
+                try {
+                    igv.loadGenome(genomePath, null);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error loading genome: " + genomeID);
+                }
+            } else {
+                MessageUtils.showMessage("Warning: Could not locate genome: " + genomeID);
+            }
+        }
+
         result = "OK";
         return result;
     }
