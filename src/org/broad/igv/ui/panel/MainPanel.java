@@ -308,6 +308,9 @@ public class MainPanel extends JPanel implements Paintable {
 
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             if (sp.getTrackPanel().getTracks().size() == 0) {
+                //TODO In some tests this causes an ArrayIndexOutOfBoundsException
+                //Presumably there is a race condition when starting up, if we load a file before the frame
+                //has been initialized
                 centerSplitPane.setDividerLocation(0, 3);
             }
         }
