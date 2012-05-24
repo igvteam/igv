@@ -66,7 +66,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean updateOverlays = false;
     boolean inputValidated = true;
     private static int lastSelectedIndex = 0;
-    boolean proxySettingsChanged;
+    boolean proxySettingsChanged = false;
+    boolean tooltipSettingsChanged = false;
     private File newIGVDirectory;
 
 
@@ -286,6 +287,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         igvDirectoryButton = new JButton();
         igvDirectoryField = new JLabel();
         label21 = new JLabel();
+        label24 = new JLabel();
+        label25 = new JLabel();
+        label26 = new JLabel();
+        toolTipInitialDelayField = new JTextField();
+        tooltipReshowDelayField = new JTextField();
+        tooltipDismissDelayField = new JTextField();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -486,7 +493,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel10.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel10.getComponentCount(); i++) {
                             Rectangle bounds = jPanel10.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -650,7 +657,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel6.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel6.getComponentCount(); i++) {
                             Rectangle bounds = jPanel6.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -667,7 +674,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < tracksPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < tracksPanel.getComponentCount(); i++) {
                         Rectangle bounds = tracksPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -784,7 +791,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel5.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
                             Rectangle bounds = jPanel5.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -801,7 +808,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < overlaysPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < overlaysPanel.getComponentCount(); i++) {
                         Rectangle bounds = overlaysPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -926,7 +933,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel4.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel4.getComponentCount(); i++) {
                             Rectangle bounds = jPanel4.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -972,7 +979,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < chartPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < chartPanel.getComponentCount(); i++) {
                         Rectangle bounds = chartPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1035,7 +1042,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel11.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel11.getComponentCount(); i++) {
                             Rectangle bounds = jPanel11.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1111,7 +1118,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel4.getComponentCount(); i++) {
+                        for (int i = 0; i < panel4.getComponentCount(); i++) {
                             Rectangle bounds = panel4.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1333,7 +1340,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel12.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel12.getComponentCount(); i++) {
                             Rectangle bounds = jPanel12.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1480,7 +1487,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel2.getComponentCount(); i++) {
+                        for (int i = 0; i < panel2.getComponentCount(); i++) {
                             Rectangle bounds = panel2.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1555,7 +1562,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel3.getComponentCount(); i++) {
+                        for (int i = 0; i < panel3.getComponentCount(); i++) {
                             Rectangle bounds = panel3.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1572,7 +1579,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < alignmentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < alignmentPanel.getComponentCount(); i++) {
                         Rectangle bounds = alignmentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1672,7 +1679,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel8.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel8.getComponentCount(); i++) {
                             Rectangle bounds = jPanel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1689,7 +1696,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < expressionPane.getComponentCount(); i++) {
+                    for (int i = 0; i < expressionPane.getComponentCount(); i++) {
                         Rectangle bounds = expressionPane.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1768,7 +1775,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel16.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel16.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel16.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1844,7 +1851,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for(int i = 0; i < jPanel17.getComponentCount(); i++) {
+                            for (int i = 0; i < jPanel17.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel17.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1877,7 +1884,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < jPanel15.getComponentCount(); i++) {
+                        for (int i = 0; i < jPanel15.getComponentCount(); i++) {
                             Rectangle bounds = jPanel15.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1969,7 +1976,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < dbPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < dbPanel.getComponentCount(); i++) {
                         Rectangle bounds = dbPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2121,21 +2128,84 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 });
                 advancedPanel.add(igvDirectoryButton);
-                igvDirectoryButton.setBounds(610, 343, 100, igvDirectoryButton.getPreferredSize().height);
+                igvDirectoryButton.setBounds(610, 495, 100, igvDirectoryButton.getPreferredSize().height);
 
                 //---- igvDirectoryField ----
                 igvDirectoryField.setBorder(new BevelBorder(BevelBorder.LOWERED));
                 advancedPanel.add(igvDirectoryField);
-                igvDirectoryField.setBounds(55, 345, 550, 25);
+                igvDirectoryField.setBounds(55, 495, 550, 25);
 
                 //---- label21 ----
                 label21.setText("IGV Directory: ");
                 advancedPanel.add(label21);
-                label21.setBounds(45, 310, 105, label21.getPreferredSize().height);
+                label21.setBounds(45, 460, 105, label21.getPreferredSize().height);
+
+                //---- label24 ----
+                label24.setText("Tooltip initial delay (ms)");
+                advancedPanel.add(label24);
+                label24.setBounds(45, 295, 185, label24.getPreferredSize().height);
+
+                //---- label25 ----
+                label25.setText("Tooltip reshow delay (ms)");
+                advancedPanel.add(label25);
+                label25.setBounds(45, 327, 185, 23);
+
+                //---- label26 ----
+                label26.setText("Tooltip dismiss delay (ms)");
+                advancedPanel.add(label26);
+                label26.setBounds(45, 365, 185, 16);
+
+                //---- toolTipInitialDelayField ----
+                toolTipInitialDelayField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        toolTipInitialDelayFieldActionPerformed(e);
+                    }
+                });
+                toolTipInitialDelayField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        toolTipInitialDelayFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(toolTipInitialDelayField);
+                toolTipInitialDelayField.setBounds(265, 289, 455, toolTipInitialDelayField.getPreferredSize().height);
+
+                //---- tooltipReshowDelayField ----
+                tooltipReshowDelayField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        tooltipReshowDelayFieldActionPerformed(e);
+                    }
+                });
+                tooltipReshowDelayField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        tooltipReshowDelayFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(tooltipReshowDelayField);
+                tooltipReshowDelayField.setBounds(265, 324, 455, 28);
+
+                //---- tooltipDismissDelayField ----
+                tooltipDismissDelayField.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        tooltipDismissDelayFieldActionPerformed(e);
+                    }
+                });
+                tooltipDismissDelayField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        tooltipDismissDelayFieldFocusLost(e);
+                    }
+                });
+                advancedPanel.add(tooltipDismissDelayField);
+                tooltipDismissDelayField.setBounds(265, 359, 455, 28);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < advancedPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < advancedPanel.getComponentCount(); i++) {
                         Rectangle bounds = advancedPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -2226,6 +2296,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
             if (newIGVDirectory != null) {
                 moveIGVDirectory();
 
+            }
+
+            // Tooltip
+            if (tooltipSettingsChanged) {
+                Main.updateTooltipSettings();
             }
 
             updatedPreferenceMap.clear();
@@ -3120,6 +3195,54 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+    private void toolTipInitialDelayFieldFocusLost(FocusEvent e) {
+        toolTipInitialDelayFieldActionPerformed(null);
+    }
+
+
+    private void toolTipInitialDelayFieldActionPerformed(ActionEvent e) {
+        String ttText = toolTipInitialDelayField.getText();
+        try {
+            Integer.parseInt(ttText);
+            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_INITIAL_DELAY, ttText);
+            tooltipSettingsChanged = true;
+        } catch (NumberFormatException e1) {
+            MessageUtils.showMessage("Tooltip initial delay must be a number.");
+        }
+    }
+
+    private void tooltipReshowDelayFieldFocusLost(FocusEvent e) {
+        tooltipReshowDelayFieldActionPerformed(null);
+    }
+
+    private void tooltipReshowDelayFieldActionPerformed(ActionEvent e) {
+        String ttText = tooltipReshowDelayField.getText();
+        try {
+            Integer.parseInt(ttText);
+            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_RESHOW_DELAY, ttText);
+            tooltipSettingsChanged = true;
+        } catch (NumberFormatException e1) {
+            MessageUtils.showMessage("Tooltip reshow delay must be a number.");
+        }
+
+    }
+
+
+    private void tooltipDismissDelayFieldFocusLost(FocusEvent e) {
+        tooltipDismissDelayFieldActionPerformed(null);
+    }
+
+    private void tooltipDismissDelayFieldActionPerformed(ActionEvent e) {
+        String ttText = tooltipDismissDelayField.getText();
+        try {
+            Integer.parseInt(ttText);
+            updatedPreferenceMap.put(PreferenceManager.TOOLTIP_DISMISS_DELAY, ttText);
+            tooltipSettingsChanged = true;
+        } catch (NumberFormatException e1) {
+            MessageUtils.showMessage("Tooltip dismiss delay must be a number.");
+        }
+
+    }
 
     /*
    *    Object selection = geneMappingFile.getSelectedItem();
@@ -3262,6 +3385,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         if (igvDirectory != null) {
             igvDirectoryField.setText(igvDirectory.getAbsolutePath());
         }
+
+        tooltipDismissDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_DISMISS_DELAY));
+        tooltipReshowDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_RESHOW_DELAY));
+        toolTipInitialDelayField.setText(prefMgr.get(PreferenceManager.TOOLTIP_INITIAL_DELAY));
 
         updateFontField();
 
@@ -3526,6 +3653,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JButton igvDirectoryButton;
     private JLabel igvDirectoryField;
     private JLabel label21;
+    private JLabel label24;
+    private JLabel label25;
+    private JLabel label26;
+    private JTextField toolTipInitialDelayField;
+    private JTextField tooltipReshowDelayField;
+    private JTextField tooltipDismissDelayField;
     private ButtonPanel okCancelButtonPanel;
     private JButton okButton;
     private JButton cancelButton;

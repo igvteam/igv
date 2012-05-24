@@ -43,6 +43,11 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String INITIAL_TRACK_HEIGHT = "15";
 
+    public static final String TOOLTIP_INITIAL_DELAY = "TOOLTIP.INITIAL_DELAY";
+    public static final String TOOLTIP_RESHOW_DELAY = "TOOLTIP.RESHOW_DELAY";
+    public static final String TOOLTIP_DISMISS_DELAY = "TOOLTIP.DISMISS_DELAY";
+
+
     public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
     public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
     public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
@@ -1037,6 +1042,11 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(CBIO_DELETION_THRESHOLD, "0.9");
         defaultValues.put(CBIO_EXPRESSION_UP_THRESHOLD, "1.0");
         defaultValues.put(CBIO_EXPRESSION_DOWN_THRESHOLD, "1.0");
+
+        defaultValues.put(TOOLTIP_INITIAL_DELAY, "50");
+        defaultValues.put(TOOLTIP_RESHOW_DELAY, "50");
+        defaultValues.put(TOOLTIP_DISMISS_DELAY, "60000");
+
     }
 
     /**
