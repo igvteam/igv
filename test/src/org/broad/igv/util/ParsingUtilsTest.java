@@ -18,7 +18,10 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.awt.*;
 
@@ -33,6 +36,9 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
 
     public final static String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
     public final static int numChars = characters.length();
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 1e5);
 
     @Before
     public void setUp() throws Exception{
