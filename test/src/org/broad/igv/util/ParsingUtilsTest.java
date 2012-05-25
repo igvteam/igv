@@ -38,10 +38,10 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     public final static int numChars = characters.length();
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 1e5);
+    public TestRule testTimeout = new Timeout(10 * 60 * 1000);
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         Globals.CONNECT_TIMEOUT = 5 * 60 * 1000;
     }

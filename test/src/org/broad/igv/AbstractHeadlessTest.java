@@ -29,7 +29,7 @@ public class AbstractHeadlessTest {
     protected static Genome genome;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 10e3);
+    public TestRule testTimeout = new Timeout((int) 30e3);
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -43,12 +43,12 @@ public class AbstractHeadlessTest {
     }
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
 
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
 
     }
 

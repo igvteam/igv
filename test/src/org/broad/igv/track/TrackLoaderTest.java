@@ -11,7 +11,6 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
@@ -21,13 +20,13 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
-import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -38,9 +37,12 @@ import static junit.framework.Assert.assertNotNull;
  * @author Jim Robinson
  * @date 10/3/11
  */
-public class TrackLoaderTest extends AbstractHeadlessTest{
+public class TrackLoaderTest extends AbstractHeadlessTest {
 
     TrackLoader trackLoader;
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) (5 * 60e3));
 
     @Before
     public void setUp() throws Exception {
@@ -108,7 +110,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest{
     }
 
     @Test
-    public void testLoadGFFAliasedChrs() throws Exception{
+    public void testLoadGFFAliasedChrs() throws Exception {
         String filepath = TestUtils.DATA_DIR + "gff/aliased.gff";
         TrackLoader loader = new TrackLoader();
         Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
@@ -130,15 +132,12 @@ public class TrackLoaderTest extends AbstractHeadlessTest{
     }
 
 
-
-
-
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks, boolean makeIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();
         return tstLoadFi(filepath, expected_tracks, genome, makeIndex);
     }
 
-    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome, boolean makeIndex) throws Exception{
+    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome, boolean makeIndex) throws Exception {
         return tstLoadFi(this.trackLoader, filepath, expected_tracks, genome, makeIndex);
     }
 
@@ -147,10 +146,10 @@ public class TrackLoaderTest extends AbstractHeadlessTest{
 
         //Try creating an index
         //UI would ask for confirmation
-        if(makeIndex){
-            try{
+        if (makeIndex) {
+            try {
                 TestUtils.createIndex(filepath);
-            }catch(Exception e){
+            } catch (Exception e) {
 
             }
         }
