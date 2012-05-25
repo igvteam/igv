@@ -16,12 +16,10 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.Main;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 
@@ -31,10 +29,10 @@ import java.io.*;
  */
 @Ignore
 public class TestUtils {
-    public static String DATA_DIR = "test/data/";
-    public static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";
-    public static String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
-    public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
+    public static final String DATA_DIR = "test/data/";
+    public static final String defaultGenome = DATA_DIR + "/genomes/hg18.unittest.genome";
+    public static final String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
+    public static final String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
     //This is so ant can set the large data directory
     private static String LARGE_DATA_DIR_KEY = "LARGE_DATA_DIR";
     public static String LARGE_DATA_DIR = "test/largedata/";
@@ -43,7 +41,7 @@ public class TestUtils {
         LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY, LARGE_DATA_DIR);
     }
 
-    private static void setUpTestEnvironment() {
+    public static void setUpTestEnvironment() {
         Globals.setTesting(true);
         PreferenceManager.getInstance().setPrefsFile("testprefs.properties");
         Globals.READ_TIMEOUT = 60 * 1000;
@@ -57,69 +55,6 @@ public class TestUtils {
         }
     }
 
-    public static void setUpHeadless() {
-        Globals.setHeadless(true);
-        setUpTestEnvironment();
-    }
-
-    /**
-     * This closes the IGV window.
-     */
-    public static void stopGUI() {
-        try {
-            IGV igv = IGV.getInstance();
-        } catch (RuntimeException e) {
-            return;
-        }
-
-        IGV.getMainFrame().setVisible(false);
-        IGV.getMainFrame().dispose();
-    }
-
-
-    /**
-     * Start GUI with default genome file
-     *
-     * @return
-     * @throws IOException
-     */
-    public static IGV startGUI() throws IOException {
-        return startGUI(dataFileName);
-    }
-
-
-    /**
-     * Load a gui with the specified genome file.
-     * No genome is loaded if null
-     *
-     * @param genomeFile
-     * @return
-     * @throws IOException
-     */
-    public static IGV startGUI(String genomeFile) throws IOException {
-        assumeNotHeadless();
-
-        setUpTestEnvironment();
-        Globals.setHeadless(false);
-        IGV igv;
-        //If IGV is already open, we get the instance.
-        try {
-            igv = IGV.getInstance();
-            IGV.getMainFrame().setVisible(true);
-            System.out.println("Using old IGV");
-        } catch (RuntimeException e) {
-            JFrame frame = new JFrame();
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            Main.open(frame);
-            System.out.println("Started new IGV");
-            igv = IGV.getInstance();
-        }
-        if (genomeFile != null) {
-            igv.loadGenome(genomeFile, null);
-        }
-        return igv;
-    }
-
     /**
      * Loads the session into IGV. This blocks until the session
      * is loaded.
@@ -130,15 +65,6 @@ public class TestUtils {
      */
     public static void loadSession(IGV igv, String sessionPath) throws InterruptedException {
         igv.doRestoreSession(sessionPath, null, false);
-    }
-
-    public static void assumeNotHeadless() {
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        boolean headless = ge.isHeadless();
-        if (headless) {
-            System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
-        }
-        org.junit.Assume.assumeTrue(!headless);
     }
 
     /**
@@ -176,7 +102,7 @@ public class TestUtils {
      * @throws IOException
      */
     public static Genome loadGenome() throws IOException {
-        final String genomeFile = dataFileName;
+        final String genomeFile = defaultGenome;
         return IgvTools.loadGenome(genomeFile, true);
     }
 

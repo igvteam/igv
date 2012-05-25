@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.Track;
@@ -165,27 +166,5 @@ public class TribbleIndexTest {
 
     }
 
-    //@Test
-    public void testReadVCFGui() throws Exception {
-        IGV igv = TestUtils.startGUI();
-
-        String file = TestUtils.DATA_DIR + "vcf/outputPileup.flt1.vcf";
-        TestUtils.createIndex(file);
-        ResourceLocator locator = new ResourceLocator(file);
-        //For files with 1 record, this threw a null pointer exception prior to r1595
-        List<Track> tracks = igv.load(locator);
-
-        assertEquals(1, tracks.size());
-
-        //todo FIND a way to do this. We don't actually need/want to close IGV properly, just kill it
-        //Also this doesn't work
-        IGV.getMainFrame().setVisible(false);
-        IGV.getMainFrame().dispose();
-
-        //IGV.getRootPane().setVisible(false);
-        //IGV.getRootPane().dispatchEvent(new WindowEvent(IGV.getMainFrame(), WindowEvent.WINDOW_CLOSING));
-        //igv.saveSessionList();
-        //System.out.println(IGV.getMainFrame());
-    }
 
 }

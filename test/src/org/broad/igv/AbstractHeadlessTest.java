@@ -14,10 +14,12 @@ package org.broad.igv;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 
 /**
- * General setup/takedown for headless tests
+ * General setup/takedown/rules for headless tests
  * User: jacob
  * Date: 2012/05/17
  */
@@ -26,9 +28,12 @@ public class AbstractHeadlessTest {
 
     protected static Genome genome;
 
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 30e3);
+
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
+        setUpHeadless();
         genome = TestUtils.loadGenome();
     }
 
@@ -38,12 +43,18 @@ public class AbstractHeadlessTest {
     }
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
 
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
 
+    }
+
+
+    private static void setUpHeadless() {
+        Globals.setHeadless(true);
+        TestUtils.setUpTestEnvironment();
     }
 }
