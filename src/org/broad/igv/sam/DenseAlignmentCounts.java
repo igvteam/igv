@@ -79,20 +79,12 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         totalQ = new int[nPts];
     }
 
-    public PositionIterator getPositionIterator() {
-        return new PositionIterator() {
-            int pos = start;
+    public int getNumberOfPoints() {
+        return end - start;
+    }
 
-            public int nextPosition() {
-                if (pos < end) {
-                    int val = pos;
-                    pos++;
-                    return val;
-                } else {
-                    return -1;
-                }
-            }
-        };
+    public void finish() {
+        // Noop
     }
 
     public int getMaxCount() {
@@ -391,7 +383,8 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             }
             totalQ[offset] = totalQ[offset] + q;
 
-            maxCount = Math.max(posTotal[offset] + negTotal[offset], maxCount);
+            int tmp = posTotal[offset] + negTotal[offset];
+            maxCount =  tmp > maxCount ? tmp : maxCount;
         }
     }
 

@@ -34,15 +34,13 @@ import java.util.Map;
  */
 public class RenderContextImpl implements RenderContext {
 
-    private String genomeId;
     private Graphics2D graphics;
     private Map<Color, Graphics2D> graphicCacheByColor;
     private ReferenceFrame referenceFrame;
     private JComponent panel;
     private Rectangle visibleRect;
 
-    public RenderContextImpl(String genomeId, JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
-        this.genomeId = genomeId;
+    public RenderContextImpl(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
         this.panel = panel;
         this.graphicCacheByColor = new HashMap();
@@ -97,12 +95,6 @@ public class RenderContextImpl implements RenderContext {
     public int getZoom() {
         return referenceFrame.getZoom();
     }
-
-
-    public String getGenomeId() {
-        return genomeId;
-    }
-
 
     public ReferenceFrame getReferenceFrame() {
         return referenceFrame;

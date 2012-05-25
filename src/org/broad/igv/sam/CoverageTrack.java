@@ -274,6 +274,12 @@ public class CoverageTrack extends AbstractTrack {
     }
 
 
+    /**
+     * Class to render coverage track, including mismatches.
+     *
+     * NOTE:  This class has been extensively optimized with the aid of a profiler,  attempts to "clean up" this code
+     * should be done with frequent profiling, or it will likely have detrimental performance impacts.
+     */
     class IntervalRenderer {
 
         private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
@@ -286,7 +292,6 @@ public class CoverageTrack extends AbstractTrack {
             DataRange range = getDataRange();
             double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
 
-            int lastpX = Integer.MIN_VALUE;
             final double rectX = rect.getX();
             final double rectMaxX = rect.getMaxX();
             final double rectY = rect.getY();
@@ -300,44 +305,46 @@ public class CoverageTrack extends AbstractTrack {
 
 
             // First pass, coverage
+            int lastpX = -1;
             for (AlignmentCounts alignmentCounts : countList) {
-                int pos;
-                AlignmentCounts.PositionIterator posIter = alignmentCounts.getPositionIterator();
-                while ((pos = posIter.nextPosition()) >= 0) {
+                final int start = alignmentCounts.getStart();
+                final int nPoints = alignmentCounts.getNumberOfPoints();
+                boolean isSparse = alignmentCounts instanceof SparseAlignmentCounts;
 
+                for (int idx = 0; idx < nPoints; idx++) {
+
+                    int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx;
                     int pX = (int) (rectX + (pos - origin) / scale);
-                    int dX = Math.max(1, (int) (rectX + (pos + 1 - origin) / scale) - pX);
-                    if (dX > 3) {
-                        dX--; // Create a little space between bars when there is room.
-                    }
 
                     if (pX > rectMaxX) {
                         break; // We're done,  data is position sorted so we're beyond the right-side of the view
                     }
 
-                    if (pX + dX >= 0) {
+                    int dX = (int) (rectX + (pos + 1 - origin) / scale) - pX;
+                    dX = dX < 1 ? 1 : dX;
+                    if (pX + dX > lastpX) {
+                        int pY = (int) rectMaxY - 1;
+                        int totalCount = alignmentCounts.getTotalCount(pos);
+                        double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+                        int height = (int) (tmp * rectHeight);
 
-                        if (pX >= lastpX) {
-                            int pY = (int) rectMaxY - 1;
-                            int totalCount = alignmentCounts.getTotalCount(pos);
-                            double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
-                            int height = (int) (tmp * rectHeight);
-
-                            height = Math.min(height, rect.height - 1);
-                            int topY = (pY - height);
-                            if (height > 0) {
-                                if (pX >= lastpX) {
-                                    graphics.fillRect(pX, topY, dX, height);
-                                    lastpX = pX + dX;
-                                }
-                            }
+                        height = Math.min(height, rect.height - 1);
+                        int topY = (pY - height);
+                        if (dX > 3) {
+                            dX--; // Create a little space between bars when there is room.
                         }
+                        if (height > 0) {
+                            graphics.fillRect(pX, topY, dX, height);
+
+                        }
+                        lastpX = pX + dX;
                     }
                 }
             }
 
 
-            // Mark mismatches
+            // Second pass - mark mismatches
+            lastpX = -1;
             for (AlignmentCounts alignmentCounts : countList) {
 
                 BisulfiteCounts bisulfiteCounts = alignmentCounts.getBisulfiteCounts();
@@ -350,9 +357,14 @@ public class CoverageTrack extends AbstractTrack {
                     refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
                 }
 
-                int pos;
-                AlignmentCounts.PositionIterator posIter = alignmentCounts.getPositionIterator();
-                while ((pos = posIter.nextPosition()) >= 0) {
+
+
+                final int start = alignmentCounts.getStart();
+                final int nPoints = alignmentCounts.getNumberOfPoints();
+                boolean isSparse = alignmentCounts instanceof SparseAlignmentCounts;
+
+                for (int idx = 0; idx < nPoints; idx++) {
+                    int pos = isSparse ? ((SparseAlignmentCounts) alignmentCounts).getPosition(idx) : start + idx;
 
                     BisulfiteCounts.Count bc = null;
                     if (bisulfiteMode && bisulfiteCounts != null) {
@@ -360,16 +372,15 @@ public class CoverageTrack extends AbstractTrack {
                     }
 
                     int pX = (int) (rectX + (pos - origin) / scale);
-                    int dX = Math.max(1, (int) (rectX + (pos + 1 - origin) / scale) - pX);
-                    if (dX > 3) {
-                        dX--; // Create a little space between bars when there is room.
-                    }
 
                     if (pX > rectMaxX) {
                         break; // We're done,  data is position sorted so we're beyond the right-side of the view
                     }
 
-                    if (pX + dX >= 0) {
+                    int dX = (int) (rectX + (pos + 1 - origin) / scale) - pX;
+                    dX = dX < 1 ? 1 : dX;
+                    if (pX + dX > lastpX) {
+
 
                         // Test to see if any single nucleotide mismatch  (nucleotide other than the reference)
                         // has a quality weight > 20% of the total
@@ -377,12 +388,12 @@ public class CoverageTrack extends AbstractTrack {
                         boolean mismatch = false;
 
                         if (refBases != null) {
-                            int idx = pos - intervalStart;
-                            if (idx >= 0 && idx < refBases.length) {
+                            int refIdx = pos - intervalStart;
+                            if (refIdx >= 0 && refIdx < refBases.length) {
                                 if (bisulfiteMode) {
                                     mismatch = (bc != null && (bc.methylatedCount + bc.unmethylatedCount) > 0);
                                 } else {
-                                    char ref = Character.toLowerCase((char) refBases[idx]);
+                                    byte ref = refBases[refIdx];
                                     mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
                                 }
                             }
@@ -400,6 +411,10 @@ public class CoverageTrack extends AbstractTrack {
 
                         height = Math.min(height, rect.height - 1);
 
+                        if (dX > 3) {
+                            dX--; // Create a little space between bars when there is room.
+                        }
+
                         if (height > 0) {
                             if (bisulfiteMode) {
                                 if (bc != null) {
@@ -411,6 +426,7 @@ public class CoverageTrack extends AbstractTrack {
                                         pY, pX, dX, alignmentCounts, range.isLog());
                             }
                         }
+                        lastpX = pX + dX;
 
                     }
                 }

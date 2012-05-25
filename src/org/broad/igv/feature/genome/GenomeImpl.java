@@ -88,7 +88,7 @@ public class GenomeImpl implements Genome {
                     chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
                 }
             }
-            updateChromosomeAliases();
+            initializeChromosomeAliases();
 
         } else {
             FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
@@ -99,7 +99,7 @@ public class GenomeImpl implements Genome {
                 int length = fastaSequence.getChromosomeLength(chr);
                 chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
             }
-            updateChromosomeAliases();
+            initializeChromosomeAliases();
         }
 
     }
@@ -164,32 +164,24 @@ public class GenomeImpl implements Genome {
     /**
      * Update the chromosome alias table with common variations
      */
-    private void updateChromosomeAliases() {
+    private void initializeChromosomeAliases() {
 
         for (String name : chromosomeNames) {
             if (name.startsWith("gi|")) {
                 // NCBI
                 String alias = getNCBIName(name);
                 chrAliasTable.put(alias, name);
-                Chromosome chromosome = chromosomeMap.get(name);
             }
         }
 
-        if (chromosomeNames.size() < 1000) {
+        if (chromosomeNames.size() < 10000) {
             for (String name : chromosomeNames) {
-                if (name.endsWith(".fa")) {
-                    // Illumina aligner output
-                    String alias = name.substring(0, name.length() - 3);
-                    chrAliasTable.put(alias, name);
-                } else if (name.toLowerCase().startsWith("chr")) {
-                    // UCSC
+
+                // UCSC Conventions
+                if (name.toLowerCase().startsWith("chr")) {
                     chrAliasTable.put(name.substring(3), name);
-                    // Illumina
-                    chrAliasTable.put(name + ".fa", name);
                 } else {
                     chrAliasTable.put("chr" + name, name);
-                    // Illumina
-                    chrAliasTable.put("chr" + name + ".fa", name);
                 }
             }
 
@@ -214,6 +206,21 @@ public class GenomeImpl implements Genome {
                 chrAliasTable.put("chrX", "23");
                 chrAliasTable.put("chrY", "24");
 
+            }
+
+            Collection<Map.Entry<String, String>> aliasEntries = new ArrayList(chrAliasTable.entrySet());
+            for (Map.Entry<String, String> aliasEntry : aliasEntries) {
+                // Illumina conventions
+                String alias = aliasEntry.getKey();
+                String chr = aliasEntry.getValue();
+                if (!alias.endsWith(".fa")) {
+                    String illuminaName = alias + ".fa";
+                    chrAliasTable.put(illuminaName, chr);
+                }
+                if (!chr.endsWith(".fa")) {
+                    String illuminaName = chr + ".fa";
+                    chrAliasTable.put(illuminaName, chr);
+                }
             }
         }
     }
@@ -404,7 +411,7 @@ public class GenomeImpl implements Genome {
         if (!chromosomesAreOrdered) {
             Collections.sort(chromosomeNames, new ChromosomeComparator());
         }
-        updateChromosomeAliases();
+        initializeChromosomeAliases();
     }
 
     /**

@@ -30,8 +30,6 @@ public interface RenderContext {
 
     int getZoom();
 
-    String getGenomeId();
-
     ReferenceFrame getReferenceFrame();
 
     int bpToScreenPixel(double location);

@@ -59,7 +59,7 @@ public class MainTest {
         IGV igv = IGV.getInstance();
 
         //Need to wait for IGV to load file, genome,  and move to locus
-        igv.waitForNotify(0);
+        assertTrue(igv.waitForNotify(60000));
 
         assertEquals(genome, igv.getGenomeManager().getGenomeId());
         boolean trackFound = false;

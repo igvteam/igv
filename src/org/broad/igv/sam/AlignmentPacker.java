@@ -168,7 +168,7 @@ public class AlignmentPacker {
         // Use dense buckets for < 1,000,000 bp windows sparse otherwise
 
         BucketCollection buckets;
-        if (bucketCount < 1000000) {
+        if (bucketCount < 10000000) {
             buckets = new DenseBucketCollection(bucketCount);
         } else {
             buckets = new SparseBucketCollection();

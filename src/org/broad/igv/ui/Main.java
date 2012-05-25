@@ -80,17 +80,21 @@ public class Main {
 
         //Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
-        // TODO -- get these from user preferences
-        ToolTipManager.sharedInstance().setEnabled(true);
-        ToolTipManager.sharedInstance().setInitialDelay(50);
-        ToolTipManager.sharedInstance().setReshowDelay(50);
-        ToolTipManager.sharedInstance().setDismissDelay(60000);
-
+        updateTooltipSettings();
 
         // Anti alias settings.   TODO = Are these neccessary anymore ?
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
+
+    }
+
+    public static void updateTooltipSettings() {
+        ToolTipManager.sharedInstance().setEnabled(true);
+        final PreferenceManager prefMgr = PreferenceManager.getInstance();
+        ToolTipManager.sharedInstance().setInitialDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_INITIAL_DELAY));
+        ToolTipManager.sharedInstance().setReshowDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_RESHOW_DELAY));
+        ToolTipManager.sharedInstance().setDismissDelay(prefMgr.getAsInt(PreferenceManager.TOOLTIP_DISMISS_DELAY));
 
     }
 
@@ -194,7 +198,7 @@ public class Main {
     /**
      * Class to encapsulate IGV command line arguments.
      */
-    static public  class IGVArgs {
+    static public class IGVArgs {
         private String batchFile = null;
         private String sessionFile = null;
         private String dataFileString = null;

@@ -75,6 +75,9 @@ public class FeatureUtilsTest {
         Genome genome = null; // <= Don't do chromosome conversion
         FeatureCodec codec = CodecFactory.getCodec(vcfFile, genome);
         boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
+
+        TestUtils.createIndex(vcfFile);
+
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(vcfFile, codec, true);
         CloseableTribbleIterator it = basicReader.iterator();
         List<VCFVariant> features = new ArrayList<VCFVariant>();

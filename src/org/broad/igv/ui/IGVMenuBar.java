@@ -11,7 +11,9 @@
 
 package org.broad.igv.ui;
 
+import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -22,6 +24,8 @@ import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.track.AnalysisDialog;
+import org.broad.igv.track.CombinedFeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -65,6 +69,10 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu viewMenu;
     IGV igv;
 
+    public void showAboutDialog() {
+        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
+    }
+
     public IGVMenuBar(IGV igv) {
         this.igv = igv;
         setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
@@ -74,6 +82,17 @@ public class IGVMenuBar extends JMenuBar {
             add(menu);
         }
 
+        //This is for Macs, so showing the about dialog
+        //from the command bar does what we want.
+        if (Globals.IS_MAC) {
+            try {
+                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[]) null));
+                OSXAdapter.setQuitHandler(ShutdownThread.class, ShutdownThread.class.getDeclaredMethod("runS", (Class[]) null));
+            } catch (Exception e) {
+                log.error("Error setting apple-specific about and quit handlers", e);
+            }
+
+        }
     }
 
     private List<AbstractButton> createMenus() {
@@ -319,6 +338,18 @@ public class IGVMenuBar extends JMenuBar {
                 IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
             }
         });
+
+        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
+        analysisDialog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
+            }
+        });
+        if (Globals.BEDtoolsAnalysisEnabled) {
+            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+            menuItems.add(analysisDialog);
+        }
 
         //menuItems.add(exportData);
 
@@ -587,15 +618,15 @@ public class IGVMenuBar extends JMenuBar {
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.add(new JSeparator());
-         menuAction = new MenuAction("Logout") {
-             @Override
-             public void actionPerformed(ActionEvent e) {
-                 GSUtils.logout();
-                 if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
-                     doExitApplication();
-                 }
-             }
-         };
+        menuAction = new MenuAction("Logout") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GSUtils.logout();
+                if (MessageUtils.confirm("You must shutdown IGV to complete the GenomeSpace logout. Shutdown now?")) {
+                    doExitApplication();
+                }
+            }
+        };
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));

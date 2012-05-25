@@ -551,8 +551,8 @@ public class CachingQueryReader {
             overlappingRecords = new ArrayList();
             downsampledIntervals = new ArrayList();
 
-            // Use a sparse array for large regions
-            if ((end - start) > 100000) {
+            // Use a sparse array for large regions  (> 10 mb)
+            if ((end - start) > 10000000) {
                 this.counts = new SparseAlignmentCounts(start, end, bisulfiteContext);
             } else {
                 this.counts = new DenseAlignmentCounts(start, end, bisulfiteContext);
@@ -673,6 +673,7 @@ public class CachingQueryReader {
                 emptyBucket();
                 currentSamplingBucket = null;
                 finalizeSpliceJunctions();
+                counts.finish();
             }
         }
 

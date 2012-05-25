@@ -19,6 +19,7 @@ package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
@@ -207,6 +208,7 @@ public class CommandListener implements Runnable {
     private static final String CONTENT_LENGTH = "Content-Length: ";
     private static final String CONTENT_TYPE_TEXT_HTML = "text/html";
     private static final String CONNECTION_CLOSE = "Connection: close";
+    private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
 
     private void sendHTTPResponse(PrintWriter out, String result) {
 
@@ -215,6 +217,8 @@ public class CommandListener implements Runnable {
             out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
             out.print(CRNL);
             out.print(CONTENT_LENGTH + (result.length()));
+            out.print(CRNL);
+            out.print(NO_CACHE);
             out.print(CRNL);
             out.print(CONNECTION_CLOSE);
             out.print(CRNL);
@@ -255,20 +259,22 @@ public class CommandListener implements Runnable {
 
 
             if (file != null) {
-                String genomeID = params.get("genome");
-                if (genomeID == null) {
-                    genomeID = params.get("db");  // <- UCSC track line param
+                String genome = params.get("genome");
+                if (genome == null) {
+                    genome = params.get("db");  // <- UCSC track line param
                 }
-                String mergeValue = params.get("merge");
-                String locus = params.get("locus");
-                String name = params.get("name");
+                if (genome != null) {
+                    genome = URLDecoder.decode(genome, "UTF-8");
+                    if (IGV.getInstance().getSelectableGenomeIDs().contains(genome)) {
+                        IGV.getInstance().selectGenomeFromList(genome);
+                    }
+                    else {
+                       IGV.getInstance().loadGenome(genome.trim(), null);
+                    }
+                }
 
-                if (genomeID != null) {
-                    IGV.getInstance().selectGenomeFromList(genomeID);
-                }
-                if (genomeID != null) genomeID = URLDecoder.decode(genomeID, "UTF-8");
+                String mergeValue = params.get("merge");
                 if (mergeValue != null) mergeValue = URLDecoder.decode(mergeValue, "UTF-8");
-                if (locus != null) locus = URLDecoder.decode(locus, "UTF-8");
 
 
                 // Default for merge is "false" for session files,  "true" otherwise
@@ -284,7 +290,12 @@ public class CommandListener implements Runnable {
                     merge = true;
                 }
 
+                String name = params.get("name");
 
+                String locus = params.get("locus");
+                if (locus != null) {
+                    locus = URLDecoder.decode(locus, "UTF-8");
+                }
                 result = cmdExe.loadFiles(file, locus, merge, name, params);
             } else {
                 return ("ERROR Parameter \"file\" is required");

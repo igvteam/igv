@@ -33,7 +33,7 @@ public class SequenceHelper {
 
     private static Logger log = Logger.getLogger(SequenceHelper.class);
     private static boolean cacheSequences = true;
-    private static int tileSize = 30000;
+    private static int tileSize = 1000000;
 
 
     Sequence sequence;

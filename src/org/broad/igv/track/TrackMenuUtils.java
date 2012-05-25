@@ -14,6 +14,7 @@ package org.broad.igv.track;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
@@ -332,13 +333,17 @@ public class TrackMenuUtils {
 
         //---------------------//
         //Track analysis
-        if (tracks.size() == 2) {
+        if (Globals.BEDtoolsAnalysisEnabled && tracks.size() >= 2) {
 
-            JMenuItem item = new JMenuItem("Analysis");
+            JMenuItem item = new JMenuItem("Create Overlap Track");
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    (new AnalysisDialog(IGV.getMainFrame(), tracks.iterator())).setVisible(true);
+                    CombinedFeatureSource source = new CombinedFeatureSource(tracks, CombinedFeatureSource.Operation.MULTIINTER);
+                    Track newTrack = new FeatureTrack("", "Overlaps", source);
+
+                    IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+                    IGV.getInstance().repaint();
                 }
             });
             featurePopupMenu.add(item);
