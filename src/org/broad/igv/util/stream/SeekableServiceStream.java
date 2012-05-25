@@ -38,46 +38,26 @@ public class SeekableServiceStream extends SeekableStream {
 
     static Logger log = Logger.getLogger(SeekableServiceStream.class);
 
-    private static final String WEBSERVICE_URL = "http://www.broadinstitute.org/webservices/igv";
-    private static final String CLOUD_GENOME_URL = "http://igv.broadinstitute.org/genomes/seq";
-    private static final String CLOUDFRONT_GENOME_URL = "http://igvdata.broadinstitute.org/genomes/seq";
-    private static final String BROAD_GENOME_URL = "http://www.broadinstitute.org/igvdata/annotations/seq";
-    private static final String BROAD_GENOME_PATH = "/xchip/igv/data/public/annotations/seq";
-    private static final String IGV_DATA_HOST = "www.broadinstitute.org";
+    private static final String WEBSERVICE_URL = "http://www.broadinstitute.org/webservices/igv/range";
 
-    private static final String BROAD_DATA_URL = "http://www.broadinstitute.org/igvdata";
-    private static final String DATA_PATH = "/xchip/igv/data/public";
-    private static final String DATA_HTTP_PATH = "/igvdata";
 
 
     private long position = 0;
     private long contentLength = Long.MAX_VALUE;
-    private String dataPath;
+    private URL  wrappedURL;
 
     public SeekableServiceStream(URL url) {
-        this.dataPath = convertPath(url);
-    }
-
-    /**
-     * Attempt to convert the URL path to something our "range  webservice" can handle.
-     *
-     * @param url
-     * @return
-     */
-    private String convertPath(URL url) {
-        String urlString = url.toString();
-        if (urlString.startsWith(CLOUD_GENOME_URL)) {
-            return (urlString.replace(CLOUD_GENOME_URL, BROAD_GENOME_PATH));
-        } else if (urlString.startsWith(CLOUDFRONT_GENOME_URL)) {
-            return (urlString.replace(CLOUDFRONT_GENOME_URL, BROAD_GENOME_PATH));
-        } else if (urlString.startsWith(BROAD_GENOME_URL)) {
-            return (urlString.replace(BROAD_GENOME_URL, BROAD_GENOME_PATH));
-        } else {
-            return url.getPath().replaceFirst(DATA_HTTP_PATH, DATA_PATH);
-        }
+        this.wrappedURL = url;
     }
 
     public long length() {
+        if(contentLength == Long.MAX_VALUE) {
+            try {
+                contentLength = HttpUtils.getInstance().getContentLength(wrappedURL);
+            } catch (IOException e) {
+                log.error("Error fetching content length for: " + wrappedURL, e);
+            }
+        }
         return contentLength;
     }
 
@@ -106,9 +86,8 @@ public class SeekableServiceStream extends SeekableStream {
 
         InputStream is = null;
 
-        URL url = new URL(WEBSERVICE_URL + "?method=getRange&file=" + dataPath +
-                "&position=" + position + "&length=" + length);
-
+        URL url = new URL(WEBSERVICE_URL + "?file=" + wrappedURL.toExternalForm() + "&position=" + position + "&length=" + length);
+        //log.info(url);
 
         int n = 0;
         try {
