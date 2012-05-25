@@ -25,6 +25,7 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.igv.util.stream.SeekablePicardStream;
 import org.broad.tribble.util.SeekableFTPStream;
@@ -140,17 +141,10 @@ public class BAMHttpReader implements AlignmentReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
-            if (useByteRange) {
-                org.broad.tribble.util.SeekableStream tribbleStream =
-                        new org.broad.tribble.util.SeekableHTTPStream(new IGVUrlHelper(url));
-                String source = url.toExternalForm();
-                is = new SeekablePicardStream(tribbleStream, source);
-            } else {
-                throw new RuntimeException("Byte-range requests are disabled.  HTTP and FTP access to BAM files require byte-range support.");
-            }
-        } else if (protocol.equals("ftp")) {
-            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
+            org.broad.tribble.util.SeekableStream tribbleStream = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
+            String source = url.toExternalForm();
+            is = new SeekablePicardStream(tribbleStream, source);
+        } else if (protocol.equals("ftp")) {            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
             String source = url.toExternalForm();
             is = new SeekablePicardStream(tribbleStream, source);
         } else {
