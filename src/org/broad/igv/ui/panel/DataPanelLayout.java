@@ -111,7 +111,7 @@ public class DataPanelLayout implements LayoutManager {
                         }
                     }
 
-                    log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
+                    log.debug("Layout: " + frame.getName() + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
 
                 }
             } catch (Exception e) {

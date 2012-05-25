@@ -28,10 +28,12 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.xome.Block;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -42,18 +44,17 @@ public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
 
-    private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
-
-    private static double minimumScale = Double.MAX_VALUE;
-
-    String name;
-    int pixelX;
-    private int widthInPixels;
-
     /**
      * The nominal viewport width in pixels.
      */
     public static int binsPerTile = 700;
+
+    private String name;
+
+    int pixelX;
+
+    private int widthInPixels;
+
 
     /**
      * The chromosome currently in view
@@ -101,11 +102,28 @@ public class ReferenceFrame {
     private boolean locationScaleValid = false;
     private Locus initialLocus;
 
-
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
+    }
+
+
+    public ReferenceFrame(ReferenceFrame otherFrame) {
+        this.chrName = otherFrame.chrName;
+        this.initialLocus = otherFrame.initialLocus;
+        this.locationScale = otherFrame.locationScale;
+        this.locationScaleValid = otherFrame.locationScaleValid;
+        this.maxPixel = otherFrame.maxPixel;
+        this.minScale = otherFrame.minScale;
+        this.minZoom = otherFrame.minZoom;
+        this.name = otherFrame.name;
+        this.nTiles = otherFrame.nTiles;
+        this.origin = otherFrame.origin;
+        this.pixelX = otherFrame.pixelX;
+        this.setEnd = otherFrame.setEnd;
+        this.widthInPixels = otherFrame.widthInPixels;
+        this.zoom = otherFrame.zoom;
     }
 
 
@@ -653,6 +671,10 @@ public class ReferenceFrame {
 
     public int getMinZoom() {
         return minZoom;
+    }
+
+    public boolean isExomeMode() {
+        return false;  //To change body of created methods use File | Settings | File Templates.
     }
 
     public static class Range {

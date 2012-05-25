@@ -83,10 +83,10 @@ public class HeaderPanel extends JPanel implements Transferable {
             geneListPanel.setLayout(new java.awt.BorderLayout());
 
 
-            label = new JLabel(frame.name);
+            label = new JLabel(frame.getName());
             label.setForeground(Color.blue);
             label.setUI(new SwitchingLabelUI(10));
-            label.setToolTipText(frame.name);
+            label.setToolTipText(frame.getName());
             label.setPreferredSize(new Dimension(500, 80));
 
             //label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -110,7 +110,7 @@ public class HeaderPanel extends JPanel implements Transferable {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() > 1) {
-                        IGV.getInstance().setDefaultFrame(frame.name);
+                        IGV.getInstance().setDefaultFrame(frame.getName());
                     }
                 }
 
@@ -221,7 +221,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         JMenuItem item1 = new JMenuItem("Switch to standard view");
         item1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                IGV.getInstance().setDefaultFrame(frame.name);
+                IGV.getInstance().setDefaultFrame(frame.getName());
 
             }
         });
@@ -244,7 +244,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         FrameManager.removeFrame(frame);
         java.util.List<ReferenceFrame> remainingFrames = FrameManager.getFrames();
         if (remainingFrames.size() == 1) {
-            IGV.getInstance().setDefaultFrame(remainingFrames.get(0).name);
+            IGV.getInstance().setDefaultFrame(remainingFrames.get(0).getName());
         } else {
             IGV.getInstance().resetFrames();
         }

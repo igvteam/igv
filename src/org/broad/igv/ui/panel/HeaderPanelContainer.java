@@ -186,6 +186,7 @@ class HeaderDropTargetListener implements DropTargetListener {
 
         // Find the index for the drop
         Collection<ReferenceFrame> panels = FrameManager.getFrames();
+
         java.util.List<ReferenceFrame> orderedPanels = new ArrayList(panels.size());
         panels.remove(droppedFrame);
 

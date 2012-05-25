@@ -27,19 +27,23 @@ import java.util.List;
  * @author jrobinso
  * @date Sep 28, 2010
  */
-public class LoadedDataInterval extends Locus {
+public class LoadedDataInterval {
 
+
+
+    Locus range;
     private List<LocusScore> scores;
     int zoom;
 
     public LoadedDataInterval(String chr, int start, int end, int zoom, List<LocusScore> scores) {
-        super(chr, start, end);
+
+        range = new Locus(chr, start, end);
         this.zoom = zoom;
         this.scores = scores;
     }
 
     public boolean contains(String chr, int start, int end, int zoom) {
-        return this.zoom == zoom && super.contains(chr, start, end);
+        return this.zoom == zoom && range.contains(chr, start, end);
     }
 
     public List<LocusScore> getScores() {
