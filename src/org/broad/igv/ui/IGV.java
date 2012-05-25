@@ -260,6 +260,10 @@ public class IGV {
             applicationBounds = new Rectangle(0, 0, width, height);
         }
 
+        //Certain components MUST be visible, so we set minimum size
+        //{@link MainPanel#addDataPanel}
+        mainFrame.setMinimumSize(new Dimension(300, 300));
+
         mainFrame.setExtendedState(state);
         mainFrame.setBounds(applicationBounds);
 
