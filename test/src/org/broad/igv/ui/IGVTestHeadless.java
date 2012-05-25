@@ -11,6 +11,7 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RegionScoreType;
@@ -38,30 +39,9 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/02/08
  */
-public class IGVTest {
+public class IGVTestHeadless extends AbstractHeadlessTest{
 
-    private static Genome genome;
-
-    public IGVTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        TestUtils.setUpHeadless();
-        genome = TestUtils.loadGenome();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-
-    }
-
-    @After
-    public void tearDown() {
+    public IGVTestHeadless() {
     }
 
     @Test
@@ -135,24 +115,6 @@ public class IGVTest {
         }
 
         return count;
-    }
-
-    @Test
-    public void testLoadSession() throws Exception{
-        //Pretty basic, but at some point loading this view
-        //gave a class cast exception
-        String sessionPath = TestUtils.DATA_DIR + "sessions/CCLE_testSession_chr2.xml";
-        IGV igv = TestUtils.startGUI();
-
-        TestUtils.loadSession(igv, sessionPath);
-
-        assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
-        assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
-
-        int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
-        assertTrue(rangeDiff < 3);
-
-        TestUtils.stopGUI();
     }
 
 }

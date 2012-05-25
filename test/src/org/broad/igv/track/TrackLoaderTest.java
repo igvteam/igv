@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -19,13 +20,13 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
-import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -36,19 +37,16 @@ import static junit.framework.Assert.assertNotNull;
  * @author Jim Robinson
  * @date 10/3/11
  */
-public class TrackLoaderTest {
+public class TrackLoaderTest extends AbstractHeadlessTest {
 
     TrackLoader trackLoader;
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) (5 * 60e3));
 
     @Before
     public void setUp() throws Exception {
         trackLoader = new TrackLoader();
-        TestUtils.setUpHeadless();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        TestUtils.stopGUI();
     }
 
     @Test
@@ -112,7 +110,7 @@ public class TrackLoaderTest {
     }
 
     @Test
-    public void testLoadGFFAliasedChrs() throws Exception{
+    public void testLoadGFFAliasedChrs() throws Exception {
         String filepath = TestUtils.DATA_DIR + "gff/aliased.gff";
         TrackLoader loader = new TrackLoader();
         Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
@@ -134,23 +132,24 @@ public class TrackLoaderTest {
     }
 
 
-
-
-
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks, boolean makeIndex) throws Exception {
         Genome genome = TestUtils.loadGenome();
         return tstLoadFi(filepath, expected_tracks, genome, makeIndex);
     }
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome, boolean makeIndex) throws Exception {
+        return tstLoadFi(this.trackLoader, filepath, expected_tracks, genome, makeIndex);
+    }
+
+    static List<Track> tstLoadFi(TrackLoader trackLoader, String filepath, Integer expected_tracks, Genome genome, boolean makeIndex) throws Exception {
         ResourceLocator locator = new ResourceLocator(filepath);
 
         //Try creating an index
         //UI would ask for confirmation
-        if(makeIndex){
-            try{
+        if (makeIndex) {
+            try {
                 TestUtils.createIndex(filepath);
-            }catch(Exception e){
+            } catch (Exception e) {
 
             }
         }
@@ -179,7 +178,7 @@ public class TrackLoaderTest {
 
     }
 
-    private static String[] filenames = new String[]{"/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
+    static String[] filenames = new String[]{"/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
             "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
             "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
             "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz", "/psl/fishBlat.psl", "/sam/test_2.sam",
@@ -192,22 +191,4 @@ public class TrackLoaderTest {
             tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
         }
     }
-
-    @Test
-    public void testFilesHeaded() throws Exception {
-        TestUtils.startGUI();
-
-        String ex_filename = "/vcf/example4-last-gsnap-2_fixed.vcf";
-        Genome genome = TestUtils.loadGenome();
-        List<String> finames = new ArrayList<String>(Arrays.asList(filenames));
-
-        finames.add(ex_filename);
-
-        for (String finame : finames) {
-            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
-        }
-        TestUtils.stopGUI();
-    }
-
-
 }

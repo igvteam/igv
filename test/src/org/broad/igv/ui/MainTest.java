@@ -11,32 +11,39 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Test of class main. In general will use this to see that IGV
+ * starts properly, given startup parameters. Since we will be starting
+ * IGV in a non-standard way, do NOT inherit from AbstractHeadedTest
  * User: jacob
  * Date: 2012/05/04
  */
-public class MainTest {
+public class MainTest{
 
-    @Before
-    public void setUp() throws Exception {
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 1e5);
 
+    @BeforeClass
+    public static void setUpClass() throws Exception{
+        AbstractHeadedTest.assumeNotHeadless();
+        TestUtils.setUpTestEnvironment();
     }
 
-    @After
-    public void tearDown() throws Exception {
-
+    @AfterClass
+    public static void tearDownClass() throws Exception{
+        AbstractHeadedTest.tearDownClass();
     }
-
     /**
      * Test that loading IGV with a startup file and
      * locus loads that file and locus
@@ -45,7 +52,6 @@ public class MainTest {
      */
     @Test
     public void testFileLocusArgs() throws Exception {
-        TestUtils.assumeNotHeadless();
 
         String trackName = "NA12878.SLX.bam";
         String filePath = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/" + trackName;
@@ -71,8 +77,6 @@ public class MainTest {
 
         String actLocus = FrameManager.getDefaultFrame().getFormattedLocusString();
         assertEquals(actLocus, locus);
-
-
     }
 
 

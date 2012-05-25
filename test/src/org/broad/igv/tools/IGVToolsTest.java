@@ -43,6 +43,8 @@ import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.*;
 import java.util.*;
@@ -56,9 +58,13 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     private static final String hg18id = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
     private static final int MAX_LINES_CHECK = 200;
 
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 1e5);
+
     @Before
     public void setUp() throws Exception {
         igvTools = new IgvTools();
+
     }
 
     @After

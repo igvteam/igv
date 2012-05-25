@@ -11,20 +11,19 @@
 
 package org.broad.igv.batch;
 
+import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVTest;
+import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,22 +33,13 @@ import static junit.framework.Assert.*;
  * User: jacob
  * Date: 2012/03/21
  */
-public class CommandExecutorTest {
-    static IGV igv;
+public class CommandExecutorTest extends AbstractHeadedTest{
+
     CommandExecutor exec = new CommandExecutor();
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        igv = TestUtils.startGUI();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        TestUtils.stopGUI();
-    }
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         igv.getSession().clearRegionsOfInterest();
     }
 
@@ -89,8 +79,6 @@ public class CommandExecutorTest {
 
     }
 
-
-
     private List<AlignmentTrack> getAlTracks(List<Track> tracks) {
         List<AlignmentTrack> out = new ArrayList<AlignmentTrack>(tracks.size());
         for (Track t : tracks) {
@@ -125,7 +113,7 @@ public class CommandExecutorTest {
                 assertEquals("OK", resp);
 
                 tracks = igv.getAllTracks(false);
-                IGVTest.checkIsSorted(tracks, roi, type, FrameManager.getDefaultFrame().getZoom());
+                IGVTestHeadless.checkIsSorted(tracks, roi, type, FrameManager.getDefaultFrame().getZoom());
                 count++;
             }
         }
