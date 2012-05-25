@@ -72,7 +72,7 @@ public class AlignmentPacker {
 
         if (groupBy == null) {
             List<Row> alignmentRows = new ArrayList(10000);
-            pack(iter, end, pairAlignments, lengthComparator, alignmentRows);
+            pack(iter, end, pairAlignments, lengthComparator, alignmentRows, renderOptions);
             packedAlignments.put("", alignmentRows);
         } else {
             // Separate alignments into groups.
@@ -98,11 +98,11 @@ public class AlignmentPacker {
             for (String key : keys) {
                 List<Row> alignmentRows = new ArrayList(10000);
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows, renderOptions);
                 packedAlignments.put(key, alignmentRows);
             }
             List<Row> alignmentRows = new ArrayList(10000);
-            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows, renderOptions);
             packedAlignments.put("", alignmentRows);
         }
 
@@ -131,7 +131,7 @@ public class AlignmentPacker {
     }
 
     private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator,
-                      List<Row> alignmentRows) {
+                      List<Row> alignmentRows, AlignmentTrack.RenderOptions renderOptions) {
 
         if (!iter.hasNext()) {
             return;
@@ -145,6 +145,11 @@ public class AlignmentPacker {
 
         // Strictly speaking we should loop discarding dupes, etc.
         Alignment firstAlignment = iter.next();
+        
+        //in case the first alignment is filtered out...
+        while (firstAlignment.filteredOut(/*renderOptions.alnFilter*/)){
+        	firstAlignment = iter.next();
+        }
         if (pairAlignments && firstAlignment.isPaired() && firstAlignment.isProperPair() && firstAlignment.getMate().isMapped()) {
             String readName = firstAlignment.getReadName();
             PairedAlignment pair = new PairedAlignment(firstAlignment);
@@ -179,7 +184,7 @@ public class AlignmentPacker {
             Alignment al = iter.next();
             String readName = al.getReadName();
 
-            if (al.isMapped()) {
+            if (al.isMapped() && !al.filteredOut(renderOptions.alnFilter)) {
 
                 Alignment alignment = al;
                 if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getChr().equals(al.getMate().getChr())) {

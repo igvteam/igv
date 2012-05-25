@@ -311,4 +311,16 @@ public class PairedAlignment implements Alignment {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
+	@Override
+	public boolean filteredOut() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean filteredOut(java.util.List<AlignmentFilter> alnFilter) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
