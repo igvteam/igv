@@ -11,6 +11,7 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.util.TestUtils;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
@@ -27,9 +28,8 @@ import static org.junit.Assert.assertThat;
  * User: jacob
  * Date: 2012/05/14
  */
-public class CommandBarTest {
+public class CommandBarTest extends AbstractHeadedTest{
 
-    private static IGV igv;
     private static FrameFixture frame;
 
     /**
@@ -39,7 +39,7 @@ public class CommandBarTest {
      */
     @BeforeClass
     public static void setUpClass() throws Exception{
-        igv = TestUtils.startGUI();
+        AbstractHeadedTest.setUpClass();
         frame = new FrameFixture(IGV.getMainFrame());
 
 
@@ -47,23 +47,6 @@ public class CommandBarTest {
         //JPanelFixture contentFixture = frame.panel("contentPane");
         //JPanelFixture commandBar = frame.panel("igvCommandBar");
         //JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception{
-        TestUtils.stopGUI();
-        igv = null;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        igv.resetSession(null);
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        //TODO
     }
 
     /**

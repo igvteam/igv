@@ -42,6 +42,8 @@ public class AbstractHeadedTest {
         assumeNotHeadless();
         TestUtils.setUpTestEnvironment();
         igv = startGUI();
+
+        TestUtils.setAllNames(igv, true);
     }
 
     @AfterClass
