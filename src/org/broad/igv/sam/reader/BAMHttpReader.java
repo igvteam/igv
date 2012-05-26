@@ -144,7 +144,8 @@ public class BAMHttpReader implements AlignmentReader {
             org.broad.tribble.util.SeekableStream tribbleStream = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
             String source = url.toExternalForm();
             is = new SeekablePicardStream(tribbleStream, source);
-        } else if (protocol.equals("ftp")) {            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
+        } else if (protocol.equals("ftp")) {
+            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
             String source = url.toExternalForm();
             is = new SeekablePicardStream(tribbleStream, source);
         } else {

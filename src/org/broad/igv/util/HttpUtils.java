@@ -129,77 +129,6 @@ public class HttpUtils {
         }
     }
 
-    public boolean useByteRange(URL url) {
-
-        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
-        // environments (e.g. intranets)
-        final String host = url.getHost();
-        if (host.contains("broadinstitute.org")) {
-            // Test broad urls for successful byte range requests.
-            if (byteRangeTestMap.containsKey(host)) {
-                return byteRangeTestMap.get(host);
-            } else {
-                log.info("Testing range-byte request on host: " + host);
-                boolean byteRangeTestSuccess = testByteRange(host);
-                byteRangeTestMap.put(host, byteRangeTestSuccess);
-                return byteRangeTestSuccess;
-
-            }
-        } else {
-            // No test for non-Broad hosts yet.  Let's be optimisitic
-            return true;
-        }
-    }
-
-
-    /**
-     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
-     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
-     * by filters after the request is made by IGV.
-     *
-     * @return
-     */
-    public static boolean testByteRange(String host) {
-
-        log.info("Testing range-byte request");
-        try {
-            String testURL = host.startsWith("www.broadinstitute.org") ?
-                    "/igvdata/annotations/seq/hg19/chr12.txt" :
-                    "/genomes/seq/hg19/chr12.txt" ;
-            byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
-                    'G', 'A', 'G', 'A', 'G', 'G'};
-
-
-            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL("http://" + host + testURL)));
-            str.seek(25350000);
-            byte[] buffer = new byte[80000];
-            str.read(buffer);
-
-//            for(int i=0; i<expectedBytes.length; i++) {
-//
-//            }
-
-            for (int i = 0; i < expectedBytes.length; i++) {
-                if (buffer[i] != expectedBytes[i]) {
-                    log.info("Range-byte test failed -- problem with client network environment.");
-                    return false;
-                }
-            }
-            log.info("Range-byte request succeeded");
-            return true;
-        } catch (IOException e) {
-            log.error("Error while testing byte range " + e.getMessage());
-            // We could not reach the test server, so we can't know if this client can do byte-range tests or
-            // not.  Take the "optimistic" view.
-            return true;
-        }
-    }
-
-
-    public void shutdown() {
-        // Do any cleanup required here
-    }
-
 
     /**
      * Return the contents of the url as a String.  This method should only be used for queries expected to return
@@ -653,6 +582,133 @@ public class HttpUtils {
         this.defaultPassword = null;
         this.defaultUserName = null;
     }
+
+
+    /**
+     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
+     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
+     * by filters after the request is made by IGV.
+     *
+     * @return
+     */
+    public boolean useByteRange(URL url) {
+
+        // We can test byte-range success for hosts we can reach.
+
+        final String host = url.getHost();
+
+        if (byteRangeTestMap.containsKey(host)) {
+            return byteRangeTestMap.get(host);
+        } else {
+            try {
+                boolean byteRangeTestSuccess = true;
+
+                if (host.contains("broadinstitute.org")) {
+                    byteRangeTestSuccess = testBroadHost(host);
+                } else {
+                    // Generic URL
+                    byte[] firstBytes = getFirstBytes(url, 10000);
+                    if (firstBytes.length > 1000) {
+                        int end = firstBytes.length;
+                        int start = end - 100;
+                        SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(url));
+                        str.seek(start);
+                        int len = end - start;
+                        byte[] buffer = new byte[len];
+                        int n = 0;
+                        while (n < len) {
+                            int count = str.read(buffer, n, len - n);
+                            if (count < 0)
+                                throw new EOFException();
+                            n += count;
+                        }
+
+                        for (int i = 0; i < len; i++) {
+                            if (buffer[i] != firstBytes[i + start]) {
+                                //byteRangeTestSuccess = false;
+                                //break;
+                                System.out.println(buffer[i] + "\t" + firstBytes[i + start]);
+                            }
+                        }
+                    } else {
+                        // Too small a sample to test, return "true" but don't record this host as tested.
+                        return true;
+                    }
+                }
+
+                if (byteRangeTestSuccess) {
+                    log.info("Range-byte request succeeded");
+                } else {
+                    log.info("Range-byte test failed -- problem with client network environment.");
+                }
+
+                byteRangeTestMap.put(host, byteRangeTestSuccess);
+                return byteRangeTestSuccess;
+
+            } catch (IOException e) {
+                log.error("Error while testing byte range " + e.getMessage());
+                // We could not reach the test server, so we can't know if this client can do byte-range tests or
+                // not.  Take the "optimistic" view.
+                return true;
+            }
+        }
+    }
+
+    private boolean testBroadHost(String host) throws IOException {
+        // Test broad urls for successful byte range requests.
+        log.info("Testing range-byte request on host: " + host);
+
+        String testURL = host.startsWith("www.broadinstitute.org") ?
+                "/igvdata/annotations/seq/hg19/chr12.txt" :
+                "/genomes/seq/hg19/chr12.txt";
+        byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
+                'G', 'A', 'G', 'A', 'G', 'G'};
+        SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL("http://" + host + testURL)));
+        str.seek(25350000);
+        byte[] buffer = new byte[80000];
+        str.read(buffer);
+        for (int i = 0; i < expectedBytes.length; i++) {
+            if (buffer[i] != expectedBytes[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * Return the first bytes of content from the URL.  The number of bytes returned is ~ nominalLength.
+     *
+     * @param url
+     * @param nominalLength
+     * @return
+     * @throws IOException
+     */
+    private byte[] getFirstBytes(URL url, int nominalLength) throws IOException {
+
+        InputStream is = null;
+        try {
+            is = url.openStream();
+            BufferedInputStream bis = new BufferedInputStream(is);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int b;
+            while ((b = bis.read()) >= 0) {
+                bos.write(b);
+                if (bos.size() >= nominalLength) {
+                    break;
+                }
+            }
+            return bos.toByteArray();
+        } finally {
+            if (is != null) is.close();
+        }
+    }
+
+
+    public void shutdown() {
+        // Do any cleanup required here
+    }
+
 
     public static class ProxySettings {
         boolean auth = false;

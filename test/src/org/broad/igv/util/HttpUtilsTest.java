@@ -16,42 +16,40 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.server;
+package org.broad.igv.util;
 
 import org.broad.igv.util.HttpUtils;
-import org.junit.AfterClass;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 
 
-public class ByteRangeTest {
+/**
+ * Test of class HttpUtils (TODO -- need more tests!!)
+ */
+public class HttpUtilsTest {
 
 
-    String urlString = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
+    String broadURLString = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
+    String genericURLString = "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr1.fa.gz";
 
     @Test
     public void testGetContentLength() throws IOException {
         // Open an input stream just to check permissions
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) (new URL(urlString)).openConnection();
-            String contentLength =  conn.getHeaderField("Content-length");
+            conn = (HttpURLConnection) (new URL(broadURLString)).openConnection();
+            String contentLength = conn.getHeaderField("Content-length");
             assertEquals("249250621", contentLength);
 
-        }
-        finally {
+        } finally {
 
             if (conn != null) {
                 conn.disconnect();  // <- this really doesn't do anything (see Sun documentation)
@@ -59,38 +57,29 @@ public class ByteRangeTest {
         }
     }
 
+    /**
+     * Test of the "byte range" test for a Broad URL.  Note if running this test behind proxies that strip
+     * range headers the assertion should be "false".
+     *
+     * @throws Exception
+     */
     @Test
-    public void test2() throws Exception {
-        assertTrue(HttpUtils.testByteRange("www.broadinstitute.org"));
+    public void testBroadURL() throws Exception {
+        assertTrue(HttpUtils.getInstance().useByteRange(new URL(broadURLString)));
     }
 
-    @Test
-    public void test1() throws IOException {
 
-        int[] expectedBytes = {65, 67, 84, 65, 65, 71, 67, 65, 67, 65, 67};
-
-        String byteRange = "bytes=" + 100000 + "-" + 100010;
-
-        HttpURLConnection conn = (HttpURLConnection) (new URL(urlString)).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Connection", "close");
-        conn.setRequestProperty("Range", byteRange);
-
-        InputStream is = null;
-        try {
-            is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-
-            for (int i = 0; i < expectedBytes.length; i++) {
-                assertEquals("Testing index " + i, expectedBytes[i], bis.read());
-            }
-
-            assertEquals(-1, bis.read());
-        }
-        finally {
-            if (is != null) {
-                is.close();
-            }
-        }
+    /**
+     * Test of the "byte range" test for a non-Broad URL.  Note if running this test behind proxies that strip
+     * range headers the assertion should be "false".
+     *
+     * @throws Exception
+     */    @Test
+    public void testGenericURL() throws Exception {
+        final URL url = new URL(genericURLString);
+        String acceptsRangesValue = HttpUtils.getInstance().getHeaderField(url, "Accept-Ranges");
+        boolean acceptsRanges = acceptsRangesValue != null && acceptsRangesValue.contains("bytes");
+        assertEquals(acceptsRanges, HttpUtils.getInstance().useByteRange(url));
     }
+
 }
