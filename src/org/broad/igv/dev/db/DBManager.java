@@ -23,59 +23,72 @@ public class DBManager {
 
     private static Logger log = Logger.getLogger(DBManager.class);
 
-    static Collection<ConnectionWrapper> connectionPool =
-            Collections.synchronizedCollection(new ArrayList<ConnectionWrapper>());
+    static Map<String, ConnectionWrapper> connectionPool =
+            Collections.synchronizedMap(new HashMap<String, ConnectionWrapper>());
     static String username;
     static String password;
 
-    public static Connection getConnection() {
+    private static Map<String, String> driverMap;
+    static{
+        driverMap = new HashMap<String, String>(2);
+        driverMap.put("mysql", "com.mysql.jdbc.Driver");
+        driverMap.put("sqlite", "org.sqlite.JDBC");
+    }
 
-        Iterator<ConnectionWrapper> poolIter = connectionPool.iterator();
-        while (poolIter.hasNext()) {
-            ConnectionWrapper conn = poolIter.next();
+    public static ConnectionWrapper getConnection(String url) {
+
+        if (connectionPool.containsKey(url)) {
+            ConnectionWrapper conn = connectionPool.get(url);
             try {
                 if (conn == null || conn.isReallyClosed()) {
-                    poolIter.remove();
+                    connectionPool.remove(url);
                 } else if (!conn.isClosed()) {
                     return conn;
                 }
             } catch (SQLException e) {
                 log.error("Bad connection", e);
-                poolIter.remove();
+                connectionPool.remove(url);
             }
         }
 
+
         // No valid connections
-        ConnectionWrapper conn = createConnection();
+        ConnectionWrapper conn = connect(url);
         if (conn != null) {
-            connectionPool.add(conn);
+            connectionPool.put(url, conn);
             log.info("Connection pool size: " + connectionPool.size());
         }
         return conn;
 
     }
 
-
-    private static ConnectionWrapper createConnection() {
-        String driver = "com.mysql.jdbc.Driver";
+    static String createConnectionURL(String host, String db, String port, String subprotocol){
+        String driver = driverMap.get(subprotocol);
         try {
-            Class.forName(driver).newInstance();
-        } catch (Exception e) {
+            Class.forName(driver);
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-        String host = preferenceManager.get(PreferenceManager.DB_HOST);
-        String db = preferenceManager.get(PreferenceManager.DB_NAME);
-        String port = preferenceManager.get(PreferenceManager.DB_PORT);
-
-        String url = "jdbc:mysql://" + host;
-        if (!port.equals("-1")) {
+        String url = "jdbc:" + subprotocol + ":" + host;
+        if (port != null && !port.equals("-1")) {
             url += ":" + port;
         }
         url += "/" + db;
 
-        return connect(url);
+        return url;
+    }
+
+    static Connection getConnection() {
+
+        PreferenceManager preferenceManager = PreferenceManager.getInstance();
+        String host = preferenceManager.get(PreferenceManager.DB_HOST);
+        String db = preferenceManager.get(PreferenceManager.DB_NAME);
+        String port = preferenceManager.get(PreferenceManager.DB_PORT);
+        String subprotocol = "mysql";
+
+        String url = createConnectionURL(host, db, port, subprotocol);
+        return getConnection(url);
     }
 
     private static ConnectionWrapper connect(String url) {
@@ -105,7 +118,7 @@ public class DBManager {
     }
 
     public static void shutdown() {
-        for (ConnectionWrapper conn : connectionPool) {
+        for (ConnectionWrapper conn : connectionPool.values()) {
             if (conn != null) {
                 try {
                     conn.reallyClose();

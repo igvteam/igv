@@ -1,0 +1,9 @@
+	
+<!-- Alias format ?-->
+<!-- This is the sort of thing  which would be saved on a per DB basis,
+they use whatever column names they want but define how they map to standard ones-->
+<alias source="mysql://db.myawesomehospital.com/" format="bed">
+	<column tablename="chromo" templatename="chrom" />
+	<column tablename="start" templatename="chromStart" />
+	<column tablename="gene" templatename="name" />
+</alias>
