@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 
 
 /**
@@ -44,6 +45,14 @@ public class DBManagerTest extends AbstractHeadlessTest {
         int count = 0;
         assertEquals(12, rs.getMetaData().getColumnCount());
 
+    }
+
+    @Test
+    public void testGetStoredConnection() throws Exception{
+        String subPath = "sql/unigene_profile.xml";
+        File profile = new File(TestUtils.DATA_DIR, subPath);
+        Connection conn = DBManager.getStoredConnection(profile.getAbsolutePath());
+        assertFalse(conn.isClosed());
     }
 
 }

@@ -6,8 +6,18 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LoginDialog;
+import org.broad.igv.util.Utilities;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -71,8 +81,15 @@ public class DBManager {
         }
 
         String url = "jdbc:" + subprotocol + ":" + host;
-        if (port != null && !port.equals("-1")) {
-            url += ":" + port;
+        if (port != null && !port.equals("")) {
+            try{
+                int iPort = Integer.parseInt(port);
+                if(iPort >= 0){
+                    url += ":" + iPort;
+                }
+            }catch(NumberFormatException e){
+                log.error("Invalid port: " + port);
+            }
         }
         url += "/" + db;
 
@@ -89,6 +106,46 @@ public class DBManager {
 
         String url = createConnectionURL(host, db, port, subprotocol);
         return getConnection(url);
+    }
+
+    /**
+     * Open connection using parameters specified in the given
+     * profile.
+     * @param profilePath
+     * @return
+     */
+    public static Connection getStoredConnection(String profilePath){
+        InputStream profileStream = null;
+        try {
+            profileStream = new FileInputStream(profilePath);
+            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
+            Node db = document.getElementsByTagName("database").item(0);
+            NamedNodeMap attr = db.getAttributes();
+            String host = attr.getNamedItem("host").getTextContent();
+            String path = attr.getNamedItem("path").getTextContent();
+            String subprotocol = attr.getNamedItem("subprotocol").getTextContent();
+
+            String port = getNullSafe(attr, "port");
+            String username = getNullSafe(attr, "username");
+
+            String url = createConnectionURL(host, path, port, subprotocol);
+            return getConnection(url);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if(profileStream != null) profileStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static String getNullSafe(NamedNodeMap attr, String key){
+        Node node = attr.getNamedItem(key);
+        return node != null ? node.getTextContent() : null;
     }
 
     private static ConnectionWrapper connect(String url) {

@@ -1,0 +1,13 @@
+<!-- Stored connection information to a database 
+"version" refers to the spec version, not the database-->
+<database version="0" 
+host="test/data"
+path="bed/unigene.sample.bed"
+port=""
+subprotocol="sqlite"
+username="biologist"
+name="My Awesome DB"
+description="A human readable description">
+<table name="unigene" format="bed" description="Describe the table here"/>
+</database>
+	
