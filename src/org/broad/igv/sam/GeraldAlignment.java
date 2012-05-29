@@ -146,4 +146,16 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
        return Strand.NONE;
     }
 
+	@Override
+	public boolean filteredOut() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean filteredOut(java.util.List<AlignmentFilter> alnFilter) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

@@ -78,7 +78,7 @@ public class Main {
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
         System.setProperty("http.agent", Globals.applicationString());
 
-        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
+        //Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
         updateTooltipSettings();
 
@@ -145,7 +145,7 @@ public class Main {
             }
         });
 
-        initializeLookAndFeel();
+       // initializeLookAndFeel();
 
         Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 

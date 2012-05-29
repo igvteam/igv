@@ -33,6 +33,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
+import org.broad.igv.sam.AlignmentFilter;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.track.WindowFunction;
@@ -40,6 +41,7 @@ import org.broad.igv.track.WindowFunction;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -772,4 +774,22 @@ public class GobyAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
+
+
+    /*
+     * Add filtering options for viewing alignment
+     */
+	@Override
+	public boolean filteredOut() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+
+	@Override
+	public boolean filteredOut(List<AlignmentFilter> alnFilter) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

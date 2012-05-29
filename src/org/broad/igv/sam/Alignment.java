@@ -26,6 +26,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -106,4 +107,9 @@ public interface Alignment extends LocusScore {
     String getClipboardString(double location);
 
     Strand getReadStrand();
+
+    //Should always return false if no argument given...
+	boolean filteredOut();
+	
+	boolean filteredOut(List<AlignmentFilter> alnFilter);
 }

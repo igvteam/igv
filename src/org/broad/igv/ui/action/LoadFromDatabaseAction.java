@@ -31,7 +31,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
-import sun.util.resources.CurrencyNames_vi_VN;
+//import sun.util.resources.CurrencyNames_vi_VN;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
