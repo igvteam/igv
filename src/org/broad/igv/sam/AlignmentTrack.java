@@ -382,7 +382,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = visibleRect.height;
                 int depth = dataManager.getNLevels();
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
+                if (depth == 0) {
+                    squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
+                } else {
+                    squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
+                }
                 h = squishedHeight;
             }
 
