@@ -19,6 +19,8 @@
 
 package org.broad.igv.goby;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -392,6 +394,20 @@ public class GobyAlignmentQueryReaderTest {
         iter.close();
         reader.close();
 
+    }
+
+    @Test
+    public void testOldGobyHybrid() throws IOException {
+        AlignmentReader reader = new AlignmentReaderImpl(TestUtils.DATA_DIR + "goby/GDFQPGI-pickrellNA18486_yale-hybrid.entries");
+        org.junit.Assert.assertTrue(reader.hasNext());
+    }
+
+    @Test
+    public void testOldGobyHybridUrl() throws IOException {
+        AlignmentReader reader = new AlignmentReaderImpl("http://gobyweb.apps.campagnelab.org/data/H_T_D/MYHZZJH/MYHZZJH-hybrid-domain.header");
+        reader.reposition(10, 1210);
+        final Alignments.AlignmentEntry entry = reader.skipTo(10, 1210);
+        org.junit.Assert.assertNotNull(entry);
     }
 
     private String basesToText(byte[] bases) {
