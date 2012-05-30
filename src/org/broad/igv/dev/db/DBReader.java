@@ -18,63 +18,89 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 
 /**
- * @author Jim Robinson
- * @date 1/20/12
+ * Class for reading only portions of a table (queries) repeatedly.
+ * The connection is NOT closed between queries.
+ *
+ * @author Jacob Silterra
+ * @date 2012/05/30
  */
 public abstract class DBReader<T> {
 
     private static Logger log = Logger.getLogger(DBReader.class);
 
+    protected ResourceLocator locator;
+    protected String table;
+    protected String baseQueryString = "SELECT * FROM ";
+    String queryString;
 
-    public static void closeResources(ResultSet rs, Statement st, Connection conn) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        if (st != null) {
-            try {
-                st.close();
-            } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        if (conn != null) try {
-            conn.close();
-        } catch (SQLException e) {
-            log.error("Error closing sql connection", e);
-        }
-
+    public DBReader(ResourceLocator locator, String table) {
+        this.locator = locator;
+        this.table = table;
+        baseQueryString += table;
+        queryString = baseQueryString;
     }
 
-    public T load(ResourceLocator locator, String sql) {
+    protected ResultIterator load(String queryString) {
 
-
-        ResultSet rs = null;
-        Statement st = null;
-        Connection conn = null;
-        T obj = null;
         try {
-            conn = DBManager.getConnection(locator);
-            st = conn.createStatement();
-            rs = st.executeQuery(sql);
+            Connection conn = DBManager.getConnection(locator);
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(queryString);
 
-            obj = processResultSet(rs);
+            return new ResultIterator(rs, st);
 
-            System.out.println("Disconnected from database");
         } catch (SQLException e) {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
-        } finally {
-            closeResources(rs, st, conn);
         }
-
-        return obj;
     }
 
-    protected abstract T processResultSet(ResultSet rs) throws SQLException;
+
+    protected abstract T processResult(ResultSet rs) throws SQLException;
+
+    private class ResultIterator implements Iterator<T> {
+
+        private ResultSet rs;
+        private Statement st;
+
+        private boolean hasNext;
+        private T next;
+
+        public ResultIterator(ResultSet rs, Statement st) throws SQLException {
+            this.rs = rs;
+            this.st = st;
+            hasNext = rs.next();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        @Override
+        public T next() {
+            try {
+                next = processResult(rs);
+                hasNext = rs.next();
+                if (!hasNext) {
+                    DBManager.closeResources(rs, st, null);
+                }
+
+                return next;
+            } catch (SQLException e) {
+                log.error(e);
+                throw new RuntimeException("Error processing SQL Results: " + e);
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Cannot remove");
+        }
+    }
+
+
 }

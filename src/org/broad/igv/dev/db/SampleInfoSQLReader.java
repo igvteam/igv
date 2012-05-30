@@ -13,6 +13,7 @@ package org.broad.igv.dev.db;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.util.ResourceLocator;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,19 +23,19 @@ import java.sql.SQLException;
  * @author Jim Robinson
  * @date 10/15/11
  */
-public class SampleInfoSQLReader extends DBReader<Void> {
+public class SampleInfoSQLReader extends WholeTableDBReader<Void> {
 
     private static Logger log = Logger.getLogger(SampleInfoSQLReader.class);
 
     String sampleColumn = "SAMPLE_ID_ARRAY"; // TODO -- pass this in obviously
 
-    public SampleInfoSQLReader(String sampleColumn) {
-        super();
+    public SampleInfoSQLReader(ResourceLocator locator, String sampleColumn) {
+        this(locator);
         this.sampleColumn = sampleColumn;
     }
 
-    public SampleInfoSQLReader() {
-        super();
+    public SampleInfoSQLReader(ResourceLocator locator) {
+        super(locator, "table????");
     }
 
     @Override

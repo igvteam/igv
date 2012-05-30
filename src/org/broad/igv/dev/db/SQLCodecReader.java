@@ -13,12 +13,16 @@ package org.broad.igv.dev.db;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.WrappedIterator;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.FeatureReader;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,43 +32,44 @@ import java.util.List;
  * @author Jacob Silterra
  * @date 29 May 2012
  */
-public class SQLCodecReader extends DBReader<Iterable<Feature>> {
+public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     private static Logger log = Logger.getLogger(SQLCodecReader.class);
 
+    public static String UCSC_CHROMO_COL = "chrom";
+    public static String UCSC_POS_COL = "txStart";
+
     protected FeatureCodec codec;
 
-    public SQLCodecReader(FeatureCodec codec) {
+
+    /**
+     * The name of the column with chromosome names
+     * Default is correct value for UCSC genes
+     */
+    protected String chromoCol = UCSC_CHROMO_COL;
+    /**
+     * The name of the column of positions that we query over.
+     * Default is correct value for UCSC genes
+     */
+    protected String posCol = UCSC_POS_COL;
+
+    public SQLCodecReader(ResourceLocator locator, FeatureCodec codec, String table) {
+        super(locator, table);
         this.codec = codec;
     }
 
-    @Override
-    protected Iterable<Feature> processResultSet(ResultSet rs) throws SQLException {
-
-        List<Feature> featureList;
-        featureList = new ArrayList<Feature>(rs.getFetchSize());
-        while (rs.next()) {
-            Feature feat = this.parseLine(rs);
-            featureList.add(feat);
-        }
-
-        return featureList;
+    public SQLCodecReader(ResourceLocator locator, FeatureCodec codec, String table, String chromoCol, String posCol) {
+        this(locator, codec, table);
+        this.chromoCol = chromoCol;
+        this.posCol = posCol;
     }
 
-    /**
-     * Turn a line from a result set into a feature
-     * TODO Make abstract
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
-     */
-    protected Feature parseLine(ResultSet rs) throws SQLException {
+    @Override
+    protected Feature processResult(ResultSet rs) throws SQLException {
         String[] tokens = lineToArray(rs);
         //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
         return codec.decode(line);
-
     }
 
     /**
@@ -84,4 +89,30 @@ public class SQLCodecReader extends DBReader<Iterable<Feature>> {
         return tokens;
     }
 
+    @Override
+    public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
+        queryString = String.format("%s WHERE %s = '%s' AND %s >= %d AND %s < %d",
+                baseQueryString, chromoCol, chr, posCol, start, posCol, end);
+        return new WrappedIterator(load(queryString));
+    }
+
+    @Override
+    public CloseableTribbleIterator iterator() throws IOException {
+        throw new UnsupportedOperationException("Cannot iterate over SQL database");
+    }
+
+    @Override
+    public void close() throws IOException {
+        DBManager.closeConnection(this.locator);
+    }
+
+    @Override
+    public List<String> getSequenceNames() {
+        return null; //TODO
+    }
+
+    @Override
+    public Object getHeader() {
+        return null;
+    }
 }

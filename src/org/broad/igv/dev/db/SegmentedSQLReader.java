@@ -14,6 +14,7 @@ package org.broad.igv.dev.db;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.ResourceLocator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,12 +25,13 @@ import java.sql.SQLException;
  * @author Jim Robinson
  * @date 10/14/11
  */
-public class SegmentedSQLReader extends DBReader<SegmentedAsciiDataSet> {
+public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet> {
 
     private static Logger log = Logger.getLogger(SegmentedSQLReader.class);
     private Genome genome;
 
-    public SegmentedSQLReader(Genome genome) {
+    public SegmentedSQLReader(ResourceLocator locator, Genome genome) {
+        super(locator, "TABLE???");
         this.genome = genome;
     }
 

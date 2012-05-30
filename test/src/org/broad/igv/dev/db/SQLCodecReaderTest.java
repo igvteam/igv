@@ -36,22 +36,24 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
     public void testLoadBED() throws Exception {
 
         FeatureCodec codec = new IGVBEDCodec();
-        SQLCodecReader reader = new SQLCodecReader(codec);
 
         String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
         String path = "sql/unigene.db";
         String url = DBManager.createConnectionURL("sqlite", host, path, null);
         ResourceLocator locator = new ResourceLocator(url);
-        String query = "SELECT * FROM unigene ORDER BY chrom, chromStart";
+        String table = "unigene";
 
-        Iterable<Feature> SQLFeatures = reader.load(locator, query);
+
+        SQLCodecReader reader = new SQLCodecReader(locator, codec, table, "chrom", "chromStart");
+        Iterator<Feature> SQLFeatures = reader.query("chr2", 0, Integer.MAX_VALUE);
 
         String bedFile = host + "/bed/unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
         Iterator<Feature> fileFeatures = bfr.iterator();
 
         int count = 0;
-        for (Feature f : SQLFeatures) {
+        while (SQLFeatures.hasNext()) {
+            Feature f = SQLFeatures.next();
             Feature fileFeature = fileFeatures.next();
             assertEquals(fileFeature.getChr(), f.getChr());
             assertEquals(fileFeature.getStart(), f.getStart());
@@ -65,8 +67,6 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
     @Test
     public void testLoadUCSC() throws Exception {
         FeatureCodec codec = new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
-        SQLCodecReader reader = new SQLCodecReader(codec);
-
 
         String host = "genome-mysql.cse.ucsc.edu";
 
@@ -80,12 +80,14 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         String table = "knownGene";
         int strt = 100000;
         int end = 400000;
-        String query = String.format("SELECT * FROM %s WHERE chrom = 'chr1' AND txStart >= %d AND txStart < %d ORDER BY txStart;", table, strt, end);
+        //String query = String.format("SELECT * FROM %s WHERE chrom = 'chr1' AND txStart >= %d AND txStart < %d ORDER BY txStart;", table, strt, end);
 
-        Iterable<Feature> SQLFeatures = reader.load(locator, query);
+        SQLCodecReader reader = new SQLCodecReader(locator, codec, table);
+        Iterator<Feature> SQLFeatures = reader.query("chr1", strt, end);
 
         int count = 0;
-        for (Feature f : SQLFeatures) {
+        while (SQLFeatures.hasNext()) {
+            SQLFeatures.next();
             count++;
         }
 

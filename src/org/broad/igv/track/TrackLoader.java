@@ -1056,8 +1056,7 @@ public class TrackLoader {
 
         if (".seg".equals(locator.getType())) {
 
-            //TODO
-            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(genome)).load(null, locator.getDescription());
+            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(locator, genome)).load();
 
             String path = locator.getPath();
             TrackProperties props = ds.getTrackProperties();
@@ -1086,7 +1085,7 @@ public class TrackLoader {
                 newTracks.add(track);
             }
         } else {
-            (new SampleInfoSQLReader()).load(null, locator.getDescription());
+            (new SampleInfoSQLReader(locator)).load();
         }
     }
 
