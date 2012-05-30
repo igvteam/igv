@@ -13,7 +13,6 @@ package org.broad.igv.dev.db;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.WrappedIterator;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
@@ -23,6 +22,7 @@ import org.broad.tribble.FeatureReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -91,14 +91,16 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     @Override
     public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
-        queryString = String.format("%s WHERE %s = '%s' AND %s >= %d AND %s < %d",
+        String queryString = String.format("%s WHERE %s = '%s' AND %s >= %d AND %s < %d",
                 baseQueryString, chromoCol, chr, posCol, start, posCol, end);
-        return new WrappedIterator(load(queryString));
+        return loadIterator(queryString);
     }
 
     @Override
     public CloseableTribbleIterator iterator() throws IOException {
-        throw new UnsupportedOperationException("Cannot iterate over SQL database");
+        //TODO Should we allow this at all?
+        String queryString = String.format("%s LIMIT 100000", baseQueryString);
+        return loadIterator(queryString);
     }
 
     @Override
@@ -108,7 +110,20 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     @Override
     public List<String> getSequenceNames() {
-        return null; //TODO
+        String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoCol, table);
+
+        ResultSet results = loadResultSet(queryString);
+        List<String> names = new ArrayList<String>();
+        try {
+            while (results.next()) {
+                names.add(results.getString(1));
+            }
+            return names;
+        } catch (SQLException e) {
+            log.error(e);
+            throw new RuntimeException("Error getting sequence names: " + e);
+        }
+
     }
 
     @Override

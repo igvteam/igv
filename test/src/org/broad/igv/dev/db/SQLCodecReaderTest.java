@@ -22,9 +22,13 @@ import org.broad.tribble.FeatureCodec;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * User: jacob
@@ -45,7 +49,7 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
 
 
         SQLCodecReader reader = new SQLCodecReader(locator, codec, table, "chrom", "chromStart");
-        Iterator<Feature> SQLFeatures = reader.query("chr2", 0, Integer.MAX_VALUE);
+        Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = host + "/bed/unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
@@ -90,8 +94,16 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
             SQLFeatures.next();
             count++;
         }
-
         assertEquals(9, count);
+
+        /**
+         * We should be getting unique names only
+         */
+        List<String> names = reader.getSequenceNames();
+        assertTrue(names.size() > 0);
+
+        Set<String> set = new HashSet<String>(names);
+        assertEquals(names.size(), set.size());
 
     }
 }

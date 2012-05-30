@@ -13,6 +13,7 @@ package org.broad.igv.dev.db;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.CloseableTribbleIterator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,23 +35,21 @@ public abstract class DBReader<T> {
     protected ResourceLocator locator;
     protected String table;
     protected String baseQueryString = "SELECT * FROM ";
-    String queryString;
 
     public DBReader(ResourceLocator locator, String table) {
         this.locator = locator;
         this.table = table;
         baseQueryString += table;
-        queryString = baseQueryString;
     }
 
-    protected ResultIterator load(String queryString) {
+    protected ResultSet loadResultSet(String queryString) {
 
         try {
             Connection conn = DBManager.getConnection(locator);
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(queryString);
 
-            return new ResultIterator(rs, st);
+            return rs;
 
         } catch (SQLException e) {
             log.error("Database error", e);
@@ -58,21 +57,28 @@ public abstract class DBReader<T> {
         }
     }
 
+    protected CloseableTribbleIterator loadIterator(String queryString) {
+        return new ResultIterator(loadResultSet(queryString));
+    }
+
 
     protected abstract T processResult(ResultSet rs) throws SQLException;
 
-    private class ResultIterator implements Iterator<T> {
+    private class ResultIterator implements CloseableTribbleIterator {
 
         private ResultSet rs;
-        private Statement st;
 
         private boolean hasNext;
         private T next;
 
-        public ResultIterator(ResultSet rs, Statement st) throws SQLException {
+        public ResultIterator(ResultSet rs) {
             this.rs = rs;
-            this.st = st;
-            hasNext = rs.next();
+            try {
+                hasNext = rs.next();
+            } catch (SQLException e) {
+                log.error("Database error", e);
+                throw new RuntimeException("Database error", e);
+            }
         }
 
         @Override
@@ -86,7 +92,7 @@ public abstract class DBReader<T> {
                 next = processResult(rs);
                 hasNext = rs.next();
                 if (!hasNext) {
-                    DBManager.closeResources(rs, st, null);
+                    DBManager.closeResources(rs, rs.getStatement(), null);
                 }
 
                 return next;
@@ -100,6 +106,12 @@ public abstract class DBReader<T> {
         public void remove() {
             throw new UnsupportedOperationException("Cannot remove");
         }
+
+        @Override
+        public Iterator<T> iterator() {
+            return this;
+        }
+
     }
 
 
