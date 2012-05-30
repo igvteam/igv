@@ -8,6 +8,9 @@ subprotocol="sqlite"
 username="biologist"
 name="My Awesome DB"
 description="A human readable description">
-<table name="unigene" format="bed" description="Describe the table here"/>
+<table name="unigene" format="bed" description="Describe the table here"
+    chromo="chrom" posName="chromStart"/>
+    <!--We require explicit column names for the chromosome and position
+     column names, since we query over those-->
 </database>
 	

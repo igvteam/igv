@@ -41,7 +41,6 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     protected FeatureCodec codec;
 
-
     /**
      * The name of the column with chromosome names
      * Default is correct value for UCSC genes
@@ -91,6 +90,7 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     @Override
     public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
+        //TODO Might be a more efficient way to do this with prepared statements
         String queryString = String.format("%s WHERE %s = '%s' AND %s >= %d AND %s < %d",
                 baseQueryString, chromoCol, chr, posCol, start, posCol, end);
         return loadIterator(queryString);
