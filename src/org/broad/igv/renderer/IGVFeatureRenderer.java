@@ -10,7 +10,6 @@
  */
 package org.broad.igv.renderer;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
@@ -22,8 +21,8 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -31,37 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Added by Solomon
 
 /**
- * Renderer for the full "IGV" feature interface (classes implementing
- *
- * @author Enter your name here...
- * @version Enter version here..., 08/10/24
+ * Renderer for the full "IGV" feature interface
  */
 public class IGVFeatureRenderer extends FeatureRenderer {
 
-    static final Color AA_COLOR_1 = new Color(92, 92, 164);
-    static final Color AA_COLOR_2 = new Color(12, 12, 120);
-    static final Color DULL_BLUE = new Color(0, 0, 200);
-    static final Color DULL_RED = new Color(200, 0, 0);
-    /**
-     * Field description
-     */
-    public static final int NON_CODING_HEIGHT = 8;
     private static Logger log = Logger.getLogger(IGVFeatureRenderer.class);
-    protected boolean drawBoundary = false;
-
-
-    float viewLimitMin = Float.NaN;
-    float viewLimitMax = Float.NaN;
-
-
-    // Use the max of these values to determine where
-    // text should be drawn
-    protected double lastFeatureLineMaxY = 0;
-    protected double lastFeatureBoundsMaxY = 0;
-    protected double lastRegionMaxY = 0;
 
     // Constants
     static protected final int NORMAL_STRAND_Y_OFFSET = 14;
@@ -70,6 +45,22 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     static protected final int REGION_STRAND_THICKNESS = 4;
     static final int BLOCK_HEIGHT = 14;
     static final int THIN_BLOCK_HEIGHT = 6;
+    static final Color AA_COLOR_1 = new Color(92, 92, 164);
+    static final Color AA_COLOR_2 = new Color(12, 12, 120);
+    static final Color DULL_BLUE = new Color(0, 0, 200);
+    static final Color DULL_RED = new Color(200, 0, 0);
+    static final int NON_CODING_HEIGHT = 8;
+
+    float viewLimitMin = Float.NaN;
+    float viewLimitMax = Float.NaN;
+
+    // Use the max of these values to determine where
+    // text should be drawn
+    protected double lastFeatureLineMaxY = 0;
+    protected double lastFeatureBoundsMaxY = 0;
+    protected double lastRegionMaxY = 0;
+
+    protected boolean drawBoundary = false;
 
     int blockHeight = BLOCK_HEIGHT;
     int thinBlockHeight = THIN_BLOCK_HEIGHT;
@@ -79,7 +70,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
 
     /**
-     * Note:  assumption is that featureList is sorted by pStart position.
+     * Note:  assumption is that featureList is sorted by start position.
      *
      * @param featureList
      * @param context
@@ -93,6 +84,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
+        double end = origin + trackRectangle.width * locScale;
 
         final Track.DisplayMode displayMode = track.getDisplayMode();
         blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
@@ -115,136 +107,116 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             fontGraphics.setFont(font);
 
             // Track coordinates
-            double trackRectangleX = trackRectangle.getX();
-            double trackRectangleMaxX = trackRectangle.getMaxX();
-            double trackRectangleY = trackRectangle.getY();
-            double trackRectangleMaxY = trackRectangle.getMaxY();
+            int trackRectangleX = trackRectangle.x;
+            int trackRectangleMaxX = trackRectangleX + trackRectangle.width;
+            int trackRectangleY = trackRectangle.y;
+            int trackRectangleMaxY = trackRectangleY + trackRectangle.height;
 
-            // Draw the lines that represent the bounds of
-            // a feature's region
-            // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
-
-
-            int lastFeatureEndedAtPixelX = -9999;
+            int lastNamePixelEnd = -9999;
             int lastPixelEnd = -1;
             int occludedCount = 0;
             int maxOcclusions = 2;
 
 
             boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
-            boolean colorToggle = true;
 
-            IGVFeature featureArray[] = featureList.toArray(new IGVFeature[featureList.size()]);
-            for (int i = 0; i < featureArray.length; i++) {
+            for (IGVFeature feature : featureList) {
 
-                IGVFeature feature = featureArray[i];
+
+                if (feature.getEnd() < origin) continue;
+                if (feature.getStart() > end) break;
 
                 // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-
-
                 double virtualPixelStart = Math.round((feature.getStart() - origin) / locScale);
                 double virtualPixelEnd = Math.round((feature.getEnd() - origin) / locScale);
 
-                boolean hasExons = ((feature.getExons() != null) && (feature.getExons().size() > 0));
+                int pixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
+                int pixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
 
-                // If the any part of the feature fits in the
-                // Track rectangle draw it
-                if ((virtualPixelEnd >= trackRectangleX) && (virtualPixelStart <= trackRectangleMaxX)) {
-
-                    //
-                    int pixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
-                    int pixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
-
-
-                    if (pixelEnd <= lastPixelEnd) {
-                        if (occludedCount >= maxOcclusions) {
-                            continue;
-                        } else {
-                            occludedCount++;
-                        }
+                // Draw a maximum of "maxOcclusions" features on top of each other.
+                if (pixelEnd <= lastPixelEnd) {
+                    if (occludedCount >= maxOcclusions) {
+                        continue;
                     } else {
-                        occludedCount = 0;
-                        lastPixelEnd = pixelEnd;
+                        occludedCount++;
                     }
+                } else {
+                    occludedCount = 0;
+                    lastPixelEnd = pixelEnd;
+                }
 
-                    Color color = getFeatureColor(feature, track);
+                Color color = getFeatureColor(feature, track);
+                Graphics2D g2D = context.getGraphic2DForColor(color);
 
-                    Graphics2D g2D = context.getGraphic2DForColor(color);
+                // Draw block representing entire feature
+                int pixelThickStart = pixelStart;
+                int pixelThickEnd = pixelEnd;
+                boolean hasExons = false;
+                if (feature instanceof BasicFeature) {
+                    BasicFeature bf = (BasicFeature) feature;
+                    pixelThickStart = (int) Math.max(trackRectangleX, (bf.getThickStart() - origin) / locScale);
+                    pixelThickEnd = (int) Math.min(trackRectangleMaxX, (bf.getThickEnd() - origin) / locScale);
+                    hasExons = bf.hasExons();
+                }
+                drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, trackRectangle,
+                        feature.getStrand(), hasExons, g2D);
 
-                    // Get the feature's direction
-                    Strand strand = feature.getStrand();
+                // Add directional arrows and exons, if there is room.
+                int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
+                if ((pixelEnd - pixelStart < 3) && hasExons) {
+                    drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
+                } else {
+                    Graphics2D arrowGraphics = hasExons ? g2D : context.getGraphic2DForColor(Color.WHITE);
 
-                    // Draw block
-                    int pixelThickStart = pixelStart;
-                    int pixelThickEnd = pixelEnd;
-                    if (feature instanceof BasicFeature) {
-                        BasicFeature bf = (BasicFeature) feature;
-                        pixelThickStart = (int) Math.max(trackRectangleX, (bf.getThickStart() - origin) / locScale);
-                        pixelThickEnd = (int) Math.min(trackRectangleMaxX, (bf.getThickEnd() - origin) / locScale);
-                    }
+                    // Draw the directional arrows
+                    drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
 
-                    drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, trackRectangle, strand, hasExons, g2D);
-
-                    int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
-                    if ((pixelEnd - pixelStart < 3) && hasExons) {
-                        drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
-                    } else {
-
-                        Graphics2D arrowGraphics = hasExons
-                                ? g2D
-                                : context.getGraphic2DForColor(Color.WHITE);
-
-                        // Draw the directional arrows
-                        drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
-
-                        if (hasExons) {
-                            drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
-                                    alternateExonColor, track.getColor(), track.getAltColor());
-                        }
-
-                    }
-
-                    // Draw name
-                    if (displayMode != Track.DisplayMode.SQUISHED) {
-                        String name = feature.getName();
-                        if (name != null) {
-                            LineMetrics lineMetrics = font.getLineMetrics(name, g2D.getFontRenderContext());
-                            int fontHeight = (int) Math.ceil(lineMetrics.getHeight());
-
-
-                            // Draw feature name.  Center it over the feature extent,
-                            // or if the feature extends beyond the track bounds over
-                            // the track rectangle.
-                            int nameStart = Math.max(0, pixelStart);
-                            int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
-                            int textBaselineY = getLastLargestMaxY() + fontHeight;
-
-                            // Calculate the minimum amount of vertical track
-                            // space required be we  draw the
-                            // track name without drawing over the features
-                            int verticalSpaceRequiredForText = textBaselineY - (int) trackRectangleY;
-
-                            if (verticalSpaceRequiredForText <= trackRectangle.height) {
-
-                                lastFeatureEndedAtPixelX = drawFeatureName(feature, nameStart, nameEnd,
-                                        lastFeatureEndedAtPixelX, fontGraphics, textBaselineY);
-                            }
-                        }
-                    }
-
-                    // If this is the highlight feature highlight it
-                    if (getHighlightFeature() == feature) {
-                        int yStart = pixelYCenter - blockHeight / 2 - 1;
-                        Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
-                        highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelEnd - pixelStart + 2), blockHeight + 2);
-
-
+                    if (hasExons) {
+                        drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
+                                alternateExonColor, track.getColor(), track.getAltColor());
                     }
 
                 }
+
+                // Draw name , if there is room
+                if (displayMode != Track.DisplayMode.SQUISHED) {
+                    String name = feature.getName();
+                    if (name != null) {
+                        LineMetrics lineMetrics = font.getLineMetrics(name, g2D.getFontRenderContext());
+                        int fontHeight = (int) Math.ceil(lineMetrics.getHeight());
+
+
+                        // Draw feature name.  Center it over the feature extent,
+                        // or if the feature extends beyond the track bounds over
+                        // the track rectangle.
+                        int nameStart = Math.max(0, pixelStart);
+                        int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
+                        int textBaselineY = getLastLargestMaxY() + fontHeight;
+
+                        // Calculate the minimum amount of vertical track
+                        // space required be we  draw the
+                        // track name without drawing over the features
+                        int verticalSpaceRequiredForText = textBaselineY -  trackRectangleY;
+
+                        if (verticalSpaceRequiredForText <= trackRectangle.height) {
+                            lastNamePixelEnd = drawFeatureName(feature, nameStart, nameEnd,
+                                    lastNamePixelEnd, fontGraphics, textBaselineY);
+                        }
+                    }
+                }
+
+                // If this is the highlight feature highlight it
+                if (getHighlightFeature() == feature) {
+                    int yStart = pixelYCenter - blockHeight / 2 - 1;
+                    Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
+                    highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelEnd - pixelStart + 2), blockHeight + 2);
+
+
+                }
+
 
             }
 
@@ -261,16 +233,16 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param pixelEnd
      * @param trackRectangle
      * @param strand
-     * @param hasRegions
+     * @param hasExons
      * @param g
      * @return The stroke used to draw the line.
      */
     final private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
-                                        Rectangle trackRectangle, Strand strand, boolean hasRegions, Graphics2D g) {
+                                        Rectangle trackRectangle, Strand strand, boolean hasExons, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
 
-        if (!hasRegions) {
+        if (!hasExons) {
             int yOffset = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
 
             if (pixelThickStart > pixelStart) {
@@ -286,12 +258,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     Math.max(1, pixelThickEnd - pixelThickStart), (blockHeight - 4));
             lastFeatureLineMaxY = yOffset + blockHeight - 4;
         } else {
-
             // Draw the line that represents the entire feature
             int yOffset = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
             float lineThickness = ((BasicStroke) g.getStroke()).getLineWidth();
             if (strand == null) {
-
                 // Double the line thickness
                 lineThickness *= NO_STRAND_THICKNESS;
                 Stroke stroke = new BasicStroke(lineThickness);

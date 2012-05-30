@@ -179,6 +179,11 @@ public class BasicFeature extends AbstractFeature {
         return exons;
     }
 
+    @Override
+    public boolean hasExons() {
+        return exons != null && exons.size() > 0;
+    }
+
 
     /**
      * Sort the exon collection, if any, by start position.
