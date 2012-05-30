@@ -80,6 +80,9 @@ public class DBManager {
             e.printStackTrace();
         }
 
+        if(!host.startsWith("/")){
+            host = "//" + host;
+        }
         String url = "jdbc:" + subprotocol + ":" + host;
         if (port != null && !port.equals("")) {
             try{
@@ -91,7 +94,9 @@ public class DBManager {
                 log.error("Invalid port: " + port);
             }
         }
-        url += "/" + db;
+        if(db != null){
+            url += "/" + db;
+        }
 
         return url;
     }

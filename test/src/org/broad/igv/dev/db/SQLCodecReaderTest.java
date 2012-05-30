@@ -13,6 +13,7 @@ package org.broad.igv.dev.db;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -20,6 +21,7 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Iterator;
 
 import static junit.framework.Assert.assertEquals;
@@ -37,13 +39,13 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         SQLCodecReader reader = new SQLCodecReader(null, codec);
 
         ResourceLocator locator = new ResourceLocator(null);
-        String host = TestUtils.DATA_DIR;
+        String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
         String path = "sql/unigene.db";
-        locator.setUrl(DBManager.createConnectionURL(TestUtils.DATA_DIR, path,"-1","sqlite"));
+        locator.setUrl(DBManager.createConnectionURL(host, path, null,"sqlite"));
         locator.setDescription("SELECT * FROM unigene ORDER BY chrom, chromStart");
         Iterable<Feature> SQLFeatures = reader.load(locator, null);
 
-        String bedFile = host + "bed/unigene.sample.bed";
+        String bedFile = host + "/bed/unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
         Iterator<Feature> fileFeatures = bfr.iterator();
 
@@ -57,5 +59,41 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         }
 
         assertEquals(72, count);
+    }
+
+    @Test
+    public void testLoadUCSC() throws Exception{
+        FeatureCodec codec = new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
+        SQLCodecReader reader = new SQLCodecReader(null, codec);
+
+        ResourceLocator locator = new ResourceLocator(null);
+
+        String host = "genome-mysql.cse.ucsc.edu";
+
+        String path = "hg19";
+        String port = null;
+
+        DBManager.username = "genome";
+
+        locator.setUrl(DBManager.createConnectionURL(host, path, port, "mysql"));
+        String table = "knownGene";
+        int strt = 100000;
+        int end = 400000;
+        String query = String.format("SELECT * FROM %s WHERE chrom = 'chr1' AND txStart >= %d AND txStart < %d ORDER BY txStart;", table, strt, end );
+
+        locator.setDescription(query);
+        Iterable<Feature> SQLFeatures = reader.load(locator, null);
+
+        int count=0;
+        for(Feature f: SQLFeatures){
+            count++;
+        }
+
+        assertEquals(9, count);
+
+
+
+
+
     }
 }

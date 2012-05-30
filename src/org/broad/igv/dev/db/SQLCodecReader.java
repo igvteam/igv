@@ -103,7 +103,7 @@ public class SQLCodecReader extends DBReader {
      */
     protected Feature parseLine(ResultSet rs) throws SQLException{
         String[] tokens = lineToArray(rs);
-        //TODO GET RID OF THIS, IT'S BAD AND YOU SHOULD FEEL BAD FOR WRITING IT -JS
+        //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
         return codec.decode(line);
 
@@ -118,7 +118,6 @@ public class SQLCodecReader extends DBReader {
     protected String[] lineToArray(ResultSet rs) throws SQLException {
         int colCount = rs.getMetaData().getColumnCount();
         String[] tokens = new String[colCount];
-        ResultSetMetaData metaData = rs.getMetaData();
         for(int cc= 0; cc < colCount; cc++){
             //SQL indexes from 1
             tokens[cc] = rs.getString(cc+1);
