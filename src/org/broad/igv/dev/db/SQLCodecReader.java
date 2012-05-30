@@ -13,12 +13,11 @@ package org.broad.igv.dev.db;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,66 +28,24 @@ import java.util.List;
  * @author Jacob Silterra
  * @date 29 May 2012
  */
-public class SQLCodecReader extends DBReader {
+public class SQLCodecReader extends DBReader<Iterable<Feature>> {
 
     private static Logger log = Logger.getLogger(SQLCodecReader.class);
 
-    protected String template;
     protected FeatureCodec codec;
 
-    public SQLCodecReader(String template, FeatureCodec codec){
-       this.codec = codec;
+    public SQLCodecReader(FeatureCodec codec) {
+        this.codec = codec;
+    }
 
-
-//        this.template = template;
-//        InputStream templateStream = SQLCodecReader.class.getResourceAsStream("resources/" + template);
-//        try {
-//            Document document = Utilities.createDOMDocumentFromXmlStream(templateStream);
-//            //Since we are parsing a stored resource, these should only happen if the file
-//            //gets corrupted
-//        } catch (ParserConfigurationException e) {
-//            e.printStackTrace();
-//        } catch (SAXException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                templateStream.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-        }
-
-
-    public Iterable<Feature> load(ResourceLocator locator, Genome genome) {
+    @Override
+    protected Iterable<Feature> processResultSet(ResultSet rs) throws SQLException {
 
         List<Feature> featureList;
-
-        ResultSet rs = null;
-        Statement st = null;
-        Connection conn = null;
-        try {
-            conn = DBManager.getConnection(locator.getUrl());
-            String query = locator.getDescription();
-            st = conn.createStatement();
-            rs = st.executeQuery(query);
-
-            featureList = new ArrayList<Feature>(rs.getFetchSize());
-            while (rs.next()) {
-                Feature feat = this.parseLine(rs);
-                featureList.add(feat);
-            }
-
-
-            System.out.println("Disconnected from database");
-        } catch (SQLException e) {
-            log.error("Database error", e);
-            throw new RuntimeException("Database error", e);
-        } finally {
-            closeResources(rs, st, conn);
+        featureList = new ArrayList<Feature>(rs.getFetchSize());
+        while (rs.next()) {
+            Feature feat = this.parseLine(rs);
+            featureList.add(feat);
         }
 
         return featureList;
@@ -97,11 +54,12 @@ public class SQLCodecReader extends DBReader {
     /**
      * Turn a line from a result set into a feature
      * TODO Make abstract
+     *
      * @param rs
      * @return
      * @throws SQLException
      */
-    protected Feature parseLine(ResultSet rs) throws SQLException{
+    protected Feature parseLine(ResultSet rs) throws SQLException {
         String[] tokens = lineToArray(rs);
         //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
@@ -111,6 +69,7 @@ public class SQLCodecReader extends DBReader {
 
     /**
      * Convert a the current line to an array of strings
+     *
      * @param rs
      * @return
      * @throws SQLException
@@ -118,9 +77,9 @@ public class SQLCodecReader extends DBReader {
     protected String[] lineToArray(ResultSet rs) throws SQLException {
         int colCount = rs.getMetaData().getColumnCount();
         String[] tokens = new String[colCount];
-        for(int cc= 0; cc < colCount; cc++){
+        for (int cc = 0; cc < colCount; cc++) {
             //SQL indexes from 1
-            tokens[cc] = rs.getString(cc+1);
+            tokens[cc] = rs.getString(cc + 1);
         }
         return tokens;
     }

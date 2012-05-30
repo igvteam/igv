@@ -12,6 +12,7 @@
 package org.broad.igv.dev.db;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -32,11 +33,12 @@ public class DBManagerTest extends AbstractHeadlessTest {
 
 
     @Test
-    public void testConnectSQLite() throws Exception{
+    public void testConnectSQLite() throws Exception {
         String path = "sql/unigene.db";
         File dataDir = new File(TestUtils.DATA_DIR);
-        String url = DBManager.createConnectionURL(dataDir.getAbsolutePath(), path, null, "sqlite");
-        Connection conn = DBManager.getConnection(url);
+        String url = DBManager.createConnectionURL("sqlite", dataDir.getAbsolutePath(), path, null);
+        ResourceLocator locator = new ResourceLocator(url);
+        Connection conn = DBManager.getConnection(locator);
 
         String query = "SELECT * FROM unigene";
         Statement st = conn.createStatement();
@@ -48,10 +50,11 @@ public class DBManagerTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testGetStoredConnection() throws Exception{
+    public void testGetStoredConnection() throws Exception {
         String subPath = "sql/unigene_profile.xml";
         File profile = new File(TestUtils.DATA_DIR, subPath);
-        Connection conn = DBManager.getStoredConnection(profile.getAbsolutePath());
+        ResourceLocator locator = DBManager.getStoredConnection(profile.getAbsolutePath());
+        Connection conn = DBManager.getConnection(locator);
         assertFalse(conn.isClosed());
     }
 

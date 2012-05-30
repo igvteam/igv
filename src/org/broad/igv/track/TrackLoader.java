@@ -31,7 +31,6 @@ import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
@@ -76,7 +75,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: jrobinso
@@ -1054,7 +1056,8 @@ public class TrackLoader {
 
         if (".seg".equals(locator.getType())) {
 
-            SegmentedAsciiDataSet ds = (new SegmentedSQLReader()).load(locator, genome);
+            //TODO
+            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(genome)).load(null, locator.getDescription());
 
             String path = locator.getPath();
             TrackProperties props = ds.getTrackProperties();
@@ -1083,7 +1086,7 @@ public class TrackLoader {
                 newTracks.add(track);
             }
         } else {
-            (new SampleInfoSQLReader()).load(locator);
+            (new SampleInfoSQLReader()).load(null, locator.getDescription());
         }
     }
 
