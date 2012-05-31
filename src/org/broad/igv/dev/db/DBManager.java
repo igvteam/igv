@@ -97,11 +97,6 @@ public class DBManager {
         }
     }
 
-    private static String getNullSafe(NamedNodeMap attr, String key) {
-        Node node = attr.getNamedItem(key);
-        return node != null ? node.getTextContent() : null;
-    }
-
     private static Connection connect(ResourceLocator locator) {
         try {
             return DriverManager.getConnection(locator.getPath(),
@@ -191,9 +186,9 @@ public class DBManager {
             String path = attr.getNamedItem("path").getTextContent();
             String subprotocol = attr.getNamedItem("subprotocol").getTextContent();
 
-            String port = getNullSafe(attr, "port");
-            String username = getNullSafe(attr, "username");
-            String password = getNullSafe(attr, "password");
+            String port = Utilities.getNullSafe(attr, "port");
+            String username = Utilities.getNullSafe(attr, "username");
+            String password = Utilities.getNullSafe(attr, "password");
 
             ResourceLocator locator = new ResourceLocator(createConnectionURL(subprotocol, host, path, port));
             locator.setUsername(username);

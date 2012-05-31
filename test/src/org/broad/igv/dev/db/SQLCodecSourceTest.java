@@ -27,14 +27,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
  * Date: 2012/05/29
  */
-public class SQLCodecReaderTest extends AbstractHeadlessTest {
+public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadBED() throws Exception {
@@ -48,7 +47,7 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         String table = "unigene";
 
 
-        SQLCodecReader reader = new SQLCodecReader(locator, codec, table, "chrom", "chromStart");
+        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", 1);
         Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = host + "/bed/unigene.sample.bed";
@@ -85,8 +84,8 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         int strt = 100000;
         int end = 400000;
 
-        SQLCodecReader reader = new SQLCodecReader(locator, codec, table);
-        Iterator<Feature> SQLFeatures = reader.query("chr1", strt, end);
+        SQLCodecSource reader = new SQLCodecSource(locator, codec, table);
+        Iterator<Feature> SQLFeatures = reader.getFeatures("chr1", strt, end);
 
         int count = 0;
         while (SQLFeatures.hasNext()) {
@@ -103,6 +102,47 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
 
         Set<String> set = new HashSet<String>(names);
         assertEquals(names.size(), set.size());
+
+    }
+
+    @Test
+    public void testLoadUCSCFromProfile() throws Exception {
+
+        String profilePath = TestUtils.DATA_DIR + "sql/UCSC_profiles.xml";
+        //tstLoadFromProfile(profilePath, "knownGene");
+        tstLoadFromProfile(profilePath, "affyExonProbesetCore");
+    }
+
+    public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {
+        SQLCodecSource source = SQLCodecSource.getFromProfile(profilePath, tableName);
+        int start = 1;
+        int end = 100000;
+        Iterator<Feature> feats = source.getFeatures("chr1", start, end);
+        int count = 0;
+
+        while (feats.hasNext()) {
+            Feature f = feats.next();
+            assertTrue(f.getStart() >= start);
+            assertTrue(f.getStart() < end);
+            count++;
+        }
+
+        assertTrue("No data retrieved", count > 0);
+
+//        for(int att=0; att < 10; att++){
+//            source.queryStatement.setString(1, "fake");
+//            source.queryStatement.setInt(3, 93);
+//            Iterator<Feature> feats2 = source.getFeatures("chr1", start, end);
+//            int tCount = 0;
+//            while(feats2.hasNext()){
+//                tCount++;
+//            }
+//            assertEquals(count, tCount);
+//        }
+
+        assertNotNull(source.queryStatement);
+
+        return source;
 
     }
 }
