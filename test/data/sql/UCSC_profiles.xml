@@ -1,0 +1,19 @@
+<!-- Stored connection information to a database 
+"version" refers to the spec version, not the database-->
+<database version="0" 
+host="genome-mysql.cse.ucsc.edu"
+path="hg19"
+port=""
+subprotocol="mysql"
+username="genome"
+name="UCSC"
+description="UCSC Genomic database">
+    <!--We require explicit column names for the chromosome and position
+     column names, since we query over those-->
+	<table name="knownGene" format="ucscgene" description="Gene prediction track"
+    	chromoColName="chrom" posColName="txStart"/>
+
+     <table name="affyExonProbesetCore" format="bed" description="Core PS"
+    	chromoColName="chrom" posColName="chromStart" startColIndex="2"/>
+</database>
+	

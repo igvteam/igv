@@ -35,6 +35,7 @@ public abstract class DBReader<T> {
 
     public DBReader(ResourceLocator locator, String table) {
         this.locator = locator;
+        assert table != null;
         this.table = table;
         baseQueryString += table;
     }
@@ -132,6 +133,11 @@ public abstract class DBReader<T> {
         }
 
     }
+
+    public String getTable() {
+        return table;
+    }
+
 
 
 }

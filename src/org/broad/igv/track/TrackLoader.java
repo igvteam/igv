@@ -155,8 +155,8 @@ public class TrackLoader {
             String serverURL = locator.getServerURL();
             if (serverURL != null && serverURL.startsWith("jdbc:")) {
                 this.loadFromDatabase(locator, newTracks, genome);
-            } else if (typeString.endsWith(".db.xml")) {
-                loadFromDBProfile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".dbxml")) {
+                loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
@@ -1054,11 +1054,14 @@ public class TrackLoader {
     }
 
 
-    private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        SQLCodecSource reader = SQLCodecSource.getFromProfile(locator.getPath(), null);
-        CachingFeatureSource cachingReader = new CachingFeatureSource(reader);
-        FeatureTrack track = new FeatureTrack(locator, cachingReader);
-        newTracks.add(track);
+    private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+        List<SQLCodecSource> sources = SQLCodecSource.getFromProfile(locator.getPath(), null);
+        for(SQLCodecSource source: sources){
+            CachingFeatureSource cachingReader = new CachingFeatureSource(source);
+            FeatureTrack track = new FeatureTrack(locator, cachingReader);
+            track.setName(source.getTable());
+            newTracks.add(track);
+        }
     }
 
 

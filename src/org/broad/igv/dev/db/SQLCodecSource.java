@@ -96,16 +96,14 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * @param tableName
      * @return
      */
-    public static SQLCodecSource getFromProfile(String profilePath, String tableName) {
+    public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
         ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
         InputStream profileStream = null;
         try {
             profileStream = new FileInputStream(profilePath);
             Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
             NodeList nodes = document.getElementsByTagName("table");
-            if (nodes.getLength() != 1 && tableName == null) {
-                throw new IllegalArgumentException("Found " + nodes.getLength() + " tables but didn't specify a name");
-            }
+            List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(nodes.getLength());
 
             for (int tnum = 0; tnum < nodes.getLength(); tnum++) {
                 Node n = nodes.item(tnum);
@@ -119,9 +117,11 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
                     String startColString = Utilities.getNullSafe(attr, "startColIndex");
                     int startColIndex = startColString != null ? Integer.parseInt(startColString) : 1;
                     FeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
-                    return new SQLCodecSource(dbLocator, codec, tableName, chromoColName, posColName, startColIndex);
+                    sources.add(new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posColName, startColIndex));
                 }
             }
+
+            return sources;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,8 +133,6 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
                 e.printStackTrace();
             }
         }
-
-        return null;
 
     }
 

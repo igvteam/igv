@@ -114,7 +114,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
     }
 
     public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {
-        SQLCodecSource source = SQLCodecSource.getFromProfile(profilePath, tableName);
+        SQLCodecSource source = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
         int start = 1;
         int end = 100000;
         Iterator<Feature> feats = source.getFeatures("chr1", start, end);
