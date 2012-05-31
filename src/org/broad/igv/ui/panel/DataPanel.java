@@ -143,11 +143,9 @@ public class DataPanel extends JComponent implements Paintable {
 
 
             int trackWidth = getWidth();
-            int trackHeight = getHeight();
-
 
             computeMousableRegions(groups, trackWidth);
-            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect);
+            painter.paint(groups, context, trackWidth, getBackground(), damageRect);
 
 
             // If there is a partial ROI in progress draw it first
@@ -223,8 +221,7 @@ public class DataPanel extends JComponent implements Paintable {
             context = new RenderContextImpl(null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
-            int height = rect.height;
-            painter.paint(groups, context, width, height, getBackground(), rect);
+            painter.paint(groups, context, width, getBackground(), rect);
 
             drawAllRegions(g);
 

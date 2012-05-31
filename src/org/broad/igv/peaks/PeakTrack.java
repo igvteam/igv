@@ -223,6 +223,16 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
+    @Override
+    public void preload(RenderContext context, Rectangle visibleRect) {
+        try {
+            getFilteredPeaks(context.getChr());
+        } catch (IOException e) {
+            log.error("Error loading peaks", e);
+        }
+    }
+
+
     public void render(RenderContext context, Rectangle rect) {
 
         try {
@@ -234,7 +244,7 @@ public class PeakTrack extends AbstractTrack {
             renderer.render(peakList, context, rect, this);
 
         } catch (IOException e) {
-            e.printStackTrace();
+             log.error("Error loading peaks", e);
         }
     }
 

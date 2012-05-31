@@ -19,6 +19,9 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.xome.Block;
+import org.broad.igv.feature.xome.ExomeReferenceFrame;
+import org.broad.igv.feature.xome.XomeUtils;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
@@ -35,6 +38,7 @@ public class FrameManager {
 
     private static List<ReferenceFrame> frames = new ArrayList();
     private static ReferenceFrame defaultFrame;
+    static boolean exomeMode = false;
 
     static {
         //TODO This is a hack.
@@ -44,10 +48,43 @@ public class FrameManager {
     }
 
     public static ReferenceFrame getDefaultFrame() {
-        if(defaultFrame == null){
+        if (defaultFrame == null) {
             defaultFrame = new ReferenceFrame("genome");
         }
         return defaultFrame;
+    }
+
+
+    public static void setExomeMode(boolean b) {
+        if(b == exomeMode) return;
+        if(b) {
+            switchToExomeMode();
+        }
+        else {
+            switchToGenomeMode();
+        }
+    }
+
+
+    public static boolean isExomeMode() {
+        return exomeMode;
+    }
+
+    private static void switchToExomeMode() {
+        List<Block> blocks = XomeUtils.getBlocks(defaultFrame.getChrName());
+        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, blocks);
+        defaultFrame = exomeFrame;
+        frames.clear();
+        frames.add(defaultFrame);
+        exomeMode = true;
+    }
+
+    private static void switchToGenomeMode() {
+        ReferenceFrame refFrame = new ReferenceFrame(defaultFrame);
+        defaultFrame = refFrame;
+        frames.clear();
+        frames.add(defaultFrame);
+        exomeMode = false;
     }
 
 

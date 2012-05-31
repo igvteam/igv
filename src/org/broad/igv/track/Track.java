@@ -55,6 +55,9 @@ public interface Track extends Persistable {
      */
     String getId();
 
+
+    void preload(RenderContext context, Rectangle visibleRect);
+
     /**
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
      * bounds of the rectangle.

@@ -41,7 +41,7 @@ public class Block implements Feature {
     }
 
     public void extend(int x) {
-        if (x > getGenomeEnd()) genomeEnd = x;
+        if (x > genomeEnd) genomeEnd = x;
     }
 
     public int getLength() {
@@ -61,11 +61,36 @@ public class Block implements Feature {
 
     @Override
     public int getStart() {
-        return exomeStart;
+        return genomeStart;
     }
 
     @Override
     public int getEnd() {
-        return exomeStart + (genomeEnd - genomeStart);
+        return genomeEnd;
+    }
+
+    public int compareGenomePosition(double genomicPosition) {
+        if(genomicPosition < genomeStart) {
+            return -1;
+        }
+        else if(genomicPosition >= genomeEnd) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+
+    }
+
+    public int compareExomePosition(int exomePosition) {
+        if(exomePosition < exomeStart) {
+            return -1;
+        }
+        else if(exomePosition >= (exomeStart + (genomeEnd - genomeStart))) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 }

@@ -69,13 +69,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         RNA, BISULFITE, OTHER;
 
         static ExperimentType strToValue(String str) {
-             try {
-                 return valueOf(str);
-             }
-             catch(Exception e) {
-                 return ExperimentType.OTHER;
-             }
-         }
+            try {
+                return valueOf(str);
+            } catch (Exception e) {
+                return ExperimentType.OTHER;
+            }
+        }
     }
 
     public enum ColorOption {
@@ -84,8 +83,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         static ColorOption strToValue(String str) {
             try {
                 return valueOf(str);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 return ColorOption.NONE;
             }
         }
@@ -97,8 +95,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         static SortOption strToValue(String str) {
             try {
                 return valueOf(str);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 return SortOption.START;
             }
         }
@@ -110,8 +107,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         static GroupOption strToValue(String str) {
             try {
                 return valueOf(str);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 return GroupOption.NONE;
             }
         }
@@ -123,8 +119,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         static BisulfiteContext strToValue(String str) {
             try {
                 return valueOf(str);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 return BisulfiteContext.CG;
             }
         }
@@ -295,6 +290,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager.getNLevels();
     }
 
+
+    @Override
+    public void preload(RenderContext context, Rectangle visibleRect) {
+        dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
+    }
+
+
     public void render(RenderContext context, Rectangle rect) {
 
         parent = context.getPanel();
@@ -353,8 +355,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         try {
             log.debug("Render features");
             Map<String, List<AlignmentInterval.Row>> groups =
-                    dataManager.getGroups(context, renderOptions,
-                            renderOptions.bisulfiteContext);
+                    dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
 
             Map<String, PEStats> peStats = dataManager.getPEStats();
             if (peStats != null) {

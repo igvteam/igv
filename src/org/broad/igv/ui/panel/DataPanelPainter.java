@@ -26,13 +26,18 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackGroup;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.xome.Block;
+import org.broad.igv.feature.xome.ExomeReferenceFrame;
+import org.broad.igv.feature.xome.XomeUtils;
+import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -47,7 +52,6 @@ public class DataPanelPainter {
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
                                    int width,
-                                   int height,
                                    Color background,
                                    Rectangle visibleRect) {
 
@@ -55,70 +59,133 @@ public class DataPanelPainter {
 
         try {
             graphics2D = (Graphics2D) context.getGraphics().create();
-
             graphics2D.setBackground(background);
-            graphics2D.clearRect(0, 0, width, height);
+            graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
 
-            final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR);
-            int trackX = 0;
-            int trackY = 0;
+            ReferenceFrame frame = context.getReferenceFrame();
+
+            if (frame.isExomeMode()) {
+
+                Rectangle panelClip = visibleRect;
+
+                RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
+                preloadTracks(groups, exomeContext, width, visibleRect);
+
+                List<Block> blocks = ((ExomeReferenceFrame) frame).getBlocks();
+                int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
+                Block b = blocks.get(idx);
+
+                int pStart;
+                int pEnd;
+                int firstExomeStart = b.getExomeStart();
+                do {
+                    b = blocks.get(idx);
+
+                    pStart = (int) ((b.getExomeStart() - firstExomeStart) / frame.getScale());
+                    pEnd = (int) ((b.getExomeEnd() - firstExomeStart) / frame.getScale());
+
+                    Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
 
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                TrackGroup group = groupIter.next();
+                    Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
+                    //Shape clip = exomeGraphics.getClip();
 
-                if (visibleRect != null && (trackY > visibleRect.y + visibleRect.height)) {
-                    break;
+                    // Color c = ColorUtilities.randomColor(idx);
+                    // exomeGraphics.setColor(c);
+                    // exomeGraphics.fill(rect);
+                    // exomeGraphics.setColor(Color.black);
+                    // GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
+
+                    exomeGraphics.setClip(rect.intersection(panelClip));
+                    exomeGraphics.translate(pStart, 0);
+                    width = rect.width;
+
+                    ReferenceFrame tmpFrame = new ReferenceFrame(frame);
+                    tmpFrame.setOrigin(b.getGenomeStart(), false);
+
+                    RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+                    paintFrame(groups, tmpContext, rect.width, rect);
+
+                    tmpContext.dispose();
+                    exomeGraphics.dispose();
+                    idx++;
+
                 }
-
-                if (group.isVisible()) {
-                    if (groups.size() > 1) {
-                        greyGraphics.fillRect(0, trackY + 1, width, UIConstants.groupGap - 1);
-                        trackY += UIConstants.groupGap;
-                    }
-
-                    // Draw a line just above group.
-                    if (group.isDrawBorder()) {
-                        graphics2D.drawLine(0, trackY - 1, width, trackY - 1);
-                    }
-
-                    List<Track> trackList = group.getTracks();
-                    synchronized (trackList) {
-                        for (Track track : trackList) {
-                            if (track == null) continue;
-                            int trackHeight = track.getHeight();
-                            if (visibleRect != null) {
-                                if (trackY > visibleRect.y + visibleRect.height) {
-                                    break;
-                                } else if (trackY + trackHeight < visibleRect.y) {
-                                    if (track.isVisible()) {
-                                        trackY += trackHeight;
-                                    }
-                                    continue;
-                                }
-                            }
+                while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
 
 
-                            if (track.isVisible()) {
-                                Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
-                                draw(track, rect, context);
-                                trackY += trackHeight;
-                            }
-                        }
-                    }
-
-                    // Draw a line just below group.
-                    if (group.isDrawBorder()) {
-                        graphics2D.drawLine(0, trackY, width, trackY);
-                    }
-                }
+            } else {
+                paintFrame(groups, context, width, visibleRect);
             }
-        } catch (RuntimeException e) {
-            log.error(e);
-            throw e;
+
+
         } finally {
             graphics2D.dispose();
+        }
+    }
+
+    private void paintFrame(Collection<TrackGroup> groups,
+                            RenderContext context,
+                            int width,
+                            Rectangle visibleRect) {
+
+
+        final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR);
+        int trackX = 0;
+        int trackY = 0;
+
+
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+
+            if (visibleRect != null && (trackY > visibleRect.y + visibleRect.height)) {
+                break;
+            }
+
+            if (group.isVisible()) {
+                if (groups.size() > 1) {
+                    greyGraphics.fillRect(0, trackY + 1, width, UIConstants.groupGap - 1);
+                    trackY += UIConstants.groupGap;
+                }
+
+                // Draw a line just above group.
+                if (group.isDrawBorder()) {
+                    Graphics2D graphics2D = context.getGraphic2DForColor(Color.black);
+                    graphics2D.drawLine(0, trackY - 1, width, trackY - 1);
+                }
+
+                List<Track> trackList = group.getTracks();
+                synchronized (trackList) {
+                    for (Track track : trackList) {
+                        if (track == null) continue;
+                        int trackHeight = track.getHeight();
+                        if (visibleRect != null) {
+                            if (trackY > visibleRect.y + visibleRect.height) {
+                                break;
+                            } else if (trackY + trackHeight < visibleRect.y) {
+                                if (track.isVisible()) {
+                                    trackY += trackHeight;
+                                }
+                                continue;
+                            }
+                        }
+
+
+                        if (track.isVisible()) {
+                            Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                            draw(track, rect, context);
+                            trackY += trackHeight;
+                        }
+                    }
+                }
+
+                // Draw a line just below group.
+                if (group.isDrawBorder()) {
+                    Graphics2D graphics2D = context.getGraphic2DForColor(Color.black);
+                    graphics2D.drawLine(0, trackY, width, trackY);
+                }
+            }
         }
     }
 
@@ -140,4 +207,56 @@ public class DataPanelPainter {
         }
 
     }
+
+    private void preloadTracks(Collection<TrackGroup> groups,
+                               RenderContext context,
+                               int width,
+                               Rectangle visibleRect) {
+
+//        log.info("Preloading " + context.getReferenceFrame().getChrName() + ":" +
+//                ((int) context.getReferenceFrame().getOrigin()) + "-" + ((int) context.getReferenceFrame().getEnd()));
+
+        int trackY = 0;
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+
+            if (visibleRect != null && (trackY > visibleRect.y + visibleRect.height)) {
+                break;
+            }
+
+            if (group.isVisible()) {
+                if (groups.size() > 1) {
+                    trackY += UIConstants.groupGap;
+                }
+
+                List<Track> trackList = new ArrayList(group.getTracks());
+                for (Track track : trackList) {
+                    if (track == null) continue;
+                    int trackHeight = track.getHeight();
+                    if (visibleRect != null) {
+                        if (trackY > visibleRect.y + visibleRect.height) {
+                            break;
+                        } else if (trackY + trackHeight < visibleRect.y) {
+                            if (track.isVisible()) {
+                                trackY += trackHeight;
+                            }
+                            continue;
+                        }
+                    }
+
+
+                    if (track.isVisible()) {
+
+                        if (!(track instanceof SequenceTrack))
+                            track.preload(context, visibleRect);
+
+                        trackY += trackHeight;
+                    }
+                }
+
+            }
+        }
+    }
 }
+
+

@@ -185,6 +185,10 @@ public abstract class AbstractTrack implements Track {
         this.sampleId = sampleId;
     }
 
+    @Override
+    public void preload(RenderContext context, Rectangle visibleRect) {
+        // No-op, to be overriden by subclasses
+    }
 
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 

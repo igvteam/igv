@@ -103,7 +103,7 @@ public class IGV {
     /**
      * The gene track for the current genome, rendered in the FeaturePanel
      */
-    private Track geneTrack;
+    private FeatureTrack geneTrack;
 
     /**
      * The sequence track for the current genome
@@ -1665,7 +1665,7 @@ public class IGV {
         }
     }
 
-    public Track getGeneTrack() {
+    public FeatureTrack getGeneTrack() {
         return geneTrack;
     }
 
@@ -1994,7 +1994,7 @@ public class IGV {
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
-                geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
+                //geneFeatureTrack.setRendererClass(GeneRenderer.class);
                 geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {
@@ -2020,7 +2020,7 @@ public class IGV {
      * @param newGeneTrack
      * @param newSeqTrack
      */
-    private void setGenomeTracks(Track newGeneTrack, SequenceTrack newSeqTrack) {
+    private void setGenomeTracks(FeatureTrack newGeneTrack, SequenceTrack newSeqTrack) {
 
         boolean foundSeqTrack = false;
         for (TrackPanel tsv : getTrackPanels()) {

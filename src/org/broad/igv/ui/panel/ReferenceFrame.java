@@ -53,7 +53,7 @@ public class ReferenceFrame {
 
     int pixelX;
 
-    private int widthInPixels;
+    protected int widthInPixels;
 
 
     /**
@@ -87,7 +87,7 @@ public class ReferenceFrame {
     /**
      * The origin in bp
      */
-    private double origin = 0;
+    protected double origin = 0;
 
     /**
      * The location (x axis) locationScale in base pairs / virtual pixel
@@ -301,15 +301,13 @@ public class ReferenceFrame {
 
     }
 
+    public void setOrigin(double position) {
+        setOrigin(position, true);
+
+    }
 
     /* Keep origin within data range */
-
-    /**
-     * Method description
-     *
-     * @param position
-     */
-    public void setOrigin(double position) {
+    public void setOrigin(double position, boolean repaint) {
 
 
         int windowLengthBP = (int) (widthInPixels * getScale());
@@ -328,8 +326,10 @@ public class ReferenceFrame {
         //}
 
         // Repaint
-        IGV.getInstance().repaintDataAndHeaderPanels();
-        IGV.getInstance().repaintStatusAndZoomSlider();
+        if (repaint) {
+            IGV.getInstance().repaintDataAndHeaderPanels();
+            IGV.getInstance().repaintStatusAndZoomSlider();
+        }
     }
 
     public void jumpTo(String chr, int start, int end) {
@@ -674,7 +674,11 @@ public class ReferenceFrame {
     }
 
     public boolean isExomeMode() {
-        return false;  //To change body of created methods use File | Settings | File Templates.
+        return false;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public static class Range {
