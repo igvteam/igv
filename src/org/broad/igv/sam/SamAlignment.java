@@ -22,7 +22,6 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.sam.AlignmentFilter.FilterType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -1077,23 +1076,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 	// if criterion is not met then move on to next criterion 
 	
 	public boolean filteredOut(List<AlignmentFilter> alnFilter) {
-		/*
-		 * for testing without the gui here are some examples on how to use the AlignmentFilter class: 
-		 */
-		/*
-		AlignmentFilter al1 = new AlignmentFilter();
-		al1.setCaseSensitive(true);
-		al1.setExclude(false);
-		al1.setExpression("1"); // all substitutions with a t e.g. "13MT3M" for MD flag
-		al1.setTag("NM");
-		al1.setFilterType(FilterType.missing);
-		al1.setFilterType(FilterType.pattern);
-		al1.setFilterType(FilterType.range);
-		al1.setMax((double) 2);
-		al1.setMin((double) 1);
-		alnFilter=new ArrayList<AlignmentFilter>();
-		alnFilter.add(al1);
-		*/
+		
 		if(alnFilter == null){
 			return false;
 		}
@@ -1106,12 +1089,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 			Object attr = record.getAttribute(alnF.getTag());
 
 			// if tag is missing ...
-			if (attr == null && alnF.isExclude()
-					&& alnF.getFilterType() == AlignmentFilter.FilterType.missing) {
+			if (attr == null && alnF.isExclude() && alnF.getOperation().equals("is missing")) {
 				return true;
 			} else if (attr == null
 						&& !alnF.isExclude()
-						&& alnF.getFilterType() == AlignmentFilter.FilterType.missing) {
+						&& alnF.getOperation().equals("is missing")) {
 					return false;
 			}
 			// if tag is missing but not explicitly mentioned we don't care and

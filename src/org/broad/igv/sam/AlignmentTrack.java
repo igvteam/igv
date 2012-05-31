@@ -22,7 +22,6 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.sam.AlignmentFilter.FilterType;
 import org.broad.igv.session.Session;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
@@ -42,7 +41,11 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 
+import com.jidesoft.swing.JideButton;
+
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -1175,7 +1178,7 @@ public class AlignmentTrack extends AbstractTrack implements
 
 	// =========END OF RenderOptions Class===============================
 
-	class FilterOptions implements ActionListener {
+	class FilterOptions implements ActionListener{
 		private List<AlignmentFilter> clonedFilter;
 		private Rectangle dialogBounds = null;
 		private Point dialogLocation = null;
@@ -1190,30 +1193,34 @@ public class AlignmentTrack extends AbstractTrack implements
 			this.selectedTracks = selectedTracks;
 		}
 
+		
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getActionCommand().equals("Filter Alignments")){
+			if (e.getActionCommand().equals("Filter Alignments")) {
 				selectFilters(selectedTracks);
 			}
-			if (e.getActionCommand().startsWith("remove")) {
-				JButton jrb = (JButton) e.getSource();
-				String id = jrb.getName();
+			if (e.getActionCommand().startsWith("-")) {
+				JideButton jrb = (JideButton) e.getSource();
+				String id = e.getActionCommand();
 				Integer idx = getIdxFromId(id);
+				if (idx < 0) {
+					log.warn("received a negative index, this should not happen... ignoring");
+					return;
+				}
 				clonedFilter.remove(idx.intValue());
 				dialogBounds = dialog.getBounds();
 				dialogLocation = dialog.getLocation();
 				dialog.dispose();
 				selectFilters(selectedTracks);
-			}else
-			if (e.getActionCommand().equals("create")) {
-				clonedFilter.add(newAlnFilter);
+			} else if (e.getActionCommand().equals("+")) {
 				newAlnFilter = new AlignmentFilter();
+				clonedFilter.add(newAlnFilter);
 				dialogBounds = dialog.getBounds();
 				dialogLocation = dialog.getLocation();
 				dialog.dispose();
 				selectFilters(selectedTracks);
-			}else
-			if (e.getActionCommand().startsWith("up")) {
+			} else if (e.getActionCommand().startsWith("up")) {
 				JButton jrb = (JButton) e.getSource();
 				String id = jrb.getName();
 				Integer idx = getIdxFromId(id);
@@ -1226,50 +1233,48 @@ public class AlignmentTrack extends AbstractTrack implements
 				dialogLocation = dialog.getLocation();
 				dialog.dispose();
 				selectFilters(selectedTracks);
-			}else
-			if (e.getActionCommand().startsWith("down")) {
+			} else if (e.getActionCommand().startsWith("down")) {
 				JButton jrb = (JButton) e.getSource();
 				String id = jrb.getName();
 				Integer idx = getIdxFromId(id);
 				AlignmentFilter tempFilter = clonedFilter.get(idx);
 				clonedFilter.remove(idx.intValue());
-				if (idx+1 >= clonedFilter.size())
-					idx = clonedFilter.size()-1;
-				clonedFilter.add(idx+1, tempFilter);
+				if (idx + 1 >= clonedFilter.size())
+					idx = clonedFilter.size() - 1;
+				clonedFilter.add(idx + 1, tempFilter);
 				dialogBounds = dialog.getBounds();
 				dialogLocation = dialog.getLocation();
 				dialog.dispose();
 				selectFilters(selectedTracks);
-			}else
-			if (e.getActionCommand().startsWith("apply")) {
-				JButton jrb = (JButton) e.getSource();
-				String id = jrb.getName();
+			} else if (e.getActionCommand().startsWith("comp")) {
+				JComboBox jrb = (JComboBox) e.getSource();
+				String id = e.getActionCommand();
 				Integer idx = getIdxFromId(id);
-				AlignmentFilterPanel thisFilter = (AlignmentFilterPanel) allFilterPanel
-						.getComponent(idx);
-
-				clonedFilter.get(idx).setExclude(thisFilter.getExcludeButton());
-				clonedFilter.get(idx).setTag(thisFilter.getTagValue());
-				clonedFilter.get(idx).setFilterType(thisFilter.getFilterType());
-				clonedFilter.get(idx).setExpression(
-						thisFilter.getExpressionString());
-				clonedFilter.get(idx).setHasWildCards(
-						thisFilter.getHasWildCardsButton());
-				clonedFilter.get(idx).setRegExpr(
-						thisFilter.getIsRegExprButton());
-				clonedFilter.get(idx).setCaseSensitive(
-						thisFilter.getCaseSensitiveBox());
-				clonedFilter.get(idx).setMin(thisFilter.getMinField());
-				clonedFilter.get(idx).setMax(thisFilter.getMaxField());
-
-				dialogBounds = dialog.getBounds();
-				dialogLocation = dialog.getLocation();
-				dialog.dispose();
-				selectFilters(selectedTracks);
+				if (jrb.getSelectedItem() ==null){
+					jrb.setSelectedIndex(0);
+				}
+				if(idx>clonedFilter.size()){
+					log.warn("clonedFilter is empty");
+				}else{
+					clonedFilter.get(idx.intValue()).setOperation((String)jrb.getSelectedItem());
+					log.warn(clonedFilter.get(idx.intValue()).getOperation());
+				}
+				log.warn(idx);
+				
+				
+				
+				//dialogBounds = dialog.getBounds();
+				//dialogLocation = dialog.getLocation();
+				//dialog.dispose();
+				//selectFilters(selectedTracks);
 			}
 		}
 
+		
+
 		private Integer getIdxFromId(String id) {
+			if (id==null || id.equals("new"))
+				return -1;
 			Integer out = null;
 			String[] idParts = id.split("_");
 			out = Integer.parseInt(idParts[idParts.length - 1]);
@@ -1282,6 +1287,7 @@ public class AlignmentTrack extends AbstractTrack implements
 			if (selectedTracks.isEmpty()) {
 				return;
 			}
+			int filterCounter = 0;
 			allFilterPanel = new JPanel();
 			allFilterPanel.setLayout(new BoxLayout(allFilterPanel,
 					BoxLayout.Y_AXIS));
@@ -1294,6 +1300,7 @@ public class AlignmentTrack extends AbstractTrack implements
 					for (Integer i = 0; i < renderOptions.alnFilter.size(); i++) {
 						allFilterPanel.add(paintAlignmentFilterDialog(
 								renderOptions.alnFilter.get(i), i.toString()));
+						filterCounter++;
 					}
 				}
 				firstTime = false;
@@ -1301,13 +1308,23 @@ public class AlignmentTrack extends AbstractTrack implements
 				for (Integer i = 0; i < clonedFilter.size(); i++) {
 					allFilterPanel.add(paintAlignmentFilterDialog(
 							clonedFilter.get(i), i.toString()));
+					filterCounter++;
 				}
 			}
 			// clonedFilter.add(new AlignmentFilter());
 
-			newAlnFilter = new AlignmentFilter();
-			JPanel newP = paintAlignmentFilterDialog(newAlnFilter, "new");
-			allFilterPanel.add(newP);
+			if (filterCounter == 0) {
+				newAlnFilter = new AlignmentFilter();
+				clonedFilter.add(newAlnFilter);
+				filterCounter++;
+				JPanel newP = paintAlignmentFilterDialog(newAlnFilter, "0");
+				allFilterPanel.add(newP);
+				if (clonedFilter.size() != 0) {
+					log.warn("cloned filter size is not 0");
+				}
+				
+				
+			}
 			JScrollPane scrollPane = new JScrollPane(allFilterPanel);
 
 			// Here we create the two buttons on the bottom of the window
@@ -1327,19 +1344,23 @@ public class AlignmentTrack extends AbstractTrack implements
 			dialog.setVisible(true);
 
 			Object selectedValue = pane.getValue();
-			if (selectedValue.equals(options[0])) {
+			if (selectedValue != null && selectedValue.equals(options[0])) {
 				renderOptions.alnFilter = clonedFilter;
 			}
 
 		}
 
-		private AlignmentFilterPanel paintAlignmentFilterDialog(
+		private AlignmentFilterComponent paintAlignmentFilterDialog(
 				AlignmentFilter alf, String index) {
-			AlignmentFilterPanel newP = new AlignmentFilterPanel(alf, index,
-					this);
+			AlignmentFilterComponent newP = new AlignmentFilterComponent(alf,
+					index, this);
 
 			return newP;
 		}
+
+
+
+
 
 		
 
