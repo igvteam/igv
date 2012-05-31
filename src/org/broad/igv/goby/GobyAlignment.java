@@ -124,7 +124,12 @@ public class GobyAlignment implements Alignment {
         if (showSoftClipped && entry.hasSoftClippedBasesLeft()) {
             int clipLength = entry.getSoftClippedBasesLeft().length();
 
-            addSoftClipBlock(blocks, Math.max(0, entry.getPosition() - clipLength), entry.getSoftClippedBasesLeft(),readQual,0);
+            addSoftClipBlock(blocks, Math.max(0,
+                    entry.getPosition() - clipLength),
+                    entry.getSoftClippedBasesLeft(),readQual,
+                    entry.hasSoftClippedQualityLeft(),
+                    entry.getSoftClippedQualityLeft().toByteArray(),
+                    0);
         }
         for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
             final String from = var.getFrom();
@@ -186,8 +191,11 @@ public class GobyAlignment implements Alignment {
         if (showSoftClipped && entry.hasSoftClippedBasesRight()) {
 
             int targetAlignedLength = entry.getTargetAlignedLength();
-            addSoftClipBlock(blocks, entry.getPosition() + targetAlignedLength, entry.getSoftClippedBasesRight(),
+            addSoftClipBlock(blocks, entry.getPosition() + targetAlignedLength,
+                    entry.getSoftClippedBasesRight(),
                     readQual,
+                    entry.hasSoftClippedQualityRight(),
+                    entry.getSoftClippedQualityRight().toByteArray(),
                     entry.getQueryAlignedLength()+entry.getSoftClippedBasesLeft().length());
         }
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
@@ -242,14 +250,16 @@ public class GobyAlignment implements Alignment {
         return tmp;
     }
 
-    private void addSoftClipBlock(ObjectArrayList<AlignmentBlock> blocks, int position, String softClippedBasesLeft, byte[] readQualScores, int j) {
+    private void addSoftClipBlock(ObjectArrayList<AlignmentBlock> blocks, int position, String softClippedBasesLeft,
+                                  byte[] readQualScores, boolean hasSoftClippedQuality,
+                                  byte[] softClippedQuality, int j) {
         final int length = softClippedBasesLeft.length();
         byte[] bases = new byte[length];
         byte[] scores = new byte[length];
 
         for (int i = 0; i < length; i++) {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
-            scores[i] = readQualScores[j++];
+            scores[i] = hasSoftClippedQuality?softClippedQuality[i] : readQualScores[j++];
         }
         final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
                 bases,

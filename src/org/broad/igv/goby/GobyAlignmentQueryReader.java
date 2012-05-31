@@ -31,9 +31,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Query reader to parse <a href="http://goby.campagnelab.org">Goby</a> alignment files.
@@ -53,6 +51,23 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
     private DoubleIndexedIdentifier targetIdentifiers;
     private boolean isIndexed;
     private List<String> targetSequenceNames;
+    private static final CloseableIterator<Alignment> EMPTY_ITERATOR = new CloseableIterator<Alignment>() {
+        public void close() {
+
+        }
+
+        public boolean hasNext() {
+            return false;
+        }
+
+        public Alignment next() {
+            return null;
+        }
+
+        public void remove() {
+
+        }
+    };
 
 
     /**
@@ -138,6 +153,11 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
             referenceIndex = targetIdentifiers.getIndex(id.replace("chr", ""));
         }
         try {
+            if (referenceIndex == -1) {
+                // the reference could not be found in the Goby alignment, probably a wrong reference choice. Not sure how
+                // to inform the end user, but we send no results here:
+                return EMPTY_ITERATOR;
+            }
             return new GobyAlignmentIterator(getNewLocalReader(), targetIdentifiers, referenceIndex, sequence, start, end);
         } catch (IOException e) {
             LOG.error(e);
@@ -169,6 +189,9 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
         return result;
     }
 
+    /**
+     * get an unrestricted alignment reader.
+     */
     private AlignmentReaderImpl getNewLocalReader() {
         if (reader != null) return reader;
         try {
@@ -179,4 +202,19 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * get an alignment reader restricted to a window.
+     */
+    private AlignmentReaderImpl getNewLocalReader(int referenceIndex, int start, int end) {
+        if (reader != null) return reader;
+        try {
+
+            return new AlignmentReaderImpl(basename, referenceIndex, start, referenceIndex, end);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
