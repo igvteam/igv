@@ -44,9 +44,7 @@ public class DBManagerTest extends AbstractHeadlessTest {
         Statement st = conn.createStatement();
         ResultSet rs = st.executeQuery(query);
 
-        int count = 0;
         assertEquals(12, rs.getMetaData().getColumnCount());
-
     }
 
     @Test
@@ -56,6 +54,7 @@ public class DBManagerTest extends AbstractHeadlessTest {
         ResourceLocator locator = DBManager.getStoredConnection(profile.getAbsolutePath());
         Connection conn = DBManager.getConnection(locator);
         assertFalse(conn.isClosed());
+        conn.close();
     }
 
 }

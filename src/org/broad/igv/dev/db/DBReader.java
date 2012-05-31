@@ -15,10 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.CloseableTribbleIterator;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Iterator;
 
 /**
@@ -57,6 +54,18 @@ public abstract class DBReader<T> {
         }
     }
 
+    protected CloseableTribbleIterator loadIterator(PreparedStatement st) {
+        try {
+            ResultSet rs = st.executeQuery();
+
+            return new ResultIterator(rs, false);
+
+        } catch (SQLException e) {
+            log.error("Database error", e);
+            throw new RuntimeException("Database error", e);
+        }
+    }
+
     protected CloseableTribbleIterator loadIterator(String queryString) {
         return new ResultIterator(loadResultSet(queryString));
     }
@@ -67,12 +76,22 @@ public abstract class DBReader<T> {
     private class ResultIterator implements CloseableTribbleIterator {
 
         private ResultSet rs;
+        /**
+         * Whether the statement will be closed when iteration
+         * is complete. The ResultSet is always closed
+         */
+        private boolean closeStatement;
 
         private boolean hasNext;
         private T next;
 
         public ResultIterator(ResultSet rs) {
+            this(rs, true);
+        }
+
+        public ResultIterator(ResultSet rs, boolean closeStatement) {
             this.rs = rs;
+            this.closeStatement = closeStatement;
             try {
                 hasNext = rs.next();
             } catch (SQLException e) {
@@ -92,7 +111,7 @@ public abstract class DBReader<T> {
                 next = processResult(rs);
                 hasNext = rs.next();
                 if (!hasNext) {
-                    DBManager.closeResources(rs, rs.getStatement(), null);
+                    DBManager.closeResources(rs, closeStatement ? rs.getStatement() : null, null);
                 }
 
                 return next;

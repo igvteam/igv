@@ -20,6 +20,8 @@ import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.FeatureReader;
 
 import java.io.IOException;
+import java.sql.Blob;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
     public static String UCSC_POS_COL = "txStart";
 
     protected FeatureCodec codec;
+
+    protected PreparedStatement queryStatement;
 
     /**
      * The name of the column with chromosome names
@@ -81,19 +85,56 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
     protected String[] lineToArray(ResultSet rs) throws SQLException {
         int colCount = rs.getMetaData().getColumnCount();
         String[] tokens = new String[colCount];
+        String s;
         for (int cc = 0; cc < colCount; cc++) {
+
             //SQL indexes from 1
-            tokens[cc] = rs.getString(cc + 1);
+            //Have to parse blobs specially, otherwise we get the pointer as a string
+            String clazz = rs.getMetaData().getColumnClassName(cc + 1).toLowerCase();
+            if (clazz.contains("blob") || clazz.equalsIgnoreCase("[b")) {
+                Blob b = rs.getBlob(cc + 1);
+                s = new String(b.getBytes(1l, (int) b.length()));
+            } else {
+                s = rs.getString(cc + 1);
+            }
+            tokens[cc] = s;
         }
         return tokens;
     }
 
+    /**
+     * Create the prepared statement. Idempotent.
+     *
+     * @throws IOException
+     */
+    private void initQueryStatement() throws IOException {
+        if (queryStatement != null) {
+            return;
+        }
+        String queryString = String.format("%s WHERE %s = ? AND %s >= ? AND %s < ?",
+                baseQueryString, chromoCol, posCol, posCol);
+        try {
+            queryStatement = DBManager.getConnection(locator).prepareStatement(queryString);
+        } catch (SQLException e) {
+            log.error(e);
+            throw new IOException(e);
+        }
+
+    }
+
     @Override
     public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
-        //TODO Might be a more efficient way to do this with prepared statements
-        String queryString = String.format("%s WHERE %s = '%s' AND %s >= %d AND %s < %d",
-                baseQueryString, chromoCol, chr, posCol, start, posCol, end);
-        return loadIterator(queryString);
+        initQueryStatement();
+        try {
+            queryStatement.clearParameters();
+            queryStatement.setString(1, chr);
+            queryStatement.setInt(2, start);
+            queryStatement.setInt(3, end);
+        } catch (SQLException e) {
+            log.error(e);
+            throw new IOException(e);
+        }
+        return loadIterator(queryStatement);
     }
 
     @Override
@@ -105,7 +146,14 @@ public class SQLCodecReader extends DBReader<Feature> implements FeatureReader {
 
     @Override
     public void close() throws IOException {
-        DBManager.closeConnection(this.locator);
+        try {
+            queryStatement.close();
+            queryStatement = null;
+            DBManager.closeConnection(locator);
+        } catch (SQLException e) {
+            log.error(e);
+            throw new IOException(e);
+        }
     }
 
     @Override

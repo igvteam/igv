@@ -84,7 +84,6 @@ public class SQLCodecReaderTest extends AbstractHeadlessTest {
         String table = "knownGene";
         int strt = 100000;
         int end = 400000;
-        //String query = String.format("SELECT * FROM %s WHERE chrom = 'chr1' AND txStart >= %d AND txStart < %d ORDER BY txStart;", table, strt, end);
 
         SQLCodecReader reader = new SQLCodecReader(locator, codec, table);
         Iterator<Feature> SQLFeatures = reader.query("chr1", strt, end);
