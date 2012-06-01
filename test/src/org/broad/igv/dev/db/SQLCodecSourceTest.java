@@ -105,12 +105,22 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
-    public void testLoadUCSCFromProfile() throws Exception {
 
-        String profilePath = TestUtils.DATA_DIR + "sql/UCSC_profiles.xml";
-        //tstLoadFromProfile(profilePath, "knownGene");
+    private String profilePath = TestUtils.DATA_DIR + "sql/UCSC_profiles.xml";
+
+    @Test
+    public void testLoadUCSCFromProfileGene() throws Exception {
+        tstLoadFromProfile(profilePath, "knownGene");
+    }
+
+    @Test
+    public void testLoadUCSCFromProfileBED() throws Exception {
         tstLoadFromProfile(profilePath, "affyExonProbesetCore");
+    }
+
+    @Test
+    public void testLoadUCSCFromProfilePSL() throws Exception {
+        tstLoadFromProfile(profilePath, "all_mrna");
     }
 
     public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {

@@ -1,19 +1,33 @@
-<!-- Stored connection information to a database 
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<!-- Stored connection information to a database
 "version" refers to the spec version, not the database-->
-<database version="0" 
-host="genome-mysql.cse.ucsc.edu"
-path="hg19"
-port=""
-subprotocol="mysql"
-username="genome"
-name="UCSC"
-description="UCSC Genomic database">
+<database version="0"
+          host="genome-mysql.cse.ucsc.edu"
+          path="hg19"
+          port=""
+          subprotocol="mysql"
+          username="genome"
+          name="UCSC"
+          description="UCSC Genomic database">
     <!--We require explicit column names for the chromosome and position
      column names, since we query over those-->
-	<table name="knownGene" format="ucscgene" description="Gene prediction track"
-    	chromoColName="chrom" posColName="txStart"/>
+    <table name="knownGene" format="ucscgene" description="Gene prediction track"
+           chromoColName="chrom" posColName="txStart"/>
 
-     <table name="affyExonProbesetCore" format="bed" description="Core PS"
-    	chromoColName="chrom" posColName="chromStart" startColIndex="2"/>
+    <table name="affyExonProbesetCore" format="bed" description="Core PS"
+           chromoColName="chrom" posColName="chromStart" startColIndex="2"/>
+
+    <table name="all_mrna" format="psl" description="Human mRNAs from GenBank"
+           chromoColName="tName" posColName="tStart" startColIndex="2"/>
 </database>
 	
