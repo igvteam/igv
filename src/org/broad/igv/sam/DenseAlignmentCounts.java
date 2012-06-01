@@ -19,7 +19,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.Strand;
 
 /**
  * @author jrobinso
@@ -290,10 +289,19 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     }
 
 
-    protected void incrementDeletion(int pos) {
+    protected void incrementDeletion(int pos, boolean negativeStrand) {
         int offset = pos - start;
-        if (offset >= 0 && offset < del.length)
+        if (offset >= 0 && offset < del.length) {
             del[offset] = del[offset] + 1;
+
+            if (countDeletedBasesCovered) {
+                if (negativeStrand) {
+                    negTotal[offset] = negTotal[offset] + 1;
+                } else {
+                    posTotal[offset] = posTotal[offset] + 1;
+                }
+            }
+        }
     }
 
     protected void incrementInsertion(AlignmentBlock insBlock) {
@@ -384,7 +392,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             totalQ[offset] = totalQ[offset] + q;
 
             int tmp = posTotal[offset] + negTotal[offset];
-            maxCount =  tmp > maxCount ? tmp : maxCount;
+            maxCount = tmp > maxCount ? tmp : maxCount;
         }
     }
 

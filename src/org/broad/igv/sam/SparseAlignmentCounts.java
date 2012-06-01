@@ -1,7 +1,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;
@@ -303,9 +302,16 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
 
-    protected void incrementDeletion(int pos) {
+    protected void incrementDeletion(int pos, boolean negativeStrand) {
         int idx = getIndex(pos);
         increment(del, idx, 1);
+        if (countDeletedBasesCovered) {
+            if (negativeStrand) {
+                increment(negTotal, idx, 1);
+            } else {
+                increment(posTotal, idx, 1);
+            }
+        }
     }
 
     protected void incrementInsertion(AlignmentBlock insBlock) {
@@ -416,6 +422,7 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
             list.set(idx, delta);
         }
     }
+
     public void finish() {
         indeces = new ArrayList<Integer>(indexMap.keySet());
         Collections.sort(indeces);
