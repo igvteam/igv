@@ -69,6 +69,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     private ColorTable tagValueColors;
 
     private final Color LR_COLOR = grey1; // "Normal" alignment color
+    private final Color LR_COLOR_12 = new Color(190, 190, 210);
+    private final Color LR_COLOR_21 = new Color(210, 190, 190);
     private final Color RL_COLOR = new Color(0, 150, 0);
     private final Color RR_COLOR = new Color(0, 0, 150);
     private final Color LL_COLOR = new Color(0, 150, 150);
@@ -128,8 +130,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         // fr Orienations (e.g. Illumina paired-end libraries)
         frOrientationColors = new HashMap();
         //LR
-        frOrientationColors.put("F1R2", LR_COLOR);
-        frOrientationColors.put("F2R1", LR_COLOR);
+        frOrientationColors.put("F1R2", LR_COLOR_12);
+        frOrientationColors.put("F2R1", LR_COLOR_21);
         frOrientationColors.put("F R ", LR_COLOR);
         frOrientationColors.put("FR", LR_COLOR);
         //LL
@@ -151,8 +153,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         // rf orienation  (e.g. Illumina mate-pair libraries)
         rfOrientationColors = new HashMap();
         //LR
-        rfOrientationColors.put("R1F2", LR_COLOR);
-        rfOrientationColors.put("R2F1", LR_COLOR);
+        rfOrientationColors.put("R1F2", LR_COLOR_12);
+        rfOrientationColors.put("R2F1", LR_COLOR_21);
         rfOrientationColors.put("R F ", LR_COLOR);
         rfOrientationColors.put("RF", LR_COLOR);
         //LL
@@ -175,8 +177,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         // ff orienation  (e.g. SOLID libraries)
         ffOrientationColors = new HashMap();
         //LR
-        ffOrientationColors.put("F1F2", LR_COLOR);
-        ffOrientationColors.put("R2R1", LR_COLOR);
+        ffOrientationColors.put("F1F2", LR_COLOR_12);
+        ffOrientationColors.put("R2R1", LR_COLOR_21);
         //LL -- switched with RR color per Bob's instructions
         ffOrientationColors.put("F1R2", RR_COLOR);
         ffOrientationColors.put("R2F1", RR_COLOR);
@@ -381,7 +383,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             g = context.getGraphic2DForColor(alignmentColor2);
 
             drawAlignment(pair.secondAlignment, rowRect, trackRect, g, context, alignmentColor2, renderOptions, leaveMargin, selectedReadNames);
-        }else{
+        } else {
             return;
         }
 
@@ -1021,14 +1023,19 @@ public class AlignmentRenderer implements FeatureRenderer {
         return colorScale.getColor((float) logDist);
     }
 
+
     /**
+     * Returns a color to flag unexpected pair orientations.  Expected orientations (e.g. FR for Illumina) get the
+     * neutral grey color
+     *
+     * @param alignment
+     * @param peStats
      * @return
      */
-
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (alignment.isPaired() && !alignment.isProperPair()) {
+        if (alignment.isPaired()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
@@ -1056,6 +1063,25 @@ public class AlignmentRenderer implements FeatureRenderer {
                     c = frOrientationColors.get(pairOrientation);
                 }
             }
+        }
+
+        return c == null ? grey1 : c;
+
+    }
+
+    /**
+     * Similiar to "pair orientation" color, but this method does not attempt to interpret orientations.
+     *
+     * @param alignment
+     * @return
+     */
+    private Color getTemplateStrandColor(Alignment alignment) {
+
+        Color c = null;
+        if (alignment.isPaired()) {
+
+            final String pairOrientation = alignment.getPairOrientation();
+            return tagValueColors.get(pairOrientation);
         }
 
         return c == null ? grey1 : c;
