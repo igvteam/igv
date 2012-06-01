@@ -95,6 +95,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
 
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
+    public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
 
 
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
@@ -966,6 +967,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, "0");
         defaultValues.put(SAM_JUNCTION_MIN_COVERAGE, "1");
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
+        defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

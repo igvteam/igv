@@ -29,6 +29,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     private static Map<String, Set<Integer>> knownSnps;
     int start;
     int end;
+    protected boolean countDeletedBasesCovered = false;
 
 
     private BisulfiteCounts bisulfiteCounts;
@@ -42,6 +43,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
         this.start = start;
         this.end = end;
+
+        countDeletedBasesCovered = prefs.getAsBoolean(PreferenceManager.SAM_COUNT_DELETED_BASES_COVERED);
 
         if(!Globals.isHeadless() && bisulfiteContext != null){
             bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, GenomeManager.getInstance().getCurrentGenome());
@@ -93,13 +96,15 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
                 // Don't count softclips
                 if (!b.isSoftClipped() && strand != Strand.NONE) {
-                    incBlockCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
+                    final boolean isNegativeStrand = strand == Strand.NEGATIVE;
+
+                    incBlockCounts(b, isNegativeStrand); //alignment.isNegativeStrand());
 
                     // Count deletions
                     if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&
                             gapTypes[gapIdx] == SamAlignment.DELETION) {
                         for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
-                            incrementDeletion(pos);
+                            incrementDeletion(pos, isNegativeStrand);
                         }
                         gapIdx++;
                     }
@@ -219,7 +224,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     protected abstract void incrementInsertion(AlignmentBlock insBlock);
 
-    protected abstract void incrementDeletion(int pos);
+    protected abstract void incrementDeletion(int pos, boolean negativeStrand);
 
     protected abstract void incBlockCounts(AlignmentBlock b, boolean b1);
 
