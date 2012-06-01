@@ -735,7 +735,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         // SAM alignment tag keys must be of length 2
-        return key.length() == 2 ? record.getAttribute(key) : null;
+        return key.length() == 2 ? record.getAttribute(key) :
+                (key.equals("TEMPLATE_ORIENTATION") ? pairOrientation : null);
     }
 
     public String getClipboardString(double location) {
