@@ -931,8 +931,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         String id = variant.getID();
 
         StringBuffer toolTip = new StringBuffer();
-        toolTip.append("Chr:" + variant.getChr());
-        toolTip.append("<br>Position:" + variant.getStart());
+        toolTip.append("Chr: " + variant.getChr());
+        toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
         Set<Allele> alternates = variant.getAlternateAlleles();
@@ -1086,12 +1086,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
         String id = variant.getID();
         StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("Chr:" + variant.getChr());
-        toolTip = toolTip.append("<br>Position:" + variant.getStart());
+        toolTip = toolTip.append("Chr: " + variant.getChr());
+        toolTip = toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip = toolTip.append("<br>ID: " + id + "<br>");
         toolTip = toolTip.append("<br><b>Sample Information</b>");
         toolTip = toolTip.append("<br>Sample: " + sample);
-        toolTip = toolTip.append("<br>Position:" + variant.getStart());
 
         Genotype genotype = variant.getGenotype(sample);
         if (genotype != null) {

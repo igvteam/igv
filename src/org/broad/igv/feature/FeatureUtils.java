@@ -216,7 +216,7 @@ public class FeatureUtils {
     }
 
     /**
-     * Return a feature whose position is exactly 'position'.
+     * Return a feature whose position is exactly the integer part of 'position'.
      *
      * @param position Query position.
      * @param features List of features.
@@ -232,7 +232,7 @@ public class FeatureUtils {
             }
         });
 
-        if (r > 0) {
+        if (r >= 0) {
             return features.get(r);
         } else {
             return null;

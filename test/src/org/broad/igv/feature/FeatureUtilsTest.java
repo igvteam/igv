@@ -85,13 +85,17 @@ public class FeatureUtilsTest {
             VCFVariant next = (VCFVariant) it.next();
             features.add(next);
         }
-        //System.out.println("Now looking up closest to..");
-        VCFVariant a_6321739 = (VCFVariant) FeatureUtils.getFeatureClosest(6321739d, features);
-        VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740d, features);
-        //System.out.println(a_6321739);
-        //System.out.println(a_6321739);
-        assertEquals("variant closest to 6321739 must be found with position=6321739", 6321739, a_6321739.getStart());
-        assertEquals("variant closest to 6321740 must be found with position=6321740", 6321740, a_6321740.getStart());
+       // Test the first feature in the file -- this one was failing
+        VCFVariant a_6321732 = (VCFVariant) FeatureUtils.getFeatureClosest(6321732.4, features);
+        assertEquals("variant closest to 6321732 must be found with position=6321732", 6321732, a_6321732.getStart());
+
+
+        //Now test a couple right next to each other
+        VCFVariant a_6321739 = (VCFVariant) FeatureUtils.getFeatureClosest(6321739.4, features);
+        VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740.4, features);
+        assertEquals("variant closest to 6321739.4 must be found with position=6321739", 6321739, a_6321739.getStart());
+        assertEquals("variant closest to 6321740.4 must be found with position=6321740", 6321740, a_6321740.getStart());
+
 
 
     }
