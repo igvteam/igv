@@ -181,6 +181,7 @@ public class VCFVariant implements Variant {
         return variantContext.getAttributes();
     }
 
+    @Override
     public Genotype getGenotype(String sample) {
         // TODO -- cache these rather than make a new object each call?
         return new VCFGenotype(variantContext.getGenotype(sample));
@@ -190,30 +191,37 @@ public class VCFVariant implements Variant {
         return variantContext.getFilters();
     }
 
+    @Override
     public int getHomVarCount() {
         return zygosityCount.getHomVar();
     }
 
+    @Override
     public int getHetCount() {
         return zygosityCount.getHet();
     }
 
+    @Override
     public int getHomRefCount() {
         return zygosityCount.getHomRef();
     }
 
+    @Override
     public int getNoCallCount() {
         return zygosityCount.getNoCall();
     }
 
+    @Override
     public String getChr() {
         return chr;
     }
 
+    @Override
     public int getStart() {
         return isIndel ? variantContext.getStart() : variantContext.getStart() - 1;
     }
 
+    @Override
     public int getEnd() {
         return variantContext.getEnd();
     }
@@ -222,6 +230,17 @@ public class VCFVariant implements Variant {
     public String toString() {
         return String.format("VCFVariant[%s:%d-%d]", getChr(), getStart(), getEnd());
     }
+
+    @Override
+    public String getPositionString() {
+        if (variantContext.getStart() == variantContext.getEnd()) {
+            return String.valueOf(variantContext.getStart());
+        } else {
+            return String.format("%d-%d", variantContext.getStart(), variantContext.getEnd());
+        }
+
+    }
+
 
     public VariantContext getVariantContext() {
         return variantContext;

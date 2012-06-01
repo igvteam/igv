@@ -1,9 +1,15 @@
 package org.broad.igv.feature.xome;
 
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -18,34 +24,21 @@ import java.util.*;
 public class XomeUtils {
 
 
-    static List<Block> testBlocks;
+    static Map<String, List<Block>> blockCache = new HashMap();
 
+    public static synchronized List<Block> getBlocks(String chr) {
 
-
-    public static synchronized List<Block> getTestBlocks() {
-        if(testBlocks == null) {
-            try {
-                String file = "/Users/jrobinso/projects/genomes/hg18/hg18_refGene.txt";
-                Map<String, List<Feature>> allFeatures = new HashMap<String, List<Feature>>();
-                FeatureCodec codec = CodecFactory.getCodec(file, null);
-                AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(file, codec, false);
-                Iterable<Feature> iter = bfs.iterator();
-                for (Feature f : iter) {
-                    List<Feature> flist = allFeatures.get(f.getChr());
-                    if (flist == null) {
-                        flist = new ArrayList<Feature>(5000);
-                        allFeatures.put(f.getChr(), flist);
-                    }
-                    flist.add(f);
-                }
-
-                testBlocks = collapseTranscripts(allFeatures.get("chr1"));
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-
+        List<Block> blocks = blockCache.get(chr);
+        if (blocks == null) {
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
+            Chromosome chromosome = genome.getChromosome(chr);
+            List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
+            blocks = collapseTranscripts(features);
+            blockCache.put(chr, blocks);
         }
-        return testBlocks;
+        return blocks;
+
     }
 
 

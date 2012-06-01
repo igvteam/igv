@@ -1,6 +1,6 @@
 ##fileformat=VCFv4.1
 ##Goby=development (20111126110648)
-##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates for use with Biomart.">
+##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates_for use with Biomart.">
 ##INFO=<ID=Strand,Number=1,Type=String,Description="Strand of the cytosine site on the reference sequence.">
 ##INFO=<ID=#C_Group[last],Number=1,Type=Integer,Description="Number of unmethylated Cytosines at site in group last.">
 ##INFO=<ID=#Cm_Group[last],Number=1,Type=Integer,Description="Number of methylated Cytosines at site in group last.">

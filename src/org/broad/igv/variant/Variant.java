@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Represents a variant call on a collection of samples.  
+ * Represents a variant call on a collection of samples.
  *
  * @author jrobinso
  * @date Jan 20, 2011
@@ -34,32 +34,31 @@ public interface Variant extends Feature {
 
     /**
      * @return the identifier for this variant.  This is the "ID" attribute in VCF files, and is typically a
-     * dbSnp id.   This method can return null, which means that no ID has been assigned.  There is not
+     *         dbSnp id.   This method can return null, which means that no ID has been assigned.  There is not
      */
     String getID();
 
     /**
-     * @return   the type of this variant as a String.  Any String value is legal, typical values from VCF files include
-     *      NO_VARIATION, SNP, MNP, INDEL, SYMBOLIC, MIXED
+     * @return the type of this variant as a String.  Any String value is legal, typical values from VCF files include
+     *         NO_VARIATION, SNP, MNP, INDEL, SYMBOLIC, MIXED
      */
     String getType();
 
 
     /**
-     *
      * @return return true if the variant has been marked as filtered
      */
     boolean isFiltered();
 
     /**
-=
+     * =
+     *
      * @return the phred scale quality score of this variant.
      */
     double getPhredScaledQual();
 
 
     /**
-
      * @return the map of all attributes.  This cannot be null, if there are no attributes return an empty map.
      */
     Map<String, Object> getAttributes();
@@ -141,4 +140,6 @@ public interface Variant extends Feature {
     double getMethlationRate();
 
     double getCoveredSampleFraction();
+
+    String getPositionString();
 }

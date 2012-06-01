@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  */
 public class AlignmentReaderFactoryTest extends AbstractHeadlessTest {
 
-    @Test
+    @Test(timeout = (int) 60e3)
     public void testGetMergedReader() throws Exception {
         String relfiname = "HG00171.hg18.bam";
         String path = TestUtils.LARGE_DATA_DIR + "temprel.bam.list";
