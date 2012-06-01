@@ -1,0 +1,21 @@
+<!-- Going to want to use the same code to read SQL databases and text files
+Since the SQL databases are line-based, this should be possible. Just need to map columns and such-->
+
+<!-- The name is the name of the column in the SQL table. When reading from
+files, it's not used. The name is used to map column name to number-->
+<template version="0">
+	<format name="bed" version="0">
+		<column name="chrom" number="0" required="true"/>
+		<column name="chomStart" number="1" required="true"/>
+		<column name="chromEnd" number="2" required="true"/>
+		<column name="name" number="3" required="false"/>
+		<column name="score" number="4" required="false"/>
+		<column name="strand" number="5" required="false"/>
+		<column name="thickStart" number="6" required="false"/>
+		<column name="thickEnd" number="7" required="false"/>
+		<column name="itemRgb" number="8" required="false"/>
+		<column name="blockCount" number="9" required="false"/>
+		<column name="blockSizes" number="10" required="false"/>
+		<column name="blockStarts" number="11" required="false"/>
+	</format>
+</template>

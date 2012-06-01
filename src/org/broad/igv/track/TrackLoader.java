@@ -28,10 +28,10 @@ import org.broad.igv.dev.affective.AffectiveAnnotationParser;
 import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
 import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.dev.affective.Annotation;
+import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.exceptions.ProbeMappingException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
@@ -76,7 +76,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: jrobinso
@@ -152,6 +155,8 @@ public class TrackLoader {
             String serverURL = locator.getServerURL();
             if (serverURL != null && serverURL.startsWith("jdbc:")) {
                 this.loadFromDatabase(locator, newTracks, genome);
+            } else if (typeString.endsWith(".dbxml")) {
+                loadFromDBProfile(locator, newTracks);
             } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
@@ -281,7 +286,6 @@ public class TrackLoader {
         }
 
     }
-
 
     private void loadGMT(ResourceLocator locator) throws IOException {
         List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
@@ -1050,11 +1054,22 @@ public class TrackLoader {
     }
 
 
+    private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+        List<SQLCodecSource> sources = SQLCodecSource.getFromProfile(locator.getPath(), null);
+        for(SQLCodecSource source: sources){
+            CachingFeatureSource cachingReader = new CachingFeatureSource(source);
+            FeatureTrack track = new FeatureTrack(locator, cachingReader);
+            track.setName(source.getTable());
+            newTracks.add(track);
+        }
+    }
+
+
     private void loadFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (".seg".equals(locator.getType())) {
 
-            SegmentedAsciiDataSet ds = (new SegmentedSQLReader()).load(locator, genome);
+            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(locator, genome)).load();
 
             String path = locator.getPath();
             TrackProperties props = ds.getTrackProperties();
@@ -1083,7 +1098,7 @@ public class TrackLoader {
                 newTracks.add(track);
             }
         } else {
-            (new SampleInfoSQLReader()).load(locator);
+            (new SampleInfoSQLReader(locator)).load();
         }
     }
 
