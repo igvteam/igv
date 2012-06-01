@@ -37,13 +37,14 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     public final static String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
     public final static int numChars = characters.length();
 
+    private static final int connectTimeout = 30 * 1000;
     @Rule
-    public TestRule testTimeout = new Timeout(10 * 60 * 1000);
+    public TestRule testTimeout = new Timeout(4*connectTimeout);
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        Globals.CONNECT_TIMEOUT = 5 * 60 * 1000;
+        Globals.CONNECT_TIMEOUT = connectTimeout;
     }
 
     private String genRandString() {

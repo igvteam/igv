@@ -144,12 +144,10 @@ public class ParsingUtils {
                 URL url = new URL(path);
                 URLConnection connection = url.openConnection();
                 connection.setConnectTimeout(Globals.CONNECT_TIMEOUT);
-                contentLength = connection.getContentLength();
                 //For reasons beyond my ken, on Java 7 getContentLength
-                //returns -1
-                if (contentLength < 0) {
-                    contentLength = connection.getInputStream().available();
-                }
+                //returns -1 without attempting a connection
+                //contentLength = connection.getContentLength();
+                contentLength = connection.getInputStream().available();
             } else {
                 contentLength = (new File(path)).length();
             }
