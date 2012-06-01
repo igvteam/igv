@@ -50,7 +50,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
         SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", 1);
         Iterator<Feature> SQLFeatures = reader.iterator();
 
-        String bedFile = host + "/bed/unigene.sample.bed";
+        String bedFile = host + "/bed/Unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
         Iterator<Feature> fileFeatures = bfr.iterator();
 
