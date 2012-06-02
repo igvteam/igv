@@ -184,15 +184,20 @@ public class IgvTools {
      * @throws IOException
      * @throws PreprocessingException
      */
-    public static void main(String[] argv) throws IOException, PreprocessingException {
+    public static void main(String[] argv)  {
 
-        initLogger();
-        Globals.setHeadless(true);
+        try {
+            initLogger();
+            Globals.setHeadless(true);
 
-        (new IgvTools()).run(argv);
+            (new IgvTools()).run(argv);
 
-        System.out.println("Done");
-        System.exit(1);
+            System.out.println("Done");
+            System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     void run(String[] argv) {
