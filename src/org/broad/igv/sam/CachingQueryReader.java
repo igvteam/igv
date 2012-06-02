@@ -388,9 +388,10 @@ public class CachingQueryReader {
                     "<br>This is often caused by a corrupt index file.");
             return false;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error loading alignment data", e);
-            throw new DataLoadException("", "Error: " + e.toString());
+            MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString());
+            return false;
         } finally {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
