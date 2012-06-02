@@ -121,6 +121,7 @@ public class IgvTools {
     private static CmdLineParser.Option queryStringOpt = null;
     private static CmdLineParser.Option minMapQualityOpt = null;
     private static CmdLineParser.Option includeDupsOpt = null;
+    private static CmdLineParser.Option pairedCoverageOpt = null;
 
     // options for index
     private static CmdLineParser.Option indexTypeOption = null;
@@ -412,6 +413,7 @@ public class IgvTools {
                 queryStringOpt = parser.addStringOption("query");
                 minMapQualityOpt = parser.addStringOption("minMapQuality");
                 includeDupsOpt = parser.addBooleanOption("includeDuplicates");
+                pairedCoverageOpt = parser.addBooleanOption("pairs");
 
                 // Trackline
                 colorOption = parser.addStringOption("color");
@@ -436,6 +438,7 @@ public class IgvTools {
         int countFlags = 0;
         countFlags += (Boolean) parser.getOptionValue(separateBasesOption, false) ? CoverageCounter.BASES : 0;
         countFlags += (Boolean) parser.getOptionValue(includeDupsOpt, false) ? CoverageCounter.INCLUDE_DUPS : 0;
+        countFlags += (Boolean) parser.getOptionValue(pairedCoverageOpt, false) ? CoverageCounter.PAIRED_COVERAGE : 0;
         String strandopt = (String) parser.getOptionValue(strandOption, "");
         if (strandopt.equals("read")) {
             countFlags += CoverageCounter.STRANDS_BY_READ;

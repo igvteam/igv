@@ -29,12 +29,14 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
+import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.Pair;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -92,8 +94,8 @@ public class CoverageCounter {
      */
     static final int BASES = 0x08;
 
-    public static final Integer INCLUDE_DUPS = 0x20;
-
+    public static final int INCLUDE_DUPS = 0x20;
+    public static final int PAIRED_COVERAGE = 0x40;
     private boolean outputSeparate;
     private boolean firstInPair;
     private boolean secondInPair;
@@ -114,6 +116,11 @@ public class CoverageCounter {
      * Flag to control treatment of duplicates.  If true duplicates are counted.  The default value is false.
      */
     private boolean includeDuplicates = false;
+
+    /**
+     * If true, coverage is computed based from properly paired reads, counting entire insert.
+     */
+    private boolean pairedCoverage = false;
 
     private Genome genome;
 
@@ -169,7 +176,8 @@ public class CoverageCounter {
                            File wigFile,
                            Genome genome,
                            String queryString,
-                           int minMapQual, int countFlags) {
+                           int minMapQual,
+                           int countFlags) {
         this.alignmentFile = alignmentFile;
         this.consumer = consumer;
         this.windowSize = windowSize;
@@ -208,19 +216,33 @@ public class CoverageCounter {
         }
         outputBases = (countFlags & BASES) > 0;
         includeDuplicates = (countFlags & INCLUDE_DUPS) > 0;
+        pairedCoverage = (countFlags & PAIRED_COVERAGE) > 0;
     }
 
 
     // TODO -- command-line options to override all of these checks
     private boolean passFilter(Alignment alignment) {
+
+        // If the first-in-pair or second-in-pair option is selected test that we have that information, otherwise
+        // alignment is filtered.
         boolean pairingInfo = (!firstInPair && !secondInPair) ||
                 (alignment.getFirstOfPairStrand() != Strand.NONE);
+
+        // For paired coverage see if the alignment is properly paired, and if it is the "leftmost" alignment
+        // (to prevent double-counting the pair).
+        boolean properPairTest = true;
+        if(pairedCoverage) {
+            ReadMate mate = alignment.getMate();
+            properPairTest = alignment.isProperPair() && mate != null && alignment.getStart() < mate.getStart();
+        }
 
         return alignment.isMapped() && pairingInfo &&
                 (includeDuplicates || !alignment.isDuplicate()) &&
                 alignment.getMappingQuality() >= minMappingQuality &&
-                !alignment.isVendorFailedRead();
+                !alignment.isVendorFailedRead() && properPairTest;
     }
+
+
 
     /**
      * Parse and "count" the alignment file.  The main method.
@@ -294,7 +316,7 @@ public class CoverageCounter {
 
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
-                    if (blocks != null) {
+                    if (blocks != null && !pairedCoverage) {
                         int lastBlockEnd = -1;
                         for (AlignmentBlock block : blocks) {
 
@@ -333,7 +355,9 @@ public class CoverageCounter {
                         }
                     } else {
                         int adjustedStart = alignment.getAlignmentStart();
-                        int adjustedEnd = alignment.getAlignmentEnd();
+                        int adjustedEnd = pairedCoverage ?
+                                adjustedStart + Math.abs(alignment.getInferredInsertSize()) :
+                                alignment.getAlignmentEnd();
 
                         if (readNegStrand) {
                             adjustedStart = Math.max(0, adjustedStart - extFactor);

@@ -176,17 +176,25 @@ Options:
                values are  min, max,  mean, median, p2, p10, p90, and p98.
                The "p" values represent percentile, so p2=2nd percentile,
                etc.
+
   --strands [arg] By default, counting is combined among both strands.
                 This setting outputs the count for each strand separately.
                 Legal argument values are 'read' or 'first'.
                 'read' Separates count by 'read' strand, 'first' uses the first in pair strand"
+
   --bases		Count the occurrence of each base (A,G,C,T,N). Takes no arguments
   
-  --query [querystring]	Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000. Input file must be indexed.
+  --query [querystring]	Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000.
+                        Input file must be indexed.
   
   --minMapQuality [mqual]	Set the minimum mapping quality of reads to include. Default is 0.
-  --includeDuplicates 	 Include duplicate alignments in count. Default false.
-                If this flag is included, duplicates are counted. Takes no arguments				
+
+  --includeDuplicates 	 Include duplicate alignments in count. Default false.  If this flag is included, duplicates
+                          are counted. Takes no arguments
+
+  --pairs  Compute coverage from paired alignments counting the entire insert as covered.  When using this option only
+           reads marked "proper pairs" are used.
+
 
 Notes:
 

@@ -734,22 +734,6 @@ public class Preprocessor implements DataConsumer {
         String[] tracknames = aParser.getTrackNames(prefix + " ");
         setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
 
-        /*if(isize != null) {
-           String [] tokens = isize.split(",");
-           if(tokens.length < 2) {
-               System.out.println("Invalid insert size string.  Expected mean & stdev separated by comma, e.g.  400,60");
-           }
-           else {
-               try {
-                   float mean = Float.parseFloat(tokens[0]);
-                   float stdev = Float.parseFloat(tokens[1]);
-                   aParser.computeISize(mean, stdev);
-               } catch (NumberFormatException e) {
-                   System.out.println("Error parsing iSize parameter " + e.toString());
-               }
-           }
-       } */
-
         this.sizeEstimate = ((int) (genome.getLength() / windowSizeValue));
 
         try {
