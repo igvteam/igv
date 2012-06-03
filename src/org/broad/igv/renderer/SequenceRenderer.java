@@ -31,7 +31,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.SOLIDUtils;
 
@@ -98,7 +97,7 @@ public class SequenceRenderer {
         if (context.getScale() >= resolutionThreshold) {
             // Zoomed out too far to see sequences.  This can happen when in gene list view and one of the frames
             // is zoomed in but others are not
-            context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR).fill(trackRectangle);
+            context.getGraphic2DForColor(UIConstants.LIGHT_GREY).fill(trackRectangle);
 
         } else {
             double locScale = context.getScale();

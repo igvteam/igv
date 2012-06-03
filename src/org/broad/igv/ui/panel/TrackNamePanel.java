@@ -111,7 +111,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             graphics2D.setColor(Color.BLACK);
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
-            greyGraphics.setColor(UIConstants.ZOOMED_OUT_COLOR);
+            greyGraphics.setColor(UIConstants.LIGHT_GREY);
 
             int regionY = 0;
 

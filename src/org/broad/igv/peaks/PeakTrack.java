@@ -224,7 +224,7 @@ public class PeakTrack extends AbstractTrack {
     }
 
     @Override
-    public void preload(RenderContext context, Rectangle visibleRect) {
+    public void preload(RenderContext context) {
         try {
             getFilteredPeaks(context.getChr());
         } catch (IOException e) {

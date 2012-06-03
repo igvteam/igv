@@ -88,7 +88,7 @@ public class UIConstants {
     static final public String SERVER_BASE_URL = "http://www.broadinstitute.org/";
     static final public Color LIGHT_YELLOW = new Color(255, 244, 201);
 
-    final public static Color ZOOMED_OUT_COLOR = new Color(238, 239, 240);
+    final public static Color LIGHT_GREY = new Color(238, 239, 240);
 
     final public static Color TRACK_BORDER_GRAY = new Color(200, 200, 210);
 

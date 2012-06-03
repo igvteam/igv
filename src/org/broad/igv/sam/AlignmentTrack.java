@@ -292,7 +292,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
     @Override
-    public void preload(RenderContext context, Rectangle visibleRect) {
+    public void preload(RenderContext context) {
         dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
     }
 
@@ -626,6 +626,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
+
+        if(alignmentsRect == null) return null;   // <= not loaded yet
 
         Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroupedAlignments(frame);
 

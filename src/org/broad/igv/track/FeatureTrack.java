@@ -569,7 +569,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void preload(RenderContext context, Rectangle visibleRect) {
+    public void preload(RenderContext context) {
         ReferenceFrame frame = context.getReferenceFrame();
         loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
     }
@@ -601,7 +601,8 @@ public class FeatureTrack extends AbstractTrack {
 
         if (FeatureTrack.drawBorder) {
             Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
-            borderGraphics.draw(rect);
+            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
+            borderGraphics.drawLine(rect.x, rect.y+rect.height, rect.x + rect.width, rect.y+rect.height);
         }
 
     }
@@ -735,6 +736,8 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
     }
+
+
 
     /**
      * Loads and segregates features into rows such that they do not overlap.  Loading is done in a background

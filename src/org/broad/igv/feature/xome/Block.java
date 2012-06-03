@@ -12,12 +12,27 @@ public class Block implements Feature {
     private int genomeStart;
     private int genomeEnd;
     private int exomeStart;
+    private int leftPixel;
+    private int rightPixel;
 
     public Block(int idx, int start, int end, int xomeStart) {
         this.idx = idx;
         this.genomeStart = start;
         this.genomeEnd = end;
         this.exomeStart = xomeStart;
+    }
+
+    public void setScreenBounds(int leftPixel, int rightPixel) {
+        this.leftPixel = leftPixel;
+        this.rightPixel = rightPixel;
+    }
+
+    public int getLeftPixel() {
+        return leftPixel;
+    }
+
+    public int getRightPixel() {
+        return rightPixel;
     }
 
     public int getIdx() {

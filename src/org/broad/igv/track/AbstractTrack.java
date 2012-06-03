@@ -186,7 +186,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void preload(RenderContext context, Rectangle visibleRect) {
+    public void preload(RenderContext context) {
         // No-op, to be overriden by subclasses
     }
 

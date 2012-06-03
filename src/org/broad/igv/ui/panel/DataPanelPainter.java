@@ -26,21 +26,20 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.xome.Block;
 import org.broad.igv.feature.xome.ExomeReferenceFrame;
-import org.broad.igv.feature.xome.XomeUtils;
-import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.LongRunningTask;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -74,16 +73,19 @@ public class DataPanelPainter {
 
                 List<Block> blocks = ((ExomeReferenceFrame) frame).getBlocks();
                 int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
-                Block b = blocks.get(idx);
+                Block b;
 
                 int pStart;
                 int pEnd;
-                int firstExomeStart = b.getExomeStart();
+                int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
+                int visibleBlockCount = 0;
                 do {
                     b = blocks.get(idx);
 
-                    pStart = (int) ((b.getExomeStart() - firstExomeStart) / frame.getScale());
-                    pEnd = (int) ((b.getExomeEnd() - firstExomeStart) / frame.getScale());
+                    pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * ExomeReferenceFrame.blockGap;
+                    pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * ExomeReferenceFrame.blockGap;
+
+                    b.setScreenBounds(pStart, pEnd);
 
                     Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
@@ -104,12 +106,15 @@ public class DataPanelPainter {
                     ReferenceFrame tmpFrame = new ReferenceFrame(frame);
                     tmpFrame.setOrigin(b.getGenomeStart(), false);
 
+                    System.out.println(b.getGenomeStart());
+
                     RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
                     paintFrame(groups, tmpContext, rect.width, rect);
 
                     tmpContext.dispose();
                     exomeGraphics.dispose();
                     idx++;
+                    visibleBlockCount++;
 
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
@@ -131,7 +136,6 @@ public class DataPanelPainter {
                             Rectangle visibleRect) {
 
 
-        final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR);
         int trackX = 0;
         int trackY = 0;
 
@@ -145,6 +149,7 @@ public class DataPanelPainter {
 
             if (group.isVisible()) {
                 if (groups.size() > 1) {
+                    final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.LIGHT_GREY);
                     greyGraphics.fillRect(0, trackY + 1, width, UIConstants.groupGap - 1);
                     trackY += UIConstants.groupGap;
                 }
@@ -208,54 +213,50 @@ public class DataPanelPainter {
 
     }
 
-    private void preloadTracks(Collection<TrackGroup> groups,
-                               RenderContext context,
+    private void preloadTracks(final Collection<TrackGroup> groups,
+                               final RenderContext context,
                                int width,
-                               Rectangle visibleRect) {
+                               final Rectangle visibleRect) {
 
-//        log.info("Preloading " + context.getReferenceFrame().getChrName() + ":" +
-//                ((int) context.getReferenceFrame().getOrigin()) + "-" + ((int) context.getReferenceFrame().getEnd()));
-
-        int trackY = 0;
+        // Find the tracks that need loaded, we go to this bother to avoid loading tracks scrolled out of view
+        final List<Track> visibleTracks = new ArrayList<Track>();
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
-
-            if (visibleRect != null && (trackY > visibleRect.y + visibleRect.height)) {
-                break;
-            }
-
-            if (group.isVisible()) {
-                if (groups.size() > 1) {
-                    trackY += UIConstants.groupGap;
+            List<Track> trackList = new ArrayList(group.getTracks());
+            for (Track track : trackList) {
+                if (track != null && track.isVisible()) {
+                    visibleTracks.add(track);
                 }
-
-                List<Track> trackList = new ArrayList(group.getTracks());
-                for (Track track : trackList) {
-                    if (track == null) continue;
-                    int trackHeight = track.getHeight();
-                    if (visibleRect != null) {
-                        if (trackY > visibleRect.y + visibleRect.height) {
-                            break;
-                        } else if (trackY + trackHeight < visibleRect.y) {
-                            if (track.isVisible()) {
-                                trackY += trackHeight;
-                            }
-                            continue;
-                        }
-                    }
-
-
-                    if (track.isVisible()) {
-
-                        if (!(track instanceof SequenceTrack))
-                            track.preload(context, visibleRect);
-
-                        trackY += trackHeight;
-                    }
-                }
-
             }
         }
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                for (Track track : visibleTracks) {
+                    RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), null);
+                    track.preload(newContext);
+                }
+            }
+        };
+
+        runnable.run();
+
+//        Future future = LongRunningTask.submit(runnable);
+//        try {
+//            future.get();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
+
+//        Thread workerThread = new Thread(runnable);
+//        workerThread.start();
+//        try {
+//            workerThread.join();
+//        } catch (InterruptedException e) {
+//            log.error("Preload thread was interrupted", e);
+//        }
     }
 }
 
