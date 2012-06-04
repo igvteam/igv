@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.tools;
+package org.broad.igv.tools.converters;
 
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.tools.parsers.WiggleParser;

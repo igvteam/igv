@@ -33,8 +33,10 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.tdf.TDFUtils;
+import org.broad.igv.tools.converters.BamToBed;
 import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
+import org.broad.igv.tools.converters.WigToBed;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.ReadmeParser;
@@ -70,6 +72,7 @@ public class IgvTools {
     static final String CMD_VERSION = "version";
     static final String CMD_GUI = "gui";
     static final String CMD_HELP = "help";
+    static final String CMD_BAMTOBED = "bamtobed";
 
     //static Map<String, String> commandList = new HashMap<String, String>(9);
 
@@ -184,7 +187,7 @@ public class IgvTools {
      * @throws IOException
      * @throws PreprocessingException
      */
-    public static void main(String[] argv)  {
+    public static void main(String[] argv) {
 
         try {
             initLogger();
@@ -382,6 +385,11 @@ public class IgvTools {
                     DensitiesToBedGraph.convert(inputDir, outputDir);
                 }
 
+            } else if (command.equals(CMD_BAMTOBED)) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
+                String ofile = nonOptionArgs[2];
+                Boolean pairOption = (Boolean) parser.getOptionValue(pairedCoverageOpt, false);
+                BamToBed.convert(new File(ifile), new File(ofile), pairOption);
             } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
@@ -408,7 +416,7 @@ public class IgvTools {
             maxZoomOption = parser.addIntegerOption('z', "maxZoom");
 
             // extended options for coverage
-            if (command.equals(CMD_COUNT)) {
+            if (command.equals(CMD_COUNT) || command.equals(CMD_BAMTOBED)) {
 
                 extFactorOption = parser.addIntegerOption('e', "extFactor");
                 windowSizeOption = parser.addIntegerOption('w', "windowSize");

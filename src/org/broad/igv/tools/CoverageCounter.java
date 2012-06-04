@@ -228,20 +228,25 @@ public class CoverageCounter {
         boolean pairingInfo = (!firstInPair && !secondInPair) ||
                 (alignment.getFirstOfPairStrand() != Strand.NONE);
 
-        // For paired coverage see if the alignment is properly paired, and if it is the "leftmost" alignment
+        // For paired coverage, see if the alignment is properly paired, and if it is the "leftmost" alignment
         // (to prevent double-counting the pair).
-        boolean properPairTest = true;
-        if(pairedCoverage) {
+        if (pairedCoverage) {
             ReadMate mate = alignment.getMate();
-            properPairTest = alignment.isProperPair() && mate != null && alignment.getStart() < mate.getStart();
+            if (!alignment.isProperPair() || alignment.getMate() == null || alignment.getStart() > mate.getStart()) {
+                return false;
+            }
+            if (Math.abs(alignment.getInferredInsertSize()) > 10000) {
+                System.out.println("Very large insert size: " + Math.abs(alignment.getInferredInsertSize()) +
+                        " for read " + alignment.getReadName() + ".  Skipped.");
+                return false;
+            }
         }
 
         return alignment.isMapped() && pairingInfo &&
                 (includeDuplicates || !alignment.isDuplicate()) &&
                 alignment.getMappingQuality() >= minMappingQuality &&
-                !alignment.isVendorFailedRead() && properPairTest;
+                !alignment.isVendorFailedRead();
     }
-
 
 
     /**
