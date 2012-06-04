@@ -71,8 +71,7 @@ public class FrameManager {
     }
 
     private static void switchToExomeMode() {
-        List<Block> blocks = XomeUtils.getBlocks(defaultFrame.getChrName());
-        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, blocks);
+        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame);
         defaultFrame = exomeFrame;
         frames.clear();
         frames.add(defaultFrame);

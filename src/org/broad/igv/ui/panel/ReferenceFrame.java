@@ -59,7 +59,7 @@ public class ReferenceFrame {
     /**
      * The chromosome currently in view
      */
-    private String chrName = "chrAll";
+    protected String chrName = "chrAll";
 
     /**
      * The minimum zoom level for the current screen size + chromosome combination.
@@ -92,15 +92,17 @@ public class ReferenceFrame {
     /**
      * The location (x axis) locationScale in base pairs / virtual pixel
      */
-    private double locationScale;
+    protected double locationScale;
 
     /**
      * Minimum allowed scale in base pairs / pixel
      */
     private double minScale = 1.0 / 14;
 
-    private boolean locationScaleValid = false;
-    private Locus initialLocus;
+    protected boolean locationScaleValid = false;
+    protected Locus initialLocus;
+    protected int setEnd = 0;
+
 
     public ReferenceFrame(String name) {
         this.name = name;
@@ -372,7 +374,7 @@ public class ReferenceFrame {
 
     }
 
-    private void imputeZoom(double start, double end) {
+    protected void imputeZoom(double start, double end) {
         int z = (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
         if (z != this.zoom) {
             zoom = Math.min(maxZoom, Math.max(minZoom, z));
@@ -634,23 +636,16 @@ public class ReferenceFrame {
 
     public void setInterval(Locus locus) {
         this.initialLocus = locus;
-        setInterval(locus.getChr(), locus.getStart(), locus.getEnd());
-    }
 
-
-    int setEnd = 0;
-
-    public void setInterval(String chr, int start, int end) {
-
-        this.chrName = chr;
-        this.origin = start;
+        this.chrName = locus.getChr();
+        this.origin = locus.getStart();
         if (widthInPixels > 0) {
-            locationScale = (end - origin) / widthInPixels;
+            locationScale = (locus.getEnd() - origin) / widthInPixels;
             locationScaleValid = true;
-            imputeZoom(origin, end);
+            imputeZoom(origin, locus.getEnd());
         } else {
             // Set end temporarily until scale can be calculated
-            this.setEnd = end;
+            this.setEnd = locus.getEnd();
         }
     }
 

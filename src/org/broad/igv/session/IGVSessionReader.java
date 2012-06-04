@@ -19,6 +19,7 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -778,7 +779,8 @@ public class IGVSessionReader implements SessionReader {
                                     getAttribute((Element) childNode, SessionAttribute.END.getText()).replace(",", "");
                             int start = ParsingUtils.parseInt(startString);
                             int end = ParsingUtils.parseInt(endString);
-                            f.setInterval(chr, start, end);
+                            org.broad.igv.feature.Locus locus = new Locus(chr, start, end);
+                            f.setInterval(locus);
                         } catch (NumberFormatException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
