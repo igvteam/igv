@@ -456,7 +456,7 @@ public class CoverageCounter {
         void incrementCount(int position, byte base, byte quality, Strand strand) {
             final Counter counter = getCounterForPosition(position);
             int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
-            counter.increment(position, base, quality, strandNum);
+            counter.increment(base, quality, strandNum);
         }
 
 
@@ -485,7 +485,7 @@ public class CoverageCounter {
         void closeBucketsBefore(int position, WigWriter wigWriter) {
             List<Integer> bucketsToClose = new ArrayList();
 
-            Integer bucket = position / windowSize;
+            int bucket = position / windowSize;
             for (Map.Entry<Integer, Counter> entry : counts.entrySet()) {
                 if (entry.getKey() < bucket) {
 
@@ -600,7 +600,7 @@ public class CoverageCounter {
             return strandCount[strand];
         }
 
-        void increment(int position, byte base, byte quality, int strand) {
+        void increment(byte base, byte quality, int strand) {
 
             if (outputBases) {
                 incrementNucleotide(base, strand);
