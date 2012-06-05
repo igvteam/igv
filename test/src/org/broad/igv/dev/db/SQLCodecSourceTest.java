@@ -47,7 +47,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
         String table = "unigene";
 
 
-        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", 1);
+        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", "chromEnd", 1);
         Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = host + "/bed/Unigene.sample.bed";
@@ -106,7 +106,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
     }
 
 
-    private String profilePath = TestUtils.DATA_DIR + "sql/UCSC_profiles.xml";
+    private String profilePath = TestUtils.DATA_DIR + "sql/UCSC_profiles.dbxml";
 
     @Test
     public void testLoadUCSCFromProfileGene() throws Exception {
@@ -153,6 +153,51 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
         assertNotNull(source.queryStatement);
 
         return source;
+
+    }
+
+    @Test
+    public void testQueryWithBins() throws Exception{
+        tstQueryWithBins(profilePath, "all_mrna", "chr3", 500, 500000);
+    }
+
+    @Test
+    public void testQueryWithBins_big() throws Exception{
+        tstQueryWithBins(profilePath, "all_mrna", "chr1", 0, (int) 247e4);
+    }
+
+    public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception{
+        SQLCodecSource binSource = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
+        assertNotNull(binSource.binColName);
+
+        SQLCodecSource noBinSource = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
+        binSource.binColName = null;
+
+
+        Iterator<Feature> binFeats = binSource.getFeatures(chr, start, end);
+        Iterator<Feature> noBinFeats = noBinSource.getFeatures(chr, start, end);
+
+        int count = 0;
+        while (binFeats.hasNext()) {
+            assertTrue(noBinFeats.hasNext());
+
+            Feature bf = binFeats.next();
+            Feature nbf = noBinFeats.next();
+
+            assertEquals(chr, bf.getChr());
+            assertTrue(bf.getStart() >= start);
+            assertTrue(bf.getStart() < end);
+
+            assertEquals(nbf.getChr(), bf.getChr());
+            assertEquals(nbf.getStart(), bf.getStart());
+            assertEquals(nbf.getEnd(), bf.getEnd());
+
+            count++;
+        }
+
+        assertFalse(noBinFeats.hasNext());
+
+
 
     }
 }
