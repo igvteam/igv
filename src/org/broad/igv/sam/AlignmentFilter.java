@@ -131,8 +131,8 @@ public class AlignmentFilter {
 		return tag;
 	}
 
-	//false = keep for display
-	//true  = filter out (remove from display)
+	// false = keep for display
+	// true = filter out (remove from display)
 	public boolean filter(String attr) {
 		String regExprToUse = null;
 		Pattern regExpr;
@@ -144,7 +144,7 @@ public class AlignmentFilter {
 				match = true;
 			}
 		} else if (Operation.equals("is not equal to")) {
-			if (attr.equals(expression)) {
+			if (!attr.equals(expression)) {
 				match = true;
 			}
 		} else if (Operation.equals("starts with")) {
@@ -165,17 +165,18 @@ public class AlignmentFilter {
 				match = true;
 			}
 		} else if (Operation.equals("is missing")) {
-			//if the flag is missing (that is what "is missing" is referring to, we won't be here
+			// if the flag is missing (that is what "is missing" is referring
+			// to, we won't be here
 			return false;
 		}
 
-		//if (hasWildCards) {
-			// regExprToUse = WildcardMatcher.wildcardToRegex(expression);
-		//} else 
-	
+		// if (hasWildCards) {
+		// regExprToUse = WildcardMatcher.wildcardToRegex(expression);
+		// } else
 
 		return match;
 	}
+
 	public boolean filter(Double attr) {
 		if (Operation.equals("is greater than")) {
 			return Double.parseDouble(expression) > attr;
@@ -185,16 +186,22 @@ public class AlignmentFilter {
 			return Double.parseDouble(expression) >= attr;
 		} else if (Operation.equals("is less than or equal to")) {
 			return Double.parseDouble(expression) <= attr;
-		} else{
+		} else {
 			return filter(attr.toString());
 		}
 	}
+
 	public boolean filter(Object attribute) {
 		if (attribute instanceof Integer) {
-			return filter(new Double((Integer)attribute));
-		}else{
-			return filter(attribute.toString());
+			if (Operation.equals("is greater than")
+					|| Operation.equals("is less than")
+					|| Operation.equals("is greater than or equal to")
+					|| Operation.equals("is less than or equal to")) {
+				return filter(new Double((Integer) attribute));
+			}
 		}
+		return filter(attribute.toString());
+
 	}
 
 	public void setOperation(String op) {

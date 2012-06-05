@@ -103,6 +103,12 @@ public class AlignmentFilterComponent extends JPanel {
 		return tagValue.getText();
 	}
 
+	public Integer getTagValueWidth(){
+		return tagValue.getWidth();
+	}
+	public void setTagValueWidth(int witdth, int height){
+		tagValue.setSize(witdth, height);
+	}
 
 	public AlignmentFilterComponent(final AlignmentFilter alf, String index,
 			ActionListener actListener) {
@@ -148,6 +154,7 @@ public class AlignmentFilterComponent extends JPanel {
 				});
 		
 		//tagValue.addActionListener(actListener);
+		System.out.println("tag bounds:" + tagValue.getBounds());
 		jPanel1.add(tagValue);
 
 		List<String> textForOperators = new ArrayList<String>();
