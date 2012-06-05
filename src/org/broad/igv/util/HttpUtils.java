@@ -66,21 +66,12 @@ public class HttpUtils {
     private char[] defaultPassword = null;
 
     /**
-     *  Create the single instance  and register the cookie manager
-     */
-    static {
-        synchronized (HttpUtils.class) {
-            org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
-            instance = new HttpUtils();
-            instance.disableCertificateValidation();
-            CookieHandler.setDefault(new IGVCookieManager());
-        }
-    }
-
-    /**
      * @return the single instance
      */
     public static HttpUtils getInstance() {
+        if(instance == null){
+            instance = new HttpUtils();
+        }
         return instance;
     }
 
@@ -88,7 +79,13 @@ public class HttpUtils {
      * Constructor
      */
     private HttpUtils() {
+
+        org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
+
+        disableCertificateValidation();
+        CookieHandler.setDefault(new IGVCookieManager());
         Authenticator.setDefault(new IGVAuthenticator());
+
         byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
