@@ -56,11 +56,10 @@ public class FrameManager {
 
 
     public static void setExomeMode(boolean b) {
-        if(b == exomeMode) return;
-        if(b) {
+        if (b == exomeMode) return;  // No change
+        if (b) {
             switchToExomeMode();
-        }
-        else {
+        } else {
             switchToGenomeMode();
         }
     }
@@ -72,6 +71,9 @@ public class FrameManager {
 
     private static void switchToExomeMode() {
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame);
+
+        Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
+        exomeFrame.setInterval(locus);
         defaultFrame = exomeFrame;
         frames.clear();
         frames.add(defaultFrame);
@@ -80,6 +82,9 @@ public class FrameManager {
 
     private static void switchToGenomeMode() {
         ReferenceFrame refFrame = new ReferenceFrame(defaultFrame);
+
+        Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
+        refFrame.setInterval(locus);
         defaultFrame = refFrame;
         frames.clear();
         frames.add(defaultFrame);

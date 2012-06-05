@@ -30,20 +30,16 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     int exomeOrigin;
     int genomeEnd;
 
-    int exomeMaxPosition;
-
     public ExomeReferenceFrame(ReferenceFrame otherFrame) {
 
         super(otherFrame);
-        List<Block> blocks = XomeUtils.getBlocks(getChrName());
-        exomeMaxPosition = blocks.get(blocks.size() - 1).getExomeEnd();
-        findFirstBlock(blocks);
-        findEnd(blocks);
+
     }
 
     private void findFirstBlock(List<Block> blocks) {
         int idx = FeatureUtils.getIndexBefore(origin, blocks);
-        if (blocks.get(idx).compareGenomePosition(origin) == 0) {
+        final int comp = blocks.get(idx).compareGenomePosition(origin);
+        if (comp == 0) {
             firstBlockIdx = idx;
         } else {
             firstBlockIdx = (idx + 1) < blocks.size() ? (idx + 1) : idx;
@@ -54,12 +50,11 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     @Override
     public void shiftOriginPixels(double delta) {
 
-        if (exomeOrigin == 0 && delta < 0 || exomeOrigin >= exomeMaxPosition && delta > 0) return;
+        if (exomeOrigin == 0 && delta < 0) return;
 
         double shiftBP = delta * getScale();
         exomeOrigin += shiftBP;
         if (exomeOrigin < 0) exomeOrigin = 0;
-        if (exomeOrigin > exomeMaxPosition) exomeOrigin = exomeMaxPosition;
 
         // Find exome block that contains the new position.  We're assuming is very close to the current block.
         List<Block> blocks = XomeUtils.getBlocks(getChrName());
@@ -133,39 +128,45 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         List<Block> blocks = XomeUtils.getBlocks(chrName);
         findFirstBlock(blocks);
         Block firstBlock = blocks.get(firstBlockIdx);
-        exomeOrigin = firstBlock.getExomeStart() - (int) (origin - firstBlock.getGenomeStart());
+
+        origin = firstBlock.getGenomeStart();
+        exomeOrigin = firstBlock.getExomeStart();
 
         genomeEnd = locus.getEnd();
         // Loop through blocks until we find the genome end
 
-        Block endBlock = blocks.get(firstBlockIdx);
+        Block endBlock;
         int idx = firstBlockIdx;
         while (idx < blocks.size()) {
             endBlock = blocks.get(idx);
-            if (endBlock.getGenomeEnd() > genomeEnd) {
-                endBlockIdx = endBlock.getIdx();
+            if (endBlock.getGenomeStart() > genomeEnd) {
+                endBlockIdx = idx - 1;
+                break;
+            } else if (endBlock.getGenomeEnd() >= genomeEnd) {
+
+                endBlockIdx = idx;
                 break;
             }
             idx++;
         }
+        genomeEnd = blocks.get(endBlockIdx).getGenomeEnd();
 
         // Get total base pairs traversed, in exome coordinates, and # of pixels available
         int pWidth = widthInPixels > 0 ? widthInPixels : 1000; // <= if not known guess
-
-        int bp = (int) (origin - firstBlock.getGenomeStart());  // First block (partial block)
-
-        for (idx = firstBlockIdx + 1; idx < endBlockIdx; idx++) {
+        pWidth -= 30;
+        int bp = 0;
+        for (idx = firstBlockIdx + 1; idx <= endBlockIdx; idx++) {
             bp += blocks.get(idx).getLength();
             pWidth -= blockGap;
         }
-        pWidth -= blockGap;
-        bp += (int) (genomeEnd - blocks.get(endBlockIdx).getGenomeStart());   // Last block (partial block)
 
         if (pWidth < 10) pWidth = 10;
 
         locationScale = ((double) bp) / pWidth;
         locationScaleValid = true;
-      //  imputeZoom(origin, locus.getEnd());
+
+        imputeZoom(exomeOrigin, exomeOrigin + bp);
+
 
     }
 

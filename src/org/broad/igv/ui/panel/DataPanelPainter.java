@@ -31,7 +31,6 @@ import org.broad.igv.feature.xome.ExomeReferenceFrame;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.util.LongRunningTask;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -105,8 +104,6 @@ public class DataPanelPainter {
 
                     ReferenceFrame tmpFrame = new ReferenceFrame(frame);
                     tmpFrame.setOrigin(b.getGenomeStart(), false);
-
-                    System.out.println(b.getGenomeStart());
 
                     RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
                     paintFrame(groups, tmpContext, rect.width, rect);

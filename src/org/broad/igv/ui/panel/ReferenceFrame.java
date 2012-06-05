@@ -381,6 +381,7 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
+        IGV.getInstance().repaintStatusAndZoomSlider();
     }
 
     protected Genome getGenome() {
