@@ -205,6 +205,7 @@ public class ReferenceFrame {
         zoomBy(zoomIncrement, currentCenter);
     }
 
+
     public void zoomBy(final int zoomFactor, final double newCenter) {
 
         if (FrameManager.isGeneListMode()) {

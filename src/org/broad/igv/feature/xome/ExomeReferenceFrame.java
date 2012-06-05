@@ -7,6 +7,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.DragEventManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -21,14 +22,17 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     private static Logger log = Logger.getLogger(ExomeReferenceFrame.class);
 
     // The screen pixel gap between blocks
-    public static int blockGap = 2;
+    // public static int blockGap = 2;
 
     //List<Block> blocks;
     int firstBlockIdx;
     int endBlockIdx;
 
     int exomeOrigin;
+    int exomeEnd;
+
     int genomeEnd;
+    private int blockGap;
 
     public ExomeReferenceFrame(ReferenceFrame otherFrame) {
 
@@ -152,6 +156,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         genomeEnd = blocks.get(endBlockIdx).getGenomeEnd();
 
         // Get total base pairs traversed, in exome coordinates, and # of pixels available
+        int nBlocks = (endBlockIdx - firstBlockIdx) + 1;
+        blockGap = nBlocks < 80 ? 2 : (nBlocks < 160 ? 1 : 0);
+
         int pWidth = widthInPixels > 0 ? widthInPixels : 1000; // <= if not known guess
         pWidth -= 30;
         int bp = 0;
@@ -165,9 +172,52 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         locationScale = ((double) bp) / pWidth;
         locationScaleValid = true;
 
-        imputeZoom(exomeOrigin, exomeOrigin + bp);
+        exomeEnd = exomeOrigin + bp;
 
+        imputeZoom(exomeOrigin, exomeEnd);
+    }
 
+    @Override
+    public void zoomTo(int newZoom, double newCenter) {
+
+        // Zoom in exome coordinates.  This is approximate, we aren't accounting for gaps
+        int exomeLength = exomeEnd - exomeOrigin;
+        exomeOrigin += exomeLength / 4;
+        exomeEnd -= exomeLength / 4;
+        locationScale /= 2;
+        locationScaleValid = true;
+
+        List<Block> blocks = XomeUtils.getBlocks(chrName);
+        for (int idx = firstBlockIdx; idx < blocks.size(); idx++) {
+            if (blocks.get(idx).getExomeEnd() > exomeOrigin) {
+                firstBlockIdx = idx;
+                break;
+            }
+        }
+        Block b = blocks.get(firstBlockIdx);
+        origin = b.getGenomeStart() + (exomeOrigin - b.getExomeStart());
+
+        for (int idx = endBlockIdx; idx > firstBlockIdx; idx--) {
+            if (blocks.get(idx).getExomeStart() < exomeEnd) {
+                endBlockIdx = idx;
+                break;
+            }
+        }
+        b = blocks.get(endBlockIdx);
+        genomeEnd = b.getGenomeEnd() + (exomeEnd - b.getExomeStart());
+
+        int nBlocks = (endBlockIdx - firstBlockIdx) + 1;
+        blockGap = nBlocks < 80 ? 2 : (nBlocks < 160 ? 1 : 0);
+
+        imputeZoom(exomeOrigin, exomeEnd);
+
+        recordHistory();
+
+        IGV.getInstance().repaintDataAndHeaderPanels();
+        IGV.getInstance().repaintStatusAndZoomSlider();
+
+        // This is a hack,  this is not a drag event but is a "jump"
+        DragEventManager.getInstance().dragStopped();
     }
 
     private void findEnd(List<Block> blocks) {
@@ -188,6 +238,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
 
         exomeOrigin = firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+
+        exomeEnd = lastBlock.getExomeEnd();
+
         genomeEnd = lastBlock.getGenomeEnd();
     }
 
@@ -235,5 +288,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     public int getExomeOrigin() {
         return exomeOrigin;
+    }
+
+    public int getBlockGap() {
+        return blockGap;
     }
 }

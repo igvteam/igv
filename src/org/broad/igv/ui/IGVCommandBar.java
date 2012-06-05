@@ -939,10 +939,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
-        final Icon noTooltipIcon =
-                IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
-        final Icon tooltipIcon =
-                IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
+        final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
+        final Icon tooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
         supressTooltipButton = new JideButton(noTooltipIcon);
         //supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //supressTooltipButton.setBorder(toolButtonBorder);
@@ -968,6 +966,26 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(supressTooltipButton, JideBoxLayout.FIX);
 
+        boolean showExomeButton = Boolean.parseBoolean(System.getProperty("showExomeButton", "false"));
+        if (showExomeButton) {
+            final JideButton exomeButton = new JideButton();
+            exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
+            exomeButton.setText(FrameManager.isExomeMode() ? "Genome" : "Exome");
+            exomeButton.setToolTipText("Click to toggle between 'exome' and 'genome' views");
+            exomeButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    boolean newMode = !FrameManager.isExomeMode();
+                    FrameManager.setExomeMode(newMode);
+                    String label = newMode ? "Genome" : "Exome";
+                    exomeButton.setText(label);
+                    IGV.getInstance().resetFrames();
+                }
+            });
+            toolPanel.add(exomeButton, JideBoxLayout.FIX);
+        }
+
         this.add(toolPanel);
 
         this.add(Box.createHorizontalGlue(), JideBoxLayout.VARY);
@@ -978,7 +996,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         zoomControl.setPreferredSize(new Dimension(200, 30));
         zoomControl.setMinimumSize(new Dimension(200, 30));
         zoomControl.setMaximumSize(new Dimension(200, 30));
-        zoomControl.setToolTipText("Click + to zoom in,  - to zoom out.");
+        zoomControl.setToolTipText("Click + to zoom in,  - to zoom out");
         zoomControl.setOpaque(false);
         this.add(zoomControl, JideBoxLayout.FIX);
 

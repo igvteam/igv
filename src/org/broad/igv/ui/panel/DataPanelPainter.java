@@ -65,6 +65,8 @@ public class DataPanelPainter {
 
             if (frame.isExomeMode()) {
 
+                int blockGap = ((ExomeReferenceFrame) frame).getBlockGap();
+
                 Rectangle panelClip = visibleRect;
 
                 RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
@@ -74,44 +76,54 @@ public class DataPanelPainter {
                 int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
                 Block b;
 
+
                 int pStart;
-                int pEnd;
+                int pEnd = -1;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
                 do {
                     b = blocks.get(idx);
 
-                    pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * ExomeReferenceFrame.blockGap;
-                    pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * ExomeReferenceFrame.blockGap;
+                    pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
 
-                    b.setScreenBounds(pStart, pEnd);
+                    if (pStart >= pEnd) {
+                        // Don't draw over previously drawn region -- can happen when zoomed out.
 
-                    Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
+                        pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+
+                        if (pEnd == pStart) pEnd++;
 
 
-                    Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
-                    //Shape clip = exomeGraphics.getClip();
+                        b.setScreenBounds(pStart, pEnd);
 
-                    // Color c = ColorUtilities.randomColor(idx);
-                    // exomeGraphics.setColor(c);
-                    // exomeGraphics.fill(rect);
-                    // exomeGraphics.setColor(Color.black);
-                    // GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
+                        Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
-                    exomeGraphics.setClip(rect.intersection(panelClip));
-                    exomeGraphics.translate(pStart, 0);
-                    width = rect.width;
 
-                    ReferenceFrame tmpFrame = new ReferenceFrame(frame);
-                    tmpFrame.setOrigin(b.getGenomeStart(), false);
+                        Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
+                        //Shape clip = exomeGraphics.getClip();
 
-                    RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
-                    paintFrame(groups, tmpContext, rect.width, rect);
+                        // Color c = ColorUtilities.randomColor(idx);
+                        // exomeGraphics.setColor(c);
+                        // exomeGraphics.fill(rect);
+                        // exomeGraphics.setColor(Color.black);
+                        // GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
 
-                    tmpContext.dispose();
-                    exomeGraphics.dispose();
+                        exomeGraphics.setClip(rect.intersection(panelClip));
+                        exomeGraphics.translate(pStart, 0);
+                        width = rect.width;
+
+                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
+                        tmpFrame.setOrigin(b.getGenomeStart(), false);
+
+                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+                        paintFrame(groups, tmpContext, rect.width, rect);
+
+                        tmpContext.dispose();
+                        exomeGraphics.dispose();
+                        visibleBlockCount++;
+                    }
                     idx++;
-                    visibleBlockCount++;
+
 
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
