@@ -12,6 +12,8 @@
 package org.broad.igv.dev.db;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.broad.igv.util.ResourceLocator;
@@ -47,7 +49,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
         String table = "unigene";
 
 
-        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", "chromEnd", 1);
+        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
         Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = host + "/bed/Unigene.sample.bed";
@@ -121,6 +123,22 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
     @Test
     public void testLoadUCSCFromProfilePSL() throws Exception {
         tstLoadFromProfile(profilePath, "all_mrna");
+    }
+
+    @Test
+    public void testLoadUCSCFromProfileSNP() throws Exception {
+        SQLCodecSource source = tstLoadFromProfile(profilePath, "snp135");
+        Iterator<Feature> feats = source.getFeatures("chr2", 10000, 100000);
+        int count = 0;
+        while(feats.hasNext()){
+            BasicFeature f = (BasicFeature) feats.next();
+            assertEquals(0.0f, f.getScore());
+            assertFalse(f.hasExons());
+            assertNotSame(Strand.NONE, f.getStrand());
+            count++;
+        }
+
+        assertTrue(count > 0);
     }
 
     public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {

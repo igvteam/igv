@@ -87,6 +87,12 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * the first data column.
      */
     protected int startColIndex = 1;
+
+    /**
+     * Maximum column number to read, by default is Integer.MAX_VALUE
+     * Columns beyond this are ignored. Inclusive.
+     */
+    protected int endColIndex = Integer.MAX_VALUE;
     private int featureWindowSize = (int) 1e6;
 
     private static final int MAX_BINS = 20;
@@ -97,12 +103,13 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     }
 
     public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table,
-                          String chromoColName, String posStartColName, String posEndColName, int startColIndex) {
+                          String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex) {
         this(locator, codec, table);
         this.chromoColName = chromoColName;
         this.posStartColName = posStartColName;
         this.posEndColName = posEndColName;
         this.startColIndex = startColIndex;
+        this.endColIndex = endColIndex;
     }
 
     /**
@@ -133,10 +140,12 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
                     String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
                     String format = attr.getNamedItem("format").getTextContent();
                     String startColString = Utilities.getNullSafe(attr, "startColIndex");
+                    String endColString = Utilities.getNullSafe(attr, "endColIndex");
                     String binColName = Utilities.getNullSafe(attr, "binColName");
                     int startColIndex = startColString != null ? Integer.parseInt(startColString) : 1;
+                    int endColIndex = endColString != null ? Integer.parseInt(endColString) : Integer.MAX_VALUE;
                     FeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
-                    SQLCodecSource source = new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posStartColName, posEndColName, startColIndex);
+                    SQLCodecSource source = new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posStartColName, posEndColName, startColIndex, endColIndex);
                     source.binColName = binColName;
                     sources.add(source);
                 }
@@ -173,7 +182,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * @throws SQLException
      */
     protected String[] lineToArray(ResultSet rs) throws SQLException {
-        int colCount = rs.getMetaData().getColumnCount() - startColIndex + 1;
+        int colCount = Math.min(rs.getMetaData().getColumnCount(), endColIndex) - startColIndex + 1;
         String[] tokens = new String[colCount];
         String s;
         int sqlCol;
