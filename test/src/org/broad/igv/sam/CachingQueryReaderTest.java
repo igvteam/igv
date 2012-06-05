@@ -23,9 +23,8 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.*;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
@@ -444,7 +443,7 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
     /**
      * Test that our live sample gives a uniform distribution
      */
-    @Test(timeout = (int) 60e3)
+    @Ignore
     public void testLiveSample() throws Exception {
         int totalLength = (int) 1e4;
         //Store the number of times each index is sampled

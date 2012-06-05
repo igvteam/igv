@@ -59,7 +59,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     private static final int MAX_LINES_CHECK = 200;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 1e3*60*60);
+    public TestRule testTimeout = new Timeout((int) 1e3 * 60 * 20);
 
     @Before
     public void setUp() throws Exception {
