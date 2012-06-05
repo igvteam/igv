@@ -1223,6 +1223,13 @@ public class AlignmentTrack extends AbstractTrack implements
 				dialogLocation = dialog.getLocation();
 				dialog.dispose();
 				selectFilters(selectedTracks);
+			}  else if (e.getActionCommand().startsWith("Tag")) {
+				newAlnFilter = new AlignmentFilter();
+				clonedFilter.add(newAlnFilter);
+				dialogBounds = dialog.getBounds();
+				dialogLocation = dialog.getLocation();
+				dialog.dispose();
+				selectFilters(selectedTracks);
 			} else if (e.getActionCommand().startsWith("up")) {
 				JButton jrb = (JButton) e.getSource();
 				String id = jrb.getName();

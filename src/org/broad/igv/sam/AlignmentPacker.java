@@ -147,9 +147,14 @@ public class AlignmentPacker {
         Alignment firstAlignment = iter.next();
         
         //in case the first alignment is filtered out...
-        while (firstAlignment.filteredOut(/*renderOptions.alnFilter*/)){
+        while (firstAlignment.filteredOut(renderOptions.alnFilter)){
+        	if (!iter.hasNext()) {
+                return;
+            }
         	firstAlignment = iter.next();
+        	
         }
+        
         if (pairAlignments && firstAlignment.isPaired() && firstAlignment.isProperPair() && firstAlignment.getMate().isMapped()) {
             String readName = firstAlignment.getReadName();
             PairedAlignment pair = new PairedAlignment(firstAlignment);

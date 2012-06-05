@@ -161,7 +161,7 @@ public class AlignmentFilter {
 			Matcher matcher = regExpr.matcher(attr);
 			match = matcher.matches();
 		} else if (Operation.equals("does not contain")) {
-			if (attr.contains(expression)) {
+			if (!attr.contains(expression)) {
 				match = true;
 			}
 		} else if (Operation.equals("is missing")) {
@@ -179,13 +179,13 @@ public class AlignmentFilter {
 
 	public boolean filter(Double attr) {
 		if (Operation.equals("is greater than")) {
-			return Double.parseDouble(expression) > attr;
-		} else if (Operation.equals("is less than")) {
 			return Double.parseDouble(expression) < attr;
+		} else if (Operation.equals("is less than")) {
+			return Double.parseDouble(expression) > attr;
 		} else if (Operation.equals("is greater than or equal to")) {
-			return Double.parseDouble(expression) >= attr;
-		} else if (Operation.equals("is less than or equal to")) {
 			return Double.parseDouble(expression) <= attr;
+		} else if (Operation.equals("is less than or equal to")) {
+			return Double.parseDouble(expression) >= attr;
 		} else {
 			return filter(attr.toString());
 		}

@@ -148,7 +148,12 @@ public class AlignmentFilterComponent extends JPanel {
 				  }
 
 				  public void warn() {
-				     alf.setTag(tagValue.getText());
+					 if(tagValue.getText().length()!=2){
+						 JButton error = new JButton("Error");
+						 System.err.println("Tag is not of length 2");
+					 }else{
+						 alf.setTag(tagValue.getText());
+					 }
 				  }
 				
 				});
