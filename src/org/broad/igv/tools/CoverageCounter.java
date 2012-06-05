@@ -472,9 +472,7 @@ public class CoverageCounter {
 
         private Counter getCounter(int idx) {
             if (!counts.containsKey(idx)) {
-                int counterStartPosition = idx * windowSize;
-                int counterEndPosition = counterStartPosition + windowSize;
-                counts.put(idx, new Counter(chr, counterStartPosition, counterEndPosition));
+                counts.put(idx, new Counter());
             }
             final Counter counter = counts.get(idx);
             return counter;
@@ -572,13 +570,13 @@ public class CoverageCounter {
          * The total number of counts on this Counter. Will
          * be the sum of baseCount over the second index.
          */
-        int[] strandCount = new int[NUM_STRANDS];
+        int[] strandCount;
         int totalCount = 0;
-        int qualityCount = 0;
+        //int qualityCount = 0;
 
-        String chr;
-        int start;
-        int end;
+        //String chr;
+        //int start;
+        //int end;
         //byte[] ref;
         /**
          * The number of times a particular base has been encountered (ie # of reads of that base)
@@ -587,16 +585,20 @@ public class CoverageCounter {
 
         private Map<Byte, Integer>[] baseTypeCounts;
 
-        Counter(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
+        Counter() {
+            //this.chr = chr;
+            //this.start = start;
+            //this.end = end;
 
             if (outputBases) {
                 baseTypeCounts = new HashMap[NUM_STRANDS];
                 for (int ii = 0; ii < NUM_STRANDS; ii++) {
                     baseTypeCounts[ii] = new HashMap<Byte, Integer>();
                 }
+            }
+
+            if(outputSeparate){
+                 strandCount = new int[NUM_STRANDS];
             }
         }
 
@@ -605,15 +607,22 @@ public class CoverageCounter {
             return strandCount[strand];
         }
 
+        public int getTotalCounts() {
+            return totalCount;
+        }
+
         void increment(byte base, byte quality, int strand) {
 
             if (outputBases) {
                 incrementNucleotide(base, strand);
             }
 
-            this.strandCount[strand]++;
+            if(outputSeparate){
+                this.strandCount[strand]++;
+            }
+
             this.totalCount++;
-            this.qualityCount += quality;
+            //this.qualityCount += quality;
         }
 
         /**
@@ -635,11 +644,6 @@ public class CoverageCounter {
                 orig = btc.get(base);
             }
             btc.put(base, orig + 1);
-        }
-
-
-        public int getTotalCounts() {
-            return this.totalCount;
         }
 
         public int getBaseCount(byte base, int strand) {

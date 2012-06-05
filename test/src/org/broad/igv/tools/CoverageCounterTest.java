@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
 
 
 public class CoverageCounterTest extends AbstractHeadlessTest {
@@ -48,7 +48,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         String queryString = "1:16731624-16731624";
         int minMapQuality = 30;
         File wigFile = new File(TestUtils.DATA_DIR + "out/testMapQual.wig");
-        Genome genome = TestUtils.loadGenome();
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
@@ -60,6 +59,39 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         String totalCount = dc.attributes.get("totalCount");
 
         assertEquals("19", totalCount);
+    }
+
+    @Test
+    public void testPairFlag() throws Exception{
+        String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
+        String queryString = "2:1000-1100";
+        File wigFile = new File(TestUtils.DATA_DIR + "out/testPair.wig");
+        int windowSize = 1;
+
+        TestDataConsumer dc = new TestDataConsumer();
+
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, 0, CoverageCounter.PAIRED_COVERAGE);
+
+        cc.parse();
+
+        //Have manually checked these regions and verified that there is 1 pair
+        //in the 1000-1100 region, and 4 at location 851
+        //with
+        for(TestData td: dc.testDatas){
+            assertEquals(1.0f, td.data[0]);
+        }
+
+
+        queryString = "2:851";
+        dc = new TestDataConsumer();
+
+        cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, 0, CoverageCounter.PAIRED_COVERAGE);
+
+        cc.parse();
+
+        for(TestData td: dc.testDatas){
+            assertEquals(4.0f, td.data[0]);
+        }
 
     }
 
@@ -75,8 +107,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         int windowSize = 25;
 
         File wigFile = null;
-        Genome genome = this.genome;
-
 
         int[] countFlags = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR,
                 CoverageCounter.BASES,
@@ -107,7 +137,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         int[] windowSizes = new int[]{10, 50, 101, 500, 999};
 
         File wigFile = null;//new File(TestUtils.DATA_DIR + "out", "testStrandsConsistent.wig");
-        Genome genome = this.genome;
         //Test that when we run the process twice, with separate and totalled strands, the results add
         //up properly
         int[] strandOptions = new int[]{0, CoverageCounter.STRANDS_BY_READ, CoverageCounter.STRANDS_BY_FIRST_IN_PAIR, CoverageCounter.BASES};
@@ -149,7 +178,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         int expected_cols = 10;
 
         File wigFile = new File(TestUtils.DATA_DIR + "out", "testCountBases.wig");
-        Genome genome = this.genome;
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
@@ -190,7 +218,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-    @Test
+
     public void testColumnCounts() throws Exception {
         String ifile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam";
 
