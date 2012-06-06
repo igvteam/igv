@@ -880,11 +880,13 @@ public class FilterGeneNetworkUI extends JDialog {
                         return null;
                     }
                     String val = GeneNetwork.getNodeKeyData(n, key);
-                    if ("nan".equalsIgnoreCase(val)) {
+                    if ("nan".equalsIgnoreCase(val) || val == null) {
                         return null;
                     }
+
                     //Change from fraction to percent
                     double dPerc = Double.parseDouble(val) * 100;
+
                     if (dPerc == 0.0d) return "0.0";
                     //If above 1, just show integer. If small, show in exponential format
                     String fmt = "%2.1f";
