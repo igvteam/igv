@@ -238,10 +238,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         PreparedStatement statement = queryStatement;
         Set<Integer> bins = calculateBins(start, end);
         //System.out.println("number of bins: " + bins.size());
-        if(bins.size() > MAX_BINS){
-            System.out.println("Too many possible bins, not using bin optimization");
-            statement = queryStatement;
-        }else{
+        if(bins.size() < MAX_BINS && binnedQueryStatement != null){
             statement = binnedQueryStatement;
         }
 
