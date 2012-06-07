@@ -74,6 +74,12 @@ public class FilterGeneNetworkUI extends JDialog {
     private static List<String> columnNames;
     private static Map<Integer, String> columnNumToKeyMap;
 
+    public static String keyToLabel(String key){
+        String label = key.replace('_', ' ');
+        label = label.replace("PERCENT", "%");
+        return label;
+    }
+
     static {
         String[] firstLabels = {"Gene label", "Interactions"};
         columnNumToKeyMap = new HashMap<Integer, String>(GeneNetwork.attributeMap.size());
@@ -82,13 +88,11 @@ public class FilterGeneNetworkUI extends JDialog {
             columnNames.add(label);
         }
         int ind = columnNames.size();
-        for (String label : GeneNetwork.attributeMap.keySet()) {
-            columnNumToKeyMap.put(ind, label);
+        for (String key : GeneNetwork.attributeMap.keySet()) {
+            columnNumToKeyMap.put(ind, key);
             ind++;
 
-            label = label.replace('_', ' ');
-            label = label.replace("PERCENT", "%");
-            columnNames.add(label);
+            columnNames.add(keyToLabel(key));
 
         }
 

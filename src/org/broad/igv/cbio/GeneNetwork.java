@@ -80,7 +80,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     private Document origDocument;
 
 
-    static Map<String, RegionScoreType> attributeMap = new HashMap();
+    static Map<String, RegionScoreType> attributeMap = new LinkedHashMap();
 
     /**
      * For each score type, we are only interested in the fraction of samples which are

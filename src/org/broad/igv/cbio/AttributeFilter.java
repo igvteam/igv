@@ -27,6 +27,14 @@ public class AttributeFilter {
         initComponents();
         attrName.setModel(new DefaultComboBoxModel(GeneNetwork.attributeMap.keySet().toArray()));
         attrName.addItem(GeneNetwork.PERCENT_ALTERED);
+        attrName.setRenderer(new ListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String label = FilterGeneNetworkUI.keyToLabel(" " + value);
+                JLabel comp = new JLabel(label);
+                return comp;
+            }
+        });
     }
 
     JPanel getPanel() {
