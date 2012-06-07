@@ -718,6 +718,26 @@
                 <void method="add"> 
                  <object class="com.jformdesigner.model.FormComponent"> 
                   <string>javax.swing.JList</string> 
+                  <void method="setProperty"> 
+                   <string>selectionMode</string> 
+                   <int>0</int> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>selectionBackground</string> 
+                   <object class="javax.swing.plaf.ColorUIResource"> 
+                    <int>255</int> 
+                    <int>255</int> 
+                    <int>255</int> 
+                   </object> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>selectionForeground</string> 
+                   <object class="java.awt.Color" field="black"/> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>focusable</string> 
+                   <boolean>false</boolean> 
+                  </void> 
                   <void property="name"> 
                    <string>lociJList</string> 
                   </void> 
@@ -827,7 +847,7 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Load</string> 
+             <string>View</string> 
             </void> 
             <void method="setProperty"> 
              <string>enabled</string> 

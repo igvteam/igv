@@ -15,6 +15,7 @@
 
 package org.broad.igv.lists;
 
+import javax.swing.plaf.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
@@ -415,7 +416,6 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
-
     class GeneListModel extends AbstractListModel {
 
         java.util.List<String> genes;
@@ -731,6 +731,12 @@ public class GeneListManagerUI extends JDialog {
 
                         //======== scrollPane3 ========
                         {
+
+                            //---- lociJList ----
+                            lociJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                            lociJList.setSelectionBackground(Color.white);
+                            lociJList.setSelectionForeground(Color.black);
+                            lociJList.setFocusable(false);
                             scrollPane3.setViewportView(lociJList);
                         }
                         panel5.add(scrollPane3, BorderLayout.CENTER);
@@ -764,7 +770,7 @@ public class GeneListManagerUI extends JDialog {
                 buttonBar.add(viewNetworkButton);
 
                 //---- loadButton ----
-                loadButton.setText("Load");
+                loadButton.setText("View");
                 loadButton.setEnabled(false);
                 loadButton.addActionListener(new ActionListener() {
                     @Override
@@ -831,4 +837,5 @@ public class GeneListManagerUI extends JDialog {
     private JButton loadButton;
     private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
 }
