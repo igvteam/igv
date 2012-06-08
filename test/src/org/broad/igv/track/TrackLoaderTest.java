@@ -30,9 +30,7 @@ import org.junit.rules.Timeout;
 import java.io.File;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 
 /**
@@ -195,7 +193,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testWigAndBigWig() throws Exception{
+    public void testWigAndBigWig() throws Exception {
         String wigPath = TestUtils.DATA_DIR + "wig/test_fixedStep.wig";
         String bigWigPath = TestUtils.DATA_DIR + "wig/test_fixedStep.bigwig";
         List<Track> wigtracks = tstLoadFi(wigPath, 1, false);
@@ -211,13 +209,13 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
         int trials = 10;
 
-        for(int ii=0; ii < trials; ii++){
+        for (int ii = 0; ii < trials; ii++) {
             int strt = start + ii;
             List<LocusScore> wigScores = wigTrack.getSummaryScores(chr, strt, end, zoom);
             List<LocusScore> bigWigScores = bigWigTrack.getSummaryScores(chr, strt, end, zoom);
             assertEquals(wigScores.size(), bigWigScores.size());
             int ind = 0;
-            for(LocusScore ws: wigScores){
+            for (LocusScore ws : wigScores) {
                 LocusScore bws = bigWigScores.get(ind);
                 assertEquals(ws.getScore(), bws.getScore());
                 ind++;
@@ -227,7 +225,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testBedAndBigBed() throws Exception{
+    public void testBedAndBigBed() throws Exception {
         String bedPath = TestUtils.DATA_DIR + "bed/Unigene.sample.nolong.bed";
         String bigBedPath = TestUtils.DATA_DIR + "bed/Unigene.sample.nolong.bigbed";
 
@@ -250,11 +248,11 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         //Multiple trials because we're concerned about file open/close issues
         int trials = 10;
 
-        for(int ii=0; ii < trials; ii++){
+        for (int ii = 0; ii < trials; ii++) {
             int strt = start + ii;
             List<Feature> bedFeatures = bedTrack.getFeatures(chr, strt, end);
             List<Feature> bigBedFeatures = bigBedTrack.getFeatures(chr, strt, end);
-            TestUtils.assertFeatureListsEqual(bedFeatures, bigBedFeatures);
+            TestUtils.assertFeatureListsEqual(bedFeatures.iterator(), bigBedFeatures.iterator());
 
             //NOT FOOLPROOF
             assertTrue(bigBedFile.canWrite());

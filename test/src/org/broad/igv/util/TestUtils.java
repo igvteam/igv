@@ -21,11 +21,13 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 
-import java.util.List;
-import java.io.*;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author jrobinso
@@ -126,11 +128,12 @@ public class TestUtils {
     /**
      * Returns either 1 or 2, representing the number of
      * bytes used to end a line. Reads only from first line of a file
+     *
      * @param filePath
      * @return
      * @throws IOException
      */
-    public static int getBytesAtEnd(String filePath) throws IOException{
+    public static int getBytesAtEnd(String filePath) throws IOException {
         InputStream is = new FileInputStream(filePath);
         AsciiLineReader reader = new AsciiLineReader(is);
         String line = reader.readLine();
@@ -145,19 +148,20 @@ public class TestUtils {
     /**
      * Check that the features are all the same. Checks size of list, chr, start, and end of
      * each feature
+     *
      * @param expected
-     * @param actual
+     * @param actIter
      * @throws AssertionError
      */
-    public static void assertFeatureListsEqual(List<Feature> expected, List<Feature> actual) throws AssertionError{
-        assertEquals("Feature lists have unequal sizes", expected.size(), actual.size());
-        int ind = 0;
-        for(Feature exp: expected){
-            Feature act = actual.get(ind);
+    public static void assertFeatureListsEqual(Iterator<Feature> expected, Iterator<Feature> actIter) throws AssertionError {
+        while (expected.hasNext()) {
+            Feature exp = expected.next();
+            assertTrue(actIter.hasNext());
+            Feature act = actIter.next();
             assertEquals(exp.getChr(), act.getChr());
             assertEquals(exp.getStart(), act.getStart());
             assertEquals(exp.getEnd(), act.getEnd());
-            ind++;
         }
+        assertFalse(actIter.hasNext());
     }
 }
