@@ -80,7 +80,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     private Document origDocument;
 
 
-    static Map<String, RegionScoreType> attributeMap = new HashMap();
+    static Map<String, RegionScoreType> attributeMap = new LinkedHashMap();
 
     /**
      * For each score type, we are only interested in the fraction of samples which are
@@ -659,9 +659,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      * <p/>
      *
      * @param tracks
-     * @param node_attributes
+     * @param nodeAttributes
      */
-    public void annotate(List<Track> tracks, Collection<String> node_attributes) {
+    public void annotate(List<Track> tracks, Collection<String> nodeAttributes) {
 
         Set<Node> nodes = this.vertexSet();
         String name;
@@ -669,22 +669,15 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         for (Node node : nodes) {
             name = getNodeKeyData(node, LABEL);
 
-            ScoreData data = this.collectScoreData(name, tracks, node_attributes);
+            ScoreData data = this.collectScoreData(name, tracks, nodeAttributes);
 
-            //If we don't have any data to look at
-            if (data != null) {
-                //System.out.println("name: " + name + " total: " + data.getAvgScore() + " altered: " + data.getPercentAltered());
-            } else {
-                //System.out.println("name: " + name + " no data");
-                continue;
-            }
-
+            //Don't add annotation if gene has no alteration?
             float relData = data.getPercentAltered();
             if (relData == 0 && !Globals.isTesting()) {
                 continue;
             }
 
-            for (String attr : node_attributes) {
+            for (String attr : nodeAttributes) {
                 Element newData = node.getOwnerDocument().createElement("data");
                 newData.setAttribute(KEY, attr);
                 newData.setTextContent("" + data.get(attr));
@@ -700,7 +693,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         }
 
         addSchema(Arrays.asList(PERCENT_ALTERED), "float", "node");
-        addSchema(node_attributes, "float", "node");
+        addSchema(nodeAttributes, "float", "node");
     }
 
     public ScoreData collectScoreData(String name, List<Track> tracks, Iterable<String> attributes) {

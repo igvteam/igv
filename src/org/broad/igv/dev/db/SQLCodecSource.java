@@ -30,13 +30,9 @@ import org.w3c.dom.NodeList;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
+
 
 /**
  * Class for reading data from SQL database, where the lines
@@ -50,11 +46,14 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     private static Logger log = Logger.getLogger(SQLCodecSource.class);
 
     public static String UCSC_CHROMO_COL = "chrom";
-    public static String UCSC_POS_COL = "txStart";
+    public static String UCSC_START_COL = "txStart";
+    public static String UCSC_END_COL = "txEnd";
+
 
     protected FeatureCodec codec;
 
     protected PreparedStatement queryStatement;
+    protected PreparedStatement binnedQueryStatement;
 
     /**
      * The name of the column with chromosome names
@@ -65,7 +64,21 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * The name of the column of positions that we query over.
      * Default is correct value for UCSC genes
      */
-    protected String posColName = UCSC_POS_COL;
+    protected String posStartColName = UCSC_START_COL;
+
+
+    /**
+     * Name of the column which contains
+     * the end location
+     */
+    protected String posEndColName = UCSC_END_COL;
+
+    /**
+     * Some databases use a "bin" column to speed up queries.
+     * See http://genomewiki.ucsc.edu/index.php/Bin_indexing_system
+     * or doi: 10.1101/gr.229102 Genome Res. 2002. 12: 996-1006
+     */
+    protected String binColName;
 
     /**
      * We start reading data from this column, by default is 1 (SQL indexes from 1)
@@ -74,18 +87,29 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * the first data column.
      */
     protected int startColIndex = 1;
+
+    /**
+     * Maximum column number to read, by default is Integer.MAX_VALUE
+     * Columns beyond this are ignored. Inclusive.
+     */
+    protected int endColIndex = Integer.MAX_VALUE;
     private int featureWindowSize = (int) 1e6;
+
+    private static final int MAX_BINS = 20;
 
     public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table) {
         super(locator, table);
         this.codec = codec;
     }
 
-    public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table, String chromoColName, String posColName, int startColIndex) {
+    public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table,
+                          String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex) {
         this(locator, codec, table);
         this.chromoColName = chromoColName;
-        this.posColName = posColName;
+        this.posStartColName = posStartColName;
+        this.posEndColName = posEndColName;
         this.startColIndex = startColIndex;
+        this.endColIndex = endColIndex;
     }
 
     /**
@@ -112,12 +136,18 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
                 if (tableName == null || tableName.equals(tabName)) {
 
                     String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
-                    String posColName = attr.getNamedItem("posColName").getTextContent();
+                    String posStartColName = attr.getNamedItem("posStartColName").getTextContent();
+                    String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
                     String format = attr.getNamedItem("format").getTextContent();
                     String startColString = Utilities.getNullSafe(attr, "startColIndex");
+                    String endColString = Utilities.getNullSafe(attr, "endColIndex");
+                    String binColName = Utilities.getNullSafe(attr, "binColName");
                     int startColIndex = startColString != null ? Integer.parseInt(startColString) : 1;
+                    int endColIndex = endColString != null ? Integer.parseInt(endColString) : Integer.MAX_VALUE;
                     FeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
-                    sources.add(new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posColName, startColIndex));
+                    SQLCodecSource source = new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posStartColName, posEndColName, startColIndex, endColIndex);
+                    source.binColName = binColName;
+                    sources.add(source);
                 }
             }
 
@@ -152,7 +182,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * @throws SQLException
      */
     protected String[] lineToArray(ResultSet rs) throws SQLException {
-        int colCount = rs.getMetaData().getColumnCount() - startColIndex + 1;
+        int colCount = Math.min(rs.getMetaData().getColumnCount(), endColIndex) - startColIndex + 1;
         String[] tokens = new String[colCount];
         String s;
         int sqlCol;
@@ -182,10 +212,20 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         if (queryStatement != null) {
             return;
         }
-        String queryString = String.format("%s WHERE %s = ? AND %s >= ? AND %s < ?",
-                baseQueryString, chromoColName, posColName, posColName);
+        //Include feature iff = (feature.start >= start AND feature.start < end)
+        //OR (feature.start < start AND feature.end >= start);
+        String queryString = String.format("%s WHERE %s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?))",
+                baseQueryString, chromoColName, posStartColName, posStartColName, posStartColName, posEndColName);
+
         try {
             queryStatement = DBManager.getConnection(locator).prepareStatement(queryString);
+
+            if(binColName != null){
+                String[] qs = new String[MAX_BINS];
+                Arrays.fill(qs, "?");
+                String binnedQueryString = queryString + String.format(" AND %s IN (%s)", binColName, StringUtils.join(qs, ','));
+                binnedQueryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
+            }
         } catch (SQLException e) {
             log.error(e);
             throw new IOException(e);
@@ -195,17 +235,119 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
         initQueryStatement();
+        PreparedStatement statement = queryStatement;
+        Set<Integer> bins = calculateBins(start, end);
+        //System.out.println("number of bins: " + bins.size());
+        if(bins.size() < MAX_BINS && binnedQueryStatement != null){
+            statement = binnedQueryStatement;
+        }
+
         try {
-            queryStatement.clearParameters();
-            queryStatement.setString(1, chr);
-            queryStatement.setInt(2, start);
-            queryStatement.setInt(3, end);
+            statement.clearParameters();
+            statement.setString(1, chr);
+            statement.setInt(3, end);
+            int[] cols = new int[]{2, 4, 5};
+            for(Integer cc: cols){
+                statement.setInt(cc, start);
+            }
+
+            if (statement == binnedQueryStatement) {
+                int qnum = 6;
+                for (Integer bin : bins) {
+                    statement.setInt(qnum, bin);
+                    qnum++;
+                }
+
+                for (; qnum <= statement.getParameterMetaData().getParameterCount(); qnum++) {
+                    statement.setNull(qnum, Types.INTEGER);
+                }
+            }
+
         } catch (SQLException e) {
             log.error(e);
             throw new IOException(e);
         }
-        return loadIterator(queryStatement);
+
+        return loadIterator(statement);
     }
+
+
+    private static final int SMALLEST_BIN_SIZE = 128*1024;
+
+    private Set<Integer> calculateBins(int start, int end) {
+        int length = end - start;
+        int sweepLength = SMALLEST_BIN_SIZE;
+        Set<Integer> bins = new HashSet<Integer>(2*(length) / SMALLEST_BIN_SIZE);
+
+        while(sweepLength < BINRANGE_MAXEND_512M){
+            int tstStart = Math.max(start - sweepLength/2, 0);
+            while(tstStart < end){
+                bins.add(binFromRange(tstStart, tstStart += sweepLength));
+            }
+            sweepLength *= 2;
+        }
+        bins.add(binFromRange(start, end));
+
+        return bins;
+    }
+
+    private static final int BINRANGE_MAXEND_512M = 512*1024*1024;
+    private static final int _binOffsetOldToExtended = 4681;
+
+    /**
+     * From http://genomewiki.ucsc.edu/index.php/Bin_indexing_system
+     */
+    public static int binFromRange(int start, int end) {
+
+        if(start < 0 || end < 0){
+            throw new IllegalArgumentException("start "+start+", end "+ end + " must be > 0");
+        }
+
+        boolean extended = false;
+        if(end > BINRANGE_MAXEND_512M){
+            extended = true;
+        }
+
+        final int binOffsetsExtended[] ={
+               4096 + 512 + 64 + 8 + 1,
+                      512 + 64 + 8 + 1,
+                            64 + 8 + 1,
+                                 8 + 1,
+                                     1,
+                                     0};
+
+        int[] binOffsets = Arrays.copyOfRange(binOffsetsExtended,
+                extended ? 0 : 1, binOffsetsExtended.length);
+
+
+        /** How much to shift to get to first bin. */
+        final int _binFirstShift = 17;
+        /** How much to shift to get to next larger bin.*/
+        final int _binNextShift = 3;
+
+        int startBin = start;
+        int endBin = end - 1;
+
+        startBin >>= _binFirstShift;
+        endBin >>= _binFirstShift;
+        int bin = -1;
+
+        for (int binOffset : binOffsets) {
+
+            if (startBin == endBin) {
+                bin= binOffset + startBin;
+                if(extended){
+                    bin += _binOffsetOldToExtended;
+                }
+                break;
+            }
+            startBin >>= _binNextShift;
+            endBin >>= _binNextShift;
+        }
+
+        return bin;
+    }
+
 
     CloseableTribbleIterator iterator() throws IOException {
         String queryString = String.format("%s LIMIT %s", baseQueryString, featureWindowSize);

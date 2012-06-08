@@ -29,6 +29,7 @@ import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
@@ -56,7 +57,11 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private Logger log = Logger.getLogger(FilterGeneNetworkUI.class);
 
-    private static final int MAX_GENES_JUSTSHOW = 20;
+    /*
+    If we would like to skip showing filter dialog for a small number of genes
+    Set to -1 for now, should never skip
+    */
+    private static final int MAX_GENES_JUSTSHOW = -1;
 
     private GeneList geneList;
     private List<AttributeFilter> filterRows = new ArrayList<AttributeFilter>(1);
@@ -69,6 +74,12 @@ public class FilterGeneNetworkUI extends JDialog {
     private static List<String> columnNames;
     private static Map<Integer, String> columnNumToKeyMap;
 
+    public static String keyToLabel(String key){
+        String label = key.replace('_', ' ');
+        label = label.replace("PERCENT", "%");
+        return label;
+    }
+
     static {
         String[] firstLabels = {"Gene label", "Interactions"};
         columnNumToKeyMap = new HashMap<Integer, String>(GeneNetwork.attributeMap.size());
@@ -77,13 +88,11 @@ public class FilterGeneNetworkUI extends JDialog {
             columnNames.add(label);
         }
         int ind = columnNames.size();
-        for (String label : GeneNetwork.attributeMap.keySet()) {
-            columnNumToKeyMap.put(ind, label);
+        for (String key : GeneNetwork.attributeMap.keySet()) {
+            columnNumToKeyMap.put(ind, key);
             ind++;
 
-            label = label.replace('_', ' ');
-            label = label.replace("PERCENT", "%");
-            columnNames.add(label);
+            columnNames.add(keyToLabel(key));
 
         }
 
@@ -100,12 +109,9 @@ public class FilterGeneNetworkUI extends JDialog {
             loadcBioData(this.geneList.getLoci());
 
         } else {
-            //Just retrieved network; if
-            //there are only a small number of genes
-            //we skip to it
-            if(network.vertexSet().size() < MAX_GENES_JUSTSHOW){
+            if (network.vertexSet().size() < MAX_GENES_JUSTSHOW) {
                 showNetwork();
-            }else{
+            } else {
                 super.setVisible(visible);
             }
         }
@@ -381,10 +387,10 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private void saveButtonActionPerformed(ActionEvent e) {
         File outPath = FileDialogUtils.chooseFile("Save table to...", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
-        if(outPath != null){
-            try{
+        if (outPath != null) {
+            try {
                 saveTable(outPath);
-            }catch(FileNotFoundException exc){
+            } catch (FileNotFoundException exc) {
                 MessageUtils.showMessage(exc.getMessage());
             }
         }
@@ -415,18 +421,22 @@ public class FilterGeneNetworkUI extends JDialog {
         saveButton = new JButton();
         thresholds = new JPanel();
         contentPanel = new JPanel();
-        label1 = new JLabel();
-        mutInput = new JTextField();
         label2 = new JLabel();
-        ampInput = new JTextField();
         label3 = new JLabel();
         delInput = new JTextField();
         label4 = new JLabel();
         expUpInput = new JTextField();
         label7 = new JLabel();
         expDownInput = new JTextField();
+        ampInput = new JTextField();
+        label1 = new JLabel();
+        mutInput = new JTextField();
+        label6 = new JLabel();
+        label8 = new JLabel();
+        separator1 = new JSeparator();
+        separator3 = new JSeparator();
         panel2 = new JPanel();
-        label5 = new JLabel();
+        textArea1 = new JTextArea();
 
         //======== this ========
         setMinimumSize(new Dimension(600, 22));
@@ -611,53 +621,32 @@ public class FilterGeneNetworkUI extends JDialog {
 
             //======== thresholds ========
             {
-                thresholds.setBorder(new EmptyBorder(12, 12, 12, 12));
                 thresholds.setPreferredSize(new Dimension(550, 196));
                 thresholds.setMinimumSize(new Dimension(550, 196));
                 thresholds.setLayout(null);
 
                 //======== contentPanel ========
                 {
+                    contentPanel.setBorder(new EtchedBorder());
                     contentPanel.setLayout(null);
-
-                    //---- label1 ----
-                    label1.setText("Mutation:");
-                    label1.setHorizontalAlignment(SwingConstants.RIGHT);
-                    label1.setLabelFor(mutInput);
-                    label1.setToolTipText("Minimum number of mutations found");
-                    contentPanel.add(label1);
-                    label1.setBounds(new Rectangle(new Point(50, 30), label1.getPreferredSize()));
-
-                    //---- mutInput ----
-                    mutInput.setText("1");
-                    mutInput.setAutoscrolls(false);
-                    mutInput.setMinimumSize(new Dimension(34, 28));
-                    mutInput.setPreferredSize(new Dimension(45, 28));
-                    contentPanel.add(mutInput);
-                    mutInput.setBounds(new Rectangle(new Point(130, 25), mutInput.getPreferredSize()));
 
                     //---- label2 ----
                     label2.setText("Amplification:");
                     label2.setHorizontalAlignment(SwingConstants.RIGHT);
                     label2.setLabelFor(ampInput);
                     label2.setToolTipText("Amplification score, on a log-normalized scale");
+                    label2.setPreferredSize(new Dimension(90, 18));
                     contentPanel.add(label2);
-                    label2.setBounds(new Rectangle(new Point(25, 75), label2.getPreferredSize()));
-
-                    //---- ampInput ----
-                    ampInput.setText("0.7");
-                    ampInput.setMinimumSize(new Dimension(34, 28));
-                    ampInput.setPreferredSize(new Dimension(45, 28));
-                    contentPanel.add(ampInput);
-                    ampInput.setBounds(new Rectangle(new Point(130, 70), ampInput.getPreferredSize()));
+                    label2.setBounds(140, 96, label2.getPreferredSize().width, 18);
 
                     //---- label3 ----
                     label3.setText("Deletion:");
                     label3.setHorizontalAlignment(SwingConstants.RIGHT);
                     label3.setLabelFor(delInput);
                     label3.setToolTipText("Deletion score, on a log-normalized scale");
+                    label3.setPreferredSize(new Dimension(60, 16));
                     contentPanel.add(label3);
-                    label3.setBounds(new Rectangle(new Point(55, 125), label3.getPreferredSize()));
+                    label3.setBounds(360, 96, label3.getPreferredSize().width, 18);
 
                     //---- delInput ----
                     delInput.setText("0.7");
@@ -665,30 +654,32 @@ public class FilterGeneNetworkUI extends JDialog {
                     delInput.setPreferredSize(new Dimension(45, 28));
                     delInput.setMaximumSize(new Dimension(50, 2147483647));
                     contentPanel.add(delInput);
-                    delInput.setBounds(new Rectangle(new Point(320, 70), delInput.getPreferredSize()));
+                    delInput.setBounds(new Rectangle(new Point(240, 162), delInput.getPreferredSize()));
 
                     //---- label4 ----
-                    label4.setText("Expression Up:");
+                    label4.setText("Up:");
                     label4.setHorizontalAlignment(SwingConstants.RIGHT);
                     label4.setLabelFor(expUpInput);
                     label4.setToolTipText("Expression score, log-normalized scale");
+                    label4.setPreferredSize(new Dimension(100, 18));
                     contentPanel.add(label4);
-                    label4.setBounds(new Rectangle(new Point(210, 75), label4.getPreferredSize()));
+                    label4.setBounds(130, 168, label4.getPreferredSize().width, 18);
 
                     //---- expUpInput ----
                     expUpInput.setText("0.1");
                     expUpInput.setMinimumSize(new Dimension(34, 28));
-                    expUpInput.setPreferredSize(new Dimension(35, 28));
+                    expUpInput.setPreferredSize(new Dimension(45, 28));
                     contentPanel.add(expUpInput);
-                    expUpInput.setBounds(130, 120, 45, expUpInput.getPreferredSize().height);
+                    expUpInput.setBounds(new Rectangle(new Point(430, 91), expUpInput.getPreferredSize()));
 
                     //---- label7 ----
-                    label7.setText("Expression Down:");
+                    label7.setText("Down:");
                     label7.setHorizontalAlignment(SwingConstants.RIGHT);
                     label7.setLabelFor(expDownInput);
                     label7.setToolTipText("Expression score, log-normalized scale");
+                    label7.setPreferredSize(new Dimension(120, 16));
                     contentPanel.add(label7);
-                    label7.setBounds(new Rectangle(new Point(190, 125), label7.getPreferredSize()));
+                    label7.setBounds(300, 168, label7.getPreferredSize().width, 18);
 
                     //---- expDownInput ----
                     expDownInput.setText("0.1");
@@ -696,7 +687,46 @@ public class FilterGeneNetworkUI extends JDialog {
                     expDownInput.setMinimumSize(new Dimension(34, 28));
                     expDownInput.setMaximumSize(new Dimension(50, 2147483647));
                     contentPanel.add(expDownInput);
-                    expDownInput.setBounds(new Rectangle(new Point(320, 120), expDownInput.getPreferredSize()));
+                    expDownInput.setBounds(new Rectangle(new Point(430, 162), expDownInput.getPreferredSize()));
+
+                    //---- ampInput ----
+                    ampInput.setText("0.7");
+                    ampInput.setMinimumSize(new Dimension(34, 28));
+                    ampInput.setPreferredSize(new Dimension(45, 28));
+                    contentPanel.add(ampInput);
+                    ampInput.setBounds(new Rectangle(new Point(240, 91), ampInput.getPreferredSize()));
+
+                    //---- label1 ----
+                    label1.setText("Mutation:");
+                    label1.setHorizontalAlignment(SwingConstants.RIGHT);
+                    label1.setLabelFor(mutInput);
+                    label1.setToolTipText("Minimum number of mutations found");
+                    label1.setPreferredSize(new Dimension(65, 18));
+                    contentPanel.add(label1);
+                    label1.setBounds(165, 26, label1.getPreferredSize().width, 18);
+
+                    //---- mutInput ----
+                    mutInput.setText("1");
+                    mutInput.setAutoscrolls(false);
+                    mutInput.setMinimumSize(new Dimension(34, 28));
+                    mutInput.setPreferredSize(new Dimension(45, 28));
+                    contentPanel.add(mutInput);
+                    mutInput.setBounds(new Rectangle(new Point(240, 21), mutInput.getPreferredSize()));
+
+                    //---- label6 ----
+                    label6.setText("Copy Number");
+                    contentPanel.add(label6);
+                    label6.setBounds(30, 96, label6.getPreferredSize().width, 18);
+
+                    //---- label8 ----
+                    label8.setText("Expression");
+                    label8.setHorizontalAlignment(SwingConstants.RIGHT);
+                    contentPanel.add(label8);
+                    label8.setBounds(30, 168, 86, 18);
+                    contentPanel.add(separator1);
+                    separator1.setBounds(0, 135, 500, 10);
+                    contentPanel.add(separator3);
+                    separator3.setBounds(0, 65, 500, 10);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -713,7 +743,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     }
                 }
                 thresholds.add(contentPanel);
-                contentPanel.setBounds(12, 115, 503, 173);
+                contentPanel.setBounds(12, 80, 500, 210);
 
                 //======== panel2 ========
                 {
@@ -736,10 +766,13 @@ public class FilterGeneNetworkUI extends JDialog {
                 thresholds.add(panel2);
                 panel2.setBounds(new Rectangle(new Point(55, 25), panel2.getPreferredSize()));
 
-                //---- label5 ----
-                label5.setText("The score a given track must have to be considered \"altered\"");
-                thresholds.add(label5);
-                label5.setBounds(30, 5, 420, 55);
+                //---- textArea1 ----
+                textArea1.setText("Samples are considered to have a given \"event\" if the value is above the thresholds below.");
+                textArea1.setEditable(false);
+                textArea1.setLineWrap(true);
+                textArea1.setBackground(UIManager.getColor("Button.background"));
+                thresholds.add(textArea1);
+                textArea1.setBounds(15, 10, 430, 40);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -784,43 +817,48 @@ public class FilterGeneNetworkUI extends JDialog {
     private JButton saveButton;
     private JPanel thresholds;
     private JPanel contentPanel;
-    private JLabel label1;
-    private JTextField mutInput;
     private JLabel label2;
-    private JTextField ampInput;
     private JLabel label3;
     private JTextField delInput;
     private JLabel label4;
     private JTextField expUpInput;
     private JLabel label7;
     private JTextField expDownInput;
+    private JTextField ampInput;
+    private JLabel label1;
+    private JTextField mutInput;
+    private JLabel label6;
+    private JLabel label8;
+    private JSeparator separator1;
+    private JSeparator separator3;
     private JPanel panel2;
-    private JLabel label5;
+    private JTextArea textArea1;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
     /**
      * Export the current table to a tab-delimited file.
      * String exported should be the same as what user sees
+     *
      * @param outFile
      * @throws IOException
      */
-    private void saveTable(File outFile) throws FileNotFoundException{
+    private void saveTable(File outFile) throws FileNotFoundException {
         PrintWriter writer = new PrintWriter(outFile);
         TableModel model = geneTable.getModel();
         String delimiter = "\t";
 
         //Write header
         String header = model.getColumnName(0);
-        for(int col=1; col < model.getColumnCount(); col++){
+        for (int col = 1; col < model.getColumnCount(); col++) {
             header += delimiter + model.getColumnName(col);
         }
 
         writer.println(header);
 
-        for(int row = 0; row < model.getRowCount(); row++){
+        for (int row = 0; row < model.getRowCount(); row++) {
             String rowStr = "" + model.getValueAt(row, 0);
-            for(int col = 1; col < model.getColumnCount(); col++){
+            for (int col = 1; col < model.getColumnCount(); col++) {
                 rowStr += delimiter + model.getValueAt(row, col);
             }
 
@@ -880,11 +918,13 @@ public class FilterGeneNetworkUI extends JDialog {
                         return null;
                     }
                     String val = GeneNetwork.getNodeKeyData(n, key);
-                    if ("nan".equalsIgnoreCase(val)) {
+                    if ("nan".equalsIgnoreCase(val) || val == null) {
                         return null;
                     }
+
                     //Change from fraction to percent
                     double dPerc = Double.parseDouble(val) * 100;
+
                     if (dPerc == 0.0d) return "0.0";
                     //If above 1, just show integer. If small, show in exponential format
                     String fmt = "%2.1f";
