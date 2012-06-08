@@ -70,7 +70,7 @@ public class ReferenceFrame {
      * The current zoom level.  Zoom level -1 corresponds to the whole
      * genome view (chromosome "all")
      */
-    private int zoom = minZoom;
+    protected int zoom = minZoom;
     /**
      * The maximum zoom level.  Set to prevent integer overflow.  This is a function
      * of chromosom length.
@@ -519,7 +519,7 @@ public class ReferenceFrame {
      * nBins =  2^z
      * so minZoom is the value z such that nBins < dataPanelWidth
      */
-    private void computeMinZoom() {
+    protected void computeMinZoom() {
         if (this.chrName.equals(Globals.CHR_ALL)) {
             minZoom = 0;
         } else {

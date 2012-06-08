@@ -1077,34 +1077,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
     public void searchByLocus(final String searchText) {
-        searchByLocus(searchText, true);
-    }
-
-    public void searchByLocus(final String searchText, boolean inBackground) {
-
 
         if (log.isDebugEnabled()) {
             log.debug("Enter search by locus: " + searchText);
         }
 
         if ((searchText != null) && (searchText.length() > 0)) {
-            NamedRunnable runnable = new NamedRunnable() {
-                public void run() {
-                    searchTextField.setText(searchText);
-                    (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
-                    chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
-                }
-
-                public String getName() {
-                    return "Search: " + searchText;
-                }
-            };
-
-            if (inBackground) {
-                LongRunningTask.submit(runnable);
-            } else {
-                runnable.run();
-            }
+            searchTextField.setText(searchText);
+            (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
+            chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
         }
 
         if (log.isDebugEnabled()) {

@@ -32,6 +32,7 @@ import java.util.*;
  */
 public class FeatureUtils {
 
+
     public static Map<String, List<IGVFeature>> divideByChromosome(List<IGVFeature> features) {
         Map<String, List<IGVFeature>> featureMap = new LinkedHashMap();
         for (IGVFeature f : features) {
@@ -216,7 +217,7 @@ public class FeatureUtils {
     }
 
     /**
-     * Return a feature whose position is exactly the integer part of 'position'.
+     * Return a feature that encompasses the supplied position.
      *
      * @param position Query position.
      * @param features List of features.
@@ -224,13 +225,8 @@ public class FeatureUtils {
      */
     private static Feature getFeatureAt(double position, List<? extends Feature> features) {
         Feature key = new BasicFeature("", (int) position, (int) position + 1);
-        int r = Collections.binarySearch(features, key, new Comparator<Object>() {
-            public int compare(Object o1, Object o2) {
-                Feature f1 = (Feature) o1;
-                Feature f2 = (Feature) o2;
-                return f1.getStart() - f2.getStart();
-            }
-        });
+
+        int r = Collections.binarySearch(features, key, FEATURE_CONTAINS_COMPARATOR);
 
         if (r >= 0) {
             return features.get(r);
@@ -327,4 +323,17 @@ public class FeatureUtils {
 
         return returnList;
     }
+
+
+    public static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = new Comparator<Feature>() {
+        public int compare(Feature o1, Feature o2) {
+            int genomeStart2 = o2.getStart();
+            int genomeStart1 = o1.getEnd();
+            if (genomeStart2 >= genomeStart1 && o2.getEnd() <= o1.getEnd()) {
+                return 0;
+            } else {
+                return genomeStart1 - genomeStart2;
+            }
+        }
+    };
 }

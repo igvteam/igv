@@ -52,7 +52,10 @@ public class CytobandPanel extends JPanel {
     private static int bandHeight = 10;
     private static String fontFamilyName = "Lucida Sans";
     private boolean isDragging = false;
+
     private double viewOrigin;
+    private double viewEnd;
+
     double cytobandScale;
     ReferenceFrame frame;
     private Rectangle currentRegionRect;
@@ -68,6 +71,8 @@ public class CytobandPanel extends JPanel {
 
         this.frame = frame;
         viewOrigin = frame.getOrigin();
+        viewEnd = frame.getEnd();
+
         FontManager.getFont(fontHeight);
         setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
         if (mouseable) {
@@ -114,9 +119,11 @@ public class CytobandPanel extends JPanel {
             double scale = getReferenceFrame().getScale();
 
             double origin = isDragging ? viewOrigin : getReferenceFrame().getOrigin();
-
             int start = (int) (origin / cytobandScale);
-            double scaledDataPanelWidth = dataPanelWidth * scale;
+
+            double end = getReferenceFrame().getEnd();
+
+            double scaledDataPanelWidth = end - origin;
             int span = (int) (scaledDataPanelWidth / cytobandScale);
 
             // Draw Cytoband current region viewer
@@ -198,6 +205,7 @@ public class CytobandPanel extends JPanel {
 
                 int w = getWidth();
                 double scale = getReferenceFrame().getScale();
+
                 int x = (int) Math.max(0, Math.min(e.getX(), w * (cytobandScale - scale)));
                 int delta = x - lastMousePressX;
                 if ((delta != 0) && (cytobandScale > 0)) {

@@ -241,7 +241,6 @@ public class DASFeatureSource implements FeatureSource {
             */
 
             Document dom = documentBuilder.parse(inputStream);
-            inputStream.close();
             return dom;
         }
 

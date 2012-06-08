@@ -28,9 +28,11 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.xome.Block;
 import org.broad.igv.feature.xome.ExomeReferenceFrame;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -76,20 +78,22 @@ public class DataPanelPainter {
                 int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
                 Block b;
 
-
+                int lastPStart = -1;
                 int pStart;
-                int pEnd = -1;
+                int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
                 do {
                     b = blocks.get(idx);
 
                     pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+                    pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
 
-                    if (pStart >= pEnd) {
+                    if (pEnd > lastPStart) {
+
+                        lastPStart = pStart;
                         // Don't draw over previously drawn region -- can happen when zoomed out.
 
-                        pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
 
                         if (pEnd == pStart) pEnd++;
 
@@ -102,24 +106,24 @@ public class DataPanelPainter {
                         Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
                         //Shape clip = exomeGraphics.getClip();
 
-                        // Color c = ColorUtilities.randomColor(idx);
-                        // exomeGraphics.setColor(c);
-                        // exomeGraphics.fill(rect);
-                        // exomeGraphics.setColor(Color.black);
-                        // GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
+                         Color c = ColorUtilities.randomColor(idx);
+                         exomeGraphics.setColor(c);
+                         exomeGraphics.fill(rect);
+                         exomeGraphics.setColor(Color.black);
+                         GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
 
                         exomeGraphics.setClip(rect.intersection(panelClip));
                         exomeGraphics.translate(pStart, 0);
                         width = rect.width;
 
-                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
-                        tmpFrame.setOrigin(b.getGenomeStart(), false);
-
-                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
-                        paintFrame(groups, tmpContext, rect.width, rect);
-
-                        tmpContext.dispose();
-                        exomeGraphics.dispose();
+//                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
+//                        tmpFrame.setOrigin(b.getGenomeStart(), false);
+//
+//                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+//                        paintFrame(groups, tmpContext, rect.width, rect);
+//
+//                        tmpContext.dispose();
+//                        exomeGraphics.dispose();
                         visibleBlockCount++;
                     }
                     idx++;

@@ -1347,7 +1347,7 @@ public class IGV {
      * @param locus
      */
     public void goToLocus(String locus) {
-        contentPane.getCommandBar().searchByLocus(locus, false);
+        contentPane.getCommandBar().searchByLocus(locus);
     }
 
     /**

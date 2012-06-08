@@ -10,16 +10,16 @@ import org.broad.tribble.Feature;
 public class Block implements Feature {
     int idx;
     private int genomeStart;
-    private int genomeEnd;
     private int exomeStart;
+    private int length;
     private int leftPixel;
     private int rightPixel;
 
-    public Block(int idx, int start, int end, int xomeStart) {
+    public Block(int idx, int genomeStart, int xomeStart, int length) {
         this.idx = idx;
-        this.genomeStart = start;
-        this.genomeEnd = end;
+        this.genomeStart = genomeStart;
         this.exomeStart = xomeStart;
+        this.length = length;
     }
 
     public void setScreenBounds(int leftPixel, int rightPixel) {
@@ -44,7 +44,7 @@ public class Block implements Feature {
     }
 
     public int getGenomeEnd() {
-        return genomeEnd;
+        return genomeStart + length;
     }
 
     public int getExomeStart() {
@@ -52,11 +52,13 @@ public class Block implements Feature {
     }
 
     public int getExomeEnd() {
-        return exomeStart + (genomeEnd - genomeStart);
+        return exomeStart + length;
     }
 
     public void extend(int x) {
-        if (x > genomeEnd) genomeEnd = x;
+        if (x > genomeStart + length) {
+            length = x - genomeStart;
+        };
     }
 
     public int getLength() {
@@ -65,7 +67,7 @@ public class Block implements Feature {
 
 
     public String toString() {
-        return "Block " + idx + " [" + genomeStart + ", " + genomeEnd + ", " + exomeStart + "]";
+        return "Block " + idx + " [" + genomeStart + ", " + getGenomeEnd() + ", " + exomeStart + ", " + length +"]";
     }
 
     @Override
@@ -81,14 +83,14 @@ public class Block implements Feature {
 
     @Override
     public int getEnd() {
-        return genomeEnd;
+        return genomeStart + length;
     }
 
     public int compareGenomePosition(double genomicPosition) {
         if(genomicPosition < genomeStart) {
             return -1;
         }
-        else if(genomicPosition >= genomeEnd) {
+        else if(genomicPosition >= genomeStart + length) {
             return 1;
         }
         else {
@@ -101,7 +103,7 @@ public class Block implements Feature {
         if(exomePosition < exomeStart) {
             return -1;
         }
-        else if(exomePosition >= (exomeStart + (genomeEnd - genomeStart))) {
+        else if(exomePosition >= (exomeStart + length)) {
             return 1;
         }
         else {
