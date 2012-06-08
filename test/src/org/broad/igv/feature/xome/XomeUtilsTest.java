@@ -7,7 +7,6 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import sun.tools.jconsole.inspector.XObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
