@@ -16,12 +16,16 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
+import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
-import java.awt.*;
+
+import java.util.List;
 import java.io.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -136,5 +140,24 @@ public class TestUtils {
 
         return bytesThisLine - line.length();
 
+    }
+
+    /**
+     * Check that the features are all the same. Checks size of list, chr, start, and end of
+     * each feature
+     * @param expected
+     * @param actual
+     * @throws AssertionError
+     */
+    public static void assertFeatureListsEqual(List<Feature> expected, List<Feature> actual) throws AssertionError{
+        assertEquals("Feature lists have unequal sizes", expected.size(), actual.size());
+        int ind = 0;
+        for(Feature exp: expected){
+            Feature act = actual.get(ind);
+            assertEquals(exp.getChr(), act.getChr());
+            assertEquals(exp.getStart(), act.getStart());
+            assertEquals(exp.getEnd(), act.getEnd());
+            ind++;
+        }
     }
 }

@@ -1,15 +1,13 @@
-track type=wiggle_0 name="fixedStep" description="fixedStep format" visibility=full \
-    autoScale=off viewLimits=0:1000 color=0,200,100 maxHeightPixels=100:50:20 \
-    graphType=points priority=20
-fixedStep chrom=chr19 start=59307401 step=1
+track type=wiggle_0 name="fixedStep" description="fixedStep format" visibility=full 
+fixedStep chrom=chr19 start=5930740 step=1
 1000
- 900
- 800
- 700
- 600
- 500
- 400
- 300
- 200
- 100
+900
+800
+700
+600
+500
+400
+300
+200
+100
  

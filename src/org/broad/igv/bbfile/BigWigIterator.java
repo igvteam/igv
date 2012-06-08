@@ -21,6 +21,7 @@ package org.broad.igv.bbfile;
 import org.broad.tribble.util.SeekableStream;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,7 +44,8 @@ public class BigWigIterator implements Iterator<WigItem> {
     private boolean isContained;     // if true, features must be fully contained by selection region
 
     // File access variables for reading Bed data block
-    private SeekableStream fis;  // file input stream handle
+    //private SeekableStream fis;  // file input stream handle
+    private String path;            // Path to the resource we are reading
     private BPTree chromIDTree;    // B+ chromosome index tree
     private RPTree chromDataTree;  // R+ chromosome data location tree
 
@@ -76,14 +78,14 @@ public class BigWigIterator implements Iterator<WigItem> {
      * contained - specifies wig values must be contained by region, if true;
      * else return any intersecting region values
      */
-    public BigWigIterator(SeekableStream fis, BPTree chromIDTree, RPTree chromDataTree,
+    public BigWigIterator(String path, BPTree chromIDTree, RPTree chromDataTree,
                           RPChromosomeRegion selectionRegion, boolean contained) {
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: BigWigIterator selection region is null\n");
 
-        this.fis = fis;
+        this.path = path;
         this.chromIDTree = chromIDTree;
         this.chromDataTree = chromDataTree;
         this.selectionRegion = new RPChromosomeRegion(selectionRegion);
@@ -128,8 +130,7 @@ public class BigWigIterator implements Iterator<WigItem> {
         else if (leafItemIndex < leafHitList.size())
             return true;
 
-        else
-            return false;
+        else return false;
     }
 
     /**
@@ -227,17 +228,6 @@ public class BigWigIterator implements Iterator<WigItem> {
     }
 
     /*
-    *   Method returns the BigBed file input stream handle.
-    *
-    *   Returns:
-    *       File input stream handle
-    * */
-
-    public SeekableStream getBBFis() {
-        return fis;
-    }
-
-    /*
     *   Method returns the B+ chromosome index tree used for identifying
     *   chromosome ID's used to specify R+ chromosome data locations.
     *
@@ -296,7 +286,7 @@ public class BigWigIterator implements Iterator<WigItem> {
         dataBlockRead = getDataBlock(leafItemIndex++);
 
         // try next item - probably intersection issue
-        // Note: recursive call until a block is valid or hit list exhuasted
+        // Note: recursive call until a block is valid or hit list exhausted
         if (!dataBlockRead)
             hitCount = getHitRegion(hitRegion, contained);
 
@@ -371,7 +361,23 @@ public class BigWigIterator implements Iterator<WigItem> {
         int uncompressBufSize = chromDataTree.getUncompressBuffSize();
 
         // decompress leaf item data block for feature extraction
-        wigDataBlock = new BigWigDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh, uncompressBufSize);
+
+        SeekableStream fis = null;
+        try {
+            fis = BBFileReader.getStream(path);
+            wigDataBlock = new BigWigDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh, uncompressBufSize);
+        } catch (IOException e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }finally{
+            if(fis != null){
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         // get section Wig item list and set next index to first item
         wigItemList = wigDataBlock.getWigData(selectionRegion, isContained);

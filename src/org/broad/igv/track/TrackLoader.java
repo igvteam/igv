@@ -728,8 +728,7 @@ public class TrackLoader {
         String trackId = locator.getPath();
 
         String path = locator.getPath();
-        SeekableStream ss = new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path), 128000);
-        BBFileReader reader = new BBFileReader(path, ss);
+        BBFileReader reader = new BBFileReader(path);
         BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
 
         if (reader.isBigWigFile()) {

@@ -14,6 +14,7 @@ package org.broad.igv.track;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 
 /**
@@ -190,5 +192,74 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         for (String finame : filenames) {
             tstLoadFi(TestUtils.DATA_DIR + finame, null, genome, true);
         }
+    }
+
+    @Test
+    public void testWigAndBigWig() throws Exception{
+        String wigPath = TestUtils.DATA_DIR + "wig/test_fixedStep.wig";
+        String bigWigPath = TestUtils.DATA_DIR + "wig/test_fixedStep.bigwig";
+        List<Track> wigtracks = tstLoadFi(wigPath, 1, false);
+        List<Track> bigWigtracks = tstLoadFi(bigWigPath, 1, false);
+
+        String chr = "chr19";
+        int start = 5930725;
+        int end = 5930764;
+        int zoom = 21;
+
+        DataSourceTrack wigTrack = (DataSourceTrack) wigtracks.get(0);
+        DataSourceTrack bigWigTrack = (DataSourceTrack) bigWigtracks.get(0);
+
+        int trials = 10;
+
+        for(int ii=0; ii < trials; ii++){
+            int strt = start + ii;
+            List<LocusScore> wigScores = wigTrack.getSummaryScores(chr, strt, end, zoom);
+            List<LocusScore> bigWigScores = bigWigTrack.getSummaryScores(chr, strt, end, zoom);
+            assertEquals(wigScores.size(), bigWigScores.size());
+            int ind = 0;
+            for(LocusScore ws: wigScores){
+                LocusScore bws = bigWigScores.get(ind);
+                assertEquals(ws.getScore(), bws.getScore());
+                ind++;
+            }
+        }
+
+    }
+
+    @Test
+    public void testBedAndBigBed() throws Exception{
+        String bedPath = TestUtils.DATA_DIR + "bed/Unigene.sample.nolong.bed";
+        String bigBedPath = TestUtils.DATA_DIR + "bed/Unigene.sample.nolong.bigbed";
+
+        File bigBedFile = new File(bigBedPath);
+
+        //Need to index so query of bed file is accurate
+        TestUtils.createIndex(bedPath);
+
+        List<Track> bedtracks = tstLoadFi(bedPath, 1, false);
+        List<Track> bigBedtracks = tstLoadFi(bigBedPath, 1, false);
+
+
+        String chr = "chr2";
+        int start = 178711404 - 1;
+        int end = 179189619 + 1;
+
+        FeatureTrack bedTrack = (FeatureTrack) bedtracks.get(0);
+        FeatureTrack bigBedTrack = (FeatureTrack) bigBedtracks.get(0);
+
+        //Multiple trials because we're concerned about file open/close issues
+        int trials = 10;
+
+        for(int ii=0; ii < trials; ii++){
+            int strt = start + ii;
+            List<Feature> bedFeatures = bedTrack.getFeatures(chr, strt, end);
+            List<Feature> bigBedFeatures = bigBedTrack.getFeatures(chr, strt, end);
+            TestUtils.assertFeatureListsEqual(bedFeatures, bigBedFeatures);
+
+            //NOT FOOLPROOF
+            assertTrue(bigBedFile.canWrite());
+        }
+
+
     }
 }

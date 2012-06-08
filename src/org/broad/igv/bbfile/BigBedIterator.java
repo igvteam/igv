@@ -21,6 +21,7 @@ package org.broad.igv.bbfile;
 import org.apache.log4j.Logger;
 import org.broad.tribble.util.SeekableStream;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -39,7 +40,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
     private boolean contained; // if true, features must be fully contained by extraction region
 
     // File access variables for reading Bed data block
-    private SeekableStream fis;  // file input stream handle
+    //private SeekableStream fis;  // file input stream handle
     private BPTree chromIDTree;    // B+ chromosome index tree
     private RPTree chromDataTree;  // R+ chromosome data location tree
 
@@ -64,14 +65,13 @@ public class BigBedIterator implements Iterator<BedFeature> {
      * contained - specifies bed features must be contained by region, if true;
      * else return any intersecting region features
      */
-    public BigBedIterator(SeekableStream fis, BPTree chromIDTree, RPTree chromDataTree,
-                          RPChromosomeRegion selectionRegion, boolean contained) {
+    public BigBedIterator(String path, BPTree chromIDTree, RPTree chromDataTree,
+                          RPChromosomeRegion selectionRegion, boolean contained){
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: BigBedIterator selection region is null\n");
 
-        this.fis = fis;
         this.chromIDTree = chromIDTree;
         this.chromDataTree = chromDataTree;
         this.selectionRegion = selectionRegion;
@@ -79,9 +79,24 @@ public class BigBedIterator implements Iterator<BedFeature> {
 
         List<RPTreeLeafNodeItem> leafNodeItems = chromDataTree.getChromosomeDataHits(selectionRegion, contained);
         features = new ArrayList<BedFeature>(512 * leafNodeItems.size());
-        for(RPTreeLeafNodeItem item : leafNodeItems) {
-            features.addAll(readBedDataBlock(item));
+
+        SeekableStream fis = null;
+        try {
+            fis = BBFileReader.getStream(path);
+            for (RPTreeLeafNodeItem item : leafNodeItems) {
+                features.addAll(readBedDataBlock(item, fis));
+            }
+        } catch (IOException e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }finally {
+            if(fis != null) try{
+                fis.close();
+            }catch (IOException e){
+                log.error(e);
+            }
         }
+
     }
 
     public BigBedIterator() {
@@ -128,7 +143,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
    *   Returns:
    *       Successful Bed feature data block set up: true or false.
    * */
-    private List<BedFeature> readBedDataBlock(RPTreeLeafNodeItem leafHitItem) {
+    private List<BedFeature> readBedDataBlock(RPTreeLeafNodeItem leafHitItem, SeekableStream fis) {
 
         // get the chromosome names associated with the hit region ID's
         int startChromID = leafHitItem.getChromosomeBounds().getStartChromID();

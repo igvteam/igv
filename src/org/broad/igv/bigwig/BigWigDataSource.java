@@ -196,7 +196,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return headers.get(headers.size() - 1);
     }
 
-    protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
+    protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom){
 
         Chromosome c = genome.getChromosome(chr);
         if (c == null) return null;
@@ -251,7 +251,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
 
     @Override
-    protected synchronized DataTile getRawData(String chr, int start, int end) {
+    protected synchronized DataTile getRawData(String chr, int start, int end){
 
         if (chr.equals(Globals.CHR_ALL)) {
             return null;

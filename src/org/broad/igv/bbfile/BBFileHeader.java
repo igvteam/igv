@@ -57,7 +57,7 @@ public class BBFileHeader {
 
     // defines the bigBed/bigWig source file access
     private String path;               // bigBed file/pathname
-    private SeekableStream fis;      // BBFile I/O stream handle
+    //private SeekableStream fis;      // BBFile I/O stream handle
     private long fileHeaderOffset;     // file offset for file header
 
     private boolean isHeaderOK;        // File header read correctly?
@@ -88,11 +88,11 @@ public class BBFileHeader {
 
         // save the path and seekable file handle
         this.path = path;
-        this.fis = fis;
+        //this.fis = fis;
         fileHeaderOffset = fileOffset;
 
         // read in BBFile header
-        isHeaderOK = readBBFileHeader(fileHeaderOffset);
+        isHeaderOK = readBBFileHeader(fileHeaderOffset, fis);
 
     }
 
@@ -244,7 +244,7 @@ public class BBFileHeader {
      *      Success status flag is true for successfully read header,
      *      or is false for a read error.
     **/
-    private boolean readBBFileHeader(long fileOffset) {
+    private boolean readBBFileHeader(long fileOffset, SeekableStream fis) {
 
         BBFileHeader bbHeader = null;
         LittleEndianInputStream lbdis = null;
