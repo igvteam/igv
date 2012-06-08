@@ -23,6 +23,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,11 +37,13 @@ import static junit.framework.Assert.*;
 public class CommandExecutorTest extends AbstractHeadedTest{
 
     CommandExecutor exec = new CommandExecutor();
+    private final String snapshotDir = TestUtils.DATA_DIR + "out/";
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
         igv.getSession().clearRegionsOfInterest();
+        exec.setSnapshotDirectory(snapshotDir);
     }
 
     @After
@@ -119,6 +122,50 @@ public class CommandExecutorTest extends AbstractHeadedTest{
         }
 
 
+    }
+
+    private final String outFileBase = "testSnap";
+
+    @Test
+    public void testSnapShotPng() throws Exception{
+        String outFileName =  outFileBase + ".Png";
+        tstSnapshot(outFileName);
+    }
+
+    @Test
+    public void testSnapShotJpeg() throws Exception{
+        tstSnapshot(outFileBase + ".jpeg");
+        tstSnapshot(outFileBase + ".jpg");
+    }
+
+    @Test
+    public void testSnapShotSvg() throws Exception{
+        String outFileName =  outFileBase + ".svG";
+        tstSnapshot(outFileName);
+    }
+
+    @Test
+    public void testSnapShotFails() throws Exception{
+        String[] exts = new String[]{"abc", "svt", "pnq"};
+        for(String ext: exts){
+            String outFileName =  outFileBase + "." + ext;
+            tstSnapshot(outFileName, false);
+        }
+    }
+
+
+    public void tstSnapshot(String outFileName) throws Exception{
+        tstSnapshot(outFileName, true);
+    }
+
+    public void tstSnapshot(String outFileName, boolean shouldSucceed) throws Exception{
+
+        File out = new File(snapshotDir, outFileName);
+        assertFalse(out.exists());
+
+        exec.execute("snapshot " + outFileName);
+
+        assertEquals(shouldSucceed, out.exists());
     }
 
 }

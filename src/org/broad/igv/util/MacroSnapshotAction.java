@@ -28,6 +28,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -83,6 +84,11 @@ public class MacroSnapshotAction {
 
         File file = new File(outputDirectory, filename);
         log.info("Snapshot: " + filename);
-        mainFrame.createSnapshotNonInteractive(file);
+        try {
+            mainFrame.createSnapshotNonInteractive(file);
+        } catch (IOException e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }
     }
 }

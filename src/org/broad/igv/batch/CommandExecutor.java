@@ -89,8 +89,7 @@ public class CommandExecutor {
 
                 } else if (cmd.equals("snapshot")) {
                     String filename = param1;
-                    createSnapshot(filename);
-
+                    result = createSnapshot(filename);
                 } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
                     result = load(param1, param2, param3);
                 } else if (cmd.equals("genome") && args.size() > 1) {
@@ -143,12 +142,16 @@ public class CommandExecutor {
                 LRUCache.clearCaches();
             }
             log.debug("Finished execution: " + command + "  sleeping ....");
-            if (sleepInterval > 0) Thread.sleep(sleepInterval);
+            if (sleepInterval > 0) try {
+                Thread.sleep(sleepInterval);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             log.debug("Finished sleeping");
 
-        } catch (Exception e) {
-            log.error("Could not Parse Command", e);
-            return "ERROR Could not Parse Command: " + e.toString();
+        }catch(IOException e){
+            log.error(e);
+            result = "Error: " + e.getMessage();
         }
         log.info(result);
 
@@ -412,7 +415,7 @@ public class CommandExecutor {
      * @param param1
      * @return
      */
-    private String setSnapshotDirectory(String param1) {
+    String setSnapshotDirectory(String param1) {
         if (param1 == null) {
             return "ERROR: missing directory parameter";
         }
@@ -536,7 +539,7 @@ public class CommandExecutor {
     }
 
 
-    private void createSnapshot(String filename) {
+    private String createSnapshot(String filename) {
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
@@ -545,7 +548,13 @@ public class CommandExecutor {
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
-        SnapshotUtilities.doSnapshotOffscreen(igv.getMainPanel(), file);
+        try{
+            IGV.getInstance().createSnapshotNonInteractive(file);
+        }catch(IOException e){
+            log.error(e);
+            return e.getMessage();
+        }
+        return "OK";
     }
 
     private static RegionScoreType getRegionSortOption(String str) {

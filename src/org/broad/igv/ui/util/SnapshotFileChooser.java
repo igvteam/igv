@@ -64,21 +64,19 @@ public class SnapshotFileChooser extends JFileChooser {
     public static SnapshotFileType getSnapshotFileType(String fileExtension) {
 
         String extension = fileExtension.toLowerCase();
-        SnapshotFileType type = null;
+        SnapshotFileType type = SnapshotFileType.NULL;
 
-        if (SnapshotFileType.EPS.getExtension().equals(extension)) {
-            type = SnapshotFileType.EPS;
-        } else if (SnapshotFileType.PDF.getExtension().equals(extension)) {
-            type = SnapshotFileType.PDF;
-        } else if (SnapshotFileType.SVG.getExtension().equals(extension)) {
-            type = SnapshotFileType.SVG;
-        } else if (SnapshotFileType.PNG.getExtension().equals(extension)) {
-            type = SnapshotFileType.PNG;
-        } else if (SnapshotFileType.JPEG.getExtension().equals(extension)) {
+        if(".jpg".equalsIgnoreCase(fileExtension)){
             type = SnapshotFileType.JPEG;
-        } else {
-            type = SnapshotFileType.NULL;
         }
+
+        for(SnapshotFileType iterType: SnapshotFileType.values()){
+            if(type != SnapshotFileType.NULL) break;
+            if(iterType.getExtension().equalsIgnoreCase(extension)){
+                type = iterType;
+            }
+        }
+
         return type;
     }
 

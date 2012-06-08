@@ -534,7 +534,7 @@ public class IGV {
                 loadGenome(file.getAbsolutePath(), monitor);
 
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             MessageUtils.showMessage("<html>Error loading: " + file.getAbsolutePath() + "<br>" + e.getMessage());
             log.error("Error loading: " + file.getAbsolutePath(), e);
         } finally {
@@ -879,17 +879,7 @@ public class IGV {
     final public void saveImage(Component target, String title) {
         contentPane.getStatusBar().setMessage("Creating image...");
         File defaultFile = new File(title + ".png");
-        try {
-            //createSnapshot(this, defaultFile);
-            createSnapshot(target, defaultFile);
-        } catch (Exception e) {
-            log.error("Error exporting  image ", e);
-            MessageUtils.showMessage(("Error encountered while exporting image: " + e.getMessage()));
-
-        } finally {
-            resetStatusMessage();
-
-        }
+        createSnapshot(target, defaultFile);
     }
 
     public boolean isExportingSnapshot() {
@@ -899,14 +889,15 @@ public class IGV {
     final public void createSnapshot(final Component target, final File defaultFile) {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
+        contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
+        File file = selectSnapshotFile(defaultFile);
+        if (file == null) {
+            return;
+        }
+
         try {
-            contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-            File file = selectSnapshotFile(defaultFile);
-            if (file == null) {
-                return;
-            }
             createSnapshotNonInteractive(target, file);
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
                     + e.getMessage()));
@@ -918,11 +909,11 @@ public class IGV {
     }
 
 
-    public void createSnapshotNonInteractive(File file) {
+    public void createSnapshotNonInteractive(File file) throws IOException{
         createSnapshotNonInteractive(contentPane.getMainPanel(), file);
     }
 
-    protected void createSnapshotNonInteractive(Component target, File file) {
+    public void createSnapshotNonInteractive(Component target, File file) throws IOException{
 
         log.debug("Creating snapshot: " + file.getName());
 
@@ -931,19 +922,24 @@ public class IGV {
         SnapshotFileChooser.SnapshotFileType type = SnapshotFileChooser.getSnapshotFileType(extension);
 
         // If valid extension
+        IOException exc = null;
         if (type != SnapshotFileChooser.SnapshotFileType.NULL) {
 
-            boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
+            //boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
             try {
                 setExportingSnapshot(true);
                 SnapshotUtilities.doComponentSnapshot(target, file, type);
-
+            } catch (IOException e) {
+                log.error(e);
+                exc = e;
             } finally {
                 setExportingSnapshot(false);
             }
+            log.debug("Finished creating snapshot: " + file.getName());
+            if(exc != null) throw exc;
+        }else{
+            log.error("Unknown file extension " + extension);
         }
-
-        log.debug("Finished creating snapshot: " + file.getName());
     }
 
     public File selectSnapshotFile(File defaultFile) {
@@ -1537,33 +1533,24 @@ public class IGV {
     public List<Track> load(ResourceLocator locator) {
 
         TrackLoader loader = new TrackLoader();
-        try {
-            List<Track> newTracks = loader.load(locator, this);
-            if (newTracks.size() > 0) {
-                for (Track track : newTracks) {
-                    String fn = locator.getPath();
-                    int lastSlashIdx = fn.lastIndexOf("/");
-                    if (lastSlashIdx < 0) {
-                        lastSlashIdx = fn.lastIndexOf("\\");
-                    }
-                    if (lastSlashIdx > 0) {
-                        fn = fn.substring(lastSlashIdx + 1);
-                    }
-                    track.setAttributeValue("NAME", track.getName());
-                    track.setAttributeValue("DATA FILE", fn);
-                    track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+        List<Track> newTracks = loader.load(locator, this);
+        if (newTracks.size() > 0) {
+            for (Track track : newTracks) {
+                String fn = locator.getPath();
+                int lastSlashIdx = fn.lastIndexOf("/");
+                if (lastSlashIdx < 0) {
+                    lastSlashIdx = fn.lastIndexOf("\\");
                 }
+                if (lastSlashIdx > 0) {
+                    fn = fn.substring(lastSlashIdx + 1);
+                }
+                track.setAttributeValue("NAME", track.getName());
+                track.setAttributeValue("DATA FILE", fn);
+                track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
             }
-
-            return newTracks;
-
-        } catch (DataLoadException dle) {
-            throw dle;
-        } catch (Exception e) {
-            log.error(e);
-            throw new DataLoadException(e.getMessage(), locator.getPath());
         }
 
+        return newTracks;
     }
 
 

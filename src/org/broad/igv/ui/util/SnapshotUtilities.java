@@ -83,7 +83,7 @@ public class SnapshotUtilities {
 
 
 
-    public static void doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type) {
+    public static void doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type) throws IOException{
 
         int width = component.getWidth();
         int height = component.getHeight();
@@ -141,23 +141,22 @@ public class SnapshotUtilities {
         doSnapshotOffscreen(target, selectedFile);
     }
 
-    private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) {
+    private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) throws IOException{
 
         BufferedImage image = getDeviceCompatibleImage(width, height); //  new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
         Graphics g = image.createGraphics();
         target.paintAll(g);
 
         if (selectedFile != null) {
-
-            if (!selectedFile.getName().toLowerCase().endsWith(".jpeg")) {
-                String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
-                selectedFile = new File(correctedFilename);
-            }
-            writeImage(image, selectedFile, "jpeg");
+//            if (!selectedFile.getName().toLowerCase().endsWith(".jpeg")) {
+//                String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
+//                selectedFile = new File(correctedFilename);
+//            }
+            ImageIO.write(image, "jpeg", selectedFile);
         }
     }
 
-    private static void exportScreenShotPNG(Component target, File selectedFile, int width, int height) {
+    private static void exportScreenShotPNG(Component target, File selectedFile, int width, int height) throws IOException{
 
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics g = image.createGraphics();
@@ -169,7 +168,7 @@ public class SnapshotUtilities {
                 String correctedFilename = selectedFile.getAbsolutePath() + ".png";
                 selectedFile = new File(correctedFilename);
             }
-            writeImage(image, selectedFile, "png");
+            ImageIO.write(image, "png", selectedFile);
         }
     }
 
@@ -182,8 +181,6 @@ public class SnapshotUtilities {
         }
 
         try {
-            IGV.getInstance().setExportingSnapshot(true);
-
             Rectangle rect = target.getBounds();
 
             int height = ((MainPanel) target).getOffscreenImageHeight();
@@ -232,26 +229,15 @@ public class SnapshotUtilities {
                         String correctedFilename = selectedFile.getAbsolutePath() + ".png";
                         selectedFile = new File(correctedFilename);
                     }
-                    writeImage(image, selectedFile, "png");
+                    ImageIO.write(image, "png", selectedFile);
                 }
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Error creating snapshot", e);
             return "Error: " + e.toString();
-        } finally {
-            IGV.getInstance().setExportingSnapshot(false);
         }
         return "OK";
-
-    }
-
-    private static void writeImage(BufferedImage image, File f, String type) {
-        try {
-            ImageIO.write(image, type, f);
-        } catch (IOException e) {
-            log.error(("Error creating: " + f.getAbsolutePath()), e);
-        }
     }
 
     /**
