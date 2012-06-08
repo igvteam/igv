@@ -209,7 +209,7 @@ public class FeatureUtils {
         org.broad.tribble.Feature f1 = getFeatureBefore(position, features);
         org.broad.tribble.Feature f2 = getFeatureAfter(position, features);
 
-        double d1 = f1 == null ? Double.MAX_VALUE : Math.abs(f1.getEnd() - position);
+        double d1 = f1 == null ? Double.MAX_VALUE : Math.abs(position - f1.getEnd());
         double d2 = f2 == null ? Double.MAX_VALUE : Math.abs(f2.getStart() - position);
 
         return (d1 < d2 ? f1 : f2);
@@ -224,9 +224,10 @@ public class FeatureUtils {
      * @return The feature whose start overlaps with position, or null.
      */
     private static Feature getFeatureAt(double position, List<? extends Feature> features) {
-        Feature key = new BasicFeature("", (int) position, (int) position + 1);
+        int strt = (int) position;
+        Feature key = new BasicFeature("", strt, strt + 1);
 
-        int r = Collections.binarySearch(features, key, FEATURE_CONTAINS_COMPARATOR);
+        int r = Collections.binarySearch(features, key, FEATURE_START_COMPARATOR);
 
         if (r >= 0) {
             return features.get(r);
@@ -325,7 +326,7 @@ public class FeatureUtils {
     }
 
 
-    public static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = new Comparator<Feature>() {
+    private static final Comparator<Feature> FEATURE_CONTAINS_COMPARATOR = new Comparator<Feature>() {
         public int compare(Feature o1, Feature o2) {
             int genomeStart2 = o2.getStart();
             int genomeStart1 = o1.getEnd();
@@ -334,6 +335,12 @@ public class FeatureUtils {
             } else {
                 return genomeStart1 - genomeStart2;
             }
+        }
+    };
+
+    private static final Comparator<Feature> FEATURE_START_COMPARATOR = new Comparator<Feature>() {
+        public int compare(Feature o1, Feature o2) {
+            return o1.getStart() - o2.getStart();
         }
     };
 }
