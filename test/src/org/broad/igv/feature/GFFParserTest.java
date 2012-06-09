@@ -49,7 +49,9 @@ public class GFFParserTest {
 
         assertEquals(1, features.size());
         BasicFeature bf = (BasicFeature) features.get(0);
-        assertNotNull(bf.getAttributes());
+
+        Exon exon = bf.getExons().get(0);
+        assertNotNull(exon.getAttributes());
 
 
     }
