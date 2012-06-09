@@ -613,13 +613,6 @@ public class GFFParser implements FeatureParser {
                 // mRNA.setName(gene.getName());
             }
 
-            // If the feature consists of a single exon just return it
-            if(exons.size() == 1) {
-                Exon exon = exons.iterator().next();
-                transcript.setAttributes(exon.getAttributes());
-                return transcript;
-            }
-
             for (Exon exon : exons) {
                 transcript.addExon(exon);
             }
