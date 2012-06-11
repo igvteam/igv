@@ -102,7 +102,9 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
-        menus.add(createToolsMenu());
+        if(Globals.toolsMenuEnabled){
+            menus.add(createToolsMenu());
+        }
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
@@ -140,10 +142,7 @@ public class IGVMenuBar extends JMenuBar {
         });
 
         menuItems.add(analysisDialog);
-        analysisDialog.setEnabled(false);
-        if (Globals.BEDtoolsAnalysisEnabled) {
-            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
-        }
+        analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
         return MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);

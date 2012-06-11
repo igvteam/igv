@@ -330,7 +330,7 @@ public class TrackMenuUtils {
 
         //---------------------//
         //Track analysis
-        if (Globals.BEDtoolsAnalysisEnabled && tracks.size() >= 2) {
+        if (Globals.toolsMenuEnabled && tracks.size() >= 2) {
 
             JMenuItem item = new JMenuItem("Create Overlap Track");
             item.addActionListener(new ActionListener() {
@@ -348,6 +348,7 @@ public class TrackMenuUtils {
                     IGV.getInstance().repaint();
                 }
             });
+            item.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
             featurePopupMenu.add(item);
         }
 
