@@ -936,7 +936,7 @@
               <void method="setProperty"> 
                <string>preferredSize</string> 
                <object class="java.awt.Dimension"> 
-                <int>65</int> 
+                <int>66</int> 
                 <int>18</int> 
                </object> 
               </void> 
@@ -948,7 +948,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>165</int> 
+               <int>50</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -1006,7 +1006,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Copy Number</string> 
+               <string>Copy Number:</string> 
               </void> 
               <void property="name"> 
                <string>label6</string> 
@@ -1033,7 +1033,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Expression</string> 
+               <string>Expression:</string> 
               </void> 
               <void method="setProperty"> 
                <string>horizontalAlignment</string> 
@@ -1114,6 +1114,36 @@
               <void method="setProperty"> 
                <string>y</string> 
                <int>65</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JSeparator</string> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>10</int> 
+                <int>210</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>orientation</string> 
+               <int>1</int> 
+              </void> 
+              <void property="name"> 
+               <string>separator2</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>120</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>0</int> 
               </void> 
              </object> 
             </void> 
