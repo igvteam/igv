@@ -73,7 +73,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private final Color LR_COLOR_12 = new Color(190, 190, 210);
     private final Color LR_COLOR_21 = new Color(210, 190, 190);
     private final Color RL_COLOR = new Color(0, 150, 0);
-    private final Color RR_COLOR = new Color(0, 0, 150);
+    private final Color RR_COLOR = new Color(20, 50, 200);
     private final Color LL_COLOR = new Color(0, 150, 150);
     private final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
@@ -739,10 +739,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                         color = getShadedColor(qual, color, alignmentColor, prefs);
                     } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
                         if (block.hasFlowSignals()) {
-                            int flowSignal = (int)block.getFlowSignalSubContext(loc - start).signals[1][0];
+                            int flowSignal = (int) block.getFlowSignalSubContext(loc - start).signals[1][0];
                             int expectedFlowSignal;
                             if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
-                                expectedFlowSignal = 100 * (short)((flowSignal + 50.0) / 100.0);
+                                expectedFlowSignal = 100 * (short) ((flowSignal + 50.0) / 100.0);
                             } else {
                                 // NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
                                 // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
@@ -754,7 +754,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                                     expectedFlowSignal = 100;
 
                                     // Count HP length
-                                    pos = start + idx - 1; 
+                                    pos = start + idx - 1;
                                     while (0 <= pos && genome.getReference(chr, pos) == refbase) {
                                         pos--;
                                         expectedFlowSignal += 100;
@@ -772,7 +772,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             // NB: this next section is some mangling to use the base quality color preferences...
                             if (flowSignalDiff <= 0) {
                                 flowSignalDiff = 0;
-                            } else if (50 < flowSignalDiff) { 
+                            } else if (50 < flowSignalDiff) {
                                 flowSignalDiff = 50;
                             }
                             flowSignalDiff = 50 - flowSignalDiff; // higher is better
@@ -786,12 +786,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                             } else if (flowSignalDiff < Byte.MIN_VALUE) {
                                 qual = Byte.MIN_VALUE;
                             } else {
-                                qual = (byte)flowSignalDiff;
+                                qual = (byte) flowSignalDiff;
                             }
                             // Finally, get the color
                             color = getShadedColor(qual, color, alignmentColor, prefs);
                         }
-                    } 
+                    }
 
                     double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
 
@@ -891,8 +891,11 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        Color c = alignment.getDefaultColor();
-        switch (renderOptions.getColorOption()) {
+
+        Color defaultColor = alignment.getDefaultColor();
+        Color c = defaultColor;
+        ColorOption colorOption = renderOptions.getColorOption();
+        switch (colorOption) {
             case BISULFITE:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
@@ -908,6 +911,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                 c = nomeseqColor;
                 break;
 
+            case UNEXPECTED_PAIR:
+            case PAIR_ORIENTATION:
+                c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
+                if (colorOption == ColorOption.PAIR_ORIENTATION || c != defaultColor) {
+                    break;
+                }
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
@@ -939,9 +948,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
 
-                break;
-            case PAIR_ORIENTATION:
-                c = getOrientationColor(alignment, getPEStats(alignment, renderOptions));
                 break;
             case READ_STRAND:
                 if (alignment.isNegativeStrand()) {
