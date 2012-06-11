@@ -102,6 +102,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
+        menus.add(createToolsMenu());
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
@@ -112,6 +113,41 @@ public class IGVMenuBar extends JMenuBar {
         // Experimental -- remove for production release
 
         return menus;
+    }
+
+    private JMenu createToolsMenu() {
+        List<JComponent> menuItems = new ArrayList<JComponent>(10);
+
+        JMenuItem exportData = new JMenuItem("Export Features");
+        exportData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File outFile = FileDialogUtils.chooseFile("Save Visible Data",
+                        PreferenceManager.getInstance().getLastTrackDirectory(),
+                        new File("visibleData.bed"),
+                        FileDialogUtils.SAVE);
+                IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
+            }
+        });
+        menuItems.add(exportData);
+
+        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
+        analysisDialog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
+            }
+        });
+
+        menuItems.add(analysisDialog);
+        analysisDialog.setEnabled(false);
+        if (Globals.BEDtoolsAnalysisEnabled) {
+            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+        }
+
+        MenuAction toolsMenuAction = new MenuAction("Tools", null);
+        return MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+
     }
 
     public void enableExtrasMenu() {
@@ -326,30 +362,6 @@ public class IGVMenuBar extends JMenuBar {
 
 
         MenuAction dataMenuAction = new MenuAction("Tracks", null, KeyEvent.VK_K);
-
-        JMenuItem exportData = new JMenuItem("Export Features");
-        exportData.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File outFile = FileDialogUtils.chooseFile("Save Visible Data",
-                        PreferenceManager.getInstance().getLastTrackDirectory(),
-                        new File("visibleData.bed"),
-                        FileDialogUtils.SAVE);
-                IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
-            }
-        });
-
-        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
-        analysisDialog.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
-            }
-        });
-        if (Globals.BEDtoolsAnalysisEnabled) {
-            analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
-            menuItems.add(analysisDialog);
-        }
 
         //menuItems.add(exportData);
 

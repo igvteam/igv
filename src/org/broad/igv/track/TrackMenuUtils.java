@@ -39,10 +39,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -339,8 +336,13 @@ public class TrackMenuUtils {
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    String newName = JOptionPane.showInputDialog(IGV.getMainFrame(), "Enter overlap track name: ", "Overlaps");
+
+                    if (newName == null || newName.trim() == "") {
+                        return;
+                    }
                     CombinedFeatureSource source = new CombinedFeatureSource(tracks, CombinedFeatureSource.Operation.MULTIINTER);
-                    Track newTrack = new FeatureTrack("", "Overlaps", source);
+                    Track newTrack = new FeatureTrack("", newName, source);
 
                     IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
                     IGV.getInstance().repaint();

@@ -118,11 +118,11 @@ public class AnalysisDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
                 contentPanel.add(track1Box);
-                track1Box.setBounds(50, 35, 190, track1Box.getPreferredSize().height);
+                track1Box.setBounds(10, 35, 270, track1Box.getPreferredSize().height);
                 contentPanel.add(operation);
-                operation.setBounds(50, 75, 190, operation.getPreferredSize().height);
+                operation.setBounds(70, 75, 150, operation.getPreferredSize().height);
                 contentPanel.add(track2Box);
-                track2Box.setBounds(50, 115, 190, track2Box.getPreferredSize().height);
+                track2Box.setBounds(10, 115, 270, track2Box.getPreferredSize().height);
 
                 //---- label1 ----
                 label1.setText("Result Track Name");
@@ -131,14 +131,17 @@ public class AnalysisDialog extends JDialog {
 
                 //======== scrollPane1 ========
                 {
+
+                    //---- resultName ----
+                    resultName.setLineWrap(true);
                     scrollPane1.setViewportView(resultName);
                 }
                 contentPanel.add(scrollPane1);
-                scrollPane1.setBounds(50, 180, 175, 35);
+                scrollPane1.setBounds(10, 170, 270, 65);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -156,8 +159,8 @@ public class AnalysisDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -168,8 +171,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -180,8 +183,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
