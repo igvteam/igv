@@ -1246,45 +1246,47 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
 
-        if (!hasAlignmentFiles()) {
-            return false;
-        }
+        if (hasAlignmentFiles()) {
+            final ReferenceFrame referenceFrame = te.getFrame();
+            final double position = te.getChromosomePosition();
+            double maxDistance = 10 * referenceFrame.getScale();
 
-        final ReferenceFrame referenceFrame = te.getFrame();
-        final double position = te.getChromosomePosition();
-        double maxDistance = 10 * referenceFrame.getScale();
+            Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
+            selectedSamples.clear();
+            if (f != null) {
+                String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());
+                if (selectedSample != null) {
+                    // Select clicked sample and all other adjacent with the same genotype
+                    Genotype genotype = f.getGenotype(selectedSample);
+                    String type = genotype.getType();
 
-        Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
-        selectedSamples.clear();
-        if (f != null) {
-            String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());
-            if (selectedSample != null) {
-                // Select clicked sample and all other adjacent with the same genotype
-                Genotype genotype = f.getGenotype(selectedSample);
-                String type = genotype.getType();
-
-                int idx = getSampleIndex(selectedSample);
-                for (int i = idx; i < sampleBounds.size(); i++) {
-                    String s = sampleBounds.get(i).sample;
-                    Genotype gt = f.getGenotype(s);
-                    if (gt != null && type.equals(gt.getType())) {
-                        selectedSamples.add(s);
-                    } else {
-                        break;
+                    int idx = getSampleIndex(selectedSample);
+                    for (int i = idx; i < sampleBounds.size(); i++) {
+                        String s = sampleBounds.get(i).sample;
+                        Genotype gt = f.getGenotype(s);
+                        if (gt != null && type.equals(gt.getType())) {
+                            selectedSamples.add(s);
+                        } else {
+                            break;
+                        }
                     }
-                }
-                for (int i = idx - 1; i >= 0; i--) {
-                    String s = sampleBounds.get(i).sample;
-                    Genotype gt = f.getGenotype(s);
-                    if (gt != null && type.equals(gt.getType())) {
-                        selectedSamples.add(s);
-                    } else {
-                        break;
+                    for (int i = idx - 1; i >= 0; i--) {
+                        String s = sampleBounds.get(i).sample;
+                        Genotype gt = f.getGenotype(s);
+                        if (gt != null && type.equals(gt.getType())) {
+                            selectedSamples.add(s);
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
+            IGV.getInstance().doRefresh();
         }
-        IGV.getInstance().doRefresh();
+
+        if (IGV.getInstance().isSuppressTooltip()) {
+            openTooltipWindow(te);
+        }
 
         return true;
     }

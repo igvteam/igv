@@ -4,21 +4,209 @@ import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 
 /**
  * @author Jim Robinson
  * @date 11/7/11
  */
 public class TooltipTextFrame extends JFrame {
+
+
+    private static final DataFlavor[] supportedFlavors;
+
+    static {
+        try {
+            supportedFlavors = new DataFlavor[]{
+                    new DataFlavor("text/html;class=java.lang.String"),
+                    new DataFlavor("text/plain;class=java.lang.String")
+            };
+        } catch (ClassNotFoundException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+
+    public TooltipTextFrame(String title, String text) throws HeadlessException {
+
+        setTitle(title);
+
+        //setUndecorated(true);
+        setAlwaysOnTop(true);
+
+
+        setLayout(new BorderLayout());
+
+        JEditorPane pane = new JEditorPane("text/html", text);
+        pane.setEditable(false);
+        pane.setTransferHandler(new MyTransferHandler());
+
+        Dimension d = pane.getPreferredSize();
+        int w = (int) (1.1 * d.width);
+        int h = (int) (1.1 * d.height);
+
+        h = h > 600 ? 600 : (h < 100 ? 100 : h);
+        w = w > 800 ? 800 : (w < 100 ? 100 : w);
+        setSize(w, h);
+
+
+        JScrollPane scrollPane = new JScrollPane(pane);
+
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+
+            private Point point = new Point();
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point p = getLocation();
+                final int dx = e.getX() - point.x;
+                final int dy = e.getY() - point.y;
+                setLocation(p.x + dx, p.y + dy);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                point.x = e.getX();
+                point.y = e.getY();
+            }
+        };
+
+        pane.addMouseListener(mouseAdapter);
+
+        pane.addMouseMotionListener(mouseAdapter);
+
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                try {
+                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                        BrowserLauncher.openURL(e.getURL().toExternalForm());
+                } catch (IOException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        });
+
+        getContentPane().add(scrollPane, BorderLayout.CENTER);
+    }
+
+
+    /**
+     * Custom transfer handler that preserves line breaks in html when copying to clipboard
+     */
+    class MyTransferHandler extends TransferHandler {
+
+        protected Transferable createTransferable(JComponent c) {
+            final JEditorPane pane = (JEditorPane) c;
+            final String htmlText = pane.getText();
+            final String plainText = extractText(new StringReader(htmlText));
+            return new MyTransferable(plainText, htmlText);
+        }
+
+        public String extractText(Reader reader) {
+            final ArrayList<String> list = new ArrayList<String>();
+
+            HTMLEditorKit.ParserCallback parserCallback = new HTMLEditorKit.ParserCallback() {
+                public void handleText(final char[] data, final int pos) {
+                    list.add(new String(data));
+                }
+
+                public void handleStartTag(HTML.Tag tag, MutableAttributeSet attribute, int pos) {
+                }
+
+                public void handleEndTag(HTML.Tag t, final int pos) {
+                }
+
+                public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, final int pos) {
+                    if (t.equals(HTML.Tag.BR)) {
+                        list.add("\n");
+                    }
+                }
+
+                public void handleComment(final char[] data, final int pos) {
+                }
+
+                public void handleError(final String errMsg, final int pos) {
+                }
+            };
+            try {
+                new ParserDelegator().parse(reader, parserCallback, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String result = "";
+            for (String s : list) {
+                result += s;
+            }
+            return result;
+        }
+
+
+        @Override
+        public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
+            if (action == COPY) {
+                clip.setContents(this.createTransferable(comp), null);
+            }
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+
+    }
+
+    class MyTransferable implements Transferable {
+
+
+        private final String plainData;
+        private final String htmlData;
+
+        public MyTransferable(String plainData, String htmlData) {
+            this.plainData = plainData;
+            this.htmlData = htmlData;
+        }
+
+        public DataFlavor[] getTransferDataFlavors() {
+            return supportedFlavors;
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            for (DataFlavor supportedFlavor : supportedFlavors) {
+                if (supportedFlavor == flavor) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (flavor.equals(supportedFlavors[0])) {
+                return htmlData;
+            }
+            if (flavor.equals(supportedFlavors[1])) {
+                return plainData;
+            }
+            throw new UnsupportedFlavorException(flavor);
+        }
+    }
 
 
     public static void main(String[] args) throws IOException {
@@ -52,7 +240,7 @@ public class TooltipTextFrame extends JFrame {
         }
         text.append("</html>");
 
-        TooltipTextFrame frame = new TooltipTextFrame(text.toString());
+        TooltipTextFrame frame = new TooltipTextFrame("test", text.toString());
         frame.setVisible(true);
 
     }
@@ -97,63 +285,8 @@ public class TooltipTextFrame extends JFrame {
         buf.append("</table>");
 
 
-        TooltipTextFrame frame = new TooltipTextFrame(buf.toString());
+        TooltipTextFrame frame = new TooltipTextFrame("test", buf.toString());
         frame.setVisible(true);
 
     }
-
-    public TooltipTextFrame(String text) throws HeadlessException {
-        init(text);
-    }
-
-    void init(String text) {
-
-        //setUndecorated(true);
-        setAlwaysOnTop(true);
-
-        setSize(300, 300);
-        setLayout(new BorderLayout());
-
-        JEditorPane pane = new JEditorPane("text/html", text);
-        pane.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(pane);
-
-        MouseAdapter mouseAdapter = new MouseAdapter() {
-
-            private Point point = new Point();
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                Point p = getLocation();
-                final int dx = e.getX() - point.x;
-                final int dy = e.getY() - point.y;
-                setLocation(p.x + dx, p.y + dy);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                point.x = e.getX();
-                point.y = e.getY();
-            }
-        };
-
-        pane.addMouseListener(mouseAdapter);
-
-        pane.addMouseMotionListener(mouseAdapter);
-
-        pane.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                try {
-                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
-                        BrowserLauncher.openURL(e.getURL().toExternalForm());
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-        });
-
-        getContentPane().add(scrollPane, BorderLayout.CENTER);
-    }
-
-
 }

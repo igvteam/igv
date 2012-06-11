@@ -188,20 +188,6 @@ public class EWigTrack extends AbstractTrack {
 
     }
 
-    @Override
-    public boolean handleDataClick(TrackClickEvent te) {
-        MouseEvent e = te.getMouseEvent();
-        if (e.isPopupTrigger()) {
-            getPopupMenu(e).show(e.getComponent(), e.getX(), e.getY());
-            //sortRows();
-            //IGV.getInstance().repaintDataPanels();
-            return true;
-        } else {
-            return super.handleDataClick(te);
-        }
-
-    }
-
     public JPopupMenu getPopupMenu(
             final MouseEvent evt) {
 

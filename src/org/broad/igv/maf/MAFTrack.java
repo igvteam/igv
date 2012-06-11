@@ -63,16 +63,15 @@ public class MAFTrack extends AbstractTrack {
     private HashMap<String, String> chrMappings;
 
 
-
     public MAFTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;
         this.mgr = new MAFManager(locator, genome);
 
         List<String> mafChrNames = mgr.getChrNames();
-        if(mafChrNames != null) {
+        if (mafChrNames != null) {
             chrMappings = new HashMap();
-            for(String mafChr : mafChrNames) {
+            for (String mafChr : mafChrNames) {
                 String chr = genome.getChromosomeAlias(mafChr);
                 chrMappings.put(chr, mafChr);
             }
@@ -120,7 +119,7 @@ public class MAFTrack extends AbstractTrack {
 
         for (String sp : mgr.getSelectedSpecies()) {
 
-            String name =  mgr.getSpeciesName(sp);
+            String name = mgr.getSpeciesName(sp);
             if (name == null) {
                 name = sp;
             }
@@ -262,11 +261,13 @@ public class MAFTrack extends AbstractTrack {
         MouseEvent e = te.getMouseEvent();
         if (e.isPopupTrigger()) {
             configureTrack();
-            return true;
+        } else {
+            if (IGV.getInstance().isSuppressTooltip()) {
+                openTooltipWindow(te);
+            }
         }
-        return false;
+        return true;
     }
-
 
 
     private void configureTrack() {

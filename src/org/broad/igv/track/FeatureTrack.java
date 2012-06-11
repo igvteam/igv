@@ -304,12 +304,23 @@ public class FeatureTrack extends AbstractTrack {
             int n = 1;
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
+                    if (!firstFeature) {
+                        buf.append("<br/>--------------<br/>");
+                    }
+
                     IGVFeature igvFeature = (IGVFeature) feature;
                     String vs = igvFeature.getValueString(position, null);
-                    if (!firstFeature) {
-                        buf.append("<br>--------------<br>");
-                    }
                     buf.append(vs);
+
+                    if (IGV.getInstance().isSuppressTooltip()){
+                        // URL
+                        String url = getFeatureURL(igvFeature);
+
+                        if (url != null) {
+                            buf.append("<br/><a href=\"" + url + "\">" + url + "</a>");
+                        }
+                    }
+
                     firstFeature = false;
 
                     if (n > maxNumber) {
@@ -340,6 +351,20 @@ public class FeatureTrack extends AbstractTrack {
 
         }
     }
+
+
+    private String getFeatureURL(IGVFeature igvFeature) {
+        String url = igvFeature.getURL();
+        if (url == null) {
+            String trackURL = getUrl();
+            if (trackURL != null && igvFeature.getIdentifier() != null) {
+                String encodedID = URLEncoder.encode(igvFeature.getIdentifier());
+                url = trackURL.replaceAll("\\$\\$", encodedID);
+            }
+        }
+        return url;
+    }
+
 
     /**
      * Get all features this track contains.
@@ -477,9 +502,6 @@ public class FeatureTrack extends AbstractTrack {
 
         MouseEvent e = te.getMouseEvent();
 
-        //dhmay adding for feature selection
-        selectedFeature = null;
-
         //dhmay adding selection of an expanded feature row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             if (levelRects != null) {
@@ -502,6 +524,9 @@ public class FeatureTrack extends AbstractTrack {
         }
 
 
+        //dhmay adding for feature selection
+        selectedFeature = null;
+
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
@@ -514,24 +539,22 @@ public class FeatureTrack extends AbstractTrack {
             else if (igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
                 selectedFeature = null;
             else selectedFeature = igvFeature;
-            String url = igvFeature.getURL();
-            if (url == null) {
-                String trackURL = getUrl();
-                if (trackURL != null && igvFeature.getIdentifier() != null) {
-                    String encodedID = URLEncoder.encode(igvFeature.getIdentifier());
-                    url = trackURL.replaceAll("\\$\\$", encodedID);
+
+            if (IGV.getInstance().isSuppressTooltip()) {
+                openTooltipWindow(te);
+            } else {
+                String url = getFeatureURL(igvFeature);
+                if (url != null) {
+                    try {
+                        BrowserLauncher.openURL(url);
+                    } catch (IOException e1) {
+                        log.error("Error launching url: " + url);
+                    }
+                    e.consume();
+                    return true;
                 }
             }
 
-            if (url != null) {
-                try {
-                    BrowserLauncher.openURL(url);
-                } catch (IOException e1) {
-                    log.error("Error launching url: " + url);
-                }
-                e.consume();
-                return true;
-            }
         }
 
         return false;

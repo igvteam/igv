@@ -752,6 +752,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
         }
+        if (IGV.getInstance().isSuppressTooltip()) {
+            openTooltipWindow(te);
+        }
         return false;
     }
 

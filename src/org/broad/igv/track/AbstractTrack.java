@@ -27,11 +27,13 @@ import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
@@ -476,7 +478,32 @@ public abstract class AbstractTrack implements Track {
         return new ArrayList();
     }
 
-    public boolean handleDataClick(TrackClickEvent e) {
+    public boolean handleDataClick(TrackClickEvent te) {
+
+        if (IGV.getInstance().isSuppressTooltip()) {
+            return openTooltipWindow(te);
+        }
+        return false;
+    }
+
+    protected boolean openTooltipWindow(TrackClickEvent e) {
+        ReferenceFrame frame = e.getFrame();
+        final MouseEvent me = e.getMouseEvent();
+        String popupText = getValueStringAt(frame.getChrName(), e.getChromosomePosition(), e.getMouseEvent().getY(), frame);
+
+        if (popupText != null) {
+
+            final TooltipTextFrame tf = new TooltipTextFrame(getName(), popupText);
+            Point p = me.getComponent().getLocationOnScreen();
+            tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
+
+            UIUtilities.invokeOnEventThread(new Runnable() {
+                public void run() {
+                    tf.setVisible(true);
+                }
+            });
+            return true;
+        }
         return false;
     }
 

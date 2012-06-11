@@ -78,9 +78,7 @@ public class MutationTrack extends FeatureTrack {
                     buf.append("</html>");
 
 
-                    final TooltipTextFrame tf = new TooltipTextFrame(buf.toString());
-                    tf.setSize(350, 500);
-
+                    final TooltipTextFrame tf = new TooltipTextFrame(MutationTrack.this.getName(), buf.toString());
                     Point p = me.getComponent().getLocationOnScreen();
                     tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
 
@@ -89,7 +87,6 @@ public class MutationTrack extends FeatureTrack {
                             tf.setVisible(true);
                         }
                     });
-
 
                 }
             });
