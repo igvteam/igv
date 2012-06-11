@@ -1,28 +1,30 @@
 package org.broad.igv.sam;
 
+import java.util.Arrays;
+
 /**
- * Represents an alignment block which contains flow signals.  Added to suppor IonTorrent alignments.
+ * Represents an alignment block which contains flow signals.  Added to support IonTorrent alignments.
  *
  * @author Jim Robinson
  * @date 3/19/12
  */
 public class AlignmentBlockFS extends AlignmentBlock {
 
-    public short[][][] flowSignals = null;
+    public FlowSignalContext fContext = null;
 
-    protected AlignmentBlockFS(int start, byte[] bases, byte[] qualities, short[][][] flowSignals, Alignment baseAlignment) {
+    protected AlignmentBlockFS(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext, Alignment baseAlignment) {
         super(start, bases, qualities, baseAlignment);
-        if (flowSignals != null && flowSignals.length == bases.length) {
-            this.flowSignals = flowSignals;
+        if (fContext != null && fContext.signals.length == bases.length) {
+            this.fContext = fContext;
         }
     }
 
-    public short[][] getFlowSignalContext(int offset) {
-        return this.flowSignals[offset];
+    public FlowSignalSubContext getFlowSignalSubContext(int offset) {
+        return new FlowSignalSubContext(this.fContext.signals[offset], this.fContext.bases[offset]);
     }
 
 
     public boolean hasFlowSignals() {
-        return (null != this.flowSignals);
+        return (null != this.fContext);
     }
 }

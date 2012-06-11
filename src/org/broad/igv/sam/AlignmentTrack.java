@@ -65,6 +65,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DOWNAMPLED_ROW_HEIGHT = 3;
     static final int DS_MARGIN_2 = 5;
 
+    public enum ShadeBasesOption {
+        NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE;
+    }
+
     public enum ExperimentType {
         RNA, BISULFITE, OTHER;
 
@@ -148,6 +152,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
 
+    static final ShadeBasesOption DEFAULT_SHADE_BASES_OPTION = ShadeBasesOption.QUALITY;
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
     static final boolean DEFAULT_SHOWALLBASES = false;
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
@@ -485,6 +490,46 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
 
     }
+    
+    /**
+     * Copy the contents of the popup text to the system clipboard.
+     */
+    public void copyFlowSignalDistribution(final TrackClickEvent e, double location) {
+        TreeMap <Short , Integer> map = new TreeMap<Short, Integer>();
+        for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
+            Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
+            while (alignmentIterator.hasNext()) {
+                Alignment alignment = alignmentIterator.next();
+                if (!alignment.contains(location)) {
+                    continue;
+                }
+                AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+                for (int i = 0; i < blocks.length; i++) {
+                    AlignmentBlock block = blocks[i];
+                    if (!block.contains((int)location) || !block.hasFlowSignals()) {
+                        continue;
+                    }
+                    short flowSignal = block.getFlowSignalSubContext((int)location- block.getStart()).signals[1][0];
+                    if (map.containsKey(flowSignal)) {
+                        // increment
+                        map.put(flowSignal, map.get(flowSignal) + 1);
+                    } else {
+                        // insert
+                        map.put(flowSignal, 1);
+                    }
+                }
+            }
+        }
+        StringBuffer buf = new StringBuffer();
+        buf.append("{\n");
+        for (Short key : map.keySet()) {
+            buf.append("    \"" + key + "\" : \"" + map.get(key) + "\"\n"); 
+        }
+        buf.append("}\n");
+        StringSelection stringSelection = new StringSelection(buf.toString());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    }
 
     /**
      * Jump to the mate region
@@ -820,7 +865,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
     public static class RenderOptions {
-        boolean shadeBases;
+        ShadeBasesOption shadeBasesOption;
         boolean shadeCenters;
         boolean flagUnmappedPairs;
         boolean showAllBases;
@@ -847,7 +892,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
-            shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
+            shadeBasesOption = ShadeBasesOption.valueOf(prefs.get(PreferenceManager.SAM_SHADE_BASES));
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
@@ -891,11 +936,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public Map<String, String> getPersistentState() {
             Map<String, String> attributes = new HashMap();
             PreferenceManager prefs = PreferenceManager.getInstance();
-            if (shadeBases != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY)) {
-                attributes.put("shadeBases", String.valueOf(shadeBases));
+            if (shadeBasesOption != DEFAULT_SHADE_BASES_OPTION) {
+                attributes.put("shadeBasesOption", shadeBasesOption.toString());
             }
             if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
-                attributes.put("shadeCenters", String.valueOf(shadeBases));
+                attributes.put("shadeCenters", String.valueOf(shadeCenters));
             }
             if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
                 attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
@@ -944,9 +989,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (value != null) {
                 setMinInsertSize(Integer.parseInt(value));
             }
-            value = attributes.get("shadeBases");
+            value = attributes.get("shadeBasesOption");
             if (value != null) {
-                shadeBases = Boolean.parseBoolean(value);
+                shadeBasesOption = ShadeBasesOption.valueOf(value);
             }
             value = attributes.get("shadeCenters");
             if (value != null) {
@@ -1098,6 +1143,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
+            addCopyFlowSignalDistributionToClipboardItem(e);
 
             addSeparator();
             addGroupMenuItem();
@@ -1105,7 +1151,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addColorByMenuItem();
 
             addSeparator();
-            addShadeBaseMenuItem();
+            addShadeBaseByMenuItem();
             addShowMismatchesMenuItem();
             addShowAllBasesMenuItem();
 
@@ -1448,6 +1494,26 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
+        public void addCopyFlowSignalDistributionToClipboardItem(final TrackClickEvent te) {
+            final MouseEvent me = te.getMouseEvent();
+            JMenuItem item = new JMenuItem("Copy the flow signal distrubtion for this base to the clipboard");
+            final ReferenceFrame frame = te.getFrame();
+            if (frame == null) {
+                item.setEnabled(false);
+            } else {
+                final double location = frame.getChromosomePosition(me.getX());
+
+                // Change track height by attribute
+                item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+                        copyFlowSignalDistribution(te, location);
+                    }
+                });
+            }
+            add(item);
+        }
+
         public void addViewPairedArcsMenuItem() {
             final JMenuItem item = new JCheckBoxMenuItem("View paired arcs");
             item.setSelected(isPairedArcView());
@@ -1624,28 +1690,53 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
+        
+        private JCheckBoxMenuItem getShadeBasesMenuItem(String label, final ShadeBasesOption option) {
+            final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
+            mi.setSelected(renderOptions.shadeBasesOption == option);
 
-
-        public void addShadeBaseMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
-            item.setSelected(renderOptions.shadeBases);
-            item.addActionListener(new ActionListener() {
+            if (option == ShadeBasesOption.NONE) {
+                mi.setSelected(renderOptions.shadeBasesOption == null || renderOptions.shadeBasesOption == option);
+            }
+            mi.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
                     UIUtilities.invokeOnEventThread(new Runnable() {
 
                         public void run() {
-                            renderOptions.shadeBases = item.isSelected();
+                            if (mi.isSelected()) {
+                                renderOptions.shadeBasesOption = option;
+                            } else {
+                                renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
+                            }
                             refresh();
                         }
                     });
+
                 }
             });
 
-            add(item);
+            return mi;
         }
+        
+        public void addShadeBaseByMenuItem() {
+            JMenu groupMenu = new JMenu("Shade bases by...");
+            ButtonGroup group = new ButtonGroup();
 
+            Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
+            mappings.put("none", ShadeBasesOption.NONE);
+            mappings.put("quality", ShadeBasesOption.QUALITY);
+            mappings.put("read flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ);
+            mappings.put("reference flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE);
+
+            for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
+                JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());
+                groupMenu.add(mi);
+                group.add(mi);
+            }
+
+            add(groupMenu);
+        }
 
         public void addShowCoverageItem() {
             // Change track height by attribute

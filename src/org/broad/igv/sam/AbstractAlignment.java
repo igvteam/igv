@@ -121,26 +121,28 @@ public abstract class AbstractAlignment implements Alignment {
         }
         return 0;
     }
+    
     private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
         if (block.hasFlowSignals()) {
             // flow signals
             int i, j, n = 0;
-            short[][] flowSignalContext = block.getFlowSignalContext(offset);
-            if (null != flowSignalContext) {
+            FlowSignalSubContext f = block.getFlowSignalSubContext(offset);
+            if (null != f && null != f.signals && null != f.bases) {
                 buf.append("FZ = ");
-                for (i=0;i<flowSignalContext.length;i++) {
-                    if (null != flowSignalContext[i] && 0 < flowSignalContext[i].length) {
+                for (i=0;i<f.signals.length;i++) {
+                    if (null != f.signals[i] && 0 < f.signals[i].length) {
                         if (1 == i) {
                             if (0 < n) {
                                 buf.append(",");
                             }
                             buf.append("[");
                         }
-                        for (j=0;j<flowSignalContext[i].length;j++) {
+                        for (j=0;j<f.signals[i].length;j++) {
                             if (1 != i && 0 < n) {
                                 buf.append(",");
                             }
-                            buf.append(flowSignalContext[i][j]);
+                            buf.append(f.bases[i][j]);
+                            buf.append(f.signals[i][j]);
                             n++;
                         }
                         if (1 == i) {
@@ -178,7 +180,7 @@ public abstract class AbstractAlignment implements Alignment {
                         for (offset=0;offset<block.getBases().length;offset++) {
                             byte base = block.getBase(offset);
                             buf.append((char)base + ": ");
-                            bufAppendFlowSignals(block, buf, offset); // TODO: add in all blocks
+                            bufAppendFlowSignals(block, buf, offset);
                         }
                         buf.append("----------------------"); // NB: no <br> required
                         return buf.toString();

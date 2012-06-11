@@ -282,6 +282,7 @@ public class TrackLoader {
             return newTracks;
         } catch (IOException e) {
             log.error(e);
+            e.printStackTrace();
             throw new DataLoadException(e.getMessage(), path);
         }
 

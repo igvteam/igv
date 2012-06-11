@@ -26,6 +26,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 
 import java.awt.*;
 import java.io.File;
@@ -68,7 +69,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SHOW_CENTER_LINE = "SAM.SHOW_CENTER_LINE";
     public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";
     public static final String SAM_SHOW_COV_TRACK = "SAM.SHOW_COV_TRACK";
-    public static final String SAM_SHADE_BASE_QUALITY = "SAM.SHADE_BASE_QUALITY";
+    public static final String SAM_SHADE_BASES = "SAM.SHADE_BASE_QUALITY";
     public static final String SAM_BASE_QUALITY_MIN = "SAM.BASE_QUALITY_MIN";
     public static final String SAM_BASE_QUALITY_MAX = "SAM.BASE_QUALITY_MAX";
     public static final String SAM_FILTER_ALIGNMENTS = "SAM.FILTER_ALIGNMENTS";
@@ -940,7 +941,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_REF_SEQ, "false");
         defaultValues.put(SAM_SHOW_CENTER_LINE, "true");
         defaultValues.put(SAM_SHOW_COV_TRACK, "true");
-        defaultValues.put(SAM_SHADE_BASE_QUALITY, "true");
+        defaultValues.put(SAM_SHADE_BASES, ShadeBasesOption.QUALITY.toString());
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");
         defaultValues.put(SAM_FILTER_FAILED_READS, "true");
         defaultValues.put(SAM_DOWNSAMPLE_READS, "true");
