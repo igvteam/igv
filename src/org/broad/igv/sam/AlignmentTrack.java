@@ -995,7 +995,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             value = attributes.get("shadeBasesOption");
             if (value != null) {
-                shadeBasesOption = ShadeBasesOption.valueOf(value);
+                // For older sessions
+                if (value.equals("false")) {
+                    shadeBasesOption = ShadeBasesOption.NONE;
+                } else if (value.equals("true")) {
+                    shadeBasesOption = ShadeBasesOption.QUALITY;
+                } else {
+                    shadeBasesOption = ShadeBasesOption.valueOf(value);
+                }
             }
             value = attributes.get("shadeCenters");
             if (value != null) {
