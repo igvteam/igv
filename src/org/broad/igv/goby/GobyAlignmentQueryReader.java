@@ -23,7 +23,6 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
@@ -32,6 +31,7 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Query reader to parse <a href="http://goby.campagnelab.org">Goby</a> alignment files.
@@ -120,13 +120,12 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
     }
 
     /**
-     * This method returns null. We are not reading a SAM file. IGV does not seem to mind receiving null.
-     *
-     * @return null
+     * @return true if any readgroups have the platform tag set to "IONTORRENT"
      */
-    public SAMFileHeader getHeader() {
+    public Set<String> getPlatforms() {
         return null;
     }
+
 
     /**
      * Obtain an iterator over the entire file.

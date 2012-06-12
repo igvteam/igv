@@ -92,6 +92,11 @@ public class GeraldReader implements AlignmentReader {
         }
     }
 
+    @Override
+    public Set<String> getPlatforms() {
+        return null;
+    }
+
     public CloseableIterator<Alignment> query(final String sequence, final int start, final int end, final boolean contained) {
 
         if (featureIndex == null) {

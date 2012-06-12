@@ -444,6 +444,10 @@ public class CachingQueryReader {
         return pairedEnd;
     }
 
+    public Set<String> getPlatforms() {
+        return reader.getPlatforms();
+    }
+
     public class TiledIterator implements CloseableIterator<Alignment> {
 
         Iterator<Alignment> currentSamIterator;

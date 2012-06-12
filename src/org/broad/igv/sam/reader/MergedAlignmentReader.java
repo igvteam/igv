@@ -64,6 +64,18 @@ public class MergedAlignmentReader implements AlignmentReader {
 
 
     /**
+     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     */
+    public Set<String> getPlatforms() {
+        Set<String> platforms = new HashSet<String>();
+        for (AlignmentReader reader : readers) {
+            platforms.addAll(reader.getPlatforms());
+        }
+        return platforms;
+    }
+
+
+    /**
      * Return the merged list of all sequence names, maintaining order.
      *
      * @return

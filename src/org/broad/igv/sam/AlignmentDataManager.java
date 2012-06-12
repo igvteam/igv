@@ -130,6 +130,11 @@ public class AlignmentDataManager {
     }
 
 
+    public boolean isIonTorrent() {
+        return reader.getPlatforms().contains("IONTORRENT");
+    }
+
+
     /**
      * Return the loaded interval for the specified frame.  Note this can be null if the interval isn't loaded
      * yet.

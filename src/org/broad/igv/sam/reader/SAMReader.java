@@ -25,6 +25,7 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
+import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
@@ -39,6 +40,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +75,22 @@ public class SAMReader implements AlignmentReader {
 
     public SAMFileHeader getHeader() {
         return header;
+    }
+
+
+    /**
+     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     */
+    public Set<String>  getPlatforms() {
+        Set<String> platforms = new HashSet<String>();
+        SAMFileHeader header = getHeader();
+        if (header != null) {
+            for (SAMReadGroupRecord rg : header.getReadGroups()) {
+                platforms.add(rg.getPlatform());
+
+            }
+        }
+        return platforms;
     }
 
 

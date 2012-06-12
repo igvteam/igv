@@ -23,7 +23,6 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 
@@ -38,7 +37,17 @@ public interface AlignmentReader {
 
     void close() throws IOException;
 
+    /**
+     * Return the list of sequence (chromosome) names as defined in the files header or meta-data section.
+     */
     List<String> getSequenceNames();
+
+    /**
+     * Return the set of all platforms represented in this file.
+     *
+     * @return set of all platforms.  May return "null"
+     */
+    Set<String>  getPlatforms();
 
     CloseableIterator<Alignment> iterator();
 

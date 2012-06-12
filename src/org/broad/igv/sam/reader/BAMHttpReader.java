@@ -11,10 +11,7 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableStream;
@@ -84,6 +81,22 @@ public class BAMHttpReader implements AlignmentReader {
             header = reader.getFileHeader();
         }
         return header;
+    }
+
+
+    /**
+     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     */
+    public Set<String>  getPlatforms() {
+        Set<String> platforms = new HashSet<String>();
+        SAMFileHeader header = getHeader();
+        if (header != null) {
+            for (SAMReadGroupRecord rg : header.getReadGroups()) {
+                platforms.add(rg.getPlatform().toUpperCase());
+
+            }
+        }
+        return platforms;
     }
 
     public boolean hasIndex() {

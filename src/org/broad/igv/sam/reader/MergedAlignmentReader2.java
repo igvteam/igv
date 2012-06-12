@@ -19,6 +19,7 @@
 package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.util.CloseableIterator;
 
 import java.io.IOException;
@@ -63,6 +64,18 @@ public class MergedAlignmentReader2 implements AlignmentReader {
 
     public List<String> getSequenceNames() {
         return sequenceNames;
+    }
+
+
+    /**
+     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     */
+    public Set<String> getPlatforms() {
+        Set<String> platforms = new HashSet<String>();
+        for (AlignmentReader reader : readers) {
+            platforms.addAll(reader.getPlatforms());
+        }
+        return platforms;
     }
 
 
