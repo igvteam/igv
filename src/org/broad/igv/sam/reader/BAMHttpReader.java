@@ -87,7 +87,7 @@ public class BAMHttpReader implements AlignmentReader {
     /**
      * @return true if any readgroups have the platform tag set to "IONTORRENT"
      */
-    public Set<String>  getPlatforms() {
+    public Set<String> getPlatforms() {
         Set<String> platforms = new HashSet<String>();
         SAMFileHeader header = getHeader();
         if (header != null) {

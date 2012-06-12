@@ -159,8 +159,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
 
-    private boolean ionTorrent;  // TODO -- have a platform enumeration ?
-
+    private boolean ionTorrent;
+    
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
