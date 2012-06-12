@@ -14,23 +14,23 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "track1Box"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 50
+						"x": 10
 						"y": 35
-						"width": 190
+						"width": 270
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "operation"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 50
+						"x": 70
 						"y": 75
-						"width": 190
+						"width": 150
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "track2Box"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 50
+						"x": 10
 						"y": 115
-						"width": 190
+						"width": 270
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label1"
@@ -44,12 +44,13 @@ new FormModel {
 						name: "scrollPane1"
 						add( new FormComponent( "javax.swing.JTextArea" ) {
 							name: "resultName"
+							"lineWrap": true
 						} )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 50
-						"y": 180
-						"width": 175
-						"height": 35
+						"x": 10
+						"y": 170
+						"width": 270
+						"height": 65
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"

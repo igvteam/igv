@@ -92,7 +92,7 @@ public class Globals {
     //Note: This must be the FULL path. Having bedtools on your systems path
     //is not sufficient
     public static String BEDtoolsPath = "/usr/local/bin/bedtools";
-    public static boolean BEDtoolsAnalysisEnabled = false;
+    public static boolean toolsMenuEnabled = false;
 
     static {
         Properties properties = new Properties();
@@ -119,7 +119,7 @@ public class Globals {
 
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
 
-        BEDtoolsAnalysisEnabled = Boolean.parseBoolean(System.getProperty("enable.analysis", "false"));
+        toolsMenuEnabled = Boolean.parseBoolean(System.getProperty("enable.tools", "false"));
     }
 
     public static void setHeadless(boolean bool) {
