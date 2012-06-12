@@ -325,7 +325,7 @@ public class RulerPanel extends JPanel {
     private void drawExomeBlocks(Graphics g, ExomeReferenceFrame frame) {
 
         String chr = frame.getChrName();
-        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chr);
+        List<ExomeBlock> blocks = frame.getBlocks(chr);
         int idx = frame.getFirstBlockIdx();
         ExomeBlock b;
 
@@ -381,8 +381,8 @@ public class RulerPanel extends JPanel {
     private void drawExomeGenes(Graphics g, ExomeReferenceFrame frame) {
 
         String chr = frame.getChrName();
-        List<ExomeUtils.Gene> genes = ExomeUtils.getGenes(chr);
-        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chr);
+        List<ExomeReferenceFrame.Gene> genes = frame.getGenes(chr);
+        List<ExomeBlock> blocks = frame.getBlocks(chr);
 
         int idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
         Rectangle visibleRect = this.getVisibleRect();
@@ -396,10 +396,10 @@ public class RulerPanel extends JPanel {
         int blockGap = 0; // TODO --
         int top = visibleRect.y + visibleRect.height - 30;
         do {
-            ExomeUtils.Gene gene = genes.get(idx);
+            ExomeReferenceFrame.Gene gene = genes.get(idx);
 
-            double exomeStart = ExomeUtils.genomeToExomePosition(blocks, gene.getStart());
-            double exomeEnd = ExomeUtils.genomeToExomePosition(blocks, (int) gene.getEnd());
+            double exomeStart = ExomeReferenceFrame.genomeToExomePosition(blocks, gene.getStart());
+            double exomeEnd = ExomeReferenceFrame.genomeToExomePosition(blocks, (int) gene.getEnd());
 
             pStart = (int) ((exomeStart - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
             pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;

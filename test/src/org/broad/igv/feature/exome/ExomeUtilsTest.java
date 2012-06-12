@@ -28,7 +28,7 @@ public class ExomeUtilsTest {
     @BeforeClass
     public static void setup() throws IOException {
         Map<String, List<Feature>> allFeatures = loadTestFeatures();
-        chr6Blocks = ExomeUtils.collapseTranscripts(allFeatures.get("chr6"));
+        chr6Blocks = ExomeReferenceFrame.collapseTranscripts(allFeatures.get("chr6"));
 
     }
 
@@ -75,13 +75,13 @@ public class ExomeUtilsTest {
         final int exomeStart = 2685;
 
         // Genome positino at exact start of block
-        int calcExomePosition = ExomeUtils.genomeToExomePosition(chr6Blocks, genomeStart);
+        int calcExomePosition = ExomeReferenceFrame.genomeToExomePosition(chr6Blocks, genomeStart);
         assertEquals(exomeStart, calcExomePosition);
 
         // Genome position in interior of block
         int genomePosition = genomeStart + 100;
         int expectedExomePosition = exomeStart + 100;
-        calcExomePosition = ExomeUtils.genomeToExomePosition(chr6Blocks, genomePosition);
+        calcExomePosition = ExomeReferenceFrame.genomeToExomePosition(chr6Blocks, genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
         // Between 2 blocks -- position exome at end of first block
@@ -89,27 +89,27 @@ public class ExomeUtilsTest {
         //Block 3 [2214930, 2215032, 307, 102]
         genomePosition = (2208917 + 2214930) / 2;
         expectedExomePosition = 223 + 84;
-        calcExomePosition = ExomeUtils.genomeToExomePosition(chr6Blocks, genomePosition);
+        calcExomePosition = ExomeReferenceFrame.genomeToExomePosition(chr6Blocks, genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
         // Before first block
         genomePosition = 100;
         expectedExomePosition = 0;
-        calcExomePosition = ExomeUtils.genomeToExomePosition(chr6Blocks, genomePosition);
+        calcExomePosition = ExomeReferenceFrame.genomeToExomePosition(chr6Blocks, genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
         // After last block
         //Block 100 [111693771, 111696954, 29865, 3183]
         genomePosition = 111696954 + 100;
         expectedExomePosition = 29865 + 3183;
-        calcExomePosition = ExomeUtils.genomeToExomePosition(chr6Blocks, genomePosition);
+        calcExomePosition = ExomeReferenceFrame.genomeToExomePosition(chr6Blocks, genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
     }
 
     @Test
     public void testGetBlockByGenomePosition() {
         int genomePosition = (2208917 + 2214930) / 2;
-        int idx = ExomeUtils.getIndexForGenomePosition(chr6Blocks, genomePosition);
+        int idx = ExomeReferenceFrame.getIndexForGenomePosition(chr6Blocks, genomePosition);
         assertEquals(2, idx);
 
         ExomeBlock b = chr6Blocks.get(idx);
@@ -128,7 +128,7 @@ public class ExomeUtilsTest {
         int exomePosition = exomeStart + 100;
         int expectedGenomePosition = genomeStart + 100;
 
-        int calcGenomePosition = ExomeUtils.exomeToGenomePosition(chr6Blocks, exomePosition);
+        int calcGenomePosition = ExomeReferenceFrame.exomeToGenomePosition(chr6Blocks, exomePosition);
         assertEquals(expectedGenomePosition, calcGenomePosition);
     }
 
