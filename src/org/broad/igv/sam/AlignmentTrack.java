@@ -158,6 +158,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final boolean DEFAULT_SHOWALLBASES = false;
     static final BisulfiteContext DEFAULT_BISULFITE_CONTEXT = BisulfiteContext.CG;
 
+
+    private boolean ionTorrent = false;  // TODO -- have a platform enumeration ?
+
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
@@ -195,6 +198,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         this.genome = genome;
         this.dataManager = dataManager;
+
+        // TODO -- get the ionTorrent flag from dataManager, which in turn gets it from header
+        ionTorrent = false;
 
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
@@ -993,15 +999,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (value != null) {
                 setMinInsertSize(Integer.parseInt(value));
             }
-            value = attributes.get("shadeBasesOption");
+            value = attributes.get("shadeBases");  // For older sessions
             if (value != null) {
-                // For older sessions
                 if (value.equals("false")) {
                     shadeBasesOption = ShadeBasesOption.NONE;
                 } else if (value.equals("true")) {
                     shadeBasesOption = ShadeBasesOption.QUALITY;
-                } else {
+                }
+            }
+            value = attributes.get("shadeBasesOption");
+            if (value != null) {
+                try {
                     shadeBasesOption = ShadeBasesOption.valueOf(value);
+                } catch (Exception e) {
+                    log.error("Error converting shadeBasesOption", e);
+                    shadeBasesOption = ShadeBasesOption.QUALITY;
                 }
             }
             value = attributes.get("shadeCenters");
@@ -1154,7 +1166,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSeparator();
             add(TrackMenuUtils.getTrackRenameItem(tracks));
             addCopyToClipboardItem(e);
-            addCopyFlowSignalDistributionToClipboardItem(e);
+
+            if (ionTorrent) {
+                addCopyFlowSignalDistributionToClipboardItem(e);
+            }
 
             addSeparator();
             addGroupMenuItem();
@@ -1703,6 +1718,52 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
+
+        public void addShadeBaseByMenuItem() {
+
+            if (ionTorrent) {
+                JMenu groupMenu = new JMenu("Shade bases by...");
+                ButtonGroup group = new ButtonGroup();
+
+                Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
+                mappings.put("none", ShadeBasesOption.NONE);
+                mappings.put("quality", ShadeBasesOption.QUALITY);
+                mappings.put("read flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ);
+                mappings.put("reference flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE);
+
+                for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
+                    JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());
+                    groupMenu.add(mi);
+                    group.add(mi);
+                }
+
+                add(groupMenu);
+            } else {
+                final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
+                item.setSelected(renderOptions.shadeBasesOption == ShadeBasesOption.QUALITY);
+                item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+                        UIUtilities.invokeOnEventThread(new Runnable() {
+
+                            public void run() {
+                                if (item.isSelected()) {
+                                    renderOptions.shadeBasesOption = ShadeBasesOption.QUALITY;
+                                } else {
+                                    renderOptions.shadeBasesOption = ShadeBasesOption.NONE;
+                                }
+                                refresh();
+                            }
+                        });
+                    }
+                });
+
+                add(item);
+            }
+
+        }
+
+
         private JCheckBoxMenuItem getShadeBasesMenuItem(String label, final ShadeBasesOption option) {
             final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label);
             mi.setSelected(renderOptions.shadeBasesOption == option);
@@ -1729,25 +1790,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             });
 
             return mi;
-        }
-
-        public void addShadeBaseByMenuItem() {
-            JMenu groupMenu = new JMenu("Shade bases by...");
-            ButtonGroup group = new ButtonGroup();
-
-            Map<String, ShadeBasesOption> mappings = new LinkedHashMap<String, ShadeBasesOption>();
-            mappings.put("none", ShadeBasesOption.NONE);
-            mappings.put("quality", ShadeBasesOption.QUALITY);
-            mappings.put("read flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ);
-            mappings.put("reference flow signal deviation", ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE);
-
-            for (Map.Entry<String, ShadeBasesOption> el : mappings.entrySet()) {
-                JCheckBoxMenuItem mi = getShadeBasesMenuItem(el.getKey(), el.getValue());
-                groupMenu.add(mi);
-                group.add(mi);
-            }
-
-            add(groupMenu);
         }
 
         public void addShowCoverageItem() {
