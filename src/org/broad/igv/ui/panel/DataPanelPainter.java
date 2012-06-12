@@ -26,8 +26,8 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.xome.Block;
-import org.broad.igv.feature.xome.ExomeReferenceFrame;
+import org.broad.igv.feature.exome.ExomeBlock;
+import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -39,8 +39,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -74,9 +72,9 @@ public class DataPanelPainter {
                 RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
                 preloadTracks(groups, exomeContext, width, visibleRect);
 
-                List<Block> blocks = ((ExomeReferenceFrame) frame).getBlocks();
+                List<ExomeBlock> blocks = ((ExomeReferenceFrame) frame).getBlocks();
                 int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
-                Block b;
+                ExomeBlock b;
 
                 int lastPStart = -1;
                 int pStart;

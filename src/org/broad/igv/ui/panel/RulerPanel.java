@@ -31,10 +31,15 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.exome.ExomeBlock;
+import org.broad.igv.feature.exome.ExomeReferenceFrame;
+import org.broad.igv.feature.exome.ExomeUtils;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -58,6 +63,11 @@ public class RulerPanel extends JPanel {
     private static Logger log = Logger.getLogger(RulerPanel.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
+
+    private static Color grey1 = new Color(120, 120, 120);
+    private static Color grey2 = new Color(200, 200, 200);
+    private static Color gene1 = new Color(0, 0, 150, 150);
+    private static Color gene2 = new Color(0, 150, 0, 150);
 
     // TODO -- get from preferences
     boolean affective = false;
@@ -117,6 +127,15 @@ public class RulerPanel extends JPanel {
 
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
+        } else if (FrameManager.isExomeMode()) {
+            // TODO -- hack,
+            ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) FrameManager.getDefaultFrame();
+            drawExomeBlocks(g, exomeFrame);
+            drawExomeGenes(g, exomeFrame);
+            if (drawSpan) {
+                drawSpan(g);
+            }
+
         } else {
             // Clear panel
             if (affective) {
@@ -131,18 +150,23 @@ public class RulerPanel extends JPanel {
                 drawEllipsis(g);
             }
         }
+
     }
 
     private void drawSpan(Graphics g) {
 
         //TODO -- hack
-
         int w = getWidth();
 
         g.setFont(spanFont);
 
-        // Positions are 1/2 open, subtract 1 to compensate
-        int range = (int) (frame.getScale() * w) + 1;
+
+        int range;
+        if (FrameManager.isExomeMode()) {
+            range = (int) (frame.getEnd() - frame.getOrigin()) + 1;
+        } else {
+            range = (int) (frame.getScale() * w) + 1;
+        }
 
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
@@ -296,6 +320,119 @@ public class RulerPanel extends JPanel {
 
             offset += chrLength;
         }
+    }
+
+    private void drawExomeBlocks(Graphics g, ExomeReferenceFrame frame) {
+
+        String chr = frame.getChrName();
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chr);
+        int idx = frame.getFirstBlockIdx();
+        ExomeBlock b;
+
+        Rectangle visibleRect = this.getVisibleRect();
+
+
+        int lastPStart = -1;
+        int pStart;
+        int pEnd;
+        int exomeOrigin = frame.getExomeOrigin();
+        int visibleBlockCount = 0;
+        int blockGap = 0; // TODO --
+        int top = visibleRect.y + visibleRect.height - 10;
+        do {
+            b = blocks.get(idx);
+
+            pStart = (int) ((b.getExomeStart() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+            pEnd = (int) ((b.getExomeEnd() - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+
+            // Don't draw over previously drawn region -- can happen when zoomed out.
+            if (pEnd > lastPStart) {
+
+                lastPStart = pStart;
+                if (pEnd == pStart) pEnd++;
+
+
+                b.setScreenBounds(pStart, pEnd);
+
+                Rectangle rect = new Rectangle(pStart, top, pEnd - pStart, 10);
+
+
+                Graphics2D exomeGraphics = (Graphics2D) g.create();
+                //Shape clip = exomeGraphics.getClip();
+
+                Color c = idx % 2 == 0 ? grey1 : grey2;
+
+                exomeGraphics.setColor(c);
+                exomeGraphics.fill(rect);
+                //GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
+
+
+                visibleBlockCount++;
+            }
+            idx++;
+
+
+        }
+        while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
+
+
+    }
+
+    private void drawExomeGenes(Graphics g, ExomeReferenceFrame frame) {
+
+        String chr = frame.getChrName();
+        List<ExomeUtils.Gene> genes = ExomeUtils.getGenes(chr);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chr);
+
+        int idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
+        Rectangle visibleRect = this.getVisibleRect();
+
+
+        int lastPStart = -1;
+        int pStart;
+        int pEnd;
+        int exomeOrigin = frame.getExomeOrigin();
+        int visibleBlockCount = 0;
+        int blockGap = 0; // TODO --
+        int top = visibleRect.y + visibleRect.height - 30;
+        do {
+            ExomeUtils.Gene gene = genes.get(idx);
+
+            double exomeStart = ExomeUtils.genomeToExomePosition(blocks, gene.getStart());
+            double exomeEnd = ExomeUtils.genomeToExomePosition(blocks, (int) gene.getEnd());
+
+            pStart = (int) ((exomeStart - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+            pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+
+            // Don't draw over previously drawn region -- can happen when zoomed out.
+            if (pEnd > lastPStart) {
+
+                lastPStart = pStart;
+                if (pEnd == pStart) pEnd++;
+
+                Rectangle rect = new Rectangle(pStart, top, pEnd - pStart, 20);
+
+
+                Graphics2D exomeGraphics = (Graphics2D) g.create();
+                //Shape clip = exomeGraphics.getClip();
+
+                Color c = idx % 2 == 0 ? gene1 : gene2;
+
+                exomeGraphics.setColor(c);
+                exomeGraphics.fill(rect);
+                exomeGraphics.setColor(Color.black);
+                GraphicUtils.drawCenteredText(gene.getName(), rect, exomeGraphics);
+
+
+                visibleBlockCount++;
+            }
+            idx++;
+
+
+        }
+        while ((pStart < visibleRect.x + visibleRect.width) && idx < genes.size());
+
+
     }
 
     public static String formatNumber(double position) {

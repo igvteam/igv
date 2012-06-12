@@ -1,4 +1,4 @@
-package org.broad.igv.feature.xome;
+package org.broad.igv.feature.exome;
 
 
 import org.broad.tribble.Feature;
@@ -7,7 +7,7 @@ import org.broad.tribble.Feature;
  * @author Jim Robinson
  * @date 5/24/12
  */
-public class Block implements Feature {
+public class ExomeBlock implements Feature {
     int idx;
     private int genomeStart;
     private int exomeStart;
@@ -15,7 +15,7 @@ public class Block implements Feature {
     private int leftPixel;
     private int rightPixel;
 
-    public Block(int idx, int genomeStart, int xomeStart, int length) {
+    public ExomeBlock(int idx, int genomeStart, int xomeStart, int length) {
         this.idx = idx;
         this.genomeStart = genomeStart;
         this.exomeStart = xomeStart;

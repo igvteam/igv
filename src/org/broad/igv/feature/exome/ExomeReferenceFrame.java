@@ -1,15 +1,9 @@
-package org.broad.igv.feature.xome;
+package org.broad.igv.feature.exome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.DragEventManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.List;
 
@@ -21,14 +15,8 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ExomeReferenceFrame.class);
 
-    //List<Block> blocks;
     int firstBlockIdx;
-    //int endBlockIdx;
-
     int exomeOrigin;
-    //int exomeEnd;
-
-    //int genomeEnd;
     private int blockGap;
 
     public ExomeReferenceFrame(ReferenceFrame otherFrame) {
@@ -36,6 +24,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         super(otherFrame);
 
     }
+
 
     @Override
     public void shiftOriginPixels(double delta) {
@@ -47,8 +36,8 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         if (exomeOrigin < 0) exomeOrigin = 0;
 
         // Find exome block that contains the new position.  We're assuming is very close to the current block.
-        List<Block> blocks = XomeUtils.getBlocks(getChrName());
-        Block b = blocks.get(firstBlockIdx);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(getChrName());
+        ExomeBlock b = blocks.get(firstBlockIdx);
         int comp = b.compareExomePosition(exomeOrigin);
         if (comp > 0) {
             while (firstBlockIdx < blocks.size() - 1) {
@@ -74,9 +63,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     @Override
     public void setOrigin(double genomePosition, boolean repaint) {
 
-        List<Block> blocks = XomeUtils.getBlocks(chrName);
-        firstBlockIdx = XomeUtils.getIndexForGenomePosition(blocks, origin);
-        Block firstBlock = blocks.get(firstBlockIdx);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chrName);
+        firstBlockIdx = ExomeUtils.getIndexForGenomePosition(blocks, origin);
+        ExomeBlock firstBlock = blocks.get(firstBlockIdx);
 
         exomeOrigin = firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
 
@@ -109,14 +98,14 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         this.origin = locus.getStart();    // Genome locus
         int genomeEnd = locus.getEnd();
 
-        List<Block> blocks = XomeUtils.getBlocks(chrName);
-        firstBlockIdx = XomeUtils.getIndexForGenomePosition(blocks, origin);
-        Block firstBlock = blocks.get(firstBlockIdx);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chrName);
+        firstBlockIdx = ExomeUtils.getIndexForGenomePosition(blocks, origin);
+        ExomeBlock firstBlock = blocks.get(firstBlockIdx);
 
         exomeOrigin =  origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
                 firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
 
-        int exomeEnd = Math.max(exomeOrigin + 40, XomeUtils.genomeToExomePosition(blocks, genomeEnd));
+        int exomeEnd = Math.max(exomeOrigin + 40, ExomeUtils.genomeToExomePosition(blocks, genomeEnd));
 
 
         int bp = exomeEnd - exomeOrigin;
@@ -137,19 +126,17 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         int currentBPLength = (int) (locationScale * widthInPixels);
         int delta = (int) (currentBPLength / (2 * zoomFactor));
 
-        List<Block> blocks = XomeUtils.getBlocks(chrName);
-        int exomeCenter = XomeUtils.genomeToExomePosition(blocks, (int) newCenter);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(chrName);
+        int exomeCenter = ExomeUtils.genomeToExomePosition(blocks, (int) newCenter);
         exomeOrigin =  exomeCenter - delta;
 
-        origin = XomeUtils.exomeToGenomePosition(blocks, exomeOrigin);
+        origin = ExomeUtils.exomeToGenomePosition(blocks, exomeOrigin);
         locationScale /= zoomFactor;
 
         IGV.getInstance().repaintDataAndHeaderPanels();
         IGV.getInstance().repaintStatusAndZoomSlider();
 
     }
-
-
 
     /**
      * Return the chromosome (genomic) position corresponding to the screen pixel position.
@@ -161,20 +148,20 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     public double getChromosomePosition(int screenPosition) {
 
         double exomePosition = exomeOrigin + getScale() * screenPosition;
-        List<Block> blocks = XomeUtils.getBlocks(getChrName());
-        return XomeUtils.exomeToGenomePosition(blocks, (int) exomePosition);
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(getChrName());
+        return ExomeUtils.exomeToGenomePosition(blocks, (int) exomePosition);
     }
 
     @Override
     public double getEnd() {
-        List<Block> blocks = XomeUtils.getBlocks(getChrName());
+        List<ExomeBlock> blocks = ExomeUtils.getBlocks(getChrName());
         int exomeEnd = exomeOrigin + (int) (locationScale * widthInPixels);
-        int genomeEnd = XomeUtils.exomeToGenomePosition(blocks, exomeEnd) ;
+        int genomeEnd = ExomeUtils.exomeToGenomePosition(blocks, exomeEnd) ;
         return genomeEnd;
     }
 
-    public List<Block> getBlocks() {
-        return XomeUtils.getBlocks(getChrName());
+    public List<ExomeBlock> getBlocks() {
+        return ExomeUtils.getBlocks(getChrName());
     }
 
     public int getFirstBlockIdx() {

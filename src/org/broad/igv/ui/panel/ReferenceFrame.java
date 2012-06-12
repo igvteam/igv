@@ -28,13 +28,8 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.xome.Block;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Locale;
 
 
 /**
