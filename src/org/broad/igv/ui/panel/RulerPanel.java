@@ -51,8 +51,12 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -75,7 +79,10 @@ public class RulerPanel extends JPanel {
     boolean drawEllipsis = false;
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
+
     private List<ClickLink> chromosomeRects = new ArrayList();
+    private List<MouseRect> mouseRects = new ArrayList<MouseRect>();
+
 
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
@@ -380,12 +387,14 @@ public class RulerPanel extends JPanel {
 
     private void drawExomeGenes(Graphics g, ExomeReferenceFrame frame) {
 
+        mouseRects.clear();
+
         String chr = frame.getChrName();
         List<ExomeReferenceFrame.Gene> genes = frame.getGenes(chr);
 
         int idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
         Rectangle visibleRect = this.getVisibleRect();
-
+        FontMetrics fm = g.getFontMetrics();
 
         int lastPStart = -1;
         int pStart;
@@ -419,9 +428,14 @@ public class RulerPanel extends JPanel {
 
                 exomeGraphics.setColor(c);
                 exomeGraphics.fill(rect);
-                exomeGraphics.setColor(Color.black);
-                GraphicUtils.drawCenteredText(gene.getName(), rect, exomeGraphics);
 
+                Rectangle2D sb = fm.getStringBounds(gene.getName(), g);
+                if (sb.getWidth() < rect.getWidth()) {
+                    exomeGraphics.setColor(Color.black);
+                    GraphicUtils.drawCenteredText(gene.getName(), rect, exomeGraphics);
+                }
+
+                mouseRects.add(new MouseRect(rect, gene.getName()));
 
                 visibleBlockCount++;
             }
@@ -430,6 +444,13 @@ public class RulerPanel extends JPanel {
 
         }
         while ((pStart < visibleRect.x + visibleRect.width) && idx < genes.size());
+
+        Collections.sort(mouseRects, new Comparator<MouseRect>() {
+            @Override
+            public int compare(MouseRect mr1, MouseRect mr2) {
+                return mr1.width() - mr2.width();
+            }
+        });
 
 
     }
@@ -541,6 +562,15 @@ public class RulerPanel extends JPanel {
                     }
                     setCursor(Cursor.getDefaultCursor());
                     setToolTipText(WHOLE_GENOME_TOOLTIP);
+
+                } else {
+                    for (MouseRect mr : mouseRects) {
+                        if (mr.containsPoint(e.getPoint())) {
+                            RulerPanel.this.setToolTipText(mr.getText());
+                            return;
+                        }
+                    }
+                    RulerPanel.this.setToolTipText(CHROM_TOOLTIP);
 
                 }
             }
@@ -792,6 +822,28 @@ public class RulerPanel extends JPanel {
             }
 
 
+        }
+    }
+
+    static class MouseRect {
+        Rectangle bounds;
+        String text;
+
+        MouseRect(Rectangle bounds, String text) {
+            this.bounds = bounds;
+            this.text = text;
+        }
+
+        boolean containsPoint(Point p) {
+            return bounds.contains(p);
+        }
+
+        String getText() {
+            return text;
+        }
+
+        public int width() {
+            return bounds.width;
         }
     }
 

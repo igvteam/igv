@@ -32,6 +32,7 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.FrameManager;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -236,7 +237,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
                         axisRect.x + AXIS_AREA_WIDTH - 15, midPY + 4, labelGraphics);
             }
 
-        } else if (track.isShowDataRange() && arect.height > 20) {
+        } else if (!FrameManager.isExomeMode() && track.isShowDataRange() && arect.height > 20) {
             DataRange range = track.getDataRange();
             if (range != null) {
                 Graphics2D g = context.getGraphic2DForColor(Color.black);

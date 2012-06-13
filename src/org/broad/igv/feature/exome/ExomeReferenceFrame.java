@@ -214,23 +214,11 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     @Override
     public double getEnd() {
-        List<ExomeBlock> blocks = getBlocks(getChrName());
         int exomeEnd = exomeOrigin + (int) (locationScale * widthInPixels);
         int genomeEnd = exomeToGenomePosition(exomeEnd);
         return genomeEnd;
     }
 
-
-    public List<ExomeBlock> getBlocks(String chr) {
-        ExomeData exomeData = exomeBlockData.get(chr);
-        return exomeData.blocks;
-    }
-
-    public List<Gene> getGenes(String chr) {
-        ExomeData exomeData = exomeBlockData.get(chr);
-        return exomeData.genes;
-
-    }
 
     public int genomeToExomePosition(int genomePosition) {
 
@@ -267,14 +255,15 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         }
     }
 
-    private ExomeBlock getBlockAtGenomePosition(List<ExomeBlock> blocks, int genomePosition) {
-        ExomeBlock key = new ExomeBlock(-1, genomePosition, -1, 1);
-        int r = Collections.binarySearch(blocks, key, GENOME_POSITION_COMPARATOR);
-        if (r >= 0) {
-            return blocks.get(r);
-        } else {
-            return null;
-        }
+    public List<ExomeBlock> getBlocks(String chr) {
+        ExomeData exomeData = exomeBlockData.get(chr);
+        return exomeData.blocks;
+    }
+
+    public List<Gene> getGenes(String chr) {
+        ExomeData exomeData = exomeBlockData.get(chr);
+        return exomeData.genes;
+
     }
 
     private ExomeBlock getBlockAtExomePosition(List<ExomeBlock> blocks, int exomePosition) {

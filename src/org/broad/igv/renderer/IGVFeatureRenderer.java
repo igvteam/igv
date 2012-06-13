@@ -26,6 +26,7 @@ import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -471,7 +472,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         int nameWidth = fm.stringWidth(name);
         int nameStart = (pixelStart + pixelEnd - nameWidth) / 2;
 
-        if (nameStart > (lastFeatureEndedAtPixelX + fontSize)) {
+        Rectangle2D sb = fm.getStringBounds(name, g2D);
+
+
+        if (nameStart > (lastFeatureEndedAtPixelX + fontSize) && sb.getWidth() < g2D.getClipBounds().getWidth()) {
 
             // g2D.clearRect(xString2, textBaselineY, (int) stringBounds.getWidth(), (int) stringBounds.getHeight());
             g2D.drawString(name, nameStart, textBaselineY);

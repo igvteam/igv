@@ -26,6 +26,7 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.renderer.GraphicUtils;
@@ -47,6 +48,8 @@ public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
+    private static Color exomeBorderColor = new Color(190, 190, 255 );
+
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
                                    int width,
@@ -65,18 +68,20 @@ public class DataPanelPainter {
 
             if (frame.isExomeMode()) {
 
-                int blockGap = ((ExomeReferenceFrame) frame).getBlockGap();
+                ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) frame;
+
+                int blockGap = exomeFrame.getBlockGap();
 
                 Rectangle panelClip = visibleRect;
 
                 RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
                 preloadTracks(groups, exomeContext, width, visibleRect);
 
-                List<ExomeBlock> blocks = ((ExomeReferenceFrame) frame).getBlocks();
-                int idx = ((ExomeReferenceFrame) frame).getFirstBlockIdx();
+                List<ExomeBlock> blocks = exomeFrame.getBlocks();
+                int idx = exomeFrame.getFirstBlockIdx();
                 ExomeBlock b;
 
-                int lastPStart = -1;
+                int lastPStart = 0;
                 int pStart;
                 int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
@@ -104,24 +109,23 @@ public class DataPanelPainter {
                         Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
                         //Shape clip = exomeGraphics.getClip();
 
-                         Color c = ColorUtilities.randomColor(idx);
-                         exomeGraphics.setColor(c);
-                         exomeGraphics.fill(rect);
-                         exomeGraphics.setColor(Color.black);
-                         GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
+//                         Color c = ColorUtilities.randomColor(idx);
+//                         exomeGraphics.setColor(c);
+//                         exomeGraphics.fill(rect);
+//                         exomeGraphics.setColor(Color.black);
+//                         GraphicUtils.drawCenteredText(String.valueOf(idx), rect, exomeGraphics);
 
                         exomeGraphics.setClip(rect.intersection(panelClip));
                         exomeGraphics.translate(pStart, 0);
-                        width = rect.width;
 
-//                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
-//                        tmpFrame.setOrigin(b.getGenomeStart(), false);
-//
-//                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
-//                        paintFrame(groups, tmpContext, rect.width, rect);
-//
-//                        tmpContext.dispose();
-//                        exomeGraphics.dispose();
+                        ReferenceFrame tmpFrame = new ReferenceFrame(frame);
+                        tmpFrame.setOrigin(b.getGenomeStart(), false);
+
+                        RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+                        paintFrame(groups, tmpContext, rect.width, rect);
+
+                        tmpContext.dispose();
+                        exomeGraphics.dispose();
                         visibleBlockCount++;
                     }
                     idx++;
@@ -129,6 +133,28 @@ public class DataPanelPainter {
 
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
+
+
+                // Draw lines @ gene boundaries
+
+                String chr = frame.getChrName();
+                List<ExomeReferenceFrame.Gene> genes = exomeFrame.getGenes(chr);
+
+                idx = FeatureUtils.getIndexBefore(frame.getOrigin(), genes);
+
+                exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
+                int top = visibleRect.y;
+
+                Graphics2D lineGraphics = context.getGraphic2DForColor(exomeBorderColor);
+                do {
+                    ExomeReferenceFrame.Gene gene = genes.get(idx);
+                    double exomeEnd = exomeFrame.genomeToExomePosition(gene.getEnd());
+                    pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+                    lineGraphics.drawLine(pEnd, top, pEnd, top + visibleRect.height);
+                    idx++;
+
+                }
+                while ((pEnd < visibleRect.x + visibleRect.width) && idx < genes.size());
 
 
             } else {
