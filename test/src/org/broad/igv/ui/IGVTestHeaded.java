@@ -12,25 +12,12 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
-import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.Utilities;
+import org.fest.swing.fixture.FrameFixture;
+import org.fest.swing.fixture.JComboBoxFixture;
+import org.fest.swing.fixture.JPanelFixture;
 import org.junit.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,6 +42,24 @@ public class IGVTestHeaded extends AbstractHeadedTest{
 
         int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
         assertTrue(rangeDiff < 3);
+    }
+
+    /**
+     * Basic test showing usage of FEST and checking combo box
+     *
+     * @throws Exception
+     */
+    @Test
+    public void scratchTestFEST() throws Exception {
+
+        FrameFixture frame = new FrameFixture(IGV.getMainFrame());
+        JPanelFixture contentFixture = frame.panel("contentPane");
+
+        JPanelFixture commandBar = frame.panel("igvCommandBar");
+        JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
+
+        String[] chromos = commandBar.comboBox("chromosomeComboBox").contents();
+        assertEquals(26, chromos.length);
     }
 
 }

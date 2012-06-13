@@ -29,6 +29,10 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
+import java.awt.*;
+import java.lang.reflect.Field;
+import java.util.*;
+
 /**
  * @author jrobinso
  * @date Jul 28, 2010
@@ -164,4 +168,51 @@ public class TestUtils {
         }
         assertFalse(actIter.hasNext());
     }
+
+    /*
+     * The FEST library finds components by name
+     * We set the name property to equal the variable name.
+     * Intended for testing ONLY
+     * @param parent Element in which to set child names. Each field of this Object which is a Component
+     *               will have it's name set
+     * @param recursive Whether to set names on grand-child components. Note that this is all-or-none,
+     *                  if this is true it goes recursively all the way down. Recursion is breadth-first,
+     *                  stops at each level when an object has only non-Component fields
+     */
+    public static void setAllNames(Object parent, boolean recursive){
+        Field[] fields = parent.getClass().getDeclaredFields();
+        java.util.List<Component> childComponents = new ArrayList<Component>(fields.length);
+        try {
+            for (Field f : fields) {
+                Component c = null;
+                f.setAccessible(true);
+                try {
+                    c = (Component) f.get(parent);
+                } catch (ClassCastException e) {
+                    continue;
+                }
+                //Null valued fields don't throw a CCE
+                //We don't overwrite names, this should also prevent
+                //infinite recursion
+                if(c == null || c.getName() != null){
+                    continue;
+                }
+                //At this point, we've established
+                //that the field in question is a Component
+                c.setName(f.getName());
+                childComponents.add(c);
+
+                f.setAccessible(false);
+            }
+
+            if(recursive){
+                for(Component c: childComponents){
+                    setAllNames(c, recursive);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
