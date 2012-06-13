@@ -21,6 +21,8 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -150,6 +152,30 @@ public class StringUtils {
         StringSelection stringSelection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
+    }
+
+    /**
+     * Converts an input string, of any case, into a series
+     * of capitalized words.
+     * toCapWords("BOB") -> "Bob"
+     * toCapWords("bOb is MY FRiend") -> "Bob Is My Friend"
+     * @param text
+     * @return
+     */
+    public static String capWords(String text){
+        String res = "";
+        boolean capNext = true;
+        String s;
+
+        for(char c: text.toLowerCase().toCharArray()){
+            s = Character.toString(c);
+            if(capNext){
+                s = s.toUpperCase();
+            }
+            res += s;
+            capNext = " ".equals(s);
+        }
+        return res;
     }
 
 

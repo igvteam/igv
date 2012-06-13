@@ -16,6 +16,7 @@
 package org.broad.igv.track;
 
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,9 +40,15 @@ public class AnalysisDialog extends JDialog {
         super(owner);
         initComponents();
 
-        operation.setModel(new DefaultComboBoxModel(CombinedFeatureSource.Operation.values()));
+        ArrayList<CombinedFeatureSource.Operation> dialogOperations = new ArrayList<CombinedFeatureSource.Operation>(
+                Arrays.asList(CombinedFeatureSource.Operation.values()));
+        dialogOperations.remove(CombinedFeatureSource.Operation.MULTIINTER);
+
+        operation.setModel(new DefaultComboBoxModel(dialogOperations.toArray()));
         track1Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
         track2Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
+
+        operation.setRenderer(new OperationComboBoxRenderer());
         track1Box.setRenderer(new TrackComboBoxRenderer());
         track2Box.setRenderer(new TrackComboBoxRenderer());
 
@@ -211,7 +219,6 @@ public class AnalysisDialog extends JDialog {
 
     private class TrackComboBoxRenderer extends DefaultListCellRenderer {
 
-
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Track track = (Track) value;
@@ -220,11 +227,16 @@ public class AnalysisDialog extends JDialog {
         }
     }
 
-    private void setOutputTrackName() {
-        String name = ((Track) track1Box.getSelectedItem()).getName();
-        name += " " + operation.getSelectedItem() + " ";
-        name += ((Track) track2Box.getSelectedItem()).getName();
-        resultName.setText(name);
+
+
+    private class OperationComboBoxRenderer extends DefaultListCellRenderer{
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            CombinedFeatureSource.Operation op = (CombinedFeatureSource.Operation) value;
+            String toShow = StringUtils.capWords(op.name());
+            return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
+        }
+
     }
 
     private class SetOutputTrackNameListener implements ItemListener {
@@ -234,4 +246,9 @@ public class AnalysisDialog extends JDialog {
             setOutputTrackName();
         }
     }
+
+    private void setOutputTrackName() {
+
+    }
+
 }

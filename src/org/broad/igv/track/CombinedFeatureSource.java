@@ -204,7 +204,14 @@ public class CombinedFeatureSource implements FeatureSource {
         int numCols0 = tempFiles.get(fiNames[0]);
         int numCols1 = tempFiles.get(fiNames[1]);
         while ((line = in.readLine()) != null) {
+            System.out.println(line);
             String[] tokens = line.split("\t");
+            if (operation.getCmd().contains("-split")){
+                //When we split, the returned feature still has the exons
+                //We don't want to plot them all a zillion times
+                tokens = Arrays.copyOfRange(tokens, 0, Math.min(6, tokens.length));
+            }
+
             if (operation == Operation.WINDOW || operation == Operation.CLOSEST) {
 
                 String[] closest = Arrays.copyOfRange(tokens, numCols0, numCols0 + numCols1);
@@ -320,7 +327,7 @@ public class CombinedFeatureSource implements FeatureSource {
         //We use these bed flags to ensure output will be in bed format, even
         //if input is bam
         //TODO Include -wo, -wb options
-        INTERSECT("intersect -bed"),
+        INTERSECT("intersect -bed -split"),
         SUBTRACT("subtract"),
         //Identify the "closest" feature in file B for each feature in file A
         CLOSEST("closest"),
@@ -339,5 +346,6 @@ public class CombinedFeatureSource implements FeatureSource {
         public String getCmd() {
             return cmd;
         }
+
     }
 }
