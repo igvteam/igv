@@ -53,8 +53,50 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     public ExomeReferenceFrame(ReferenceFrame otherFrame) {
         super(otherFrame);
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
+        init(geneTrack);
     }
 
+    public ExomeReferenceFrame(ReferenceFrame otherFrame, FeatureTrack referenceTrack) {
+        super(otherFrame);
+        init(referenceTrack);
+    }
+
+
+    public ExomeReferenceFrame(ReferenceFrame otherFrame, Map<String, List<Feature>> featureMap) {
+        super(otherFrame);
+        init(featureMap);
+    }
+
+
+    private void init(FeatureTrack geneTrack) {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        for (Chromosome chromosome : genome.getChromosomes()) {
+            String chr = chromosome.getName();
+            List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
+            List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
+            List<Gene> genes = ExomeUtils.collapseToGenes(features);
+            ExomeData exomeData = new ExomeData(blocks, genes);
+            blockCache.put(chr, exomeData);
+
+        }
+    }
+
+    private void init(Map<String, List<Feature>> featureMap) {
+        for (String chr : featureMap.keySet()) {
+            List<Feature> features = featureMap.get(chr);
+            List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
+            List<Gene> genes = ExomeUtils.collapseToGenes(features);
+            ExomeData exomeData = new ExomeData(blocks, genes);
+            blockCache.put(chr, exomeData);
+
+        }
+    }
+
+    private synchronized ExomeData getExomeData(String chr) {
+        return blockCache.get(chr);
+    }
 
     @Override
     public void shiftOriginPixels(double delta) {
@@ -135,7 +177,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
                 firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
 
-        int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(blocks, genomeEnd));
+        int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
 
 
         int bp = exomeEnd - exomeOrigin;
@@ -156,11 +198,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         int currentBPLength = (int) (locationScale * widthInPixels);
         int delta = (int) (currentBPLength / (2 * zoomFactor));
 
-        List<ExomeBlock> blocks = getBlocks(chrName);
-        int exomeCenter = genomeToExomePosition(blocks, (int) newCenter);
+        int exomeCenter = genomeToExomePosition((int) newCenter);
         exomeOrigin = exomeCenter - delta;
 
-        origin = exomeToGenomePosition(blocks, exomeOrigin);
+        origin = exomeToGenomePosition(exomeOrigin);
         locationScale /= zoomFactor;
 
         IGV.getInstance().repaintDataAndHeaderPanels();
@@ -178,15 +219,14 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     public double getChromosomePosition(int screenPosition) {
 
         double exomePosition = exomeOrigin + getScale() * screenPosition;
-        List<ExomeBlock> blocks = getBlocks(getChrName());
-        return exomeToGenomePosition(blocks, (int) exomePosition);
+        return exomeToGenomePosition((int) exomePosition);
     }
 
     @Override
     public double getEnd() {
         List<ExomeBlock> blocks = getBlocks(getChrName());
         int exomeEnd = exomeOrigin + (int) (locationScale * widthInPixels);
-        int genomeEnd = exomeToGenomePosition(blocks, exomeEnd);
+        int genomeEnd = exomeToGenomePosition(exomeEnd);
         return genomeEnd;
     }
 
@@ -202,110 +242,12 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     }
 
-    private synchronized ExomeData getExomeData(String chr) {
-        ExomeData exomeData = blockCache.get(chr);
-        if (exomeData == null) {
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
-            Chromosome chromosome = genome.getChromosome(chr);
+    public int genomeToExomePosition(int genomePosition) {
 
-            List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
-            List<ExomeBlock> blocks = collapseTranscripts(features);
-            List<Gene> genes = collapseToGenes(features);
-            exomeData = new ExomeData(blocks, genes);
-            blockCache.put(chr, exomeData);
+        ExomeData ed = blockCache.get(chrName);
+        if(ed == null) return -1;
 
-        }
-        return exomeData;
-    }
-
-    private List<Gene> collapseToGenes(List<Feature> features) {
-
-        Map<String, Gene> genes = new HashMap<String, Gene>(10000);
-
-        for (Feature f : features) {
-            if (f instanceof BasicFeature) {
-                String geneName = ((BasicFeature) f).getName();
-                Gene gene = genes.get(geneName);
-                if (gene == null) {
-                    gene = new Gene((BasicFeature) f);
-                    genes.put(geneName, gene);
-                } else {
-                    gene.expand(f);
-                }
-            } else {
-
-            }
-        }
-
-        List<Gene> geneList = new ArrayList<Gene>(genes.values());
-        FeatureUtils.sortFeatureList(geneList);
-        return geneList;
-    }
-
-    static List<ExomeBlock> collapseTranscripts(List<Feature> features) {
-
-        // Step 1,  extract exons
-        List<Feature> exons = new ArrayList<Feature>(features.size() * 10);
-        for (Feature f : features) {
-            if (f instanceof BasicFeature) {
-                List<Exon> tmp = ((BasicFeature) f).getExons();
-                if (tmp != null) {
-                    exons.addAll(tmp);
-                }
-            } else {
-
-            }
-        }
-
-        FeatureUtils.sortFeatureList(exons);
-        List<ExomeBlock> blocks = collapseFeatures(exons);
-        return blocks;
-
-    }
-
-    /**
-     * Collapse the list of features into a list of non-overlapping blocks.  It is assumed that the
-     * feature list is sorted by start position.
-     *
-     * @param features
-     * @return
-     */
-    private static List<ExomeBlock> collapseFeatures(List<Feature> features) {
-
-        List<ExomeBlock> blocks = new ArrayList();
-        if (features.isEmpty()) {
-            return blocks;
-        }
-
-        Iterator<Feature> iter = features.iterator();
-        Feature f = iter.next();
-        int blockIndex = 0;
-        int exomeStart = 0;
-        ExomeBlock block = new ExomeBlock(blockIndex, f.getStart(), exomeStart, f.getEnd() - f.getStart());
-
-        while (iter.hasNext()) {
-            f = iter.next();
-            if (f.getStart() > block.getGenomeEnd()) {
-                blocks.add(block);
-
-                // Start next block
-                int blockLength = block.getLength();
-                exomeStart += blockLength;
-                blockIndex++;
-                int startingLength = f.getEnd() - f.getStart();
-                block = new ExomeBlock(blockIndex, f.getStart(), exomeStart, startingLength);
-            } else {
-                block.extend(f.getEnd());
-            }
-
-        }
-
-        return blocks;
-
-    }
-
-    public static int genomeToExomePosition(List<ExomeBlock> blocks, int genomePosition) {
+        List<ExomeBlock> blocks = ed.getBlock();
         int idx = getIndexForGenomePosition(blocks, genomePosition);
         ExomeBlock b = blocks.get(idx);
 
@@ -318,8 +260,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         }
     }
 
-    public static int exomeToGenomePosition(List<ExomeBlock> blocks, int exomePosition) {
+    public int exomeToGenomePosition(int exomePosition) {
 
+
+        ExomeData ed = blockCache.get(chrName);
+        if(ed == null) return -1;
+
+        List<ExomeBlock> blocks = ed.getBlock();
         ExomeBlock b = getBlockAtExomePosition(blocks, exomePosition);
         if (b != null) {
             return b.getGenomeStart() + (exomePosition - b.getExomeStart());
@@ -330,7 +277,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         }
     }
 
-    private static ExomeBlock getBlockAtGenomePosition(List<ExomeBlock> blocks, int genomePosition) {
+    private ExomeBlock getBlockAtGenomePosition(List<ExomeBlock> blocks, int genomePosition) {
         ExomeBlock key = new ExomeBlock(-1, genomePosition, -1, 1);
         int r = Collections.binarySearch(blocks, key, GENOME_POSITION_COMPARATOR);
         if (r >= 0) {
@@ -340,7 +287,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         }
     }
 
-    private static ExomeBlock getBlockAtExomePosition(List<ExomeBlock> blocks, int exomePosition) {
+    private ExomeBlock getBlockAtExomePosition(List<ExomeBlock> blocks, int exomePosition) {
         ExomeBlock key = new ExomeBlock(-1, -1, exomePosition, 1);
         int r = Collections.binarySearch(blocks, key, EXOME_POSITION_COMPARATOR);
         if (r >= 0) {
@@ -459,7 +406,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     }
 
-    static class ExomeData {
+    public static class ExomeData {
         List<ExomeBlock> block;
         List<Gene> genes;
 
