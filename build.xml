@@ -171,6 +171,10 @@
     <!-- Run all tests with ant -->
     <path id="test.classpath">
         <path refid="@jars"/>
+        <fileset dir="${testlib.dir}">
+            <include name="fest*.jar"/>
+            <include name="jcip*.jar"/>
+        </fileset>
         <pathelement location="${testtmp.dir}"/>
         <pathelement location="${tmp.dir}"/>
     </path>
