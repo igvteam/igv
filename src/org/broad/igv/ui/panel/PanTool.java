@@ -113,8 +113,8 @@ public class PanTool extends AbstractDataPanelTool {
             } else {
                 isDragging = true;
 
-                double deltaX = lastMousePoint.getX() - e.getX();
-                double deltaY = lastMousePoint.getY() - e.getY();
+                int deltaX = lastMousePoint.x - e.getX();
+                int deltaY = lastMousePoint.y - e.getY();
                 cumulativeDeltaX += Math.abs(deltaX);
                 cumulativeDeltaY += Math.abs(deltaY);
 

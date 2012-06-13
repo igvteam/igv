@@ -86,7 +86,7 @@ public class ExomeUtils {
             if (f.getStart() > block.getGenomeEnd()) {
                 blocks.add(block);
 
-                // Start next block
+                // Start next blocks
                 int blockLength = block.getLength();
                 exomeStart += blockLength;
                 blockIndex++;

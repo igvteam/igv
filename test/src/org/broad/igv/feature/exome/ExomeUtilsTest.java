@@ -43,17 +43,17 @@ public class ExomeUtilsTest extends AbstractHeadlessTest {
         final int genomeStart = 10831323;
         final int exomeStart = 2685;
 
-        // Genome positino at exact start of block
+        // Genome positino at exact start of blocks
         int calcExomePosition = frame.genomeToExomePosition(genomeStart);
         assertEquals(exomeStart, calcExomePosition);
 
-        // Genome position in interior of block
+        // Genome position in interior of blocks
         int genomePosition = genomeStart + 100;
         int expectedExomePosition = exomeStart + 100;
         calcExomePosition = frame.genomeToExomePosition(genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
-        // Between 2 blocks -- position exome at end of first block
+        // Between 2 blocks -- position exome at end of first blocks
         //Block 2 [2208833, 2208917, 223, 84]
         //Block 3 [2214930, 2215032, 307, 102]
         genomePosition = (2208917 + 2214930) / 2;
@@ -61,13 +61,13 @@ public class ExomeUtilsTest extends AbstractHeadlessTest {
         calcExomePosition = frame.genomeToExomePosition(genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
-        // Before first block
+        // Before first blocks
         genomePosition = 100;
         expectedExomePosition = 0;
         calcExomePosition = frame.genomeToExomePosition(genomePosition);
         assertEquals(expectedExomePosition, calcExomePosition);
 
-        // After last block
+        // After last blocks
         //Block 100 [111693771, 111696954, 29865, 3183]
         genomePosition = 111696954 + 100;
         expectedExomePosition = 29865 + 3183;

@@ -19,31 +19,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ExomeReferenceFrame.class);
 
-    private static final Comparator<ExomeBlock> GENOME_POSITION_COMPARATOR = new Comparator<ExomeBlock>() {
-        public int compare(ExomeBlock o1, ExomeBlock o2) {
-            int genomeStart2 = o2.getGenomeStart();
-            int genomeStart1 = o1.getGenomeStart();
-            if (genomeStart2 >= genomeStart1 && o2.getGenomeEnd() <= o1.getGenomeEnd()) {
-                return 0;
-            } else {
-                return genomeStart1 - genomeStart2;
-            }
-        }
-    };
-
-    private static final Comparator<ExomeBlock> EXOME_POSITION_COMPARATOR = new Comparator<ExomeBlock>() {
-        public int compare(ExomeBlock o1, ExomeBlock o2) {
-            int exomeStart2 = o2.getExomeStart();
-            int exomeStart1 = o1.getExomeStart();
-            if (exomeStart2 >= exomeStart1 && o2.getExomeEnd() <= o1.getExomeEnd()) {
-                return 0;
-            } else {
-                return exomeStart1 - exomeStart2;
-            }
-        }
-    };
-
-    Map<String, ExomeData> blockCache = new HashMap();
+    Map<String, ExomeData> exomeBlockData = new HashMap();
 
     int firstBlockIdx;
 
@@ -53,7 +29,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     public ExomeReferenceFrame(ReferenceFrame otherFrame) {
         super(otherFrame);
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
         init(geneTrack);
     }
@@ -75,10 +50,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         for (Chromosome chromosome : genome.getChromosomes()) {
             String chr = chromosome.getName();
             List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
-            List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
-            List<Gene> genes = ExomeUtils.collapseToGenes(features);
-            ExomeData exomeData = new ExomeData(blocks, genes);
-            blockCache.put(chr, exomeData);
+            if (features != null && features.size() > 0) {
+                processFeatures(chr, features);
+            }
 
         }
     }
@@ -86,20 +60,27 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     private void init(Map<String, List<Feature>> featureMap) {
         for (String chr : featureMap.keySet()) {
             List<Feature> features = featureMap.get(chr);
-            List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
-            List<Gene> genes = ExomeUtils.collapseToGenes(features);
-            ExomeData exomeData = new ExomeData(blocks, genes);
-            blockCache.put(chr, exomeData);
+            if (features.size() > 0) {
+                processFeatures(chr, features);
+            }
 
         }
     }
 
-    private synchronized ExomeData getExomeData(String chr) {
-        return blockCache.get(chr);
+    private void processFeatures(String chr, List<Feature> features) {
+        List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
+        List<Gene> genes = ExomeUtils.collapseToGenes(features);
+        ExomeData exomeData = new ExomeData(blocks, genes);
+        exomeBlockData.put(chr, exomeData);
     }
 
+    /**
+     * Move by the specified pixel amount.
+     *
+     * @param delta
+     */
     @Override
-    public void shiftOriginPixels(double delta) {
+    public void shiftOriginPixels(int delta) {
 
         if (exomeOrigin == 0 && delta < 0) return;
 
@@ -107,7 +88,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         exomeOrigin += shiftBP;
         if (exomeOrigin < 0) exomeOrigin = 0;
 
-        // Find exome block that contains the new position.  We're assuming is very close to the current block.
+        // Find exome blocks that contains the new position.  We're assuming is very close to the current blocks.
         List<ExomeBlock> blocks = getBlocks(getChrName());
         ExomeBlock b = blocks.get(firstBlockIdx);
         int comp = b.compareExomePosition(exomeOrigin);
@@ -128,13 +109,16 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         // Find genomePosition
         double genomePosition = b.getGenomeStart() + (exomeOrigin - b.getExomeStart());
 
-        super.setOrigin(genomePosition, true);
+        setOrigin(genomePosition, true);
     }
 
 
     @Override
     public void setOrigin(double genomePosition, boolean repaint) {
 
+        super.setOrigin(genomePosition, false);
+
+        //super.setOrigin(genomePosition, false);
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
         ExomeBlock firstBlock = blocks.get(firstBlockIdx);
@@ -223,6 +207,12 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     }
 
     @Override
+    protected double getGenomeCenterPosition() {
+        double centerExomePosition = exomeOrigin + getScale() * widthInPixels / 2;
+        return exomeToGenomePosition((int) centerExomePosition);
+    }
+
+    @Override
     public double getEnd() {
         List<ExomeBlock> blocks = getBlocks(getChrName());
         int exomeEnd = exomeOrigin + (int) (locationScale * widthInPixels);
@@ -232,22 +222,22 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
 
     public List<ExomeBlock> getBlocks(String chr) {
-        ExomeData exomeData = getExomeData(chr);
-        return exomeData.block;
+        ExomeData exomeData = exomeBlockData.get(chr);
+        return exomeData.blocks;
     }
 
     public List<Gene> getGenes(String chr) {
-        ExomeData exomeData = getExomeData(chr);
+        ExomeData exomeData = exomeBlockData.get(chr);
         return exomeData.genes;
 
     }
 
     public int genomeToExomePosition(int genomePosition) {
 
-        ExomeData ed = blockCache.get(chrName);
-        if(ed == null) return -1;
+        ExomeData ed = exomeBlockData.get(chrName);
+        if (ed == null) return -1;
 
-        List<ExomeBlock> blocks = ed.getBlock();
+        List<ExomeBlock> blocks = ed.getBlocks();
         int idx = getIndexForGenomePosition(blocks, genomePosition);
         ExomeBlock b = blocks.get(idx);
 
@@ -263,10 +253,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     public int exomeToGenomePosition(int exomePosition) {
 
 
-        ExomeData ed = blockCache.get(chrName);
-        if(ed == null) return -1;
+        ExomeData ed = exomeBlockData.get(chrName);
+        if (ed == null) return -1;
 
-        List<ExomeBlock> blocks = ed.getBlock();
+        List<ExomeBlock> blocks = ed.getBlocks();
         ExomeBlock b = getBlockAtExomePosition(blocks, exomePosition);
         if (b != null) {
             return b.getGenomeStart() + (exomePosition - b.getExomeStart());
@@ -407,20 +397,46 @@ public class ExomeReferenceFrame extends ReferenceFrame {
     }
 
     public static class ExomeData {
-        List<ExomeBlock> block;
-        List<Gene> genes;
+        private List<ExomeBlock> blocks;
+        private List<Gene> genes;
 
         ExomeData(List<ExomeBlock> block, List<Gene> genes) {
-            this.block = block;
+            this.blocks = block;
             this.genes = genes;
         }
 
-        public List<ExomeBlock> getBlock() {
-            return block;
+        public List<ExomeBlock> getBlocks() {
+            return blocks;
         }
 
         public List<Gene> getGenes() {
             return genes;
         }
     }
+
+
+    private static final Comparator<ExomeBlock> GENOME_POSITION_COMPARATOR = new Comparator<ExomeBlock>() {
+        public int compare(ExomeBlock o1, ExomeBlock o2) {
+            int genomeStart2 = o2.getGenomeStart();
+            int genomeStart1 = o1.getGenomeStart();
+            if (genomeStart2 >= genomeStart1 && o2.getGenomeEnd() <= o1.getGenomeEnd()) {
+                return 0;
+            } else {
+                return genomeStart1 - genomeStart2;
+            }
+        }
+    };
+
+    private static final Comparator<ExomeBlock> EXOME_POSITION_COMPARATOR = new Comparator<ExomeBlock>() {
+        public int compare(ExomeBlock o1, ExomeBlock o2) {
+            int exomeStart2 = o2.getExomeStart();
+            int exomeStart1 = o1.getExomeStart();
+            if (exomeStart2 >= exomeStart1 && o2.getExomeEnd() <= o1.getExomeEnd()) {
+                return 0;
+            } else {
+                return exomeStart1 - exomeStart2;
+            }
+        }
+    };
+
 }

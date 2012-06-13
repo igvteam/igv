@@ -186,20 +186,18 @@ public class ReferenceFrame {
     }
 
     public void incrementZoom(int increment) {
-        zoomByAndCenter(increment);
+        double currentCenter = getGenomeCenterPosition();
+        zoomBy(increment, currentCenter);
     }
 
     public void zoomAndCenterAdjusted(int newZoom) {
-        double currentCenter = origin + ((widthInPixels / 2) * getScale());
+        double currentCenter = getGenomeCenterPosition();
         zoomTo(newZoom, currentCenter);
     }
 
-    public void zoomByAndCenter(int zoomIncrement) {
-        // Zoom but remain centered about current center
-        double currentCenter = origin + ((widthInPixels / 2) * getScale());
-        zoomBy(zoomIncrement, currentCenter);
+    protected double getGenomeCenterPosition() {
+        return origin + ((widthInPixels / 2) * getScale());
     }
-
 
     public void zoomBy(final int zoomFactor, final double newCenter) {
 
@@ -265,8 +263,7 @@ public class ReferenceFrame {
         }
     }
 
-    public void shiftOriginPixels(double delta) {
-
+    public void shiftOriginPixels(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
     }
