@@ -25,6 +25,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.StringUtils;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -77,6 +78,8 @@ public class FilterGeneNetworkUI extends JDialog {
     public static String keyToLabel(String key) {
         String label = key.replace('_', ' ');
         label = label.replace("PERCENT", "%");
+        //Looks kinda funny with 'CNA' term
+        //label = StringUtils.capWords(label);
         return label;
     }
 
@@ -91,7 +94,6 @@ public class FilterGeneNetworkUI extends JDialog {
         for (String key : GeneNetwork.attributeMap.keySet()) {
             columnNumToKeyMap.put(ind, key);
             ind++;
-
             columnNames.add(keyToLabel(key));
 
         }
