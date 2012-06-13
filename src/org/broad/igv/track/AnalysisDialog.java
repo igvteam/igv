@@ -248,7 +248,10 @@ public class AnalysisDialog extends JDialog {
     }
 
     private void setOutputTrackName() {
-
+        String name = ((Track) track1Box.getSelectedItem()).getName();
+        name += " " + operation.getSelectedItem() + " ";
+        name += ((Track) track2Box.getSelectedItem()).getName();
+        resultName.setText(name);
     }
 
 }
