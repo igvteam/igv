@@ -257,12 +257,12 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     public List<ExomeBlock> getBlocks(String chr) {
         ExomeData exomeData = exomeBlockData.get(chr);
-        return exomeData.blocks;
+        return exomeData == null ? null : exomeData.blocks;
     }
 
     public List<Gene> getGenes(String chr) {
         ExomeData exomeData = exomeBlockData.get(chr);
-        return exomeData.genes;
+        return exomeData == null ? null : exomeData.genes;
 
     }
 

@@ -158,7 +158,7 @@ public abstract class AbstractDataSource implements DataSource {
         int adjustedEnd = Math.min(chrLength, endLocation);
 
 
-        if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
+        if (cacheSummaryTiles && !FrameManager.isGeneListMode() &&!FrameManager.isExomeMode()) {
             double tileWidth = ((double) chrLength) / nTiles;
             int startTile = (int) (adjustedStart / tileWidth);
             int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;

@@ -248,13 +248,30 @@ public class AlignmentDataManager {
         loadedInterval.setAlignmentRows(alignmentRows);
     }
 
+    public synchronized  void preload(RenderContext context,
+                                      AlignmentTrack.RenderOptions renderOptions,
+                                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        final String chr = context.getChr();
+        final int start = (int) context.getOrigin();
+        final int end = (int) context.getEndLocation();
+        AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
+        // If we've moved out of the loaded interval start a new load.
+        if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
+            int length = Math.max(100000, end - start);
+            int adjustedStart = Math.max(0, start - length/2);
+            int adjustedEnd = end + length/2;
+            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context, bisulfiteContext);
+        }
+
+    }
+
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
                                                                                      AlignmentTrack.RenderOptions renderOptions,
                                                                                      AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         final String chr = context.getChr();
         final int start = (int) context.getOrigin();
-        final int end = (int) context.getEndLocation() + 1;
+        final int end = (int) context.getEndLocation();
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
 

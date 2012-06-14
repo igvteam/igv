@@ -305,7 +305,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void preload(RenderContext context) {
         System.out.println("preload " + (int) context.getOrigin() + "-" +  (int) context.getEndLocation());
-        dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
+        dataManager.preload(context, renderOptions, renderOptions.bisulfiteContext);
     }
 
 

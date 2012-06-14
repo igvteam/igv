@@ -48,7 +48,7 @@ public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
-    private static Color exomeBorderColor = new Color(190, 190, 255 );
+    private static Color exomeBorderColor = new Color(190, 190, 255);
 
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
@@ -145,16 +145,24 @@ public class DataPanelPainter {
                 exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int top = visibleRect.y;
 
+                int lastXDrawn = -1;
                 Graphics2D lineGraphics = context.getGraphic2DForColor(exomeBorderColor);
                 do {
                     ExomeReferenceFrame.Gene gene = genes.get(idx);
+                    double exomeStart = exomeFrame.genomeToExomePosition(gene.getStart());
                     double exomeEnd = exomeFrame.genomeToExomePosition(gene.getEnd());
+                    pStart = (int) ((exomeStart - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
                     pEnd = (int) ((exomeEnd - exomeOrigin) / frame.getScale()) + visibleBlockCount * blockGap;
+
+                    if (pStart != lastXDrawn) {
+                        lineGraphics.drawLine(pStart, top, pStart, top + visibleRect.height);
+                    }
                     lineGraphics.drawLine(pEnd, top, pEnd, top + visibleRect.height);
+                    lastXDrawn = pEnd;
                     idx++;
 
                 }
-                while ((pEnd < visibleRect.x + visibleRect.width) && idx < genes.size());
+                while ((pStart < visibleRect.x + visibleRect.width) && idx < genes.size());
 
 
             } else {

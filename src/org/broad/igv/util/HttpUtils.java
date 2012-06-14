@@ -622,9 +622,7 @@ public class HttpUtils {
 
                         for (int i = 0; i < len; i++) {
                             if (buffer[i] != firstBytes[i + start]) {
-                                //byteRangeTestSuccess = false;
-                                //break;
-                                System.out.println(buffer[i] + "\t" + firstBytes[i + start]);
+                                byteRangeTestSuccess = false;
                             }
                         }
                     } else {

@@ -21,11 +21,15 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -68,7 +72,18 @@ public class FrameManager {
     }
 
     private static void switchToExomeMode() {
-        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame);
+
+        Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
+        dlg.setVisible(true);
+        List<FeatureTrack> tracks = dlg.getSelectedTracks();
+
+        if(tracks == null || tracks.isEmpty()) {
+            tracks = new ArrayList<FeatureTrack>();
+            tracks.add(IGV.getInstance().getGeneTrack());
+        }
+
+        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, tracks.get(0));
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
         exomeFrame.setInterval(locus);

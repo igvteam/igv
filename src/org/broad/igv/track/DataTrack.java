@@ -86,7 +86,11 @@ public abstract class DataTrack extends AbstractTrack {
         if (interval != null && interval.contains(chr, start, end, zoom)) {
             inViewScores = interval.getScores();
         } else {
-            inViewScores = load(context, chr, start, end, zoom);
+            // Get a buffer +/- 50% of screen size
+            int delta = (end - start) / 2;
+            int adjustedStart = Math.max(0, start-delta);
+            int adjustedEnd = end + delta;
+            inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
         }
 
         if (autoscale && !FrameManager.isGeneListMode()) {
@@ -112,6 +116,20 @@ public abstract class DataTrack extends AbstractTrack {
         }
 
         getRenderer().render(inViewScores, context, rect, this);
+    }
+
+
+    @Override
+    public void preload(RenderContext context) {
+        String chr = context.getChr();
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation() + 1;
+        int zoom = context.getZoom();
+        int delta = (end - start) / 2;
+        int adjustedStart = Math.max(0, start-delta);
+        int adjustedEnd = end + delta;
+        load(context, chr, adjustedStart, adjustedEnd, zoom);
+
     }
 
     public List<LocusScore> load(final RenderContext context, final String chr, final int start, final int end, final int zoom) {

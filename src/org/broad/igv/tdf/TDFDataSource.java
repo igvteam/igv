@@ -391,7 +391,7 @@ public class TDFDataSource implements CoverageDataSource {
         String querySeq = tmp == null ? chr : tmp;
 
         // If we are in gene list view bypass caching.
-        if (Globals.isHeadless() || FrameManager.isGeneListMode()) {
+        if (Globals.isHeadless() || FrameManager.isGeneListMode() || FrameManager.isExomeMode()) {
 
             return getSummaryScores(querySeq, startLocation, endLocation, zoom);
 

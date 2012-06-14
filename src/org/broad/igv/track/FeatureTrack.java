@@ -312,7 +312,7 @@ public class FeatureTrack extends AbstractTrack {
                     String vs = igvFeature.getValueString(position, null);
                     buf.append(vs);
 
-                    if (IGV.getInstance().isSuppressTooltip()){
+                    if (IGV.getInstance().isSuppressTooltip()) {
                         // URL
                         String url = getFeatureURL(igvFeature);
 
@@ -594,7 +594,13 @@ public class FeatureTrack extends AbstractTrack {
     @Override
     public void preload(RenderContext context) {
         ReferenceFrame frame = context.getReferenceFrame();
-        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
+        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        String chr = context.getChr();
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation();
+        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
+            loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
+        }
     }
 
 
@@ -625,7 +631,7 @@ public class FeatureTrack extends AbstractTrack {
         if (FeatureTrack.drawBorder) {
             Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
             borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-            borderGraphics.drawLine(rect.x, rect.y+rect.height, rect.x + rect.width, rect.y+rect.height);
+            borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
         }
 
     }
@@ -759,7 +765,6 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
     }
-
 
 
     /**
