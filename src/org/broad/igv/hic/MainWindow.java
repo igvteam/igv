@@ -304,7 +304,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-
     private void exitActionPerformed(ActionEvent e) {
         setVisible(false);
         dispose();
@@ -359,6 +358,7 @@ public class MainWindow extends JFrame {
         try {
             String number = JOptionPane.showInputDialog("Which eigenvector do you want to see?");
             int num = Integer.parseInt(number) - 1;
+
             rv = hic.getEigenvector(num);
 
             if (rv != null) {

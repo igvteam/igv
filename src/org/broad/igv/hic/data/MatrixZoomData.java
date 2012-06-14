@@ -43,7 +43,6 @@ public class MatrixZoomData {
     private double pearsonsMax = 1;
     private RealMatrix oe;
     private double[] eigenvector;
-    private int sum = -1;
 
     public class ScaleParameters {
         double percentile90;
@@ -72,9 +71,7 @@ public class MatrixZoomData {
         this.zoom = dis.readInt();
 
         if (reader.getVersion() >= 1) {
-            this.sum = dis.readInt();
-        } else {
-            this.sum = -1;  // Flag => compute when needed.
+            dis.readInt();              // sum but we're not using this anymore
         }
 
         this.binSize = dis.readInt();
@@ -99,10 +96,6 @@ public class MatrixZoomData {
 
     public int getBinSize() {
         return binSize;
-    }
-
-    public int getSum() {
-        return sum;
     }
 
     public int getChr1() {
@@ -320,20 +313,24 @@ public class MatrixZoomData {
         return sum / count;
     }
 
-    /**
-     * Neccessary for "old" HiC files
-     */
-    private void computeSum() {
+    public void computeSum() {
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         Collections.sort(blockNumbers);
-        this.sum = 0;
-        for (int blockNumber : blockNumbers) {
-            Block b = readBlock(blockNumber);
-            if (b != null) {
-                for (ContactRecord rec : b.getContactRecords()) {
-                    this.sum += rec.getCounts();
+        //this.sum = 0;
+        try{
+            java.io.PrintWriter pw = new PrintWriter("chr14_5kb.txt");
+            for (int blockNumber : blockNumbers) {
+                Block b = readBlock(blockNumber);
+                if (b != null) {
+                    for (ContactRecord rec : b.getContactRecords()) {
+                        //this.sum += rec.getCounts();
+                        System.out.println(rec.getX() + " " + rec.getY() + " " + rec.getCounts());
+                    }
                 }
             }
+        }
+        catch(IOException e) {
+
         }
     }
 
@@ -341,10 +338,6 @@ public class MatrixZoomData {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
-        }
-
-        if (sum < 0) {
-            computeSum();
         }
 
         int nBins = chr1.getSize() / binSize + 1;
@@ -360,7 +353,6 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    //expected = expected * (this.sum / df.getSum());
                     double normCounts = (rec.getCounts() / expected);
 
                     rm.addToEntry(x, y, normCounts);
