@@ -67,6 +67,14 @@ public class GenomeManager {
     private List<GenomeListItem> cachedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
 
+    public static void main(String[] args){
+        if(args.length >= 1 && args[0].equals("genList")){
+            if(args.length != 4) throw new IllegalArgumentException("Incorrect number of inputs, expected genList [dir] [rootPath] [outFile]");
+
+
+        }
+    }
+
 
     public synchronized static GenomeManager getInstance() {
         if (theInstance == null) {
@@ -874,5 +882,52 @@ public class GenomeManager {
     public void addUserDefineGenomeItem(GenomeListItem genomeListItem) {
         userDefinedGenomeArchiveList.add(0, genomeListItem);
         updateImportedGenomePropertyFile();
+    }
+
+    /**
+     * Given a directory, looks for all .genome files,
+     * and outputs a list of these genomes suitable for parsing by IGV.
+     * Intended to be run on server periodically.
+     * @param inDir Directory in which all genome files live
+     * @param rootPath The path to be prepended to file names (e.g. http://igvdata.broadinstitute.org)
+     * @param outPath Path to output file, where we will write the results
+     */
+    public void generateGenomeList(File inDir, String rootPath, String outPath){
+        File[] genomeFiles = inDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if(name == null) return false;
+                return name.toLowerCase().endsWith(".genome");
+            }
+        });
+
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(outPath);
+        } catch (FileNotFoundException e) {
+            log.error("Error opening " + outPath);
+            e.printStackTrace();
+            return;
+        }
+
+
+        GenomeDescriptor descriptor;
+        for(File f: genomeFiles){
+            String curLine = "";
+            try{
+                descriptor = parseGenomeArchiveFile(f);
+                curLine += descriptor.getName();
+                curLine += "\t" + rootPath + "/" + f.getName();
+                curLine += "\t" + descriptor.getId();
+            } catch (IOException e) {
+                log.error("Error parsing genome file. Skipping " + f.getAbsolutePath());
+                log.error(e);
+                continue;
+            }
+            writer.println(curLine);
+        }
+
+        writer.close();
+
     }
 }
