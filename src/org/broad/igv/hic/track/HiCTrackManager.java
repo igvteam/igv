@@ -29,6 +29,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -50,18 +52,36 @@ public class HiCTrackManager {
 
     private static java.util.List<Track> loadedTracks = new ArrayList();
 
-    public static void openLoadDialog(final MainWindow parent) {
+    public static void loadTrackFromFile(final MainWindow parent) {
+        FileDialog dlg = new FileDialog(parent);
+        dlg.setMode(FileDialog.LOAD);
+        dlg.setVisible(true);
+        String file = dlg.getFile();
+        if (file != null) {
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        if (genome == null) {
-            String genomePath = "http://igvdata.broadinstitute.org/genomes/hg19.genome";
-            try {
-                genome = GenomeManager.getInstance().loadGenome(genomePath, null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            final File f = new File(dlg.getDirectory(), dlg.getFile());
+            // Load new tracks
+            Runnable runnable = new Runnable() {
+                public void run() {
 
+                    Genome genome = loadGenome();
+
+                    String path = f.getAbsolutePath();
+                   // genome = GenomeManager.getInstance().getCurrentGenome();
+                    ResourceLocator locator = new ResourceLocator(path);
+                    List<Track> tracks = (new TrackLoader()).load(locator, genome);
+                    loadedTracks.addAll(tracks);
+                    parent.updateTrackPanel();
+
+                }
+            };
+            parent.executeLongRunningTask(runnable);
         }
+    }
+
+    public static void loadHostedTrack(final MainWindow parent) {
+
+        Genome genome = loadGenome();
 
         Map<String, List<ResourceLocator>> locators = getTrackLocators();
         HiCLoadDialog dlg = new HiCLoadDialog(parent, locators, loadedTracks);
@@ -100,6 +120,20 @@ public class HiCTrackManager {
             parent.executeLongRunningTask(runnable);
         }
 
+    }
+
+
+    private static Genome loadGenome() {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (genome == null) {
+            String genomePath = "http://igvdata.broadinstitute.org/genomes/hg19.genome";
+            try {
+                genome = GenomeManager.getInstance().loadGenome(genomePath, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return genome;
     }
 
 

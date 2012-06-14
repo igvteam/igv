@@ -16,28 +16,16 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
 import org.broad.igv.hic.track.TrackPanel;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXParseException;
 import slider.RangeSlider;
 
 import java.awt.*;
@@ -45,13 +33,11 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.*;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author James Robinson
@@ -1191,11 +1177,21 @@ public class MainWindow extends JFrame {
         loadItem.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                HiCTrackManager.openLoadDialog(MainWindow.this);
+                HiCTrackManager.loadHostedTrack(MainWindow.this);
             }
 
         });
         viewMenu.add(loadItem);
+
+        JMenuItem loadFromFileItem = new JMenuItem("Load from file...");
+        loadFromFileItem.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                HiCTrackManager.loadTrackFromFile(MainWindow.this);
+            }
+
+        });
+        viewMenu.add(loadFromFileItem);
 
         menuBar1.add(viewMenu);
         contentPane.add(menuBar1, BorderLayout.NORTH);
