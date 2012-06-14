@@ -23,20 +23,27 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
  */
-public class GenomeManagerTest {
+public class GenomeManagerTest extends AbstractHeadlessTest{
 
     static GenomeManager genomeManager;
 
@@ -45,13 +52,9 @@ public class GenomeManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        AbstractHeadlessTest.setUpClass();
         genomeManager = GenomeManager.getInstance();
     }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
 
     @Test
     public void testSortChromosomes() {
@@ -71,6 +74,25 @@ public class GenomeManagerTest {
         for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }
+    }
+
+    @Test
+    public void testGenerateGenomeList() throws Exception{
+        File inDir = new File(TestUtils.DATA_DIR,"genomes");
+        String outPath = TestUtils.DATA_DIR + "out/genomelist.txt";
+
+        String rootPath = "http://igvdata.broadinstitute.org/genomes";
+
+        genomeManager.generateGenomeList(inDir, rootPath, outPath);
+
+        BufferedReader reader = new BufferedReader(new FileReader(outPath));
+        int count = 0;
+        String line;
+        while((line = reader.readLine()) != null){
+            assertTrue(line.contains(rootPath + "/"));
+            count++;
+        }
+        assertEquals(3, count);
     }
 
 }

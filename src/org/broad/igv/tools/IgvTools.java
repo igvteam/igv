@@ -390,7 +390,13 @@ public class IgvTools {
                 String ofile = nonOptionArgs[2];
                 Boolean pairOption = (Boolean) parser.getOptionValue(pairedCoverageOpt, false);
                 BamToBed.convert(new File(ifile), new File(ofile), pairOption);
-            } else {
+            } else if (command.equalsIgnoreCase("genGenomeList")){
+                //Generate a genomes.txt list file based on a directory
+                //TODO Probably a better place for this. Users won't generally use it
+                File inDir = new File(ifile);
+                GenomeManager manager = GenomeManager.getInstance();
+                manager.generateGenomeList(inDir, nonOptionArgs[2], nonOptionArgs[3]);
+            } else{
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
