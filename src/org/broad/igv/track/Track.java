@@ -43,7 +43,7 @@ import java.util.List;
 public interface Track extends Persistable {
 
     enum DisplayMode {
-        COLLAPSED, SQUISHED, EXPANDED
+        COLLAPSED, SQUISHED, EXPANDED, ALTERNATIVE_SPLICE
     }
 
     /**

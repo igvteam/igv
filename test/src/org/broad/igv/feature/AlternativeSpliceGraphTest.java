@@ -33,7 +33,7 @@ public class AlternativeSpliceGraphTest extends AbstractHeadlessTest {
     @Test
     public void initTest() throws Exception {
 
-        String nm = "EGFR";
+        String nm = "CLIP1";
         List<NamedFeature> n_features = FeatureDB.getFeaturesList(nm, Integer.MAX_VALUE, false);
         List<IGVFeature> features = new ArrayList<IGVFeature>(n_features.size());
         int maxNumExons = -1;
