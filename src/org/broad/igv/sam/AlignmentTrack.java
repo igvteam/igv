@@ -160,7 +160,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
     private boolean ionTorrent;
-    
+
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
@@ -199,7 +199,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.genome = genome;
         this.dataManager = dataManager;
 
-         ionTorrent = dataManager.isIonTorrent();
+        ionTorrent = dataManager.isIonTorrent();
 
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
@@ -304,7 +304,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public void preload(RenderContext context) {
-        System.out.println("preload " + (int) context.getOrigin() + "-" +  (int) context.getEndLocation());
+        System.out.println("preload " + (int) context.getOrigin() + "-" + (int) context.getEndLocation());
         dataManager.preload(context, renderOptions, renderOptions.bisulfiteContext);
     }
 
@@ -902,7 +902,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
-            shadeBasesOption = ShadeBasesOption.valueOf(prefs.get(PreferenceManager.SAM_SHADE_BASES));
+
+            String shadeOptionString = prefs.get(PreferenceManager.SAM_SHADE_BASES);
+            if (shadeOptionString.equals("false")) {
+                shadeBasesOption = ShadeBasesOption.NONE;
+            } else if (shadeOptionString.equals("true")) {
+                shadeBasesOption = ShadeBasesOption.QUALITY;
+            } else {
+                shadeBasesOption = ShadeBasesOption.valueOf(shadeOptionString);
+            }
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
