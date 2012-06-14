@@ -258,7 +258,7 @@ public class DataPanelPainter {
 
     }
 
-    private void preloadTracks(final Collection<TrackGroup> groups,
+    private void  preloadTracks(final Collection<TrackGroup> groups,
                                final RenderContext context,
                                int width,
                                final Rectangle visibleRect) {

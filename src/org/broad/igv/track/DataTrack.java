@@ -88,7 +88,7 @@ public abstract class DataTrack extends AbstractTrack {
         } else {
             // Get a buffer +/- 50% of screen size
             int delta = (end - start) / 2;
-            int adjustedStart = Math.max(0, start-delta);
+            int adjustedStart = Math.max(0, start - delta);
             int adjustedEnd = end + delta;
             inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
         }
@@ -120,15 +120,19 @@ public abstract class DataTrack extends AbstractTrack {
 
 
     @Override
-    public void preload(RenderContext context) {
+    public synchronized void preload(RenderContext context) {
+        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
+
         String chr = context.getChr();
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
         int zoom = context.getZoom();
-        int delta = (end - start) / 2;
-        int adjustedStart = Math.max(0, start-delta);
-        int adjustedEnd = end + delta;
-        load(context, chr, adjustedStart, adjustedEnd, zoom);
+        if (interval == null || !interval.contains(chr, start, end, zoom)) {
+            int delta = (end - start) / 2;
+            int adjustedStart = Math.max(0, start - delta);
+            int adjustedEnd = end + delta;
+            load(context, chr, adjustedStart, adjustedEnd, zoom);
+        }
 
     }
 
