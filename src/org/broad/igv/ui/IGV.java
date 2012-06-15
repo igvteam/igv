@@ -929,9 +929,6 @@ public class IGV {
             try {
                 setExportingSnapshot(true);
                 SnapshotUtilities.doComponentSnapshot(target, file, type);
-            } catch (IOException e) {
-                log.error(e);
-                exc = e;
             } finally {
                 setExportingSnapshot(false);
             }

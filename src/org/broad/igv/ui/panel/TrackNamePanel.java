@@ -117,12 +117,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
             groupExtents.clear();
 
-            Rectangle clipRect = g.getClipBounds();
+            //Rectangle clipRect = g.getClipBounds();
 
             for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
                 TrackGroup group = groupIter.next();
 
-                if (regionY > clipRect.getMaxY()) {
+                if (regionY > visibleRect.getMaxY()) {
                     break;
                 }
 
@@ -142,7 +142,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     int h = group.getHeight();
                     Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
                     Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                    regionY = printTrackNames(group, displayableRect, clipRect, graphics2D, 0, regionY);
+                    regionY = printTrackNames(group, displayableRect, visibleRect, graphics2D, 0, regionY);
 
                     if (isGrouped) {
                         groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
