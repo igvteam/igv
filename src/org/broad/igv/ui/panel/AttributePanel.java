@@ -348,5 +348,4 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
         }
     }
 
-    ;
 }

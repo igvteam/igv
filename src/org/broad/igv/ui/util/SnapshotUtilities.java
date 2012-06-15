@@ -36,6 +36,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -79,8 +80,8 @@ public class SnapshotUtilities {
     }
 
     // Treat this class as a singleton, no instances allowed
-    private SnapshotUtilities() {}
-
+    private SnapshotUtilities() {
+    }
 
 
     public static void doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type) throws IOException{
@@ -134,11 +135,39 @@ public class SnapshotUtilities {
     }
 
 
-    private static void exportScreenshotSVG(Component target, File selectedFile) {
+    private static void exportScreenshotSVG(Component target, File selectedFile) throws IOException {
 
         // Disable extending panel height beyond visible area
-        SnapshotUtilities.setMaxPanelHeight(-1);
-        doSnapshotOffscreen(target, selectedFile);
+        //SnapshotUtilities.setMaxPanelHeight(-1);
+        log.debug("Getting dom");
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+        // Create an instance of the SVG Generator.
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        //logger.info("Painting");
+        target.paint(svgGenerator);
+
+        Writer out = null;
+        try {
+            // Finally, stream out SVG to the standard output using
+            // UTF-8 encoding.
+            boolean useCSS = true; // we want to use CSS style attributes
+            out = new BufferedWriter(new FileWriter(selectedFile));
+            //logger.info("Writing output");
+            svgGenerator.stream(out, useCSS);
+        } finally {
+            if (out != null) try {
+                out.close();
+            } catch (IOException e) {
+                log.error("Error closing svg file", e);
+            }
+        }
+
     }
 
     private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) throws IOException{
@@ -148,11 +177,13 @@ public class SnapshotUtilities {
         target.paintAll(g);
 
         if (selectedFile != null) {
-//            if (!selectedFile.getName().toLowerCase().endsWith(".jpeg")) {
-//                String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
-//                selectedFile = new File(correctedFilename);
-//            }
+
+            if (!selectedFile.getName().toLowerCase().endsWith(".jpeg")) {
+                String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
+                selectedFile = new File(correctedFilename);
+            }
             ImageIO.write(image, "jpeg", selectedFile);
+
         }
     }
 
@@ -169,76 +200,11 @@ public class SnapshotUtilities {
                 selectedFile = new File(correctedFilename);
             }
             ImageIO.write(image, "png", selectedFile);
+
+
         }
     }
 
-
-    public static String doSnapshotOffscreen(Component target, File selectedFile) {
-
-        if (!(target instanceof Paintable)) {
-            // TODO -- message that target does not support this
-            return "Error: target is not paintable";
-        }
-
-        try {
-            Rectangle rect = target.getBounds();
-
-            int height = ((MainPanel) target).getOffscreenImageHeight();
-            rect.height = height;
-
-            // translate to (0, 0) if neccessary
-            int dx = rect.x;
-            int dy = rect.y;
-            rect.x = 0;
-            rect.y = 0;
-            rect.width -= dx;
-            rect.height -= dy;
-
-            Paintable paintable = (Paintable) target;
-
-            final String filenameLowercase = selectedFile.getName().toLowerCase();
-            if (filenameLowercase.endsWith(".svg")) {
-                log.debug("Getting dom");
-                DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-
-
-                // Create an instance of org.w3c.dom.Document.
-                String svgNS = "http://www.w3.org/2000/svg";
-                Document document = domImpl.createDocument(svgNS, "svg", null);
-
-                // Create an instance of the SVG Generator.
-                SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-                //logger.info("Painting");
-                paintable.paintOffscreen(svgGenerator, rect);
-
-                // Finally, stream out SVG to the standard output using
-                // UTF-8 encoding.
-                boolean useCSS = true; // we want to use CSS style attributes
-                Writer out = new BufferedWriter(new FileWriter(selectedFile));
-                //logger.info("Writing output");
-                svgGenerator.stream(out, useCSS);
-
-
-            } else {
-
-                BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
-                Graphics2D g = image.createGraphics();
-                paintable.paintOffscreen(g, rect);
-                if (selectedFile != null) {
-                    if (!filenameLowercase.endsWith(".png")) {
-                        String correctedFilename = selectedFile.getAbsolutePath() + ".png";
-                        selectedFile = new File(correctedFilename);
-                    }
-                    ImageIO.write(image, "png", selectedFile);
-                }
-            }
-
-        } catch (IOException e) {
-            log.error("Error creating snapshot", e);
-            return "Error: " + e.toString();
-        }
-        return "OK";
-    }
 
     /**
      * Creates a device compatible buffered svg.

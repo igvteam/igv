@@ -254,7 +254,7 @@ abstract public class TrackPanelComponent extends JPanel {
 
 
     public void saveImage() {
-        IGV.getInstance().saveImage(getTrackPanel().getParent(), "igv_panel");
+        IGV.getInstance().saveImage(getTrackPanel().getScrollPane(), "igv_panel");
     }
 
 
