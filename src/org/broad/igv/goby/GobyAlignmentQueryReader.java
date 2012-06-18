@@ -29,9 +29,7 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Query reader to parse <a href="http://goby.campagnelab.org">Goby</a> alignment files.
@@ -120,10 +118,10 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
     }
 
     /**
-     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     * @return the list of platforms represented in this alignment? Please define this exactly.
      */
     public Set<String> getPlatforms() {
-        return null;
+        return Collections.EMPTY_SET;
     }
 
 

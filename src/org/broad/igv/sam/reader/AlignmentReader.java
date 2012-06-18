@@ -45,7 +45,9 @@ public interface AlignmentReader {
     /**
      * Return the set of all platforms represented in this file.
      *
-     * @return set of all platforms.  May return "null"
+     * @return set of all platforms.
+     * FC: Actually the following statement is not true, since returning null causes NPE at org.broad.igv.sam.AlignmentDataManager.isIonTorrent(AlignmentDataManager.java:134)
+     * May return "null"
      */
     Set<String>  getPlatforms();
 
