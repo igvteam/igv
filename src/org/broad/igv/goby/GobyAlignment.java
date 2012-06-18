@@ -126,7 +126,7 @@ public class GobyAlignment implements Alignment {
 
             addSoftClipBlock(blocks, Math.max(0,
                     entry.getPosition() - clipLength),
-                    entry.getSoftClippedBasesLeft(),readQual,
+                    entry.getSoftClippedBasesLeft(), readQual,
                     entry.hasSoftClippedQualityLeft(),
                     entry.getSoftClippedQualityLeft().toByteArray(),
                     0);
@@ -196,7 +196,7 @@ public class GobyAlignment implements Alignment {
                     readQual,
                     entry.hasSoftClippedQualityRight(),
                     entry.getSoftClippedQualityRight().toByteArray(),
-                    entry.getQueryAlignedLength()+entry.getSoftClippedBasesLeft().length());
+                    entry.getQueryAlignedLength() + entry.getSoftClippedBasesLeft().length());
         }
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
         Arrays.sort(block, blockComparator);
@@ -232,6 +232,31 @@ public class GobyAlignment implements Alignment {
                 this.insertionBlock = new AlignmentBlock[0];
             }
         }
+
+        block = removeNulls(block);
+
+    }
+
+    private AlignmentBlock[] removeNulls(AlignmentBlock[] block) {
+        int nullCount = 0;
+        for (int i = 0; i < block.length; i++) {
+            AlignmentBlock alignmentBlock = block[i];
+            if (alignmentBlock == null) {
+                nullCount++;
+            }
+        }
+        if (nullCount == 0) {
+            // nothing to filter
+            return block;
+        } else {
+            int newLength = block.length - nullCount;
+            AlignmentBlock[] result = new AlignmentBlock[newLength];
+            int j = 0;
+            for (int i = 0; i < result.length; i++) {
+                result[i] = block[j++];
+            }
+            return result;
+        }
     }
 
     private AlignmentBlock[] keepSoftClips(AlignmentBlock[] blocks) {
@@ -259,7 +284,7 @@ public class GobyAlignment implements Alignment {
 
         for (int i = 0; i < length; i++) {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
-            scores[i] = hasSoftClippedQuality?softClippedQuality[i] : readQualScores[j++];
+            scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
         final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
                 bases,
@@ -671,6 +696,10 @@ public class GobyAlignment implements Alignment {
         else {
 
             int last = block.length - 1;
+            if (block[last] == null) {
+                // System.out.println("STOP");
+                return entry.getPosition() + entry.getTargetAlignedLength();
+            }
             return block[last].getEnd();
         }
     }
