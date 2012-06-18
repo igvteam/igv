@@ -1,0 +1,257 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.iontorrent.views;
+
+import com.iontorrent.data.FlowDistribution;
+import com.iontorrent.utils.FileTools;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.File;
+import java.util.TreeMap;
+import javax.swing.*;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYAreaRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+/**
+ *
+ * @author Chantal Roth
+ */
+public class FlowSignalDistributionPanel extends javax.swing.JPanel {
+
+    private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(FlowSignalDistributionPanel.class);
+    /**
+     * The data: key is the flow signal value, such as 654, and the value is how
+     * often it was found
+     */
+    private FlowDistribution distributions[];
+    
+    /** names of data sets - better would really be our won data structure instead of TreeMap.... */
+    private String label[];
+    /**
+     * the size of the bin - the map has bin size 1, which is usually too small
+     * for anything to see. This is customizable by the user. Should be stored in some properties...
+     * for now we make it static so that it is remembered between calls
+     */
+    private static int binsize;
+    /**
+     * where user can store .csv data
+     */
+    private String filename;
+    /**
+     * jfreechart
+     */
+    private JComponent chartpanel;
+
+    /** Info about location, for instance */
+    String information;
+    public FlowSignalDistributionPanel(FlowDistribution distributions[], String information) {
+        this.distributions = distributions;
+        this.information = information;
+        if (binsize < 1) binsize = 5;        
+        initComponents();
+        recreateChart();
+    }
+
+   
+
+    private void recreateChart() {
+        if (distributions == null || distributions.length<1) {
+            JOptionPane.showMessageDialog(this, "I got no flow signal distribution data");
+            return;
+        }
+        if (chartpanel != null) {
+            remove(chartpanel);
+        }
+        chartpanel = createChart();
+        add("Center", chartpanel);
+        // with freechart, one sometimes just doesn't get a repaint... 
+        chartpanel.repaint();
+       
+    }
+
+    private JComponent createChart() {
+        
+        XYSeriesCollection dataset = new XYSeriesCollection();
+       
+        for (int i = 0; i < distributions.length; i++) {
+            TreeMap<Short, Integer> map = distributions[i].getMap();
+            dataset.addSeries(createDataset( distributions[i]));
+        }
+
+        String plotTitle = "Flow Signal Distribution";
+        String xaxis = "flow signal value";
+        String yaxis = "count";
+
+        // XYSplineRenderer renderer = new XYSplineRenderer();
+        XYAreaRenderer renderer = new XYAreaRenderer(XYAreaRenderer.AREA);        
+       
+        NumberAxis xax = new NumberAxis(xaxis);
+        NumberAxis yax = new NumberAxis(yaxis);
+        XYPlot plot = new XYPlot(dataset, xax, yax, renderer);
+        
+
+        JFreeChart freechart = new JFreeChart(plot);
+       
+        freechart.setTitle(plotTitle);
+        String bininfo = "bin size="+binsize;
+        if (information == null)  freechart.addSubtitle(new TextTitle (bininfo));
+        else freechart.addSubtitle(new TextTitle (information+", "+bininfo));
+        
+        freechart.getXYPlot().setForegroundAlpha(0.75f);
+        ChartPanel chartPanel = new ChartPanel(freechart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));      
+        return chartPanel;
+    }
+
+    private XYSeries createDataset(FlowDistribution dist) {
+        int[] bins = dist.getBinnedData(binsize);
+        
+        XYSeries xy = new XYSeries(dist.getName());
+        for (int b = 0; b < bins.length; b++) {
+            xy.add(b * binsize, bins[b]);
+        }        
+        return xy;
+    }
+
+    
+     private String getCsvString() {
+        StringBuilder csv = new StringBuilder();
+        csv = csv.append(information).append("\n\n");
+        for (int i = 0; i < distributions.length; i++) {           
+            csv = csv.append(distributions[i].toCsv(binsize));
+        }          
+        return csv.toString();          
+     }
+   
+    private void p(String msg) {
+        log.info(msg);
+    }
+
+    private void err(String msg) {
+        log.error(msg);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jToolBar1 = new javax.swing.JToolBar();
+        btnCopy = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        btnConfigure = new javax.swing.JButton();
+
+        setLayout(new java.awt.BorderLayout());
+
+        jToolBar1.setRollover(true);
+
+        btnCopy.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/copy.png"))); // NOI18N
+        btnCopy.setToolTipText("Copy the data to the clipboard");
+        btnCopy.setFocusable(false);
+        btnCopy.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnCopy.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnCopy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCopyActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnCopy);
+
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/save.png"))); // NOI18N
+        btnSave.setToolTipText("Save data in .csv file (to be used in Excel for instance)");
+        btnSave.setFocusable(false);
+        btnSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnSave);
+
+        btnConfigure.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/configure.png"))); // NOI18N
+        btnConfigure.setToolTipText("Change the bin size");
+        btnConfigure.setFocusable(false);
+        btnConfigure.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnConfigure.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnConfigure.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfigureActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnConfigure);
+
+        add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigureActionPerformed
+        // let user pick bin size
+        JComponent msg = new JLabel("Pick a bin size for the chart (current: " + binsize + ")");
+        String ans = JOptionPane.showInputDialog(this, msg,
+                "Bin size for chart", JOptionPane.QUESTION_MESSAGE);
+        if (ans == null) {
+            return;
+        }
+        try {
+            binsize = Integer.parseInt(ans);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "I couldn't parse " + ans);
+        }
+        binsize = Math.max(1, binsize);
+        binsize = Math.min(200, binsize);
+
+        recreateChart();
+    }//GEN-LAST:event_btnConfigureActionPerformed
+
+    /**
+     * Convert to export to Excel
+     */
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+
+        // get file name from user
+        filename = FileTools.getFile("File to store flow chart distribution", ".csv", filename, true);
+        if (filename == null || filename.length() < 1) {
+            return;
+        }
+        String csv = getCsvString();        
+
+        File fileToSave = new File(filename);
+        FileTools.writeStringToFile(fileToSave, csv, false);
+              
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCopyActionPerformed
+        String csv = getCsvString();
+         // copy to clipboard
+        StringSelection stringSelection = new StringSelection(csv);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+        
+        // also show as popup for copy paste
+        JTextArea area = new JTextArea(15, 30);
+        area.setText(csv);
+        JOptionPane.showMessageDialog(this, new JScrollPane(area), "Data to paste to Excel (it is already in the clipboard)", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_btnCopyActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnConfigure;
+    private javax.swing.JButton btnCopy;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JToolBar jToolBar1;
+    // End of variables declaration//GEN-END:variables
+}
