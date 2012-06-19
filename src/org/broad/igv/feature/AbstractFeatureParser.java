@@ -81,7 +81,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     }
 
 
-
     /**
      * Load all features in this file.
      *
@@ -199,6 +198,8 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>();
         String nextLine = null;
 
+        int maxLogErrors = 10;
+        int nErrors = 0;
         int nLines = 0;
         try {
             while ((nextLine = reader.readLine()) != null) {
@@ -247,9 +248,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                     }
 
                 } catch (NumberFormatException e) {
-
-                    // Expected condition -- for example comments.  don't log as it slows down
-                    // the parsing and is not useful information.
+                    if (nErrors < maxLogErrors) {
+                        log.error("Number format error parsing line: " + nextLine, e);
+                    }
+                    nErrors++;
                 }
             }
         } catch (java.io.EOFException e) {
@@ -268,7 +270,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         // TODO -- why is this test here?  This will break igvtools processing of expression files
         //if (IGV.hasInstance() || Globals.isTesting()) {
-            FeatureDB.addFeatures(features);
+        FeatureDB.addFeatures(features);
         //}
         return features;
     }
