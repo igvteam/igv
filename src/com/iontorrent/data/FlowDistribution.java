@@ -4,7 +4,6 @@
  */
 package com.iontorrent.data;
 
-import java.awt.datatransfer.StringSelection;
 import java.util.TreeMap;
 
 /**
@@ -15,13 +14,15 @@ public class FlowDistribution {
 
     private TreeMap<Short, Integer> map;
     private String information;
+    private String name;
     private int nrflows;
     /** the chromosome location */
     private int location;
     
-    public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String information) {
+    public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String name, String information) {
         this.map = map;
         this.information = information;
+        this.name = name;
         this.nrflows = nrflows;
         this.location = location;
     }
@@ -29,6 +30,10 @@ public class FlowDistribution {
     public int getNrFlows() {
         return nrflows;
     }
+    public String getName() {
+        return name;
+    }
+    
     public String toCsv(int binsize) {
         int[] bins = getBinnedData(binsize);
         String nl = "\n";

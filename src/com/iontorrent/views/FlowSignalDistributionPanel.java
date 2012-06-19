@@ -18,20 +18,12 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.AbstractSeriesDataset;
-import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.data.statistics.HistogramType;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.AbstractXYDataset;
-import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -112,8 +104,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < distributions.length; i++) {
             int[] data = distributions[i].getBinnedData(binsize);
-            String seriename = distributions[i].getInformation();
-            p("Got " + data.length + " data points");
+            String seriename = distributions[i].getName();
             for (int j = 0; j < data.length; j++) {
                 String cat = "" + (binsize * j);
                 dataset.addValue(data[j], seriename, cat);
@@ -122,32 +113,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         }
         return dataset;
     }
-
-    private IntervalXYDataset createHistoDataset() {
-        HistogramDataset dataset = new HistogramDataset();
-        dataset.setType(HistogramType.RELATIVE_FREQUENCY);
-        // get maximum 
-        int maxx = 0;
-        for (int i = 0; i < distributions.length; i++) {
-            int x = distributions[i].getMaxX();
-            if (x > maxx) {
-                maxx = x;
-            }
-        }
-        int nrbins = maxx / binsize + 1;
-        p("Got nr bins " + nrbins + " for max x " + maxx);
-        for (int i = 0; i < distributions.length; i++) {
-            int[] data = distributions[i].getBinnedData(1);
-            double hist[] = new double[data.length];
-            p("Got " + hist.length + " data points");
-            for (int j = 0; j < hist.length; j++) {
-                hist[j] = data[j];
-            }
-            dataset.addSeries(distributions[i].getInformation(), hist, nrbins);
-        }
-        return dataset;
-    }
-
+   
     private XYSeriesCollection createXYDataset() {
         XYSeriesCollection dataset = new XYSeriesCollection();
         for (int i = 0; i < distributions.length; i++) {
@@ -165,18 +131,15 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         String xaxis = "flow signal value";
         String yaxis = "count";
 
-
-        XYItemRenderer renderer = null;
+        XYItemRenderer renderer;
+        
         NumberAxis xax = new NumberAxis(xaxis);
         NumberAxis yax = new NumberAxis(yaxis);
         JFreeChart freechart = null;
+        // could be another chart option
         // XYSplineRenderer renderer = new XYSplineRenderer();
-        //XYAreaRenderer renderer = new XYAreaRenderer(XYAreaRenderer.AREA);  
-
-        //CandlestickRenderer
-        if (chart_type == ChartConfigPanel.TYPE_BAR) {
-
-            //  IntervalXYDataset dataset = createHistoDataset();
+        
+        if (chart_type == ChartConfigPanel.TYPE_BAR) {            
             CategoryDataset dataset = createCategoryDataset();
             freechart = ChartFactory.createBarChart(
                     plotTitle, // chart title
@@ -212,7 +175,6 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         } else {
             freechart.addSubtitle(new TextTitle(information + ", " + bininfo));
         }
-
        
         ChartPanel chartPanel = new ChartPanel(freechart);
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
@@ -222,7 +184,8 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     private XYSeries createDataset(FlowDistribution dist) {
         int[] bins = dist.getBinnedData(binsize);
 
-        XYSeries xy = new XYSeries(dist.getInformation());
+        p("Flow Dist name: "+dist.getName());
+        XYSeries xy = new XYSeries(dist.getName());
         for (int b = 0; b < bins.length; b++) {
             xy.add(b * binsize, bins[b]);
         }
@@ -231,7 +194,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
     private String getCsvString() {
         StringBuilder csv = new StringBuilder();
-        // csv = csv.append(information).append("\n\n");
+        //csv = csv.append(information).append("\n\n");
         for (int i = 0; i < distributions.length; i++) {
             csv = csv.append(distributions[i].toCsv(binsize));
         }
@@ -240,7 +203,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
     private String getJsonString() {
         StringBuilder json = new StringBuilder();
-        // json = json.append(information).append("\n\n");
+        //json = json.append(information).append("\n\n");
         for (int i = 0; i < distributions.length; i++) {
             json = json.append(distributions[i].toJson());
         }

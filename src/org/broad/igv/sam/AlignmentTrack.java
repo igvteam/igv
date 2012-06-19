@@ -551,15 +551,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
         
         
-        String info = "";
-        if (forward && reverse) info += "both strands";
-        else if (forward) info += "forward strand";
-        else info += "reverse strand";
-        info += ", "+nrflows+" flows";
+        String name = "";
+        if (forward && reverse) name += "both strands";
+        else if (forward) name += "forward strand";
+        else name += "reverse strand";
         
         String locus = Locus.getFormattedLocusString(frame.getChrName(), (int)location, (int)location);
+        String info = locus +", "+nrflows+" flows, "+bases;
         
-        FlowDistribution dist = new FlowDistribution(location, nrflows, map, bases+", "+locus+" "+info);
+        FlowDistribution dist = new FlowDistribution(location, nrflows, map, name, info);
         return dist;
     }
 
