@@ -4,6 +4,8 @@
 #Class/TMP files
 .class
 *.tmp
+tmp/
+IGV-dist/
 
 #OS junk files
 [Tt]humbs.db
