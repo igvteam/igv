@@ -12,7 +12,9 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 import com.iontorrent.data.FlowDistribution;
-import com.iontorrent.views.FlowSignalDistributionView;
+import com.iontorrent.utils.LocationListener;
+import com.iontorrent.utils.SimpleDialog;
+import com.iontorrent.views.FlowSignalDistributionPanel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -53,6 +55,7 @@ import java.io.File;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+import org.broad.igv.feature.Locus;
 
 /**
  * @author jrobinso
@@ -65,6 +68,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DS_MARGIN_0 = 2;
     static final int DOWNAMPLED_ROW_HEIGHT = 3;
     static final int DS_MARGIN_2 = 5;
+
+   
 
     public enum ShadeBasesOption {
 
@@ -496,8 +501,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     /**
      * Copy the contents of the popup text to the system clipboard.
      */
-    public void copyFlowSignalDistribution(final TrackClickEvent e, double location) {
-        FlowDistribution dist = getFlowSignalDistribution(location);        
+    public void copyFlowSignalDistribution(final TrackClickEvent e, int location) {
+        FlowDistribution dist = getFlowSignalDistribution(e.getFrame(), location);        
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection(dist.toJson()), null);
     }
@@ -505,12 +510,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     /**
      * by default, returns both for forward and backward strand
      */
-    private FlowDistribution getFlowSignalDistribution(double location) {
-        return getFlowSignalDistribution(location, true, true);
+    private FlowDistribution getFlowSignalDistribution(ReferenceFrame frame, int location) {
+        return getFlowSignalDistribution(frame, location, true, true);
     }
 
-    private FlowDistribution getFlowSignalDistribution(double location, boolean forward, boolean reverse) {
+    private FlowDistribution getFlowSignalDistribution(ReferenceFrame frame, int location, boolean forward, boolean reverse) {
         TreeMap<Short, Integer> map = new TreeMap<Short, Integer>();
+        int nrflows = 0;
+        String bases ="";
         for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
             Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
             while (alignmentIterator.hasNext()) {
@@ -524,10 +531,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                 for (int i = 0; i < blocks.length; i++) {
                     AlignmentBlock block = blocks[i];
+                    int posinblock = (int) location - block.getStart();
                     if (!block.contains((int) location) || !block.hasFlowSignals()) {
                         continue;
                     }
-                    short flowSignal = block.getFlowSignalSubContext((int) location - block.getStart()).signals[1][0];
+                    nrflows++;
+                    short flowSignal = block.getFlowSignalSubContext(posinblock).signals[1][0];
+                    char base = (char)block.getBase(posinblock);
+                    if (bases.indexOf(base)<0) bases += base;
                     if (map.containsKey(flowSignal)) {
                         // increment
                         map.put(flowSignal, map.get(flowSignal) + 1);
@@ -538,12 +549,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             }        
         }
+        
+        
         String info = "";
         if (forward && reverse) info += "both strands";
         else if (forward) info += "forward strand";
         else info += "reverse strand";
+        info += ", "+nrflows+" flows";
         
-        FlowDistribution dist = new FlowDistribution(map, info);
+        String locus = Locus.getFormattedLocusString(frame.getChrName(), (int)location, (int)location);
+        
+        FlowDistribution dist = new FlowDistribution(location, nrflows, map, bases+", "+locus+" "+info);
         return dist;
     }
 
@@ -1539,7 +1555,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             if (frame == null) {
                 item.setEnabled(false);
             } else {
-                final double location = frame.getChromosomePosition(me.getX());
+                final int location = (int)(frame.getChromosomePosition(me.getX()));
 
                 // Change track height by attribute
                 item.addActionListener(new ActionListener() {
@@ -1893,26 +1909,26 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 itemr.setEnabled(false);
                 itemb.setEnabled(false);
             } else {
-                final double location = frame.getChromosomePosition(e.getMouseEvent().getX());
+                final int location = (int)(frame.getChromosomePosition(e.getMouseEvent().getX()));
                 // Change track height by attribute
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e, true, true);
+                        showFlowSignalDistribution(location, e.getFrame(), true, true);
                     }
                 });
                 itemf.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e, true, false);
+                        showFlowSignalDistribution(location, e.getFrame(), true, false);
                     }
                 });
                 itemr.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e, false, true);
+                        showFlowSignalDistribution(location, e.getFrame(), false, true);
                     }
                 });
                 itemb.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        showFlowSignalDistribution(location, e, false, false);
+                        showFlowSignalDistribution(location, e.getFrame(), false, false);
                     }
                 });
             }
@@ -1920,22 +1936,36 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
     /** if neither forward nor reverse, create 2 charts in one */
-    private void showFlowSignalDistribution(double location, TrackClickEvent e, boolean forward, boolean reverse) {
+    private void showFlowSignalDistribution(final int location, final ReferenceFrame frame, final boolean forward, final boolean reverse) {
+        FlowDistribution[] distributions = getFlowDistributions(forward, reverse, frame, location);
+                
+        final FlowSignalDistributionPanel distributionPanel = new FlowSignalDistributionPanel(distributions);
+        LocationListener listener =  new LocationListener(){
+            @Override
+            public void locationChanged(int newLocation) {
+                p("Got new location from panel: "+newLocation+", (old location was: "+location+")");
+                FlowDistribution[] newdist = getFlowDistributions(forward, reverse, frame, newLocation);
+                distributionPanel.setDistributions(newdist);
+            }
+        };
+        distributionPanel.setListener(listener);
+               
+        // listen to left/right mouse clicks from panel and navigate accordingly
+        SimpleDialog dia = new SimpleDialog("Flow Signal Distribution", distributionPanel);
+    }
+     private FlowDistribution[] getFlowDistributions(boolean forward, boolean reverse, ReferenceFrame frame, int location) {
         FlowDistribution distributions[] =  null;
         if (forward || reverse) {
             distributions = new FlowDistribution[1];
-            distributions[0] = getFlowSignalDistribution(location, forward, reverse);
+            distributions[0] = getFlowSignalDistribution(frame, location, forward, reverse);
         }
         else {
-            distributions = new FlowDistribution[3];
-            distributions[0] = getFlowSignalDistribution(location, true, true);
-            distributions[1] = getFlowSignalDistribution(location, true, false);
-            distributions[2] = getFlowSignalDistribution(location, false, true);
-        }        
-        
-        // and now display data in a custom view
-        String info = e.getFrame().getFormattedLocusString();       
-        FlowSignalDistributionView.showView(distributions, info);
+            distributions = new FlowDistribution[2];
+            //distributions[0] = getFlowSignalDistribution(frame, location, true, true);
+            distributions[0] = getFlowSignalDistribution(frame, location, true, false);
+            distributions[1] = getFlowSignalDistribution(frame, location, false, true);
+        }
+        return distributions;
     }
 
     private void p(String msg) {

@@ -14,18 +14,26 @@ import java.util.TreeMap;
 public class FlowDistribution {
 
     private TreeMap<Short, Integer> map;
-    private String name;
-
-    public FlowDistribution(TreeMap<Short, Integer> map, String name) {
+    private String information;
+    private int nrflows;
+    /** the chromosome location */
+    private int location;
+    
+    public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String information) {
         this.map = map;
-        this.name = name;
+        this.information = information;
+        this.nrflows = nrflows;
+        this.location = location;
     }
 
+    public int getNrFlows() {
+        return nrflows;
+    }
     public String toCsv(int binsize) {
         int[] bins = getBinnedData(binsize);
         String nl = "\n";
         StringBuilder csv = new StringBuilder();
-        csv = csv.append(getName());
+        csv = csv.append(getInformation());
         csv = csv.append("flow value, count\n");
         for (int b = 0; b < bins.length; b++) {
             csv = csv.append(b * binsize).append(",").append(bins[b]).append(nl);
@@ -77,14 +85,32 @@ public class FlowDistribution {
     /**
      * @return the name
      */
-    public String getName() {
-        return name;
+    public String getInformation() {
+        return information;
+    }
+
+  
+    /**
+     * @return the location
+     */
+    public int getLocation() {
+        return location;
     }
 
     /**
-     * @param name the name to set
+     * @param location the location to set
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setLocation(int location) {
+        this.location = location;
+    }
+
+    public int getMaxX() {
+        int maxx = 0;
+        for (Short x : map.keySet()) {
+            if (x > maxx) {
+                maxx = x;
+            }
+        }
+        return maxx;
     }
 }
