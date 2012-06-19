@@ -1,18 +1,10 @@
 package org.broad.igv.hic.tools;
 
-import org.apache.batik.util.DoublyLinkedList;
-import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
-import org.apache.log4j.Level;
-import org.broad.igv.hic.MainWindow;
-import org.apache.log4j.Logger;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
-import java.io.BufferedInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -26,7 +18,7 @@ import java.util.*;
  * DensityUtil class for example usage.
  *
  * @author Jim Robinson
- * @date 11/27/11
+ * @since 11/27/11
  */
 public class DensityCalculation {
 
@@ -192,7 +184,7 @@ public class DensityCalculation {
             for (int n = 0; n < nGrids; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
-                    System.err.println("Density was NaN, this shouldn't happen.");
+                    System.err.println("Density was NaN, this shouldn't happen; possibly due to smoothing non-human genome");
                 }
                 else {
                     // this is the sum of the diagonal for this particular chromosome.
