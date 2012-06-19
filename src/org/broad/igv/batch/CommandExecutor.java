@@ -17,7 +17,6 @@
 package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
@@ -186,7 +185,7 @@ public class CommandExecutor {
     private String setSamplingReadCount(String samplingReadCount) {
         try {
             Integer.parseInt(samplingReadCount);
-            PreferenceManager.getInstance().override(PreferenceManager.SAM_MAX_LEVELS, String.valueOf(samplingReadCount));
+            PreferenceManager.getInstance().override(PreferenceManager.SAM_SAMPLING_COUNT, String.valueOf(samplingReadCount));
             return "OK";
         } catch (NumberFormatException e) {
             return "ERROR: SAMPLING READ COUNT IS NOT A NUMBER: " + samplingReadCount;

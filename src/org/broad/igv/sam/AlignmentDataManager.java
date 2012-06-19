@@ -458,7 +458,7 @@ public class AlignmentDataManager {
             PreferenceManager prefs = PreferenceManager.getInstance();
             downsample = prefs.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
             sampleWindowSize = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_WINDOW);
-            maxReadCount = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+            maxReadCount = prefs.getAsInt(PreferenceManager.SAM_SAMPLING_COUNT);
         }
 
         public boolean isDownsample() {
