@@ -249,4 +249,13 @@
         </antcall>
     </target>
 
+    <!-- Deploy the application -->
+    <target name="deploy">
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="${dist.dir}">
+                <include name="lib/**"/>
+            </fileset>
+            <fileset file="${dist.dir}${jar.name}"/>
+        </copy>
+    </target>
 </project>

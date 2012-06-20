@@ -129,28 +129,38 @@ public abstract class AbstractAlignment implements Alignment {
             FlowSignalSubContext f = block.getFlowSignalSubContext(offset);
             if (null != f && null != f.signals && null != f.bases) {
                 buf.append("FZ = ");
+                StringBuffer spos = new StringBuffer();
+                spos.append("Flow positions = ");
                 for (i=0;i<f.signals.length;i++) {
                     if (null != f.signals[i] && 0 < f.signals[i].length) {
                         if (1 == i) {
                             if (0 < n) {
                                 buf.append(",");
+                                spos.append(",");
                             }
                             buf.append("[");
+                            spos.append("[");
                         }
                         for (j=0;j<f.signals[i].length;j++) {
                             if (1 != i && 0 < n) {
                                 buf.append(",");
+                                 spos.append(",");
                             }
                             buf.append(f.bases[i][j]);
                             buf.append(f.signals[i][j]);
+                            spos.append(f.flownumbers[i][j]);
                             n++;
                         }
                         if (1 == i) {
                             buf.append("]");
+                            spos.append("]");
                         }
                     }
                 }
+                buf.append("<br>").append(spos);
                 buf.append("<br>");
+                // maybe also add flow order?
+                
             }
         }
     }

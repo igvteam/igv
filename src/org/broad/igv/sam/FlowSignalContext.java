@@ -11,9 +11,11 @@ import java.util.Arrays;
 public class FlowSignalContext {
     public short[][][]signals = null;
     public char[][][]bases = null;
+    public short[][][]flownumbers = null;
 
-    public FlowSignalContext(short[][][] signals, char[][][] bases) {
+    public FlowSignalContext(short[][][] signals, char[][][] bases, short[][][]flownumbers) {
         this.signals = signals;
         this.bases = bases;
+        this.flownumbers = flownumbers;
     }
 }

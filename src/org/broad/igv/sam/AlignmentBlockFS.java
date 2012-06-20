@@ -20,7 +20,7 @@ public class AlignmentBlockFS extends AlignmentBlock {
     }
 
     public FlowSignalSubContext getFlowSignalSubContext(int offset) {
-        return new FlowSignalSubContext(this.fContext.signals[offset], this.fContext.bases[offset]);
+        return new FlowSignalSubContext(this.fContext.signals[offset], this.fContext.bases[offset], this.fContext.flownumbers[offset]);
     }
 
 

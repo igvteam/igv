@@ -4,6 +4,7 @@
  */
 package com.iontorrent.data;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
@@ -18,6 +19,7 @@ public class FlowDistribution {
     private int nrflows;
     /** the chromosome location */
     private int location;
+    ArrayList<ReadInfo> readinfos;
     
     public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String name, String information) {
         this.map = map;
@@ -39,7 +41,7 @@ public class FlowDistribution {
         String nl = "\n";
         StringBuilder csv = new StringBuilder();
         csv = csv.append(getInformation());
-        csv = csv.append("flow value, count\n");
+        csv = csv.append(nl).append("flow value, count\n");
         for (int b = 0; b < bins.length; b++) {
             csv = csv.append(b * binsize).append(",").append(bins[b]).append(nl);
         }
@@ -56,7 +58,17 @@ public class FlowDistribution {
         buf.append("}\n");
         return buf.toString();
     }
-
+    public String getReadInfoString() {
+       String nl = "\n";
+        StringBuilder csv = new StringBuilder();
+        csv = csv.append(getInformation());
+        csv = csv.append(nl).append(ReadInfo.getHeader()).append(nl);
+        for (ReadInfo ri: readinfos) {
+            csv = csv.append(ri.toCsv()).append(nl);
+        }
+        csv = csv.append(nl);
+        return csv.toString(); 
+    }
     public int[] getBinnedData(int binsize) {
         int maxx = 0;
         for (Short x : map.keySet()) {
@@ -117,5 +129,9 @@ public class FlowDistribution {
             }
         }
         return maxx;
+    }
+
+    public void setReadInfos(ArrayList<ReadInfo> readinfos) {
+       this.readinfos = readinfos;
     }
 }

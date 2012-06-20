@@ -113,7 +113,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         }
         return dataset;
     }
-   
+
     private XYSeriesCollection createXYDataset() {
         XYSeriesCollection dataset = new XYSeriesCollection();
         for (int i = 0; i < distributions.length; i++) {
@@ -132,14 +132,14 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         String yaxis = "count";
 
         XYItemRenderer renderer;
-        
+
         NumberAxis xax = new NumberAxis(xaxis);
         NumberAxis yax = new NumberAxis(yaxis);
         JFreeChart freechart = null;
         // could be another chart option
         // XYSplineRenderer renderer = new XYSplineRenderer();
-        
-        if (chart_type == ChartConfigPanel.TYPE_BAR) {            
+
+        if (chart_type == ChartConfigPanel.TYPE_BAR) {
             CategoryDataset dataset = createCategoryDataset();
             freechart = ChartFactory.createBarChart(
                     plotTitle, // chart title
@@ -151,15 +151,15 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
                     true, // tooltips?
                     false // URLs?
                     );
-             freechart.getCategoryPlot().setForegroundAlpha(0.75f);
-          
+            freechart.getCategoryPlot().setForegroundAlpha(0.75f);
+
         } else if (chart_type == ChartConfigPanel.TYPE_LINE) {
             renderer = new XYLineAndShapeRenderer();
             XYSeriesCollection dataset = createXYDataset();
             XYPlot plot = new XYPlot(dataset, xax, yax, renderer);
             freechart = new JFreeChart(plot);
             plot.setForegroundAlpha(0.75f);
-           
+
         } else if (chart_type == ChartConfigPanel.TYPE_AREA) {
             renderer = new XYAreaRenderer(XYAreaRenderer.AREA);
             XYSeriesCollection dataset = createXYDataset();
@@ -175,7 +175,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         } else {
             freechart.addSubtitle(new TextTitle(information + ", " + bininfo));
         }
-       
+
         ChartPanel chartPanel = new ChartPanel(freechart);
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         return chartPanel;
@@ -184,7 +184,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     private XYSeries createDataset(FlowDistribution dist) {
         int[] bins = dist.getBinnedData(binsize);
 
-        p("Flow Dist name: "+dist.getName());
+        p("Flow Dist name: " + dist.getName());
         XYSeries xy = new XYSeries(dist.getName());
         for (int b = 0; b < bins.length; b++) {
             xy.add(b * binsize, bins[b]);
@@ -205,9 +205,17 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         StringBuilder json = new StringBuilder();
         //json = json.append(information).append("\n\n");
         for (int i = 0; i < distributions.length; i++) {
-            json = json.append(distributions[i].toJson());
+            json = json.append("\n").append(distributions[i].toJson());
         }
         return json.toString();
+    }
+
+    private String getReadString() {
+        StringBuilder rinfo = new StringBuilder();
+        for (int i = 0; i < distributions.length; i++) {
+            rinfo = rinfo.append("\n").append(distributions[i].getReadInfoString());
+        }
+        return rinfo.toString();
     }
 
     private void p(String msg) {
@@ -230,6 +238,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         buttonToolBar = new javax.swing.JToolBar();
         btnCopy = new javax.swing.JButton();
         btnCopyJson = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         btnSave = new javax.swing.JButton();
         btnConfigure = new javax.swing.JButton();
         btnLeft = new javax.swing.JButton();
@@ -262,6 +271,18 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             }
         });
         buttonToolBar.add(btnCopyJson);
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/copyr.png"))); // NOI18N
+        jButton1.setToolTipText("show read info");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        buttonToolBar.add(jButton1);
 
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/save.png"))); // NOI18N
         btnSave.setToolTipText("Save data in .csv file (to be used in Excel for instance)");
@@ -383,6 +404,19 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             getListener().locationChanged(location + 1);
         }
     }//GEN-LAST:event_btnRightActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String readinfo = getReadString();
+        // copy to clipboard
+        StringSelection stringSelection = new StringSelection(readinfo);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+
+        // also show as popup for copy paste
+        JTextArea area = new JTextArea(15, 30);
+        area.setText(readinfo);
+        JOptionPane.showMessageDialog(this, new JScrollPane(area), "Read info string (it is already in the clipboard)", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConfigure;
     private javax.swing.JButton btnCopy;
@@ -391,6 +425,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnRight;
     private javax.swing.JButton btnSave;
     private javax.swing.JToolBar buttonToolBar;
+    private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
 
     public void setDistributions(FlowDistribution[] newdist) {

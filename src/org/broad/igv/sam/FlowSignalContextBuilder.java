@@ -112,15 +112,19 @@ public class FlowSignalContextBuilder {
     public FlowSignalContext getFlowSignalContext(byte[] readBases, int fromIdx, int nBases) {
         int i, idx;
         short[][][] blockFlowSignals = null;
+        short[][][] blockFlowNumbers = null;
         char[][][] blockFlowOrder = null; 
+        
 
         if (null == this.flowSignals) {
             return null;
         }
 
         blockFlowSignals = new short[nBases][][];
+        blockFlowNumbers = new short[nBases][][];
         blockFlowOrder = new char[nBases][][];
         //Default value
+        Arrays.fill(blockFlowNumbers, null);
         Arrays.fill(blockFlowSignals, null);
         Arrays.fill(blockFlowOrder, null);
 
@@ -165,47 +169,58 @@ public class FlowSignalContextBuilder {
             }
             // set-up block
             blockFlowSignals[idx] = new short[3][];
+            blockFlowNumbers[idx] = new short[3][];
             blockFlowOrder[idx] = new char[3][];
             // this.previous context
             if (0 <= this.prevFlowSignalsStart && this.prevFlowSignalsStart <= this.prevFlowSignalsEnd && this.prevFlowSignalsEnd < this.flowSignals.length) {
                 blockFlowSignals[idx][0] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
+                blockFlowNumbers[idx][0] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
                 blockFlowOrder[idx][0] = new char[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
                     for (j = this.prevFlowSignalsEnd; this.prevFlowSignalsStart <= j; j--) {
+                        blockFlowNumbers[idx][0][this.prevFlowSignalsEnd - j] = (short) (j+ this.flowOrderStart);
                         blockFlowSignals[idx][0][this.prevFlowSignalsEnd - j] = this.flowSignals[j];
                         blockFlowOrder[idx][0][this.prevFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
                     for (j = this.prevFlowSignalsStart; j <= this.prevFlowSignalsEnd; j++) {
+                        blockFlowNumbers[idx][0][j-this.prevFlowSignalsStart] = (short) (j+ this.flowOrderStart);
                         blockFlowSignals[idx][0][j-this.prevFlowSignalsStart] = this.flowSignals[j];
                         blockFlowOrder[idx][0][j-this.prevFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
                 blockFlowSignals[idx][0] = null;
+                blockFlowNumbers[idx][0] = null;
                 blockFlowOrder[idx][0] = null;
             }
             // current context
             blockFlowSignals[idx][1] = new short[1];
+            blockFlowNumbers[idx][1] = new short[1];
             blockFlowOrder[idx][1] = new char[1];
+            blockFlowNumbers[idx][1][0] = (short) flowOrderIndex;
             blockFlowSignals[idx][1][0] = s;
             blockFlowOrder[idx][1][0] = f;
             // next context
             if (0 <= nextFlowSignalsStart && nextFlowSignalsStart <= nextFlowSignalsEnd && nextFlowSignalsEnd < this.flowSignals.length) {
                 blockFlowSignals[idx][2] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
+                blockFlowNumbers[idx][2] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
                 blockFlowOrder[idx][2] = new char[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
                     for (j = nextFlowSignalsEnd; nextFlowSignalsStart <= j; j--) {
+                        blockFlowNumbers[idx][2][nextFlowSignalsEnd - j] = (short) (j+ this.flowOrderStart);
                         blockFlowSignals[idx][2][nextFlowSignalsEnd - j] = this.flowSignals[j];
                         blockFlowOrder[idx][2][nextFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
                     for (j = nextFlowSignalsStart; j <= nextFlowSignalsEnd; j++) {
+                        blockFlowNumbers[idx][2][j-nextFlowSignalsStart] = (short) (j+ this.flowOrderStart);
                         blockFlowSignals[idx][2][j-nextFlowSignalsStart] = this.flowSignals[j];
                         blockFlowOrder[idx][2][j-nextFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
+                blockFlowNumbers[idx][2] = null;
                 blockFlowSignals[idx][2] = null;
                 blockFlowOrder[idx][2] = null;
             }
@@ -216,6 +231,6 @@ public class FlowSignalContextBuilder {
             idx++; // next base
         }
 
-        return new FlowSignalContext(blockFlowSignals, blockFlowOrder);
+        return new FlowSignalContext(blockFlowSignals, blockFlowOrder, blockFlowNumbers );
     }
 }
