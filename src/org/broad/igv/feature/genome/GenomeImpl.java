@@ -130,9 +130,10 @@ public class GenomeImpl implements Genome {
             try {
                 br = new BufferedReader(new FileReader(aliasFile));
                 addChrAliases(GenomeManager.loadChrAliases(br));
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.error("Error loading chr alias table", e);
-                MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
+                if(!Globals.isHeadless())
+                    MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
                         e.toString());
             } finally {
                 if (br != null) {
