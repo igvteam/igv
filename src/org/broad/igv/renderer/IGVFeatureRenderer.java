@@ -28,9 +28,8 @@ import org.broad.tribble.Feature;
 import java.awt.*;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -71,6 +70,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     //Could use more coordinates, but they are all contained in the Exon
     private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
     private AlternativeSpliceGraph<Integer> exonGraph = new AlternativeSpliceGraph<Integer>();
+    private Set<String> drawnNames = new HashSet<String>(100);
 
     /**
      * Note:  assumption is that featureList is sorted by start position.
@@ -197,7 +197,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // the track rectangle.
                         int nameStart = Math.max(0, pixelStart);
                         int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
-                        int textBaselineY = pixelYCenter + blockHeight - 4;
+                        int textBaselineY = pixelYCenter + blockHeight;
 
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
@@ -205,7 +205,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int verticalSpaceRequiredForText = textBaselineY - trackRectangleY;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
-                            lastNamePixelEnd = drawFeatureName(feature, nameStart, nameEnd,
+                            lastNamePixelEnd = drawFeatureName(feature, track.getDisplayMode(), nameStart, nameEnd,
                                     lastNamePixelEnd, fontGraphics, textBaselineY);
                         }
                     }
@@ -348,7 +348,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int curYOffset = yOffset;
             boolean drawConnectingLine = true;
 
-            if (true || mode == Track.DisplayMode.ALTERNATIVE_SPLICE) {
+            if (mode == Track.DisplayMode.ALTERNATIVE_SPLICE) {
 
                 IExon eProx = Exon.getExonProxy(exon);
                 drawConnectingLine = !exonGraph.containsEdge(lastExon, eProx);
@@ -474,12 +474,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     }
 
-    final private int drawFeatureName(IGVFeature feature, int pixelStart, int pixelEnd,
+    final private int drawFeatureName(IGVFeature feature, Track.DisplayMode mode, int pixelStart, int pixelEnd,
                                       int lastFeatureEndedAtPixelX, Graphics2D g2D,
                                       int textBaselineY) {
 
         String name = feature.getName();
-        if (name == null) {
+        if (name == null || (drawnNames.contains(name) && mode == Track.DisplayMode.ALTERNATIVE_SPLICE)){
             return lastFeatureEndedAtPixelX;
         }
 
@@ -496,6 +496,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // g2D.clearRect(xString2, textBaselineY, (int) stringBounds.getWidth(), (int) stringBounds.getHeight());
             g2D.drawString(name, nameStart, textBaselineY);
             lastFeatureEndedAtPixelX = nameStart + nameWidth;
+            drawnNames.add(name);
 
         }
 
@@ -666,5 +667,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     public void reset() {
         exonMap.clear();
         exonGraph = new AlternativeSpliceGraph<Integer>();
+        drawnNames.clear();
     }
 }
