@@ -1,6 +1,5 @@
 package org.broad.igv.feature.genome;
 
-import com.sun.xml.internal.ws.util.ByteArrayBuffer;
 import org.broad.igv.Globals;
 import org.broad.tribble.Feature;
 
