@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -26,17 +25,15 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.collections.CI;
 import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
+ *
  * User: jrobinso
- * Date: Oct 21, 2009
- * Time: 10:14:24 PM
- * To change this template use File | Settings | File Templates.
  */
 
 
@@ -48,9 +45,6 @@ public class GFFParser implements FeatureParser {
     static HashSet utrTerms = new HashSet();
     static HashSet<String> geneParts = new HashSet();
     static HashSet<String> ignoredTypes = new HashSet();
-
-    //static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus","Alias", "alias", "systematic_id", "ID"};
-
 
     static {
         utrTerms.add("five_prime_UTR");
@@ -93,59 +87,43 @@ public class GFFParser implements FeatureParser {
         ignoredTypes.add("intron");
     }
 
-    /*
-    static {
-        ignoreAttributes.add("ID");
-        ignoreAttributes.add("Parent");
-        ignoreAttributes.add("wormprep");
-        ignoreAttributes.add("Index");
-        ignoreAttributes.add("color");
-        ignoreAttributes.add("colour");
-        ignoreAttributes.add("exonNumber");
-
-    }
-    */
-
 
     Helper helper;
 
     Map<String, GFF3Transcript> transcriptCache = new HashMap(50000);
     Map<String, BasicFeature> geneCache = new HashMap(50000);
     private TrackProperties trackProperties = null;
-
-    static StringBuffer buf = new StringBuffer();
+    Set<String> featuresToHide = new HashSet();
 
     public static boolean isGFF(String path) {
-        return path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz") ||
-                path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz") ||
-                path.toLowerCase().endsWith("gff") || path.toLowerCase().endsWith("gff.gz") ||
-                path.toLowerCase().endsWith("gtf") || path.toLowerCase().endsWith("gtf.gz");
+        String lowpath = path.toLowerCase();
+        lowpath = lowpath.replace(".gz", "");
+        return lowpath.endsWith("gff3") ||
+                lowpath.endsWith("gvf") ||
+                lowpath.endsWith("gff") ||
+                lowpath.endsWith("gtf");
+    }
+
+    private static boolean isGFF3(String path){
+    String lowpath = path.toLowerCase().replace(".gz", "");
+    return lowpath.endsWith("gff3") || lowpath.endsWith("gvf");
     }
 
 
     public GFFParser(String path) {
         // Assume V2 until proven otherwise
-        if (path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz") ||
-                path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz")) {
+
+        if (isGFF3(path)) {
             helper = new GFF3Helper();
         } else {
             helper = new GFF2Helper();
         }
     }
 
-    /**
-     * By definition this is a feature file
-     */
-    public boolean isFeatureFile(ResourceLocator locator) {
-        return true;
-    }
-
-
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
-        final String pathLowerCase = locator.getPath().toLowerCase();
-        if (pathLowerCase.endsWith("gff3") || pathLowerCase.endsWith("gff3.gz") ||
-                pathLowerCase.endsWith("gvf") || pathLowerCase.endsWith("gvf.gz")) {
+        String path = locator.getPath().toLowerCase();
+        if (isGFF3(path)) {
             helper = new GFF3Helper();
         }
 
@@ -186,6 +164,103 @@ public class GFFParser implements FeatureParser {
         }
     }
 
+    private void readHeaderLine(String line){
+        if (line.startsWith("#track") || line.startsWith("##track")) {
+            trackProperties = new TrackProperties();
+            ParsingUtils.parseTrackLine(line, trackProperties);
+        } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
+            helper.setUrlDecoding(false);
+        } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
+            String[] kv = line.split("=");
+            if (kv.length > 1) {
+                featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
+            }
+        } else if (line.startsWith("#displayName") || line.startsWith("##displayName")) {
+            String[] nameTokens = line.split("=");
+            if (nameTokens.length < 2) {
+                helper.setNameFields(null);
+            } else {
+                String[] fields = nameTokens[1].split(",");
+                helper.setNameFields(fields);
+            }
+        }
+    }
+
+    private void processExon(String featureType, String[] parentIds, String chromosome,
+                             int start, int end, Strand strand, Map<String, String> attributes, String phaseString){
+        String name = getName(attributes);
+        int phase = -1;
+        if (!phaseString.equals(".")) {
+            try {
+                phase = Integer.parseInt(phaseString);
+            } catch (NumberFormatException numberFormatException) {
+                // Just skip setting the phase
+                log.error("GFF3 error: non numeric phase: " + phaseString);
+            }
+        }
+
+        // Make a copy of the exon record for each parent
+        for (String pid : parentIds) {
+
+            Exon exon = new Exon(chromosome, start, end, strand);
+            exon.setAttributes(attributes);
+            exon.setUTR(utrTerms.contains(featureType));
+
+            if (phase >= 0) {
+                exon.setPhase(phase);
+
+            }
+            exon.setName(name);
+
+            if (featureType.equalsIgnoreCase("exon")) {
+                getGFF3Transcript(pid).addExon(exon);
+            } else if (featureType.equals("CDS")) {
+                getGFF3Transcript(pid).addCDS(exon);
+            } else if (featureType.equals("five_prime_UTR") || featureType.equals("5'-UTR")) {
+                getGFF3Transcript(pid).setFivePrimeUTR(exon);
+            } else if (featureType.equals("three_prime_UTR") || featureType.equals("3'-UTR")) {
+                getGFF3Transcript(pid).setThreePrimeUTR(exon);
+            }
+        }
+    }
+
+    private BasicFeature generateFeature(String featureType, String[] parentIds, String chromosome,
+                                         int start, int end, Strand strand, Map<String, String> attributes){
+
+
+        BasicFeature f = new BasicFeature(chromosome, start, end, strand);
+        String name = getName(attributes);
+        f.setName(name);
+        f.setAttributes(attributes);
+
+        if (attributes.containsKey("color")) {
+            f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
+        }
+
+        String id = helper.getID(attributes);
+        if (id == null) {
+            return f;
+        } else {
+            f.setIdentifier(id);
+        }
+
+        if (featuresToHide.contains(featureType)) {
+            if (IGV.hasInstance()) FeatureDB.addFeature(f);
+            return null;
+        }
+
+        if (featureType.equalsIgnoreCase("gene")) {
+            geneCache.put(id, f);
+        } else if (featureType.equalsIgnoreCase("mRNA") || featureType.equalsIgnoreCase("transcript")) {
+            String pid = null;
+            if (parentIds != null && parentIds.length > 0) {
+                pid = parentIds[0];
+            }
+            getGFF3Transcript(id).transcript(f, pid);
+        }
+        return f;
+    }
+
 
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
         List<org.broad.tribble.Feature> features = new ArrayList();
@@ -193,12 +268,8 @@ public class GFFParser implements FeatureParser {
         int lineNumber = 0;
         try {
 
-            genome = GenomeManager.getInstance().getCurrentGenome();
-
-            Set<String> featuresToHide = new HashSet();
 
             while ((line = reader.readLine()) != null) {
-
                 lineNumber++;
 
                 if (line.startsWith("##gff-version") && line.endsWith("3")) {
@@ -207,28 +278,7 @@ public class GFFParser implements FeatureParser {
 
 
                 if (line.startsWith("#")) {
-                    if (line.startsWith("#track") || line.startsWith("##track")) {
-                        trackProperties = new TrackProperties();
-                        ParsingUtils.parseTrackLine(line, trackProperties);
-                    } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
-                        helper.setUrlDecoding(false);
-                    } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
-                        String[] kv = line.split("=");
-                        if (kv.length > 1) {
-                            featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
-                        }
-                    } else if (line.startsWith("#displayName") || line.startsWith("##displayName")) {
-                        String[] nameTokens = line.split("=");
-                        if (nameTokens.length < 2) {
-                            helper.setNameFields(null);
-                        } else {
-                            String[] fields = nameTokens[1].split(",");
-                            helper.setNameFields(fields);
-                        }
-
-                    } else if (line.startsWith("#colorBy")) {
-
-                    }
+                    readHeaderLine(line);
                     continue;
                 }
 
@@ -241,11 +291,13 @@ public class GFFParser implements FeatureParser {
                     if (line.startsWith("track")) {
                         trackProperties = new TrackProperties();
                         ParsingUtils.parseTrackLine(line, trackProperties);
+                        continue;
+                    } else {
+                        String msg = String.format("GFF line expected to have 9 tokens, but has %d", nTokens);
+                        throw new ParserException(msg, lineNumber, line);
                     }
-                    continue;
                 }
 
-                // The type
                 String featureType = new String(tokens[2].trim());
 
                 if (ignoredTypes.contains(featureType)) {
@@ -258,119 +310,43 @@ public class GFFParser implements FeatureParser {
                 // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
                 int start;
                 int end;
+                int col = 3;
                 try {
-                    start = Integer.parseInt(tokens[3]) - 1;
+                    start = Integer.parseInt(tokens[col]) - 1;
+                    col++;
+                    end = Integer.parseInt(tokens[col]);
                 } catch (NumberFormatException ne) {
-                    throw new ParserException("Column 4 must contain a numeric value", lineNumber, line);
-                }
-
-                try {
-                    end = Integer.parseInt(tokens[4]);
-                } catch (NumberFormatException ne) {
-                    throw new ParserException("Column 5 must contain a numeric value", lineNumber, line);
+                    String msg = String.format("Column %d must contain a numeric value. %s", col + 1, ne.getMessage());
+                    throw new ParserException(msg, lineNumber, line);
                 }
 
                 Strand strand = convertStrand(tokens[6]);
-
                 String attributeString = tokens[8];
 
-                LinkedHashMap<String, String> attributes = new LinkedHashMap();
-                //attributes.put("Type", featureType);
+                CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
+
                 helper.parseAttributes(attributeString, attributes);
-
-                String id = helper.getID(attributes);
-
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
 
 
-                if (featureType.equals("CDS_parts")) {
+                if (featureType.equals("CDS_parts") || featureType.equals("intron")) {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
                     }
 
-                } else if (featureType.equals("intron")) {
-
-                    for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
-                    }
                 } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
                         parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
-                    String name = getName(attributes);
-                    int phase = -1;
+
                     String phaseString = tokens[7].trim();
-                    if (!phaseString.equals(".")) {
-                        try {
-                            phase = Integer.parseInt(phaseString);
-
-                        } catch (NumberFormatException numberFormatException) {
-
-                            // Just skip setting the phase
-                            log.error("GFF3 error: non numeric phase: " + phaseString);
-                        }
-                    }
-
-                    // Make a copy of the exon record for each parent
-                    for (String pid : parentIds) {
-
-                        Exon exon = new Exon(chromosome, start, end, strand);
-                        exon.setAttributes(attributes);
-                        exon.setUTR(utrTerms.contains(featureType));
-
-                        if (phase >= 0) {
-                            exon.setPhase(phase);
-
-                        }
-                        exon.setName(name);
-
-                        if (featureType.equals("exon")) {
-                            getGFF3Transcript(pid).addExon(exon);
-                        } else if (featureType.equals("CDS")) {
-                            getGFF3Transcript(pid).addCDS(exon);
-                        } else if (featureType.equals("five_prime_UTR") || featureType.equals("5'-UTR")) {
-                            getGFF3Transcript(pid).setFivePrimeUTR(exon);
-                        } else if (featureType.equals("three_prime_UTR") || featureType.equals("3'-UTR")) {
-                            getGFF3Transcript(pid).setThreePrimeUTR(exon);
-                        }
-                    }
-
+                    processExon(featureType, parentIds, chromosome, start, end, strand, attributes, phaseString);
 
                 } else {
-                    BasicFeature f = new BasicFeature(chromosome, start, end, strand);
-                    f.setName(getName(attributes));
-                    f.setAttributes(attributes);
 
-                    if (attributes.containsKey("color")) {
-                        f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
-                    }
-                    if (attributes.containsKey("Color")) {
-                        f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
-                    }
-
-
-                    if (id == null) {
+                    BasicFeature f = generateFeature(featureType, parentIds, chromosome, start, end, strand, attributes);
+                    if(f != null){
                         features.add(f);
-                    } else {
-                        f.setIdentifier(id);
-
-                        if (featureType.equals("gene")) {
-                            geneCache.put(id, f);
-                            if (featuresToHide.contains(featureType)) {
-                                if (IGV.hasInstance()) FeatureDB.addFeature(f);
-                            } else {
-                                features.add(f);
-                            }
-                        } else if (featureType.equals("mRNA") || featureType.equals("transcript")) {
-                            String pid = null;
-                            if (parentIds != null && parentIds.length > 0) {
-                                pid = parentIds[0];
-                            }
-                            getGFF3Transcript(id).transcript(f, pid);
-                        } else if (featuresToHide.contains(featureType)) {
-                            if (IGV.hasInstance()) FeatureDB.addFeature(f);
-                        } else {
-                            features.add(f);
-                        }
                     }
+
                 }
             }
 
@@ -382,15 +358,11 @@ public class GFFParser implements FeatureParser {
                 }
             }
 
-            if (IGV.hasInstance()) {
-                FeatureDB.addFeatures(features);
-            }
 
         } catch (ParserException e) {
             throw e;
-        } catch (Exception
-                ex) {
-            log.error("Error parsing GFF file", ex);
+        } catch (IOException ex) {
+            log.error("Error reading GFF file", ex);
             if (line != null && lineNumber != 0) {
                 throw new ParserException(ex.getMessage(), ex, lineNumber, line);
             } else {
@@ -679,8 +651,9 @@ public class GFFParser implements FeatureParser {
 
     public static class GFF2Helper implements Helper {
 
-        static String[] idFields = {"systematic_id", "ID", "transcript_id", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
-        static String[] DEFAULT_NAME_FIELDS = {"gene", "Name", "name", "primary_name", "Locus", "locus", "Alias", "alias", "systematic_id", "ID"};
+        //TODO Almost identical
+        static String[] idFields = {"systematic_id", "ID", "transcript_id", "name", "primary_name", "gene", "locus", "alias"};
+        static String[] DEFAULT_NAME_FIELDS = {"gene", "name", "primary_name", "locus", "alias", "systematic_id", "ID"};
 
         private String[] nameFields;
 

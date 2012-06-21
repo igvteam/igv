@@ -102,10 +102,12 @@ public class BasicFeature extends AbstractFeature {
         this.identifier = identifier;
     }
 
-
-    // TODO -- why are these set?  they are never used.
     public void setParentIds(String[] parentIds) {
         this.parentIds = parentIds;
+    }
+
+    public String[] getParentIds() {
+        return this.parentIds;
     }
 
 

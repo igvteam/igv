@@ -13,6 +13,8 @@ package org.broad.igv.util.collections;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Class for case-insensitive collections
@@ -57,6 +59,32 @@ public class CI{
     public static class CIHashMap<V> extends HashMap<String, V> {
 
         public CIHashMap(){
+            super();
+        }
+
+
+        @Override
+        public V put(String key, V value){
+            return super.put(convertKey(key), value);
+        }
+
+        public V remove(String key){
+            return super.remove(convertKey(key));
+        }
+
+        public V get(String key){
+            return super.get(convertKey(key));
+        }
+
+        public boolean containsKey(String key){
+            return super.containsKey(convertKey(key));
+        }
+
+    }
+
+    public static class CILinkedHashMap<V> extends LinkedHashMap<String, V> {
+
+        public CILinkedHashMap(){
             super();
         }
 
