@@ -68,6 +68,8 @@ public class Main {
 
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ImageIcon icon = new ImageIcon(Main.class.getResource("mainframeicon.png"));
+        if (icon != null) frame.setIconImage(icon.getImage());
         open(frame, args);
 
     }

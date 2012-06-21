@@ -109,7 +109,6 @@ public abstract class AbstractAlignment implements Alignment {
         return 0;
     }
 
-
     public byte getPhred(double position) {
         int basePosition = (int) position;
         for (AlignmentBlock block : this.alignmentBlocks) {
@@ -121,46 +120,44 @@ public abstract class AbstractAlignment implements Alignment {
         }
         return 0;
     }
-    
+
     private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
         if (block.hasFlowSignals()) {
             // flow signals
             int i, j, n = 0;
             FlowSignalSubContext f = block.getFlowSignalSubContext(offset);
-            if (null != f && null != f.signals && null != f.bases) {
+            if (null != f && null != f.getSignals() && null != f.getBases()) {
                 buf.append("FZ = ");
                 StringBuffer spos = new StringBuffer();
-                spos.append("Flow positions = ");
-                for (i=0;i<f.signals.length;i++) {
-                    if (null != f.signals[i] && 0 < f.signals[i].length) {
+                spos.append("Flow position = ").append(f.getFlowOrderIndex());
+
+                for (i = 0; i < f.getNrSignalTypes(); i++) {
+                    short[] signals = f.getSignalsOfType(i);
+                    char[] bases = f.getBasesOfType(i);
+                    if (null != signals && 0 < signals.length) {
                         if (1 == i) {
                             if (0 < n) {
                                 buf.append(",");
-                                spos.append(",");
                             }
                             buf.append("[");
-                            spos.append("[");
                         }
-                        for (j=0;j<f.signals[i].length;j++) {
+                        for (j = 0; j < signals.length; j++) {
                             if (1 != i && 0 < n) {
                                 buf.append(",");
-                                 spos.append(",");
                             }
-                            buf.append(f.bases[i][j]);
-                            buf.append(f.signals[i][j]);
-                            spos.append(f.flownumbers[i][j]);
+                            buf.append(bases[j]);
+                            buf.append(signals[j]);
+
                             n++;
                         }
                         if (1 == i) {
                             buf.append("]");
-                            spos.append("]");
                         }
                     }
                 }
                 buf.append("<br>").append(spos);
                 buf.append("<br>");
-                // maybe also add flow order?
-                
+                // maybe also add flow order?                
             }
         }
     }
@@ -179,7 +176,7 @@ public abstract class AbstractAlignment implements Alignment {
                         buf = new StringBuffer();
                         buf.append("Insertion: " + new String(block.getBases()) + "<br>");
                         buf.append("Base phred quality = ");
-                        for (offset=0;offset<block.getBases().length;offset++) {
+                        for (offset = 0; offset < block.getBases().length; offset++) {
                             byte quality = block.getQuality(offset);
                             if (0 < offset) {
                                 buf.append(",");
@@ -187,9 +184,9 @@ public abstract class AbstractAlignment implements Alignment {
                             buf.append(quality);
                         }
                         buf.append("<br>");
-                        for (offset=0;offset<block.getBases().length;offset++) {
+                        for (offset = 0; offset < block.getBases().length; offset++) {
                             byte base = block.getBase(offset);
-                            buf.append((char)base + ": ");
+                            buf.append((char) base + ": ");
                             bufAppendFlowSignals(block, buf, offset);
                         }
                         buf.append("----------------------"); // NB: no <br> required
@@ -200,7 +197,7 @@ public abstract class AbstractAlignment implements Alignment {
                 }
             }
         }
-        
+
         buf = new StringBuffer();
 
         String sample = getSample();
@@ -309,7 +306,6 @@ public abstract class AbstractAlignment implements Alignment {
         return null;
     }
 
-
     public void setMateSequence(String sequence) {
         // ignore by default
     }
@@ -322,7 +318,6 @@ public abstract class AbstractAlignment implements Alignment {
         return false;
     }
 
-
     public Color getDefaultColor() {
         return AlignmentRenderer.grey1;
     }
@@ -330,6 +325,4 @@ public abstract class AbstractAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
-
-
 }

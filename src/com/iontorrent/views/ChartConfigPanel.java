@@ -13,7 +13,7 @@ public class ChartConfigPanel extends javax.swing.JPanel {
     public static final int TYPE_BAR = 0;
     public static final int TYPE_LINE = 1;
     public static final int TYPE_AREA= 2;
-    public static final int TYPE_CANDLE= 3;
+    public static final int TYPE_STACKED= 3;
     /**
      * Creates new form ChartConfigPanel
      */
@@ -29,11 +29,13 @@ public class ChartConfigPanel extends javax.swing.JPanel {
     public int getChartType() {
         if (this.radioArea.isSelected()) return TYPE_AREA;
         else if (this.radioLine.isSelected()) return TYPE_LINE;
+        else if (this.radioStacked.isSelected()) return TYPE_STACKED;
         else return TYPE_BAR;
     }
     public void setChartType(int type) {
         if (type == TYPE_AREA) radioArea.setSelected(true);
         else if (type == TYPE_LINE) radioLine.setSelected(true);
+        else if (type == TYPE_STACKED) radioStacked.setSelected(true);
         else radioBar.setSelected(true);
         
     }
@@ -53,6 +55,7 @@ public class ChartConfigPanel extends javax.swing.JPanel {
         radioLine = new javax.swing.JRadioButton();
         radioBar = new javax.swing.JRadioButton();
         radioArea = new javax.swing.JRadioButton();
+        radioStacked = new javax.swing.JRadioButton();
 
         jLabel1.setText("Size of bins:");
         jLabel1.setToolTipText("The granularity of the histogram");
@@ -76,18 +79,25 @@ public class ChartConfigPanel extends javax.swing.JPanel {
         buttonGroup1.add(radioArea);
         radioArea.setText("Area chart");
 
+        buttonGroup1.add(radioStacked);
+        radioStacked.setText("Stacked bar chart");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spinbins, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(jLabel2)
-            .addComponent(radioLine)
-            .addComponent(radioBar)
-            .addComponent(radioArea)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinbins, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel2)
+                    .addComponent(radioLine)
+                    .addComponent(radioBar)
+                    .addComponent(radioArea)
+                    .addComponent(radioStacked))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -100,9 +110,12 @@ public class ChartConfigPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radioLine)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(radioBar)
+                .addComponent(radioArea)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(radioStacked)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(radioArea))
+                .addComponent(radioBar)
+                .addGap(39, 39, 39))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -117,6 +130,7 @@ public class ChartConfigPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton radioArea;
     private javax.swing.JRadioButton radioBar;
     private javax.swing.JRadioButton radioLine;
+    private javax.swing.JRadioButton radioStacked;
     private javax.swing.JSpinner spinbins;
     // End of variables declaration//GEN-END:variables
 

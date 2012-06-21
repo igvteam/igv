@@ -7,6 +7,7 @@ import java.util.Arrays;
  *
  * @author Nils Homer
  * @date 4/11/12
+ * Modified by Chantal Roth, 6/21/2012
  */
 public class FlowSignalContextBuilder {
 
@@ -20,6 +21,11 @@ public class FlowSignalContextBuilder {
     private boolean readNegativeStrandFlag;
     private boolean[] incorporations = null; // required for the reverse strand
 
+    
+    public static final int PREV = 0;
+    public static final int CURR = 1;
+    public static final int NEXT = 2;
+    
     public FlowSignalContextBuilder(short[] flowSignals, String flowOrder, int flowOrderStart, byte[] readBases, int fromIdx, boolean readNegativeStrandFlag) {
         if (null == flowSignals || null == flowOrder || flowOrderStart < 0) {
             return;
@@ -112,7 +118,6 @@ public class FlowSignalContextBuilder {
     public FlowSignalContext getFlowSignalContext(byte[] readBases, int fromIdx, int nBases) {
         int i, idx;
         short[][][] blockFlowSignals = null;
-        short[][][] blockFlowNumbers = null;
         char[][][] blockFlowOrder = null; 
         
 
@@ -121,10 +126,8 @@ public class FlowSignalContextBuilder {
         }
 
         blockFlowSignals = new short[nBases][][];
-        blockFlowNumbers = new short[nBases][][];
         blockFlowOrder = new char[nBases][][];
         //Default value
-        Arrays.fill(blockFlowNumbers, null);
         Arrays.fill(blockFlowSignals, null);
         Arrays.fill(blockFlowOrder, null);
 
@@ -132,12 +135,16 @@ public class FlowSignalContextBuilder {
         // Go through the bases
         i = fromIdx;
         idx = 0;
+        
+        int[] flowOrderIndices = new int[nBases];
+       
         while (0 <= this.flowSignalsIndex && this.flowSignalsIndex < this.flowSignals.length && i < fromIdx + nBases) {
             short s = this.flowSignals[this.flowSignalsIndex];
             char f = this.flowOrder.charAt((this.flowSignalsIndex + this.flowOrderStart) % this.flowOrder.length());
+            flowOrderIndices[idx] = flowSignalsIndex+flowOrderStart;
             int nextFlowSignalsStart = -1, nextFlowSignalsEnd = -1;
-            int j = i + 1;
-            if (j < readBases.length) {
+            int basepos = i + 1;
+            if (basepos < readBases.length) {
                 if (this.readNegativeStrandFlag) {
                     nextFlowSignalsEnd = this.flowSignalsIndex - 1;
                     // NB: loop condition is not symmetric to the forward, as we must respect the directionality of sequencing.
@@ -147,7 +154,7 @@ public class FlowSignalContextBuilder {
                     // for the next flow that matches our next read base (we would place the A incorporation flow in the fourth flow,
                     // which is wrong).
                     while (!this.incorporations[this.flowSignalsIndex] ||
-                            this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[j]]) { // NB: malicious input can cause infinite loops here
+                            this.flowOrder.charAt(this.flowOrderIndex) != SamAlignment.NT2COMP[readBases[basepos]]) { // NB: malicious input can cause infinite loops here
                         this.flowOrderIndex--;
                         this.flowSignalsIndex--;
                         if (this.flowOrderIndex < 0) {
@@ -157,7 +164,7 @@ public class FlowSignalContextBuilder {
                     nextFlowSignalsStart = this.flowSignalsIndex + 1;
                 } else {
                     nextFlowSignalsStart = this.flowSignalsIndex + 1;
-                    while (this.flowOrder.charAt(this.flowOrderIndex) != readBases[j]) { // NB: malicious input can cause infinite loops here
+                    while (this.flowOrder.charAt(this.flowOrderIndex) != readBases[basepos]) { // NB: malicious input can cause infinite loops here
                         this.flowOrderIndex++;
                         this.flowSignalsIndex++;
                         if (this.flowOrder.length() <= this.flowOrderIndex) {
@@ -169,60 +176,50 @@ public class FlowSignalContextBuilder {
             }
             // set-up block
             blockFlowSignals[idx] = new short[3][];
-            blockFlowNumbers[idx] = new short[3][];
             blockFlowOrder[idx] = new char[3][];
+            
             // this.previous context
             if (0 <= this.prevFlowSignalsStart && this.prevFlowSignalsStart <= this.prevFlowSignalsEnd && this.prevFlowSignalsEnd < this.flowSignals.length) {
-                blockFlowSignals[idx][0] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
-                blockFlowNumbers[idx][0] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
-                blockFlowOrder[idx][0] = new char[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
+                blockFlowSignals[idx][PREV] = new short[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
+                blockFlowOrder[idx][PREV] = new char[this.prevFlowSignalsEnd - this.prevFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
-                    for (j = this.prevFlowSignalsEnd; this.prevFlowSignalsStart <= j; j--) {
-                        blockFlowNumbers[idx][0][this.prevFlowSignalsEnd - j] = (short) (j+ this.flowOrderStart);
-                        blockFlowSignals[idx][0][this.prevFlowSignalsEnd - j] = this.flowSignals[j];
-                        blockFlowOrder[idx][0][this.prevFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
+                    for (int flowpos = this.prevFlowSignalsEnd; this.prevFlowSignalsStart <= flowpos; flowpos--) {
+                        blockFlowSignals[idx][PREV][this.prevFlowSignalsEnd - flowpos] = this.flowSignals[flowpos];
+                        blockFlowOrder[idx][PREV][this.prevFlowSignalsEnd - flowpos] = this.flowOrder.charAt((flowpos + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
-                    for (j = this.prevFlowSignalsStart; j <= this.prevFlowSignalsEnd; j++) {
-                        blockFlowNumbers[idx][0][j-this.prevFlowSignalsStart] = (short) (j+ this.flowOrderStart);
-                        blockFlowSignals[idx][0][j-this.prevFlowSignalsStart] = this.flowSignals[j];
-                        blockFlowOrder[idx][0][j-this.prevFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
+                    for (int flowpos = this.prevFlowSignalsStart; flowpos <= this.prevFlowSignalsEnd; flowpos++) {
+                        blockFlowSignals[idx][PREV][flowpos-this.prevFlowSignalsStart] = this.flowSignals[flowpos];
+                        blockFlowOrder[idx][PREV][flowpos-this.prevFlowSignalsStart] = this.flowOrder.charAt((flowpos + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
-                blockFlowSignals[idx][0] = null;
-                blockFlowNumbers[idx][0] = null;
-                blockFlowOrder[idx][0] = null;
+                blockFlowSignals[idx][PREV] = null;
+                blockFlowOrder[idx][PREV] = null;
             }
             // current context
-            blockFlowSignals[idx][1] = new short[1];
-            blockFlowNumbers[idx][1] = new short[1];
-            blockFlowOrder[idx][1] = new char[1];
-            blockFlowNumbers[idx][1][0] = (short) flowOrderIndex;
-            blockFlowSignals[idx][1][0] = s;
-            blockFlowOrder[idx][1][0] = f;
+            blockFlowSignals[idx][CURR] = new short[1];
+            blockFlowOrder[idx][CURR] = new char[1];
+            blockFlowSignals[idx][CURR][0] = s;
+            blockFlowOrder[idx][CURR][0] = f;
             // next context
             if (0 <= nextFlowSignalsStart && nextFlowSignalsStart <= nextFlowSignalsEnd && nextFlowSignalsEnd < this.flowSignals.length) {
-                blockFlowSignals[idx][2] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
-                blockFlowNumbers[idx][2] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
-                blockFlowOrder[idx][2] = new char[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
+                blockFlowSignals[idx][NEXT] = new short[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
+                blockFlowOrder[idx][NEXT] = new char[nextFlowSignalsEnd - nextFlowSignalsStart + 1];
                 if (this.readNegativeStrandFlag) {
-                    for (j = nextFlowSignalsEnd; nextFlowSignalsStart <= j; j--) {
-                        blockFlowNumbers[idx][2][nextFlowSignalsEnd - j] = (short) (j+ this.flowOrderStart);
-                        blockFlowSignals[idx][2][nextFlowSignalsEnd - j] = this.flowSignals[j];
-                        blockFlowOrder[idx][2][nextFlowSignalsEnd - j] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
+                    for (int flowpos = nextFlowSignalsEnd; nextFlowSignalsStart <= flowpos; flowpos--) {
+                        blockFlowSignals[idx][NEXT][nextFlowSignalsEnd - flowpos] = this.flowSignals[flowpos];
+                        blockFlowOrder[idx][NEXT][nextFlowSignalsEnd - flowpos] = this.flowOrder.charAt((flowpos + this.flowOrderStart) % this.flowOrder.length());
                     }
                 } else {
-                    for (j = nextFlowSignalsStart; j <= nextFlowSignalsEnd; j++) {
-                        blockFlowNumbers[idx][2][j-nextFlowSignalsStart] = (short) (j+ this.flowOrderStart);
-                        blockFlowSignals[idx][2][j-nextFlowSignalsStart] = this.flowSignals[j];
-                        blockFlowOrder[idx][2][j-nextFlowSignalsStart] = this.flowOrder.charAt((j + this.flowOrderStart) % this.flowOrder.length());
+                    for (int flowpos = nextFlowSignalsStart; flowpos <= nextFlowSignalsEnd; flowpos++) {
+                        blockFlowSignals[idx][NEXT][flowpos-nextFlowSignalsStart] = this.flowSignals[flowpos];
+                        blockFlowOrder[idx][NEXT][flowpos-nextFlowSignalsStart] = this.flowOrder.charAt((flowpos + this.flowOrderStart) % this.flowOrder.length());
                     }
                 }
             } else {
-                blockFlowNumbers[idx][2] = null;
-                blockFlowSignals[idx][2] = null;
-                blockFlowOrder[idx][2] = null;
+                blockFlowSignals[idx][NEXT] = null;
+                blockFlowOrder[idx][NEXT] = null;
             }
             // update for the next iteration
             this.prevFlowSignalsStart = nextFlowSignalsStart;
@@ -231,6 +228,6 @@ public class FlowSignalContextBuilder {
             idx++; // next base
         }
 
-        return new FlowSignalContext(blockFlowSignals, blockFlowOrder, blockFlowNumbers );
+        return new FlowSignalContext(blockFlowSignals, blockFlowOrder, flowOrderIndices );
     }
 }

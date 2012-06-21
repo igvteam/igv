@@ -7,19 +7,30 @@ package com.iontorrent.views;
 import com.iontorrent.data.FlowDistribution;
 import com.iontorrent.utils.FileTools;
 import com.iontorrent.utils.LocationListener;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.io.File;
+import java.io.IOException;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.jfree.chart.ChartFactory;
 
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.*;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.CategoryDataset;
@@ -62,19 +73,45 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
      * jfreechart
      */
     private JComponent chartpanel;
+    private JFreeChart freechart;
     /**
      * for navigation left and right
      */
     private LocationListener listener;
+    private Font font = new Font("SansSerif", Font.PLAIN, 10);
+    /**
+     * Chart colors and symbols
+     */
+    static final String BASES = "ACGT";
+    Shape shapea = getGlyphShape("A");
+    Shape shapec = getGlyphShape("C");
+    Shape shapeg = getGlyphShape("G");
+    Shape shapet = getGlyphShape("T");
+    Shape shapex = getGlyphShape("?");
+    //Color colA = Color.GREEN.darker();
+    Color colA = new Color(0, 150, 30);
+    Color colC = Color.BLUE.darker();
+    // Color colT = Color.RED.darker();
+    Color colT = Color.RED.darker();
+    Color colG = new Color(30, 30, 30);
+    Color colX = Color.orange;
+    Color colors[] = {colA, colC, colG, colT, colX};
+    Shape shapes[] = {shapea, shapec, shapeg, shapet, shapex};
+    float dash[] = {8.0f};
+    BasicStroke dashedStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER, 8.0f, dash, 0.0f);
 
+    /** max x val in chart */
+    private int maxx;
     public FlowSignalDistributionPanel(FlowDistribution distributions[]) {
         this.distributions = distributions;
         if (chart_type < 0) {
             chart_type = ChartConfigPanel.TYPE_LINE;
         }
         if (binsize < 1) {
-            binsize = 15;
+            binsize = 25;
         }
+        
         initComponents();
         recreateChart();
     }
@@ -124,22 +161,21 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     }
 
     private JComponent createChart() {
-
+        maxx = 0;
         this.location = distributions[0].getLocation();
         String information = distributions[0].getInformation();
         String plotTitle = "Flow Signal Distribution";
         String xaxis = "flow signal value";
         String yaxis = "count";
 
-        XYItemRenderer renderer;
 
         NumberAxis xax = new NumberAxis(xaxis);
         NumberAxis yax = new NumberAxis(yaxis);
-        JFreeChart freechart = null;
+        freechart = null;
         // could be another chart option
         // XYSplineRenderer renderer = new XYSplineRenderer();
 
-        if (chart_type == ChartConfigPanel.TYPE_BAR) {
+        if (chart_type == ChartConfigPanel.TYPE_BAR || chart_type == ChartConfigPanel.TYPE_STACKED) {
             CategoryDataset dataset = createCategoryDataset();
             freechart = ChartFactory.createBarChart(
                     plotTitle, // chart title
@@ -151,40 +187,147 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
                     true, // tooltips?
                     false // URLs?
                     );
-            freechart.getCategoryPlot().setForegroundAlpha(0.75f);
 
-        } else if (chart_type == ChartConfigPanel.TYPE_LINE) {
-            renderer = new XYLineAndShapeRenderer();
-            XYSeriesCollection dataset = createXYDataset();
-            XYPlot plot = new XYPlot(dataset, xax, yax, renderer);
-            freechart = new JFreeChart(plot);
-            plot.setForegroundAlpha(0.75f);
-
-        } else if (chart_type == ChartConfigPanel.TYPE_AREA) {
-            renderer = new XYAreaRenderer(XYAreaRenderer.AREA);
-            XYSeriesCollection dataset = createXYDataset();
-            XYPlot plot = new XYPlot(dataset, xax, yax, renderer);
+            CategoryPlot plot = freechart.getCategoryPlot();
             plot.setForegroundAlpha(0.5f);
-            freechart = new JFreeChart(plot);
-        }
+            CategoryItemRenderer renderer;
+            if (chart_type == ChartConfigPanel.TYPE_STACKED) {
+                renderer = new StackedBarRenderer();
+                plot.setRenderer(renderer);
+            } else {
+                BarRenderer bar = (BarRenderer) plot.getRenderer();
+                bar.setShadowVisible(false);
+                bar.setItemMargin(0);
+                bar.setDrawBarOutline(false);
+                renderer = bar;
+            }
 
+            int series = dataset.getRowCount();
+            for (int s = 0; s < series; s++) {
+                char base = distributions[s].getBase();
+                int which = BASES.indexOf(base);
+                if (which < 0) {
+                    which = 4;
+                }
+                Color c = colors[which];
+
+                if (distributions[s].isReverse() && !distributions[s].isForward()) {
+                    renderer.setSeriesOutlineStroke(s, dashedStroke);
+                    renderer.setSeriesStroke(s, dashedStroke);
+                    c = c.darker();
+                } else if (!distributions[s].isReverse() && distributions[s].isForward()) {
+                    c = c.brighter();
+                }
+                renderer.setSeriesOutlinePaint(s, c);
+                renderer.setSeriesItemLabelPaint(s, c);
+                renderer.setSeriesPaint(s, c);
+
+            }
+        } else {
+            XYSeriesCollection dataset = null;
+            AbstractXYItemRenderer renderer = null;
+            dataset = createXYDataset();
+            XYPlot plot = null;
+            if (chart_type == ChartConfigPanel.TYPE_LINE) {
+                renderer = new XYLineAndShapeRenderer();                
+                plot = new XYPlot(dataset, xax, yax, renderer);
+                freechart = new JFreeChart(plot);
+                plot.setForegroundAlpha(0.75f);
+
+            } else if (chart_type == ChartConfigPanel.TYPE_AREA) {
+                renderer = new XYAreaRenderer(XYAreaRenderer.AREA_AND_SHAPES);
+                plot = new XYPlot(dataset, xax, yax, renderer);
+                plot.setForegroundAlpha(0.5f);
+                freechart = new JFreeChart(plot);
+            }
+            plot.setDomainGridlinesVisible(true);
+            int series = dataset.getSeriesCount();
+          //  plot.setDomainGridlinePaint(Color.gray.darker());  
+            for (int x = 100; x < maxx; x+= 100) {
+                final Marker line = new ValueMarker(x);
+                line.setPaint(Color.gray.darker());            
+                plot.addDomainMarker(line);
+            }
+            
+        
+            for (int s = 0; s < series; s++) {
+                char base = distributions[s].getBase();
+                int which = BASES.indexOf(base);
+                if (which < 0) {
+                    which = 4;
+                }
+                Color c = colors[which];
+
+//                if (renderer instanceof XYLineAndShapeRenderer) {
+//                    XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) renderer;
+//                    Shape shape = shapes[which];
+//                    //  p("Using shape " + shape.getClass().getName() + " for base " + base);
+//                    r.setBaseShapesVisible(true);
+//                    r.setSeriesShape(s, shape);
+//                    r.setSeriesShapesVisible(s, true);
+//                }
+                // if reverse and not forward, use dashed line
+                if (distributions[s].isReverse() && !distributions[s].isForward()) {
+                    renderer.setSeriesOutlineStroke(s, dashedStroke);
+                    renderer.setSeriesStroke(s, dashedStroke);
+                    c = c.darker();
+                } else if (!distributions[s].isReverse() && distributions[s].isForward()) {
+                    c = c.brighter();
+                }
+                renderer.setSeriesFillPaint(s, c);
+                renderer.setSeriesOutlinePaint(s, c);
+                renderer.setSeriesItemLabelPaint(s, c);
+                renderer.setSeriesPaint(s, c);
+            }
+        }
+        
+        xax.setMinorTickCount(1);
+        xax.setTickUnit(new NumberTickUnit(50));
+        
+        xax.setTickMarksVisible(true);
+        xax.setMinorTickMarksVisible(true);
         freechart.setTitle(plotTitle);
         String bininfo = "bin size=" + binsize;
-        if (information == null) {
+        if (information
+                == null) {
             freechart.addSubtitle(new TextTitle(bininfo));
         } else {
             freechart.addSubtitle(new TextTitle(information + ", " + bininfo));
         }
-
         ChartPanel chartPanel = new ChartPanel(freechart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+
+        chartPanel.setPreferredSize(
+                new java.awt.Dimension(800, 600));
         return chartPanel;
+    }
+
+    public Shape getGlyphShape(String strGlyphs) {
+        AffineTransform transform = new AffineTransform();
+//        transform.translate(-6, 6);
+        transform.scale(1, 1);
+        return getGlyphShapes(font, strGlyphs, transform)[0];
+    }
+
+    public Shape[] getGlyphShapes(Font font, String strGlyphs, AffineTransform transform) {
+
+        FontRenderContext frc = new FontRenderContext(null, true, true);
+        GlyphVector glyphs = font.createGlyphVector(frc, strGlyphs);
+
+        int count = glyphs.getNumGlyphs();
+        Shape[] shapes = new Shape[count];
+        for (int i = 0; i < count; i++) {
+
+            // get transformed glyph shape
+            GeneralPath path = (GeneralPath) glyphs.getGlyphOutline(i);
+            shapes[i] = path.createTransformedShape(transform);
+        }
+        return shapes;
+
     }
 
     private XYSeries createDataset(FlowDistribution dist) {
         int[] bins = dist.getBinnedData(binsize);
-
-        p("Flow Dist name: " + dist.getName());
+        if (maxx < dist.getMaxX()) maxx = dist.getMaxX();
         XYSeries xy = new XYSeries(dist.getName());
         for (int b = 0; b < bins.length; b++) {
             xy.add(b * binsize, bins[b]);
@@ -355,6 +498,39 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
      */
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
 
+
+        String[] options = new String[2];
+        String msg = "1) Save image of chart\n";
+        msg += "2) Save data in .csv file\n";
+        options[0] = "1) Image";
+        options[1] = "2) Data";
+
+        int ans = JOptionPane.showOptionDialog(this, msg, "Export",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (ans < 0) {
+            return;
+        }
+        if (ans == 0) {
+            doSaveImageAction();
+        } else if (ans == 1) {
+            doSaveDataAction();
+        }
+
+
+    }//GEN-LAST:event_btnSaveActionPerformed
+    private void doSaveImageAction() {
+        filename = FileTools.getFile("File to store chart image", ".png", filename, true);
+        if (filename == null || filename.length() < 1) {
+            return;
+        }
+        try {
+            ChartUtilities.saveChartAsJPEG(new File(filename), freechart, 800, 600);
+        } catch (IOException ex) {
+            Logger.getLogger(FlowSignalDistributionPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void doSaveDataAction() {
         // get file name from user
         filename = FileTools.getFile("File to store flow chart distribution", ".csv", filename, true);
         if (filename == null || filename.length() < 1) {
@@ -364,8 +540,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
         File fileToSave = new File(filename);
         FileTools.writeStringToFile(fileToSave, csv, false);
-
-    }//GEN-LAST:event_btnSaveActionPerformed
+    }
 
     private void btnCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCopyActionPerformed
         String csv = getCsvString();

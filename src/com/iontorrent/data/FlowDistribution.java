@@ -16,26 +16,35 @@ public class FlowDistribution {
     private TreeMap<Short, Integer> map;
     private String information;
     private String name;
+    private char base;
     private int nrflows;
-    /** the chromosome location */
+    /**
+     * the chromosome location
+     */
     private int location;
-    ArrayList<ReadInfo> readinfos;
-    
-    public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String name, String information) {
+    private ArrayList<ReadInfo> readinfos;
+    private boolean forward;
+    private boolean reverse;
+
+    public FlowDistribution(int location, int nrflows, TreeMap<Short, Integer> map, String name, char base, boolean forward, boolean reverse, String information) {
         this.map = map;
         this.information = information;
         this.name = name;
         this.nrflows = nrflows;
         this.location = location;
+        this.forward = forward;
+        this.reverse = reverse;
+        this.base = base;
     }
 
     public int getNrFlows() {
         return nrflows;
     }
+
     public String getName() {
         return name;
     }
-    
+
     public String toCsv(int binsize) {
         int[] bins = getBinnedData(binsize);
         String nl = "\n";
@@ -58,17 +67,19 @@ public class FlowDistribution {
         buf.append("}\n");
         return buf.toString();
     }
+
     public String getReadInfoString() {
-       String nl = "\n";
+        String nl = "\n";
         StringBuilder csv = new StringBuilder();
         csv = csv.append(getInformation());
         csv = csv.append(nl).append(ReadInfo.getHeader()).append(nl);
-        for (ReadInfo ri: readinfos) {
+        for (ReadInfo ri : readinfos) {
             csv = csv.append(ri.toCsv()).append(nl);
         }
         csv = csv.append(nl);
-        return csv.toString(); 
+        return csv.toString();
     }
+
     public int[] getBinnedData(int binsize) {
         int maxx = 0;
         for (Short x : map.keySet()) {
@@ -106,7 +117,6 @@ public class FlowDistribution {
         return information;
     }
 
-  
     /**
      * @return the location
      */
@@ -132,6 +142,16 @@ public class FlowDistribution {
     }
 
     public void setReadInfos(ArrayList<ReadInfo> readinfos) {
-       this.readinfos = readinfos;
+        this.readinfos = readinfos;
+    }
+
+    public char getBase() {
+        return base;
+    }
+    public boolean isForward() {
+        return forward;
+    }
+    public boolean isReverse() {
+        return reverse;
     }
 }

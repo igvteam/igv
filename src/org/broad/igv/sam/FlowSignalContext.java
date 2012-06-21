@@ -7,15 +7,32 @@ import java.util.Arrays;
  *
  * @author Nils Homer
  * @date 4/11/12
+ * modified by Chantal Roth
  */
 public class FlowSignalContext {
-    public short[][][]signals = null;
-    public char[][][]bases = null;
-    public short[][][]flownumbers = null;
+    private short[][][]signals = null;
+    private char[][][]bases = null;
+    private int[] flowOrderIndices;
 
-    public FlowSignalContext(short[][][] signals, char[][][] bases, short[][][]flownumbers) {
+    public FlowSignalContext(short[][][] signals, char[][][] bases, int[] flowOrderIndices) {
         this.signals = signals;
         this.bases = bases;
-        this.flownumbers = flownumbers;
+        this.flowOrderIndices = flowOrderIndices;
+    }
+    public int getNrSignals() {
+        return signals.length;
+    }
+    public int getNrBases() {
+        return bases.length;
+    }
+    public short[][] getSignalForOffset(int offset) {
+        return signals[offset];
+    }
+    
+    public char[][] getBasesForOffset(int offset) {
+        return bases[offset];
+    }
+    public int getFlowOrderIndexForOffset(int offset) {
+        return flowOrderIndices[offset];
     }
 }

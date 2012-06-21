@@ -21,7 +21,7 @@ public class SimpleDialog extends JDialog {
      
     
     
-    public SimpleDialog(String title, JPanel mainpanel) {
+    public SimpleDialog(String title, JPanel mainpanel, int width, int height) {
         setLocationRelativeTo(null);
         this.setUndecorated(false);
         
@@ -35,7 +35,7 @@ public class SimpleDialog extends JDialog {
         int y = (int) Math.max(100, screen.getHeight() / 2 - 200);
         this.setLocation(x, y);
         this.setVisible(true);
-        this.setSize(600,400);
+        this.setSize(width, height);
         this.toFront();       
     }
      private void p(String msg) {
