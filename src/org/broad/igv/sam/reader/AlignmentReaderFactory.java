@@ -180,18 +180,18 @@ public class AlignmentReaderFactory {
     }
 
     /**
-     *
      * @param header
      * @return Return the set of platforms, uppercase. Will be null iff header is null
-     *
      */
-    public static Set<String> getPlatforms(SAMFileHeader header){
+    public static Set<String> getPlatforms(SAMFileHeader header) {
         Set<String> platforms = null;
         if (header != null) {
-            platforms = new HashSet<String>();
-            for (SAMReadGroupRecord rg : header.getReadGroups()) {
-                platforms.add(rg.getPlatform().toUpperCase());
-
+            List<SAMReadGroupRecord> readGroups = header.getReadGroups();
+            if (readGroups != null) {
+                platforms = new HashSet<String>();
+                for (SAMReadGroupRecord rg : readGroups) {
+                    platforms.add(rg.getPlatform().toUpperCase());
+                }
             }
         }
         return platforms;
