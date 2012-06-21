@@ -77,22 +77,9 @@ public class SAMReader implements AlignmentReader {
         return header;
     }
 
-
-    /**
-     * @return true if any readgroups have the platform tag set to "IONTORRENT"
-     */
-    public Set<String>  getPlatforms() {
-        Set<String> platforms = new HashSet<String>();
-        SAMFileHeader header = getHeader();
-        if (header != null) {
-            for (SAMReadGroupRecord rg : header.getReadGroups()) {
-                platforms.add(rg.getPlatform());
-
-            }
-        }
-        return platforms;
+    public Set<String> getPlatforms() {
+        return AlignmentReaderFactory.getPlatforms(getHeader());
     }
-
 
     private void loadHeader() {
 

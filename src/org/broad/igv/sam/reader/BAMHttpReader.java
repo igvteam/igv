@@ -85,7 +85,7 @@ public class BAMHttpReader implements AlignmentReader {
 
 
     /**
-     * @return true if any readgroups have the platform tag set to "IONTORRENT"
+     * @return names of platforms represented in this file.
      */
     public Set<String> getPlatforms() {
         Set<String> platforms = new HashSet<String>();

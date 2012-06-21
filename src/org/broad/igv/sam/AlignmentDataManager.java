@@ -131,7 +131,11 @@ public class AlignmentDataManager {
 
 
     public boolean isIonTorrent() {
-        return reader.getPlatforms().contains("IONTORRENT");
+        Set<String> platforms = reader.getPlatforms();
+        if(platforms != null){
+            return platforms.contains("IONTORRENT");
+        }
+        return false;
     }
 
 

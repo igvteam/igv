@@ -119,7 +119,7 @@ public class GenomeManager {
                 File archiveFile = getArchiveFile(genomePath);
 
                 GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-                Map<String, String> aliases = loadAliasFile(genomeDescriptor);
+                Map<String, String> aliases = loadChrAliases(genomeDescriptor);
 
                 final String id = genomeDescriptor.getId();
                 final String displayName = genomeDescriptor.getName();
@@ -275,32 +275,36 @@ public class GenomeManager {
         }
     }
 
+    static Map<String, String> loadChrAliases(BufferedReader br) throws IOException {
+        String nextLine = "";
+        Map<String, String> aliasTable = new HashMap<String, String>();
+        while ((nextLine = br.readLine()) != null) {
+            String[] kv = nextLine.split("\t");
+            if (kv.length > 1) {
+                aliasTable.put(kv[0], kv[1]);
+            }
+        }
+        return aliasTable;
+    }
+
     /**
      * Load the chromosome alias file, if any, specified in the genome descriptor.
      *
      * @param genomeDescriptor
      * @return The chromosome alias map, or null if none is defined.
      */
-    private Map<String, String> loadAliasFile(GenomeDescriptor genomeDescriptor) {
+    private Map<String, String> loadChrAliases(GenomeDescriptor genomeDescriptor) {
         InputStream aliasStream = null;
         try {
             aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
-                Map<String, String> chrAliasTable = new HashMap();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                String nextLine = "";
-                while ((nextLine = reader.readLine()) != null) {
-                    String[] kv = nextLine.split("\t");
-                    if (kv.length > 1) {
-                        chrAliasTable.put(kv[0], kv[1]);
-                    }
-                }
-
+                Map<String, String> chrAliasTable = loadChrAliases(reader);
                 return chrAliasTable;
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             // We don't want to bomb if the alias load fails.  Just log it and proceed.
             log.error("Error loading chromosome alias table");
             return null;
