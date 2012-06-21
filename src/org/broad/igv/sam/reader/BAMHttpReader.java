@@ -94,7 +94,11 @@ public class BAMHttpReader implements AlignmentReader {
             List<SAMReadGroupRecord> readGroups = header.getReadGroups();
             if (readGroups != null) {
                 for (SAMReadGroupRecord rg : readGroups) {
-                    platforms.add(rg.getPlatform().toUpperCase());
+
+                    final String platform = rg.getPlatform();
+                    if (platform != null) {
+                        platforms.add(platform.toUpperCase());
+                    }
                 }
             }
         }
