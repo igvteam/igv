@@ -148,7 +148,7 @@ public class GFFParser implements FeatureParser {
             tracks.add(track);
             return tracks;
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             log.error(ex);
             throw new RuntimeException(ex);
 
@@ -251,14 +251,18 @@ public class GFFParser implements FeatureParser {
 
         if (featureType.equalsIgnoreCase("gene")) {
             geneCache.put(id, f);
+            return f;
         } else if (featureType.equalsIgnoreCase("mRNA") || featureType.equalsIgnoreCase("transcript")) {
             String pid = null;
             if (parentIds != null && parentIds.length > 0) {
                 pid = parentIds[0];
             }
+            //Transcripts get turned into features at end
             getGFF3Transcript(id).transcript(f, pid);
+        }else{
+            return f;
         }
-        return f;
+        return null;
     }
 
 
@@ -359,8 +363,6 @@ public class GFFParser implements FeatureParser {
             }
 
 
-        } catch (ParserException e) {
-            throw e;
         } catch (IOException ex) {
             log.error("Error reading GFF file", ex);
             if (line != null && lineNumber != 0) {
@@ -768,7 +770,7 @@ public class GFFParser implements FeatureParser {
         public String[] getParentIds(Map<String, String> attributes, String ignored) {
             String parentIdString = attributes.get("Parent");
             if (parentIdString != null) {
-                return attributes.get("Parent").split(",");
+                return parentIdString.split(",");
             } else {
                 return null;
             }

@@ -17,17 +17,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Class for case-insensitive collections
+ * Class for case-insensitive collections. Needless to say,
+ * the keys must be Strings.
  */
 public class CI{
 
     private CI(){};
 
-    private static String convertKey(String key){
+    private static String convertKey(Object key){
         if(key == null){
             return null;
         }
-        return key.toLowerCase();
+        return ((String) key).toLowerCase();
     }
 
     public static class CIHashSet extends HashSet<String>{
@@ -40,11 +41,13 @@ public class CI{
             return super.add(convertKey(key));
         }
 
-        public boolean remove(String key){
+        @Override
+        public boolean remove(Object key){
             return super.remove(convertKey(key));
         }
 
-        public boolean contains(String key){
+        @Override
+        public boolean contains(Object key){
             return super.contains(convertKey(key));
         }
     }
@@ -68,15 +71,18 @@ public class CI{
             return super.put(convertKey(key), value);
         }
 
-        public V remove(String key){
+        @Override
+        public V remove(Object key){
             return super.remove(convertKey(key));
         }
 
-        public V get(String key){
+        @Override
+        public V get(Object key){
             return super.get(convertKey(key));
         }
 
-        public boolean containsKey(String key){
+        @Override
+        public boolean containsKey(Object key){
             return super.containsKey(convertKey(key));
         }
 
@@ -94,15 +100,18 @@ public class CI{
             return super.put(convertKey(key), value);
         }
 
-        public V remove(String key){
+        @Override
+        public V remove(Object key){
             return super.remove(convertKey(key));
         }
 
-        public V get(String key){
+        @Override
+        public V get(Object key){
             return super.get(convertKey(key));
         }
 
-        public boolean containsKey(String key){
+        @Override
+        public boolean containsKey(Object key){
             return super.containsKey(convertKey(key));
         }
 
