@@ -62,7 +62,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public static CI.CIHashSet exonTerms = new CI.CIHashSet();
     public static CI.CIHashSet utrTerms = new CI.CIHashSet();
-    static CI.CIHashSet geneParts = new CI.CIHashSet();
+    public static CI.CIHashSet geneParts = new CI.CIHashSet();
     static CI.CIHashSet ignoredTypes = new CI.CIHashSet();
 
     static {

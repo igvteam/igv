@@ -38,7 +38,7 @@ import java.io.IOException;
  */
 public abstract class UCSCCodec<T extends Feature> extends AsciiFeatureCodec<T> {
 
-    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+    GFFCodec.GFF3Helper tagHelper = new GFFCodec.GFF3Helper();
     protected boolean gffTags = false;
     protected boolean spliceJunctions;
 
