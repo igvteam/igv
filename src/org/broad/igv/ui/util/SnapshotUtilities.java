@@ -172,13 +172,21 @@ public class SnapshotUtilities {
 
     private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) throws IOException{
 
-        BufferedImage image = getDeviceCompatibleImage(width, height); //  new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
+        BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics g = image.createGraphics();
         target.paintAll(g);
 
+        String[] exts = new String[]{".jpg", ".jpeg"};
+        boolean hasExt = false;
         if (selectedFile != null) {
 
-            if (!selectedFile.getName().toLowerCase().endsWith(".jpeg")) {
+            for(String ext: exts){
+                if (selectedFile.getName().toLowerCase().endsWith(ext)) {
+                    hasExt = true;
+                    break;
+                }
+            }
+            if(!hasExt){
                 String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
                 selectedFile = new File(correctedFilename);
             }
