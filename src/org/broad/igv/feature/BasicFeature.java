@@ -217,14 +217,6 @@ public class BasicFeature extends AbstractFeature {
         return (exons == null) ? 0 : exons.size();
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public void setURL(String link) {
         this.link = link;
     }
