@@ -58,20 +58,8 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Class featureClass;
 
     public TribbleFeatureSource(String path, Genome genome) throws IOException {
-
-        FeatureCodec codec = CodecFactory.getCodec(path, genome);
         this.genome = genome;
-        isVCF = codec.getClass() == VCFWrapperCodec.class;
-        featureClass = codec.getFeatureType();
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, codec, true);
-        header = basicReader.getHeader();
-        initFeatureWindowSize(basicReader);
-        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
-
-
-        init();
-
-        initCoverageSource(path + ".tdf");
+        init(path);
 
     }
 
@@ -82,7 +70,16 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         }
     }
 
-    private void init() {
+    protected void init(String path) {
+
+        FeatureCodec codec = CodecFactory.getCodec(path, genome);
+        isVCF = codec.getClass() == VCFWrapperCodec.class;
+        featureClass = codec.getFeatureType();
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, codec, true);
+        header = basicReader.getHeader();
+        initFeatureWindowSize(basicReader);
+        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
+
         if (genome != null) {
             Collection<String> seqNames = reader.getSequenceNames();
             if (seqNames != null)
@@ -93,22 +90,14 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
                     }
                 }
         }
+
+        initCoverageSource(path + ".tdf");
     }
 
     public Class getFeatureClass() {
         return featureClass;
     }
 
-
-    /**
-     * Return features overlapping the query interval
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     * @throws IOException
-     */
     public CloseableTribbleIterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
         String seqName = chrNameMap.get(chr);

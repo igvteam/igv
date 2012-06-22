@@ -15,11 +15,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
-import org.broad.igv.track.FeatureCollectionSource;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
@@ -41,18 +40,16 @@ public class GFFParser implements FeatureParser {
 
     static Logger log = Logger.getLogger(GFFParser.class);
 
-    static HashSet exonTerms = new HashSet();
-    static HashSet utrTerms = new HashSet();
-    static HashSet<String> geneParts = new HashSet();
-    static HashSet<String> ignoredTypes = new HashSet();
+    static CI.CIHashSet exonTerms = new CI.CIHashSet();
+    static CI.CIHashSet utrTerms = new CI.CIHashSet();
+    static CI.CIHashSet geneParts = new CI.CIHashSet();
+    static CI.CIHashSet ignoredTypes = new CI.CIHashSet();
 
     static {
         utrTerms.add("five_prime_UTR");
         utrTerms.add("three_prime_UTR");
         utrTerms.add("5'-utr");
         utrTerms.add("3'-utr");
-        utrTerms.add("3'-UTR");
-        utrTerms.add("5'-UTR");
         utrTerms.add("5utr");
         utrTerms.add("3utr");
     }
@@ -62,8 +59,6 @@ public class GFFParser implements FeatureParser {
         exonTerms.add("exon");
         exonTerms.add("coding_exon");
         exonTerms.add("CDS");
-        exonTerms.add("cds");
-
     }
 
 
@@ -72,7 +67,6 @@ public class GFFParser implements FeatureParser {
         geneParts.add("transcript");
         geneParts.add("processed_transcript");
         geneParts.add("mrna");
-        geneParts.add("mRNA");
         geneParts.add("promoter");
         geneParts.add("intron");
         geneParts.add("CDS_parts");
@@ -93,15 +87,13 @@ public class GFFParser implements FeatureParser {
     Map<String, GFF3Transcript> transcriptCache = new HashMap(50000);
     Map<String, BasicFeature> geneCache = new HashMap(50000);
     private TrackProperties trackProperties = null;
-    Set<String> featuresToHide = new HashSet();
+    CI.CIHashSet featuresToHide = new CI.CIHashSet();
 
     public static boolean isGFF(String path) {
         String lowpath = path.toLowerCase();
         lowpath = lowpath.replace(".gz", "");
-        return lowpath.endsWith("gff3") ||
-                lowpath.endsWith("gvf") ||
-                lowpath.endsWith("gff") ||
-                lowpath.endsWith("gtf");
+        return lowpath.endsWith("gff3") || lowpath.endsWith("gvf") ||
+                lowpath.endsWith("gff") || lowpath.endsWith("gtf");
     }
 
     private static boolean isGFF3(String path){
@@ -142,6 +134,7 @@ public class GFFParser implements FeatureParser {
 
             if (trackProperties != null) {
                 track.setProperties(trackProperties);
+                track.setName(trackProperties.getName());
             }
 
             List<FeatureTrack> tracks = new ArrayList();
@@ -214,11 +207,11 @@ public class GFFParser implements FeatureParser {
 
             if (featureType.equalsIgnoreCase("exon")) {
                 getGFF3Transcript(pid).addExon(exon);
-            } else if (featureType.equals("CDS")) {
+            } else if (featureType.equalsIgnoreCase("CDS")) {
                 getGFF3Transcript(pid).addCDS(exon);
-            } else if (featureType.equals("five_prime_UTR") || featureType.equals("5'-UTR")) {
+            } else if (featureType.equalsIgnoreCase("five_prime_UTR") || featureType.equalsIgnoreCase("5'-UTR")) {
                 getGFF3Transcript(pid).setFivePrimeUTR(exon);
-            } else if (featureType.equals("three_prime_UTR") || featureType.equals("3'-UTR")) {
+            } else if (featureType.equalsIgnoreCase("three_prime_UTR") || featureType.equalsIgnoreCase("3'-UTR")) {
                 getGFF3Transcript(pid).setThreePrimeUTR(exon);
             }
         }
@@ -270,95 +263,19 @@ public class GFFParser implements FeatureParser {
         List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
         int lineNumber = 0;
+        GFFCodec codec = new GFFCodec(genome);
         try {
 
 
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
 
-                if (line.startsWith("##gff-version") && line.endsWith("3")) {
-                    helper = new GFF3Helper();
+                if(line.startsWith("#")){
+                    codec.readHeaderLine(line);
                 }
-
-
-                if (line.startsWith("#")) {
-                    readHeaderLine(line);
-                    continue;
-                }
-
-                String[] tokens = Globals.tabPattern.split(line, -1);
-                int nTokens = tokens.length;
-
-                // GFF files have 9 tokens
-                if (nTokens < 9) {
-                    // Maybe its a track line?
-                    if (line.startsWith("track")) {
-                        trackProperties = new TrackProperties();
-                        ParsingUtils.parseTrackLine(line, trackProperties);
-                        continue;
-                    } else {
-                        String msg = String.format("GFF line expected to have 9 tokens, but has %d", nTokens);
-                        throw new ParserException(msg, lineNumber, line);
-                    }
-                }
-
-                String featureType = new String(tokens[2].trim());
-
-                if (ignoredTypes.contains(featureType)) {
-                    continue;
-                }
-
-                String chromosome = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
-
-                // GFF coordinates are 1-based inclusive (length = end - start + 1)
-                // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
-                int start;
-                int end;
-                int col = 3;
-                try {
-                    start = Integer.parseInt(tokens[col]) - 1;
-                    col++;
-                    end = Integer.parseInt(tokens[col]);
-                } catch (NumberFormatException ne) {
-                    String msg = String.format("Column %d must contain a numeric value. %s", col + 1, ne.getMessage());
-                    throw new ParserException(msg, lineNumber, line);
-                }
-
-                Strand strand = convertStrand(tokens[6]);
-                String attributeString = tokens[8];
-
-                CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
-
-                helper.parseAttributes(attributeString, attributes);
-                String[] parentIds = helper.getParentIds(attributes, attributeString);
-
-
-                if (featureType.equals("CDS_parts") || featureType.equals("intron")) {
-                    for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
-                    }
-
-                } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
-                        parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
-
-                    String phaseString = tokens[7].trim();
-                    processExon(featureType, parentIds, chromosome, start, end, strand, attributes, phaseString);
-
-                } else {
-
-                    BasicFeature f = generateFeature(featureType, parentIds, chromosome, start, end, strand, attributes);
-                    if(f != null){
-                        features.add(f);
-                    }
-
-                }
-            }
-
-            // Create and add IGV genes
-            for (GFF3Transcript transcript : transcriptCache.values()) {
-                Feature igvTranscript = transcript.createTranscript();
-                if (igvTranscript != null) {
-                    features.add(igvTranscript);
+                Feature f = codec.decode(line);
+                if(f != null){
+                    features.add(f);
                 }
             }
 
@@ -372,7 +289,13 @@ public class GFFParser implements FeatureParser {
             }
         }
 
-        return features;
+        trackProperties = TrackLoader.getTrackProperties(codec.getHeader());
+
+        //Combine the features
+
+        List<Feature> iFeatures = new GFFFeatureSource.GFFCombiner().combineFeatures(features.iterator());
+
+        return iFeatures;
     }
 
 
@@ -407,7 +330,16 @@ public class GFFParser implements FeatureParser {
 
     }
 
-
+    /**
+     * Given a GFF File, creates a new GFF file for each type. Any feature type
+     * which is part of a "gene" ( {@link #geneParts} ) are put in the same file,
+     * others are put in different files. So features of type "gene", "exon", and "mrna"
+     * would go in gene.gff, but features of type "myFeature" would go in myFeature.gff.
+     *
+     * @param gffFile
+     * @param outputDirectory
+     * @throws IOException
+     */
     public static void splitFileByType(String gffFile, String outputDirectory) throws IOException {
 
         BufferedReader br = new BufferedReader(new FileReader(gffFile));
@@ -421,7 +353,6 @@ public class GFFParser implements FeatureParser {
             if (!nextLine.startsWith("#")) {
                 String[] tokens = Globals.tabPattern.split(nextLine.trim().replaceAll("\"", ""), -1);
 
-                // GFF files have 9 columns
                 String type = tokens[2];
                 if (geneParts.contains(type)) {
                     type = "gene";
@@ -439,7 +370,6 @@ public class GFFParser implements FeatureParser {
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (nextLine.startsWith("#")) {
-                // GFF files have 9 columns
                 for (PrintWriter pw : writers.values()) {
                     pw.println(nextLine);
                 }
@@ -696,28 +626,15 @@ public class GFFParser implements FeatureParser {
             if (attributes.isEmpty()) {
                 parentIds[0] = attributeString;
             } else {
-                parentIds[0] = attributes.get("id");
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("mRNA");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("systematic_id");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("transcript_id");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("gene");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("transcriptId");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("proteinId");
+                String[] possNames = new String[]{"id", "mrna", "systematic_id", "transcript_id", "gene", "transcriptid", "proteinid"};
+                for(String possName: possNames){
+                    if(attributes.containsKey(possName)){
+                        parentIds[0] = attributes.get(possName);
+                        break;
+                    }
                 }
             }
             return parentIds;
-
         }
 
 

@@ -4,6 +4,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
@@ -26,8 +27,8 @@ public class GFFtoBedTest {
     @Test
     public void testConvert() throws Exception {
 
-        File inputFile = new File("test/data/gff/gene.gff3");
-        File outputFile = new File("test/data/gff/gene.bed");
+        File inputFile = new File(TestUtils.DATA_DIR, "gff/gene.gff3");
+        File outputFile = new File(TestUtils.DATA_DIR, "out/gene.bed");
 
         // Convert
         GFFtoBed.convert(inputFile, outputFile);
