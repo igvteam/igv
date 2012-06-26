@@ -27,77 +27,22 @@ import org.broad.igv.util.*;
 import java.util.*;
 
 /**
+ * A wrapper class that provides caching for on-disk, queried, and web-service Sequence implementations.
+ *
  * @author jrobinso
  */
-public class SequenceHelper {
+public class SequenceWrapper implements Sequence {
 
-    private static Logger log = Logger.getLogger(SequenceHelper.class);
+    private static Logger log = Logger.getLogger(SequenceWrapper.class);
     private static boolean cacheSequences = true;
     private static int tileSize = 1000000;
 
-
-    Sequence sequence;
+    private Sequence sequence;
     private ObjectCache<String, SequenceTile> sequenceCache = new ObjectCache(50);
 
 
-    public SequenceHelper(String seqpath) {
-
-        if (seqpath == null) {
-           // ?? What do we do here, why do we even check ??
-        } else {
-            seqpath = checkSequenceURL(seqpath);
-            sequence = new IGVSequence(seqpath);
-        }
-    }
-
-    public SequenceHelper(Sequence sequence) {
+    public SequenceWrapper(Sequence sequence) {
         this.sequence = sequence;
-    }
-
-    /**
-     * Return the sequence in Color Space (SOLID alignment encoding)
-     *
-     * @param genome
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     */
-    public byte[] readCSSequence(String genome, String chr, int start, int end) {
-        // We need to know the base just to the left of the start
-        int csStart = (start == 0 ? 0 : start - 1);
-        byte[] baseSequence = sequence.readSequence(chr, csStart, end);
-        if (baseSequence == null || baseSequence.length == 0) {
-            return baseSequence;
-        }
-
-        byte[] csSequence = new byte[end - start];
-        int i = 0;
-        int c1 = start == 0 ? 0 : baseToCS(baseSequence[i++]);
-        for (; i < baseSequence.length; i++) {
-            int c2 = baseToCS(baseSequence[i]);
-            csSequence[i] = (byte) (c1 ^ c2);
-        }
-        return csSequence;
-
-    }
-
-    private static int baseToCS(byte base) {
-        switch (base) {
-            case 'A':
-            case 'a':
-                return 0;
-            case 'C':
-            case 'c':
-                return 1;
-            case 'T':
-            case 't':
-                return 2;
-            case 'G':
-            case 'g':
-                return 3;
-        }
-        return -1;
     }
 
     public byte getBase(String chr, int position) {
@@ -105,7 +50,7 @@ public class SequenceHelper {
             int tileNo = position / tileSize;
 
             // Get first chunk
-            SequenceTile tile = getSequenceTile(chr, tileNo, Integer.MAX_VALUE);
+            SequenceTile tile = getSequenceTile(chr, tileNo);
             int offset = position - tile.getStart();
             byte[] bytes = tile.bytes;
             if (offset > 0 && offset < bytes.length) {
@@ -116,7 +61,7 @@ public class SequenceHelper {
 
         } else {
             // TODO -- implement or disable
-            return 0;
+            return sequence.getBase(chr, position);
         }
     }
 
@@ -126,17 +71,16 @@ public class SequenceHelper {
      * @param chr
      * @param start
      * @param end
-     * @param max   -- end of the sequence or contig.  Used to constrain last time end
      * @return
      */
-    public byte[] getSequence(String chr, int start, int end, int max) {
+    public byte[] getSequence(String chr, int start, int end) {
         if (cacheSequences) {
             byte[] seqbytes = new byte[end - start];
             int startTile = start / tileSize;
             int endTile = end / tileSize;
 
             // Get first chunk
-            SequenceTile tile = getSequenceTile(chr, startTile, max);
+            SequenceTile tile = getSequenceTile(chr, startTile);
             if (tile == null) {
                 return null;
             }
@@ -165,7 +109,7 @@ public class SequenceHelper {
 
             // If multiple chunks ...
             for (int t = startTile + 1; t <= endTile; t++) {
-                tile = getSequenceTile(chr, t, max);
+                tile = getSequenceTile(chr, t);
                 if (tile == null) {
                     break;
                 }
@@ -178,24 +122,24 @@ public class SequenceHelper {
 
             return seqbytes;
         } else {
-            return sequence.readSequence(chr, start, end);
+            return sequence.getSequence(chr, start, end);
         }
     }
 
 
-    private SequenceTile getSequenceTile(String chr, int tileNo, int maxEnd) {
+    private SequenceTile getSequenceTile(String chr, int tileNo) {
         String key = getKey(chr, tileNo);
         SequenceTile tile = sequenceCache.get(key);
 
         if (tile == null) {
             int start = tileNo * tileSize;
-            int end = Math.min(start + tileSize, maxEnd); // <=  UCSC coordinate conventions (end base not inclusive)
+            int end = start + tileSize; // <=  UCSC coordinate conventions (end base not inclusive)
 
             if (end <= start) {
                 return null;
             }
 
-            byte[] seq = sequence.readSequence(chr, start, end);
+            byte[] seq = sequence.getSequence(chr, start, end);
             tile = new SequenceTile(start, seq);
             sequenceCache.put(key, tile);
         }

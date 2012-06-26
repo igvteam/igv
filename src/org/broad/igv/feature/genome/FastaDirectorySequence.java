@@ -33,14 +33,19 @@ public class FastaDirectorySequence implements Sequence {
         return sequenceMap.values();
     }
 
-    public byte[] readSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end) {
 
 
         if (!sequenceMap.containsKey(chr)) {
             return null;
         }
-        return sequenceMap.get(chr).readSequence(chr, start, end);
+        return sequenceMap.get(chr).getSequence(chr, start, end);
     }
 
+
+    @Override
+    public byte getBase(String chr, int position) {
+        throw new RuntimeException("getBase() is not implemented for class " + FastaIndexedSequence.class.getName());
+    }
 
 }

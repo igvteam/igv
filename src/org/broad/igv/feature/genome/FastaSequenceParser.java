@@ -15,39 +15,17 @@ import java.util.Map;
  * @author Jim Robinson
  * @date 3/26/12
  */
-public class FastaSequence implements Sequence {
+public class FastaSequenceParser {
 
-    Map<String, byte[]> sequenceMap;
-
-    public FastaSequence(String path) throws IOException {
-        readFasta(path);
-    }
-
-    public byte[] readSequence(String chr, int qstart, int qend) {
-        byte[] allBytes = sequenceMap.get(chr);
-        if (allBytes == null) {
-            return null;
-        } else {
-            final int start = Math.max(0, qstart);    // qstart should never be < 0
-            final int end = Math.min(allBytes.length, qend);
-            int len = end - start;
-
-            byte[] bytes = new byte[len];
-            Arrays.fill(bytes, (byte) 0);
-            int s = Math.max(start, 0);
-            System.arraycopy(allBytes, s, bytes, 0, len);
-            return bytes;
-        }
-    }
 
     /**
      * Read an entire fasta file, which might be local or remote and might be gzipped.
      *
      * @param path
      */
-    private void readFasta(String path) throws IOException {
+    public static Map<String, byte[]> parseFasta(String path) throws IOException {
 
-        sequenceMap = new HashMap();
+        Map<String, byte[]> sequenceMap = new HashMap();
         BufferedReader br = null;
 
         try {
@@ -77,5 +55,7 @@ public class FastaSequence implements Sequence {
         } finally {
             if (br != null) br.close();
         }
+
+        return sequenceMap;
     }
 }

@@ -49,7 +49,7 @@ public class IGVSequence implements Sequence {
         this.dirPath = dirPath;
     }
 
-    public byte[] readSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end) {
 
         String fn = getChrFileName(chr);
         String seqFile = dirPath + fn;
@@ -79,6 +79,11 @@ public class IGVSequence implements Sequence {
         }
     }
 
+
+    @Override
+    public byte getBase(String chr, int position) {
+        throw new RuntimeException("getBase() is not implemented for class " + FastaIndexedSequence.class.getName());
+    }
 
     /**
      * Get a "legal" chromosome file name from the chr name.  This method supports "old" style .genome

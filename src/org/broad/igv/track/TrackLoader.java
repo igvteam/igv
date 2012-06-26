@@ -1220,8 +1220,9 @@ public class TrackLoader {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
-
-        return CodecFactory.getCodec(path, genome) != null;
+        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
+        // are indexable.
+        return path.endsWith(".vcf") || CodecFactory.getCodec(path, genome) != null;
     }
 
 

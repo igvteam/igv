@@ -72,7 +72,7 @@ public class FastaIndexedSequence implements Sequence {
      * @return
      */
 
-    public byte[] readSequence(String chr, int qstart, int qend) {
+    public byte[] getSequence(String chr, int qstart, int qend) {
 
         FastaIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
         if (idxEntry == null) {
@@ -137,9 +137,14 @@ public class FastaIndexedSequence implements Sequence {
 
             return null;
         }
-
-
     }
+
+
+    @Override
+    public byte getBase(String chr, int position) {
+        throw new RuntimeException("getBase() is not implemented for class " + FastaIndexedSequence.class.getName());
+    }
+
 
 
     /**

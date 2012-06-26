@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -194,6 +195,14 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+
+    public void setAttribute(String key, String value) {
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+        }
+        attributes.put(key, value);
     }
 
     public boolean contains(double location) {

@@ -67,9 +67,10 @@ public class GenomeManager {
     private List<GenomeListItem> cachedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
 
-    public static void main(String[] args){
-        if(args.length >= 1 && args[0].equals("genList")){
-            if(args.length != 4) throw new IllegalArgumentException("Incorrect number of inputs, expected genList [dir] [rootPath] [outFile]");
+    public static void main(String[] args) {
+        if (args.length >= 1 && args[0].equals("genList")) {
+            if (args.length != 4)
+                throw new IllegalArgumentException("Incorrect number of inputs, expected genList [dir] [rootPath] [outFile]");
 
 
         }
@@ -114,7 +115,9 @@ public class GenomeManager {
                 monitor.fireProgressChange(25);
             }
 
-            if (genomePath.endsWith(".genome")) {
+            if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
+                throw new GenomeException("IGV cannot readed gzipped fasta files.  Please un-gzip the file and try again.");
+            } else if (genomePath.endsWith(".genome")) {
 
                 File archiveFile = getArchiveFile(genomePath);
 
@@ -149,8 +152,8 @@ public class GenomeManager {
                 genomeDescriptor.close();
 
 
-            } else if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                throw new GenomeException("IGV cannot readed gzipped fasta files.  Please un-gzip the file and try again.");
+            } else if (genomePath.endsWith(".gbk")) {
+
             } else {
 
                 // Assume its a fasta
@@ -167,12 +170,14 @@ public class GenomeManager {
                 if (!FileUtils.resourceExists(fastaIndexPath)) {
                     //Have to make sure we have a local copy of the fasta file
                     //to index it
-                    File archiveFile = getArchiveFile(fastaPath);
-                    fastaPath = archiveFile.getAbsolutePath();
-                    fastaIndexPath = fastaPath + ".fai";
+                    if (!FileUtils.isRemote(fastaPath)) {
+                        File archiveFile = getArchiveFile(fastaPath);
+                        fastaPath = archiveFile.getAbsolutePath();
+                        fastaIndexPath = fastaPath + ".fai";
 
-                    log.info("Creating index file at " + fastaIndexPath);
-                    FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
+                        log.info("Creating index file at " + fastaIndexPath);
+                        FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
+                    }
 
                 }
 
@@ -892,15 +897,16 @@ public class GenomeManager {
      * Given a directory, looks for all .genome files,
      * and outputs a list of these genomes suitable for parsing by IGV.
      * Intended to be run on server periodically.
-     * @param inDir Directory in which all genome files live
+     *
+     * @param inDir    Directory in which all genome files live
      * @param rootPath The path to be prepended to file names (e.g. http://igvdata.broadinstitute.org)
-     * @param outPath Path to output file, where we will write the results
+     * @param outPath  Path to output file, where we will write the results
      */
-    public void generateGenomeList(File inDir, String rootPath, String outPath){
+    public void generateGenomeList(File inDir, String rootPath, String outPath) {
         File[] genomeFiles = inDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                if(name == null) return false;
+                if (name == null) return false;
                 return name.toLowerCase().endsWith(".genome");
             }
         });
@@ -916,9 +922,9 @@ public class GenomeManager {
 
 
         GenomeDescriptor descriptor;
-        for(File f: genomeFiles){
+        for (File f : genomeFiles) {
             String curLine = "";
-            try{
+            try {
                 descriptor = parseGenomeArchiveFile(f);
                 curLine += descriptor.getName();
                 curLine += "\t" + rootPath + "/" + f.getName();

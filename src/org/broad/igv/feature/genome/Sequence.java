@@ -8,5 +8,9 @@ package org.broad.igv.feature.genome;
  */
 public interface Sequence {
 
-    byte[] readSequence(String chr, int start, int end);
+    byte[] getSequence(String chr, int start, int end);
+
+    public byte getBase(String chr, int position);
+
 }
+                                                                    

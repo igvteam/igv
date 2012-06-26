@@ -56,9 +56,7 @@ public class GenomeImpl implements Genome {
     private long length = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
-
-    SequenceHelper sequenceHelper;
-
+    private Sequence sequence;
 
     public GenomeImpl(String id, String displayName, String sequencePath, boolean fasta, String[] fastaFiles) throws IOException {
         this.id = id;
@@ -66,23 +64,24 @@ public class GenomeImpl implements Genome {
         chrAliasTable = new HashMap();
 
         if (sequencePath == null) {
-            sequenceHelper = null;
+            sequence = null;
         } else if (!fasta) {
             // Legacy genomes
-            sequenceHelper = new SequenceHelper(sequencePath);
+            sequencePath = SequenceWrapper.checkSequenceURL(sequencePath);
+            sequence = new SequenceWrapper(new IGVSequence(sequencePath));
         } else if (fastaFiles != null) {
-            FastaDirectorySequence sequence = new FastaDirectorySequence(sequencePath, fastaFiles);
-            sequenceHelper = new SequenceHelper(sequence);
+            FastaDirectorySequence fastaDirectorySequence = new FastaDirectorySequence(sequencePath, fastaFiles);
+            sequence = new SequenceWrapper(sequence);
             chromosomeNames = new ArrayList();
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : fastaDirectorySequence.getFastaSequences()) {
                 chromosomeNames.addAll(fastaSequence.getChromosomeNames());
             }
             Collections.sort(chromosomeNames, new ChromosomeComparator());
             chromosomeMap = new LinkedHashMap();
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : fastaDirectorySequence.getFastaSequences()) {
                 chromosomeNames.addAll(fastaSequence.getChromosomeNames());
             }
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
+            for (FastaIndexedSequence fastaSequence : fastaDirectorySequence.getFastaSequences()) {
                 for (String chr : fastaSequence.getChromosomeNames()) {
                     int length = fastaSequence.getChromosomeLength(chr);
                     chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
@@ -92,7 +91,7 @@ public class GenomeImpl implements Genome {
 
         } else {
             FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
-            sequenceHelper = new SequenceHelper(fastaSequence);
+            sequence = new SequenceWrapper(fastaSequence);
             chromosomeNames = new ArrayList(fastaSequence.getChromosomeNames());
             chromosomeMap = new LinkedHashMap(chromosomeNames.size());
             for (String chr : chromosomeNames) {
@@ -341,7 +340,7 @@ public class GenomeImpl implements Genome {
 
     public byte[] getSequence(String chr, int start, int end) {
 
-        if (sequenceHelper == null) {
+        if (sequence == null) {
             return null;
         }
 
@@ -353,7 +352,7 @@ public class GenomeImpl implements Genome {
         if (end <= start) {
             return null;
         }
-        return sequenceHelper.getSequence(chr, start, end, c.getLength());
+        return sequence.getSequence(chr, start, end);
     }
 
     public String getDisplayName() {
@@ -361,7 +360,7 @@ public class GenomeImpl implements Genome {
     }
 
     public byte getReference(String chr, int pos) {
-        return sequenceHelper.getBase(chr, pos);
+        return sequence.getBase(chr, pos);
     }
 
 

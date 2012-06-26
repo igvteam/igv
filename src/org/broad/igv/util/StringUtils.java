@@ -179,4 +179,20 @@ public class StringUtils {
     }
 
 
+    /**
+     * This must exist in the jdk ?
+     *
+     * @param string
+     * @return
+     */
+    public static int countChar(String string, char c) {
+        int cnt = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (c == string.charAt(i)) {
+                cnt++;
+            }
+        }
+        return cnt;
+
+    }
 }
