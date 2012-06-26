@@ -144,6 +144,7 @@ public class DBManager {
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            throw new IllegalArgumentException("Unable to create driver for protocol " + subprotocol);
         }
 
         //If the host is a local file, don't want the leading "//"
