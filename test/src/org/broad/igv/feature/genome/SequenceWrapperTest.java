@@ -37,28 +37,31 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author jrobinso
  */
-public class SequenceHelperTest {
+public class SequenceWrapperTest {
 
     static String seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
     static PreferenceManager preferenceManager;
+    static SequenceWrapper helper;
 
-    public SequenceHelperTest() {
+    public SequenceWrapperTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         Globals.setHeadless(true);
         preferenceManager = PreferenceManager.getInstance();
-      }
+        String tmp = SequenceWrapper.checkSequenceURL(seqPath);
+        helper = new SequenceWrapper(new IGVSequence(tmp));
+    }
 
     @Before
     public void setUp() {
         //Web requests don't seem to work with this false
-     }
+    }
 
     @After
     public void tearDown() {
-        SequenceHelper.setCacheSequences(true);
+        SequenceWrapper.setCacheSequences(true);
     }
 
     /**
@@ -71,14 +74,11 @@ public class SequenceHelperTest {
             int start = 55054464;
             int end = start + 10000;
 
+           byte[] cachedSeq = helper.getSequence(chr, start, end);
 
-            SequenceHelper helper = new SequenceHelper(seqPath);
+            SequenceWrapper.setCacheSequences(false);
 
-            byte[] cachedSeq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
-
-            SequenceHelper.setCacheSequences(false);
-
-            byte[] uncachedSeq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
+            byte[] uncachedSeq = helper.getSequence(chr, start, end);
 
             assertEquals(uncachedSeq.length, cachedSeq.length);
 
@@ -87,7 +87,7 @@ public class SequenceHelperTest {
             }
 
         } finally {
-            SequenceHelper.setCacheSequences(true);
+            SequenceWrapper.setCacheSequences(true);
         }
 
     }
@@ -100,8 +100,9 @@ public class SequenceHelperTest {
         int start = 5;
         int end = 10;
         String expSequence = "ATTGC";
-        SequenceHelper helper = new SequenceHelper("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
-        byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
+        String tmp = SequenceWrapper.checkSequenceURL("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
+        SequenceWrapper helper = new SequenceWrapper(new IGVSequence(tmp));
+        byte[] seq = helper.getSequence(chr, start, end);
         assertEquals(expSequence, new String(seq));
 
     }
@@ -115,8 +116,7 @@ public class SequenceHelperTest {
         int start = 55054464;
         int end = start + 20;
         String expSequence = "ATGCGACCCTCCGGGACGGC";
-        SequenceHelper helper = new SequenceHelper(seqPath);
-        byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
+        byte[] seq = helper.getSequence(chr, start, end);
         assertEquals(expSequence, new String(seq));
     }
 

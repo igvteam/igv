@@ -19,17 +19,19 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.feature.Cytoband;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a sequence database composed of plain text files with no white space, one per chromosome, in a directory.
- * This is the original IGV "sequence" format, replaced in favor if indexed fasta files.
+ * This is the original IGV "sequence" format, replaced in favor of indexed fasta files.
  *
  * @author jrobinso
  * @Date 8/8/11
@@ -41,6 +43,8 @@ public class IGVSequence implements Sequence {
 
     private String dirPath;
     private Map<String, String> chrFileNameCache = new HashMap();
+    private HashMap<String, Integer> chromosomeLengths;
+    private List<String> chromosomeNames;
 
     public IGVSequence(String dirPath) {
         if (!dirPath.endsWith("/")) {
@@ -49,7 +53,7 @@ public class IGVSequence implements Sequence {
         this.dirPath = dirPath;
     }
 
-    public byte[] readSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end) {
 
         String fn = getChrFileName(chr);
         String seqFile = dirPath + fn;
@@ -80,6 +84,21 @@ public class IGVSequence implements Sequence {
     }
 
 
+    @Override
+    public byte getBase(String chr, int position) {
+        throw new RuntimeException("getBase() is not implemented for class " + FastaIndexedSequence.class.getName());
+    }
+
+    @Override
+    public List<String> getChromosomeNames() {
+        return chromosomeNames;
+    }
+
+    @Override
+    public int getChromosomeLength(String chrname) {
+        return chromosomeLengths.get(chrname);
+    }
+
     /**
      * Get a "legal" chromosome file name from the chr name.  This method supports "old" style .genome
      * files.
@@ -98,6 +117,31 @@ public class IGVSequence implements Sequence {
             chrFileNameCache.put(chr, chrFN);
         }
         return chrFN;
+    }
+
+    /**
+     * Generate chromosomes from the list of cytobands.  This method is provided for backward compatibility for
+     * pre V2.1 genomes.
+     *
+     * @param chrCytoMap
+     * @param chromosomesAreOrdered
+     */
+    public void generateChromosomes(LinkedHashMap<String, List<Cytoband>> chrCytoMap, boolean chromosomesAreOrdered) {
+
+        chromosomeLengths = new HashMap<String, Integer>();
+        for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
+            String chr = entry.getKey();
+            List<Cytoband> cytobands = entry.getValue();
+
+            int length = cytobands.get(cytobands.size() - 1).getEnd();
+            final ChromosomeImpl chromosome = new ChromosomeImpl(chr, length);
+            chromosomeLengths.put(chr, length);
+        }
+
+        this.chromosomeNames = new LinkedList<String>(chromosomeLengths.keySet());
+        if (!chromosomesAreOrdered) {
+            Collections.sort(chromosomeNames, new ChromosomeComparator());
+        }
     }
 
 

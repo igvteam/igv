@@ -56,52 +56,20 @@ public class GenomeImpl implements Genome {
     private long length = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
+    private Sequence sequence;
 
-    SequenceHelper sequenceHelper;
-
-
-    public GenomeImpl(String id, String displayName, String sequencePath, boolean fasta, String[] fastaFiles) throws IOException {
+    public GenomeImpl(String id, String displayName, Sequence sequence) {
         this.id = id;
         this.displayName = displayName;
-        chrAliasTable = new HashMap();
-
-        if (sequencePath == null) {
-            sequenceHelper = null;
-        } else if (!fasta) {
-            // Legacy genomes
-            sequenceHelper = new SequenceHelper(sequencePath);
-        } else if (fastaFiles != null) {
-            FastaDirectorySequence sequence = new FastaDirectorySequence(sequencePath, fastaFiles);
-            sequenceHelper = new SequenceHelper(sequence);
-            chromosomeNames = new ArrayList();
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
-                chromosomeNames.addAll(fastaSequence.getChromosomeNames());
-            }
-            Collections.sort(chromosomeNames, new ChromosomeComparator());
-            chromosomeMap = new LinkedHashMap();
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
-                chromosomeNames.addAll(fastaSequence.getChromosomeNames());
-            }
-            for (FastaIndexedSequence fastaSequence : sequence.getFastaSequences()) {
-                for (String chr : fastaSequence.getChromosomeNames()) {
-                    int length = fastaSequence.getChromosomeLength(chr);
-                    chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
-                }
-            }
-            initializeChromosomeAliases();
-
-        } else {
-            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
-            sequenceHelper = new SequenceHelper(fastaSequence);
-            chromosomeNames = new ArrayList(fastaSequence.getChromosomeNames());
-            chromosomeMap = new LinkedHashMap(chromosomeNames.size());
-            for (String chr : chromosomeNames) {
-                int length = fastaSequence.getChromosomeLength(chr);
-                chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
-            }
-            initializeChromosomeAliases();
+        this.chrAliasTable = new HashMap<String, String>();
+        this.sequence = sequence;
+        this.chromosomeNames = sequence.getChromosomeNames();
+        chromosomeMap = new LinkedHashMap(chromosomeNames.size());
+        for (String chr : sequence.getChromosomeNames()) {
+            int length = sequence.getChromosomeLength(chr);
+            chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
         }
-
+        initializeChromosomeAliases();
     }
 
 
@@ -155,7 +123,7 @@ public class GenomeImpl implements Genome {
     /**
      * Update the chromosome alias table with common variations
      */
-    private void initializeChromosomeAliases() {
+    void initializeChromosomeAliases() {
 
         for (String name : chromosomeNames) {
             if (name.startsWith("gi|")) {
@@ -341,7 +309,7 @@ public class GenomeImpl implements Genome {
 
     public byte[] getSequence(String chr, int start, int end) {
 
-        if (sequenceHelper == null) {
+        if (sequence == null) {
             return null;
         }
 
@@ -353,7 +321,7 @@ public class GenomeImpl implements Genome {
         if (end <= start) {
             return null;
         }
-        return sequenceHelper.getSequence(chr, start, end, c.getLength());
+        return sequence.getSequence(chr, start, end);
     }
 
     public String getDisplayName() {
@@ -361,7 +329,7 @@ public class GenomeImpl implements Genome {
     }
 
     public byte getReference(String chr, int pos) {
-        return sequenceHelper.getBase(chr, pos);
+        return sequence.getBase(chr, pos);
     }
 
 
@@ -377,32 +345,6 @@ public class GenomeImpl implements Genome {
             }
         }
 
-    }
-
-    /**
-     * Generate chromosomes from the list of cytobands.  This method is provided for backward compatibility for
-     * pre V2.1 genomes.
-     *
-     * @param chrCytoMap
-     * @param chromosomesAreOrdered
-     */
-    public void generateChromosomeMap(LinkedHashMap<String, List<Cytoband>> chrCytoMap, boolean chromosomesAreOrdered) {
-
-        chromosomeMap = new LinkedHashMap<String, Chromosome>();
-        for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
-            String chr = entry.getKey();
-            List<Cytoband> cytobands = entry.getValue();
-
-            int length = cytobands.get(cytobands.size() - 1).getEnd();
-            final ChromosomeImpl chromosome = new ChromosomeImpl(chr, length);
-            chromosomeMap.put(chr, chromosome);
-        }
-
-        this.chromosomeNames = new LinkedList<String>(chromosomeMap.keySet());
-        if (!chromosomesAreOrdered) {
-            Collections.sort(chromosomeNames, new ChromosomeComparator());
-        }
-        initializeChromosomeAliases();
     }
 
     /**

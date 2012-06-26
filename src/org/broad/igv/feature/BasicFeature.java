@@ -106,10 +106,17 @@ public class BasicFeature extends AbstractFeature {
         this.parentIds = parentIds;
     }
 
-    public String[] getParentIds() {
-        return this.parentIds;
+    @Override
+    public void setStart(int start) {
+        super.setStart(start);
+        this.thickStart = start;
     }
 
+    @Override
+    public void setEnd(int end) {
+        super.setEnd(end);
+        this.thickEnd = end;
+    }
 
     /**
      * Defined in interface {@linkplain LocusScore}

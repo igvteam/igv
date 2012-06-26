@@ -4,6 +4,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,14 +12,15 @@ import static org.junit.Assert.assertEquals;
  * @author Jim Robinson
  * @date 3/26/12
  */
-public class FastaSequenceTest {
+public class FastaSequenceParserTest {
 
-    static FastaSequence fastaSequence;
+    static InMemorySequence fastaSequence;
 
     @BeforeClass
     public static void setup() throws IOException {
         String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
-        fastaSequence = new FastaSequence(path);
+        Map<String, byte[]> sequenceMap = FastaSequenceParser.parseFasta(path);
+        fastaSequence = new InMemorySequence(sequenceMap);
     }
 
     @Test
@@ -31,7 +33,7 @@ public class FastaSequenceTest {
 
         String expectedSequence = "TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT";
 
-        byte[] seq = fastaSequence.readSequence(chr, start, end);
+        byte[] seq = fastaSequence.getSequence(chr, start, end);
         String seqString = new String(seq);
 
         assertEquals(expectedSequence, seqString);
@@ -44,7 +46,7 @@ public class FastaSequenceTest {
         int chrLen = 8059593;
         int start = chrLen - 10;
         int end = chrLen + 10;
-        byte[] bytes = fastaSequence.readSequence(chr, start, end);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
         byte[] expectedSequence = "TTTTTCCCAG".getBytes();

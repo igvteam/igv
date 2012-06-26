@@ -909,11 +909,11 @@ public class IGV {
     }
 
 
-    public void createSnapshotNonInteractive(File file) throws IOException{
+    public void createSnapshotNonInteractive(File file) throws IOException {
         createSnapshotNonInteractive(contentPane.getMainPanel(), file);
     }
 
-    public void createSnapshotNonInteractive(Component target, File file) throws IOException{
+    public void createSnapshotNonInteractive(Component target, File file) throws IOException {
 
         log.debug("Creating snapshot: " + file.getName());
 
@@ -933,8 +933,8 @@ public class IGV {
                 setExportingSnapshot(false);
             }
             log.debug("Finished creating snapshot: " + file.getName());
-            if(exc != null) throw exc;
-        }else{
+            if (exc != null) throw exc;
+        } else {
             log.error("Unknown file extension " + extension);
         }
     }
@@ -1988,6 +1988,33 @@ public class IGV {
             }
         }
 
+
+        SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
+        if (geneFeatureTrack != null) {
+            setGenomeTracks(geneFeatureTrack, seqTrack);
+        } else {
+            setGenomeTracks(null, seqTrack);
+        }
+
+    }
+
+    /**
+     * Create an annotation track for the genome from a supplied list of features
+     * @param genome
+     * @param features
+     */
+    public void createGeneTrack(Genome genome, List<org.broad.tribble.Feature> features) {
+
+        FeatureDB.clearFeatures();
+        FeatureTrack geneFeatureTrack = null;
+        String name = "Annotations";
+
+        String id = genome.getId() + "_genes";
+        geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
+        geneFeatureTrack.setMinimumHeight(5);
+        geneFeatureTrack.setHeight(35);
+        //geneFeatureTrack.setRendererClass(GeneRenderer.class);
+        geneFeatureTrack.setColor(Color.BLUE.darker());
 
         SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
         if (geneFeatureTrack != null) {
