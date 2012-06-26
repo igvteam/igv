@@ -113,7 +113,7 @@ public class FastaUtils {
                     if (basesThisLine == 0) {
                         numBlanks++;
                     } else if (numBlanks >= 1) {
-                        throw new DataLoadException("Blank line at line " + reader.getCurrentLineNumber() + " in contig " + curContig, inputPath);
+                        throw new DataLoadException("Blank line in contig " + curContig, inputPath);
                     }
 
 

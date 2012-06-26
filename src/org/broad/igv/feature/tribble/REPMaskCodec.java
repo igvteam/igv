@@ -25,6 +25,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.exception.CodecLineParsingException;
@@ -56,12 +57,13 @@ import java.util.Map;
  * 15 repLeft	0	int(11)	-#bases after match (if strand is +) or start (if strand is -) in repeat sequence
  * 16 id	1	char(1)	First digit of id field in RepeatMasker .out file. Best ignored.
  */
-public class REPMaskCodec implements FeatureCodec {
+public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
 
     FeatureFileHeader header;
     Genome genome;
 
     public REPMaskCodec(Genome genome) {
+        super(BasicFeature.class);
         this.genome = genome;
     }
 
@@ -171,10 +173,6 @@ public class REPMaskCodec implements FeatureCodec {
         feature.setAttributes(attributes);
 
         return feature;
-    }
-
-    public Class getFeatureType() {
-        return BasicFeature.class;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
 }

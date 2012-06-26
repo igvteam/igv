@@ -135,6 +135,10 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     @Test
     public void testSnapShotJpeg() throws Exception{
         tstSnapshot(outFileBase + ".jpeg");
+    }
+
+    @Test
+    public void testSnapShotJpg() throws Exception{
         tstSnapshot(outFileBase + ".jpg");
     }
 

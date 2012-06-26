@@ -190,7 +190,10 @@ public class AlignmentReaderFactory {
             if (readGroups != null) {
                 platforms = new HashSet<String>();
                 for (SAMReadGroupRecord rg : readGroups) {
-                    platforms.add(rg.getPlatform().toUpperCase());
+                    String platform = rg.getPlatform();
+                    if (platform != null) {
+                        platforms.add(platform.toUpperCase());
+                    }
                 }
             }
         }

@@ -83,26 +83,8 @@ public class BAMHttpReader implements AlignmentReader {
         return header;
     }
 
-
-    /**
-     * @return names of platforms represented in this file.
-     */
     public Set<String> getPlatforms() {
-        Set<String> platforms = new HashSet<String>();
-        SAMFileHeader header = getHeader();
-        if (header != null) {
-            List<SAMReadGroupRecord> readGroups = header.getReadGroups();
-            if (readGroups != null) {
-                for (SAMReadGroupRecord rg : readGroups) {
-
-                    final String platform = rg.getPlatform();
-                    if (platform != null) {
-                        platforms.add(platform.toUpperCase());
-                    }
-                }
-            }
-        }
-        return platforms;
+        return AlignmentReaderFactory.getPlatforms(getHeader());
     }
 
     public boolean hasIndex() {

@@ -60,6 +60,7 @@ public class GisticFileParser {
         AsciiLineReader reader = null;
 
         String nextLine = null;
+        int rowCounter = 0;
         try {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -67,6 +68,7 @@ public class GisticFileParser {
 
             // Parse header
             reader.readLine();
+            rowCounter++;
 
             // Parse data
             // parameters to track chromosome breaks. Used in wholeGenome case.
@@ -75,6 +77,8 @@ public class GisticFileParser {
             List<GisticScore> scores = new ArrayList();
 
             nextLine = reader.readLine();
+            rowCounter++;
+
             while ((nextLine != null) && (nextLine.length() > 0)) {
                 String[] tokens = nextLine.split("\t");
 
@@ -86,7 +90,7 @@ public class GisticFileParser {
                     start = Integer.parseInt(tokens[2]);
                 }
                 catch (NumberFormatException ne) {
-                    throw new ParserException("Column 3 must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                    throw new ParserException("Column 3 must be a numeric value.", rowCounter, nextLine);
                 }
 
                 int end = -1;
@@ -94,7 +98,7 @@ public class GisticFileParser {
                     end = Integer.parseInt(tokens[3]);
                 }
                 catch (NumberFormatException ne) {
-                    throw new ParserException("Column 4 must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                    throw new ParserException("Column 4 must be a numeric value.", rowCounter, nextLine);
                 }
 
                 float qValue = 0;
@@ -118,6 +122,7 @@ public class GisticFileParser {
                 }
 
                 nextLine = reader.readLine();
+                rowCounter++;
             }
 
             if (scores.isEmpty()) {
@@ -137,8 +142,8 @@ public class GisticFileParser {
         }
         catch (Exception e) {
             log.error("Exception when loading: " + locator.getPath(), e);
-            if (reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), reader.getCurrentLineNumber(), nextLine);
+            if (rowCounter != 0) {
+                throw new ParserException(e.getMessage(), rowCounter, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

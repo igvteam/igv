@@ -21,6 +21,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
@@ -54,7 +55,7 @@ import java.util.Map;
  * Parent can *only* be used to indicate a partof
  * relationship.
  */
-public class GFFCodec implements org.broad.tribble.FeatureCodec {
+public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     private static Logger log = Logger.getLogger(GFFCodec.class);
 
@@ -71,12 +72,14 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
     Genome genome;
 
     public GFFCodec(Genome genome) {
+        super(Feature.class);
         // Assume GFF2 until shown otherwise
         helper = new GFF2Helper();
         this.genome = genome;
     }
 
     public GFFCodec(Version version, Genome genome) {
+        super(Feature.class);
         this.genome = genome;
         if (version == Version.GFF2) {
             helper = new GFF2Helper();
@@ -216,10 +219,6 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         }
         return f;
 
-    }
-
-    public Class getFeatureType() {
-        return Feature.class;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public Object getHeader() {

@@ -19,14 +19,12 @@
 
 package org.broad.igv.util;
 
-import org.broad.tribble.readers.BufferedLineReader;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertTrue;
 

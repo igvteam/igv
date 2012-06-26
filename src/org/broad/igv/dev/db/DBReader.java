@@ -132,6 +132,15 @@ public abstract class DBReader<T> {
             return this;
         }
 
+        @Override
+        public void close() {
+            try {
+                DBManager.closeResources(rs, rs.getStatement(), null);
+            } catch (SQLException e) {
+                log.error(e);
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public String getTable() {

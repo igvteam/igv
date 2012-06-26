@@ -27,6 +27,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 
@@ -67,7 +68,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static FeatureParser getInstanceFor(String path, Genome genome) {
-        FeatureCodec codec = getCodec(path, genome);
+        AsciiFeatureCodec codec = getCodec(path, genome);
         if (codec != null) {
             return new FeatureCodecParser(codec, genome);
         } else {
@@ -75,7 +76,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
     }
 
-    private static FeatureCodec getCodec(String path, Genome genome) {
+    private static AsciiFeatureCodec getCodec(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
         return CodecFactory.getCodec(tmp, genome);
     }

@@ -300,9 +300,9 @@ public class HiC {
 
     public double[] getEigenvector(final int n) {
         if (zd == null) return null;
-
         double[] eigenvector = zd.getEigenvector();
         if (eigenvector == null) {
+
             final DensityFunction df = getDensityFunction();
             if (df != null) {
                 Runnable runnable = new Runnable() {

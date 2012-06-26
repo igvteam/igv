@@ -19,6 +19,7 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -50,7 +51,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     public static String UCSC_END_COL = "txEnd";
 
 
-    protected FeatureCodec codec;
+    protected AsciiFeatureCodec codec;
 
     protected PreparedStatement queryStatement;
     protected PreparedStatement binnedQueryStatement;
@@ -97,12 +98,12 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private static final int MAX_BINS = 20;
 
-    public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table) {
+    public SQLCodecSource(ResourceLocator locator, AsciiFeatureCodec codec, String table) {
         super(locator, table);
         this.codec = codec;
     }
 
-    public SQLCodecSource(ResourceLocator locator, FeatureCodec codec, String table,
+    public SQLCodecSource(ResourceLocator locator, AsciiFeatureCodec codec, String table,
                           String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex) {
         this(locator, codec, table);
         this.chromoColName = chromoColName;
@@ -144,7 +145,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
                     String binColName = Utilities.getNullSafe(attr, "binColName");
                     int startColIndex = startColString != null ? Integer.parseInt(startColString) : 1;
                     int endColIndex = endColString != null ? Integer.parseInt(endColString) : Integer.MAX_VALUE;
-                    FeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
+                    AsciiFeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
                     SQLCodecSource source = new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posStartColName, posEndColName, startColIndex, endColIndex);
                     source.binColName = binColName;
                     sources.add(source);
