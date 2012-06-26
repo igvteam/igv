@@ -106,6 +106,10 @@ public class BasicFeature extends AbstractFeature {
         this.parentIds = parentIds;
     }
 
+    public String[] getParentIds() {
+        return parentIds;
+    }
+
     @Override
     public void setStart(int start) {
         super.setStart(start);
