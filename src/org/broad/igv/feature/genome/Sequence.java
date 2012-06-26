@@ -1,5 +1,9 @@
 package org.broad.igv.feature.genome;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author jrobinso
  * @date 8/8/11
@@ -12,5 +16,8 @@ public interface Sequence {
 
     public byte getBase(String chr, int position);
 
+    List<String> getChromosomeNames();
+
+    int getChromosomeLength(String chrname);
 }
                                                                     

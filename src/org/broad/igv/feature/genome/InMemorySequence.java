@@ -1,25 +1,28 @@
 package org.broad.igv.feature.genome;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jrobinso
- * Date: 6/23/12
- * Time: 8:59 PM
- * To change this template use File | Settings | File Templates.
+ * A sequence implementation in which all data is held in memory.
  */
-public class InMemorySequence {
+public class InMemorySequence implements Sequence {
 
+    /**
+     * Map of chromosome name -> byte array of sequence
+     */
     private Map<String, byte[]> sequenceMap;
 
     public InMemorySequence(Map<String, byte[]> sequenceMap) {
         this.sequenceMap = sequenceMap;
     }
 
-    public byte[] readSequence(String chr, int qstart, int qend) {
+    public InMemorySequence(String chr, byte[] seq) {
+        sequenceMap = new HashMap<String, byte[]>();
+        sequenceMap.put(chr, seq);
+    }
+
+    public byte[] getSequence(String chr, int qstart, int qend) {
         byte[] allBytes = sequenceMap.get(chr);
         if (allBytes == null) {
             return null;
@@ -36,4 +39,26 @@ public class InMemorySequence {
         }
     }
 
+
+    @Override
+    public byte getBase(String chr, int position) {
+
+        byte[] seqBytes = sequenceMap.get(chr);
+        if (seqBytes != null && position < seqBytes.length) {
+            return seqBytes[position];
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public List<String> getChromosomeNames() {
+        return new ArrayList<String>(sequenceMap.keySet());
+    }
+
+    @Override
+    public int getChromosomeLength(String chrname) {
+        byte [] bytes = sequenceMap.get(chrname);
+        return bytes == null ? 0 : bytes.length;
+    }
 }

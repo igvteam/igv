@@ -21,30 +21,22 @@ import static junit.framework.Assert.assertEquals;
 public class GenbankParserTest {
 
 
-    public static final String CHR = "NT_030059";
 
     @Test
     public void testReadSequence() throws Exception {
 
         String testFile = TestUtils.DATA_DIR + "gbk/pten_test.gbk";
 
-        //LOCUS       NT_030059             105338 bp    DNA     linear   CON 28-OCT-2010
-        BufferedReader reader = new BufferedReader(new FileReader(testFile));
-//        String nextLine;
-//        do {
-//            nextLine = reader.readLine();
-//        } while (!nextLine.startsWith("ORIGIN"));
+        GenbankParser genbankParser = new GenbankParser(testFile);
 
-
-        GenbankParser genbankSequence = new GenbankParser(CHR, reader);
-        reader.close();
-
+        String expectedChr = "NT_030059";
+        assertEquals(expectedChr, genbankParser.getChr());
 
         String[] expectedTypes = {"gene", "mRNA", "CDS", "gene", "variation", "variation"};
         int[] expectedStarts = {0, 0, 1032, 82042, -79, 10554};
         int[] expectedEnds = {105338, 105338, 102035, 82643, -78, 10555};
 
-        List<Feature> features = genbankSequence.features;
+        List<Feature> features = genbankParser.getFeatures();
         for (int i=0; i<expectedTypes.length; i++) {
             BasicFeature bf = (BasicFeature) features.get(i);
             assertEquals(expectedTypes[i], bf.getType());
@@ -54,10 +46,11 @@ public class GenbankParserTest {
 
 
         //       61 ttccgaggcg cccgggctcc cggcgcggcg gcggaggggg cgggcaggcc ggcgggcggt
+        String chr = genbankParser.getChr();
         int start = 60;
         int end = 70;
         String expectedSequence = "ttccgaggcg";
-        byte[] seqbytes = genbankSequence.getSequence(CHR, start, end);
+        byte[] seqbytes = genbankParser.getSequence(chr, start, end);
         String sequence = new String(seqbytes);
         assertEquals(expectedSequence, sequence);
 
@@ -65,12 +58,12 @@ public class GenbankParserTest {
         expectedSequence = "tcttgtca";
         end = 105338;
         start = end - expectedSequence.length();
-        seqbytes = genbankSequence.getSequence(CHR, start, end);
+        seqbytes = genbankParser.getSequence(chr, start, end);
         sequence = new String(seqbytes);
         assertEquals(expectedSequence, sequence);
 
 
-        assertEquals(105338, genbankSequence.getSequenceLenth());
+        assertEquals(105338, genbankParser.getSequenceLenth());
 
 
     }

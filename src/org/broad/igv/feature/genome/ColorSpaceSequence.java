@@ -7,7 +7,7 @@ package org.broad.igv.feature.genome;
  * Time: 11:00 AM
  * To change this template use File | Settings | File Templates.
  */
-public class ColorSpaceSequence implements Sequence {
+public class ColorSpaceSequence   {
 
     Sequence sequence;
 
@@ -61,8 +61,6 @@ public class ColorSpaceSequence implements Sequence {
     }
 
 
-
-    @Override
     public byte getBase(String chr, int position) {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }

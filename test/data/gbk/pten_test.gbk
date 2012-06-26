@@ -185,17 +185,17 @@ FEATURES             Location/Qualifiers
                      /pseudo
                      /db_xref="GeneID:100271271"
                      /db_xref="HGNC:36342"
-     variation       -206
-                     /gene="PTEN"
-                     /replace="a"
-                     /replace="g"
-                     /db_xref="HGMD_null"
      variation       -78
                      /gene="PTEN"
                      /replace="a"
                      /replace="g"
                      /db_xref="HGMD_null"
-ORIGIN      
+     variation       10555
+                     /gene="PTEN"
+                     /replace="a"
+                     /replace="t"
+                     /db_xref="dbSNP:34784775"
+ORIGIN
         1 cctcccctcg cccggcgcgg tcccgtccgc ctctcgctcg cctcccgcct cccctcggtc
        61 ttccgaggcg cccgggctcc cggcgcggcg gcggaggggg cgggcaggcc ggcgggcggt
       121 gatgtggcgg gactctttat gcgctgcggc aggatacgcg ctcggcgctg ggacgcgact
@@ -1953,4 +1953,3 @@ ORIGIN
    105241 ccaatcagat gtccatttgt tattgtgttt gttaacaacc ctttatctct tagtgttata
    105301 aactccactt aaaactgatt aaagtctcat tcttgtca
 //
-

@@ -1,5 +1,7 @@
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.feature.ChromosomeImpl;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -13,12 +15,14 @@ import java.util.*;
 public class FastaDirectorySequence implements Sequence {
 
     Map<String, FastaIndexedSequence> sequenceMap;
+    List<String> chromosomeNames;
+    Map<String, Integer> chrLengths;
 
-    public FastaDirectorySequence(String directoryPath, String [] fastaFiles) throws IOException {
+    public FastaDirectorySequence(String directoryPath, String[] fastaFiles) throws IOException {
         readIndeces(directoryPath, fastaFiles);
     }
 
-    private void readIndeces(String directoryPath, String [] fastaFiles) throws IOException {
+    private void readIndeces(String directoryPath, String[] fastaFiles) throws IOException {
         sequenceMap = new LinkedHashMap<String, FastaIndexedSequence>();
         for (String file : fastaFiles) {
             String fastaPath = directoryPath + "/" + file;
@@ -27,6 +31,21 @@ public class FastaDirectorySequence implements Sequence {
                 sequenceMap.put(chr, fastaSequence);
             }
         }
+
+        chromosomeNames = new ArrayList();
+        for (FastaIndexedSequence fastaSequence : getFastaSequences()) {
+            chromosomeNames.addAll(fastaSequence.getChromosomeNames());
+        }
+        Collections.sort(chromosomeNames, new ChromosomeComparator());
+
+        chrLengths = new HashMap<String, Integer>(chromosomeNames.size());
+        for (FastaIndexedSequence fastaSequence : getFastaSequences()) {
+            for (String chr : fastaSequence.getChromosomeNames()) {
+                int length = fastaSequence.getChromosomeLength(chr);
+                chrLengths.put(chr, length);
+            }
+        }
+
     }
 
     public Collection<FastaIndexedSequence> getFastaSequences() {
@@ -44,8 +63,17 @@ public class FastaDirectorySequence implements Sequence {
 
 
     @Override
+    public List<String> getChromosomeNames() {
+        return chromosomeNames;
+    }
+
+    @Override
     public byte getBase(String chr, int position) {
         throw new RuntimeException("getBase() is not implemented for class " + FastaIndexedSequence.class.getName());
     }
 
+    @Override
+    public int getChromosomeLength(String chrname) {
+        return chrLengths.get(chrname);
+    }
 }

@@ -116,93 +116,23 @@ public class GenomeManager {
             }
 
             if (genomePath.endsWith(Globals.GZIP_FILE_EXTENSION)) {
-                throw new GenomeException("IGV cannot readed gzipped fasta files.  Please un-gzip the file and try again.");
+                throw new GenomeException("IGV cannot readed gzipped genome files.  Please un-gzip the file and try again.");
             } else if (genomePath.endsWith(".genome")) {
-
-                File archiveFile = getArchiveFile(genomePath);
-
-                GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
-                Map<String, String> aliases = loadChrAliases(genomeDescriptor);
-
-                final String id = genomeDescriptor.getId();
-                final String displayName = genomeDescriptor.getName();
-
-                boolean isFasta = genomeDescriptor.isFasta();
-                String[] fastaFiles = genomeDescriptor.getFastaFileNames();
-
-                newGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta, fastaFiles);
-                setCurrentGenome(newGenome);
-
-                log.info("Genome loaded.  id= " + id);
-
-                if (genomeDescriptor.hasCytobands()) {
-                    LinkedHashMap<String, List<Cytoband>> cytobandMap = loadCytobandFile(genomeDescriptor);
-                    if (!isFasta) {
-                        newGenome.generateChromosomeMap(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
-                    }
-                    newGenome.setCytobands(cytobandMap);
-                }
-
-
-                if (aliases != null) newGenome.addChrAliases(aliases);
-                if (IGV.hasInstance() && !Globals.isHeadless()) {
-                    updateGeneTrack(genomeDescriptor);
-                }
-
-                genomeDescriptor.close();
-
-
+                newGenome = loadDotGenomeFile(genomePath);
             } else if (genomePath.endsWith(".gbk")) {
-
+                newGenome = loadGenbankFile(genomePath);
             } else {
-
-                // Assume its a fasta
-                String fastaPath = null;
-                String fastaIndexPath = null;
-                if (genomePath.endsWith(".fai")) {
-                    fastaPath = genomePath.substring(0, genomePath.length() - 4);
-                    fastaIndexPath = genomePath;
-                } else {
-                    fastaPath = genomePath;
-                    fastaIndexPath = genomePath + ".fai";
-                }
-
-                if (!FileUtils.resourceExists(fastaIndexPath)) {
-                    //Have to make sure we have a local copy of the fasta file
-                    //to index it
-                    if (!FileUtils.isRemote(fastaPath)) {
-                        File archiveFile = getArchiveFile(fastaPath);
-                        fastaPath = archiveFile.getAbsolutePath();
-                        fastaIndexPath = fastaPath + ".fai";
-
-                        log.info("Creating index file at " + fastaIndexPath);
-                        FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
-                    }
-
-                }
-
-                String id = fastaPath;
-                String name = (new File(fastaPath)).getName();
-                if (HttpUtils.isURL(fastaPath)) {
-                    name = Utilities.getFileNameFromURL(fastaPath);
-                }
-
-
-                newGenome = new GenomeImpl(id, name, fastaPath, true, null);
-                setCurrentGenome(newGenome);
-
-                log.info("Genome loaded.  id= " + id);
-                if (!Globals.isHeadless()) {
-                    IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
-                }
+                // Assume a fasta file
+                newGenome = loadFastaFile(genomePath);
             }
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
             }
 
-            // Do this last so that user defined aliases have preference.
-            newGenome.loadUserDefinedAliases();
+            setCurrentGenome(newGenome);
+
+            log.info("Genome loaded.  id= " + newGenome.getId());
 
             return currentGenome;
 
@@ -210,6 +140,149 @@ public class GenomeManager {
             throw new GenomeServerException("Server connection error", e);
         }
 
+    }
+
+    private GenomeImpl loadGenbankFile(String genomePath) throws IOException {
+        GenomeImpl newGenome;
+        GenbankParser genbankParser = new GenbankParser(genomePath);
+        String chr = genbankParser.getChr();
+        byte[] seq = genbankParser.getSequence();
+        Sequence sequence = new InMemorySequence(chr, seq);
+        newGenome = new GenomeImpl(chr, chr, sequence);
+        newGenome.loadUserDefinedAliases();
+        setCurrentGenome(newGenome);
+
+        if (IGV.hasInstance() && !Globals.isHeadless()) {
+            IGV.getInstance().createGeneTrack(newGenome, genbankParser.getFeatures());
+        }
+
+        return newGenome;
+    }
+
+    /**
+     * Create a Genome from a single fasta file.
+     *
+     * @param genomePath
+     * @return
+     * @throws IOException
+     */
+    private GenomeImpl loadFastaFile(String genomePath) throws IOException {
+        GenomeImpl newGenome;// Assume its a fasta
+        String fastaPath = null;
+        String fastaIndexPath = null;
+        if (genomePath.endsWith(".fai")) {
+            fastaPath = genomePath.substring(0, genomePath.length() - 4);
+            fastaIndexPath = genomePath;
+        } else {
+            fastaPath = genomePath;
+            fastaIndexPath = genomePath + ".fai";
+        }
+
+        if (!FileUtils.resourceExists(fastaIndexPath)) {
+            //Have to make sure we have a local copy of the fasta file
+            //to index it
+            if (!FileUtils.isRemote(fastaPath)) {
+                File archiveFile = getArchiveFile(fastaPath);
+                fastaPath = archiveFile.getAbsolutePath();
+                fastaIndexPath = fastaPath + ".fai";
+
+                log.info("Creating index file at " + fastaIndexPath);
+                FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
+            }
+
+        }
+
+        String id = fastaPath;
+        String name = (new File(fastaPath)).getName();
+        if (HttpUtils.isURL(fastaPath)) {
+            name = Utilities.getFileNameFromURL(fastaPath);
+        }
+
+        FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
+        Sequence sequence = new SequenceWrapper(fastaSequence);
+        newGenome = new GenomeImpl(id, name, sequence);
+        newGenome.loadUserDefinedAliases();
+        setCurrentGenome(newGenome);
+
+        if (IGV.hasInstance() && !Globals.isHeadless()) {
+            IGV.getInstance().createGeneTrack(newGenome, null, null, null, null);
+        }
+        return newGenome;
+    }
+
+    /**
+     * Create a genome from a ".genome" file.  In addition to the reference sequence .genome files can optionally
+     * specify cytobands and annotations.
+     *
+     * @param genomePath
+     * @return
+     * @throws IOException
+     */
+    private GenomeImpl loadDotGenomeFile(String genomePath) throws IOException {
+        GenomeImpl newGenome;
+        File archiveFile = getArchiveFile(genomePath);
+
+        GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
+
+        final String id = genomeDescriptor.getId();
+        final String displayName = genomeDescriptor.getName();
+
+        boolean isFasta = genomeDescriptor.isFasta();
+        String[] fastaFiles = genomeDescriptor.getFastaFileNames();
+
+        LinkedHashMap<String, List<Cytoband>> cytobandMap = null;
+        if (genomeDescriptor.hasCytobands()) {
+            cytobandMap = loadCytobandFile(genomeDescriptor);
+        }
+
+
+        String sequencePath = genomeDescriptor.getSequenceLocation();
+        Sequence sequence = null;
+        if (sequencePath == null) {
+            sequence = null;
+        } else if (!isFasta) {
+            // Legacy genomes
+            sequencePath = SequenceWrapper.checkSequenceURL(sequencePath);
+            IGVSequence igvSequence = new IGVSequence(sequencePath);
+            if (cytobandMap != null) {
+                igvSequence.generateChromosomes(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
+            }
+            sequence = new SequenceWrapper(igvSequence);
+        } else if (fastaFiles != null) {
+            FastaDirectorySequence fastaDirectorySequence = new FastaDirectorySequence(sequencePath, fastaFiles);
+            sequence = new SequenceWrapper(fastaDirectorySequence);
+        } else {
+            FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
+            sequence = new SequenceWrapper(fastaSequence);
+        }
+
+        newGenome = new GenomeImpl(id, displayName, sequence);
+        if (cytobandMap != null) {
+            newGenome.setCytobands(cytobandMap);
+        }
+
+        Map<String, String> aliases = loadChrAliases(genomeDescriptor);
+        if (aliases != null) newGenome.addChrAliases(aliases);
+        // Do this last so that user defined aliases have preference.
+        newGenome.loadUserDefinedAliases();
+        setCurrentGenome(newGenome);
+
+
+        if (IGV.hasInstance() && !Globals.isHeadless()) {
+            InputStream geneStream = null;
+            try {
+                geneStream = genomeDescriptor.getGeneStream();
+                BufferedReader reader = geneStream == null ? null : new BufferedReader(new InputStreamReader(geneStream));
+                IGV.getInstance().createGeneTrack(newGenome, reader,
+                        genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
+                        genomeDescriptor.getUrl());
+            } finally {
+                if (geneStream != null) geneStream.close();
+            }
+        }
+
+        genomeDescriptor.close();
+        return newGenome;
     }
 
     /**
@@ -239,18 +312,6 @@ public class GenomeManager {
         return archiveFile;
     }
 
-    private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {
-        InputStream geneStream = null;
-        try {
-            geneStream = genomeDescriptor.getGeneStream();
-            BufferedReader reader = geneStream == null ? null : new BufferedReader(new InputStreamReader(geneStream));
-            IGV.getInstance().createGeneTrack(currentGenome, reader,
-                    genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
-                    genomeDescriptor.getUrl());
-        } finally {
-            if (geneStream != null) geneStream.close();
-        }
-    }
 
     /**
      * Load the cytoband file specified in the genome descriptor.

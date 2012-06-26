@@ -33,7 +33,7 @@ public class FastaSequenceParserTest {
 
         String expectedSequence = "TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT";
 
-        byte[] seq = fastaSequence.readSequence(chr, start, end);
+        byte[] seq = fastaSequence.getSequence(chr, start, end);
         String seqString = new String(seq);
 
         assertEquals(expectedSequence, seqString);
@@ -46,7 +46,7 @@ public class FastaSequenceParserTest {
         int chrLen = 8059593;
         int start = chrLen - 10;
         int end = chrLen + 10;
-        byte[] bytes = fastaSequence.readSequence(chr, start, end);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
         byte[] expectedSequence = "TTTTTCCCAG".getBytes();

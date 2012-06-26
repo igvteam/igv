@@ -2,6 +2,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
@@ -15,23 +16,27 @@ import java.util.List;
 /**
  * Sequence defined by a Genbank (.gbk) file.  These files contain a single sequence/chromosome/contig.
  */
-public class GenbankParser  {
+public class GenbankParser {
 
-    String chr;
-    byte[] sequence;
-    List<Feature> features;
+    private String chr;
+    private byte[] sequence;
+    private List<Feature> features;
 
 
     /**
-     * Construct a sequence from the stream represented by "reader".  It is assumed that "reader" has been
-     * advance to the line just after the ORIGIN keyword.
-     *
-     * @param reader
+     * @param path
      */
-    GenbankParser(String chr, BufferedReader reader) throws IOException {
-        this.chr = chr;
-        readFeatures(reader);
-        readOriginSequence(reader);
+    GenbankParser(String path) throws IOException {
+
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            readLocus(reader);
+            readFeatures(reader);
+            readOriginSequence(reader);
+        } finally {
+            if (reader != null) reader.close();
+        }
     }
 
 
@@ -60,6 +65,20 @@ public class GenbankParser  {
      */
     public int getSequenceLenth() {
         return sequence == null ? 0 : sequence.length;
+    }
+
+
+    /**
+     * Read the locus line
+     * LOCUS       NT_030059             105338 bp    DNA     linear   CON 28-OCT-2010
+     */
+    private void readLocus(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        String[] tokens = Globals.whitespacePattern.split(line);
+        if (!tokens[0].equalsIgnoreCase("LOCUS")) {
+            // throw exception
+        }
+        chr = tokens[1].trim();
     }
 
 
@@ -139,6 +158,7 @@ public class GenbankParser  {
             if (nextLine.charAt(5) != ' ') {
                 String featureType = nextLine.substring(5, 21).trim();
                 f = new BasicFeature();
+                f.setChr(chr);
                 f.setType(featureType);
                 currentLocQualifier = nextLine.substring(21);
 
@@ -154,15 +174,30 @@ public class GenbankParser  {
                         if (currentLocQualifier.charAt(0) == '/') {
                             String[] tokens = Globals.equalPattern.split(currentLocQualifier, 2);
                             if (tokens.length > 1) {
-                                f.setAttribute(tokens[0], tokens[1]);
+                                String keyName = tokens[0].length() > 1 ? tokens[0].substring(1) : "";
+                                f.setAttribute(keyName, tokens[1]);
                             } else {
                                 // TODO -- don't know how to interpret, log?
                             }
                         } else {
                             // location string TODO -- many forms of this to support
+                            // Crude test for strand
+                            Strand strand = currentLocQualifier.contains("complement") ? Strand.NEGATIVE : Strand.POSITIVE;
+                            f.setStrand(strand);
 
-                            if (currentLocQualifier.contains ("..")) {
-                                List<Exon> exons = parseJoinString(currentLocQualifier, chr);
+
+                            // join and complement functions irrelevant
+                            String joinString = currentLocQualifier.replace("join", "");
+                            joinString = joinString.replace("complement", "");
+                            joinString = joinString.replace("(", "");
+                            joinString = joinString.replace(")", "");
+
+                            if (joinString.contains("..")) {
+
+                                joinString = joinString.replace("<", "");
+                                joinString = joinString.replace(">", "");
+
+                                List<Exon> exons = createExons(joinString, strand);
                                 FeatureUtils.sortFeatureList(exons);
                                 Exon firstExon = exons.get(0);
                                 f.setStart(firstExon.getStart());
@@ -173,10 +208,9 @@ public class GenbankParser  {
                                         f.addExon(exon);
                                     }
                                 }
-                            }
-                            else {
+                            } else {
                                 // TODO Single locus for now,  other forms possible
-                                int start = Integer.parseInt(currentLocQualifier) - 1;
+                                int start = Integer.parseInt(joinString) - 1;
                                 int end = start + 1;
                                 f.setStart(start);
                                 f.setEnd(end);
@@ -194,51 +228,12 @@ public class GenbankParser  {
 
 
     /**
-     * FT   CDS             join(complement(5000933..5001976),
-     * FT                   complement(5000325..5000891),complement(5000024..5000272))
-     * FT                   /product="GTPase activating protein (predicted)"
-     * FT                   /gene="SPAC1952.17c"
-     * FT                   /gene="SPAC890.01c"
-     *
-     * @param joinString
-     * @param chr
-     * @return
-     * @throws IOException
-     */
-    public static List<Exon> parseJoinString(String joinString, String chr)
-            throws IOException {
-
-        if (joinString.startsWith("join") || joinString.startsWith("complement")) {
-            int leftParenCount = StringUtils.countChar(joinString, '(');
-            int rightParenCount = StringUtils.countChar(joinString, ')');
-            while (leftParenCount != rightParenCount) {
-                leftParenCount = StringUtils.countChar(joinString, '(');
-                rightParenCount = StringUtils.countChar(joinString, ')');
-            }
-
-            // join and complement functions irrelevant
-            joinString = joinString.replace("join", "");
-            joinString = joinString.replace("complement", "");
-            joinString = joinString.replace("(", "");
-            joinString = joinString.replace(")", "");
-            joinString = joinString.replace('<', ' ');
-            return createExons(joinString, chr);
-
-        } else {
-            return createExons(joinString, chr);
-        }
-
-    }
-
-
-    /**
      * Create a list of Exon objects from the Embl join string.  Apparently exons in embl
      * format are represented by a single CDS record.
      *
      * @param joinString
-     * @param chromosome
      */
-    static List<Exon> createExons(String joinString, String chromosome) {
+    List<Exon> createExons(String joinString, Strand strand) {
         String[] lociArray = joinString.split(",");
         List<Exon> exons = new ArrayList(lociArray.length);
         boolean isNegative = joinString.contains("complement");
@@ -250,10 +245,21 @@ public class GenbankParser  {
                 exonEnd = Integer.parseInt(tmp[1]);
             }
 
-            Strand strand = isNegative ? Strand.NEGATIVE : Strand.POSITIVE;
-            Exon r = new Exon(chromosome, exonStart, exonEnd, strand);
+            Exon r = new Exon(chr, exonStart, exonEnd, strand);
             exons.add(r);
         }
         return exons;
+    }
+
+    public String getChr() {
+        return chr;
+    }
+
+    public byte[] getSequence() {
+        return sequence;
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
     }
 }

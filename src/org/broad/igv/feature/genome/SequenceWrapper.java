@@ -65,6 +65,16 @@ public class SequenceWrapper implements Sequence {
         }
     }
 
+    @Override
+    public List<String> getChromosomeNames() {
+        return sequence.getChromosomeNames();
+    }
+
+    @Override
+    public int getChromosomeLength(String chrname) {
+        return sequence.getChromosomeLength(chrname);
+    }
+
     /**
      * Return the reference dna sequence for the exact interval specified.
      *

@@ -24,6 +24,8 @@ import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -169,10 +171,12 @@ public class FastaIndexedSequence implements Sequence {
         }
     }
 
-    public Set<String> getChromosomeNames() {
-        return index.getSequenceNames();
+    @Override
+    public List<String> getChromosomeNames() {
+        return new ArrayList(index.getSequenceNames());
     }
 
+    @Override
     public int getChromosomeLength(String chrname) {
         return index.getSequenceSize(chrname);
     }
