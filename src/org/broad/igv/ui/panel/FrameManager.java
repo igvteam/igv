@@ -56,13 +56,18 @@ public class FrameManager {
         return defaultFrame;
     }
 
-
-    public static void setExomeMode(boolean b) {
-        if (b == exomeMode) return;  // No change
+    /**
+     * Set exome mode. We return true if a change was made,
+     * false if not.
+     * @param b
+     * @return
+     */
+    public static boolean setExomeMode(boolean b) {
+        if (b == exomeMode) return false;  // No change
         if (b) {
-            switchToExomeMode();
+            return switchToExomeMode();
         } else {
-            switchToGenomeMode();
+            return switchToGenomeMode();
         }
     }
 
@@ -71,12 +76,16 @@ public class FrameManager {
         return exomeMode;
     }
 
-    private static void switchToExomeMode() {
+    private static boolean switchToExomeMode() {
 
         Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
-        dlg.setVisible(true);
         List<FeatureTrack> tracks = dlg.getSelectedTracks();
+        if(tracks.size() > 1){
+            dlg.setVisible(true);
+            if(dlg.isCanceled) return false;
+        }
+
 
         if(tracks == null || tracks.isEmpty()) {
             tracks = new ArrayList<FeatureTrack>();
@@ -91,9 +100,10 @@ public class FrameManager {
         frames.clear();
         frames.add(defaultFrame);
         exomeMode = true;
+        return true;
     }
 
-    private static void switchToGenomeMode() {
+    private static boolean switchToGenomeMode() {
         ReferenceFrame refFrame = new ReferenceFrame(defaultFrame);
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
@@ -102,6 +112,7 @@ public class FrameManager {
         frames.clear();
         frames.add(defaultFrame);
         exomeMode = false;
+        return true;
     }
 
 

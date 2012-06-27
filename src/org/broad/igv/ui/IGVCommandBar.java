@@ -100,6 +100,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
     private boolean suppressTooltip = false;
+    private JideButton exomeButton;
 
     /**
      * Creates new form IGVCommandBar
@@ -178,6 +179,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
             log.debug("Exit initializeGenomeList");
         }
 
+    }
+
+    public void updateComponentStates() {
+
+        if(exomeButton != null){
+            exomeButton.setEnabled(!getDefaultReferenceFrame().getChrName().equalsIgnoreCase("all"));
+        }
     }
 
     class GenomeBoxActionListener implements ActionListener {
@@ -402,9 +410,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
     }
 
-    /**
-     * Method description
-     */
+
     public void updateCurrentCoordinates() {
         searchTextField.setText("");
 
@@ -968,7 +974,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         boolean showExomeButton = Boolean.parseBoolean(System.getProperty("showExomeButton", "false"));
         if (showExomeButton) {
-            final JideButton exomeButton = new JideButton();
+            exomeButton = new JideButton();
             exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
             exomeButton.setText(FrameManager.isExomeMode() ? "Genome" : "Exome");
             exomeButton.setToolTipText("Click to toggle between 'exome' and 'genome' views");
@@ -977,7 +983,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     boolean newMode = !FrameManager.isExomeMode();
-                    FrameManager.setExomeMode(newMode);
+                    if(!FrameManager.setExomeMode(newMode)) return;
                     String label = newMode ? "Genome" : "Exome";
                     exomeButton.setText(label);
                     IGV.getInstance().resetFrames();

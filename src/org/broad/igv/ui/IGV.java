@@ -334,6 +334,7 @@ public class IGV {
 
         contentPane.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
+        contentPane.getCommandBar().updateComponentStates();
 
     }
 
@@ -847,6 +848,8 @@ public class IGV {
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         //getContentPane().repaint();
+        contentPane.getCommandBar().updateComponentStates();
+
     }
 
     final public void refreshCommandBar() {
