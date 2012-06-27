@@ -25,6 +25,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.MutationTrack;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
@@ -157,7 +158,7 @@ public class MutationParser {
                     String sampleId = tokens[sampleColumn].trim();
                     String type = tokens[typeColumn];
 
-                    LinkedHashMap<String, String> attributes = new LinkedHashMap();
+                    MultiMap<String, String> attributes = new MultiMap();
                     int n = Math.min(headers.length, tokens.length);
                     for (int i = 0; i < n; i++) {
                         String key = headers[i];

@@ -23,6 +23,7 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
 import java.util.*;
@@ -132,7 +133,7 @@ public class VCFFeature implements IGVFeature, org.broad.tribble.Feature {
         return 1;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Map<String, String> getAttributes() {
+    public MultiMap<String, String> getAttributes() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

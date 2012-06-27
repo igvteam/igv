@@ -3,7 +3,6 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
 import java.io.BufferedReader;
@@ -18,9 +17,10 @@ import java.util.List;
  */
 public class GenbankParser {
 
-    private String chr;
+    private String accession;
     private byte[] sequence;
     private List<Feature> features;
+    private String locusName;
 
 
     /**
@@ -32,6 +32,7 @@ public class GenbankParser {
         try {
             reader = ParsingUtils.openBufferedReader(path);
             readLocus(reader);
+            readAccession(reader);
             readFeatures(reader);
             readOriginSequence(reader);
         } finally {
@@ -78,7 +79,30 @@ public class GenbankParser {
         if (!tokens[0].equalsIgnoreCase("LOCUS")) {
             // throw exception
         }
-        chr = tokens[1].trim();
+        locusName = tokens[1].trim();
+    }
+
+    /**
+     * Read the acession line
+     * ACCESSION   K03160
+     * @param reader
+     * @throws IOException
+     */
+    private void readAccession(BufferedReader reader) throws  IOException {
+
+        String line = null;
+        do  {
+            line = reader.readLine();
+        }
+        while(!line.startsWith("ACCESSION"));
+
+        if(line == null) {
+            // TODO - throw exception, missing accession
+        }
+
+        String[] tokens = Globals.whitespacePattern.split(line);
+        accession = tokens[1].trim();
+
     }
 
 
@@ -158,7 +182,7 @@ public class GenbankParser {
             if (nextLine.charAt(5) != ' ') {
                 String featureType = nextLine.substring(5, 21).trim();
                 f = new BasicFeature();
-                f.setChr(chr);
+                f.setChr(accession);
                 f.setType(featureType);
                 currentLocQualifier = nextLine.substring(21);
 
@@ -245,14 +269,14 @@ public class GenbankParser {
                 exonEnd = Integer.parseInt(tmp[1]);
             }
 
-            Exon r = new Exon(chr, exonStart, exonEnd, strand);
+            Exon r = new Exon(accession, exonStart, exonEnd, strand);
             exons.add(r);
         }
         return exons;
     }
 
-    public String getChr() {
-        return chr;
+    public String getAccession() {
+        return accession;
     }
 
     public byte[] getSequence() {
@@ -261,5 +285,9 @@ public class GenbankParser {
 
     public List<Feature> getFeatures() {
         return features;
+    }
+
+    public String getLocusName() {
+        return locusName;
     }
 }
