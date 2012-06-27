@@ -231,6 +231,9 @@ public class PreferenceManager implements PropertyManager {
     private Map<String, Object> objectCache = new Hashtable();
     private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable();
 
+    private PaletteColorTable mutationColorScheme = null;
+
+
     public static PreferenceManager getInstance() {
 
         return instance;
@@ -804,22 +807,25 @@ public class PreferenceManager implements PropertyManager {
         remove(MUTATION_COLOR_TABLE);
     }
 
+
     /**
      * Original labels:  Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown
      * Nico's labels:   Synonymous, Missense, Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
      * Combined: Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown, Truncating,
      * Non-coding_Transcript, Other_AA_changing, Other_likely_neutral
      */
-    public PaletteColorTable getMutationColorScheme() {
-
-        String colorTableString = get(MUTATION_COLOR_TABLE);
-        if (colorTableString != null) {
-            PaletteColorTable pallete = new PaletteColorTable();
-            pallete.restoreMapFromString(colorTableString);
-            return pallete;
-        } else {
-            return getLegacyMutationColorScheme();
+    public synchronized PaletteColorTable getMutationColorScheme() {
+        if (mutationColorScheme == null) {
+            String colorTableString = get(MUTATION_COLOR_TABLE);
+            if (colorTableString != null) {
+                PaletteColorTable pallete = new PaletteColorTable();
+                pallete.restoreMapFromString(colorTableString);
+                mutationColorScheme = pallete;
+            } else {
+                mutationColorScheme = getLegacyMutationColorScheme();
+            }
         }
+        return mutationColorScheme;
     }
 
     private PaletteColorTable getLegacyMutationColorScheme() {
@@ -1039,7 +1045,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
 
         defaultValues.put(FRAME_STATE_KEY, "" + Frame.NORMAL);
-        
+
         defaultValues.put(CBIO_MUTATION_THRESHOLD, "1");
         defaultValues.put(CBIO_AMPLIFICATION_THRESHOLD, "0.9");
         defaultValues.put(CBIO_DELETION_THRESHOLD, "0.9");

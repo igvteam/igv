@@ -30,7 +30,9 @@ import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.legend.ColorMapEditor;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.FontChooser;
@@ -2583,8 +2585,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
             updatedPreferenceMap.put(
                     PreferenceManager.SAM_SHADE_BASES,
                     ShadeBasesOption.QUALITY.toString());
-                    samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
-                    samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
+            samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
+            samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         } else {
             PreferenceManager prefMgr = PreferenceManager.getInstance();
             if (ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(prefMgr.get(PreferenceManager.SAM_SHADE_BASES))) {
@@ -2753,7 +2755,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void chooseMutationColorsButtonActionPerformed(ActionEvent e) {
-        (new LegendDialog(IGV.getMainFrame(), true)).setVisible(true);
+        PaletteColorTable ct = PreferenceManager.getInstance().getMutationColorScheme();
+        ColorMapEditor editor = new ColorMapEditor(IGV.getMainFrame(), ct.getColorMap());
+        editor.setVisible(true);
+
+        Map<String, Color> changedColors = editor.getChangedColors();
+        if (!changedColors.isEmpty()) {
+            for (Map.Entry<String, Color> entry : changedColors.entrySet()) {
+                ct.getColorMap().put(entry.getKey(), entry.getValue());
+            }
+            String mapString = ct.getMapAsString();
+            PreferenceManager.getInstance().put(PreferenceManager.MUTATION_COLOR_TABLE, mapString);
+        }
     }
 
 

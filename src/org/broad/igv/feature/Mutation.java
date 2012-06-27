@@ -78,6 +78,7 @@ public class Mutation implements IGVFeature {
     }
 
     private String getOMAName() {
+        if (refAllele == null) return null;
         if (omaName == null) {
             String altAllele = altAllele1;
             if (refAllele.equals(altAllele1)) {
@@ -92,7 +93,8 @@ public class Mutation implements IGVFeature {
 
     // TODO -- experimental, note this only works for hg18 FIX
     public String getOMAUrl() {
-        String genome = GenomeManager.getInstance().getGenomeId();
+        if (refAllele == null) return null;
+        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
         String url = "http://mutationassessor.org/v1/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
@@ -169,13 +171,19 @@ public class Mutation implements IGVFeature {
 
     }
 
+
     public String getValueString(double position, WindowFunction ignored) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(getDescription());
-        buffer.append("<br>");
-        buffer.append("<i><b>Click mutation for more...</b></i>");
-        return buffer.toString();
+        if (refAllele != null) {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(getDescription());
+            buffer.append("<br>");
+            buffer.append("<i><b>Click mutation for more...</b></i>");
+            return buffer.toString();
+        } else {
+            return getFullDescription();
+        }
     }
+
 
     public boolean hasScore() {
         return false;

@@ -156,7 +156,7 @@ public class MutationParser {
                     }
 
                     String sampleId = tokens[sampleColumn].trim();
-                    String type = tokens[typeColumn];
+                    String type = tokens[typeColumn].trim();
 
                     MultiMap<String, String> attributes = new MultiMap();
                     int n = Math.min(headers.length, tokens.length);
