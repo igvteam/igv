@@ -19,6 +19,7 @@ import org.broad.igv.feature.tribble.UCSCGeneTableCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
     @Test
     public void testLoadBED() throws Exception {
 
-        FeatureCodec codec = new IGVBEDCodec();
+        AsciiFeatureCodec codec = new IGVBEDCodec();
 
         String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
         String path = "sql/unigene.db";
@@ -71,7 +72,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadUCSC() throws Exception {
-        FeatureCodec codec = new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
+        AsciiFeatureCodec codec = new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
 
         String host = "genome-mysql.cse.ucsc.edu";
 

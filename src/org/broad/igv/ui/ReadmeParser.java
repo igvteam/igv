@@ -1,10 +1,8 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.util.FileUtils;
-import org.broad.tribble.readers.BufferedLineReader;
 
 import java.io.*;
-import java.net.URL;
 import java.util.regex.Pattern;
 
 /**

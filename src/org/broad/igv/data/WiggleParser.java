@@ -138,6 +138,7 @@ public class WiggleParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
+        int lineNumber = 0;
 
         try {
             reader = ParsingUtils.openAsciiReader(resourceLocator);
@@ -149,6 +150,7 @@ public class WiggleParser {
             int position = -1;
 
             while ((nextLine = reader.readLine()) != null) {
+                lineNumber++;
 
                 if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith("browser") || nextLine.trim().length() == 0) {
                     continue;
@@ -203,7 +205,7 @@ public class WiggleParser {
                                     log.error("Column 2  is not a number");
 
                                     throw new ParserException("Column 2 must be numeric." + " Found: " + tokens[1],
-                                            reader.getCurrentLineNumber(), nextLine);
+                                            lineNumber, nextLine);
                                 }
                                 int startPosition = endPosition - 1;
 
@@ -240,7 +242,7 @@ public class WiggleParser {
 
                                     throw new ParserException("Column (startColumn + 1) must be numeric." + " Found: " +
                                             tokens[startColumn],
-                                            reader.getCurrentLineNumber(), nextLine);
+                                            lineNumber, nextLine);
                                 }
 
                                 if (startPosition < lastPosition) {
@@ -261,7 +263,7 @@ public class WiggleParser {
 
                                     throw new ParserException("Column " + (endColumn + 1) +
                                             " must be numeric." + " Found: " + tokens[endColumn],
-                                            reader.getCurrentLineNumber(), nextLine);
+                                            lineNumber, nextLine);
                                 }
 
                                 data.add(Float.parseFloat(tokens[dataColumn].trim()));
@@ -294,7 +296,7 @@ public class WiggleParser {
 
                     } catch (NumberFormatException e) {
                         log.error(e);
-                        throw new ParserException(e.getMessage(), reader.getCurrentLineNumber(), nextLine);
+                        throw new ParserException(e.getMessage(), lineNumber, nextLine);
                     }
 
 
@@ -308,8 +310,8 @@ public class WiggleParser {
         } catch (ParserException pe) {
             throw (pe);
         } catch (Exception e) {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && lineNumber != 0) {
+                throw new ParserException(e.getMessage(), e, lineNumber, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

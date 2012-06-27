@@ -35,7 +35,7 @@ public class AbstractHeadedTest {
     protected static Genome genome;
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 1e6);
+    public TestRule testTimeout = new Timeout((int) 60000);
 
     @BeforeClass
     public static void setUpClass() throws Exception {

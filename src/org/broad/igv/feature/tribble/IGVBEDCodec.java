@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  * Time: 10:15:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IGVBEDCodec extends UCSCCodec {
+public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
 
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
@@ -40,10 +41,12 @@ public class IGVBEDCodec extends UCSCCodec {
     Genome genome;
 
     public IGVBEDCodec() {
+        super(BasicFeature.class);
         this.genome = null;
     }
 
     public IGVBEDCodec(Genome genome) {
+        super(BasicFeature.class);
         this.genome = genome;
     }
 
@@ -86,7 +89,7 @@ public class IGVBEDCodec extends UCSCCodec {
         // Name
         if (tokenCount > 3) {
             if (gffTags) {
-                Map<String, String> atts = new LinkedHashMap();
+                MultiMap<String, String> atts = new MultiMap<String, String>();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
                 //if (name == null) {

@@ -160,7 +160,7 @@ public class IGVDatasetParser {
 
         float dataMin = 0;
         float dataMax = 0;
-        //long filePosition = 0;
+
         InputStream is = null;
         AsciiLineReader reader = null;
         String nextLine = null;
@@ -169,6 +169,9 @@ public class IGVDatasetParser {
         String[] headings = null;
         WholeGenomeData wgData = null;
         int nRows = 0;
+
+        int headerRows = 0;
+        int count = 0;
 
         boolean logNormalized;
         try {
@@ -194,6 +197,8 @@ public class IGVDatasetParser {
             // Parse comments and directives, if any
             nextLine = reader.readLine();
             while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
+                headerRows++;
+
                 if (nextLine.length() > 0) {
                     parseDirective(nextLine, dataset);
                 }
@@ -227,7 +232,6 @@ public class IGVDatasetParser {
 
             // Update
             int updateCount = 5000;
-            int count = 0;
             long lastPosition = 0;
             while ((nextLine = reader.readLine()) != null) {
 
@@ -266,7 +270,7 @@ public class IGVDatasetParser {
                         log.error("Column " + tokens[startColumn] + " is not a number");
                         throw new ParserException("Column " + (startColumn + 1) +
                                 " must contain an integer value." + " Found: " + tokens[startColumn],
-                                reader.getCurrentLineNumber(), nextLine);
+                                count + headerRows, nextLine);
                     }
 
                     int length = 1;
@@ -278,7 +282,7 @@ public class IGVDatasetParser {
                             log.error("Column " + tokens[endColumn] + " is not a number");
                             throw new ParserException("Column " + (endColumn + 1) +
                                     " must contain an integer value." + " Found: " + tokens[endColumn],
-                                    reader.getCurrentLineNumber(), nextLine);
+                                    count + headerRows, nextLine);
                         }
                     }
 
@@ -286,7 +290,7 @@ public class IGVDatasetParser {
 
                     if (wgData.locations.size() > 0 && wgData.locations.get(wgData.locations.size() - 1) > location) {
                         throw new ParserException("File is not sorted, .igv and .cn files must be sorted by start position." +
-                                " Use igvtools (File > Run igvtools..) to sort the file.", reader.getCurrentLineNumber());
+                                " Use igvtools (File > Run igvtools..) to sort the file.", count + headerRows);
                     }
 
                     wgData.locations.add(location);
@@ -323,8 +327,8 @@ public class IGVDatasetParser {
             throw new RuntimeException(e);
         } catch (Exception e) {
             log.error("Exception when loading: " + dataResourceLocator.getPath(), e);
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && (count + headerRows != 0) ) {
+                throw new ParserException(e.getMessage(), e, count + headerRows, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

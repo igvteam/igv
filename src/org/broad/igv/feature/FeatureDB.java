@@ -25,6 +25,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -70,7 +71,7 @@ public class FeatureDB {
     }
 
     private static void addByAttributes(IGVFeature igvFeature) {
-        Map<String, String> attributes = igvFeature.getAttributes();
+        MultiMap<String, String> attributes = igvFeature.getAttributes();
         if (attributes != null) {
             for (String value : attributes.values()) {
                 if (value.length() < 20) {

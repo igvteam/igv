@@ -20,8 +20,8 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.vcf.VCFVariant;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.LineReader;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
@@ -29,21 +29,24 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
  * @author Jim Robinson
  * @date Aug 1, 2011
  */
-public class VCFWrapperCodec implements FeatureCodec {
+public class VCFWrapperCodec extends AsciiFeatureCodec<VCFVariant> {
 
-    FeatureCodec wrappedCodec;
+    AsciiFeatureCodec wrappedCodec;
     Genome genome;
 
-    public VCFWrapperCodec(FeatureCodec wrappedCodec, Genome genome) {
+    public VCFWrapperCodec(AsciiFeatureCodec wrappedCodec, Genome genome) {
+        super(VCFVariant.class);
         this.wrappedCodec = wrappedCodec;
         this.genome = genome;
     }
 
+    @Override
     public Feature decodeLoc(String line) {
         return wrappedCodec.decodeLoc(line);
     }
 
-    public Feature decode(String line) {
+    @Override
+    public VCFVariant decode(String line) {
         VariantContext vc = (VariantContext) wrappedCodec.decode(line);
         if(vc == null){
             return null;
@@ -53,10 +56,7 @@ public class VCFWrapperCodec implements FeatureCodec {
 
     }
 
-    public Class getFeatureType() {
-        return VCFVariant.class;
-    }
-
+    @Override
     public Object readHeader(LineReader reader) {
         return wrappedCodec.readHeader(reader);
     }
@@ -74,6 +74,7 @@ public class VCFWrapperCodec implements FeatureCodec {
      * @param path the file to test for parsability with this codec
      * @return true if potentialInput can be parsed, false otherwise
      */
+    @Override
     public boolean canDecode(String path) {
         return path.endsWith(".vcf") || path.endsWith(".vcf4");
     }

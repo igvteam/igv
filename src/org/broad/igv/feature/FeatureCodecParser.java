@@ -19,6 +19,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 
@@ -34,9 +35,9 @@ import org.broad.tribble.FeatureCodec;
  * Date: 2012/01/26
  */
 public class FeatureCodecParser extends AbstractFeatureParser {
-    private FeatureCodec codec;
+    private AsciiFeatureCodec codec;
 
-    public FeatureCodecParser(FeatureCodec codec, Genome genome) {
+    public FeatureCodecParser(AsciiFeatureCodec codec, Genome genome) {
         this.codec = codec;
     }
 

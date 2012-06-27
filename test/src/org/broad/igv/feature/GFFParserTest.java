@@ -52,7 +52,5 @@ public class GFFParserTest {
 
         Exon exon = bf.getExons().get(0);
         assertNotNull(exon.getAttributes());
-
-
     }
 }

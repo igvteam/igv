@@ -54,10 +54,10 @@ public class FastaIndexedSequenceTest {
 
         // TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT;
         Sequence igvSequence = new IGVSequence(chr02qSeqPath);
-        byte[] expectedBytes = igvSequence.readSequence(chr, start, end);
+        byte[] expectedBytes = igvSequence.getSequence(chr, start, end);
         String expectedSequence = new String(expectedBytes);
 
-        byte[] bytes = fastaSequence.readSequence(chr, start, end);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         String seq = new String(bytes);
         assertEquals(expectedSequence, seq);
     }
@@ -71,7 +71,7 @@ public class FastaIndexedSequenceTest {
         int chrLen = 8059593;
         int start = chrLen - 10;
         int end = chrLen + 10;
-        byte[] bytes = fastaSequence.readSequence(chr, start, end);
+        byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
 
         byte[] expectedSequence = "TTTTTCCCAG".getBytes();
@@ -92,7 +92,7 @@ public class FastaIndexedSequenceTest {
         int end = 300;
         FastaIndexedSequence sequence = new FastaIndexedSequence(fasta);
 
-        byte[] bytes = sequence.readSequence(chr, start, end);
+        byte[] bytes = sequence.getSequence(chr, start, end);
 
         assertEquals(expectedSequence, new String(bytes));
 
@@ -110,15 +110,15 @@ public class FastaIndexedSequenceTest {
         FastaIndexedSequence sequence = new FastaIndexedSequence(fasta);
 
 
-        byte[] bytes = sequence.readSequence(chr, start, end);
+        byte[] bytes = sequence.getSequence(chr, start, end);
 
         for (int i = 60; i < 100; i++) {
 
         }
 
         FastaIndexedSequence s = new FastaIndexedSequence(fasta);
-        SequenceHelper sequenceHelper = new SequenceHelper(s);
-        bytes = sequenceHelper.getSequence(chr, start, end, end);
+        SequenceWrapper sequenceHelper = new SequenceWrapper(s);
+        bytes = sequenceHelper.getSequence(chr, start, end);
         for (int i = 60; i < 100; i++) {
             // ?????? Not sure what to test here
         }

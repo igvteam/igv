@@ -44,7 +44,7 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
     }
 
     public Map<String, Object> getAttributes() {
-        return vcfGenotype.getAttributes();
+        return vcfGenotype.getExtendedAttributes();
     }
 
     public String getGenotypeString() {
@@ -52,7 +52,7 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
     }
 
     public double getPhredScaledQual() {
-        return vcfGenotype.getPhredScaledQual();
+        return vcfGenotype.getGQ();
     }
 
     public String getType() {

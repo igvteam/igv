@@ -102,12 +102,25 @@ public class BasicFeature extends AbstractFeature {
         this.identifier = identifier;
     }
 
-
-    // TODO -- why are these set?  they are never used.
     public void setParentIds(String[] parentIds) {
         this.parentIds = parentIds;
     }
 
+    public String[] getParentIds() {
+        return parentIds;
+    }
+
+    @Override
+    public void setStart(int start) {
+        super.setStart(start);
+        this.thickStart = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        super.setEnd(end);
+        this.thickEnd = end;
+    }
 
     /**
      * Defined in interface {@linkplain LocusScore}
@@ -215,14 +228,6 @@ public class BasicFeature extends AbstractFeature {
 
     public int getExonCount() {
         return (exons == null) ? 0 : exons.size();
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public void setURL(String link) {

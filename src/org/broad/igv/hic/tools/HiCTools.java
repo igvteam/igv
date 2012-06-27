@@ -27,6 +27,8 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 
@@ -72,22 +74,41 @@ public class HiCTools {
             AsciiToBinConverter.convertBack(ifile, ofile);
         } else if (args[0].equals("printmatrix")) {
             if (args.length < 5) {
-                System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize");
+                System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize [oe]");
             }
             String file = args[1];
             String chr1 = args[2];
             String chr2 = args[3];
             String binSizeSt = args[4];
+            boolean observed = true;
+            if (args.length == 6)
+                observed = false;
             int binSize = 0;
             try {
                 binSize = Integer.parseInt(binSizeSt);
             } catch (NumberFormatException e) {
                 System.err.println("Integer expected.  Found: " + binSizeSt);
             }
-            dumpMatrix(file, chr1, chr2, binSize);
+            dumpMatrix(file, chr1, chr2, binSize, observed);
 
 
-        } else if (args[0].equals("pre")) {
+        } else if (args[0].equals("eigenvector")) {
+            if (args.length < 4) {
+                System.err.println("Usage: hictools eigenvector hicFile chr binsize");
+            }
+            String file = args[1];
+            String chr = args[2];
+            String binSizeSt = args[3];
+            int binSize = 0;
+            try {
+                binSize = Integer.parseInt(binSizeSt);
+            } catch (NumberFormatException e) {
+                System.err.println("Integer expected.  Found: " + binSizeSt);
+                System.exit(-1);
+            }
+            calculateEigenvector(file, chr, binSize);
+        }
+        else if (args[0].equals("pre")) {
             String genomeId = "";
             try {
                 genomeId = args[3];
@@ -234,14 +255,95 @@ public class HiCTools {
         }
     }
 
+    static void calculateEigenvector(String file, String chr, int binsize) throws IOException {
+        if (!file.endsWith("hic")) {
+            System.err.println("Only 'hic' files are supported");
+            System.exit(-1);
 
-    static void dumpMatrix(String file, String chr1, String chr2, int binsize) throws IOException {
+        }
+        // Load the expected density function, if it exists.
+        Map<Integer, DensityFunction> zoomToDensityMap = null;
+        String densityFile = file + ".densities";
+        if (FileUtils.resourceExists(densityFile)) {
+            InputStream is = null;
+            try {
+                is = ParsingUtils.openInputStream(densityFile);
+                zoomToDensityMap = DensityUtil.readDensities(is);
+
+            } finally {
+                if (is != null) is.close();
+            }
+        }
+        else {
+            System.err.println("Densities file doesn't exist");
+            System.exit(-1);
+        }
+
+        SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
+        Dataset dataset = (new DatasetReader(ss)).read();
+        Chromosome[] tmp = dataset.getChromosomes();
+
+        Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
+        for (Chromosome c : tmp) {
+            chromosomeMap.put(c.getName(), c);
+        }
+
+        if (!chromosomeMap.containsKey(chr)) {
+            System.err.println("Unknown chromosome: " + chr);
+            System.exit(-1);
+        }
+        int zoomIdx = 0;
+        boolean found = false;
+        for (; zoomIdx < HiCGlobals.zoomBinSizes.length; zoomIdx++) {
+            if (HiCGlobals.zoomBinSizes[zoomIdx] == binsize) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            System.err.println("Unknown bin size: " + binsize);
+            System.exit(-1);
+        }
+
+        Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr), chromosomeMap.get(chr));
+        MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
+        final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
+        System.out.println("Computing eigenvector");
+        double[] eigenvector = zd.computeEigenvector(df, 0);
+        for (double ev : eigenvector)
+            System.out.print(ev + " ");
+        System.out.println();
+        System.out.println("Done");
+    }
+
+    static void dumpMatrix(String file, String chr1, String chr2, int binsize, boolean observed) throws IOException {
 
         if (!file.endsWith("hic")) {
             System.err.println("Only 'hic' files are supported");
             System.exit(-1);
 
         }
+        // Load the expected density function, if it exists.
+        Map<Integer, DensityFunction> zoomToDensityMap = null;
+        if (!observed) {
+            String densityFile = file + ".densities";
+            if (FileUtils.resourceExists(densityFile)) {
+                InputStream is = null;
+                try {
+                    is = ParsingUtils.openInputStream(densityFile);
+                    zoomToDensityMap = DensityUtil.readDensities(is);
+
+                } finally {
+                    if (is != null) is.close();
+                }
+            }
+            else {
+                System.err.println("Densities file doesn't exist");
+                System.exit(-1);
+            }
+        }
+
         SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
         Dataset dataset = (new DatasetReader(ss)).read();
         Chromosome[] tmp = dataset.getChromosomes();
@@ -274,8 +376,12 @@ public class HiCTools {
 
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
-
-        zd.dump();
+        if (!observed) {
+            final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
+            zd.dumpOE(df);
+        }
+        else
+            zd.dump();
     }
 
 

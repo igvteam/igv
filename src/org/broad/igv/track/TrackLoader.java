@@ -417,15 +417,8 @@ public class TrackLoader {
             AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
             Iterable<Feature> iter = bfs.iterator();
             Object header = bfs.getHeader();
-            TrackProperties trackProperties = null;
-            try {
-                FeatureFileHeader ffHeader = (FeatureFileHeader) header;
-                if (ffHeader != null) {
-                    trackProperties = ffHeader.getTrackProperties();
-                }
-            } catch (ClassCastException e) {
-                //Header is some other type, just don't include it
-            }
+            TrackProperties trackProperties = getTrackProperties(header);
+
             List<FeatureTrack> tracks = AbstractFeatureParser.loadTracks(iter, locator, genome, trackProperties);
             newTracks.addAll(tracks);
         } else if (MutationParser.isMutationAnnotationFile(locator)) {
@@ -1220,8 +1213,22 @@ public class TrackLoader {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
+        // The vcf extension is for performance, it doesn't matter which codec is returned all vcf files
+        // are indexable.
+        return path.endsWith(".vcf") || CodecFactory.getCodec(path, genome) != null;
+    }
 
-        return CodecFactory.getCodec(path, genome) != null;
+    public static TrackProperties getTrackProperties(Object header){
+        try {
+            FeatureFileHeader ffHeader = (FeatureFileHeader) header;
+            if (ffHeader != null) {
+                return ffHeader.getTrackProperties();
+            }else{
+                return null;
+            }
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
 

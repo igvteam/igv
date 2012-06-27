@@ -30,11 +30,12 @@ import org.broad.igv.feature.tribble.UCSCCodec;
  * Time: 10:15:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PeakCodec extends UCSCCodec {
+public class PeakCodec extends UCSCCodec<Peak> {
 
     Genome genome;
 
     public PeakCodec(Genome genome) {
+        super(Peak.class);
         this.genome = genome;
     }
 

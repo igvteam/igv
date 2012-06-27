@@ -22,6 +22,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
@@ -316,7 +317,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             //Credit Michael Poidinger and Solomonraj Wilson, Singapore Immunology Network.
             Float exprValue = null;
 
-            Map<String, String> attributes = exon.getAttributes();
+            MultiMap<String, String> attributes = exon.getAttributes();
             if (attributes != null && attributes.containsKey("expr")) {
                 try {
                     exprValue = Float.parseFloat(attributes.get("expr"));

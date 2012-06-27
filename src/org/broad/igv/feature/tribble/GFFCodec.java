@@ -13,23 +13,26 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TrackProperties;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
+import org.broad.igv.util.collections.CI;
+import org.broad.igv.util.collections.MultiMap;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Notes from GFF3 spec
@@ -54,29 +57,76 @@ import java.util.Map;
  * Parent can *only* be used to indicate a partof
  * relationship.
  */
-public class GFFCodec implements org.broad.tribble.FeatureCodec {
+public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     private static Logger log = Logger.getLogger(GFFCodec.class);
 
-    public enum Version {
-        GFF2, GFF3
+    public static CI.CIHashSet exonTerms = new CI.CIHashSet();
+    public static CI.CIHashSet utrTerms = new CI.CIHashSet();
+    public static CI.CIHashSet geneParts = new CI.CIHashSet();
+    static CI.CIHashSet ignoredTypes = new CI.CIHashSet();
+
+    static {
+        utrTerms.add("five_prime_UTR");
+        utrTerms.add("three_prime_UTR");
+        utrTerms.add("5'-utr");
+        utrTerms.add("3'-utr");
+        utrTerms.add("5utr");
+        utrTerms.add("3utr");
     }
 
-    static String[] nameFields = {"Name", "name", "gene", "primary_name", "Locus", "locus",
-            "alias", "systematic_id", "ID"};
+    static {
+        exonTerms.addAll(utrTerms);
+        exonTerms.add("exon");
+        exonTerms.add("coding_exon");
+        exonTerms.add("CDS");
+    }
+
+
+    static {
+        geneParts.addAll(exonTerms);
+        geneParts.add("transcript");
+        geneParts.add("processed_transcript");
+        geneParts.add("mrna");
+        geneParts.add("promoter");
+        geneParts.add("intron");
+        geneParts.add("CDS_parts");
+
+    }
+
+    static {
+        ignoredTypes.add("start_codon");
+        ignoredTypes.add("stop_codon");
+        ignoredTypes.add("Contig");
+        ignoredTypes.add("RealContig");
+        ignoredTypes.add("intron");
+    }
+
+    private TrackProperties trackProperties = null;
+    CI.CIHashSet featuresToHide = new CI.CIHashSet();
 
 
     FeatureFileHeader header;
     Helper helper;
     Genome genome;
 
+    public enum Version {
+        GFF2, GFF3
+    }
+
+    static String[] nameFields = {"name", "gene", "primary_name", "locus",
+            "alias", "systematic_id", "ID"};
+
+
     public GFFCodec(Genome genome) {
+        super(Feature.class);
         // Assume GFF2 until shown otherwise
         helper = new GFF2Helper();
         this.genome = genome;
     }
 
     public GFFCodec(Version version, Genome genome) {
+        super(Feature.class);
         this.genome = genome;
         if (version == Version.GFF2) {
             helper = new GFF2Helper();
@@ -85,31 +135,43 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         }
     }
 
+    public void readHeaderLine(String line){
+        header = new FeatureFileHeader();
+        if (line.startsWith("#track") || line.startsWith("##track")) {
+            trackProperties = new TrackProperties();
+            ParsingUtils.parseTrackLine(line, trackProperties);
+            header.setTrackProperties(trackProperties);
+        } else if (line.startsWith("##gff-version") && line.endsWith("3")) {
+            helper = new GFF3Helper();
+        }else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
+            helper.setUrlDecoding(false);
+        } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
+            String[] kv = line.split("=");
+            if (kv.length > 1) {
+                featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
+            }
+        } else if (line.startsWith("#displayName") || line.startsWith("##displayName")) {
+            String[] nameTokens = line.split("=");
+            if (nameTokens.length < 2) {
+                helper.setNameFields(null);
+            } else {
+                String[] fields = nameTokens[1].split(",");
+                helper.setNameFields(fields);
+            }
+        }
+    }
+
     public Object readHeader(LineReader reader) {
 
         header = new FeatureFileHeader();
         String line;
-        TrackProperties trackProperties = null;
         int nLines = 0;
         try {
             while ((line = reader.readLine()) != null) {
 
                 if (line.startsWith("#")) {
                     nLines++;
-                    if (line.startsWith("##gff-version") && line.endsWith("3")) {
-                        helper = new GFF3Helper();
-                    } else if (line.startsWith("#track") || line.startsWith("##track")) {
-                        trackProperties = new TrackProperties();
-                        ParsingUtils.parseTrackLine(line, trackProperties);
-                    } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
-                        helper.setUrlDecoding(false);
-                    } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
-                        String[] kv = line.split("=");
-                        if (kv.length > 1) {
-                            header.setFeaturesToHide(Arrays.asList(kv[1].split(",")));
-                        }
-                    }
-                    continue;
+                    readHeaderLine(line);
                 } else {
                     break;
                 }
@@ -164,68 +226,73 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             return null;
         }
 
-        // The type
-        String featureType = new String(tokens[2].trim());
-
-
-        String chrToken = tokens[0];  //genome.getChromosomeAlias(tokens[0]);
+        String chrToken = tokens[0].trim();
+        String featureType = tokens[2].trim();
         String chromosome = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
         int start;
         int end;
+        int col = 3;
         try {
-            start = Integer.parseInt(tokens[3]) - 1;
+            start = Integer.parseInt(tokens[col]) - 1;
+            col++;
+            end = Integer.parseInt(tokens[col]);
         } catch (NumberFormatException ne) {
-            throw new DataLoadException("Column 4 must contain a numeric value", line);
-        }
-
-        try {
-            end = Integer.parseInt(tokens[4]);
-        } catch (NumberFormatException ne) {
-            throw new DataLoadException("Column 5 must contain a numeric value", line);
+            String msg = String.format("Column %d must contain a numeric value. %s", col + 1, ne.getMessage());
+            throw new ParserException(msg, -1, line);
         }
 
         Strand strand = convertStrand(tokens[6]);
-
         String attributeString = tokens[8];
 
-        LinkedHashMap<String, String> attributes = new LinkedHashMap();
-        //attributes.put("Type", featureType);
+        //CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
+        MultiMap<String, String> attributes = new MultiMap<String, String>();
+
         helper.parseAttributes(attributeString, attributes);
 
         String description = getDescription(attributes, featureType);
-
         String id = helper.getID(attributes);
-
         String[] parentIds = helper.getParentIds(attributes, attributeString);
 
+        if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
+                parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
+
+            //Somewhat tacky, but we need to store the phase somewhere in the feature
+            String phaseString = tokens[7].trim();
+            //String old = attributes.put(GFFFeatureSource.PHASE_STRING, phaseString);
+            //if(old != null){
+            //    log.debug("phase string attribute was overwritten internally; old value was: " + old);
+            //}
+        }
+
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
+
         f.setName(getName(attributes));
         f.setType(featureType);
         f.setDescription(description);
         f.setIdentifier(id);
         f.setParentIds(parentIds);
+        f.setAttributes(attributes);
 
         if (attributes.containsKey("color")) {
             f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
         }
-        if (attributes.containsKey("Color")) {
-            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
+
+
+        if (featuresToHide.contains(featureType)) {
+            if (IGV.hasInstance()) FeatureDB.addFeature(f);
+            return null;
         }
+
         return f;
 
     }
 
-    public Class getFeatureType() {
-        return Feature.class;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public Object getHeader() {
-        return header;  //To change body of implemented methods use File | Settings | File Templates.
+        return header;
     }
-
 
     private Strand convertStrand(String strandString) {
         Strand strand = Strand.NONE;
@@ -239,7 +306,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
     }
 
 
-    String getName(Map<String, String> attributes) {
+    String getName(MultiMap<String, String> attributes) {
 
         if (attributes == null || attributes.size() == 0) {
             return null;
@@ -249,54 +316,61 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
                 return attributes.get(nf);
             }
         }
-
-        // If still nothing return the first attribute value
-        return attributes.values().iterator().next();
+        return "";
     }
-
-    protected interface Helper {
-
-        String[] getParentIds(Map<String, String> attributes, String attributeString);
-
-        void parseAttributes(String attributeString, Map<String, String> map);
-
-        String getID(Map<String, String> attributes);
-
-        void setUrlDecoding(boolean b);
-
-    }
-
 
     static StringBuffer buf = new StringBuffer();
 
-    static String getDescription(Map<String, String> attributes, String type) {
+    static String getDescription(MultiMap<String, String> attributes, String type) {
         buf.setLength(0);
         buf.append(type);
         buf.append("<br>");
-        for (Map.Entry<String, String> att : attributes.entrySet()) {
-            String attValue = att.getValue().replaceAll(";", "<br>");
-            buf.append(att.getKey());
-            buf.append(" = ");
-            buf.append(attValue);
-            buf.append("<br>");
-        }
-
-        String description = buf.toString();
-
-        return description;
+        attributes.printHtml(buf, 100);
+        return buf.toString();
     }
 
-    class GFF2Helper implements Helper {
 
-        String[] idFields = {"systematic_id", "ID", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
+    protected interface Helper {
 
+        String[] getParentIds(MultiMap<String, String> attributes, String attributeString);
+
+        void parseAttributes(String attributeString, MultiMap<String, String> map);
+
+        String getID(MultiMap<String, String> attributes);
+
+        void setUrlDecoding(boolean b);
+
+        String getName(MultiMap<String, String> attributes);
+
+        void setNameFields(String[] fields);
+
+    }
+
+    public static class GFF2Helper implements Helper {
+
+        //TODO Almost identical
+        static String[] idFields = {"systematic_id", "ID", "transcript_id", "name", "primary_name", "gene", "locus", "alias"};
+        static String[] DEFAULT_NAME_FIELDS = {"gene", "name", "primary_name", "locus", "alias", "systematic_id", "ID"};
+
+        private String[] nameFields;
+
+        GFF2Helper() {
+            this(DEFAULT_NAME_FIELDS);
+        }
+
+        GFF2Helper(String[] nameFields) {
+            if (nameFields != null) {
+                this.nameFields = nameFields;
+            }
+
+        }
 
         public void setUrlDecoding(boolean b) {
-            // Ignored,  GFF files are never url DECODED
+            // Ignored,  GFF2 files are never url DECODED
         }
 
 
-        public void parseAttributes(String description, Map<String, String> kvalues) {
+        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
 
@@ -311,38 +385,25 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         }
 
 
-        public String[] getParentIds(Map<String, String> attributes, String attributeString) {
+        public String[] getParentIds(MultiMap<String, String> attributes, String attributeString) {
 
             String[] parentIds = new String[1];
-            if (attributes.isEmpty()) {
+            if (attributes.size() == 0) {
                 parentIds[0] = attributeString;
             } else {
-                parentIds[0] = attributes.get("id");
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("mRNA");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("systematic_id");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("transcript_id");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("gene");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("transcriptId");
-                }
-                if (parentIds[0] == null) {
-                    parentIds[0] = attributes.get("proteinId");
+                String[] possNames = new String[]{"id", "mrna", "systematic_id", "transcript_id", "gene", "transcriptid", "proteinid"};
+                for(String possName: possNames){
+                    if(attributes.containsKey(possName)){
+                        parentIds[0] = attributes.get(possName);
+                        break;
+                    }
                 }
             }
             return parentIds;
-
         }
 
 
-        public String getID(Map<String, String> attributes) {
+        public String getID(MultiMap<String, String> attributes) {
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
                     return attributes.get(nf);
@@ -350,25 +411,61 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             }
             return getName(attributes);
         }
+
+        public String getName(MultiMap<String, String> attributes) {
+
+            if (attributes.size() > 0 && nameFields != null) {
+                for (String nf : nameFields) {
+                    if (attributes.containsKey(nf)) {
+                        return attributes.get(nf);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public void setNameFields(String[] nameFields) {
+            this.nameFields = nameFields;
+        }
+
     }
 
-    class GFF3Helper implements Helper {
+    public static class GFF3Helper implements Helper {
 
-
+        static String[] DEFAULT_NAME_FIELDS = {"Name", "Alias", "ID", "gene", "locus"};
         private boolean useUrlDecoding = true;
 
+        private String[] nameFields;
 
-        public String[] getParentIds(Map<String, String> attributes, String ignored) {
+        public GFF3Helper() {
+            this(DEFAULT_NAME_FIELDS);
+        }
+
+        GFF3Helper(String[] nameFields) {
+            if (nameFields != null) {
+                this.nameFields = nameFields;
+            }
+
+        }
+
+
+        public String[] getParentIds(MultiMap<String, String> attributes, String ignored) {
             String parentIdString = attributes.get("Parent");
             if (parentIdString != null) {
-                return attributes.get("Parent").split(",");
+                return parentIdString.split(",");
             } else {
                 return null;
             }
         }
 
-
-        public void parseAttributes(String description, Map<String, String> kvalues) {
+        /**
+         * Parse the column 9 attributes.  Attributes are separated by semicolons.
+         *
+         * @param description
+         * @param kvalues
+         */
+        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
             for (String kv : kvPairs) {
@@ -382,6 +479,10 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
                     if (useUrlDecoding) {
                         key = StringUtils.decodeURL(key);
                         value = StringUtils.decodeURL(value);
+                        // Limit values to 50 characters
+                        if (value.length() > 50) {
+                            value = value.substring(0, 50) + " ...";
+                        }
                     }
                     kvalues.put(key, value);
                 } else {
@@ -394,10 +495,26 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             this.useUrlDecoding = useUrlDecoding;
         }
 
+        public String getName(MultiMap<String, String> attributes) {
 
-        public String getID(Map<String, String> attributes) {
-            String id = attributes.get("ID");
-            return id;
+            if (attributes.size() > 0 && nameFields != null) {
+                for (String nf : nameFields) {
+                    if (attributes.containsKey(nf)) {
+                        return attributes.get(nf);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public String getID(MultiMap<String, String> attributes) {
+            return attributes.get("ID");
+        }
+
+        public void setNameFields(String[] nameFields) {
+            this.nameFields = nameFields;
         }
     }
+
 }

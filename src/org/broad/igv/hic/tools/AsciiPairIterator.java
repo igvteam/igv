@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
  */
 public class AsciiPairIterator implements PairIterator {
 
-    static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
     // Map of name -> index
     private Map<String, Integer> chromosomeOrdinals;
     AlignmentPair nextPair = null;

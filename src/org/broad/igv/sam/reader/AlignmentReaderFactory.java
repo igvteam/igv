@@ -17,7 +17,9 @@
  */
 package org.broad.igv.sam.reader;
 
+import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMReadGroupRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
@@ -30,10 +32,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -178,6 +177,27 @@ public class AlignmentReaderFactory {
             throw new RuntimeException("Error instantiating reader for : " + aFile + " (" + e.toString() + ")");
         }
 
+    }
+
+    /**
+     * @param header
+     * @return Return the set of platforms, uppercase. Will be null iff header is null
+     */
+    public static Set<String> getPlatforms(SAMFileHeader header) {
+        Set<String> platforms = null;
+        if (header != null) {
+            List<SAMReadGroupRecord> readGroups = header.getReadGroups();
+            if (readGroups != null) {
+                platforms = new HashSet<String>();
+                for (SAMReadGroupRecord rg : readGroups) {
+                    String platform = rg.getPlatform();
+                    if (platform != null) {
+                        platforms.add(platform.toUpperCase());
+                    }
+                }
+            }
+        }
+        return platforms;
     }
 
 }

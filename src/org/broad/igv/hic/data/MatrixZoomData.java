@@ -313,27 +313,6 @@ public class MatrixZoomData {
         return sum / count;
     }
 
-    public void computeSum() {
-        List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
-        Collections.sort(blockNumbers);
-        //this.sum = 0;
-        try{
-            java.io.PrintWriter pw = new PrintWriter("chr14_5kb.txt");
-            for (int blockNumber : blockNumbers) {
-                Block b = readBlock(blockNumber);
-                if (b != null) {
-                    for (ContactRecord rec : b.getContactRecords()) {
-                        //this.sum += rec.getCounts();
-                        System.out.println(rec.getX() + " " + rec.getY() + " " + rec.getCounts());
-                    }
-                }
-            }
-        }
-        catch(IOException e) {
-
-        }
-    }
-
     public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
@@ -449,6 +428,34 @@ public class MatrixZoomData {
                 }
             }
         }
+    }
+
+    public void dumpOE(DensityFunction df) {
+        oe = computeOE(df);
+        int rows = oe.getRowDimension();
+        int cols = oe.getColumnDimension();
+        System.out.println(rows + " " + cols);
+        double[][] matrix = oe.getData();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+        rows = pearsons.getRowDimension();
+        cols = pearsons.getColumnDimension();
+        System.out.println(rows + " " + cols);
+        matrix = pearsons.getData();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
     }
 
     private class PearsonsResetNan extends DefaultRealMatrixChangingVisitor {

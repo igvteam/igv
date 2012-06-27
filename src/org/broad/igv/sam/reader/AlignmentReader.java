@@ -44,8 +44,7 @@ public interface AlignmentReader {
 
     /**
      * Return the set of all platforms represented in this file.
-     *
-     * @return set of all platforms.  May return "null"
+     * May return "null"
      */
     Set<String>  getPlatforms();
 

@@ -17,3 +17,17 @@ build/
 # Office Temp Files
 ~$*
 
+
+/igv.jar
+/run.bat
+/make.bat
+/default.keystore
+/web/goby-io-igv.jar
+/web/igv.jar
+/web/keystoreFileName.ks
+/web/batik-codec.jar
+/web/build.xml
+/web/jnlp.template
+/batik-codec.jar
+/goby-io-igv.jar
+/launcher/dist

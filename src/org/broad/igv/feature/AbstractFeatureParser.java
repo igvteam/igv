@@ -27,6 +27,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 
@@ -67,7 +68,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static FeatureParser getInstanceFor(String path, Genome genome) {
-        FeatureCodec codec = getCodec(path, genome);
+        AsciiFeatureCodec codec = getCodec(path, genome);
         if (codec != null) {
             return new FeatureCodecParser(codec, genome);
         } else {
@@ -75,11 +76,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
     }
 
-    private static FeatureCodec getCodec(String path, Genome genome) {
+    private static AsciiFeatureCodec getCodec(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
         return CodecFactory.getCodec(tmp, genome);
     }
-
 
 
     /**
@@ -199,6 +199,8 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>();
         String nextLine = null;
 
+        int maxLogErrors = 10;
+        int nErrors = 0;
         int nLines = 0;
         try {
             while ((nextLine = reader.readLine()) != null) {
@@ -247,9 +249,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                     }
 
                 } catch (NumberFormatException e) {
-
-                    // Expected condition -- for example comments.  don't log as it slows down
-                    // the parsing and is not useful information.
+                    if (nErrors < maxLogErrors) {
+                        log.error("Number format error parsing line: " + nextLine, e);
+                    }
+                    nErrors++;
                 }
             }
         } catch (java.io.EOFException e) {
@@ -268,7 +271,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         // TODO -- why is this test here?  This will break igvtools processing of expression files
         //if (IGV.hasInstance() || Globals.isTesting()) {
-            FeatureDB.addFeatures(features);
+        FeatureDB.addFeatures(features);
         //}
         return features;
     }

@@ -19,6 +19,8 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.util.collections.MultiMap;
+
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public interface IGVFeature extends LocusScore, NamedFeature {
 
     public int getLength();
 
-    public Map<String, String> getAttributes();
+    public MultiMap<String, String> getAttributes();
 
     public boolean contains(IGVFeature feature);
 

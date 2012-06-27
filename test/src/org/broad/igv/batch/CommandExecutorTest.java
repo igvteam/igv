@@ -77,7 +77,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     private void setCheckMaxDepth(int maxDepth) {
         String res = exec.execute("maxDepth " + maxDepth);
         assertFalse(res.contains("ERROR"));
-        int newMaxDepth = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_LEVELS);
+        int newMaxDepth = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_SAMPLING_COUNT);
         assertEquals(maxDepth, newMaxDepth);
 
     }
@@ -135,6 +135,10 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     @Test
     public void testSnapShotJpeg() throws Exception{
         tstSnapshot(outFileBase + ".jpeg");
+    }
+
+    @Test
+    public void testSnapShotJpg() throws Exception{
         tstSnapshot(outFileBase + ".jpg");
     }
 

@@ -73,12 +73,18 @@ public class DRangerParser {
 
         int parseColumn = -1;
         String nextLine = null;
+        int rowCounter = 0;
+
         try {
             reader = ParsingUtils.openAsciiReader(locator);
             setColumns(reader.readLine());
+            rowCounter++;
             while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                int nTokens = tokens.length;
+
+               String[] tokens = Globals.tabPattern.split(nextLine, -1);
+               rowCounter++;
+
+               int nTokens = tokens.length;
                 if (nTokens > pos2Column) {
                     int index = Integer.parseInt(tokens[numColumn]);
 
@@ -124,11 +130,11 @@ public class DRangerParser {
                 }
             }
         } catch (NumberFormatException ne) {
-            throw new ParserException("Column " + parseColumn + " must be a numeric value", reader.getCurrentLineNumber(), nextLine);
+            throw new ParserException("Column " + parseColumn + " must be a numeric value", rowCounter, nextLine);
         } catch (Exception e) {
             log.error("Error parsing dRanger file", e);
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && rowCounter != 0) {
+                throw new ParserException(e.getMessage(), e, rowCounter, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

@@ -1,10 +1,8 @@
 package org.broad.igv.hic.data;
 
-import org.broad.igv.hic.MainWindow;
-
 /**
  * @author jrobinso
- * @date Aug 12, 2010
+ * @since Aug 12, 2010
  */
 public class Matrix {
 

@@ -19,6 +19,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.sam.reader.SamUtils;
+import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.LineReader;
@@ -30,7 +31,7 @@ import org.broad.tribble.util.ParsingUtils;
  * Time: 3:48:18 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SAMCodec implements FeatureCodec {
+public class SAMCodec extends AsciiFeatureCodec {
 
     final static int FLAG_COL = 1;
     final static int READ_UNMAPPED_FLAG = 0x4;
@@ -44,6 +45,10 @@ public class SAMCodec implements FeatureCodec {
 
     // Declare static for effeciency -- note THIS IS NOT THREAD SAFE
     private static String [] fields = new String[NUM_REQUIRED_FIELDS];
+
+    protected SAMCodec() {
+        super(SAMCodec.class);
+    }
 
     public Feature decodeLoc(String line) {
         return decode(line);  //To change body of implemented methods use File | Settings | File Templates.
@@ -68,10 +73,6 @@ public class SAMCodec implements FeatureCodec {
 
         return new Locus(chr, alignmentStart, alignmentEnd);
 
-    }
-
-    public Class getFeatureType() {
-        return SAMCodec.class;
     }
 
     public Object readHeader(LineReader reader) {
