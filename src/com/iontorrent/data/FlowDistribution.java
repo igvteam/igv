@@ -79,6 +79,14 @@ public class FlowDistribution {
         csv = csv.append(nl);
         return csv.toString();
     }
+    public String getReadNames() {
+        StringBuilder names = new StringBuilder();
+        for (ReadInfo ri : readinfos) {
+            names = names.append(ri.getReadName()).append("_");
+        }
+      
+        return names.toString();
+    }
 
     public int[] getBinnedData(int binsize) {
         int maxx = 0;

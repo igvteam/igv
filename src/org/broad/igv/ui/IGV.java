@@ -2342,7 +2342,12 @@ public class IGV {
                     for (String p : tokens) {
                         ResourceLocator rl = new ResourceLocator(p);
                         if (names != null && idx < names.length) {
-                            rl.setName(names[idx]);
+                            String name = names[idx];
+                            int eq = name.indexOf("=");
+                            if (eq > 0) {
+                                name= name.substring(eq+1);
+                            }
+                            rl.setName(name);
                         }
                         rl.setIndexPath(indexFile);
                         locators.add(rl);

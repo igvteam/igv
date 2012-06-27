@@ -254,19 +254,64 @@ public class Main {
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
                 //String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
                 String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
+                firstArg=checkEqualsAndExtractParamter(firstArg);                
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
                             || firstArg.endsWith(".session")) {
                         sessionFile = firstArg;
+
                     } else {
                         dataFileString = firstArg;
                     }
                 }
+                
                 if (nonOptionArgs.length > 1) {
-                    locusString = nonOptionArgs[1];
+                    // check if arg contains = for all args!
+                    for (String arg: nonOptionArgs ) {                        
+                        arg = checkEqualsAndExtractParamter(arg);
+                        if (arg != null) locusString = arg;
+                        
+                    }
+                    
                 }
             }
+        }
+
+        private String checkEqualsAndExtractParamter(String arg) {
+            if (arg == null) return null;
+            int eq = arg.indexOf("=");
+            if (eq > 0) {
+                // we got a key=value
+                String key = arg.substring(0, eq);
+                String val = arg.substring(eq+1);
+                
+                if (key.equalsIgnoreCase("server")) {
+                    PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, val);
+                    log.info("Got server: "+key+"="+val);
+                    return null;
+                }
+                else if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
+                   
+                    if (val.endsWith(".xml") || val.endsWith(".php") || val.endsWith(".php3")
+                            || val.endsWith(".session")) {
+                        log.info("Got session: "+key+"="+val);
+                        sessionFile = val;
+
+                    } else {
+                         log.info("Got dataFileString: "+key+"="+val);
+                        dataFileString = val;
+                    }
+                    return null;
+                }
+                else if (key.equalsIgnoreCase("locus") || key.equalsIgnoreCase("position")) {
+                    log.info("Got locus: "+key+"="+val);
+                    locusString = val;
+                    return null;
+                }
+                return val;
+            }
+            return arg;
         }
 
         public String getBatchFile() {

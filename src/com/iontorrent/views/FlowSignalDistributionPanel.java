@@ -20,6 +20,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.broad.igv.PreferenceManager;
+import org.broad.igv.ui.IGV;
 import org.jfree.chart.ChartFactory;
 
 import org.jfree.chart.ChartPanel;
@@ -44,11 +46,15 @@ import org.jfree.data.xy.XYSeriesCollection;
  */
 public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
+    public static final int TYPE_BAR = 0;
+    public static final int TYPE_LINE = 1;
+    public static final int TYPE_AREA = 2;
+    public static final int TYPE_STACKED = 3;
     private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(FlowSignalDistributionPanel.class);
     /**
      * bar or line chart - only static until we move it into user preferences
      */
-    private static int chart_type = -1;
+    private int chart_type = -1;
     /**
      * The data: key is the flow signal value, such as 654, and the value is how
      * often it was found
@@ -64,7 +70,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
      * in some properties... for now we make it static so that it is remembered
      * between calls
      */
-    private static int binsize;
+    private int binsize;
     /**
      * where user can store .csv data
      */
@@ -100,23 +106,44 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     float dash[] = {8.0f};
     BasicStroke dashedStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER, 8.0f, dash, 0.0f);
-
-    /** max x val in chart */
+    /**
+     * max x val in chart
+     */
     private int maxx;
+
     public FlowSignalDistributionPanel(FlowDistribution distributions[]) {
         this.distributions = distributions;
-        if (chart_type < 0) {
-            chart_type = ChartConfigPanel.TYPE_LINE;
-        }
-        if (binsize < 1) {
-            binsize = 25;
-        }
-        
+
         initComponents();
         recreateChart();
     }
 
+    private void getPreferences() {
+        String type = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_FLOWDIST_CHARTTYPE);
+        if (type == null) {
+            type = "LINE";
+        }
+        if (type.equalsIgnoreCase("LINE")) {
+            chart_type = TYPE_LINE;
+        } else if (type.equalsIgnoreCase("AREA")) {
+            chart_type = TYPE_AREA;
+        } else if (type.equalsIgnoreCase("BAR")) {
+            chart_type = TYPE_BAR;
+        } else if (type.equalsIgnoreCase("STACKED")) {
+            chart_type = TYPE_STACKED;
+        }
+
+        binsize = PreferenceManager.getInstance().getAsInt(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE);
+        if (binsize < 1) {
+            binsize = 25;
+        }
+        if (binsize > 100) {
+            binsize = 100;
+        }
+    }
+
     private void recreateChart() {
+        getPreferences();
         if (distributions == null || distributions.length < 1) {
             JOptionPane.showMessageDialog(this, "I got no flow signal distribution data");
             return;
@@ -175,7 +202,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         // could be another chart option
         // XYSplineRenderer renderer = new XYSplineRenderer();
 
-        if (chart_type == ChartConfigPanel.TYPE_BAR || chart_type == ChartConfigPanel.TYPE_STACKED) {
+        if (chart_type == TYPE_BAR || chart_type == TYPE_STACKED) {
             CategoryDataset dataset = createCategoryDataset();
             freechart = ChartFactory.createBarChart(
                     plotTitle, // chart title
@@ -191,7 +218,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             CategoryPlot plot = freechart.getCategoryPlot();
             plot.setForegroundAlpha(0.5f);
             CategoryItemRenderer renderer;
-            if (chart_type == ChartConfigPanel.TYPE_STACKED) {
+            if (chart_type == TYPE_STACKED) {
                 renderer = new StackedBarRenderer();
                 plot.setRenderer(renderer);
             } else {
@@ -228,13 +255,13 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             AbstractXYItemRenderer renderer = null;
             dataset = createXYDataset();
             XYPlot plot = null;
-            if (chart_type == ChartConfigPanel.TYPE_LINE) {
-                renderer = new XYLineAndShapeRenderer();                
+            if (chart_type == TYPE_LINE) {
+                renderer = new XYLineAndShapeRenderer();
                 plot = new XYPlot(dataset, xax, yax, renderer);
                 freechart = new JFreeChart(plot);
                 plot.setForegroundAlpha(0.75f);
 
-            } else if (chart_type == ChartConfigPanel.TYPE_AREA) {
+            } else if (chart_type == TYPE_AREA) {
                 renderer = new XYAreaRenderer(XYAreaRenderer.AREA_AND_SHAPES);
                 plot = new XYPlot(dataset, xax, yax, renderer);
                 plot.setForegroundAlpha(0.5f);
@@ -242,14 +269,14 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             }
             plot.setDomainGridlinesVisible(true);
             int series = dataset.getSeriesCount();
-          //  plot.setDomainGridlinePaint(Color.gray.darker());  
-            for (int x = 100; x < maxx; x+= 100) {
+            //  plot.setDomainGridlinePaint(Color.gray.darker());  
+            for (int x = 100; x < maxx; x += 100) {
                 final Marker line = new ValueMarker(x);
-                line.setPaint(Color.gray.darker());            
+                line.setPaint(Color.gray.darker());
                 plot.addDomainMarker(line);
             }
-            
-        
+
+
             for (int s = 0; s < series; s++) {
                 char base = distributions[s].getBase();
                 int which = BASES.indexOf(base);
@@ -280,14 +307,21 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
                 renderer.setSeriesPaint(s, c);
             }
         }
-        
+
         xax.setMinorTickCount(1);
         xax.setTickUnit(new NumberTickUnit(50));
-        
+
         xax.setTickMarksVisible(true);
         xax.setMinorTickMarksVisible(true);
         freechart.setTitle(plotTitle);
         String bininfo = "bin size=" + binsize;
+        // also add nr of flows
+
+        int totflows = 0;
+        for (FlowDistribution dist : distributions) {
+            totflows += dist.getNrFlows();
+        }
+        bininfo += ", nr reads=" + totflows;
         if (information
                 == null) {
             freechart.addSubtitle(new TextTitle(bininfo));
@@ -327,7 +361,9 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
     private XYSeries createDataset(FlowDistribution dist) {
         int[] bins = dist.getBinnedData(binsize);
-        if (maxx < dist.getMaxX()) maxx = dist.getMaxX();
+        if (maxx < dist.getMaxX()) {
+            maxx = dist.getMaxX();
+        }
         XYSeries xy = new XYSeries(dist.getName());
         for (int b = 0; b < bins.length; b++) {
             xy.add(b * binsize, bins[b]);
@@ -361,6 +397,13 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         return rinfo.toString();
     }
 
+    private String getReadNames() {
+        StringBuilder rinfo = new StringBuilder();
+        for (int i = 0; i < distributions.length; i++) {
+            rinfo = rinfo.append("_").append(distributions[i].getReadNames());
+        }
+        return rinfo.toString();
+    }
     private void p(String msg) {
         log.info(msg);
     }
@@ -384,6 +427,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         btnSave = new javax.swing.JButton();
         btnConfigure = new javax.swing.JButton();
+        btnTSL = new javax.swing.JButton();
         btnLeft = new javax.swing.JButton();
         btnRight = new javax.swing.JButton();
 
@@ -451,6 +495,18 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         });
         buttonToolBar.add(btnConfigure);
 
+        btnTSL.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/chip_16.png"))); // NOI18N
+        btnTSL.setToolTipText("Open Torrent Scout light in a browser and load the currently shown reads");
+        btnTSL.setFocusable(false);
+        btnTSL.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnTSL.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnTSL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTSLActionPerformed(evt);
+            }
+        });
+        buttonToolBar.add(btnTSL);
+
         btnLeft.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/arrow-left.png"))); // NOI18N
         btnLeft.setToolTipText("move to the next bas on the left");
         btnLeft.setFocusable(false);
@@ -479,18 +535,10 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigureActionPerformed
-        // let user pick bin size
-        ChartConfigPanel config = new ChartConfigPanel();
-        config.setChartType(chart_type);
-        config.setBinSize(binsize);
-        int ans = JOptionPane.showConfirmDialog(this, config,
-                "Chart Option", JOptionPane.OK_CANCEL_OPTION);
-        if (ans != JOptionPane.OK_OPTION) {
-            return;
-        }
-        binsize = config.getBinSize();
-        chart_type = config.getChartType();
-        recreateChart();
+        // let user pick bin sizem chart type etc
+        IGV.getInstance().doViewPreferences();
+        // in case the hide setting was changed, we  have to recompute the distributions again
+        getListener().locationChanged(location);
     }//GEN-LAST:event_btnConfigureActionPerformed
 
     /**
@@ -592,6 +640,44 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         area.setText(readinfo);
         JOptionPane.showMessageDialog(this, new JScrollPane(area), "Read info string (it is already in the clipboard)", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void btnTSLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTSLActionPerformed
+        String server = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_SERVER);
+        String res = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_RESULTS);
+        String bam = null;
+        if (res.endsWith(".bam") ) {
+            bam = res;
+            File f = new File(bam);
+            res = f.getParent().toString();
+            
+        }
+        if (server == null || server.length()<1) server = "ioneast.ite";
+        
+        if (!server.startsWith("http")) server = "http://"+server;
+        
+        
+        String url = server+":8080/TSL?restartApplication";
+        if (res != null && res.length()>0) url += "&res_dir="+res;
+        if (bam != null && bam.length()>0) url += "&bam="+bam;
+        String readnames = this.getReadNames();
+        if (readnames != null && readnames.length()>0) url += "&read_names="+readnames;
+
+        JTextField txt = new JTextField();
+        txt.setText(url);;
+        if (!java.awt.Desktop.isDesktopSupported()) {
+            JOptionPane.showMessageDialog(this, txt, "Please open a browser and paste the url below:", JOptionPane.OK_OPTION);
+            return;
+        }
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        try {
+
+            java.net.URI uri = new java.net.URI(url);
+            desktop.browse(uri);
+            JOptionPane.showMessageDialog(this, "Raw data", "When TSL opens, pick the folder with the raw data to view raw traces\nand specify the .sff file to see ionograms", JOptionPane.OK_OPTION);
+        } catch (Exception e) {
+             JOptionPane.showMessageDialog(this, txt, "Please open a browser and paste the url below:", JOptionPane.OK_OPTION);
+        }
+    }//GEN-LAST:event_btnTSLActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConfigure;
     private javax.swing.JButton btnCopy;
@@ -599,6 +685,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnLeft;
     private javax.swing.JButton btnRight;
     private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnTSL;
     private javax.swing.JToolBar buttonToolBar;
     private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables

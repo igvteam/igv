@@ -98,6 +98,20 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnConfigureActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JButton" name="btnTSL">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/com/iontorrent/views/chip_16.png"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Open Torrent Scout light in a browser and load the currently shown reads"/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTSLActionPerformed"/>
+          </Events>
+        </Component>
         <Component class="javax.swing.JButton" name="btnLeft">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">

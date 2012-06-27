@@ -197,7 +197,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.dataManager = dataManager;
 
         ionTorrent = dataManager.isIonTorrent();
-
+        p("IsIonTorrent = "+ionTorrent);
+        // FOR NOW, SET TO TRUE AS A LOT OF BAM FILES DO NOT HAVE THIS INFO YET!
+        ionTorrent = true;
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
 
@@ -542,29 +544,33 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     p(location+" for read "+alignment.getReadName()+" is at an end, not taking it");
                     continue;
                 }
-                // also throw away positions near the end if we have the same base until the end
-                char baseatpos = (char)alignment.getBase(location);
-                boolean hp = true;
-                for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
-                    if ((char)alignment.getBase(pos) != baseatpos) {
-                        hp = false;
-                        break;
+                // also throw away positions near the end if we have the same base until the end if the user preference is set that way
+                boolean hideFirstHPs = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
+                 
+                if (hideFirstHPs) {
+                    char baseatpos = (char)alignment.getBase(location);
+                    boolean hp = true;
+                    for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
+                        if ((char)alignment.getBase(pos) != baseatpos) {
+                            hp = false;
+                            break;
+                        }
                     }
-                }
-                if (hp) {
-                    p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at START.");                   
-                    continue;
-                }
-                hp = true;
-                for (int pos = location+1; pos < alignment.getAlignmentEnd(); pos++) {
-                    if ((char)alignment.getBase(pos) != baseatpos) {
-                        hp = false;
-                        break;
+                    if (hp) {
+                        p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at START.");                   
+                        continue;
                     }
-                }
-                if (hp) {
-                    p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at END");
-                    continue;                    
+                    hp = true;
+                    for (int pos = location+1; pos < alignment.getAlignmentEnd(); pos++) {
+                        if ((char)alignment.getBase(pos) != baseatpos) {
+                            hp = false;
+                            break;
+                        }
+                    }
+                    if (hp) {
+                        p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at END");
+                        continue;                    
+                    }
                 }
                 AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                 for (int i = 0; i < blocks.length; i++) {
@@ -612,15 +618,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         for (TreeMap<Short, Integer> map : alleletrees) {
             String name = "";
             if (forward && reverse) {
-                name += "both strands";
+                name += "both strand";
             } else if (forward) {
                 name += "forward strand";
             } else {
                 name += "reverse strand";
             }
             char base = bases.charAt(which);
-            name += ", " + base;
-            String info = locus + ", " + nrflows + " flows, " + bases;
+            name += ", " + base+", "+nrflows+" flows";            
+            String info = locus + ", " + bases;
 
             FlowDistribution dist = new FlowDistribution(location, nrflows, map, name, base, forward, reverse, info);
             dist.setReadInfos(allelereadinfos.get(which));

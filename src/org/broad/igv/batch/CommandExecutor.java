@@ -343,6 +343,8 @@ public class CommandExecutor {
 
         // Loop through files
         for (String f : files) {
+            int eq = f.indexOf("=");
+            if (eq > 0)f = f.substring(eq+1);
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
