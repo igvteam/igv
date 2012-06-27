@@ -197,14 +197,14 @@ public class Preprocessor {
      */
     private void calculateDensities(List<String> paths, File densitiesFile) throws IOException {
         // Limit calcs to 10KB
-        int[] gridSizeArray = new int[8];
+        /*int[] gridSizeArray = new int[8];
         for (int i = 0; i < 8; i++) {
-            gridSizeArray[i] = HiCGlobals.zoomBinSizes[i];
-        }
+            gridSizeArray[i] = i];
+        } */
 
-        DensityCalculation[] calcs = new DensityCalculation[gridSizeArray.length];
-        for (int z = 0; z < gridSizeArray.length; z++) {
-            calcs[z] = new DensityCalculation(chromosomes, gridSizeArray[z]);
+        DensityCalculation[] calcs = new DensityCalculation[HiCGlobals.zoomBinSizes.length];
+        for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
+            calcs[z] = new DensityCalculation(chromosomes, HiCGlobals.zoomBinSizes[z]);
         }
 
         for (String path : paths) {
@@ -217,13 +217,13 @@ public class Preprocessor {
                     int dist = Math.abs(pair.getPos1() - pair.getPos2());
 
                     int index = pair.getChr1();
-                    for (int z = 0; z < gridSizeArray.length; z++) {
+                    for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
                         calcs[z].addDistance(index, dist);
                     }
                 }
             }
         }
-        for (int z = 0; z < gridSizeArray.length; z++) {
+        for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
             calcs[z].computeDensity();
         }
 

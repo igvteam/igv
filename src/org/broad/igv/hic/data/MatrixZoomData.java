@@ -430,32 +430,44 @@ public class MatrixZoomData {
         }
     }
 
-    public void dumpOE(DensityFunction df) {
+    public void dumpOE(DensityFunction df, boolean isOE) {
         oe = computeOE(df);
-        int rows = oe.getRowDimension();
-        int cols = oe.getColumnDimension();
-        System.out.println(rows + " " + cols);
-        double[][] matrix = oe.getData();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                System.out.print(matrix[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-        rows = pearsons.getRowDimension();
-        cols = pearsons.getColumnDimension();
-        System.out.println(rows + " " + cols);
-        matrix = pearsons.getData();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                System.out.print(matrix[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
+        if (isOE) {
+        //try {
+          //  PrintWriter pw = new PrintWriter("/broad/aidenlab/neva/output.txt");
 
+
+            int rows = oe.getRowDimension();
+            int cols = oe.getColumnDimension();
+            System.out.println(rows + " " + cols);
+            double[][] matrix = oe.getData();
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    System.out.print(matrix[i][j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+       // }
+       // catch (IOException error) {
+       //     System.err.println("Unable to print to /broad/aidenlab/neva/output.txt: " + error);
+       // }
+        }
+        else {
+
+            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+            int rows = pearsons.getRowDimension();
+            int cols = pearsons.getColumnDimension();
+            System.out.println(rows + " " + cols);
+            double[][] matrix = pearsons.getData();
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    System.out.print(matrix[i][j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
     }
 
     private class PearsonsResetNan extends DefaultRealMatrixChangingVisitor {

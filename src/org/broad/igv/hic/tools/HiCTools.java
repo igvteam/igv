@@ -74,23 +74,23 @@ public class HiCTools {
             AsciiToBinConverter.convertBack(ifile, ofile);
         } else if (args[0].equals("printmatrix")) {
             if (args.length < 5) {
-                System.err.println("Usage: hictools printmatrix hicFile chr1 chr2 binsize [oe]");
+                System.err.println("Usage: hictools printmatrix <observed/oe/pearson> hicFile chr1 chr2 binsize");
+                System.exit(-1);
             }
-            String file = args[1];
-            String chr1 = args[2];
-            String chr2 = args[3];
-            String binSizeSt = args[4];
-            boolean observed = true;
-            if (args.length == 6)
-                observed = false;
+            String type = args[1];
+            String file = args[2];
+            String chr1 = args[3];
+            String chr2 = args[4];
+            String binSizeSt = args[5];
             int binSize = 0;
             try {
                 binSize = Integer.parseInt(binSizeSt);
             } catch (NumberFormatException e) {
                 System.err.println("Integer expected.  Found: " + binSizeSt);
+                System.exit(-1);
             }
-            dumpMatrix(file, chr1, chr2, binSize, observed);
 
+            dumpMatrix(file, chr1, chr2, binSize, type);
 
         } else if (args[0].equals("eigenvector")) {
             if (args.length < 4) {
@@ -309,24 +309,21 @@ public class HiCTools {
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr), chromosomeMap.get(chr));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
         final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
-        System.out.println("Computing eigenvector");
         double[] eigenvector = zd.computeEigenvector(df, 0);
         for (double ev : eigenvector)
             System.out.print(ev + " ");
         System.out.println();
-        System.out.println("Done");
     }
 
-    static void dumpMatrix(String file, String chr1, String chr2, int binsize, boolean observed) throws IOException {
+    static void dumpMatrix(String file, String chr1, String chr2, int binsize, String type) throws IOException {
 
         if (!file.endsWith("hic")) {
             System.err.println("Only 'hic' files are supported");
             System.exit(-1);
-
         }
         // Load the expected density function, if it exists.
         Map<Integer, DensityFunction> zoomToDensityMap = null;
-        if (!observed) {
+        if (type.equals("oe") || type.equals("pearson")) {
             String densityFile = file + ".densities";
             if (FileUtils.resourceExists(densityFile)) {
                 InputStream is = null;
@@ -339,7 +336,7 @@ public class HiCTools {
                 }
             }
             else {
-                System.err.println("Densities file doesn't exist");
+                System.err.println("Densities file doesn't exist, cannot calculate O/E or Pearson's");
                 System.exit(-1);
             }
         }
@@ -360,6 +357,13 @@ public class HiCTools {
             System.err.println("Unknown chromosome: " + chr2);
             System.exit(-1);
         }
+        if (type.equals("oe") || type.equals("pearson")) {
+            if (!chr1.equals(chr2)) {
+                System.err.println("Chromosome " + chr1 + " not equal to Chromosome " + chr2);
+                System.err.println("Currently only intrachromosomal O/E and Pearson's are supported.");
+                System.exit(-1);
+            }
+        }
 
         int zoomIdx = 0;
         boolean found = false;
@@ -376,9 +380,13 @@ public class HiCTools {
 
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
-        if (!observed) {
+        if (type.equals("oe") || type.equals("pearson")) {
             final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
-            zd.dumpOE(df);
+            if (df == null) {
+                System.err.println("Densities not calculated to this resolution.");
+                System.exit(-1);
+            }
+            zd.dumpOE(df, type.equals("oe"));
         }
         else
             zd.dump();
