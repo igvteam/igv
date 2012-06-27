@@ -442,6 +442,20 @@ public class MatrixZoomData {
             }
             System.out.println();
         }
+        System.out.println();
+        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+        rows = pearsons.getRowDimension();
+        cols = pearsons.getColumnDimension();
+        System.out.println(rows + " " + cols);
+        matrix = pearsons.getData();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
     }
 
     private class PearsonsResetNan extends DefaultRealMatrixChangingVisitor {
