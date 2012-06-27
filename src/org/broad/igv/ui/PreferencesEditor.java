@@ -44,7 +44,6 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * @author jrobinso
  */
@@ -2840,7 +2839,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 inputValidated = false;
                 MessageUtils.showMessage("Down-sampling read count must be a positive integer.");
             } else {
-                updatedPreferenceMap.put(PreferenceManager.SAM_MAX_LEVELS, maxLevelString);
+                updatedPreferenceMap.put(PreferenceManager.SAM_SAMPLING_COUNT, maxLevelString);
             }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
@@ -3593,7 +3592,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         
         samMaxWindowSizeField.setText(prefMgr.get(PreferenceManager.SAM_MAX_VISIBLE_RANGE));
         samSamplingWindowField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_WINDOW));
-        samDownsampleCountField.setText(prefMgr.get(PreferenceManager.SAM_MAX_LEVELS));
+        samDownsampleCountField.setText(prefMgr.get(PreferenceManager.SAM_SAMPLING_COUNT));
 
         boolean downsample = prefMgr.getAsBoolean(PreferenceManager.SAM_DOWNSAMPLE_READS);
         downsampleReadsCB.setSelected(downsample);
@@ -3991,7 +3990,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             PreferenceManager.SAM_MAX_VISIBLE_RANGE,
             PreferenceManager.SAM_SHOW_DUPLICATES,
             PreferenceManager.SAM_SHOW_SOFT_CLIPPED,
-            PreferenceManager.SAM_MAX_LEVELS,
+            PreferenceManager.SAM_SAMPLING_COUNT,
             PreferenceManager.SAM_SAMPLING_WINDOW,
             PreferenceManager.SAM_FILTER_FAILED_READS,
             PreferenceManager.SAM_DOWNSAMPLE_READS
