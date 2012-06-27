@@ -97,7 +97,7 @@ public class CommandExecutor {
                     igv.resetSession(null);
                 } else if (cmd.equals("region")) {
                     defineRegion(param1, param2, param3);
-                } else if (cmd.equals("sort")) {
+                } else if (cmd.equalsIgnoreCase("sort")) {
                     sort(param1, param2, param3, param4);
                 } else if (cmd.equals("group")) {
                     group(param1);
@@ -520,14 +520,10 @@ public class CommandExecutor {
                 } catch (NumberFormatException e) {
                     tag = param3;
                 }
-
             }
-            if (location == null) {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), tag);
-            } else {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
-            }
-
+            //Convert from 1-based to 0-based
+            if(location != null) location--;
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
         }
         igv.repaintDataPanels();
     }
@@ -561,7 +557,7 @@ public class CommandExecutor {
         String option = str.toUpperCase();
         try {
             return RegionScoreType.valueOf(option);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
