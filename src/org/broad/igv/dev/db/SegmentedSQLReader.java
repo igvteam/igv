@@ -31,7 +31,8 @@ public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet
     private Genome genome;
 
     public SegmentedSQLReader(ResourceLocator locator, Genome genome) {
-        super(locator, "TABLE???");
+        //TODO Don't hardcode table name, this might note even be right for our target case
+        super(locator, "CNV");
         this.genome = genome;
     }
 
