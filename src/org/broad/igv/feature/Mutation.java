@@ -25,6 +25,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.MultiMap;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -53,7 +54,7 @@ public class Mutation implements IGVFeature {
     String refAllele;
     String altAllele1;
     String altAllele2;
-    private Map<String, String> attributes;
+    private MultiMap<String, String> attributes;
     private String valueString;
 
 
@@ -160,12 +161,7 @@ public class Mutation implements IGVFeature {
             buf.append("Type: ");
             buf.append(mutationType);
             if (attributes != null) {
-                for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                    buf.append("<br>");
-                    buf.append(entry.getKey());
-                    buf.append(": ");
-                    buf.append(entry.getValue());
-                }
+                attributes.printHtml(buf, 100);
             }
             valueString = buf.toString();
         }
@@ -283,11 +279,11 @@ public class Mutation implements IGVFeature {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Map<String, String> getAttributes() {
+    public MultiMap<String, String> getAttributes() {
         return null;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
+    public void setAttributes(MultiMap<String, String> attributes) {
         this.attributes = attributes;
     }
 

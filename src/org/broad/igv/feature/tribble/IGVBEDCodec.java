@@ -15,6 +15,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
@@ -88,7 +89,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         // Name
         if (tokenCount > 3) {
             if (gffTags) {
-                Map<String, String> atts = new LinkedHashMap();
+                MultiMap<String, String> atts = new MultiMap<String, String>();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
                 //if (name == null) {

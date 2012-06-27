@@ -25,6 +25,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -161,7 +162,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         feature.setName(name);
         feature.setIdentifier(name);
 
-        Map<String, String> attributes = new LinkedHashMap<String, String>();
+        MultiMap<String, String> attributes = new MultiMap<String, String>();
         attributes.put("Smith Waterman score", tokens[1]);
         attributes.put("base mismatches per thousand", tokens[2]);
         attributes.put("bases deleted per thousand", tokens[3]);

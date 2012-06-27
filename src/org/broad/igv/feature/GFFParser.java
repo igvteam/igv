@@ -27,7 +27,6 @@ import java.io.*;
 import java.util.*;
 
 /**
- *
  * User: jrobinso
  */
 
@@ -45,7 +44,8 @@ public class GFFParser implements FeatureParser {
                 lowpath.endsWith("gff") || lowpath.endsWith("gtf");
     }
 
-    public GFFParser(String path) { }
+    public GFFParser(String path) {
+    }
 
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
@@ -98,12 +98,17 @@ public class GFFParser implements FeatureParser {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
 
-                if(line.startsWith("#")){
+                if (line.startsWith("#")) {
                     codec.readHeaderLine(line);
-                }
-                Feature f = codec.decode(line);
-                if(f != null){
-                    features.add(f);
+                } else {
+                    try {
+                        Feature f = codec.decode(line);
+                        if (f != null) {
+                            features.add(f);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                 }
             }
 

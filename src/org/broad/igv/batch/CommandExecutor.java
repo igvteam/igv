@@ -77,41 +77,43 @@ public class CommandExecutor {
                 String param3 = args.size() > 3 ? args.get(3) : null;
                 String param4 = args.size() > 4 ? args.get(4) : null;
 
-                if (cmd.equals("echo")) {
+                if (cmd.equalsIgnoreCase("echo")) {
                     result = cmd;
-                } else if (cmd.equals("gotoimmediate")) {
+                } else if (cmd.equalsIgnoreCase("gotoimmediate")) {
                     return gotoImmediate(args);
-                } else if (cmd.equals("goto")) {
+                } else if (cmd.equalsIgnoreCase("goto")) {
                     result = goto1(args);
-                } else if (cmd.equals("snapshotdirectory")) {
+                }else if (cmd.equalsIgnoreCase("gototrack")) {
+                    boolean res = IGV.getInstance().scrollToTrack(param1);
+                    result = res ? "OK" : String.format("Error: Track %s not found", param1);
+                } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
                     result = setSnapshotDirectory(param1);
-
-                } else if (cmd.equals("snapshot")) {
+                } else if (cmd.equalsIgnoreCase("snapshot")) {
                     String filename = param1;
                     result = createSnapshot(filename);
-                } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
+                } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
                     result = load(param1, param2, param3);
-                } else if (cmd.equals("genome") && args.size() > 1) {
+                } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                     result = genome(param1);
-                } else if (cmd.equals("new") || cmd.equals("reset") || cmd.equals("clear")) {
+                } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
                     igv.resetSession(null);
-                } else if (cmd.equals("region")) {
+                } else if (cmd.equalsIgnoreCase("region")) {
                     defineRegion(param1, param2, param3);
-                } else if (cmd.equals("sort")) {
+                } else if (cmd.equalsIgnoreCase("sort")) {
                     sort(param1, param2, param3, param4);
-                } else if (cmd.equals("group")) {
+                } else if (cmd.equalsIgnoreCase("group")) {
                     group(param1);
-                } else if (cmd.equals("collapse")) {
+                } else if (cmd.equalsIgnoreCase("collapse")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     collapse(trackName);
-                } else if (cmd.equals("expand")) {
+                } else if (cmd.equalsIgnoreCase("expand")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     expand(trackName);
-                } else if (cmd.equals("tweakdivider")) {
+                } else if (cmd.equalsIgnoreCase("tweakdivider")) {
                     igv.tweakPanelDivider();
-                } else if (cmd.equals("maxpanelheight") && param1 != null) {
+                } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
-                } else if (cmd.equals("tofront")) {
+                } else if (cmd.equalsIgnoreCase("tofront")) {
                     return bringToFront();
                 } else if (cmd.equalsIgnoreCase("viewaspairs")) {
                     return setViewAsPairs(param1, param2);
@@ -520,14 +522,10 @@ public class CommandExecutor {
                 } catch (NumberFormatException e) {
                     tag = param3;
                 }
-
             }
-            if (location == null) {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), tag);
-            } else {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
-            }
-
+            //Convert from 1-based to 0-based
+            if(location != null) location--;
+            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
         }
         igv.repaintDataPanels();
     }
@@ -561,7 +559,7 @@ public class CommandExecutor {
         String option = str.toUpperCase();
         try {
             return RegionScoreType.valueOf(option);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }

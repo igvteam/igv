@@ -35,7 +35,8 @@ public class SampleInfoSQLReader extends WholeTableDBReader<Void> {
     }
 
     public SampleInfoSQLReader(ResourceLocator locator) {
-        super(locator, "table????");
+        //TODO Don't hardcode table name, this might note even be right for our target case
+        super(locator, "SAMPLE_INFO");
     }
 
     @Override

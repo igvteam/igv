@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 
@@ -25,12 +26,12 @@ import java.util.*;
  * User: jacob
  * Date: 2012-Jun-22
  */
-public class GFFFeatureSource extends TribbleFeatureSource{
+public class GFFFeatureSource extends TribbleFeatureSource {
 
     private static Logger log = Logger.getLogger(GFFFeatureSource.class);
     public static final String PHASE_STRING = "XXPHASE_STRINGXX";
 
-    public GFFFeatureSource(String path, Genome genome) throws IOException{
+    public GFFFeatureSource(String path, Genome genome) throws IOException {
         super(path, genome);
         this.isVCF = false;
     }
@@ -42,7 +43,7 @@ public class GFFFeatureSource extends TribbleFeatureSource{
         return new WrappedIterator((new GFFCombiner()).combineFeatures(rawIter).iterator());
     }
 
-    public static class GFFCombiner{
+    public static class GFFCombiner {
 
         Map<String, GFF3Transcript> transcriptCache = new HashMap(50000);
         Map<String, BasicFeature> geneCache = new HashMap(50000);
@@ -102,11 +103,14 @@ public class GFFFeatureSource extends TribbleFeatureSource{
                 exon.setUTR(GFFCodec.utrTerms.contains(featureType));
 
 
-                int phase = parsePhase(sPhase);
-                if (phase >= 0) {
-                    exon.setPhase(phase);
+                if (sPhase != null) {
+                    int phase = parsePhase(sPhase);
+                    if (phase >= 0) {
+                        exon.setPhase(phase);
 
+                    }
                 }
+
                 exon.setName(bf.getName());
 
                 if (featureType.equalsIgnoreCase("exon")) {
@@ -181,7 +185,7 @@ public class GFFFeatureSource extends TribbleFeatureSource{
         int start = Integer.MAX_VALUE;
         int end = Integer.MIN_VALUE;
         String description;
-        Map<String, String> attributes;
+        MultiMap<String, String> attributes;
         Map<String, BasicFeature> geneCache;
 
         GFF3Transcript(String id, Map<String, BasicFeature> geneCache) {

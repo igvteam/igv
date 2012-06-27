@@ -145,10 +145,16 @@ public class GenomeManager {
     private GenomeImpl loadGenbankFile(String genomePath) throws IOException {
         GenomeImpl newGenome;
         GenbankParser genbankParser = new GenbankParser(genomePath);
-        String chr = genbankParser.getChr();
+
+        String chr = genbankParser.getAccession();
+        String name = genbankParser.getLocusName();
+        if(!name.equals(chr)) {
+            name = name + " (" + chr + ")";
+        }
+
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new GenomeImpl(chr, chr, sequence);
+        newGenome = new GenomeImpl(chr, name, sequence);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
 

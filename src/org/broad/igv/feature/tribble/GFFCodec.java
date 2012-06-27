@@ -25,6 +25,7 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.CI;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
@@ -34,27 +35,20 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Notes from GFF3 spec
- * These tags have predefined meanings:
- * <p/>
- * ID	   Indicates the name of the feature.  IDs must be unique
- * within the scope of the GFF file.
- * <p/>
- * Name   Display name for the feature.  This is the name to be
- * displayed to the user.  Unlike IDs, there is no requirement
- * that the Name be unique within the file.
- * <p/>
- * Alias  A secondary name for the feature.  It is suggested that
- * this tag be used whenever a secondary identifier for the
- * feature is needed, such as locus names and
- * accession numbers.  Unlike ID, there is no requirement
- * that Alias be unique within the file.
- * <p/>
- * Parent Indicates the parent of the feature.  A parent ID can be
- * used to group exons into transcripts, transcripts into
- * genes, an so forth.  A feature may have multiple parents.
- * Parent can *only* be used to indicate a partof
- * relationship.
+ * Notes from GFF3 spec  http://www.sequenceontology.org/gff3.shtml
+ * These tags have predefined meanings (tags are case sensitive):
+ *
+ * ID	   Indicates the name of the feature (unique).
+ *
+ * Name   Display name for the feature.
+ *
+ * Alias  A secondary name for the feature.
+ *
+ * Parent Indicates the parent of the feature.
+ *
+ *
+ * GFF2 specification: http://www.sanger.ac.uk/resources/software/gff/spec.html
+ * Feature type definitions http://www.ebi.ac.uk/embl/Documentation/FT_definitions/feature_table.html#7.2
  */
 public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
@@ -63,7 +57,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public static CI.CIHashSet exonTerms = new CI.CIHashSet();
     public static CI.CIHashSet utrTerms = new CI.CIHashSet();
     public static CI.CIHashSet geneParts = new CI.CIHashSet();
-    static CI.CIHashSet ignoredTypes = new CI.CIHashSet();
+    //static CI.CIHashSet ignoredTypes = new CI.CIHashSet();
 
     static {
         utrTerms.add("five_prime_UTR");
@@ -93,13 +87,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     }
 
-    static {
-        ignoredTypes.add("start_codon");
-        ignoredTypes.add("stop_codon");
-        ignoredTypes.add("Contig");
-        ignoredTypes.add("RealContig");
-        ignoredTypes.add("intron");
-    }
+//    static {
+//        ignoredTypes.add("start_codon");
+//        ignoredTypes.add("stop_codon");
+//        ignoredTypes.add("Contig");
+//        ignoredTypes.add("RealContig");
+//        ignoredTypes.add("intron");
+//    }
 
     private TrackProperties trackProperties = null;
     CI.CIHashSet featuresToHide = new CI.CIHashSet();
@@ -113,8 +107,15 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         GFF2, GFF3
     }
 
-    static String[] nameFields = {"name", "gene", "primary_name", "locus",
-            "alias", "systematic_id", "ID"};
+
+    /** List of know "Name" fields.  Some important fields from the GFF3 spec are listed below.  Note GFF3
+     * is case sensitive, however GFF2, GTF, and other variants might not be.
+     *
+     * ID	  Indicates the ID of the feature.
+     * Name   Display name for the feature.
+     * Alias  A secondary name for the feature.
+     */
+    static String[] nameFields = {"Name", "name", "Alias",  "gene", "primary_name", "locus", "alias", "systematic_id", "ID"};
 
 
     public GFFCodec(Genome genome) {
@@ -134,7 +135,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
     }
 
-    public void readHeaderLine(String line){
+    public void readHeaderLine(String line) {
         header = new FeatureFileHeader();
         if (line.startsWith("#track") || line.startsWith("##track")) {
             trackProperties = new TrackProperties();
@@ -142,7 +143,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             header.setTrackProperties(trackProperties);
         } else if (line.startsWith("##gff-version") && line.endsWith("3")) {
             helper = new GFF3Helper();
-        }else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
+        } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
             helper.setUrlDecoding(false);
         } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
             String[] kv = line.split("=");
@@ -208,19 +209,16 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public BasicFeature decode(String line) {
 
-
-        if (line.startsWith("##gff-version") && line.endsWith("3")) {
-            helper = new GFF3Helper();
-        }
-
         if (line.startsWith("#")) {
+            // This should not be possible as this line would be parsed as a header.  But just in case
             return null;
         }
 
         String[] tokens = Globals.tabPattern.split(line, -1);
         int nTokens = tokens.length;
 
-        // GFF files have 9 tokens
+        // GFF3 files have 9 tokens,
+        // TODO -- the attribute column is optional for GFF 2 and earlier (8 tokens required)
         if (nTokens < 9) {
             return null;
         }
@@ -246,7 +244,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         Strand strand = convertStrand(tokens[6]);
         String attributeString = tokens[8];
 
-        CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
+        //CI.CILinkedHashMap<String> attributes = new CI.CILinkedHashMap();
+        MultiMap<String, String> attributes = new MultiMap<String, String>();
 
         helper.parseAttributes(attributeString, attributes);
 
@@ -259,10 +258,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             //Somewhat tacky, but we need to store the phase somewhere in the feature
             String phaseString = tokens[7].trim();
-            String old = attributes.put(GFFFeatureSource.PHASE_STRING, phaseString);
-            if(old != null){
-                log.debug("phase string attribute was overwritten internally; old value was: " + old);
-            }
+            //String old = attributes.put(GFFFeatureSource.PHASE_STRING, phaseString);
+            //if(old != null){
+            //    log.debug("phase string attribute was overwritten internally; old value was: " + old);
+            //}
         }
 
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
@@ -304,7 +303,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     }
 
 
-    String getName(Map<String, String> attributes) {
+    String getName(MultiMap<String, String> attributes) {
 
         if (attributes == null || attributes.size() == 0) {
             return null;
@@ -314,42 +313,31 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 return attributes.get(nf);
             }
         }
-
-        // If still nothing return the first attribute value
-        return attributes.values().iterator().next();
+        return "";
     }
 
     static StringBuffer buf = new StringBuffer();
 
-    static String getDescription(Map<String, String> attributes, String type) {
+    static String getDescription(MultiMap<String, String> attributes, String type) {
         buf.setLength(0);
         buf.append(type);
         buf.append("<br>");
-        for (Map.Entry<String, String> att : attributes.entrySet()) {
-            String attValue = att.getValue().replaceAll(";", "<br>");
-            buf.append(att.getKey());
-            buf.append(" = ");
-            buf.append(attValue);
-            buf.append("<br>");
-        }
-
-        String description = buf.toString();
-
-        return description;
+        attributes.printHtml(buf, 100);
+        return buf.toString();
     }
 
 
     protected interface Helper {
 
-        String[] getParentIds(Map<String, String> attributes, String attributeString);
+        String[] getParentIds(MultiMap<String, String> attributes, String attributeString);
 
-        void parseAttributes(String attributeString, Map<String, String> map);
+        void parseAttributes(String attributeString, MultiMap<String, String> map);
 
-        String getID(Map<String, String> attributes);
+        String getID(MultiMap<String, String> attributes);
 
         void setUrlDecoding(boolean b);
 
-        String getName(Map<String, String> attributes);
+        String getName(MultiMap<String, String> attributes);
 
         void setNameFields(String[] fields);
 
@@ -379,7 +367,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public void parseAttributes(String description, Map<String, String> kvalues) {
+        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
 
@@ -393,16 +381,40 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             }
         }
 
+        /**
+         *                parentIds[0] = attributes.get("id");
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("mRNA");
+         }
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("systematic_id");
+         }
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("transcript_id");
+         }
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("gene");
+         }
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("transcriptId");
+         }
+         if (parentIds[0] == null) {
+         parentIds[0] = attributes.get("proteinId");
+         }
+         * @param attributes
+         * @param attributeString
+         * @return
+         */
 
-        public String[] getParentIds(Map<String, String> attributes, String attributeString) {
+        public String[] getParentIds(MultiMap<String, String> attributes, String attributeString) {
 
             String[] parentIds = new String[1];
-            if (attributes.isEmpty()) {
+            if (attributes.size() == 0) {
                 parentIds[0] = attributeString;
             } else {
-                String[] possNames = new String[]{"id", "mrna", "systematic_id", "transcript_id", "gene", "transcriptid", "proteinid"};
-                for(String possName: possNames){
-                    if(attributes.containsKey(possName)){
+                String[] possNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "proteinId"};
+                for (String possName : possNames) {
+                    if (attributes.containsKey(possName)) {
                         parentIds[0] = attributes.get(possName);
                         break;
                     }
@@ -412,7 +424,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public String getID(Map<String, String> attributes) {
+        public String getID(MultiMap<String, String> attributes) {
             for (String nf : idFields) {
                 if (attributes.containsKey(nf)) {
                     return attributes.get(nf);
@@ -421,7 +433,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return getName(attributes);
         }
 
-        public String getName(Map<String, String> attributes) {
+        public String getName(MultiMap<String, String> attributes) {
 
             if (attributes.size() > 0 && nameFields != null) {
                 for (String nf : nameFields) {
@@ -459,7 +471,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
 
-        public String[] getParentIds(Map<String, String> attributes, String ignored) {
+        public String[] getParentIds(MultiMap<String, String> attributes, String ignored) {
             String parentIdString = attributes.get("Parent");
             if (parentIdString != null) {
                 return parentIdString.split(",");
@@ -474,7 +486,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
          * @param description
          * @param kvalues
          */
-        public void parseAttributes(String description, Map<String, String> kvalues) {
+        public void parseAttributes(String description, MultiMap<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
             for (String kv : kvPairs) {
@@ -504,7 +516,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             this.useUrlDecoding = useUrlDecoding;
         }
 
-        public String getName(Map<String, String> attributes) {
+        public String getName(MultiMap<String, String> attributes) {
 
             if (attributes.size() > 0 && nameFields != null) {
                 for (String nf : nameFields) {
@@ -517,7 +529,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             return null;
         }
 
-        public String getID(Map<String, String> attributes) {
+        public String getID(MultiMap<String, String> attributes) {
             return attributes.get("ID");
         }
 

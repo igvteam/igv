@@ -5,8 +5,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -30,7 +28,7 @@ public class GenbankParserTest {
         GenbankParser genbankParser = new GenbankParser(testFile);
 
         String expectedChr = "NT_030059";
-        assertEquals(expectedChr, genbankParser.getChr());
+        assertEquals(expectedChr, genbankParser.getAccession());
 
         String[] expectedTypes = {"gene", "mRNA", "CDS", "gene", "variation", "variation"};
         int[] expectedStarts = {0, 0, 1032, 82042, -79, 10554};
@@ -46,7 +44,7 @@ public class GenbankParserTest {
 
 
         //       61 ttccgaggcg cccgggctcc cggcgcggcg gcggaggggg cgggcaggcc ggcgggcggt
-        String chr = genbankParser.getChr();
+        String chr = genbankParser.getAccession();
         int start = 60;
         int end = 70;
         String expectedSequence = "ttccgaggcg";

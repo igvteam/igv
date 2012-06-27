@@ -20,6 +20,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
@@ -40,7 +41,7 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
     protected String type = "";
     protected Color color;
     protected String description;
-    protected Map<String, String> attributes;
+    protected MultiMap<String, String> attributes;
     protected String name = "";
 
     /**
@@ -189,18 +190,18 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         return (description == null) ? getName() : description;
     }
 
-    public Map<String, String> getAttributes() {
+    public MultiMap<String, String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
+    public void setAttributes(MultiMap<String, String> attributes) {
         this.attributes = attributes;
     }
 
 
     public void setAttribute(String key, String value) {
         if(attributes == null) {
-            attributes = new HashMap<String, String>();
+            attributes = new MultiMap<String, String>();
         }
         attributes.put(key, value);
     }
@@ -250,25 +251,8 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         buf.append("<br>");
         // 30 attributes is the maximum visible on a typical screen
         int max = 30;
-        int count = 0;
-        for (Map.Entry<String, String> att : attributes.entrySet()) {
-
-            //if (!ignoreAttributes.contains(att.getKey())) {
-            String attValue = att.getValue().replaceAll(";", "<br>");
-            buf.append(att.getKey());
-            buf.append(" = ");
-            buf.append(attValue);
-            buf.append("<br>");
-            if (++count > max) {
-                buf.append("...");
-                break;
-            }
-
-            //}
-        }
-        String description = buf.toString();
-
-        return description;
+        attributes.printHtml(buf, max);
+        return buf.toString();
 
     }
 }

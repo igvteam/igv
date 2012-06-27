@@ -251,7 +251,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 rebuildGenomeItemList(excludedArchivesUrls);
                             }
                         } catch (Exception e) {
-                            log.error("Error initializing genome");
+                            log.error("Error initializing genome", e);
                         } finally {
                             if (bar != null) {
                                 bar.close();
