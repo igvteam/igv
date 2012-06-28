@@ -77,12 +77,8 @@ public class GenomeImpl implements Genome {
         if (str == null) {
             return str;
         } else {
-            if (chrAliasTable.containsKey(str)) {
-                return chrAliasTable.get(str);
-            } else {
-                chrAliasTable.put(str, str);
-                return str;
-            }
+            String chr = chrAliasTable.get(str);
+            return chr == null ? str : chr;
         }
     }
 
@@ -100,9 +96,9 @@ public class GenomeImpl implements Genome {
                 addChrAliases(GenomeManager.loadChrAliases(br));
             } catch (IOException e) {
                 log.error("Error loading chr alias table", e);
-                if(!Globals.isHeadless())
+                if (!Globals.isHeadless())
                     MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
-                        e.toString());
+                            e.toString());
             } finally {
                 if (br != null) {
                     try {
