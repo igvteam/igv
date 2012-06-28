@@ -23,9 +23,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.MultiMap;
-import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -424,12 +422,11 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             curYOffset, exon, trackRectangle);
                 }
 
-                if(FrameManager.isExomeMode()){
+                if (FrameManager.isExomeMode()) {
                     //Draw exon edge bound
                     int halfHeight = blockHeight / 2;
-                    edgeGraphics.drawLine(pStart, curYOffset - halfHeight,pStart ,curYOffset + halfHeight - 1);
-                    edgeGraphics.drawLine(pEnd, curYOffset - halfHeight,pEnd ,curYOffset + halfHeight - 1);
-
+                    edgeGraphics.drawLine(pStart, curYOffset - halfHeight, pStart, curYOffset + halfHeight - 1);
+                    edgeGraphics.drawLine(pEnd, curYOffset - halfHeight, pEnd, curYOffset + halfHeight - 1);
                 }
 
             }
@@ -439,7 +436,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     /**
-     *
      * @param strand
      * @param startX
      * @param endX
@@ -490,7 +486,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                       int textBaselineY) {
 
         String name = feature.getName();
-        if (name == null || (drawnNames.contains(name) && mode == Track.DisplayMode.ALTERNATIVE_SPLICE)){
+        if (name == null || (drawnNames.contains(name) && mode == Track.DisplayMode.ALTERNATIVE_SPLICE)) {
             return lastFeatureEndedAtPixelX;
         }
 

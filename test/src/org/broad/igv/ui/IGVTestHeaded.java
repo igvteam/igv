@@ -12,12 +12,16 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.fest.swing.fixture.JPanelFixture;
-import org.junit.*;
+import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,10 +30,10 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/02/08
  */
-public class IGVTestHeaded extends AbstractHeadedTest{
+public class IGVTestHeaded extends AbstractHeadedTest {
 
     @Test
-    public void testLoadSession() throws Exception{
+    public void testLoadSession() throws Exception {
         //Pretty basic, but at some point loading this view
         //gave a class cast exception
         String sessionPath = TestUtils.DATA_DIR + "sessions/CCLE_testSession_chr2.xml";
@@ -62,4 +66,24 @@ public class IGVTestHeaded extends AbstractHeadedTest{
         assertEquals(26, chromos.length);
     }
 
+
+    public void testExomeView() throws Exception {
+        String file = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam";
+        List<Track> tracks = IGV.getInstance().load(new ResourceLocator(file));
+        Thread.sleep(10000);
+        //TestUtils.loadSession(igv, TestUtils.DATA_DIR + "sessions/slx_ceu_father.xml");
+
+        assertEquals(2, tracks.size());
+
+        FrameManager.setExomeMode(true);
+        IGV.getInstance().resetFrames();
+
+        String locus = "chr7:55,208,260-55,240,460";
+        igv.goToLocus(locus);
+
+        //File out = new File(TestUtils.DATA_DIR, "testsnap.png");
+        //SnapshotUtilities.doComponentSnapshot(IGV.getMainFrame(), out, SnapshotFileChooser.SnapshotFileType.PNG);
+
+
+    }
 }
