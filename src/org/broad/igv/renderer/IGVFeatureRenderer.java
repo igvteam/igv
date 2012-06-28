@@ -22,6 +22,8 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
@@ -339,6 +341,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // Added by Solomon - End
 
             Graphics2D blockGraphics = g2D;
+            Graphics2D edgeGraphics = context.getGraphic2DForColor(Color.gray);
             if (alternateExonColor) {
                 Color color = colorToggle ? color1 : color2;
                 blockGraphics = context.getGraphic2DForColor(color);
@@ -419,6 +422,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
                             curYOffset, exon, trackRectangle);
+                }
+
+                if(FrameManager.isExomeMode()){
+                    //Draw exon edge bound
+                    int halfHeight = blockHeight / 2;
+                    edgeGraphics.drawLine(pStart, curYOffset - halfHeight,pStart ,curYOffset + halfHeight - 1);
+                    edgeGraphics.drawLine(pEnd, curYOffset - halfHeight,pEnd ,curYOffset + halfHeight - 1);
+
                 }
 
             }
