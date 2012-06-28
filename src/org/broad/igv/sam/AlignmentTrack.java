@@ -364,90 +364,83 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
-        try {
-            log.debug("Render features");
-            Map<String, List<AlignmentInterval.Row>> groups =
-                    dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
 
-            Map<String, PEStats> peStats = dataManager.getPEStats();
-            if (peStats != null) {
-                renderOptions.peStats = peStats;
-            }
+        //log.debug("Render features");
+        Map<String, List<AlignmentInterval.Row>> groups =
+                dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
 
-            if (groups == null) {
-                return;
-            }
-
-
-            Rectangle visibleRect = context.getVisibleRect();
-            final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
-
-            if (renderOptions.isPairedArcView()) {
-                maximumHeight = (int) inputRect.getHeight();
-                AlignmentRenderer.getInstance().clearCurveMaps();
-            } else {
-                maximumHeight = Integer.MAX_VALUE;
-            }
-
-            // Divide rectangle into equal height levels
-            double y = inputRect.getY();
-            double h = expandedHeight;
-            if (getDisplayMode() != DisplayMode.EXPANDED) {
-                int visHeight = visibleRect.height;
-                int depth = dataManager.getNLevels();
-                if (depth == 0) {
-                    squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-                } else {
-                    squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-                }
-                h = squishedHeight;
-            }
-
-            // Loop through groups
-            Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
-            int nGroups = groups.size();
-            int groupNumber = 0;
-            for (Map.Entry<String, List<AlignmentInterval.Row>> entry : groups.entrySet()) {
-                String group = entry.getKey();
-                groupNumber++;
-
-                // Loop through the alignment rows for this group
-                List<AlignmentInterval.Row> rows = entry.getValue();
-                for (AlignmentInterval.Row row : rows) {
-
-                    if ((visibleRect != null && y > visibleRect.getMaxY())) {
-                        return;
-                    }
-                    if (renderOptions.isPairedArcView()) {
-                        y = Math.min(getY() + getHeight(), visibleRect.getMaxY());
-                        y -= h;
-                    }
-
-                    if (y + h > visibleRect.getY()) {
-                        Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
-                        renderer.renderAlignments(row.alignments, context, rowRectangle,
-                                inputRect, renderOptions, leaveMargin, selectedReadNames);
-                    }
-                    y += h;
-                }
-
-                // Draw a subtle divider line between groups
-                if (groupNumber < nGroups) {
-                    int borderY = (int) y + GROUP_MARGIN / 2;
-                    groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
-                }
-                y += GROUP_MARGIN;
-            }
-
-            final int bottom = inputRect.y + inputRect.height;
-            groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
-
-        } catch (Exception ex) {
-            log.error("Error rendering track", ex);
-            throw new RuntimeException("Error rendering track ", ex);
-
+        Map<String, PEStats> peStats = dataManager.getPEStats();
+        if (peStats != null) {
+            renderOptions.peStats = peStats;
         }
 
+        if (groups == null) {
+            return;
+        }
+
+
+        Rectangle visibleRect = context.getVisibleRect();
+        final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
+
+        if (renderOptions.isPairedArcView()) {
+            maximumHeight = (int) inputRect.getHeight();
+            AlignmentRenderer.getInstance().clearCurveMaps();
+        } else {
+            maximumHeight = Integer.MAX_VALUE;
+        }
+
+        // Divide rectangle into equal height levels
+        double y = inputRect.getY();
+        double h = expandedHeight;
+        if (getDisplayMode() != DisplayMode.EXPANDED) {
+            int visHeight = visibleRect.height;
+            int depth = dataManager.getNLevels();
+            if (depth == 0) {
+                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
+            } else {
+                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
+            }
+            h = squishedHeight;
+        }
+
+        // Loop through groups
+        Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
+        int nGroups = groups.size();
+        int groupNumber = 0;
+        for (Map.Entry<String, List<AlignmentInterval.Row>> entry : groups.entrySet()) {
+            String group = entry.getKey();
+            groupNumber++;
+
+            // Loop through the alignment rows for this group
+            List<AlignmentInterval.Row> rows = entry.getValue();
+            for (AlignmentInterval.Row row : rows) {
+
+                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                    return;
+                }
+                if (renderOptions.isPairedArcView()) {
+                    y = Math.min(getY() + getHeight(), visibleRect.getMaxY());
+                    y -= h;
+                }
+
+                if (y + h > visibleRect.getY()) {
+                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                    renderer.renderAlignments(row.alignments, context, rowRectangle,
+                            inputRect, renderOptions, leaveMargin, selectedReadNames);
+                }
+                y += h;
+            }
+
+            // Draw a subtle divider line between groups
+            if (groupNumber < nGroups) {
+                int borderY = (int) y + GROUP_MARGIN / 2;
+                groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
+            }
+            y += GROUP_MARGIN;
+        }
+
+        final int bottom = inputRect.y + inputRect.height;
+        groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
     }
 
     public void clearCaches() {
