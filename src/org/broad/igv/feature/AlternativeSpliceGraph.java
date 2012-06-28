@@ -13,10 +13,9 @@ package org.broad.igv.feature;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Takes a set of features, which are assumed to alternative
@@ -27,9 +26,14 @@ import java.util.Collection;
  * User: jacob
  * Date: 2012/03/28
  */
-public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> {
+public class AlternativeSpliceGraph<T> extends DefaultDirectedGraph<IExon, Object> {
 
     private IExon lastExon = null;
+
+    /**
+     * For storing information about each exon.
+     */
+    private Map<IExon, T> parameters = new HashMap<IExon, T>();
 
     public AlternativeSpliceGraph() {
         super(Object.class);
@@ -39,6 +43,28 @@ public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> 
     public AlternativeSpliceGraph(Collection<? extends IGVFeature> features) {
         this();
         addFeatures(features);
+    }
+
+    /**
+     * Add exon to graph, and parameter to map.
+     * Note that even if exon already exists in
+     * graph, the parameter will be overwritten
+     *
+     * @param exon
+     * @param parameter
+     * @return
+     */
+    public boolean put(IExon exon, T parameter) {
+        parameters.put(exon, parameter);
+        return addExon(exon);
+    }
+
+    public T getParameter(IExon exon) {
+        return parameters.get(exon);
+    }
+
+    public boolean hasParameter(IExon exon) {
+        return parameters.containsKey(exon);
     }
 
     /**
@@ -55,16 +81,15 @@ public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> 
      */
     public boolean addExon(IExon exon) {
 
-        IExon eProx = Exon.getExonProxy(exon);
         //Should be a no-op if exon already there
-        boolean added = addVertex(eProx);
+        boolean added = addVertex(exon);
 
-        if (added) {
-            if (lastExon != null) {
-                addEdge(lastExon, eProx);
+        if (lastExon != null) {
+            if (getEdge(lastExon, exon) == null) {
+                addEdge(lastExon, exon);
             }
-            lastExon = eProx;
         }
+        lastExon = exon;
 
         return added;
     }
@@ -92,6 +117,5 @@ public class AlternativeSpliceGraph extends DefaultDirectedGraph<IExon, Object> 
     public void startFeature() {
         lastExon = null;
     }
-
 
 }

@@ -28,9 +28,8 @@ import org.broad.tribble.Feature;
 import java.awt.*;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -58,9 +57,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     // Use the max of these values to determine where
     // text should be drawn
-    protected double lastFeatureLineMaxY = 0;
-    protected double lastFeatureBoundsMaxY = 0;
-    protected double lastRegionMaxY = 0;
+    //protected double lastFeatureLineMaxY = 0;
+    //protected double lastFeatureBoundsMaxY = 0;
+    //protected double lastRegionMaxY = 0;
 
     protected boolean drawBoundary = false;
 
@@ -70,6 +69,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     //Map from Exon to y offset
     //Could use more coordinates, but they are all contained in the Exon
     private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
+    private AlternativeSpliceGraph<Integer> exonGraph = new AlternativeSpliceGraph<Integer>();
+    private Set<String> drawnNames = new HashSet<String>(100);
 
     /**
      * Note:  assumption is that featureList is sorted by start position.
@@ -91,12 +92,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         final Track.DisplayMode displayMode = track.getDisplayMode();
         blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
         thinBlockHeight = displayMode == Track.DisplayMode.SQUISHED ? THIN_BLOCK_HEIGHT / 2 : THIN_BLOCK_HEIGHT;
-
-        // Clear values
-        lastFeatureLineMaxY = 0;
-        lastFeatureBoundsMaxY = 0;
-        lastRegionMaxY = 0;
-
 
         // TODO -- use enum instead of string "Color"
         if ((featureList != null) && (featureList.size() > 0)) {
@@ -150,6 +145,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     lastPixelEnd = pixelEnd;
                 }
 
+
                 Color color = getFeatureColor(feature, track);
                 Graphics2D g2D = context.getGraphic2DForColor(color);
 
@@ -163,18 +159,23 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     pixelThickEnd = (int) Math.min(trackRectangleMaxX, (bf.getThickEnd() - origin) / locScale);
                     hasExons = bf.hasExons();
                 }
-                drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, trackRectangle,
-                        feature.getStrand(), hasExons, g2D);
 
                 // Add directional arrows and exons, if there is room.
                 int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
+                if (!hasExons) {
+                    drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
+                }
+
+
                 if ((pixelEnd - pixelStart < 3) && hasExons) {
                     drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
                 } else {
-                    Graphics2D arrowGraphics = hasExons ? g2D : context.getGraphic2DForColor(Color.WHITE);
 
-                    // Draw the directional arrows
-                    drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
+                    Graphics2D arrowGraphics = hasExons
+                            ? g2D
+                            : context.getGraphic2DForColor(Color.WHITE);
+
+                    //drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
 
                     if (hasExons) {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
@@ -196,15 +197,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // the track rectangle.
                         int nameStart = Math.max(0, pixelStart);
                         int nameEnd = Math.min(pixelEnd, (int) trackRectangle.getWidth());
-                        int textBaselineY = getLastLargestMaxY() + fontHeight;
+                        int textBaselineY = pixelYCenter + blockHeight;
 
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
                         // track name without drawing over the features
-                        int verticalSpaceRequiredForText = textBaselineY -  trackRectangleY;
+                        int verticalSpaceRequiredForText = textBaselineY - trackRectangleY;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
-                            lastNamePixelEnd = drawFeatureName(feature, nameStart, nameEnd,
+                            lastNamePixelEnd = drawFeatureName(feature, track.getDisplayMode(), nameStart, nameEnd,
                                     lastNamePixelEnd, fontGraphics, textBaselineY);
                         }
                     }
@@ -233,46 +234,46 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     /**
      * @param pixelStart
      * @param pixelEnd
-     * @param trackRectangle
-     * @param strand
-     * @param hasExons
+     * @param pixelThickStart
+     * @param pixelThickEnd
+     * @param yOffset
      * @param g
-     * @return The stroke used to draw the line.
      */
     final private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
-                                        Rectangle trackRectangle, Strand strand, boolean hasExons, Graphics2D g) {
+                                        int yOffset, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
 
-        if (!hasExons) {
-            int yOffset = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
-
-            if (pixelThickStart > pixelStart) {
-                g2D.fillRect(pixelStart, yOffset - (thinBlockHeight) / 2,
-                        Math.max(1, pixelThickStart - pixelStart), (thinBlockHeight));
-            }
-            if (pixelThickEnd > 0 && pixelThickEnd < pixelEnd) {
-                g2D.fillRect(pixelThickEnd, yOffset - (thinBlockHeight) / 2,
-                        Math.max(1, pixelEnd - pixelThickEnd), (thinBlockHeight));
-            }
-
-            g2D.fillRect(pixelThickStart, yOffset - (blockHeight - 4) / 2,
-                    Math.max(1, pixelThickEnd - pixelThickStart), (blockHeight - 4));
-            lastFeatureLineMaxY = yOffset + blockHeight - 4;
-        } else {
-            // Draw the line that represents the entire feature
-            int yOffset = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
-            float lineThickness = ((BasicStroke) g.getStroke()).getLineWidth();
-            if (strand == null) {
-                // Double the line thickness
-                lineThickness *= NO_STRAND_THICKNESS;
-                Stroke stroke = new BasicStroke(lineThickness);
-                g2D.setStroke(stroke);
-            }
-            g2D.drawLine(pixelStart, yOffset, pixelEnd, yOffset);
-            lastFeatureLineMaxY = yOffset + lineThickness;
+        if (pixelThickStart > pixelStart) {
+            g2D.fillRect(pixelStart, yOffset - (thinBlockHeight) / 2,
+                    Math.max(1, pixelThickStart - pixelStart), (thinBlockHeight));
         }
+        if (pixelThickEnd > 0 && pixelThickEnd < pixelEnd) {
+            g2D.fillRect(pixelThickEnd, yOffset - (thinBlockHeight) / 2,
+                    Math.max(1, pixelEnd - pixelThickEnd), (thinBlockHeight));
+        }
+
+        g2D.fillRect(pixelThickStart, yOffset - (blockHeight - 4) / 2,
+                Math.max(1, pixelThickEnd - pixelThickStart), (blockHeight - 4));
+
         g2D.dispose();
+    }
+
+    final private void drawConnectingLine(int startX, int startY, int endX, int endY, Strand strand, Graphics2D g) {
+
+        Graphics2D g2D = (Graphics2D) g.create();
+
+        float lineThickness = ((BasicStroke) g.getStroke()).getLineWidth();
+        if (strand == null) {
+
+            // Double the line thickness
+            lineThickness *= NO_STRAND_THICKNESS;
+            Stroke stroke = new BasicStroke(lineThickness);
+            g2D.setStroke(stroke);
+        }
+        g2D.drawLine(startX, startY, endX, endY);
+        g2D.dispose();
+
     }
 
 
@@ -289,7 +290,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             g2D.fillRect(pixelStart, yOffset - blockHeight / 2, pixelEnd - pixelStart, blockHeight);
         }
 
-        lastFeatureBoundsMaxY = yOffset + blockHeight / 2;
     }
 
     protected void drawExons(IGVFeature gene, int yOffset, RenderContext context,
@@ -310,7 +310,11 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         boolean colorToggle = true;
 
+        int lastX = Integer.MIN_VALUE;
+        int lastY = Integer.MIN_VALUE;
+        IExon lastExon = null;
 
+        exonGraph.startFeature();
         for (Exon exon : gene.getExons()) {
 
             // Parse expression from tags, if available
@@ -342,16 +346,32 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             }
 
             int curYOffset = yOffset;
-//            IExon pExon = Exon.getExonProxy(exon);
-//            if(exonMap.containsKey(pExon)){
-//                curYOffset= exonMap.get(pExon);
-//            }else{
-//                exonMap.put(pExon, yOffset);
-//            }
+            boolean drawConnectingLine = true;
+
+            if (mode == Track.DisplayMode.ALTERNATIVE_SPLICE) {
+
+                IExon eProx = Exon.getExonProxy(exon);
+                drawConnectingLine = !exonGraph.containsEdge(lastExon, eProx);
+                if (exonGraph.hasParameter(eProx)) {
+                    curYOffset = exonGraph.getParameter(eProx);
+                } else {
+                    exonGraph.put(eProx, curYOffset);
+                }
+                lastExon = eProx;
+            }
 
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
+
+            Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.blue);
+            if (drawConnectingLine && lastX > Integer.MIN_VALUE && lastY > Integer.MIN_VALUE) {
+                drawConnectingLine(lastX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
+                double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastX) + 1e-12));
+                drawStrandArrows(gene.getStrand(), lastX, pStart, lastY, angle, mode, arrowGraphics);
+            }
+            lastX = pEnd;
+            lastY = curYOffset;
 
             if ((pEnd >= trackRectangle.getX()) && (pStart <= trackRectangle.getMaxX())) {
                 int pCdStart =
@@ -396,10 +416,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     }
                 }
 
-                Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.white);
-                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, curYOffset, mode, arrowGraphics);
-
-
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
                             curYOffset, exon, trackRectangle);
@@ -407,64 +423,63 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
             }
 
-            // TODO -- eliminate reference to lastRegionMaxY, a base class member.
-            //
-            lastRegionMaxY = yOffset - blockHeight / 2 + blockHeight;
-
         }
 
     }
 
-    protected void drawStrandArrows(IGVFeature feature, int pixelStart, int pixelEnd, int yOffset, Track.DisplayMode mode,
+    /**
+     *
+     * @param strand
+     * @param startX
+     * @param endX
+     * @param startY
+     * @param angle
+     * @param mode
+     * @param g2D
+     */
+    protected void drawStrandArrows(Strand strand, int startX, int endX, int startY, double angle, Track.DisplayMode mode,
                                     Graphics2D g2D) {
 
         // Don't draw strand arrows for very small regions
-        if ((pixelEnd - pixelStart < 6)) {
+
+        int distance = endX - startX;
+        if ((distance < 6)) {
             return;
         }
 
+        Graphics2D g = (Graphics2D) g2D.create();
         // Limit drawing to visible region, we don't really know the viewport pEnd,
         int vStart = 0;
         int vEnd = 10000;
 
         // Draw the directional arrows on the feature
-        final int sz = mode == Track.DisplayMode.EXPANDED ? 3 : 2;
-        if (feature.getStrand().equals(Strand.POSITIVE)) {
+        int sz = mode == Track.DisplayMode.EXPANDED ? 3 : 2;
+        sz = strand.equals(Strand.POSITIVE) ? -sz : sz;
 
-            for (int i = pixelEnd; i > pixelStart; i -= ARROW_SPACING) {
+        final int asz = Math.abs(sz);
 
-                if (i < vStart) {
-                    break;
-                }
-                if (i < vEnd) {
-                    g2D.drawLine(i, yOffset, i - sz, yOffset + sz);
-                    g2D.drawLine(i, yOffset, i - sz, yOffset - sz);
-                }
+        /*
+         We draw arrows in a translated and rotated frame.
+         This is to deal with alternative splice
+         */
+        g.translate(startX, startY);
+        g.rotate(-angle);
+        double endXInFrame = distance / Math.cos(angle);
 
-            }
-        } else if (feature.getStrand().equals(Strand.NEGATIVE)) {
+        for (int ii = ARROW_SPACING / 2; ii < endXInFrame; ii += ARROW_SPACING) {
 
-            // Draw starting line.  Should we be doing this?
-            g2D.drawLine(pixelEnd, yOffset + 2, pixelEnd, yOffset - 2);
-
-            for (int i = pixelStart; i < pixelEnd; i += ARROW_SPACING) {
-                if (i > vEnd) {
-                    break;
-                }
-                if ((i > vStart) && (i < vEnd)) {
-                    g2D.drawLine(i, yOffset, i + sz, yOffset + sz);
-                    g2D.drawLine(i, yOffset, i + sz, yOffset - sz);
-                }
-            }
+            g.drawLine(ii, 0, ii + sz, +asz);
+            g.drawLine(ii, 0, ii + sz, -asz);
         }
+
     }
 
-    final private int drawFeatureName(IGVFeature feature, int pixelStart, int pixelEnd,
+    final private int drawFeatureName(IGVFeature feature, Track.DisplayMode mode, int pixelStart, int pixelEnd,
                                       int lastFeatureEndedAtPixelX, Graphics2D g2D,
                                       int textBaselineY) {
 
         String name = feature.getName();
-        if (name == null) {
+        if (name == null || (drawnNames.contains(name) && mode == Track.DisplayMode.ALTERNATIVE_SPLICE)){
             return lastFeatureEndedAtPixelX;
         }
 
@@ -481,6 +496,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // g2D.clearRect(xString2, textBaselineY, (int) stringBounds.getWidth(), (int) stringBounds.getHeight());
             g2D.drawString(name, nameStart, textBaselineY);
             lastFeatureEndedAtPixelX = nameStart + nameWidth;
+            drawnNames.add(name);
 
         }
 
@@ -642,20 +658,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
 
-    private int getLastLargestMaxY() {
-
-        double largestY = Math.max(lastFeatureLineMaxY,
-                Math.max(lastFeatureBoundsMaxY, lastRegionMaxY));
-
-        return (int) Math.ceil(largestY);
-    }
-
     protected int getPixelFromChromosomeLocation(String chr, int chromosomeLocation, double origin,
                                                  double locationScale) {
         return (int) Math.round((chromosomeLocation - origin) / locationScale);
     }
 
+    @Override
     public void reset() {
         exonMap.clear();
+        exonGraph = new AlternativeSpliceGraph<Integer>();
+        drawnNames.clear();
     }
 }

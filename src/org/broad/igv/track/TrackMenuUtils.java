@@ -618,68 +618,47 @@ public class TrackMenuUtils {
     public static void addDisplayModeItems(final Collection<Track> tracks, JPopupMenu menu) {
 
         // Find "most representative" state from track collection
-        int expCount = 0;
-        int sqCount = 0;
-        int collCount = 0;
-        for (Track track : tracks) {
-            switch (track.getDisplayMode()) {
-                case EXPANDED:
-                    expCount++;
-                    break;
-                case SQUISHED:
-                    sqCount++;
-                    break;
-                case COLLAPSED:
-                    collCount++;
-                    break;
+        Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
+        Track.DisplayMode currentMode = null;
+
+        for(Track t: tracks){
+            Track.DisplayMode mode = t.getDisplayMode();
+            if(counts.containsKey(mode)){
+                counts.put(mode, counts.get(mode) + 1);
+            }else{
+                counts.put(mode, 1);
             }
         }
-        Track.DisplayMode currentMode = null;
-        if (expCount > sqCount && expCount > collCount) {
-            currentMode = Track.DisplayMode.EXPANDED;
-        } else if (sqCount > expCount && sqCount > collCount) {
-            currentMode = Track.DisplayMode.SQUISHED;
-        } else {
-            currentMode = Track.DisplayMode.COLLAPSED;
+
+        int maxCount = -1;
+        for(Map.Entry<Track.DisplayMode, Integer> count: counts.entrySet()){
+            if(count.getValue() > maxCount){
+                currentMode = count.getKey();
+                maxCount = count.getValue();
+            }
         }
 
         ButtonGroup group = new ButtonGroup();
-
-
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Expanded");
-        m1.setSelected(currentMode == Track.DisplayMode.EXPANDED);
-        m1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                setTrackDisplayMode(tracks, Track.DisplayMode.EXPANDED);
-                refresh();
-            }
-        });
-
-        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
-        m2.setSelected(currentMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                setTrackDisplayMode(tracks, Track.DisplayMode.SQUISHED);
-                refresh();
-            }
-        });
-
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Collapsed");
-        m3.setSelected(currentMode == Track.DisplayMode.COLLAPSED);
-        m3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                setTrackDisplayMode(tracks, Track.DisplayMode.COLLAPSED);
-                refresh();
-            }
-        });
-
-        group.add(m1);
-        group.add(m2);
-        group.add(m3);
-        menu.add(m3);
-        menu.add(m2);
-        menu.add(m1);
-
+        Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
+        modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
+        modes.put("Expanded", Track.DisplayMode.EXPANDED);
+        modes.put("Squished", Track.DisplayMode.SQUISHED);
+        boolean showAS = Boolean.parseBoolean(System.getProperty("showAS", "false"));
+        if(showAS){
+            modes.put("Alternative Splice", Track.DisplayMode.ALTERNATIVE_SPLICE);
+        }
+        for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
+            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+            mm.setSelected(currentMode == entry.getValue());
+            mm.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    setTrackDisplayMode(tracks, entry.getValue());
+                    refresh();
+                }
+            });
+            group.add(mm);
+            menu.add(mm);
+        }
 
     }
 

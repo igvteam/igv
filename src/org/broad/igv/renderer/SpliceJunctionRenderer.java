@@ -77,11 +77,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        // Clear values
-        lastFeatureLineMaxY = 0;
-        lastFeatureBoundsMaxY = 0;
-        lastRegionMaxY = 0;
-
         // TODO -- use enum instead of string "Color"
         if ((featureList != null) && !featureList.isEmpty()) {
 
@@ -305,8 +300,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         g2D.draw(arcPath);
         //Fill the arc
         g2D.fill(arcPath);
-
-        lastFeatureLineMaxY = Math.max(outerArcPeakY, arcBeginY);
     }
 
 

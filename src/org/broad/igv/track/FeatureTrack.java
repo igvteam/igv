@@ -68,7 +68,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new HashMap();
 
-    private Renderer renderer = new IGVFeatureRenderer();
+    private FeatureRenderer renderer = new IGVFeatureRenderer();
 
     private DataRenderer coverageRenderer;
 
@@ -273,7 +273,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
 
-    public Renderer getRenderer() {
+    public FeatureRenderer getRenderer() {
         if (renderer == null) {
             setRendererClass(IGVFeatureRenderer.class);
         }
@@ -731,7 +731,7 @@ public class FeatureTrack extends AbstractTrack {
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
 
 
-        Renderer renderer = getRenderer();
+        FeatureRenderer renderer = getRenderer();
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
@@ -746,6 +746,7 @@ public class FeatureTrack extends AbstractTrack {
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i = 0;
 
+                    renderer.reset();
                     for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
                         renderer.render(row.features, context, levelRects.get(i), this);
