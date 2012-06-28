@@ -67,9 +67,6 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.util.SeekableBufferedStream;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
 
 import java.io.File;
@@ -220,7 +217,7 @@ public class TrackLoader {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
                 loadGobyCountsArchive(locator, newTracks, genome);
-            } else if (GFFParser.isGFF(locator.getPath())) {
+            } else if (GFFFeatureSource.isGFF(locator.getPath())) {
                 loadGFFfile(locator, newTracks, genome);
             } else if (AbstractFeatureParser.canParse(locator.getPath())) {
                 loadFeatureFile(locator, newTracks, genome);
@@ -300,7 +297,9 @@ public class TrackLoader {
 
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        TribbleFeatureSource src = new TribbleFeatureSource(locator.getPath(), genome);
+        TribbleFeatureSource src = GFFFeatureSource.isGFF(locator.getPath()) ?
+                new GFFFeatureSource(locator.getPath(), genome) :
+                new TribbleFeatureSource(locator.getPath(), genome);
         String typeString = locator.getPath();
         //Track t;
 
@@ -1049,7 +1048,7 @@ public class TrackLoader {
 
     private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks) throws IOException {
         List<SQLCodecSource> sources = SQLCodecSource.getFromProfile(locator.getPath(), null);
-        for(SQLCodecSource source: sources){
+        for (SQLCodecSource source : sources) {
             CachingFeatureSource cachingReader = new CachingFeatureSource(source);
             FeatureTrack track = new FeatureTrack(locator, cachingReader);
             track.setName(source.getTable());
@@ -1218,12 +1217,12 @@ public class TrackLoader {
         return path.endsWith(".vcf") || CodecFactory.getCodec(path, genome) != null;
     }
 
-    public static TrackProperties getTrackProperties(Object header){
+    public static TrackProperties getTrackProperties(Object header) {
         try {
             FeatureFileHeader ffHeader = (FeatureFileHeader) header;
             if (ffHeader != null) {
                 return ffHeader.getTrackProperties();
-            }else{
+            } else {
                 return null;
             }
         } catch (ClassCastException e) {

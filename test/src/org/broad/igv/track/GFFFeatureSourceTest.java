@@ -20,9 +20,11 @@ import org.broad.igv.util.*;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
+import org.broadinstitute.sting.utils.exceptions.StingException;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,7 +38,20 @@ import static org.junit.Assert.assertTrue;
 public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
-    public void testGetAll() throws Exception{
+    public void testIsGFF() {
+        List<String> exts = Arrays.asList("gff3", "gvf", "gff", "gtf");
+        for (String ext : exts) {
+            String file = "test." + ext;
+            assertTrue(GFFFeatureSource.isGFF(file));
+            file += ".txt";
+            assertTrue(GFFFeatureSource.isGFF(file));
+            file += ".gz";
+            assertTrue(GFFFeatureSource.isGFF(file));
+        }
+    }
+
+    @Test
+    public void testGetAll() throws Exception {
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/gene.gff3";
         TestUtils.createIndex(filepath);
         GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
@@ -47,7 +62,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         Iterator<Feature> feats = source.getFeatures(chr, start, end);
         List<Feature> sourceFeats = new ArrayList<Feature>(2);
 
-        while(feats.hasNext()){
+        while (feats.hasNext()) {
             Feature feat = feats.next();
             assertEquals(chr, feat.getChr());
             sourceFeats.add(feat);
@@ -61,7 +76,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         assertEquals(parserFeats.size(), sourceFeats.size());
 
         int sF = 0;
-        for(Feature f: parserFeats){
+        for (Feature f : parserFeats) {
             BasicFeature sourceFeat = (BasicFeature) sourceFeats.get(sF);
             BasicFeature bf = (BasicFeature) f;
             assertEquals(bf.getExonCount(), sourceFeat.getExonCount());
@@ -71,7 +86,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testQuery_01() throws Exception{
+    public void testQuery_01() throws Exception {
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.gff";
         TestUtils.createIndex(filepath);
         Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
@@ -84,7 +99,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         CloseableTribbleIterator<Feature> features = source.getFeatures(chr, start, end);
         int geneCount = 0;
         int rnaCount = 0;
-        while(features.hasNext()){
+        while (features.hasNext()) {
 
 
             Feature feat = features.next();
@@ -93,15 +108,16 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             BasicFeature bf = (BasicFeature) feat;
 
             String id = bf.getIdentifier().toLowerCase();
-            if(id.contains("gene")) geneCount++;
-            if(id.contains("rna")) rnaCount++;;
+            if (id.contains("gene")) geneCount++;
+            if (id.contains("rna")) rnaCount++;
+            ;
 
 
-            if("gene21".equals(id)){
+            if ("gene21".equals(id)) {
                 assertEquals(0, bf.getExonCount());
                 assertEquals("gene", bf.getType());
             }
-            if("rna22".equals(id)){
+            if ("rna22".equals(id)) {
                 assertEquals(6, bf.getExonCount());
                 assertEquals("mRNA", bf.getType());
             }

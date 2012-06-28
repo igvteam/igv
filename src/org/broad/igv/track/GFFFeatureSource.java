@@ -31,6 +31,20 @@ public class GFFFeatureSource extends TribbleFeatureSource {
     private static Logger log = Logger.getLogger(GFFFeatureSource.class);
     public static final String PHASE_STRING = "XXPHASE_STRINGXX";
 
+
+    public static boolean isGFF(String path) {
+        String lowpath = path.toLowerCase();
+        if(lowpath.endsWith(".gz")) {
+            int idx = lowpath.length() - 3;
+            lowpath = lowpath.substring(0, idx);
+        }
+        if(lowpath.endsWith(".txt")) {
+            int idx = lowpath.length() - 4;
+            lowpath = lowpath.substring(0, idx);
+        }
+        return lowpath.endsWith("gff3") || lowpath.endsWith("gvf") || lowpath.endsWith("gff") || lowpath.endsWith("gtf");
+    }
+
     public GFFFeatureSource(String path, Genome genome) throws IOException {
         super(path, genome);
         this.isVCF = false;
@@ -38,6 +52,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
     @Override
     public CloseableTribbleIterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+
         CloseableTribbleIterator<Feature> rawIter = super.getFeatures(chr, start, end);
 
         return new WrappedIterator((new GFFCombiner()).combineFeatures(rawIter).iterator());

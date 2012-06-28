@@ -37,13 +37,6 @@ public class GFFParser implements FeatureParser {
 
     private TrackProperties trackProperties = null;
 
-    public static boolean isGFF(String path) {
-        String lowpath = path.toLowerCase();
-        lowpath = lowpath.replace(".gz", "");
-        return lowpath.endsWith("gff3") || lowpath.endsWith("gvf") ||
-                lowpath.endsWith("gff") || lowpath.endsWith("gtf");
-    }
-
     public GFFParser(String path) {
     }
 

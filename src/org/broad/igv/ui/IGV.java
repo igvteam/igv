@@ -26,14 +26,12 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.peaks.PeakCommandBar;
-import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.session.IGVSessionReader;
@@ -1964,7 +1962,7 @@ public class IGV {
 
         if (reader != null) {
             FeatureParser parser;
-            if (GFFParser.isGFF(geneFileName)) {
+            if (GFFFeatureSource.isGFF(geneFileName)) {
                 parser = new GFFParser(geneFileName);
             } else {
                 parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
