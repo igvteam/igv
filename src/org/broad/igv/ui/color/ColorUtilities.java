@@ -116,8 +116,28 @@ public class ColorUtilities {
         col2 = Math.abs(BASE_COL + (idx * 55) % RAND_COL);
         col3 = Math.abs(BASE_COL + (idx * 77) % RAND_COL);
 
+        // Reject colors too close to white
+        if (col1 > 200 && col2 > 200 && col3 > 200) {
+            int tmp = col1 % 3;
+            if (tmp == 0) {
+                col1 = 255 - col1;
+            } else if (tmp == 1) {
+                col2 = 255 - col2;
+            } else {
+                col3 = 255 - col3;
+            }
+        }
+
         return new Color(col1, col2, col3);
     }
+
+
+    public static void main(String[] args) {
+        for (int i = 200; i < 300; i++) {
+            System.out.println(i % 3);
+        }
+    }
+
 
     public static Color randomDesaturatedColor(float alpha) {
         float hue = (float) Math.random();
@@ -343,6 +363,7 @@ public class ColorUtilities {
             return null;
         }
     }
+
     public static synchronized Color getGrayscaleColor(int gray) {
         gray = Math.max(0, Math.min(255, gray));
         Color c = grayscaleColors.get(gray);

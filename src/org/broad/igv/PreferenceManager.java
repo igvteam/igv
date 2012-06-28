@@ -900,7 +900,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(MUTATION_MISSENSE_COLOR_KEY, "170,20,240");
         defaultValues.put(MUTATION_NONSENSE_COLOR_KEY, "50,30,75");
         defaultValues.put(MUTATION_SPLICE_SITE_COLOR_KEY, "150,0,150");
-        defaultValues.put(MUTATION_SYNONYMOUS_COLOR_KEY, "200,200,200");
+        defaultValues.put(MUTATION_SYNONYMOUS_COLOR_KEY, "200,170,200");
         defaultValues.put(MUTATION_TARGETED_REGION_COLOR_KEY, "236,155,43");
         defaultValues.put(MUTATION_UNKNOWN_COLOR_KEY, "0,180,225");
         //     * Nico's labels:   Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
