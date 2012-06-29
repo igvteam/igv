@@ -309,6 +309,7 @@ public class AlignmentDataManager {
         preload(context, renderOptions, bisulfiteContext, false);
 
         List<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(context.getReferenceFrame().getName());
+        if(loadedIntervals == null) return null;
         for(AlignmentInterval loadedInterval: loadedIntervals){
             // If there is any overlap in the loaded interval and the requested interval return it.
             if (loadedInterval.overlaps(chr, start, end)) {

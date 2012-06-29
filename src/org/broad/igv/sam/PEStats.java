@@ -82,7 +82,9 @@ public class PEStats {
         }
 
         // Force recomputation of orientation
-        orientation = null;
+        synchronized (this){
+            orientation = null;
+        }
     }
 
     public void compute(double minPercentile, double maxPercentile) {
@@ -107,7 +109,7 @@ public class PEStats {
         return maxThreshold;
     }
 
-    public Orientation getOrientation() {
+    public synchronized Orientation getOrientation() {
         if (orientation == null) {
             if (ffCount > frCount && ffCount > rfCount) {
                 orientation = Orientation.FF;
