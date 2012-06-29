@@ -1816,6 +1816,15 @@ public class IGV {
         return allTracks;
     }
 
+    public List<FeatureTrack> getFeatureTracks() {
+        List<FeatureTrack> featureTracks = new ArrayList<FeatureTrack>();
+        for (Track t : getAllTracks()) {
+            if (t instanceof FeatureTrack)
+                featureTracks.add((FeatureTrack) t);
+        }
+        return featureTracks;
+    }
+
     public void clearSelections() {
         for (Track t : getAllTracks()) {
             if (t != null)

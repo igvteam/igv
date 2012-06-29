@@ -1,22 +1,31 @@
 /*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Thu Jun 14 08:42:46 EDT 2012
  */
 
 package org.broad.igv.ui.panel;
 
-import java.awt.event.*;
-
-import com.jidesoft.swing.*;
+import com.jidesoft.swing.CheckBoxList;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.ListDataListener;
 
 /**
  * @author Stan Diamond
@@ -32,14 +41,12 @@ public class FeatureTrackSelectionDialog extends JDialog {
         initComponents();
         setModal(true);
 
-        Collection<Track> tracks = IGV.getInstance().getAllTracks();
+        Collection<FeatureTrack> tracks = IGV.getInstance().getFeatureTracks();
         ArrayList<TrackWrapper> wrappers = new ArrayList<TrackWrapper>();
         ArrayList<TrackWrapper> selectedObjects = new ArrayList<TrackWrapper>();
-        for (Track t : tracks) {
-            if (t instanceof FeatureTrack) {
-                TrackWrapper trackWrapper = new TrackWrapper((FeatureTrack) t);
-                wrappers.add(trackWrapper);
-            }
+        for (FeatureTrack t : tracks) {
+            TrackWrapper trackWrapper = new TrackWrapper(t);
+            wrappers.add(trackWrapper);
         }
         featureTrackList.setListData(wrappers.toArray());
         featureTrackList.setSelectedObjects(selectedObjects.toArray());
