@@ -305,7 +305,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void preload(RenderContext context) {
         System.out.println("preload " + (int) context.getOrigin() + "-" + (int) context.getEndLocation());
-        dataManager.preload(context, renderOptions, renderOptions.bisulfiteContext);
+        dataManager.preload(context, renderOptions, renderOptions.bisulfiteContext, true);
     }
 
 
@@ -345,21 +345,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Might be offscreen
         if (!context.getVisibleRect().intersects(downsampleRect)) return;
 
-        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
-        if (loadedInterval == null) return;
+        final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
+        if (loadedIntervals == null) return;
 
         Graphics2D g = context.getGraphic2DForColor(Color.black);
-        List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-        for (CachingQueryReader.DownsampledInterval interval : intervals) {
-            int x0 = context.bpToScreenPixel(interval.getStart());
-            int x1 = context.bpToScreenPixel(interval.getEnd());
-            int w = Math.max(1, x1 - x0);
-            // If there is room, leave a gap on one side
-            if (w > 5) w--;
-            // Greyscale from 0 -> 100 downsampled
-            //int gray = 200 - interval.getCount();
-            //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
-            g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
+
+        for (AlignmentInterval loadedInterval : loadedIntervals) {
+            List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+            for (CachingQueryReader.DownsampledInterval interval : intervals) {
+                int x0 = context.bpToScreenPixel(interval.getStart());
+                int x1 = context.bpToScreenPixel(interval.getEnd());
+                int w = Math.max(1, x1 - x0);
+                // If there is room, leave a gap on one side
+                if (w > 5) w--;
+                // Greyscale from 0 -> 100 downsampled
+                //int gray = 200 - interval.getCount();
+                //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
+                g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
+            }
         }
     }
 
@@ -640,14 +643,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
-            AlignmentInterval iv = dataManager.getLoadedInterval(frame);
-            if (iv == null) {
+            Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(frame);
+            if (loadedIntervals == null) {
                 return null;
             } else {
-                List<CachingQueryReader.DownsampledInterval> intervals = iv.getDownsampledIntervals();
-                CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
-                        FeatureUtils.getFeatureAt(position, 0, intervals);
-                return interval == null ? null : interval.getValueString();
+                for (AlignmentInterval loadedInterval : loadedIntervals) {
+                    List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+                    CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval)
+                            FeatureUtils.getFeatureAt(position, 0, intervals);
+                    if(interval != null) return interval.getValueString();
+                }
+                return null;
             }
         } else if (renderOptions.isPairedArcView()) {
             Alignment feature = null;
