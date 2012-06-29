@@ -40,12 +40,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     private int blockGap;
 
-    public ExomeReferenceFrame(ReferenceFrame otherFrame) {
-        super(otherFrame);
-        FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
-        init(geneTrack);
-    }
-
     public ExomeReferenceFrame(ReferenceFrame otherFrame, FeatureTrack referenceTrack) {
         super(otherFrame);
         init(referenceTrack);
