@@ -201,11 +201,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     }
 
-    @Override
-    public int getChromosomeLength() {
-        return genomeToExomePosition(super.getChromosomeLength());
-    }
-
     /**
      * Return the chromosome (genomic) position corresponding to the screen pixel position.
      *
