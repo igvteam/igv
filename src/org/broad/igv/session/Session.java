@@ -36,13 +36,6 @@ import java.util.*;
 public class Session {
     private static Logger log = Logger.getLogger(Session.class);
 
-    public static String[] PREF_KEYS = {
-            PreferenceManager.OVERLAY_MUTATION_TRACKS,
-            PreferenceManager.COLOR_MUTATIONS,
-            PreferenceManager.OVERLAY_ATTRIBUTE_KEY
-
-    };
-
     private int version;
     private String path;
     private String groupTracksBy;

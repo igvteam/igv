@@ -217,6 +217,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 if (genomeListItem.getId().equalsIgnoreCase(igv.getGenomeManager().getGenomeId())) {
                                     genome = igv.getGenomeManager().getCurrentGenome();
                                 } else {
+                                    igv.resetSession(null);
                                     genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
 
                                 }
@@ -230,8 +231,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             }
 
                             // TODO -- warn user.
-                            igv.resetSession(null);
-
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);
 

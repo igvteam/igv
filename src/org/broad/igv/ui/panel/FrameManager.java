@@ -89,7 +89,6 @@ public class FrameManager {
 
         if(tracks == null || tracks.isEmpty()) {
             tracks = new ArrayList<FeatureTrack>();
-            tracks.add(IGV.getInstance().getGeneTrack());
         }
 
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, tracks.get(0));

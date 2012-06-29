@@ -79,7 +79,7 @@ public class ExportTrackNamesMenuAction extends MenuAction {
                 pw.println();
             }
 
-            for (Track t : igv.getAllTracks(false)) {
+            for (Track t : igv.getAllTracks()) {
                 if (t.getTrackType() == TrackType.COPY_NUMBER || t.getTrackType() == TrackType.CNV) {
                     pw.print(t.getName());
                     for (ReferenceFrame frame : referenceFrames) {

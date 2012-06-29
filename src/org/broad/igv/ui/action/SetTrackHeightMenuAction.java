@@ -133,7 +133,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
         }
 
         // Get all tracks except the gene track
-        List<Track> tracks = IGV.getInstance().getAllTracks(false);
+        List<Track> tracks = IGV.getInstance().getAllTracks();
 
 
         double[] heights = new double[tracks.size()];

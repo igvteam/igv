@@ -29,7 +29,7 @@ public class FeatureTrackSelectionPanel extends JPanel {
             LayoutManager lm = new BoxLayout(this, BoxLayout.Y_AXIS);
             this.setLayout(lm);
 
-            Collection<Track> tracks = IGV.getInstance().getAllTracks(true);
+            Collection<Track> tracks = IGV.getInstance().getAllTracks();
             for(Track t : tracks) {
                 if(t instanceof FeatureTrack) {
 

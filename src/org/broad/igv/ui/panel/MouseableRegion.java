@@ -120,7 +120,7 @@ public class MouseableRegion {
 
         public Set<Track> getTracks() {
             Set<Track> selectedTracks = new HashSet();
-            for (Track track : IGV.getInstance().getAllTracks(true)) {
+            for (Track track : IGV.getInstance().getAllTracks()) {
                 String attributeValue = track.getAttributeValue(key);
                 if (attributeValue == null) {
                     continue;

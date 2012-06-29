@@ -359,16 +359,6 @@ public class IGVSessionReader implements SessionReader {
         }
         session.setVersion(version);
 
-        geneTrack = igv.getGeneTrack();
-        if (geneTrack != null) {
-            trackDictionary.put(geneTrack.getId(), Arrays.asList(geneTrack));
-        }
-        seqTrack = igv.getSequenceTrack();
-        if (seqTrack != null) {
-            trackDictionary.put(seqTrack.getId(), Arrays.asList(seqTrack));
-        }
-
-
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation);
 

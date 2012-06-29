@@ -160,7 +160,7 @@ public class CommandExecutor {
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
-        List<Track> tracks = igv.getAllTracks(false);
+        List<Track> tracks = igv.getAllTracks();
         boolean vAP = "false".equalsIgnoreCase(vAPString) ? false : true;
         for (Track track : tracks) {
             if (track instanceof AlignmentTrack) {

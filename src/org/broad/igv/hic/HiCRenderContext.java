@@ -42,7 +42,8 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public String getChr() {
-        return context.getChromosome().getName();
+        String tmpHack = "chr" + context.getChromosome().getName();
+        return tmpHack;
     }
 
     public double getOrigin() {

@@ -44,7 +44,7 @@ public class ScatterPlotUtils {
     }
 
     public static boolean hasPlottableTracks() {
-        List<Track> tracks = IGV.getInstance().getAllTracks(false);
+        List<Track> tracks = IGV.getInstance().getAllTracks();
         for (Track t : tracks) {
             if (plottableTypes.contains(t.getTrackType())) {
                 return true;
@@ -55,7 +55,7 @@ public class ScatterPlotUtils {
 
     private static ScatterPlotData getScatterPlotData(String chr, int start, int end, int zoom) {
 
-        List<Track> tracks = IGV.getInstance().getAllTracks(false);
+        List<Track> tracks = IGV.getInstance().getAllTracks();
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
         LinkedHashMap<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         LinkedHashSet<TrackType> types = new LinkedHashSet<TrackType>();

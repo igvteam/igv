@@ -45,8 +45,8 @@ public class AnalysisDialog extends JDialog {
         dialogOperations.remove(CombinedFeatureSource.Operation.MULTIINTER);
 
         operation.setModel(new DefaultComboBoxModel(dialogOperations.toArray()));
-        track1Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
-        track2Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks(true)).toArray()));
+        track1Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks()).toArray()));
+        track2Box.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks()).toArray()));
 
         operation.setRenderer(new OperationComboBoxRenderer());
         track1Box.setRenderer(new TrackComboBoxRenderer());

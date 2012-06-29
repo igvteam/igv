@@ -128,7 +128,7 @@ public class IGVMenuBar extends JMenuBar {
                         PreferenceManager.getInstance().getLastTrackDirectory(),
                         new File("visibleData.bed"),
                         FileDialogUtils.SAVE);
-                IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks(false));
+                IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks());
             }
         });
         menuItems.add(exportData);

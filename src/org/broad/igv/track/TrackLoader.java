@@ -995,7 +995,7 @@ public class TrackLoader {
 
 
     /**
-     * Load a ".mut" file (muation file) and create tracks.
+     * Load a mutation file (".mut" or ".maf").
      *
      * @param locator
      * @param newTracks

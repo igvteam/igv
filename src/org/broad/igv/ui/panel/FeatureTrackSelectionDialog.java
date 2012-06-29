@@ -32,17 +32,13 @@ public class FeatureTrackSelectionDialog extends JDialog {
         initComponents();
         setModal(true);
 
-        Collection<Track> tracks = IGV.getInstance().getAllTracks(true);
+        Collection<Track> tracks = IGV.getInstance().getAllTracks();
         ArrayList<TrackWrapper> wrappers = new ArrayList<TrackWrapper>();
-        FeatureTrack geneTrack = IGV.getInstance().getGeneTrack();
         ArrayList<TrackWrapper> selectedObjects = new ArrayList<TrackWrapper>();
         for (Track t : tracks) {
             if (t instanceof FeatureTrack) {
                 TrackWrapper trackWrapper = new TrackWrapper((FeatureTrack) t);
                 wrappers.add(trackWrapper);
-                if (t == geneTrack) {
-                    selectedObjects.add(trackWrapper);
-                }
             }
         }
         featureTrackList.setListData(wrappers.toArray());

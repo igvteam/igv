@@ -255,25 +255,6 @@ public class MainPanel extends JPanel implements Paintable {
         }
 
         igv.reset();
-
-        Track sequenceTrack = igv.getSequenceTrack();
-        Track geneTrack = igv.getGeneTrack();
-
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-            if (sequenceTrack != null) {
-                dataTrackScrollPane.getTrackPanel().addTrack(sequenceTrack);
-            }
-            if (geneTrack != null) {
-                dataTrackScrollPane.getTrackPanel().addTrack(geneTrack);
-            }
-        } else {
-            if (sequenceTrack != null) {
-                featureTrackScrollPane.getTrackPanel().addTrack(sequenceTrack);
-            }
-            if (geneTrack != null) {
-                featureTrackScrollPane.getTrackPanel().addTrack(geneTrack);
-            }
-        }
     }
 
     /**

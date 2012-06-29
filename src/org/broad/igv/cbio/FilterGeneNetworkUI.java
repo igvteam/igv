@@ -147,7 +147,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     if (network.vertexSet().size() == 0) {
                         MessageUtils.showMessage("No results found for " + HttpUtils.buildURLString(geneLoci, ", "));
                     } else {
-                        network.annotateAll(IGV.getInstance().getAllTracks(false));
+                        network.annotateAll(IGV.getInstance().getAllTracks());
                         UIUtilities.invokeOnEventThread(showUI);
                     }
                 } catch (Exception e) {

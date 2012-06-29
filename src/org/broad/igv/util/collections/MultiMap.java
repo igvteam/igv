@@ -71,7 +71,12 @@ public class MultiMap<K, V> {
     }
 
     public void printHtml(StringBuffer buffer, int max) {
+
+        if(map == null || map.isEmpty()) return;
+
         int count = 0;
+
+        buffer.append("<br>");
         for (Map.Entry<K, Object> entry : map.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof List) {

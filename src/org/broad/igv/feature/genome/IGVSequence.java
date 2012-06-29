@@ -129,17 +129,17 @@ public class IGVSequence implements Sequence {
     public void generateChromosomes(LinkedHashMap<String, List<Cytoband>> chrCytoMap, boolean chromosomesAreOrdered) {
 
         chromosomeLengths = new HashMap<String, Integer>();
+        chromosomeNames = new ArrayList<String>(chrCytoMap.size());
         for (Map.Entry<String, List<Cytoband>> entry : chrCytoMap.entrySet()) {
             String chr = entry.getKey();
-            List<Cytoband> cytobands = entry.getValue();
+            chromosomeNames.add(chr);
 
+            List<Cytoband> cytobands = entry.getValue();
             int length = cytobands.get(cytobands.size() - 1).getEnd();
-            final ChromosomeImpl chromosome = new ChromosomeImpl(chr, length);
             chromosomeLengths.put(chr, length);
         }
 
-        this.chromosomeNames = new LinkedList<String>(chromosomeLengths.keySet());
-        if (!chromosomesAreOrdered) {
+       if (!chromosomesAreOrdered) {
             Collections.sort(chromosomeNames, new ChromosomeComparator());
         }
     }

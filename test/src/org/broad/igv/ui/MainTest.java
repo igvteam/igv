@@ -69,7 +69,7 @@ public class MainTest{
 
         assertEquals(genome, igv.getGenomeManager().getGenomeId());
         boolean trackFound = false;
-        for (Track track : igv.getAllTracks(false)) {
+        for (Track track : igv.getAllTracks()) {
             trackFound |= track.getName().equals(trackName);
         }
 

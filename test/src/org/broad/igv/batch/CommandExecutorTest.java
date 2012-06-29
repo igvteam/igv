@@ -48,7 +48,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
 
     @After
     public void tearDown() throws Exception {
-        igv.removeTracks(igv.getAllTracks(false));
+        igv.removeTracks(igv.getAllTracks());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
                 String resp = exec.execute("sort " + typeStr + " " + roi.getLocusString());
                 assertEquals("OK", resp);
 
-                tracks = igv.getAllTracks(false);
+                tracks = igv.getAllTracks();
                 IGVTestHeadless.checkIsSorted(tracks, roi, type, FrameManager.getDefaultFrame().getZoom());
                 count++;
             }

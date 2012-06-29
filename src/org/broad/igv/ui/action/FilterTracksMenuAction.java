@@ -100,7 +100,7 @@ public class FilterTracksMenuAction extends MenuAction {
         }
 
         trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGV.getInstance().getAllTracks(false));
+        trackFilterPane.addTracks(IGV.getInstance().getAllTracks());
 
         while (true) {
 
@@ -267,7 +267,7 @@ public class FilterTracksMenuAction extends MenuAction {
         boolean showAllTracks = showAllTracksFilterCheckBox.isSelected();
         if (showAllTracks) {
 
-            List<Track> tracks = IGV.getInstance().getAllTracks(false);
+            List<Track> tracks = IGV.getInstance().getAllTracks();
             for (Track track : tracks) {
                 track.setVisible(showAllTracks);
             }
@@ -318,7 +318,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
         trackFilterPane = new TrackFilterPane(uniqueAttributeKeys, "Show tracks whose attribute", trackFilter);
         trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGV.getInstance().getAllTracks(false));
+        trackFilterPane.addTracks(IGV.getInstance().getAllTracks());
 
         // Evaluate the filter elements
         trackFilter.evaluate();
