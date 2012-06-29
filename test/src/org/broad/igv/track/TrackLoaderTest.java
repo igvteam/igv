@@ -75,7 +75,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
 
-    @Test(expected = TribbleException.MalformedFeatureFile.class)
+    @Test(expected = TribbleException.class)
     public void testBEDCodec1() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
         tstLoadFi(filepath, null, false);
