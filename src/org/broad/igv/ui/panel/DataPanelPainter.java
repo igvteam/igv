@@ -74,9 +74,6 @@ public class DataPanelPainter {
 
                 Rectangle panelClip = visibleRect;
 
-                RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
-                preloadTracks(groups, exomeContext, width, visibleRect);
-
                 List<ExomeBlock> blocks = exomeFrame.getBlocks();
                 int idx = exomeFrame.getFirstBlockIdx();
                 ExomeBlock b;
@@ -105,7 +102,6 @@ public class DataPanelPainter {
 
                         Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
-
                         Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
                         //Shape clip = exomeGraphics.getClip();
 
@@ -121,7 +117,10 @@ public class DataPanelPainter {
                         ReferenceFrame tmpFrame = new ReferenceFrame(frame);
                         tmpFrame.setOrigin(b.getGenomeStart(), false);
 
+
                         RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+                        preloadTracks(groups, tmpContext, rect);
+
                         paintFrame(groups, tmpContext, rect.width, rect);
 
                         tmpContext.dispose();
@@ -130,13 +129,11 @@ public class DataPanelPainter {
                     }
                     idx++;
 
-
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
 
 
                 // Draw lines @ gene boundaries
-
                 String chr = frame.getChrName();
                 List<ExomeReferenceFrame.Gene> genes = exomeFrame.getGenes(chr);
 
@@ -260,7 +257,6 @@ public class DataPanelPainter {
 
     private void  preloadTracks(final Collection<TrackGroup> groups,
                                final RenderContext context,
-                               int width,
                                final Rectangle visibleRect) {
 
         // Find the tracks that need loaded, we go to this bother to avoid loading tracks scrolled out of view

@@ -46,7 +46,7 @@ public class AlignmentDataManager {
     * We store a certain number of intervals per frame. This is the maximum number before discarding
     * the oldest.
      */
-    private int maxLoadedIntervals = 5;
+    private int maxLoadedIntervals = 50;
 
     private HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
