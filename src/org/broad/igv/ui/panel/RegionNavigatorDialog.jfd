@@ -24,6 +24,14 @@
         <boolean>true</boolean> 
        </object> 
       </void> 
+      <void method="addEvent"> 
+       <object class="com.jformdesigner.model.FormEvent"> 
+        <string>java.awt.event.WindowListener</string> 
+        <string>windowDeactivated</string> 
+        <string>thisWindowDeactivated</string> 
+        <boolean>true</boolean> 
+       </object> 
+      </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JPanel</string> 

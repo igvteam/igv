@@ -412,6 +412,10 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         synchRegions();
     }
 
+    private void thisWindowDeactivated(WindowEvent e) {
+        updateROIsFromRegionTable();
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -444,6 +448,10 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             @Override
             public void windowActivated(WindowEvent e) {
                 thisWindowActivated(e);
+            }
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                thisWindowDeactivated(e);
             }
         });
         Container contentPane = getContentPane();
@@ -488,25 +496,23 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                            new Object[][]{
-                                    {null, null, null, null},
-                            },
-                            new String[]{
-                                    "Chr", "Start", "End", "Description"
-                            }
+                        new Object[][] {
+                            {null, null, null, null},
+                        },
+                        new String[] {
+                            "Chr", "Start", "End", "Description"
+                        }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[]{
-                                String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[] {
+                            String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[]{
-                                false, true, true, true
+                        boolean[] columnEditable = new boolean[] {
+                            false, true, true, true
                         };
-
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
-
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
