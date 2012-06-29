@@ -28,6 +28,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
+import org.broad.igv.util.collections.LRUCache;
 
 import java.awt.*;
 import java.io.File;
@@ -83,7 +84,7 @@ public class CommandExecutor {
                     return gotoImmediate(args);
                 } else if (cmd.equalsIgnoreCase("goto")) {
                     result = goto1(args);
-                }else if (cmd.equalsIgnoreCase("gototrack")) {
+                } else if (cmd.equalsIgnoreCase("gototrack")) {
                     boolean res = IGV.getInstance().scrollToTrack(param1);
                     result = res ? "OK" : String.format("Error: Track %s not found", param1);
                 } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
@@ -150,7 +151,7 @@ public class CommandExecutor {
             }
             log.debug("Finished sleeping");
 
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error(e);
             result = "Error: " + e.getMessage();
         }
@@ -243,7 +244,7 @@ public class CommandExecutor {
             String genomePath = genomeID;
             if (!ParsingUtils.pathExists(genomePath)) {
                 String workingDirectory = (new File("tmp")).getParent();
-                genomePath = FileUtils.getAbsolutePath(genomeID,  workingDirectory);
+                genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
             }
             if (ParsingUtils.pathExists(genomePath)) {
                 try {
@@ -524,7 +525,7 @@ public class CommandExecutor {
                 }
             }
             //Convert from 1-based to 0-based
-            if(location != null) location--;
+            if (location != null) location--;
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
         }
         igv.repaintDataPanels();
@@ -545,9 +546,9 @@ public class CommandExecutor {
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
-        try{
+        try {
             IGV.getInstance().createSnapshotNonInteractive(file);
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error(e);
             return e.getMessage();
         }

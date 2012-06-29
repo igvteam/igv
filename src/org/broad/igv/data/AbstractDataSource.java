@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.data;
 
@@ -27,7 +20,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.Accumulator;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.collections.LRUCache;
 
 import java.util.*;
 
@@ -158,7 +151,7 @@ public abstract class AbstractDataSource implements DataSource {
         int adjustedEnd = Math.min(chrLength, endLocation);
 
 
-        if (cacheSummaryTiles && !FrameManager.isGeneListMode() &&!FrameManager.isExomeMode()) {
+        if (cacheSummaryTiles && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
             double tileWidth = ((double) chrLength) / nTiles;
             int startTile = (int) (adjustedStart / tileWidth);
             int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;

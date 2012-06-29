@@ -13,7 +13,7 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.collections.LRUCache;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 

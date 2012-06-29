@@ -13,7 +13,7 @@
 package org.broad.igv.methyl;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.collections.LRUCache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
