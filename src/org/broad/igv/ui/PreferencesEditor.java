@@ -81,6 +81,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+    private void extractBinSize() {
+        String sbin = this.binSizeText.getText();
+        if (sbin != null) {
+            sbin = sbin.trim();
+            try {
+                Integer.parseInt(sbin);
+                updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, sbin);
+            } catch (NumberFormatException numberFormatException) {
+                inputValidated = false;
+                MessageUtils.showMessage(
+                        "Bin size must be an integer.");
+            }
+        }
+    }
+
     private void resetBackgroundButtonActionPerformed(ActionEvent e) {
         final PreferenceManager prefMgr = PreferenceManager.getInstance();
         prefMgr.remove(PreferenceManager.BACKGROUND_COLOR);
@@ -94,18 +109,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void binSizeTextActionPerformed(ActionEvent e) {
-        String sbin = this.binSizeText.getText();
-        if (sbin != null) {
-            sbin = sbin.trim();
-            try {
-                Integer.parseInt(sbin);
-                updatedPreferenceMap.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, sbin);
-            } catch (NumberFormatException numberFormatException) {
-                inputValidated = false;
-                MessageUtils.showMessage(
-                        "Bin size must be an integer.");
-            }
-        }
+        extractBinSize();
     }
 
     private void hideFirstHPActionPerformed(ActionEvent e) {
@@ -150,6 +154,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
             server = server.trim();
             updatedPreferenceMap.put(PreferenceManager.IONTORRENT_SERVER, server);            
         }
+    }
+
+    private void binSizeTextFocusLost(FocusEvent e) {
+        extractBinSize();
     }
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
@@ -1712,6 +1720,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         @Override
                         public void focusLost(FocusEvent e) {
                             junctionFlankingTextFieldFocusLost(e);
+                            binSizeTextFocusLost(e);
                         }
                     });
                     panel6.add(binSizeText);
@@ -2916,6 +2925,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
         insertSizeMaxPercentileField.setEnabled(selected);
     }
 
+    public void selectTab(String tabname) {
+        if (tabname == null) return;
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            if (tabbedPane.getTitleAt(i).equalsIgnoreCase(tabname)) {
+                tabbedPane.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
 
     private void insertSizeMinPercentileFieldFocusLost(FocusEvent e) {
         insertSizeMinPercentileFieldActionPerformed(null);

@@ -267,7 +267,7 @@ public class Main {
                 }
                 
                 if (nonOptionArgs.length > 1) {
-                    // check if arg contains = for all args!
+                    // check if arg contains = for all args
                     for (String arg: nonOptionArgs ) {                        
                         arg = checkEqualsAndExtractParamter(arg);
                         if (arg != null) locusString = arg;

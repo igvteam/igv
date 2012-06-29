@@ -10,6 +10,7 @@ import com.iontorrent.utils.LocationListener;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -115,6 +116,13 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         this.distributions = distributions;
 
         initComponents();
+        this.setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyTyped(evt);
+            }
+        });
         recreateChart();
     }
 
@@ -139,6 +147,18 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         }
         if (binsize > 100) {
             binsize = 100;
+        }
+    }
+
+    private void moveLeft() {
+        if (getListener() != null) {
+            getListener().locationChanged(location - 1);
+        }
+    }
+
+    private void moveRight() {
+        if (getListener() != null) {
+            getListener().locationChanged(location + 1);
         }
     }
 
@@ -428,9 +448,16 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         btnSave = new javax.swing.JButton();
         btnConfigure = new javax.swing.JButton();
         btnTSL = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        spinBin = new javax.swing.JSpinner();
         btnLeft = new javax.swing.JButton();
         btnRight = new javax.swing.JButton();
 
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                formKeyTyped(evt);
+            }
+        });
         setLayout(new java.awt.BorderLayout());
 
         buttonToolBar.setRollover(true);
@@ -484,7 +511,7 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         buttonToolBar.add(btnSave);
 
         btnConfigure.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/configure.png"))); // NOI18N
-        btnConfigure.setToolTipText("Change the bin size");
+        btnConfigure.setToolTipText("Change settings such as the bin size, chart type and whether or not to use the first/last HP");
         btnConfigure.setFocusable(false);
         btnConfigure.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnConfigure.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -506,6 +533,20 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
             }
         });
         buttonToolBar.add(btnTSL);
+
+        jLabel1.setText("Bin size:");
+        buttonToolBar.add(jLabel1);
+
+        spinBin.setModel(new javax.swing.SpinnerNumberModel(25, 1, 200, 5));
+        spinBin.setMaximumSize(new java.awt.Dimension(50, 19));
+        spinBin.setMinimumSize(new java.awt.Dimension(47, 18));
+        spinBin.setPreferredSize(new java.awt.Dimension(47, 18));
+        spinBin.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinBinStateChanged(evt);
+            }
+        });
+        buttonToolBar.add(spinBin);
 
         btnLeft.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/iontorrent/views/arrow-left.png"))); // NOI18N
         btnLeft.setToolTipText("move to the next bas on the left");
@@ -536,11 +577,15 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
 
     private void btnConfigureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigureActionPerformed
         // let user pick bin sizem chart type etc
-        IGV.getInstance().doViewPreferences();
+        IGV.getInstance().doViewPreferences("IonTorrent");
+        
         // in case the hide setting was changed, we  have to recompute the distributions again
-        getListener().locationChanged(location);
+        refresh();
     }//GEN-LAST:event_btnConfigureActionPerformed
 
+    public void refresh() {
+        getListener().locationChanged(location);
+    }
     /**
      * Convert to export to Excel
      */
@@ -617,15 +662,11 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnCopyJsonActionPerformed
 
     private void btnLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLeftActionPerformed
-        if (getListener() != null) {
-            getListener().locationChanged(location - 1);
-        }
+        moveLeft();
     }//GEN-LAST:event_btnLeftActionPerformed
 
     private void btnRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRightActionPerformed
-        if (getListener() != null) {
-            getListener().locationChanged(location + 1);
-        }
+        moveRight();
     }//GEN-LAST:event_btnRightActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -678,6 +719,37 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
              JOptionPane.showMessageDialog(this, txt, "Please open a browser and paste the url below:", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_btnTSLActionPerformed
+
+    private void spinBinStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinBinStateChanged
+        if (this.spinBin.getValue() != null) {
+            changeBinSize(((Integer)spinBin.getValue()).intValue());            
+        }
+    }//GEN-LAST:event_spinBinStateChanged
+
+    private void changeBinSize(int newbinsize) {
+         this.binsize = newbinsize;
+            PreferenceManager pref = PreferenceManager.getInstance();
+            pref.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, ""+binsize);
+            refresh();
+    }
+    private void formKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyTyped
+        handleKeyEvent(evt);
+    }//GEN-LAST:event_formKeyTyped
+
+   
+    public void handleKeyEvent(KeyEvent e) {
+        int c = e.getKeyCode();
+        p("Got key: " + c + ", left/right etc: " + KeyEvent.VK_LEFT + "/" + KeyEvent.VK_RIGHT + "/" + KeyEvent.VK_UP + "/" + KeyEvent.VK_DOWN + "/" + KeyEvent.VK_DELETE);
+        if (c == KeyEvent.VK_LEFT || c == 37) {
+            this.moveLeft();
+        } else if (c == KeyEvent.VK_RIGHT || c == 39) {
+            this.moveRight();
+        } else if (c == KeyEvent.VK_UP || c == KeyEvent.VK_PAGE_UP || c == 38) {
+            changeBinSize(binsize + 5);            
+        } else if (c == KeyEvent.VK_DOWN || c == KeyEvent.VK_PAGE_DOWN || c == 40) {
+            changeBinSize(binsize - 5);            
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConfigure;
     private javax.swing.JButton btnCopy;
@@ -688,6 +760,8 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnTSL;
     private javax.swing.JToolBar buttonToolBar;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JSpinner spinBin;
     // End of variables declaration//GEN-END:variables
 
     public void setDistributions(FlowDistribution[] newdist) {
