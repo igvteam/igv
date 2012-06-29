@@ -111,6 +111,9 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
      * max x val in chart
      */
     private int maxx;
+    
+    /** to avoid infinite loops in event handling */
+    private boolean ignore_events;
 
     public FlowSignalDistributionPanel(FlowDistribution distributions[]) {
         this.distributions = distributions;
@@ -721,16 +724,22 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnTSLActionPerformed
 
     private void spinBinStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinBinStateChanged
+        if (ignore_events) return;
         if (this.spinBin.getValue() != null) {
             changeBinSize(((Integer)spinBin.getValue()).intValue());            
         }
     }//GEN-LAST:event_spinBinStateChanged
 
     private void changeBinSize(int newbinsize) {
-         this.binsize = newbinsize;
-            PreferenceManager pref = PreferenceManager.getInstance();
-            pref.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, ""+binsize);
-            refresh();
+        this.binsize = newbinsize;
+        PreferenceManager pref = PreferenceManager.getInstance();
+        pref.put(PreferenceManager.IONTORRENT_FLOWDIST_BINSIZE, ""+binsize);
+        refresh();
+        if (((Integer)spinBin.getValue()).intValue() != newbinsize) {
+            ignore_events = true;
+            spinBin.setValue(newbinsize);
+            ignore_events = false;
+        }
     }
     private void formKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyTyped
         handleKeyEvent(evt);
