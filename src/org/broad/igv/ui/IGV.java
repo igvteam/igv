@@ -1921,96 +1921,18 @@ public class IGV {
         }
     }
 
-
     /**
-     * @param reader        a reader for the gene (annotation) file.
-     * @param genome
-     * @param geneFileName
-     * @param geneTrackName
-     */
-    public void createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
-                                String annotationURL) {
-
-        FeatureDB.clearFeatures();
-        FeatureTrack geneFeatureTrack = null;
-
-        if (reader != null) {
-            FeatureParser parser;
-            if (GFFFeatureSource.isGFF(geneFileName)) {
-                parser = new GFFParser(geneFileName);
-            } else {
-                parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
-            }
-            if (parser == null) {
-                MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
-                        "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
-            } else {
-                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader, genome);
-                String name = geneTrackName;
-                if (name == null) name = "Genes";
-
-                String id = genome.getId() + "_genes";
-                geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
-                geneFeatureTrack.setMinimumHeight(5);
-                geneFeatureTrack.setHeight(35);
-                //geneFeatureTrack.setRendererClass(GeneRenderer.class);
-                geneFeatureTrack.setColor(Color.BLUE.darker());
-                TrackProperties props = parser.getTrackProperties();
-                if (props != null) {
-                    geneFeatureTrack.setProperties(parser.getTrackProperties());
-                }
-                geneFeatureTrack.setUrl(annotationURL);
-            }
-        }
-
-
-        SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
-        if (geneFeatureTrack != null) {
-            setGenomeTracks(geneFeatureTrack, seqTrack);
-        } else {
-            setGenomeTracks(null, seqTrack);
-        }
-
-    }
-
-    /**
-     * Create an annotation track for the genome from a supplied list of features
-     *
-     * @param genome
-     * @param features
-     */
-    public void createGeneTrack(Genome genome, List<org.broad.tribble.Feature> features) {
-
-        FeatureDB.clearFeatures();
-        FeatureTrack geneFeatureTrack = null;
-        String name = "Annotations";
-
-        String id = genome.getId() + "_genes";
-        geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
-        geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(35);
-        //geneFeatureTrack.setRendererClass(GeneRenderer.class);
-        geneFeatureTrack.setColor(Color.BLUE.darker());
-
-        SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
-        if (geneFeatureTrack != null) {
-            setGenomeTracks(geneFeatureTrack, seqTrack);
-        } else {
-            setGenomeTracks(null, seqTrack);
-        }
-
-    }
-
-    /**
-     * Replace current gene track with new one.  This is called upon switching genomes
+     * Add gene and sequence tracks.  This is called upon switching genomes.
      *
      * @param newGeneTrack
-     * @param newSeqTrack
+     * @param
      */
-    private void setGenomeTracks(FeatureTrack newGeneTrack, SequenceTrack newSeqTrack) {
+    public void setGenomeTracks(FeatureTrack newGeneTrack) {
 
         TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY) ?
                 getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
+        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
+
 
         panel.addTrack(newSeqTrack);
         panel.addTrack(newGeneTrack);

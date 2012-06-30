@@ -2,6 +2,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.track.FeatureTrack;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -61,4 +62,5 @@ public interface Genome {
     byte getReference(String chr, int pos);
 
 
+    FeatureTrack getGeneTrack();
 }

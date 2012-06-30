@@ -20,10 +20,6 @@ import java.util.concurrent.Future;
  */
 public class MatrixZoomData {
 
-    // A thread executor for computing Pearsons correlation
-    // TODO -- move this to some utility class
-
-
     private Chromosome chr1;  // Redundant, but convenient
     private Chromosome chr2;  // Redundant, but convenient
 
@@ -259,7 +255,7 @@ public class MatrixZoomData {
                     matrix[i][j] = is.readDouble();
                 }
             }
-            rm = new Array2DRowRealMatrix(rows, cols);
+            rm = new BlockRealMatrix(rows, cols);
             rm.setSubMatrix(matrix, 0, 0);
         } catch (IOException error) {
             System.err.println("IO error when saving Pearson's: " + error);

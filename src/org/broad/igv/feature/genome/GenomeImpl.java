@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.BufferedReader;
@@ -57,6 +58,7 @@ public class GenomeImpl implements Genome {
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
     private Sequence sequence;
+    private FeatureTrack geneTrack;
 
     public GenomeImpl(String id, String displayName, Sequence sequence) {
         this.id = id;
@@ -341,6 +343,15 @@ public class GenomeImpl implements Genome {
             }
         }
 
+    }
+
+    public void setGeneTrack(FeatureTrack geneFeatureTrack) {
+        this.geneTrack = geneFeatureTrack;
+    }
+
+    @Override
+    public FeatureTrack getGeneTrack() {
+        return geneTrack;
     }
 
     /**

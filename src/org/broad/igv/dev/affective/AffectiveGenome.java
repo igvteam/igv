@@ -4,6 +4,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVCommandBar;
 
@@ -196,6 +197,11 @@ public class AffectiveGenome implements Genome {
 
     public byte getReference(String chr, int pos) {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public FeatureTrack getGeneTrack() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void addChrAliases(Map<String, String> aliases) {

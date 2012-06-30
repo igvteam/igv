@@ -21,6 +21,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
@@ -312,29 +314,36 @@ public class IGVSessionReader implements SessionReader {
         Element element = (Element) node;
 
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
-        String genome = getAttribute(element, SessionAttribute.GENOME.getText());
-        if (genome != null && genome.length() > 0) {
-            // THis is a hack, and a bad one, but selecting a genome will actually "reset" the session so we have to
-            // save the path and restore it.
-            String sessionPath = session.getPath();
-            if (IGV.getInstance().getGenomeIds().contains(genome)) {
-                IGV.getInstance().selectGenomeFromList(genome);
+        String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
+        if (genomeId != null && genomeId.length() > 0) {
+            if (GenomeManager.getInstance().getGenomeId().equals(genomeId)) {
+                // We don't have to reload the genome, but the gene track for the current genome should be restored.
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
             } else {
-                String genomePath = genome;
-                if (!ParsingUtils.pathExists(genomePath)) {
-                    genomePath = FileUtils.getAbsolutePath(genome, session.getPath());
-                }
-                if (ParsingUtils.pathExists(genomePath)) {
-                    try {
-                        IGV.getInstance().loadGenome(genomePath, null);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error loading genome: " + genome);
-                    }
+                // Selecting a genome will actually "reset" the session so we have to
+                // save the path and restore it.
+                String sessionPath = session.getPath();
+                if (IGV.getInstance().getGenomeIds().contains(genomeId)) {
+                    IGV.getInstance().selectGenomeFromList(genomeId);
                 } else {
-                    MessageUtils.showMessage("Warning: Could not locate genome: " + genome);
+                    String genomePath = genomeId;
+                    if (!ParsingUtils.pathExists(genomePath)) {
+                        genomePath = FileUtils.getAbsolutePath(genomeId, session.getPath());
+                    }
+                    if (ParsingUtils.pathExists(genomePath)) {
+                        try {
+                            IGV.getInstance().loadGenome(genomePath, null);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error loading genome: " + genomeId);
+                        }
+                    } else {
+                        MessageUtils.showMessage("Warning: Could not locate genome: " + genomeId);
+                    }
                 }
+                session.setPath(sessionPath);
             }
-            session.setPath(sessionPath);
+
         }
 
 

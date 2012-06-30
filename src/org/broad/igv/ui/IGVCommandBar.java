@@ -212,10 +212,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 genome = AffectiveUtils.getGenome();
                                 igv.getGenomeManager().setCurrentGenome(genome);
                             } else {
-                                //If this is the same as currently loaded genome, no need to
-                                //do anything. Mainly to prevent double calling
+                                // If we haven't changed genomes we're done.
                                 if (genomeListItem.getId().equalsIgnoreCase(igv.getGenomeManager().getGenomeId())) {
-                                    genome = igv.getGenomeManager().getCurrentGenome();
+                                    return;
+                                    //genome = igv.getGenomeManager().getCurrentGenome();
                                 } else {
                                     igv.resetSession(null);
                                     genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
