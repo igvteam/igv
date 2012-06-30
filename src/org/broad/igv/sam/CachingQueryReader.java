@@ -12,20 +12,18 @@
 package org.broad.igv.sam;
 
 
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.collections.LRUCache;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;

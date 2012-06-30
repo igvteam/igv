@@ -22,6 +22,7 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
@@ -43,6 +44,6 @@ public class NewSessionMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         igv.resetSession(null); // Clear everything but the genome
-
+        igv.setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
     }
 }

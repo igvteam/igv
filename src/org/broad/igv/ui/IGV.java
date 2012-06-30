@@ -48,6 +48,7 @@ import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
+import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.util.SeekableFileStream;
 
@@ -1803,7 +1804,7 @@ public class IGV {
     /**
      * Return the list of all tracks in the order they appear on the screen
      *
-     *  @return
+     * @return
      */
     public List<Track> getAllTracks() {
         List<Track> allTracks = new ArrayList<Track>();
@@ -1813,6 +1814,15 @@ public class IGV {
         }
 
         return allTracks;
+    }
+
+    public List<FeatureTrack> getFeatureTracks() {
+        List<FeatureTrack> featureTracks = new ArrayList<FeatureTrack>();
+        for (Track t : getAllTracks()) {
+            if (t instanceof FeatureTrack)
+                featureTracks.add((FeatureTrack) t);
+        }
+        return featureTracks;
     }
 
     public void clearSelections() {

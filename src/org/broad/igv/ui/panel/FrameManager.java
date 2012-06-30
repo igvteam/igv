@@ -17,19 +17,17 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -59,6 +57,7 @@ public class FrameManager {
     /**
      * Set exome mode. We return true if a change was made,
      * false if not.
+     *
      * @param b
      * @return
      */
@@ -79,16 +78,15 @@ public class FrameManager {
     private static boolean switchToExomeMode() {
 
         Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-        FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
-        List<FeatureTrack> tracks = dlg.getSelectedTracks();
-        if(tracks.size() > 1){
+        List<FeatureTrack> featureTracks = IGV.getInstance().getFeatureTracks();
+        List<FeatureTrack> tracks;
+        if (featureTracks.size() == 1) {
+            tracks = featureTracks;
+        } else {
+            FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
             dlg.setVisible(true);
-            if(dlg.isCanceled) return false;
-        }
-
-
-        if(tracks == null || tracks.isEmpty()) {
-            tracks = new ArrayList<FeatureTrack>();
+            if (dlg.isCanceled) return false;
+            tracks = dlg.getSelectedTracks();
         }
 
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, tracks.get(0));

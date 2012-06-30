@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -42,6 +35,7 @@ import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -131,25 +125,25 @@ public class CoverageTrack extends AbstractTrack {
         if (autoScale & dataManager != null) {
             final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals();
             if (loadedIntervals != null) {
-                for (AlignmentInterval interval : loadedIntervals) {
-                    rescaleInterval(interval);
-                }
+                rescaleIntervals(loadedIntervals);
             }
         }
     }
 
     public void rescale(ReferenceFrame frame) {
         if (autoScale & dataManager != null) {
-            rescaleInterval(dataManager.getLoadedInterval(frame));
+            rescaleIntervals(dataManager.getLoadedIntervals(frame));
         }
     }
 
-    private void rescaleInterval(AlignmentInterval interval) {
-        if (interval != null) {
-            int max = Math.max(10, interval.getMaxCount());
-            DataRange.Type type = getDataRange().getType();
-            super.setDataRange(new DataRange(0, 0, max));
-            getDataRange().setType(type);
+    private void rescaleIntervals(Collection<AlignmentInterval> intervals) {
+        for (AlignmentInterval interval : intervals) {
+            if (interval != null) {
+                int max = Math.max(10, interval.getMaxCount());
+                DataRange.Type type = getDataRange().getType();
+                super.setDataRange(new DataRange(0, 0, max));
+                getDataRange().setType(type);
+            }
         }
     }
 
@@ -161,13 +155,17 @@ public class CoverageTrack extends AbstractTrack {
 
         if (context.getScale() < minVisibleScale) {
             //
-            AlignmentInterval interval = null;
+            Collection<AlignmentInterval> intervals = null;
             if (dataManager != null) {
-                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
+                intervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
             }
-            if (interval != null && interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                List<AlignmentCounts> counts = interval.getCounts();
-                intervalRenderer.paint(context, rect, counts);
+            if (intervals != null) {
+                for (AlignmentInterval interval : intervals) {
+                    if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
+                        List<AlignmentCounts> counts = interval.getCounts();
+                        intervalRenderer.paint(context, rect, counts);
+                    }
+                }
             }
         } else if (dataSource != null) {
             // Use precomputed data source, if any
@@ -191,24 +189,23 @@ public class CoverageTrack extends AbstractTrack {
                 rect.x + rect.width, rect.y + rect.height);
 
         // Draw scale
-        drawScale(context, rect);
+        if (!FrameManager.isExomeMode())
+            drawScale(context, rect);
     }
 
-    private void drawScale(RenderContext context, Rectangle rect) {
+    public void drawScale(RenderContext context, Rectangle rect) {
         DataRange range = getDataRange();
         if (range != null) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
             Font smallFont = FontManager.getFont(8);
-            try {
-                g.setFont(smallFont);
-                String scale = "[" + (int) range.getMinimum() + " - " +
-                        (int) range.getMaximum() + "]";
-                g.drawString(scale, rect.x + 5, rect.y + 10);
+            g.setFont(smallFont);
+            String scale = "[" + (int) range.getMinimum() + " - " +
+                    (int) range.getMaximum() + "]";
 
-            } finally {
-                g.setFont(font);
-            }
+            g.drawString(scale, rect.x + 5, rect.y + 10);
+
+            g.setFont(font);
         }
     }
 
@@ -235,12 +232,14 @@ public class CoverageTrack extends AbstractTrack {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-            if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-                final int pos = (int) position; // - 1;
-                AlignmentCounts counts = interval.getAlignmentCounts(pos);
-                if (counts != null) {
-                    return counts.getValueStringAt(pos);
+            Collection<AlignmentInterval> intervals = dataManager.getLoadedIntervals(frame);
+            for (AlignmentInterval interval : intervals) {
+                if (interval != null && interval.contains(chr, (int) position, (int) position)) {
+                    final int pos = (int) position;
+                    AlignmentCounts counts = interval.getAlignmentCounts(pos);
+                    if (counts != null) {
+                        return counts.getValueStringAt(pos);
+                    }
                 }
             }
         } else {
@@ -273,10 +272,9 @@ public class CoverageTrack extends AbstractTrack {
         return 0;
     }
 
-
     /**
      * Class to render coverage track, including mismatches.
-     *
+     * <p/>
      * NOTE:  This class has been extensively optimized with the aid of a profiler,  attempts to "clean up" this code
      * should be done with frequent profiling, or it will likely have detrimental performance impacts.
      */
@@ -356,7 +354,6 @@ public class CoverageTrack extends AbstractTrack {
                 if ((intervalEnd - intervalStart) < TEN_MB) {
                     refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
                 }
-
 
 
                 final int start = alignmentCounts.getStart();

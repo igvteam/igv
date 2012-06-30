@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.util.collections;
 
 import java.util.ArrayList;
@@ -6,7 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A "map-like" class that supports duplicate keys.  Note this violates the map contract,  thus "map-like".
+ * A "map-like" class that supports multiple values for a given key.
+ * Note this violates the map contract,  thus "map-like".
  * Created to support GFF column 9 and Genbank tag-value pairs.
  */
 public class MultiMap<K, V> {
@@ -72,7 +84,7 @@ public class MultiMap<K, V> {
 
     public void printHtml(StringBuffer buffer, int max) {
 
-        if(map == null || map.isEmpty()) return;
+        if (map == null || map.isEmpty()) return;
 
         int count = 0;
 

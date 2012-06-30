@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
@@ -28,6 +29,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
+import org.broad.igv.util.collections.LRUCache;
 
 import java.awt.*;
 import java.io.File;
@@ -83,7 +85,7 @@ public class CommandExecutor {
                     return gotoImmediate(args);
                 } else if (cmd.equalsIgnoreCase("goto")) {
                     result = goto1(args);
-                }else if (cmd.equalsIgnoreCase("gototrack")) {
+                } else if (cmd.equalsIgnoreCase("gototrack")) {
                     boolean res = IGV.getInstance().scrollToTrack(param1);
                     result = res ? "OK" : String.format("Error: Track %s not found", param1);
                 } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
@@ -96,7 +98,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
-                    igv.resetSession(null);
+                    newSession();
                 } else if (cmd.equalsIgnoreCase("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equalsIgnoreCase("sort")) {
@@ -150,13 +152,18 @@ public class CommandExecutor {
             }
             log.debug("Finished sleeping");
 
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error(e);
             result = "Error: " + e.getMessage();
         }
         log.info(result);
 
         return result;
+    }
+
+    private void newSession() {
+        igv.resetSession(null);
+        igv.setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
@@ -243,7 +250,7 @@ public class CommandExecutor {
             String genomePath = genomeID;
             if (!ParsingUtils.pathExists(genomePath)) {
                 String workingDirectory = (new File("tmp")).getParent();
-                genomePath = FileUtils.getAbsolutePath(genomeID,  workingDirectory);
+                genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
             }
             if (ParsingUtils.pathExists(genomePath)) {
                 try {
@@ -524,7 +531,7 @@ public class CommandExecutor {
                 }
             }
             //Convert from 1-based to 0-based
-            if(location != null) location--;
+            if (location != null) location--;
             igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
         }
         igv.repaintDataPanels();
@@ -545,9 +552,9 @@ public class CommandExecutor {
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
-        try{
+        try {
             IGV.getInstance().createSnapshotNonInteractive(file);
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error(e);
             return e.getMessage();
         }

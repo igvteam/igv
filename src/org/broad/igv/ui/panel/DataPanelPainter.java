@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -29,11 +22,13 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
-import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.*;
+import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.RenderContextImpl;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -74,9 +69,6 @@ public class DataPanelPainter {
 
                 Rectangle panelClip = visibleRect;
 
-                RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
-                preloadTracks(groups, exomeContext, width, visibleRect);
-
                 List<ExomeBlock> blocks = exomeFrame.getBlocks();
                 int idx = exomeFrame.getFirstBlockIdx();
                 ExomeBlock b;
@@ -86,6 +78,7 @@ public class DataPanelPainter {
                 int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
+
                 do {
                     b = blocks.get(idx);
 
@@ -105,7 +98,6 @@ public class DataPanelPainter {
 
                         Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
-
                         Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
                         //Shape clip = exomeGraphics.getClip();
 
@@ -121,7 +113,10 @@ public class DataPanelPainter {
                         ReferenceFrame tmpFrame = new ReferenceFrame(frame);
                         tmpFrame.setOrigin(b.getGenomeStart(), false);
 
+
                         RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
+                        preloadTracks(groups, tmpContext, rect);
+
                         paintFrame(groups, tmpContext, rect.width, rect);
 
                         tmpContext.dispose();
@@ -130,13 +125,19 @@ public class DataPanelPainter {
                     }
                     idx++;
 
-
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
 
+                //TODO Hack to keep from rendering scale multiple times
+                List<Track> visibleTracks = getVisibleTracks(groups);
+                for (Track track : visibleTracks) {
+                    if (track instanceof CoverageTrack) {
+                        ((CoverageTrack) track).drawScale(context, visibleRect);
+                    }
+                }
+
 
                 // Draw lines @ gene boundaries
-
                 String chr = frame.getChrName();
                 List<ExomeReferenceFrame.Gene> genes = exomeFrame.getGenes(chr);
 
@@ -258,11 +259,7 @@ public class DataPanelPainter {
 
     }
 
-    private void  preloadTracks(final Collection<TrackGroup> groups,
-                               final RenderContext context,
-                               int width,
-                               final Rectangle visibleRect) {
-
+    private List<Track> getVisibleTracks(final Collection<TrackGroup> groups) {
         // Find the tracks that need loaded, we go to this bother to avoid loading tracks scrolled out of view
         final List<Track> visibleTracks = new ArrayList<Track>();
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
@@ -274,11 +271,20 @@ public class DataPanelPainter {
                 }
             }
         }
+        return visibleTracks;
+    }
+
+    private void preloadTracks(final Collection<TrackGroup> groups,
+                               final RenderContext context,
+                               final Rectangle visibleRect) {
+
+
+        final List<Track> visibleTracks = getVisibleTracks(groups);
 
         Runnable runnable = new Runnable() {
             public void run() {
                 for (Track track : visibleTracks) {
-                    RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), null);
+                    RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
                     track.preload(newContext);
                 }
             }

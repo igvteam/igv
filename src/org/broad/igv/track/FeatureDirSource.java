@@ -19,9 +19,9 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.LRUCache;
 import org.broad.tribble.Feature;
 
 import java.io.BufferedReader;
