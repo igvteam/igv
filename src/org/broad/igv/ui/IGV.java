@@ -549,6 +549,8 @@ public class IGV {
             PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
         }
 
+        resetSession(null);
+
         Genome genome = getGenomeManager().loadGenome(path, monitor);
         //If genome loading cancelled
         if (genome == null) return;
@@ -560,11 +562,11 @@ public class IGV {
         getGenomeManager().addUserDefineGenomeItem(genomeListItem);
 
         contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+        contentPane.getCommandBar().updateGenome(genome);
         contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
-        // Reset the session (unload all tracks)
-        resetSession(null);
 
+        // Reset the session (unload all tracks)
 
     }
 
@@ -1945,7 +1947,9 @@ public class IGV {
 
 
         panel.addTrack(newSeqTrack);
-        panel.addTrack(newGeneTrack);
+        if (newGeneTrack != null) {
+            panel.addTrack(newGeneTrack);
+        }
 
     }
 

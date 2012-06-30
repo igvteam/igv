@@ -135,7 +135,6 @@ public class GenomeManager {
 
             setCurrentGenome(newGenome);
 
-
             if (IGV.hasInstance() && !Globals.isHeadless()) {
                 FeatureTrack geneFeatureTrack = newGenome.getGeneTrack();
                 IGV.getInstance().setGenomeTracks(geneFeatureTrack);
@@ -169,7 +168,7 @@ public class GenomeManager {
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
             FeatureTrack geneFeatureTrack = createGeneTrack(newGenome, genbankParser.getFeatures());
-            IGV.getInstance().setGenomeTracks(geneFeatureTrack);
+            newGenome.setGeneTrack(geneFeatureTrack);
         }
 
         return newGenome;
