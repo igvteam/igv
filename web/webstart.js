@@ -1,4 +1,4 @@
-// $Id: webstart.js,v 1.13 2008-01-14 15:05:28 grossben Exp $
+// $Id: webstart.js 33879 2012-06-20 09:55:02Z chantal.roth@lifetech.com $
 //------------------------------------------------------------------------------
 /** Copyright (c) 2007 Memorial Sloan-Kettering Cancer Center.
  **
@@ -79,8 +79,8 @@ function timeoutHandler() {
 //        hostname += (":" + port);
 //    }
     // note: context_path is set in stylesAndScripts.jsp
-    var webstart_url = "http://www.broadinstitute.org/igv/projects/current/igv_gs_prod.jnlp";
-
+  //  var webstart_url = "http://www.broadinstitute.org/igv/projects/current/igv_gs_prod.jnlp";
+     var webstart_url = "igv.jnlp";
     if (sessionURL) {
         webstart_url += "?sessionURL=" + sessionURL;
         if (genome) {

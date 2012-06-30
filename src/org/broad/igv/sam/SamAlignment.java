@@ -78,6 +78,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
 
+    private String flowOrder;
+    
     /**
      * Converts a DNA integer value to its reverse compliment integer value.
      */
@@ -105,7 +107,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
 
     public SamAlignment(SAMRecord record) {
-        String flowOrder = null;
+        flowOrder = null;
         String keySequence = null;
 
         this.record = record;
@@ -164,6 +166,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }      // End constructor
 
+    public String getFlowOrder() {
+        return flowOrder;
+    }
 
     private void setMatePair(Genome genome) {
         if (record.getReadPairedFlag()) {

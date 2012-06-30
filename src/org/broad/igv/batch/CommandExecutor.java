@@ -350,7 +350,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        for (String f : files) {
+        for (String f : files) {           
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 

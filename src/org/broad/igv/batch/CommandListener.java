@@ -34,6 +34,7 @@ import java.net.URLDecoder;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.HashMap;
 import java.util.Map;
+import org.broad.igv.PreferenceManager;
 
 public class CommandListener implements Runnable {
 
@@ -245,6 +246,13 @@ public class CommandListener implements Runnable {
 
         //track%20type=bigBed%20name=%27hES_HUES1_p28.RRBS_CpG_meth%27%20description=%27RRBS%20CpG%20methylation%20for%20hES_HUES1_p28.RRBS%27%20visibility=4%20useScore=1%20color=0,60,120
 
+        /** from what server was IGV started? Used to link to other tools/apps */
+        
+        String server = params.get("server");
+        if (server == null || server.trim().length()<1) server = PreferenceManager.getInstance().get(PreferenceManager.IONTORRENT_SERVER);
+        else {
+            PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, server);
+        }
         if (command.equals("/load")) {
             String file = params.get("file");
             if (file == null) {
@@ -259,6 +267,7 @@ public class CommandListener implements Runnable {
 
 
             if (file != null) {
+                PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_RESULTS, file);
                 String genome = params.get("genome");
                 if (genome == null) {
                     genome = params.get("db");  // <- UCSC track line param

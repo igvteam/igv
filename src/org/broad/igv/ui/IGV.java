@@ -739,10 +739,13 @@ public class IGV {
     }
 
 
+    final public void doViewPreferences() {
+             doViewPreferences(null);
+    }
     /**
      * Open the user preferences dialog
      */
-    final public void doViewPreferences() {
+    final public void doViewPreferences(final String tabToSelect) {
 
         UIUtilities.invokeOnEventThread(new Runnable() {
 
@@ -752,6 +755,9 @@ public class IGV {
                         PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY);
 
                 PreferencesEditor dialog = new PreferencesEditor(mainFrame, true);
+                if (tabToSelect != null) {
+                    dialog.selectTab(tabToSelect);
+                }
                 dialog.setVisible(true);
 
 
@@ -2253,7 +2259,8 @@ public class IGV {
                     for (String p : tokens) {
                         ResourceLocator rl = new ResourceLocator(p);
                         if (names != null && idx < names.length) {
-                            rl.setName(names[idx]);
+                            String name = names[idx];                            
+                            rl.setName(name);
                         }
                         rl.setIndexPath(indexFile);
                         locators.add(rl);
