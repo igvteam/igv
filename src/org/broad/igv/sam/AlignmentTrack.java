@@ -337,17 +337,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderAlignments(context, alignmentsRect);
     }
 
-    private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
+      private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
 
         // Might be offscreen
-        if (!context.getVisibleRect().intersects(downsampleRect)) {
-            return;
-        }
+        if (!context.getVisibleRect().intersects(downsampleRect)) return;
 
-        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
-        if (loadedInterval == null) {
-            return;
-        }
+        final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
+        if (loadedIntervals == null) return;
 
         Graphics2D g = context.getGraphic2DForColor(Color.black);
 
@@ -358,9 +354,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 int x1 = context.bpToScreenPixel(interval.getEnd());
                 int w = Math.max(1, x1 - x0);
                 // If there is room, leave a gap on one side
-            if (w > 5) {
-                w--;
-            }
+                if (w > 5) w--;
                 // Greyscale from 0 -> 100 downsampled
                 //int gray = 200 - interval.getCount();
                 //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
