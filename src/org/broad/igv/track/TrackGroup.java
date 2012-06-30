@@ -88,11 +88,19 @@ public class TrackGroup {
 
 
     public void add(Track track) {
-        this.tracks.add(track);
+        if (track == null) {
+            log.info("Attempt to add null track");
+        } else {
+            tracks.add(track);
+        }
     }
 
     public void add(int pos, Track track) {
-        this.tracks.add(pos, track);
+        if (track == null) {
+            log.info("Attempt to add null track");
+        } else {
+            tracks.add(pos, track);
+        }
     }
 
     public void addAll(Collection<Track> trackList) {
@@ -158,7 +166,7 @@ public class TrackGroup {
 
         int h = 0;
         for (Track track : tracks) {
-            if (track.isVisible()) {
+            if (track != null && track.isVisible()) {
                 h += track.getHeight();
             }
         }
