@@ -299,7 +299,7 @@ public class Main {
                         sessionFile = val;
 
                     } else {
-                         log.info("Got dataFileString: "+key+"="+val);
+                        log.info("Got dataFileString: "+key+"="+val);
                         dataFileString = val;
                     }
                     return null;
@@ -309,7 +309,11 @@ public class Main {
                     locusString = val;
                     return null;
                 }
-                return val;
+                else {
+                    log.info("Currently not handled: "+key+"="+val);
+                    return null;
+                }
+                
             }
             return arg;
         }

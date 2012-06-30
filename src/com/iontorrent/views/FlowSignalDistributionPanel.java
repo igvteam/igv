@@ -699,8 +699,8 @@ public class FlowSignalDistributionPanel extends javax.swing.JPanel {
         
         if (!server.startsWith("http")) server = "http://"+server;
         
-        
-        String url = server+":8080/TSL?restartApplication";
+        if (server.lastIndexOf(":") < 7) server += ":8080";
+        String url = server+"/TSL?restartApplication";
         if (res != null && res.length()>0) url += "&res_dir="+res;
         if (bam != null && bam.length()>0) url += "&bam="+bam;
         String readnames = this.getReadNames();
