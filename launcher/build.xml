@@ -89,7 +89,7 @@
 
 
     <!-- Sign all jars if a keystore is defined -->
-    <target name="sign-jars" if="keystore">
+    <target name="sign-jars" >
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
                  keystore="${keystore}"/>
     </target>

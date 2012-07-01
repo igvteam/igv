@@ -739,7 +739,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         color = getShadedColor(qual, color, alignmentColor, prefs);
                     } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
                         if (block.hasFlowSignals()) {
-                            int flowSignal = (int) block.getFlowSignalSubContext(loc - start).signals[1][0];
+                            int flowSignal = (int) block.getFlowSignalSubContext(loc - start).getCurrentSignal();
                             int expectedFlowSignal;
                             if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
                                 expectedFlowSignal = 100 * (short) ((flowSignal + 50.0) / 100.0);
