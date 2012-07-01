@@ -252,29 +252,43 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                //String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
                 String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
-                firstArg=checkEqualsAndExtractParamter(firstArg);                
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
                             || firstArg.endsWith(".session")) {
                         sessionFile = firstArg;
-
                     } else {
                         dataFileString = firstArg;
                     }
                 }
-                
                 if (nonOptionArgs.length > 1) {
-                    // check if arg contains = for all args
-                    for (String arg: nonOptionArgs ) {                        
-                        arg = checkEqualsAndExtractParamter(arg);
-                        if (arg != null) locusString = arg;
-                        
-                    }
-                    
+                    locusString = nonOptionArgs[1];
                 }
+
+// Alternative implementation
+//                String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);
+//                firstArg=checkEqualsAndExtractParamter(firstArg);
+//                if (firstArg != null && !firstArg.equals("ignore")) {
+//                    log.info("Loading: " + firstArg);
+//                    if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
+//                            || firstArg.endsWith(".session")) {
+//                        sessionFile = firstArg;
+//
+//                    } else {
+//                        dataFileString = firstArg;
+//                    }
+//                }
+//
+//                if (nonOptionArgs.length > 1) {
+//                    // check if arg contains = for all args
+//                    for (String arg: nonOptionArgs ) {
+//                        arg = checkEqualsAndExtractParamter(arg);
+//                        if (arg != null) locusString = arg;
+//
+//                    }
+//
+//                }
             }
         }
 

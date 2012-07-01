@@ -11,11 +11,13 @@
 package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import com.iontorrent.data.FlowDistribution;
 import com.iontorrent.data.ReadInfo;
 import com.iontorrent.utils.LocationListener;
 import com.iontorrent.utils.SimpleDialog;
 import com.iontorrent.views.FlowSignalDistributionPanel;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -27,6 +29,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import javax.swing.*;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -139,6 +142,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
         }
     }
+
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();
 
     static {
@@ -149,6 +153,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToPubString.put(BisulfiteContext.GCH, "GCH");
         bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
     }
+
     protected static final Map<BisulfiteContext, Pair<byte[], byte[]>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<byte[], byte[]>>();
 
     static {
@@ -159,6 +164,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<byte[], byte[]>(new byte[]{'G'}, new byte[]{'H'}));
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
+
     static final ShadeBasesOption DEFAULT_SHADE_BASES_OPTION = ShadeBasesOption.QUALITY;
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
     static final boolean DEFAULT_SHOWALLBASES = false;
@@ -197,9 +203,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.dataManager = dataManager;
 
         ionTorrent = dataManager.isIonTorrent();
-        p("IsIonTorrent = "+ionTorrent);
-        // FOR NOW, SET TO TRUE AS A LOT OF BAM FILES DO NOT HAVE THIS INFO YET!
-        ionTorrent = true;
+
         minimumHeight = 50;
         maximumHeight = Integer.MAX_VALUE;
 
@@ -337,7 +341,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderAlignments(context, alignmentsRect);
     }
 
-      private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
+    private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
 
         // Might be offscreen
         if (!context.getVisibleRect().intersects(downsampleRect)) return;
@@ -531,35 +535,35 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
                 // we don't want the beginning or the end of the alignment! HP might might give misleading results
                 if (alignment.getAlignmentStart() == location || alignment.getAlignmentEnd() == location) {
-                    p(location+" for read "+alignment.getReadName()+" is at an end, not taking it");
+                    log.info(location + " for read " + alignment.getReadName() + " is at an end, not taking it");
                     continue;
                 }
                 // also throw away positions near the end if we have the same base until the end if the user preference is set that way
                 boolean hideFirstHPs = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
-                 
+
                 if (hideFirstHPs) {
-                    char baseatpos = (char)alignment.getBase(location);
+                    char baseatpos = (char) alignment.getBase(location);
                     boolean hp = true;
                     for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
-                        if ((char)alignment.getBase(pos) != baseatpos) {
+                        if ((char) alignment.getBase(pos) != baseatpos) {
                             hp = false;
                             break;
                         }
                     }
                     if (hp) {
-                        p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at START.");                   
+                        log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at START.");
                         continue;
                     }
                     hp = true;
-                    for (int pos = location+1; pos < alignment.getAlignmentEnd(); pos++) {
-                        if ((char)alignment.getBase(pos) != baseatpos) {
+                    for (int pos = location + 1; pos < alignment.getAlignmentEnd(); pos++) {
+                        if ((char) alignment.getBase(pos) != baseatpos) {
                             hp = false;
                             break;
                         }
                     }
                     if (hp) {
-                        p("Got all same bases "+baseatpos+" for read "+alignment.getReadName()+" at END");
-                        continue;                    
+                        log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at END");
+                        continue;
                     }
                 }
                 AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
@@ -613,16 +617,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 name += "forward strand";
             } else {
                 name += "reverse strand";
-        }
+            }
             char base = bases.charAt(which);
-            name += ", " + base+", "+nrflows+" flows";            
+            name += ", " + base + ", " + nrflows + " flows";
             String info = locus + ", " + bases;
 
             FlowDistribution dist = new FlowDistribution(location, nrflows, map, name, base, forward, reverse, info);
             dist.setReadInfos(allelereadinfos.get(which));
             alleledist.add(dist);
             which++;
-    }
+        }
         return alleledist;
     }
 
@@ -739,8 +743,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             } else {
                 for (AlignmentInterval loadedInterval : loadedIntervals) {
                     List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-                CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
-                    if(interval != null) return interval.getValueString();
+                    CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
+                    if (interval != null) return interval.getValueString();
                 }
                 return null;
             }
@@ -1031,6 +1035,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
          * delta, maxInsertSizeThreshold - delta, maxInsertSizeThreshold,
          * Color.blue, AlignmentRenderer.grey1, Color.red); }
          */
+
         /**
          * Called by session writer. Return instance variable values as a map of
          * strings. Used to record current state of object. Variables with
@@ -1759,7 +1764,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             add(item);
         }
 
-//        public void addCoverageDepthMenuItem() {
+        //        public void addCoverageDepthMenuItem() {
 //            // Change track height by attribute
 //            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
 //            item.addActionListener(new ActionListener() {
@@ -1952,13 +1957,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             ButtonGroup group = new ButtonGroup();
 
 
-            
             JCheckBoxMenuItem itemb = new JCheckBoxMenuItem("forward and reverse (2 data series)");
             groupMenu.add(itemb);
             group.add(itemb);
             itemb.setSelected(true);
             itemb.setFont(itemb.getFont().deriveFont(Font.BOLD));
-            
+
             JCheckBoxMenuItem item = new JCheckBoxMenuItem("both strands combined");
             groupMenu.add(item);
             group.add(item);
@@ -1984,7 +1988,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                     public void actionPerformed(ActionEvent aEvt) {
                         showFlowSignalDistribution(location, e.getFrame(), true, true);
-    }
+                    }
                 });
                 itemf.addActionListener(new ActionListener() {
 
@@ -2020,12 +2024,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             @Override
             public void locationChanged(int newLocation) {
-                p("Got new location from panel: " + newLocation + ", (old location was: " + location + ")");
+                log.info("Got new location from panel: " + newLocation + ", (old location was: " + location + ")");
                 FlowDistribution[] newdist = getFlowDistributions(forward, reverse, frame, newLocation);
                 distributionPanel.setDistributions(newdist);
                 //frame.jumpTo(frame.getChrName(), location, location);
-                
-                frame.centerOnLocation(newLocation+1);
+
+                frame.centerOnLocation(newLocation + 1);
                 IGV.getInstance().repaintDataAndHeaderPanels();
                 IGV.getInstance().repaintStatusAndZoomSlider();
             }
@@ -2059,7 +2063,4 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return distributions;
     }
 
-    private void p(String msg) {
-        log.info(msg);
-    }
 }
