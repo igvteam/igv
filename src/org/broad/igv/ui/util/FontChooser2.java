@@ -45,7 +45,7 @@ import javax.swing.JLabel;
  * preview.
  *
  * @author Ian Darwin
- * @version $Id: FontChooser.java,v 1.19 2004/03/20 20:44:56 ian Exp $
+ * @version $Id: FontChooser2.java 33567 2012-06-18 08:34:43Z chantal.roth@lifetech.com $
  */
 public class FontChooser2 extends JDialog {
 

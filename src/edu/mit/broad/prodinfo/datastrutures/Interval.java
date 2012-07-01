@@ -22,7 +22,7 @@ package edu.mit.broad.prodinfo.datastrutures;
  * Turf covered runs from the start value inclusive, up to, but not including, the end value.
  *
  * @author tsharpe
- * @version $Revision: 51146 $
+ * @version $Revision: 33567 $
  */
 public interface Interval
 {

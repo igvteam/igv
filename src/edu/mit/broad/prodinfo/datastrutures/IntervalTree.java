@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * Not thread-safe, and cannot be made so.
  *
  * @author tsharpe
- * @version $Revision: 51146 $
+ * @version $Revision: 33567 $
  */
 public class IntervalTree<V>
 {
