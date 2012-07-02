@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 
@@ -31,7 +24,9 @@ package org.broad.igv.feature.genome;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -115,8 +110,41 @@ public class GenomeImpl implements Genome {
         }
     }
 
+    /**
+     * {@code aliases} will be a map either from alias -> chromonome,
+     * or chromoname -> alias. Don't assume. We check the keys/values against
+     * genome chromosome
+     *
+     * @param aliases
+     */
     public void addChrAliases(Map<String, String> aliases) {
-        chrAliasTable.putAll(aliases);
+        Set<String> keys = aliases.keySet();
+        Collection<String> values = aliases.values();
+        Set<String> chromoNames = new HashSet<String>(chromosomeNames);
+
+        //First check if values are chromosome names
+        int chromoCol = 1;
+        if (!chromoNames.containsAll(values)) {
+            chromoCol = 0;
+        }
+
+        if (chromoCol == 1) {
+            chrAliasTable.putAll(aliases);
+            return;
+        }
+
+        //Then check keys
+        if (!chromoNames.containsAll(keys)) {
+            return;
+        }
+
+        //No-op if we aren't sure
+        if (chromoCol == 0) {
+            for (String key : keys) {
+                String val = aliases.get(key);
+                chrAliasTable.put(val, key);
+            }
+        }
     }
 
 
