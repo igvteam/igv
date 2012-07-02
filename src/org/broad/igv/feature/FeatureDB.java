@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
@@ -89,7 +88,7 @@ public class FeatureDB {
      * @param feature
      * @return true if successfully added, false if not
      */
-    public static boolean put(String name, NamedFeature feature) {
+    static boolean put(String name, NamedFeature feature) {
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
             Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
@@ -115,6 +114,7 @@ public class FeatureDB {
                 }
 
                 return currentList.add(feature);
+
             }
         }
     }
