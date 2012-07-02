@@ -1,6 +1,7 @@
 package org.broad.igv.hic;
 
-import org.broad.igv.hic.data.Chromosome;
+//import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 /**
@@ -39,7 +40,7 @@ public class Context {
     }
 
     public int getChrLength() {
-        return chromosome.getSize();
+        return chromosome.getLength();
     }
 
     public double getScale() {

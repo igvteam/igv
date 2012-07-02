@@ -3,16 +3,13 @@ package org.broad.igv.hic.data;
 import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -315,7 +312,7 @@ public class MatrixZoomData {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
 
-        int nBins = chr1.getSize() / binSize + 1;
+        int nBins = chr1.getLength() / binSize + 1;
 
         SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
 

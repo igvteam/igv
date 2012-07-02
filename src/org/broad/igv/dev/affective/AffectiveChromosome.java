@@ -55,4 +55,9 @@ public class AffectiveChromosome implements Chromosome {
         // Return nothing for now.  This could be used to mark time intervals,  e.g. hours
         return null;
     }
+
+    @Override
+    public int getIndex() {
+        return 0;
+    }
 }

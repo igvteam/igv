@@ -21,6 +21,8 @@ package org.broad.igv.hic.tools;
 import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.ChromosomeImpl;
 import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.sam.Alignment;
@@ -121,9 +123,9 @@ public class HiCTools {
             long genomeLength = 0;
             for (Chromosome c : chromosomes) {
                 if (c != null)
-                    genomeLength += c.getSize();
+                    genomeLength += c.getLength();
             }
-            chromosomes.set(0, new Chromosome(0, "All", (int) (genomeLength / 1000)));
+            chromosomes.set(0, new ChromosomeImpl(0, "All", (int) (genomeLength / 1000)));
 
             String[] tokens = args[1].split(",");
             List<String> files = new ArrayList<String>(tokens.length);
@@ -185,7 +187,7 @@ public class HiCTools {
                     String name = tokens[0];
                     int length = Integer.parseInt(tokens[1]);
                     genomeLength += length;
-                    chromosomes.add(idx, new Chromosome(idx, name, length));
+                    chromosomes.add(idx, new ChromosomeImpl(idx, name, length));
                     idx++;
                 } else {
                     System.out.println("Skipping " + nextLine);
@@ -193,7 +195,7 @@ public class HiCTools {
             }
 
             // Add the "psuedo-chromosome" All, representing the whole genome.  Units are in kilo-bases
-            chromosomes.set(0, new Chromosome(0, "All", (int) (genomeLength / 1000)));
+            chromosomes.set(0, new ChromosomeImpl(0, "All", (int) (genomeLength / 1000)));
 
 
             return chromosomes;

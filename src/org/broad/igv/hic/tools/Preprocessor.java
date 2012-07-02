@@ -2,6 +2,7 @@ package org.broad.igv.hic.tools;
 
 //import org.broad.igv.hic.MainWindow;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.util.CompressionUtils;
@@ -90,7 +91,7 @@ public class Preprocessor {
             fos.writeInt(nChrs);
             for (Chromosome chromosome : chromosomes) {
                 fos.writeString(chromosome.getName());
-                fos.writeInt(chromosome.getSize());
+                fos.writeInt(chromosome.getLength());
             }
 
             // Attribute dictionary -- only 1 attribute for now, version
@@ -248,7 +249,7 @@ public class Preprocessor {
         MatrixPP matrix = null;
 
         if (isWholeGenome) {
-            int genomeLength = chromosomes.get(0).getSize();  // <= whole genome in KB
+            int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
             int binSize = genomeLength / 500;
             matrix = new MatrixPP(c1, c2, binSize);
         } else {
@@ -290,7 +291,7 @@ public class Preprocessor {
     private int getGenomicPosition(int chr, int pos) {
         long len = 0;
         for (int i = 1; i < chr; i++) {
-            len += chromosomes.get(i).getSize();
+            len += chromosomes.get(i).getLength();
         }
         len += pos;
 
@@ -599,7 +600,7 @@ public class Preprocessor {
                 // Size block (submatrices) to be ~500 bins wide.
                 Chromosome chrom1 = chromosomes.get(chr1);
                 Chromosome chrom2 = chromosomes.get(chr2);
-                int len = Math.max(chrom1.getSize(), chrom2.getSize());
+                int len = Math.max(chrom1.getLength(), chrom2.getLength());
                 int nBins = len / binSize;   // Size of chrom in bins
                 int nColumns = Math.max(1, nBins / 500);
 
@@ -735,7 +736,7 @@ public class Preprocessor {
             this.zoom = zoom;
 
 
-            int nBinsX = chromosomes.get(chr1).getSize() / binSize + 1;
+            int nBinsX = chromosomes.get(chr1).getLength() / binSize + 1;
             blockBinCount = nBinsX / blockColumnCount + 1;
             blocks = new LinkedHashMap<Integer, Block>(blockColumnCount * blockColumnCount);
         }

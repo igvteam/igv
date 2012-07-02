@@ -16,6 +16,7 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
@@ -122,7 +123,7 @@ public class MainWindow extends JFrame {
         long bound = 0;
         for (int i = 1; i < chromosomes.length; i++) {
             Chromosome c = chromosomes[i];
-            bound += (c.getSize() / 1000);
+            bound += (c.getLength() / 1000);
             chromosomeBoundaries[i - 1] = (int) bound;
         }
         heatmapPanel.setChromosomeBoundaries(chromosomeBoundaries);

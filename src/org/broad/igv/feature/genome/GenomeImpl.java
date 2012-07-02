@@ -67,9 +67,11 @@ public class GenomeImpl implements Genome {
         this.sequence = sequence;
         this.chromosomeNames = sequence.getChromosomeNames();
         chromosomeMap = new LinkedHashMap(chromosomeNames.size());
-        for (String chr : sequence.getChromosomeNames()) {
+
+        for (int i=0; i<chromosomeNames.size(); i++) {
+            String chr = sequence.getChromosomeNames().get(i);
             int length = sequence.getChromosomeLength(chr);
-            chromosomeMap.put(chr, new ChromosomeImpl(chr, length));
+            chromosomeMap.put(chr, new ChromosomeImpl(i, chr, length));
         }
         initializeChromosomeAliases();
     }

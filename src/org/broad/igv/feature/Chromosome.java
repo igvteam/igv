@@ -12,4 +12,6 @@ public interface Chromosome {
     String getName();
 
     List<Cytoband> getCytobands();
+
+    int getIndex();
 }

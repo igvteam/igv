@@ -38,10 +38,12 @@ import java.util.List;
  */
 public class ChromosomeImpl implements Chromosome {
     private String name;
+    private int index;  // Order in the chromosome (for convenience)
     private int length = 0;
     private List<Cytoband> cytobands;
 
-    public ChromosomeImpl(String name, int length) {
+    public ChromosomeImpl(int index, String name, int length) {
+        this.index = index;
         this.name = name;
         this.length = length;
 
@@ -54,6 +56,11 @@ public class ChromosomeImpl implements Chromosome {
 
     }
 
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
 
     /**
      * @return List of cytobands for this chromosome, if any.  Can be null.
@@ -76,6 +83,10 @@ public class ChromosomeImpl implements Chromosome {
     }
 
     public String getName() {
+        return name;
+    }
+
+    public String toString() {
         return name;
     }
 

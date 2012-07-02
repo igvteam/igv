@@ -1,8 +1,8 @@
 package org.broad.igv.hic.tools;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.HiCGlobals;
-import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.LittleEndianInputStream;

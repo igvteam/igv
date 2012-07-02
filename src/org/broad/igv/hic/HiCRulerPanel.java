@@ -20,7 +20,7 @@ package org.broad.igv.hic;
 
 import org.apache.log4j.Logger;
 
-import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
@@ -145,7 +145,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
             int genomeCoord = 0;
             for (int i = 1; i < chromosomes.length; i++) {
                 Chromosome c = chromosomes[i];
-                genomeCoord += (c.getSize() / 1000);
+                genomeCoord += (c.getLength() / 1000);
                 int x2 = frame.getScreenPosition(genomeCoord);
 
                 int x = (x1 + x2) / 2;
@@ -166,7 +166,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
             double spacing = ts.getMajorTick();
 
             // Find starting point closest to the current origin
-            int maxX = frame.getChromosome().getSize();
+            int maxX = frame.getChromosome().getLength();
             int nTick = (int) (frame.getOrigin() / spacing) - 1;
             int l = (int) (nTick * spacing);
             int x = frame.getScreenPosition(l);

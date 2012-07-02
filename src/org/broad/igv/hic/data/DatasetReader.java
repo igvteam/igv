@@ -1,10 +1,10 @@
 package org.broad.igv.hic.data;
 
 
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.ChromosomeImpl;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
@@ -46,7 +46,7 @@ public class DatasetReader {
             for (int i = 0; i < nchrs; i++) {
                 String name = dis.readString();
                 int size = dis.readInt();
-                chromosomes[i] = new Chromosome(i, name, size);
+                chromosomes[i] = new ChromosomeImpl(i, name, size);
             }
             dataset.setChromosomes(chromosomes);
 

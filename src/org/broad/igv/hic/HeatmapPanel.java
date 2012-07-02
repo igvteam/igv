@@ -1,6 +1,6 @@
 package org.broad.igv.hic;
 
-import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.ObjectCache;
 
@@ -119,14 +119,14 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 int xGenomeCoord = 0;
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
-                    xGenomeCoord += (c.getSize() / 1000);
+                    xGenomeCoord += (c.getLength() / 1000);
                     int x = hic.xContext.getScreenPosition(xGenomeCoord);
                     g.drawLine(x, 0, x, getHeight());
                 }
                 int yGenomeCoord = 0;
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
-                    yGenomeCoord += (c.getSize() / 1000);
+                    yGenomeCoord += (c.getLength() / 1000);
                     int y = hic.yContext.getScreenPosition(yGenomeCoord);
                     g.drawLine(0, y, getWidth(), y);
                 }

@@ -1,6 +1,6 @@
 package org.broad.igv.hic.tools;
 
-import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.feature.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
@@ -50,7 +50,7 @@ public class DensityCalculation {
         long totalLen = 0;
         for(Chromosome chromosome : chromosomes) {
             if (chromosome != null)
-                totalLen += chromosome.getSize();
+                totalLen += chromosome.getLength();
         }
 
         numberOfBins = (int) (totalLen / gridSize) + 1;
@@ -113,7 +113,7 @@ public class DensityCalculation {
 
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
-            int nChrBins = chr.getSize() / gridSize;
+            int nChrBins = chr.getLength() / gridSize;
 
             // this is not actually the true "possible", which would count everything, but is off by a factor
             // of binSize, essentially.  it makes the numbers more reasonable and is what the Python code does.
@@ -178,7 +178,7 @@ public class DensityCalculation {
             }
 
 
-            int len = chr.getSize();
+            int len = chr.getLength();
             int nGrids = len / gridSize + 1;
             double expectedCount = 0;
             for (int n = 0; n < nGrids; n++) {

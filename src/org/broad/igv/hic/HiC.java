@@ -1,25 +1,9 @@
 package org.broad.igv.hic;
 
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 
 /**
