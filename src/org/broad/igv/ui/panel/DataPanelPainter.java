@@ -45,6 +45,11 @@ public class DataPanelPainter {
 
     private static Color exomeBorderColor = new Color(190, 190, 255);
 
+    /**
+     * Hacky field to keep scales from drawing multiple times in Exome view
+     */
+    private boolean scalesDrawn;
+
     public synchronized void paint(Collection<TrackGroup> groups,
                                    RenderContext context,
                                    int width,
@@ -80,6 +85,7 @@ public class DataPanelPainter {
                 int pEnd;
                 int exomeOrigin = ((ExomeReferenceFrame) frame).getExomeOrigin();
                 int visibleBlockCount = 0;
+                scalesDrawn = false;
 
                 do {
                     b = blocks.get(idx);
@@ -128,15 +134,6 @@ public class DataPanelPainter {
                 }
                 while ((pStart < visibleRect.x + visibleRect.width) && idx < blocks.size());
 
-                //TODO Hack to keep from rendering scale multiple times
-                List<Track> visibleTracks = getVisibleTracks(groups);
-                for (Track track : visibleTracks) {
-                    if (track instanceof CoverageTrack) {
-                        ((CoverageTrack) track).drawScale(context, visibleRect);
-                    }
-                }
-
-
                 // Draw lines @ gene boundaries
                 String chr = frame.getChrName();
                 List<ExomeReferenceFrame.Gene> genes = exomeFrame.getGenes(chr);
@@ -184,7 +181,7 @@ public class DataPanelPainter {
 
         int trackX = 0;
         int trackY = 0;
-
+        boolean anyScaleDrawn = false;
 
         for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
             TrackGroup group = groupIter.next();
@@ -227,6 +224,14 @@ public class DataPanelPainter {
                             Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
                             draw(track, rect, context);
                             trackY += trackHeight;
+
+                            //TODO Hack to keep from rendering scale multiple times in Exome View
+                            if (track instanceof CoverageTrack && FrameManager.isExomeMode() && !scalesDrawn) {
+                                int x = context.getGraphics().getClipBounds().x;
+                                Rectangle scaleRect = new Rectangle(x, rect.y, rect.width, rect.height);
+                                ((CoverageTrack) track).drawScale(context, scaleRect);
+                                anyScaleDrawn = true;
+                            }
                         }
                     }
                 }
@@ -238,6 +243,7 @@ public class DataPanelPainter {
                 }
             }
         }
+        scalesDrawn |= anyScaleDrawn;
     }
 
     final private void draw(Track track, Rectangle rect, RenderContext context) {
