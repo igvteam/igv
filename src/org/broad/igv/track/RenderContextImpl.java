@@ -40,8 +40,6 @@ public class RenderContextImpl implements RenderContext {
     private JComponent panel;
     private Rectangle visibleRect;
 
-    private static final int MIN_CACHE_SIZE = 5;
-    private int cacheSize = MIN_CACHE_SIZE;
 
     public RenderContextImpl(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
@@ -127,16 +125,5 @@ public class RenderContextImpl implements RenderContext {
         }
         graphicCacheByColor.clear();
     }
-
-    @Override
-    public void setCacheSize(int cacheSize) {
-        this.cacheSize = Math.max(MIN_CACHE_SIZE, cacheSize);
-    }
-
-    @Override
-    public int getCacheSize() {
-        return cacheSize;
-    }
-
 
 }

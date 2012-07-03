@@ -36,13 +36,4 @@ public interface RenderContext {
 
     void dispose();
 
-    /**
-     * Data managers can load a certain number
-     * of intervals at once. This sets that size.
-     * Implementations may have their own floors,
-     * so this may not have an effect
-     */
-    public void setCacheSize(int cacheSize);
-
-    public int getCacheSize();
 }

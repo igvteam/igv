@@ -56,6 +56,8 @@ public class AlignmentDataManager {
 
     private boolean showSpliceJunctions;
 
+    private static final int CACHE_SIZE = 5;
+
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
@@ -407,7 +409,7 @@ public class AlignmentDataManager {
         String key = context.getReferenceFrame().getName();
         List<AlignmentInterval> currentValue = loadedIntervalMap.get(key);
         if (currentValue != null) {
-            while(currentValue.size() > context.getCacheSize() - 1){
+            while(currentValue.size() > CACHE_SIZE - 1){
                 currentValue.remove(0);
             }
             currentValue.add(interval);
