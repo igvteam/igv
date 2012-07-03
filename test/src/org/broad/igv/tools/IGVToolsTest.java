@@ -575,19 +575,28 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCountAliased() throws Exception {
+    public void testCountAliasedForward() throws Exception {
+        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome";
         tstCountAliased(TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam",
-                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam");
+                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam",
+                genfile);
     }
 
+    @Test
+    public void testCountAliasedReversed() throws Exception {
+        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased_reversed.genome";
+        tstCountAliased(TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam",
+                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam",
+                genfile);
+    }
 
     /**
      * Test count when using a custom alias file.
      * Should supply a file using normal chromosome names, and aliases
      * which are defined in the genome file.
      */
-    public void tstCountAliased(String normfile, String aliasedfile) throws Exception {
-        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome";
+    public void tstCountAliased(String normfile, String aliasedfile, String genfile) throws Exception {
+
         String outfile = TestUtils.DATA_DIR + "out/tmpcount1.wig";
         File outFi = new File(outfile);
         outFi.delete();
