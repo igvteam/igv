@@ -23,6 +23,9 @@ public class HiCRenderContext implements RenderContext {
 
     private Map<Color, Graphics2D> graphicCacheByColor;
 
+    private static final int MIN_CACHE_SIZE = 5;
+    private int cacheSize = MIN_CACHE_SIZE;
+
     public HiCRenderContext(Context context, JComponent panel,
                             Graphics2D graphics, Rectangle visibleRect,
                             Genome genome) {
@@ -125,6 +128,16 @@ public class HiCRenderContext implements RenderContext {
     protected void finalize() throws Throwable {
         super.finalize();
         dispose();
+    }
+
+    @Override
+    public void setCacheSize(int cacheSize) {
+        this.cacheSize = Math.max(MIN_CACHE_SIZE, cacheSize);
+    }
+
+    @Override
+    public int getCacheSize() {
+        return cacheSize;
     }
 
 

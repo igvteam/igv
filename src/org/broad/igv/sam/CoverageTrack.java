@@ -137,13 +137,12 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     private void rescaleIntervals(Collection<AlignmentInterval> intervals) {
+        if(intervals == null) return;
         for (AlignmentInterval interval : intervals) {
-            if (interval != null) {
                 int max = Math.max(10, interval.getMaxCount());
                 DataRange.Type type = getDataRange().getType();
                 super.setDataRange(new DataRange(0, 0, max));
                 getDataRange().setType(type);
-            }
         }
     }
 

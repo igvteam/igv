@@ -64,15 +64,18 @@ public class DataPanelPainter {
             if (frame.isExomeMode()) {
 
                 ExomeReferenceFrame exomeFrame = (ExomeReferenceFrame) frame;
-
                 int blockGap = exomeFrame.getBlockGap();
 
                 Rectangle panelClip = visibleRect;
 
                 List<ExomeBlock> blocks = exomeFrame.getBlocks();
                 int idx = exomeFrame.getFirstBlockIdx();
-                ExomeBlock b;
+                int numBlocks = blocks.size() - idx;
 
+                RenderContext exomeContext = new RenderContextImpl(null, null, frame, visibleRect);
+                preloadTracks(groups, exomeContext, visibleRect, numBlocks);
+
+                ExomeBlock b;
                 int lastPStart = 0;
                 int pStart;
                 int pEnd;
@@ -115,8 +118,6 @@ public class DataPanelPainter {
 
 
                         RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
-                        preloadTracks(groups, tmpContext, rect);
-
                         paintFrame(groups, tmpContext, rect.width, rect);
 
                         tmpContext.dispose();
@@ -276,7 +277,8 @@ public class DataPanelPainter {
 
     private void preloadTracks(final Collection<TrackGroup> groups,
                                final RenderContext context,
-                               final Rectangle visibleRect) {
+                               final Rectangle visibleRect,
+                               final int cacheSize) {
 
 
         final List<Track> visibleTracks = getVisibleTracks(groups);
@@ -285,6 +287,7 @@ public class DataPanelPainter {
             public void run() {
                 for (Track track : visibleTracks) {
                     RenderContextImpl newContext = new RenderContextImpl(null, null, context.getReferenceFrame(), visibleRect);
+                    newContext.setCacheSize(cacheSize);
                     track.preload(newContext);
                 }
             }
