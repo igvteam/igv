@@ -272,8 +272,10 @@ public class GenomeManager {
             newGenome.setCytobands(cytobandMap);
         }
 
-        Map<String, String> aliases = loadChrAliases(genomeDescriptor);
-        if (aliases != null) newGenome.addChrAliases(aliases);
+        Collection<Map.Entry<String, String>> aliases = loadChrAliases(genomeDescriptor);
+        if (aliases != null) {
+            newGenome.addChrAliases(aliases);
+        }
         // Do this last so that user defined aliases have preference.
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
@@ -354,16 +356,16 @@ public class GenomeManager {
         }
     }
 
-    static Map<String, String> loadChrAliases(BufferedReader br) throws IOException {
+    static Collection<Map.Entry<String, String>> loadChrAliases(BufferedReader br) throws IOException {
         String nextLine = "";
-        Map<String, String> aliasTable = new HashMap<String, String>();
+        Collection<Map.Entry<String, String>> aliasTuples = new ArrayList<Map.Entry<String, String>>();
         while ((nextLine = br.readLine()) != null) {
             String[] kv = nextLine.split("\t");
             if (kv.length > 1) {
-                aliasTable.put(kv[0], kv[1]);
+                aliasTuples.add(new AbstractMap.SimpleImmutableEntry<String, String>(kv[0], kv[1]));
             }
         }
-        return aliasTable;
+        return aliasTuples;
     }
 
     /**
@@ -372,14 +374,13 @@ public class GenomeManager {
      * @param genomeDescriptor
      * @return The chromosome alias map, or null if none is defined.
      */
-    private Map<String, String> loadChrAliases(GenomeDescriptor genomeDescriptor) {
+    private Collection<Map.Entry<String, String>> loadChrAliases(GenomeDescriptor genomeDescriptor) {
         InputStream aliasStream = null;
         try {
             aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                Map<String, String> chrAliasTable = loadChrAliases(reader);
-                return chrAliasTable;
+                return loadChrAliases(reader);
             } else {
                 return null;
             }

@@ -68,7 +68,7 @@ public class GenomeImpl implements Genome {
         this.chromosomeNames = sequence.getChromosomeNames();
         chromosomeMap = new LinkedHashMap(chromosomeNames.size());
 
-        for (int i=0; i<chromosomeNames.size(); i++) {
+        for (int i = 0; i < chromosomeNames.size(); i++) {
             String chr = sequence.getChromosomeNames().get(i);
             int length = sequence.getChromosomeLength(chr);
             chromosomeMap.put(chr, new ChromosomeImpl(i, chr, length));
@@ -115,8 +115,31 @@ public class GenomeImpl implements Genome {
         }
     }
 
-    public void addChrAliases(Map<String, String> aliases) {
-        chrAliasTable.putAll(aliases);
+    /**
+     * Pouplate the chr alias table.  The input map is treated as a collection of non-directional pairings.  The
+     * directionality is determined by the "true" chromosome names.
+     *
+     * @param aliases
+     */
+    public void addChrAliases(Collection<Map.Entry<String, String>> aliases) {
+
+        // Convert names to a set for fast "contains" testing.
+        Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
+
+        for (Map.Entry<String, String> entry : aliases) {
+            String v1 = entry.getKey();
+            String v2 = entry.getValue();
+            if(chrNameSet.contains(v1)) {
+                chrAliasTable.put(v2, v1);
+            }
+            else if(chrNameSet.contains(v2)) {
+                chrAliasTable.put(v1, v2);
+            }
+            else {
+               // Nothing to do
+                log.info("Undefined chr alias mapping: " + v1 + " - " + v2 + ".  Ignored.");
+            }
+        }
     }
 
 

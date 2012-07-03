@@ -64,7 +64,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         aliases.put("aaa:bbb", "chr20");
 
         if (genome instanceof GenomeImpl) {
-            ((GenomeImpl) genome).addChrAliases(aliases);
+            ((GenomeImpl) genome).addChrAliases(aliases.entrySet());
         }
 
         SearchCommand cmd;
