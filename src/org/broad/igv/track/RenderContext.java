@@ -35,4 +35,5 @@ public interface RenderContext {
     int bpToScreenPixel(double location);
 
     void dispose();
+
 }

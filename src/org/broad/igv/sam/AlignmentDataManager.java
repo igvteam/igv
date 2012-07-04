@@ -42,11 +42,6 @@ public class AlignmentDataManager {
      */
     //TODO -- this is a  potential memory leak, this map needs cleared when the gene list changes
     private HashMap<String, List<AlignmentInterval>> loadedIntervalMap = new HashMap(50);
-    /*
-    * We store a certain number of intervals per frame. This is the maximum number before discarding
-    * the oldest.
-     */
-    private int maxLoadedIntervals = 50;
 
     private HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
@@ -60,6 +55,8 @@ public class AlignmentDataManager {
     private AlignmentTrack.ExperimentType experimentType;
 
     private boolean showSpliceJunctions;
+
+    private static final int CACHE_SIZE = 5;
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -412,7 +409,7 @@ public class AlignmentDataManager {
         String key = context.getReferenceFrame().getName();
         List<AlignmentInterval> currentValue = loadedIntervalMap.get(key);
         if (currentValue != null) {
-            if(currentValue.size() > maxLoadedIntervals - 1){
+            while(currentValue.size() > CACHE_SIZE - 1){
                 currentValue.remove(0);
             }
             currentValue.add(interval);

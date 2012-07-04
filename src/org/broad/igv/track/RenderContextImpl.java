@@ -40,6 +40,7 @@ public class RenderContextImpl implements RenderContext {
     private JComponent panel;
     private Rectangle visibleRect;
 
+
     public RenderContextImpl(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
         this.panel = panel;
@@ -124,6 +125,5 @@ public class RenderContextImpl implements RenderContext {
         }
         graphicCacheByColor.clear();
     }
-
 
 }

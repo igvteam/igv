@@ -127,5 +127,4 @@ public class HiCRenderContext implements RenderContext {
         dispose();
     }
 
-
 }

@@ -137,13 +137,12 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     private void rescaleIntervals(Collection<AlignmentInterval> intervals) {
+        if (intervals == null) return;
         for (AlignmentInterval interval : intervals) {
-            if (interval != null) {
-                int max = Math.max(10, interval.getMaxCount());
-                DataRange.Type type = getDataRange().getType();
-                super.setDataRange(new DataRange(0, 0, max));
-                getDataRange().setType(type);
-            }
+            int max = Math.max(10, interval.getMaxCount());
+            DataRange.Type type = getDataRange().getType();
+            super.setDataRange(new DataRange(0, 0, max));
+            getDataRange().setType(type);
         }
     }
 
@@ -233,6 +232,7 @@ public class CoverageTrack extends AbstractTrack {
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
             Collection<AlignmentInterval> intervals = dataManager.getLoadedIntervals(frame);
+            if (intervals == null) return null;
             for (AlignmentInterval interval : intervals) {
                 if (interval != null && interval.contains(chr, (int) position, (int) position)) {
                     final int pos = (int) position;
