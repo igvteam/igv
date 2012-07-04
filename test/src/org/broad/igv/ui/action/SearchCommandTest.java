@@ -24,9 +24,7 @@ import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -58,23 +56,39 @@ public class SearchCommandTest extends AbstractHeadlessTest {
 
     @Test
     public void testChromoWithColon() throws Exception {
-        Map<String, String> aliases = new HashMap<String, String>();
-        aliases.put("abc:123", "chr10");
-        aliases.put("xy:12", "chr1");
-        aliases.put("aaa:bbb", "chr20");
+
+        List<String> chrNames = Arrays.asList("chr10", "chr1", "chr20");
+        List<List<String>> aliases = Arrays.asList(
+                Arrays.asList("abc:123", "abc:456", "abc:789"),
+                Arrays.asList("xy:12"),
+                Arrays.asList("aaa:bbb"));
+
+
+        Collection<Collection<String>> synonymsList = new ArrayList<Collection<String>>();
+        for (int i = 0; i < chrNames.size(); i++) {
+            List<String> synonyms = new ArrayList<String>();
+            synonyms.addAll(aliases.get(i));
+            synonyms.add(chrNames.get(i));
+            synonymsList.add(synonyms);
+        }
 
         if (genome instanceof GenomeImpl) {
-            ((GenomeImpl) genome).addChrAliases(aliases.entrySet());
+            ((GenomeImpl) genome).addChrAliases(synonymsList);
         }
 
         SearchCommand cmd;
+        for (int i = 0; i < chrNames.size(); i++) {
 
-        for (String searchStr : aliases.keySet()) {
-            cmd = new SearchCommand(null, searchStr, genome);
-            List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
-            assertEquals(1, results.size());
-            assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
-            assertEquals(aliases.get(searchStr), results.get(0).chr);
+            String chr = chrNames.get(i);
+            List<String> synonyms = aliases.get(i);
+
+            for (String searchStr : synonyms) {
+                cmd = new SearchCommand(null, searchStr, genome);
+                List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
+                assertEquals(1, results.size());
+                assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
+                assertEquals(chr, results.get(0).chr);
+            }
         }
 
         String[] queries = new String[]{"X:100-1000", "Y:100-1000", "Y:12", "1\t 100", "X\t50", "X\t50\t500"};

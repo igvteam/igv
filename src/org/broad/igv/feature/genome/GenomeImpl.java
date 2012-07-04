@@ -111,29 +111,35 @@ public class GenomeImpl implements Genome {
     }
 
     /**
-<<<<<<< HEAD
-     * Pouplate the chr alias table.  The input map is treated as a collection of non-directional pairings.  The
+     * Pouplate the chr alias table.  The input is a collection of chromosome synonym lists.  The
      * directionality is determined by the "true" chromosome names.
      *
-     * @param aliases
+     * @param synonymsList
      */
-    public void addChrAliases(Collection<Map.Entry<String, String>> aliases) {
+    public void addChrAliases(Collection<Collection<String>> synonymsList) {
 
         // Convert names to a set for fast "contains" testing.
         Set<String> chrNameSet = new HashSet<String>(chromosomeNames);
 
-        for (Map.Entry<String, String> entry : aliases) {
-            String v1 = entry.getKey();
-            String v2 = entry.getValue();
-            if(chrNameSet.contains(v1)) {
-                chrAliasTable.put(v2, v1);
+
+        for (Collection<String> synonyms : synonymsList) {
+
+            // Find the chromosome name as used in this genome
+            String chr = null;
+            for (String syn : synonyms) {
+                if (chrNameSet.contains(syn)) {
+                    chr = syn;
+                    break;
+                }
             }
-            else if(chrNameSet.contains(v2)) {
-                chrAliasTable.put(v1, v2);
-            }
-            else {
-               // Nothing to do
-                log.info("Undefined chr alias mapping: " + v1 + " - " + v2 + ".  Ignored.");
+
+            // If found register aliases
+            if (chr != null) {
+                for (String syn : synonyms) {
+                    chrAliasTable.put(syn, chr);
+                }
+            } else {
+                // Nothing to do.  SHould this be logged?
             }
         }
     }

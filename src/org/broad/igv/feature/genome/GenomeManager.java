@@ -272,7 +272,7 @@ public class GenomeManager {
             newGenome.setCytobands(cytobandMap);
         }
 
-        Collection<Map.Entry<String, String>> aliases = loadChrAliases(genomeDescriptor);
+        Collection<Collection<String>> aliases = loadChrAliases(genomeDescriptor);
         if (aliases != null) {
             newGenome.addChrAliases(aliases);
         }
@@ -356,16 +356,21 @@ public class GenomeManager {
         }
     }
 
-    static Collection<Map.Entry<String, String>> loadChrAliases(BufferedReader br) throws IOException {
+    static Collection<Collection<String>> loadChrAliases(BufferedReader br) throws IOException {
         String nextLine = "";
-        Collection<Map.Entry<String, String>> aliasTuples = new ArrayList<Map.Entry<String, String>>();
+        Collection<Collection<String>> synonymList = new ArrayList<Collection<String>>();
         while ((nextLine = br.readLine()) != null) {
-            String[] kv = nextLine.split("\t");
-            if (kv.length > 1) {
-                aliasTuples.add(new AbstractMap.SimpleImmutableEntry<String, String>(kv[0], kv[1]));
+            String[] tokens = nextLine.split("\t");
+            if (tokens.length > 1) {
+                Collection<String> synonyms = new ArrayList<String>();
+                for (String t : tokens) {
+                    String syn = t.trim();
+                    if(t.length() > 0) synonyms.add(syn.trim());
+                }
+                synonymList.add(synonyms);
             }
         }
-        return aliasTuples;
+        return synonymList;
     }
 
     /**
@@ -374,7 +379,7 @@ public class GenomeManager {
      * @param genomeDescriptor
      * @return The chromosome alias map, or null if none is defined.
      */
-    private Collection<Map.Entry<String, String>> loadChrAliases(GenomeDescriptor genomeDescriptor) {
+    private Collection<Collection<String>> loadChrAliases(GenomeDescriptor genomeDescriptor) {
         InputStream aliasStream = null;
         try {
             aliasStream = genomeDescriptor.getChrAliasStream();
