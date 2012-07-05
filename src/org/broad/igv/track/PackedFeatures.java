@@ -12,6 +12,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.data.Interval;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
@@ -30,7 +31,7 @@ import java.util.*;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature> {
+public class PackedFeatures<T extends Feature>{
     protected String trackName;
     protected String chr;
     protected int start;

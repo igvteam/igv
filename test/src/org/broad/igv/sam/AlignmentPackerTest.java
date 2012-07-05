@@ -59,7 +59,7 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
         int qualityThreshold = 0;
         int maxLevels = 1000;
 
-        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, false,
+        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end,
                 new AlignmentTrack.RenderOptions());
         assertEquals(1, result.size());
         for (List<AlignmentInterval.Row> alignmentrows : result.values()) {

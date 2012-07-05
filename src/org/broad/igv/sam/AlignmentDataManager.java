@@ -48,7 +48,6 @@ public class AlignmentDataManager {
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
 
-    private boolean viewAsPairs = false;
     private static final int MAX_ROWS = 1000000;
     private Map<String, PEStats> peStats;
 
@@ -162,19 +161,13 @@ public class AlignmentDataManager {
         }
     }
 
-
-    public boolean isViewAsPairs() {
-        return viewAsPairs;
-    }
-
-
     public void setViewAsPairs(boolean option, AlignmentTrack.RenderOptions renderOptions) {
-        if (option == this.viewAsPairs) {
+        if (option == renderOptions.isViewPairs()) {
             return;
         }
 
-        boolean currentPairState = this.viewAsPairs;
-        this.viewAsPairs = option;
+        boolean currentPairState = renderOptions.isViewPairs();
+        renderOptions.setViewPairs(option);
 
         for (ReferenceFrame frame : FrameManager.getFrames()) {
             repackAlignments(frame, currentPairState, renderOptions);
@@ -223,10 +216,9 @@ public class AlignmentDataManager {
                 LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
                         alignments.iterator(),
                         loadedInterval.getEnd(),
-                        viewAsPairs,
                         renderOptions);
 
-                loadedInterval.setAlignmentRows(tmp);
+                loadedInterval.setAlignmentRows(tmp, renderOptions);
             }
         } else {
             repackAlignments(referenceFrame, renderOptions);
@@ -254,10 +246,9 @@ public class AlignmentDataManager {
             LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
                     iter,
                     loadedInterval.getEnd(),
-                    viewAsPairs || renderOptions.isPairedArcView(),
                     renderOptions);
 
-            loadedInterval.setAlignmentRows(alignmentRows);
+            loadedInterval.setAlignmentRows(alignmentRows, renderOptions);
         }
     }
 
@@ -369,10 +360,10 @@ public class AlignmentDataManager {
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
                     LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, viewAsPairs || renderOptions.isPairedArcView(), renderOptions);
+                            intervalEnd, renderOptions);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                            alignmentRows, counts, spliceJunctions, downsampledIntervals);
+                            alignmentRows, counts, spliceJunctions, downsampledIntervals, renderOptions);
 
                     addLoadedInterval(context, loadedInterval);
 

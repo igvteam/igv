@@ -1655,7 +1655,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addViewAsPairsMenuItem() {
             final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
-            item.setSelected(dataManager.isViewAsPairs());
+            item.setSelected(renderOptions.isViewPairs());
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {

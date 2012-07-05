@@ -1,7 +1,5 @@
 package org.broad.igv.sam;
 
-import java.util.Set;
-
 /**
  * @author Jim Robinson
  * @date 11/22/11

@@ -24,6 +24,8 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.Interval;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
@@ -38,7 +40,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class AlignmentInterval extends Locus {
+public class AlignmentInterval extends Locus implements Interval {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
@@ -48,12 +50,14 @@ public class AlignmentInterval extends Locus {
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions;
     private List<CachingQueryReader.DownsampledInterval> downsampledIntervals;
+    private AlignmentTrack.RenderOptions renderOptions;
 
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              List<AlignmentCounts> counts,
                              List<SpliceJunctionFeature> spliceJunctions,
-                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals) {
+                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals,
+                             AlignmentTrack.RenderOptions renderOptions) {
 
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
@@ -67,16 +71,7 @@ public class AlignmentInterval extends Locus {
 
         this.spliceJunctions = spliceJunctions;
         this.downsampledIntervals = downsampledIntervals;
-
-        // Force caclulation of splice junctions
-        boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        if (showSpliceJunctionTrack) {
-            try {
-                getSpliceJunctions();
-            } catch (IOException e) {
-                log.error("Error computing splice junctions", e);
-            }
-        }
+        this.renderOptions = renderOptions;
     }
 
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
@@ -126,8 +121,9 @@ public class AlignmentInterval extends Locus {
         return groupedAlignmentRows == null ? 0 : groupedAlignmentRows.size();
     }
 
-    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows) {
+    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows, AlignmentTrack.RenderOptions renderOptions) {
         this.groupedAlignmentRows = alignmentRows;
+        this.renderOptions = renderOptions;
     }
 
 
@@ -258,12 +254,67 @@ public class AlignmentInterval extends Locus {
         return new AlignmentIterator();
     }
 
-    public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
+    public List<SpliceJunctionFeature> getSpliceJunctions() {
         return spliceJunctions;
     }
 
     public List<CachingQueryReader.DownsampledInterval> getDownsampledIntervals() {
         return downsampledIntervals;
+    }
+
+    @Override
+    public boolean contains(String chr, int start, int end, int zoom) {
+        return super.contains(chr, start, end);
+    }
+
+    @Override
+    public boolean overlaps(String chr, int start, int end, int zoom) {
+        return super.overlaps(chr, start, end);
+    }
+
+    @Override
+    public boolean merge(Interval i) {
+        if(!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
+                || !(i instanceof AlignmentInterval)){
+            return false;
+        }
+
+        this.start = Math.min(getStart(), i.getStart());
+        this.end = Math.max(getEnd(), i.getEnd());
+
+        AlignmentInterval other = (AlignmentInterval) i;
+
+        this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
+
+        this.groupedAlignmentRows.putAll(other.getGroupedAlignments());
+
+
+        this.counts.addAll(other.getCounts());
+        this.spliceJunctions.addAll(other.getSpliceJunctions());
+        this.downsampledIntervals.addAll(other.getDownsampledIntervals());
+
+        Collections.sort(counts, new Comparator<AlignmentCounts>() {
+
+            public int compare(AlignmentCounts o1, AlignmentCounts o2) {
+                return (o1.getStart() - o2.getStart());
+            }
+        });
+        FeatureUtils.sortFeatureList(spliceJunctions);
+        FeatureUtils.sortFeatureList(downsampledIntervals);
+
+        AlignmentPacker packer = new AlignmentPacker();
+        this.groupedAlignmentRows = packer.packAlignments(getAlignmentIterator(), this.end, renderOptions);
+
+        return true;
+    }
+
+    /**
+     * AlignmentInterval data is independent of zoom
+     * @return
+     */
+    @Override
+    public int getZoom() {
+        return -1;
     }
 
     public static class Row {
