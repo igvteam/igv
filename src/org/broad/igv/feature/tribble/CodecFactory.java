@@ -1,39 +1,31 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.util.BlockCompressedInputStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
@@ -42,6 +34,13 @@ import java.io.InputStreamReader;
 public class CodecFactory {
 
     private static Logger log = Logger.getLogger(CodecFactory.class);
+
+    public static final List<String> validExtensions = new ArrayList<String>(15);
+
+    static {
+        validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene",
+                "repmask", "gff3", "gvf", "gff", "gtf", "psl"));
+    }
 
     /**
      * Return a tribble codec to decode the supplied file.
@@ -52,8 +51,6 @@ public class CodecFactory {
 //    public static FeatureCodec getCodec(String path) {
 //        return getCodec(path, null);
 //    }
-
-
     public static AsciiFeatureCodec getCodec(String path, Genome genome) {
 
         String fn = path.toLowerCase();
@@ -61,7 +58,7 @@ public class CodecFactory {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
-        if(fn.endsWith(".txt")) {
+        if (fn.endsWith(".txt")) {
             int l = fn.length() - 4;
             fn = fn.substring(0, l);
         }
