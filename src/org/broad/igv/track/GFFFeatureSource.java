@@ -81,7 +81,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(bf.getChr(), bf.getStart(), bf.getEnd());
                     }
-                } else if (GFFCodec.exonTerms.contains(featureType) && isValidParentIds(bf.getParentIds())) {
+                } else if (GFFCodec.exonTerms.contains(featureType)){// && isValidParentIds(bf.getParentIds())) {
                     incorporateExon(bf);
                 } else {
                     Feature f = incorporateFeature(bf);
