@@ -81,7 +81,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(bf.getChr(), bf.getStart(), bf.getEnd());
                     }
-                } else if (GFFCodec.exonTerms.contains(featureType)) {
+                } else if (GFFCodec.exonTerms.contains(featureType) && isValidParentIds(bf.getParentIds())) {
                     incorporateExon(bf);
                 } else {
                     Feature f = incorporateFeature(bf);
@@ -151,7 +151,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             } else if (featureType.equalsIgnoreCase("mRNA") || featureType.equalsIgnoreCase("transcript")) {
                 String pid = null;
                 String[] parentIds = bf.getParentIds();
-                if (parentIds != null && parentIds.length > 0) {
+                if (isValidParentIds(parentIds)) {
                     pid = parentIds[0];
                 }
                 //Transcripts get turned into features at end
@@ -184,8 +184,12 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             }
             return transcript;
         }
-    }
 
+        private boolean isValidParentIds(String[] parentIds){
+            return parentIds != null && parentIds.length > 0 && parentIds[0] != null &&
+                    parentIds[0].trim().length() > 0 && parentIds[0].equals(".");
+        }
+    }
 
     static class GFF3Transcript {
 
