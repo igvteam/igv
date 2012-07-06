@@ -18,7 +18,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -32,17 +31,20 @@ import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Notes from GFF3 spec  http://www.sequenceontology.org/gff3.shtml
  * These tags have predefined meanings (tags are case sensitive):
- *
+ * <p/>
  * ID	   Indicates the name of the feature (unique).
  * Name   Display name for the feature.
  * Alias  A secondary name for the feature.
  * Parent Indicates the parent of the feature.
- *
+ * <p/>
  * Specs:
  * GFF3  http://www.sequenceontology.org/gff3.shtml
  * GFF2 specification: http://www.sanger.ac.uk/resources/software/gff/spec.html
@@ -235,7 +237,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         String chrToken = tokens[0].trim();
         String featureType = tokens[2].trim();
 
-        if(ignoredTypes.contains(featureType)) {
+        if (ignoredTypes.contains(featureType)) {
             return null;
         }
 
@@ -286,6 +288,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         f.setIdentifier(id);
         f.setParentIds(parentIds);
         f.setAttributes(attributes);
+
+        assert f.getIdentifier() != null;
 
         if (attributes.containsKey("color")) {
             f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
@@ -385,10 +389,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
             for (String kv : kvPairs) {
-                List<String> tokens = StringUtils.breakQuotedString(kv, ' ');
-                if (tokens.size() >= 2) {
-                    String key = tokens.get(0).trim().replaceAll("\"", "");
-                    String value = tokens.get(1).trim().replaceAll("\"", "");
+                String[] tokens = kv.split(" ");
+                if (tokens.length == 1) {
+                    //Not space delimited, check =
+                    tokens = kv.split("=");
+                }
+                if (tokens.length >= 2) {
+                    String key = tokens[0].trim().replaceAll("\"", "");
+                    String value = tokens[0].trim().replaceAll("\"", "");
                     kvalues.put(key, value);
                 }
             }
@@ -496,7 +504,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         /**
          * Parse the column 9 attributes.  Attributes are separated by semicolons.
-         *
+         * <p/>
          * TODO -- quotes (column 9) are explicitly forbidden in GFF3 -- should breakQuotedString be used?
          *
          * @param description
