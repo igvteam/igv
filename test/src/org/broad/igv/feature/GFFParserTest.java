@@ -53,4 +53,16 @@ public class GFFParserTest {
         Exon exon = bf.getExons().get(0);
         assertNotNull(exon.getAttributes());
     }
+
+
+//    @Ignore
+//    @Test
+//    public void testLoadLargeFile() throws Exception{
+//        //Very large file, as of this writing not in repo
+//        String path = TestUtils.DATA_DIR + "gff/gene_coding_transcript_ncRNA_partiall_confirmed_plus.gff3";
+//        GFFParser parser = new GFFParser(path);
+//
+//        BufferedReader br = new BufferedReader(new FileReader(path));
+//        List<Feature> features = parser.loadFeatures(br, null);
+//    }
 }

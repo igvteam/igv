@@ -366,6 +366,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         //TODO Almost identical
         static String[] idFields = {"systematic_id", "ID", "transcript_id", "name", "primary_name", "gene", "locus", "alias"};
         static String[] DEFAULT_NAME_FIELDS = {"gene", "name", "primary_name", "locus", "alias", "systematic_id", "ID"};
+        static String[] possParentNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
 
@@ -434,8 +435,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             if (attributes.size() == 0) {
                 parentIds[0] = attributeString;
             } else {
-                String[] possNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "proteinId"};
-                for (String possName : possNames) {
+                for (String possName : possParentNames) {
                     if (attributes.containsKey(possName)) {
                         parentIds[0] = attributes.get(possName);
                         break;
