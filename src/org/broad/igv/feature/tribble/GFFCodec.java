@@ -396,7 +396,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 }
                 if (tokens.length >= 2) {
                     String key = tokens[0].trim().replaceAll("\"", "");
-                    String value = tokens[0].trim().replaceAll("\"", "");
+                    String value = tokens[1].trim().replaceAll("\"", "");
                     kvalues.put(key, value);
                 }
             }

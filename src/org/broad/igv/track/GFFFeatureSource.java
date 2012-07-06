@@ -34,11 +34,11 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
     public static boolean isGFF(String path) {
         String lowpath = path.toLowerCase();
-        if(lowpath.endsWith(".gz")) {
+        if (lowpath.endsWith(".gz")) {
             int idx = lowpath.length() - 3;
             lowpath = lowpath.substring(0, idx);
         }
-        if(lowpath.endsWith(".txt")) {
+        if (lowpath.endsWith(".txt")) {
             int idx = lowpath.length() - 4;
             lowpath = lowpath.substring(0, idx);
         }
@@ -190,8 +190,9 @@ public class GFFFeatureSource extends TribbleFeatureSource {
     static class GFF3Transcript {
 
         private String id;
-        private Set<Exon> exons = new HashSet();
-        private List<Exon> cdss = new ArrayList();
+        private Set<Exon> exons = new HashSet<Exon>();
+        private List<Exon> cdss = new ArrayList<Exon>();
+
         private Exon fivePrimeUTR;
         private Exon threePrimeUTR;
         private BasicFeature transcript;
@@ -261,9 +262,11 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             Strand strand = Strand.NONE;
             String name = null;
 
+            //FeatureUtils.sortFeatureList(exons);
+
             // Combine CDS and exons
-            while (!cdss.isEmpty()) {
-                Exon cds = cdss.get(0);
+            for (Exon cds : cdss) {
+                //insertCDS(cds);
                 Exon exon = findMatchingExon(cds);
                 if (exon == null) {
                     cds.setCodingStart(cds.getStart());
@@ -274,8 +277,8 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     exon.setCodingEnd(cds.getEnd());
                     exon.setReadingFrame(cds.getReadingShift());
                 }
-                cdss.remove(0);
             }
+
             for (Exon exon : exons) {
                 chr = exon.getChr();
                 strand = exon.getStrand();
@@ -337,6 +340,44 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             }
 
             return transcript;
+        }
+
+        /**
+         * Add the CDS to appropriate Exon,
+         * or insert it into Exon list. Assumes exons
+         * is sorted
+         *
+         * @param cds
+         */
+        private void insertCDS(Exon cds) {
+            int insertLoc = 0;
+            boolean foundExon = false;
+
+            for (Exon exon : exons) {
+
+                if (exon.contains(cds)) {
+                    exon.setCodingStart(cds.getStart());
+                    exon.setCodingEnd(cds.getEnd());
+                    exon.setReadingFrame(cds.getReadingShift());
+                    foundExon = true;
+                    break;
+                }
+
+                if (cds.getStart() > exon.getStart()) {
+                    insertLoc++;
+                } else {
+                    //Assuming sorted exon list, we are now past the
+                    //point where the cds could be
+                    break;
+                }
+            }
+
+            if (!foundExon) {
+                cds.setCodingStart(cds.getStart());
+                cds.setCodingEnd(cds.getEnd());
+                //exons.add(insertLoc, cds);
+            }
+
         }
 
         Exon findMatchingExon(IGVFeature cds) {
