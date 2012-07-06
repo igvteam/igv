@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * GenomeManager.java
@@ -30,7 +23,10 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
-import org.broad.igv.track.*;
+import org.broad.igv.track.FeatureCollectionSource;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.GFFFeatureSource;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -209,7 +205,7 @@ public class GenomeManager {
 
         String id = fastaPath;
         String name = (new File(fastaPath)).getName();
-        if (HttpUtils.isURL(fastaPath)) {
+        if (HttpUtils.isRemoteURL(fastaPath)) {
             name = Utilities.getFileNameFromURL(fastaPath);
         }
 
@@ -311,7 +307,7 @@ public class GenomeManager {
      */
     private File getArchiveFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
         File archiveFile;
-        if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
+        if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
             // We need a local copy, as there is no http zip file reader
             URL genomeArchiveURL = new URL(genomePath);
             final String tmp = URLDecoder.decode(new URL(genomePath).getFile(), "UTF-8");
@@ -365,7 +361,7 @@ public class GenomeManager {
                 Collection<String> synonyms = new ArrayList<String>();
                 for (String t : tokens) {
                     String syn = t.trim();
-                    if(t.length() > 0) synonyms.add(syn.trim());
+                    if (t.length() > 0) synonyms.add(syn.trim());
                 }
                 synonymList.add(synonyms);
             }
@@ -482,7 +478,7 @@ public class GenomeManager {
                     String chrAliasFileName = properties.getProperty(Globals.GENOME_CHR_ALIAS_FILE_KEY);
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
-                    if ((sequenceLocation != null) && !HttpUtils.getInstance().isURL(sequenceLocation)) {
+                    if ((sequenceLocation != null) && !HttpUtils.isRemoteURL(sequenceLocation)) {
                         File sequenceFolder = null;
                         // Relative or absolute location?
                         if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
@@ -604,7 +600,7 @@ public class GenomeManager {
                 genomeListURLString = PreferenceManager.getInstance().getGenomeListURL();
                 URL serverGenomeURL = new URL(genomeListURLString);
 
-                if (HttpUtils.getInstance().isURL(genomeListURLString)) {
+                if (HttpUtils.isRemoteURL(genomeListURLString)) {
                     inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
                 } else {
                     File file = new File(genomeListURLString.startsWith("file:") ? serverGenomeURL.getFile() : genomeListURLString);

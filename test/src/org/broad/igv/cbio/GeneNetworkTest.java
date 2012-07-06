@@ -316,12 +316,12 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCaching() throws Exception{
+    public void testCaching() throws Exception {
         String[] geneArray = new String[]{"sox1", "brca1", "DIRAS3"};
         List<String> geneList = Arrays.asList(geneArray);
         GeneNetwork anno = GeneNetwork.getFromCBIO(geneList);
 
-        assertTrue(HttpUtils.isURL(anno.getSourcePath()));
+        assertTrue(HttpUtils.isRemoteURL(anno.getSourcePath()));
 
         //Check that cached file exists
         String url = GeneNetwork.getURLForGeneList(geneList);
@@ -330,7 +330,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
         //This one should be loaded from local file
         GeneNetwork anno2 = GeneNetwork.getFromCBIO(geneList);
-        assertFalse(HttpUtils.isURL(anno2.getSourcePath()));
+        assertFalse(HttpUtils.isRemoteURL(anno2.getSourcePath()));
     }
 
     public static class SimpleVertexFactory implements VertexFactory<Node> {

@@ -100,7 +100,7 @@ public class ParsingUtils {
         } else {
 
             InputStream inputStream = null;
-            if (HttpUtils.getInstance().isURL(locator.getPath())) {
+            if (HttpUtils.isRemoteURL(locator.getPath())) {
                 URL url = new URL(locator.getPath());
                 inputStream = HttpUtils.getInstance().openConnectionStream(url);
             } else {
@@ -441,7 +441,7 @@ public class ParsingUtils {
     public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||
-                    (HttpUtils.getInstance().isURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));
+                    (HttpUtils.isRemoteURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));
         } catch (MalformedURLException e) {
             // todo -- log
             return false;

@@ -26,7 +26,9 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.MaximumContigGenomeException;
+import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -742,8 +744,9 @@ public class IGV {
 
 
     final public void doViewPreferences() {
-             doViewPreferences(null);
+        doViewPreferences(null);
     }
+
     /**
      * Open the user preferences dialog
      */
@@ -2235,7 +2238,7 @@ public class IGV {
 
                 if (igvArgs.getSessionFile() != null) {
                     boolean success = false;
-                    if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
+                    if (HttpUtils.isRemoteURL(igvArgs.getSessionFile())) {
                         boolean merge = false;
                         success = restoreSessionSynchronous(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
                     } else {
@@ -2263,7 +2266,7 @@ public class IGV {
                     for (String p : tokens) {
                         ResourceLocator rl = new ResourceLocator(p);
                         if (names != null && idx < names.length) {
-                            String name = names[idx];                            
+                            String name = names[idx];
                             rl.setName(name);
                         }
                         rl.setIndexPath(indexFile);

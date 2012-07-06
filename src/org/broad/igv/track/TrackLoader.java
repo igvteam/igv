@@ -916,7 +916,7 @@ public class TrackLoader {
             }
             if (covPath != null) {
                 try {
-                    if ((new File(covPath)).exists() || (HttpUtils.getInstance().isURL(covPath) &&
+                    if ((new File(covPath)).exists() || (HttpUtils.isRemoteURL(covPath) &&
                             HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
@@ -1184,7 +1184,7 @@ public class TrackLoader {
         String indexExtension = path.endsWith("gz") ? ".tbi" : ".idx";
         String indexPath = path + indexExtension;
         try {
-            if (HttpUtils.getInstance().isURL(path)) {
+            if (HttpUtils.isRemoteURL(path)) {
                 return HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
             } else {
                 File f = new File(path + indexExtension);
