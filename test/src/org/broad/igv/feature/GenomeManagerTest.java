@@ -124,11 +124,6 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             GenomeListItem item = entry.getKey();
             System.out.println(String.format("Exception loading (%s\t%s\t%s): %s", item.getDisplayableName(),
                     item.getLocation(), item.getId(), entry.getValue()));
-
-            if (entry.getKey().getId().equalsIgnoreCase("candida")) {
-                System.out.println("Candida is a known failure, you need to fix the file");
-                failedGenomes.remove(entry.getKey());
-            }
         }
 
         assertEquals(0, failedGenomes.size());
