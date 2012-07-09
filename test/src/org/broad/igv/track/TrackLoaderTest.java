@@ -99,9 +99,10 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         assertEquals("notmeaningful", track.getName());
 
         List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
-        assertEquals(1, features.size());
+        assertEquals(2, features.size());
+        //Since the features are type exon, they will be added as exons
         IGVFeature feat0 = ((IGVFeature) features.get(0)).getExons().get(0);
-        IGVFeature feat1 = ((IGVFeature) features.get(0)).getExons().get(1);
+        IGVFeature feat1 = ((IGVFeature) features.get(1)).getExons().get(0);
 
         assertEquals(707 - 1, feat0.getStart());
         assertEquals(943, feat0.getEnd());

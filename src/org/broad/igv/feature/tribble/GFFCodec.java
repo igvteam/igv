@@ -31,10 +31,7 @@ import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Notes from GFF3 spec  http://www.sequenceontology.org/gff3.shtml
@@ -285,11 +282,12 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         f.setName(getName(attributes));
         f.setType(featureType);
         f.setDescription(description);
+
+        id = id != null ? id : "igv_" + UUID.randomUUID().toString();
         f.setIdentifier(id);
+
         f.setParentIds(parentIds);
         f.setAttributes(attributes);
-
-        assert f.getIdentifier() != null;
 
         if (attributes.containsKey("color")) {
             f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
