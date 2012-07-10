@@ -343,7 +343,7 @@ public class AlignmentDataManager {
                 DownsampleOptions downsampleOptions = new DownsampleOptions();
 
                 CloseableIterator<Alignment> iter = null;
-                try {
+                //try {
 
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
@@ -378,16 +378,16 @@ public class AlignmentDataManager {
                              context.getPanel().repaint();
                     }
 
-                } catch (Exception exception) {
-                    log.error("Error loading alignments", exception);
-                    JOptionPane.showMessageDialog(IGV.getMainFrame(), "Error reading file: " + exception.getMessage());
-                } finally {
-
+//                } catch (Exception exception) {
+//                    log.error("Error loading alignments", exception);
+//                    JOptionPane.showMessageDialog(IGV.getMainFrame(), "Error reading file: " + exception.getMessage());
+//                } finally {
+//
                     if (iter != null) {
                         iter.close();
                     }
                     isLoading = false;
-                }
+//                }
             }
         };
 

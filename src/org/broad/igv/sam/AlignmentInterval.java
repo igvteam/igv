@@ -23,7 +23,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
@@ -31,10 +30,9 @@ import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.tribble.Feature;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -286,26 +284,53 @@ public class AlignmentInterval extends Locus implements Interval {
 
         this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
 
-        this.groupedAlignmentRows.putAll(other.getGroupedAlignments());
-
-
-        this.counts.addAll(other.getCounts());
-        this.spliceJunctions.addAll(other.getSpliceJunctions());
-        this.downsampledIntervals.addAll(other.getDownsampledIntervals());
-
-        Collections.sort(counts, new Comparator<AlignmentCounts>() {
-
-            public int compare(AlignmentCounts o1, AlignmentCounts o2) {
-                return (o1.getStart() - o2.getStart());
+        LinkedHashMap<String, List<Row>> otherGroupedAl = other.getGroupedAlignments();
+        for(Map.Entry<String, List<Row>> entry: otherGroupedAl.entrySet()){
+            String key = entry.getKey();
+            if(this.groupedAlignmentRows.containsKey(key)){
+                this.groupedAlignmentRows.get(key).addAll(entry.getValue());
+            }else{
+                this.groupedAlignmentRows.put(key, entry.getValue());
             }
-        });
-        FeatureUtils.sortFeatureList(spliceJunctions);
-        FeatureUtils.sortFeatureList(downsampledIntervals);
+
+        }
+
+        if(this.counts != null && other.getCounts() != null){
+            int added = 0;
+            Set<AlignmentCounts> countsSet = new HashSet<AlignmentCounts>(this.counts);
+            for(AlignmentCounts counts: other.getCounts()){
+                if(!countsSet.contains(counts)){
+                    this.counts.add(counts);
+                    added++;
+                }
+            }
+            if(added > 0){
+                Collections.sort(counts, new Comparator<AlignmentCounts>() {
+
+                    public int compare(AlignmentCounts o1, AlignmentCounts o2) {
+                        return (o1.getStart() - o2.getStart());
+                    }
+                });
+            }
+
+
+        }
+
+        //TODO Remove duplicates
+        addToListNullSafe(this.spliceJunctions, other.getSpliceJunctions());
+        addToListNullSafe(this.downsampledIntervals, other.getDownsampledIntervals());
 
         AlignmentPacker packer = new AlignmentPacker();
         this.groupedAlignmentRows = packer.packAlignments(getAlignmentIterator(), this.end, renderOptions);
 
         return true;
+    }
+
+    private void addToListNullSafe(List self, List other){
+        if(self != null && other != null){
+            self.addAll(other);
+            FeatureUtils.sortFeatureList(self);
+        }
     }
 
     /**

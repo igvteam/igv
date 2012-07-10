@@ -219,6 +219,25 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     }
 
+    @Override
+    public boolean equals(Object object){
+        if(!(object instanceof AlignmentCounts)){
+            return false;
+        }
+        AlignmentCounts other = (AlignmentCounts) object;
+        boolean equals = this.getStart() == other.getStart();
+        equals &= this.getEnd() == other.getEnd();
+        equals &= this.getMaxCount() == other.getMaxCount();
+
+        return equals;
+
+    }
+
+    @Override
+    public int hashCode(){
+        return (getStart() * getEnd() * this.getMaxCount());
+    }
+
 
     protected abstract void incPositionCount(int pos, byte n, byte q, boolean negativeStrand);
 
