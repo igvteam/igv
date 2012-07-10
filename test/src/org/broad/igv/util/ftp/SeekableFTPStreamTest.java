@@ -1,24 +1,17 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.util.ftp;
 
-import junit.framework.TestCase;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.stream.IGVSeekableFTPStream;
 import org.junit.Test;
 
@@ -31,16 +24,15 @@ import java.net.URLConnection;
  * User: jrobinso
  * Date: Apr 13, 2010
  */
-public class SeekableFTPStreamTest extends TestCase {
+public class SeekableFTPStreamTest extends AbstractHeadlessTest {
 
-    static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase1/data/HG00099/alignment/HG00099.mapped.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
+    static String url = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands.hg18.bed";
 
     @Test
     public void testRead() throws IOException {
 
         byte[] buffer = new byte[100];
 
-        System.out.println((new URL(url)).getHost());
         IGVSeekableFTPStream stream = new IGVSeekableFTPStream(new URL(url));
 
         for (int j = 0; j < 10; j++) {
@@ -48,9 +40,9 @@ public class SeekableFTPStreamTest extends TestCase {
 
             stream.read(buffer, 0, buffer.length);
 
-            for (int i = 0; i < 10; i++) {
-                //System.out.println(buffer[i]);
-            }
+            //for (int i = 0; i < 10; i++) {
+            //System.out.println(buffer[i]);
+            //}
         }
         stream.close();
     }
@@ -73,9 +65,9 @@ public class SeekableFTPStreamTest extends TestCase {
 
             stream.read(buffer, 0, buffer.length);
 
-            for (int i = 0; i < 10; i++) {
-                //System.out.println(buffer[i]);
-            }
+            //for (int i = 0; i < 10; i++) {
+            //System.out.println(buffer[i]);
+            //}
         }
 
         stream.close();
