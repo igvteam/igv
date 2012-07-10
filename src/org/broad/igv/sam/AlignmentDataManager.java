@@ -262,17 +262,22 @@ public class AlignmentDataManager {
         List<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(context.getReferenceFrame().getName());
         boolean haveInterval = false;
 
+        int adjustedStart = start;
+        int adjustedEnd = end;
+
         if(loadedIntervals != null){
             for(AlignmentInterval loadedInterval: loadedIntervals){
                 if (loadedInterval.contains(chr, start, end)) {
                     haveInterval = true;
                     break;
+                }else if (loadedInterval.overlaps(chr, start, end, context.getZoom())){
+                    adjustedStart = Math.max(start, loadedInterval.getStart() - 1);
+                    adjustedEnd = Math.min(end, loadedInterval.getEnd() + 1);
                 }
             }
         }
 
-        int adjustedStart = start;
-        int adjustedEnd = end;
+
         if(expandEnds){
             int length = Math.max(100000, end - start);
             adjustedStart = Math.max(0, start - length/2);
