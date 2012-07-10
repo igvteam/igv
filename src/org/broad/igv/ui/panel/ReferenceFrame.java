@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -30,6 +23,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.ObservableForObject;
+
+import java.util.Observer;
 
 
 /**
@@ -98,11 +94,14 @@ public class ReferenceFrame {
     protected Locus initialLocus;
     protected int setEnd = 0;
 
+    protected ObservableForObject<String> chromoObservable;
+
 
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
+        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
 
@@ -121,6 +120,7 @@ public class ReferenceFrame {
         this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
+        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
 
@@ -374,7 +374,7 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
-        if(IGV.hasInstance()) {
+        if (IGV.hasInstance()) {
             IGV.getInstance().repaintStatusAndZoomSlider();
         }
     }
@@ -416,15 +416,9 @@ public class ReferenceFrame {
         return maxPixel;
     }
 
-
-    public void setChrName(String name) {
-        this.setChromosomeName(name);
-    }
-
     /**
      * @param name
      * @param force
-     * @ deprecated, replace with calls to setChrName();
      */
     public void setChromosomeName(String name, boolean force) {
 
@@ -434,16 +428,24 @@ public class ReferenceFrame {
             zoomTo(0);
             computeMaxZoom();
 
-            //dhmay: if there's a RegionNavigatorDialog around, need to update it.
-            //Todo: Properly, there should be a way to register listeners to chromosome changes.
-            if (RegionNavigatorDialog.getActiveInstance() != null)
-                RegionNavigatorDialog.getActiveInstance().updateChromosomeDisplayed();
+            chromoObservable.setChangedAndNotify();
         }
+    }
+
+    public void addObserver(Observer observer) {
+        chromoObservable.addObserver(observer);
+    }
+
+    public void deleteObserver(Observer observer) {
+        chromoObservable.deleteObserver(observer);
+    }
+
+    public void deleteObservers() {
+        chromoObservable.deleteObservers();
     }
 
     /**
      * @param name
-     * @ deprecated, replace with calls to setChrName();
      */
     public void setChromosomeName(String name) {
         setChromosomeName(name, false);

@@ -1281,7 +1281,7 @@ public class IGV {
 
             //If there's a RegionNavigatorDialog, kill it.
             //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-            RegionNavigatorDialog.destroyActiveInstance();
+            RegionNavigatorDialog.destroyInstance();
 
             if (!getRecentSessionList().contains(sessionPath)) {
                 getRecentSessionList().addFirst(sessionPath);

@@ -271,7 +271,7 @@ public class FrameManager {
 
     public static void reset(String chr) {
         setToDefaultFrame(null);
-        getDefaultFrame().setChrName(chr);
+        getDefaultFrame().setChromosomeName(chr);
         getDefaultFrame().computeMaxZoom();
         getDefaultFrame().invalidateLocationScale();
     }
