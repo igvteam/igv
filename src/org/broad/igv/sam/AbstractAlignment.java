@@ -325,4 +325,24 @@ public abstract class AbstractAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
+
+    @Override
+    public boolean equals(Object object){
+        if(!(object instanceof Alignment)){
+            return false;
+        }
+        Alignment other = (Alignment) object;
+        boolean equals = getReadName().equals(other.getReadName());
+        equals &= this.getStart() == other.getStart();
+        equals &= this.getEnd() == other.getEnd();
+        equals &= this.getCigarString().equals(other.getCigarString());
+
+        return equals;
+
+    }
+
+    @Override
+    public int hashCode(){
+        return (getStart() * getEnd() * this.getReadName().hashCode() * this.getCigarString().hashCode());
+    }
 }

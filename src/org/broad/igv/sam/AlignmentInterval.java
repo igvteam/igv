@@ -284,23 +284,30 @@ public class AlignmentInterval extends Locus implements Interval {
 
         this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
 
-        LinkedHashMap<String, List<Row>> otherGroupedAl = other.getGroupedAlignments();
-        for(Map.Entry<String, List<Row>> entry: otherGroupedAl.entrySet()){
-            String key = entry.getKey();
-            if(this.groupedAlignmentRows.containsKey(key)){
-                this.groupedAlignmentRows.get(key).addAll(entry.getValue());
-            }else{
-                this.groupedAlignmentRows.put(key, entry.getValue());
-            }
-
+        //Combine alignments
+        Set<Alignment> allAlignments = new HashSet<Alignment>();
+        Iterator<Alignment> alIter = getAlignmentIterator();
+        while(alIter.hasNext()){
+            allAlignments.add(alIter.next());
         }
+
+        alIter = other.getAlignmentIterator();
+        while(alIter.hasNext()){
+            allAlignments.add(alIter.next());
+        }
+
+        List<Alignment> alignments = new ArrayList<Alignment>(allAlignments);
+        FeatureUtils.sortFeatureList(alignments);
+
+        AlignmentPacker packer = new AlignmentPacker();
+        this.groupedAlignmentRows = packer.packAlignments(alignments.iterator(), this.end, renderOptions);
 
         if(this.counts != null && other.getCounts() != null){
             int added = 0;
             Set<AlignmentCounts> countsSet = new HashSet<AlignmentCounts>(this.counts);
-            for(AlignmentCounts counts: other.getCounts()){
-                if(!countsSet.contains(counts)){
-                    this.counts.add(counts);
+            for(AlignmentCounts oCounts: other.getCounts()){
+                if(!countsSet.contains(oCounts)){
+                    this.counts.add(oCounts);
                     added++;
                 }
             }
@@ -316,21 +323,22 @@ public class AlignmentInterval extends Locus implements Interval {
 
         }
 
-        //TODO Remove duplicates
-        addToListNullSafe(this.spliceJunctions, other.getSpliceJunctions());
-        addToListNullSafe(this.downsampledIntervals, other.getDownsampledIntervals());
-
-        AlignmentPacker packer = new AlignmentPacker();
-        this.groupedAlignmentRows = packer.packAlignments(getAlignmentIterator(), this.end, renderOptions);
+        this.spliceJunctions = addToListNoDups(this.spliceJunctions, other.getSpliceJunctions());
+        this.downsampledIntervals = addToListNoDups(this.downsampledIntervals, other.getDownsampledIntervals());
 
         return true;
     }
 
-    private void addToListNullSafe(List self, List other){
-        if(self != null && other != null){
-            self.addAll(other);
+    private List addToListNoDups(List self, List other){
+        if(self == null) self = new ArrayList();
+        if(other != null){
+            Set selfSet = new HashSet(self);
+            selfSet.addAll(other);
+
+            self = new ArrayList(selfSet);
             FeatureUtils.sortFeatureList(self);
         }
+        return self;
     }
 
     /**
@@ -489,6 +497,27 @@ public class AlignmentInterval extends Locus implements Interval {
         public int getLastEnd() {
             return lastEnd;
         }
+
+//        @Override
+//        public boolean equals(Object object){
+//            if(!(object instanceof Row)){
+//                return false;
+//            }
+//            Row other = (Row) object;
+//            boolean equals = this.getStart() == other.getStart();
+//            equals &= this.getLastEnd() == other.getLastEnd();
+//            equals &= this.getScore() == other.getScore();
+//
+//            return equals;
+//
+//        }
+//
+//        @Override
+//        public int hashCode(){
+//            int score = (int) getScore();
+//            score = score != 0 ? score : 1;
+//            return (getStart() * getLastEnd() * score);
+//        }
 
     } // end class row
 

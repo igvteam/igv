@@ -400,10 +400,16 @@ public class AlignmentDataManager {
         String key = context.getReferenceFrame().getName();
         List<AlignmentInterval> currentValue = loadedIntervalMap.get(key);
         if (currentValue != null) {
-            while(currentValue.size() > CACHE_SIZE - 1){
-                currentValue.remove(0);
+            for(AlignmentInterval loadedInterval: currentValue){
+                if(loadedInterval.overlaps(interval.getChr(), interval.getStart(), interval.getEnd(), interval.getZoom())){
+                    loadedInterval.merge(interval);
+                    return;
+                }
             }
             currentValue.add(interval);
+            while(currentValue.size() > CACHE_SIZE){
+                currentValue.remove(0);
+            }
         } else {
             List<AlignmentInterval> valueList = new LinkedList<AlignmentInterval>();
             valueList.add(interval);

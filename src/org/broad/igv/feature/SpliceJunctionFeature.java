@@ -207,4 +207,28 @@ public class SpliceJunctionFeature extends BasicFeature {
             }
             return valueString.toString();
         }
+
+    @Override
+    public boolean equals(Object object){
+        if(!(object instanceof SpliceJunctionFeature)){
+            return false;
+        }
+        SpliceJunctionFeature other = (SpliceJunctionFeature) object;
+
+        boolean equals = getIdentifier() != null ? getIdentifier().equals(other.getIdentifier()) : other.getIdentifier() == null;
+        equals &= this.getStart() == other.getStart();
+        equals &= this.getEnd() == other.getEnd();
+        equals &= this.getJunctionDepth() == other.getJunctionDepth();
+        equals &= this.getJunctionStart() == other.getJunctionStart();
+        equals &= this.getJunctionEnd() == other.getJunctionEnd();
+
+        return equals;
+
+    }
+
+    @Override
+    public int hashCode(){
+        int idcode = getIdentifier() != null ? getIdentifier().hashCode() : 1;
+        return (getStart() * getEnd() * getJunctionStart() * getJunctionEnd() * getJunctionDepth() * idcode);
+    }
 }

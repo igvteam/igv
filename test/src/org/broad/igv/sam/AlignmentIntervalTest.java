@@ -20,9 +20,7 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -90,18 +88,27 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         Alignment expected, actual;
         int count = 0;
+        //Because we sort by start position, and some alignments have the same start position,
+        //there can be some ambiguitiy in which comes first, so we don't compare directly.
+        //Just make sure they end up the same in the end.
+        Set<String> expectedReadNames = new HashSet<String>();
+        Set<String> actualReadNames = new HashSet<String>();
         while(iter1.hasNext()){
             expected = iter1.next();
             actual = iter2.next();
 
             assertEquals(expected.getAlignmentStart(), actual.getAlignmentStart());
             assertEquals(expected.getChr(), actual.getChr());
-            assertEquals(expected.getCigarString(), actual.getCigarString());
             count++;
+
+            expectedReadNames.add(expected.getReadName());
+            actualReadNames.add(actual.getReadName());
         }
+
 
         assertFalse(iter2.hasNext());
         assertTrue("No data loaded", count > 0);
 
+        assertEquals(expectedReadNames, actualReadNames);
     }
 }

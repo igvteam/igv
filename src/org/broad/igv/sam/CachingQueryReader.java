@@ -797,6 +797,25 @@ public class CachingQueryReader {
         public String getValueString() {
             return "Interval [" + start + "-" + end + "] <br>" + count + " reads removed.";
         }
+
+        @Override
+        public boolean equals(Object object){
+            if(!(object instanceof DownsampledInterval)){
+                return false;
+            }
+            DownsampledInterval other = (DownsampledInterval) object;
+            boolean equals = this.getStart() == other.getStart();
+            equals &= this.getEnd() == other.getEnd();
+            equals &= this.getCount() == other.getCount();
+
+            return equals;
+
+        }
+
+        @Override
+        public int hashCode(){
+            return (getStart() * getEnd() * this.getCount());
+        }
     }
 
 
