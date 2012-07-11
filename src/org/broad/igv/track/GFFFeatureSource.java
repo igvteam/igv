@@ -34,11 +34,11 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
     public static boolean isGFF(String path) {
         String lowpath = path.toLowerCase();
-        if(lowpath.endsWith(".gz")) {
+        if (lowpath.endsWith(".gz")) {
             int idx = lowpath.length() - 3;
             lowpath = lowpath.substring(0, idx);
         }
-        if(lowpath.endsWith(".txt")) {
+        if (lowpath.endsWith(".txt")) {
             int idx = lowpath.length() - 4;
             lowpath = lowpath.substring(0, idx);
         }
@@ -81,7 +81,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(bf.getChr(), bf.getStart(), bf.getEnd());
                     }
-                } else if (GFFCodec.exonTerms.contains(featureType)) {
+                } else if (GFFCodec.exonTerms.contains(featureType)) {// && isValidParentIds(bf.getParentIds())) {
                     incorporateExon(bf);
                 } else {
                     Feature f = incorporateFeature(bf);
@@ -107,6 +107,14 @@ public class GFFFeatureSource extends TribbleFeatureSource {
         private void incorporateExon(BasicFeature bf) {
             String featureType = bf.getType();
             String[] parentIds = bf.getParentIds();
+
+            //If the exon has no parent, we effectively create a new feature
+            //and treat it as it's own parent.
+            if (!isValidParentIds(parentIds) && bf.getIdentifier() != null) {
+                parentIds = new String[]{bf.getIdentifier()};
+                bf.setParentIds(parentIds);
+            }
+
             // Make a copy of the exon record for each parent
             for (String pid : parentIds) {
 
@@ -151,15 +159,15 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             } else if (featureType.equalsIgnoreCase("mRNA") || featureType.equalsIgnoreCase("transcript")) {
                 String pid = null;
                 String[] parentIds = bf.getParentIds();
-                if (parentIds != null && parentIds.length > 0) {
+                if (isValidParentIds(parentIds)) {
                     pid = parentIds[0];
                 }
                 //Transcripts get turned into features at end
                 getGFF3Transcript(id).transcript(bf, pid);
+                return null;
             } else {
                 return bf;
             }
-            return null;
         }
 
         private int parsePhase(String phaseString) {
@@ -184,14 +192,19 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             }
             return transcript;
         }
-    }
 
+        private boolean isValidParentIds(String[] parentIds) {
+            return parentIds != null && parentIds.length > 0 && parentIds[0] != null &&
+                    parentIds[0].trim().length() > 0 && !parentIds[0].equals(".");
+        }
+    }
 
     static class GFF3Transcript {
 
         private String id;
-        private Set<Exon> exons = new HashSet();
-        private List<Exon> cdss = new ArrayList();
+        private Set<Exon> exons = new HashSet<Exon>();
+        private List<Exon> cdss = new ArrayList<Exon>();
+
         private Exon fivePrimeUTR;
         private Exon threePrimeUTR;
         private BasicFeature transcript;
@@ -214,6 +227,9 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             if (mRNA.getName() == null) {
                 mRNA.setName(mRNA.getIdentifier());
             }
+
+            if (mRNA.getName() == null) return;
+
             int prefixIndex = mRNA.getName().indexOf(":");
             if (prefixIndex > 0) {
                 mRNA.setName(mRNA.getName().substring(prefixIndex + 1));
@@ -261,9 +277,11 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             Strand strand = Strand.NONE;
             String name = null;
 
+            //FeatureUtils.sortFeatureList(exons);
+
             // Combine CDS and exons
-            while (!cdss.isEmpty()) {
-                Exon cds = cdss.get(0);
+            for (Exon cds : cdss) {
+                //insertCDS(cds);
                 Exon exon = findMatchingExon(cds);
                 if (exon == null) {
                     cds.setCodingStart(cds.getStart());
@@ -274,8 +292,8 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                     exon.setCodingEnd(cds.getEnd());
                     exon.setReadingFrame(cds.getReadingShift());
                 }
-                cdss.remove(0);
             }
+
             for (Exon exon : exons) {
                 chr = exon.getChr();
                 strand = exon.getStrand();
@@ -311,32 +329,65 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
             // If 5'UTR is represented by an exon, adjust its start, else add an exon to represent 5'utr
             if (fivePrimeUTR != null) {
-                fivePrimeUTR.setUTR(true);
-                transcript.addExon(fivePrimeUTR);
-                Exon exon = findMatchingExon(fivePrimeUTR);
-                if (exon != null) {
-                    if (exon.getStrand() == Strand.POSITIVE) {
-                        exon.setStart(fivePrimeUTR.getEnd());
-                    } else {
-                        exon.setEnd(fivePrimeUTR.getStart());
-                    }
-                }
+                adjustBoundariesByUTR(fivePrimeUTR);
             }
 
             if (threePrimeUTR != null) {
-                threePrimeUTR.setUTR(true);
-                transcript.addExon(threePrimeUTR);
-                Exon exon = findMatchingExon(threePrimeUTR);
-                if (exon != null) {
-                    if (exon.getStrand() == Strand.POSITIVE) {
-                        exon.setEnd(threePrimeUTR.getStart());
-                    } else {
-                        exon.setStart(threePrimeUTR.getEnd());
-                    }
-                }
+                adjustBoundariesByUTR(threePrimeUTR);
             }
 
             return transcript;
+        }
+
+        private void adjustBoundariesByUTR(Exon UTR) {
+            UTR.setUTR(true);
+            transcript.addExon(UTR);
+            Exon exon = findMatchingExon(UTR);
+            if (exon != null) {
+                if (exon.getStrand() == Strand.POSITIVE) {
+                    exon.setStart(UTR.getEnd());
+                } else {
+                    exon.setEnd(UTR.getStart());
+                }
+            }
+        }
+
+        /**
+         * Add the CDS to appropriate Exon,
+         * or insert it into Exon list. Assumes exons
+         * is sorted
+         *
+         * @param cds
+         */
+        private void insertCDS(Exon cds) {
+            int insertLoc = 0;
+            boolean foundExon = false;
+
+            for (Exon exon : exons) {
+
+                if (exon.contains(cds)) {
+                    exon.setCodingStart(cds.getStart());
+                    exon.setCodingEnd(cds.getEnd());
+                    exon.setReadingFrame(cds.getReadingShift());
+                    foundExon = true;
+                    break;
+                }
+
+                if (cds.getStart() > exon.getStart()) {
+                    insertLoc++;
+                } else {
+                    //Assuming sorted exon list, we are now past the
+                    //point where the cds could be
+                    break;
+                }
+            }
+
+            if (!foundExon) {
+                cds.setCodingStart(cds.getStart());
+                cds.setCodingEnd(cds.getEnd());
+                //exons.add(insertLoc, cds);
+            }
+
         }
 
         Exon findMatchingExon(IGVFeature cds) {

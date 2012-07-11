@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -24,11 +17,12 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -51,11 +45,11 @@ public class GenomeImporter {
      * outside of this method.
      *
      * @param genomeFile
-     * @param genomeId              Id of the genome.
-     * @param genomeDisplayName     The genome name that is user-friendly.
-     * @param fastaFile             The location of a fasta file, or directory of fasta files
-     * @param refFlatFile           RefFlat file.
-     * @param cytobandFile          Cytoband file.
+     * @param genomeId          Id of the genome.
+     * @param genomeDisplayName The genome name that is user-friendly.
+     * @param fastaFile         The location of a fasta file, or directory of fasta files
+     * @param refFlatFile       RefFlat file.
+     * @param cytobandFile      Cytoband file.
      * @return The newly created genome archive file.
      */
     public File createGenomeArchive(File genomeFile,
@@ -128,9 +122,8 @@ public class GenomeImporter {
                     }
                     fastaIndexPathList.add(fastaIndexPath);
                 }
-            }
-            else {
-                if(!FileUtils.resourceExists(fastaIndexPath)){
+            } else {
+                if (!FileUtils.resourceExists(fastaIndexPath)) {
                     String msg = "<html>Index file " + fastaIndexPath + " Not found. " +
                             "<br>Remote fasta files must be indexed prior to importing.";
                     throw new GenomeException(msg);
@@ -236,7 +229,7 @@ public class GenomeImporter {
                 propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
             if (relativeSequenceLocation != null) {
-                if (!HttpUtils.getInstance().isURL(relativeSequenceLocation)) {
+                if (!HttpUtils.isRemoteURL(relativeSequenceLocation)) {
                     relativeSequenceLocation = relativeSequenceLocation.replace('\\', '/');
                 }
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + relativeSequenceLocation);

@@ -70,12 +70,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     //do anything about TableChanged events.
     private boolean synchingRegions = false;
 
+
     /**
-     * Return the active RegionNavigatorDialog, or null if none.
+     * Return the active RegionNavigatorDialog. null if none
      *
      * @return
      */
-    public static RegionNavigatorDialog getActiveInstance() {
+    public static RegionNavigatorDialog getOrCreateInstance(Frame owner) {
+        if (activeInstance == null) {
+            activeInstance = new RegionNavigatorDialog(owner);
+        }
+        return activeInstance;
+    }
+
+    /**
+     * Return the active RegionNavigatorDialog. null if none
+     *
+     * @return
+     */
+    public static RegionNavigatorDialog getInstance() {
         return activeInstance;
     }
 
@@ -83,7 +96,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
      * dispose the active instance and get rid of the pointer. Return whether or not there was an
      * active instance
      */
-    public static boolean destroyActiveInstance() {
+    public static boolean destroyInstance() {
         if (activeInstance == null)
             return false;
         activeInstance.dispose();
@@ -91,13 +104,13 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         return true;
     }
 
-    public RegionNavigatorDialog(Frame owner) {
+    private RegionNavigatorDialog(Frame owner) {
         super(owner);
         initComponents();
         postInit();
     }
 
-    public RegionNavigatorDialog(Dialog owner) {
+    private RegionNavigatorDialog(Dialog owner) {
         super(owner);
         initComponents();
         postInit();
@@ -152,11 +165,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         textFieldSearch.getDocument().addDocumentListener(new SearchFieldDocumentListener());
 
-        activeInstance = this;
         updateChromosomeDisplayed();
 
         synchRegions();
 
+        ReferenceFrame defFrame = FrameManager.getDefaultFrame();
+        defFrame.addObserver(this);
         IGV.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20
@@ -390,10 +404,6 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         return selectedRegions;
     }
 
-    private void viewSelectedButtonActionPerformed(ActionEvent e) {
-        // TODO add your code here
-    }
-
     private void regionTableMouseClicked(MouseEvent e) {
         //We update the state of associated buttons
         //whenever the user clicks a mouse button
@@ -414,6 +424,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
     private void thisWindowDeactivated(WindowEvent e) {
         updateROIsFromRegionTable();
+    }
+
+    private void thisWindowClosed(WindowEvent e) {
+        FrameManager.getDefaultFrame().deleteObserver(this);
+        IGV.getInstance().getSession().getRegionsOfInterestObservable().deleteObserver(this);
+        destroyInstance();
     }
 
 
@@ -444,11 +460,18 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         //======== this ========
         setTitle("Regions of Interest");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                thisWindowClosed(e);
+            }
+
             @Override
             public void windowActivated(WindowEvent e) {
                 thisWindowActivated(e);
             }
+
             @Override
             public void windowDeactivated(WindowEvent e) {
                 thisWindowDeactivated(e);
@@ -496,23 +519,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                        new Object[][] {
-                            {null, null, null, null},
-                        },
-                        new String[] {
-                            "Chr", "Start", "End", "Description"
-                        }
+                            new Object[][]{
+                                    {null, null, null, null},
+                            },
+                            new String[]{
+                                    "Chr", "Start", "End", "Description"
+                            }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[] {
-                            String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[]{
+                                String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[] {
-                            false, true, true, true
+                        boolean[] columnEditable = new boolean[]{
+                                false, true, true, true
                         };
+
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
+
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];

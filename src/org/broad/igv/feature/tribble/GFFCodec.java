@@ -18,7 +18,6 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -37,12 +36,12 @@ import java.util.*;
 /**
  * Notes from GFF3 spec  http://www.sequenceontology.org/gff3.shtml
  * These tags have predefined meanings (tags are case sensitive):
- *
+ * <p/>
  * ID	   Indicates the name of the feature (unique).
  * Name   Display name for the feature.
  * Alias  A secondary name for the feature.
  * Parent Indicates the parent of the feature.
- *
+ * <p/>
  * Specs:
  * GFF3  http://www.sequenceontology.org/gff3.shtml
  * GFF2 specification: http://www.sanger.ac.uk/resources/software/gff/spec.html
@@ -235,7 +234,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         String chrToken = tokens[0].trim();
         String featureType = tokens[2].trim();
 
-        if(ignoredTypes.contains(featureType)) {
+        if (ignoredTypes.contains(featureType)) {
             return null;
         }
 
@@ -283,7 +282,10 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         f.setName(getName(attributes));
         f.setType(featureType);
         f.setDescription(description);
+
+        id = id != null ? id : "igv_" + UUID.randomUUID().toString();
         f.setIdentifier(id);
+
         f.setParentIds(parentIds);
         f.setAttributes(attributes);
 
@@ -362,6 +364,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         //TODO Almost identical
         static String[] idFields = {"systematic_id", "ID", "transcript_id", "name", "primary_name", "gene", "locus", "alias"};
         static String[] DEFAULT_NAME_FIELDS = {"gene", "name", "primary_name", "locus", "alias", "systematic_id", "ID"};
+        static String[] possParentNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
 
@@ -385,10 +388,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');
             for (String kv : kvPairs) {
-                List<String> tokens = StringUtils.breakQuotedString(kv, ' ');
-                if (tokens.size() >= 2) {
-                    String key = tokens.get(0).trim().replaceAll("\"", "");
-                    String value = tokens.get(1).trim().replaceAll("\"", "");
+                String[] tokens = kv.split(" ");
+                if (tokens.length == 1) {
+                    //Not space delimited, check =
+                    tokens = kv.split("=");
+                }
+                if (tokens.length >= 2) {
+                    String key = tokens[0].trim().replaceAll("\"", "");
+                    String value = tokens[1].trim().replaceAll("\"", "");
                     kvalues.put(key, value);
                 }
             }
@@ -426,8 +433,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             if (attributes.size() == 0) {
                 parentIds[0] = attributeString;
             } else {
-                String[] possNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "proteinId"};
-                for (String possName : possNames) {
+                for (String possName : possParentNames) {
                     if (attributes.containsKey(possName)) {
                         parentIds[0] = attributes.get(possName);
                         break;
@@ -496,7 +502,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
         /**
          * Parse the column 9 attributes.  Attributes are separated by semicolons.
-         *
+         * <p/>
          * TODO -- quotes (column 9) are explicitly forbidden in GFF3 -- should breakQuotedString be used?
          *
          * @param description

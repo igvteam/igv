@@ -359,7 +359,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
 
             //Cache the file
-            if (HttpUtils.isURL(path)) {
+            if (HttpUtils.isRemoteURL(path)) {
                 File cacheFile = getCachedFile(path);
                 try {
                     this.exportDocument(document, cacheFile.getAbsolutePath());

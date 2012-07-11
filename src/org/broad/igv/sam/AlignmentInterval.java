@@ -312,9 +312,10 @@ public class AlignmentInterval extends Locus {
                     case NUCELOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
-                        if (base == 0) {      // Base not covered (splice junction)
-                            setScore(Integer.MAX_VALUE);
-                        } else if (base == 'N' || base == 'n') {
+//                        if (base == 0) {      // Base not covered (splice junction)
+//                            setScore(Integer.MAX_VALUE);
+//                        } else
+                        if (base == 'N' || base == 'n') {
                             setScore(Integer.MAX_VALUE - 2);  // Base is "n"
                         } else if (base == ref) {
                             setScore(Integer.MAX_VALUE - 1);  // Base is reference

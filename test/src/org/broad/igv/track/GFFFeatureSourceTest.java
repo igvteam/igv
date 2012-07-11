@@ -16,11 +16,10 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
-import org.broad.igv.util.*;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
-import org.broadinstitute.sting.utils.exceptions.StingException;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -110,8 +109,6 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             String id = bf.getIdentifier().toLowerCase();
             if (id.contains("gene")) geneCount++;
             if (id.contains("rna")) rnaCount++;
-            ;
-
 
             if ("gene21".equals(id)) {
                 assertEquals(0, bf.getExonCount());

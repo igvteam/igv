@@ -16,6 +16,10 @@
        <string>title</string> 
        <string>Regions of Interest</string> 
       </void> 
+      <void method="setProperty"> 
+       <string>defaultCloseOperation</string> 
+       <int>2</int> 
+      </void> 
       <void method="addEvent"> 
        <object class="com.jformdesigner.model.FormEvent"> 
         <string>java.awt.event.WindowListener</string> 
@@ -29,6 +33,14 @@
         <string>java.awt.event.WindowListener</string> 
         <string>windowDeactivated</string> 
         <string>thisWindowDeactivated</string> 
+        <boolean>true</boolean> 
+       </object> 
+      </void> 
+      <void method="addEvent"> 
+       <object class="com.jformdesigner.model.FormEvent"> 
+        <string>java.awt.event.WindowListener</string> 
+        <string>windowClosed</string> 
+        <string>thisWindowClosed</string> 
         <boolean>true</boolean> 
        </object> 
       </void> 

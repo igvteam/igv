@@ -26,7 +26,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.ObserverForObject;
+import org.broad.igv.util.ObservableForObject;
 
 import java.util.*;
 
@@ -55,7 +55,7 @@ public class Session {
     private Map<String, Collection<RegionOfInterest>> regionsOfInterest;
     //An Observable that notifies observers of changes to the regions of interest.  Its
     //setChangedAndNotify() method should be called after any regions change.
-    private ObserverForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
+    private ObservableForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
     private GeneList currentGeneList;
     private Set<String> hiddenAttributes;
@@ -72,7 +72,7 @@ public class Session {
         this.path = path;
         regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
         regionsOfInterestObservable =
-                new ObserverForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);
+                new ObservableForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);
 
         preferences = new HashMap<String, String>();
         colorScales = new HashMap<TrackType, ContinuousColorScale>();
@@ -425,7 +425,7 @@ public class Session {
      *
      * @return
      */
-    public ObserverForObject<Map<String, Collection<RegionOfInterest>>> getRegionsOfInterestObservable() {
+    public ObservableForObject<Map<String, Collection<RegionOfInterest>>> getRegionsOfInterestObservable() {
         return regionsOfInterestObservable;
     }
 }

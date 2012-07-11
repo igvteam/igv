@@ -24,7 +24,10 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: jrobinso
@@ -45,7 +48,7 @@ public class GFFParser implements FeatureParser {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(locator);
-
+            GFFCodec.Version version = locator.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
             List<org.broad.tribble.Feature> features = loadFeatures(reader, genome);
 
             FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
