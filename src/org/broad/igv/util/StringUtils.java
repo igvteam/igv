@@ -21,8 +21,8 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,6 +32,23 @@ import java.util.regex.Pattern;
  * To change this template use File | Settings | File Templates.
  */
 public class StringUtils {
+
+    private static Map<String, String> internedStrings = new WeakHashMap<String, String>();
+
+    /**
+     * Creates or retrieves an interned copy of {@code string}. This way,
+     * we only keep one reference to strings of the same value.
+     * Backed by a WeakHashMap
+     *
+     * @param string
+     * @return
+     */
+    public static String intern(String string) {
+        if (!internedStrings.containsKey(string)) {
+            internedStrings.put(string, string);
+        }
+        return internedStrings.get(string);
+    }
 
 
     public static List<String> breakQuotedString(String string, char splitToken) {
@@ -159,17 +176,18 @@ public class StringUtils {
      * of capitalized words.
      * toCapWords("BOB") -> "Bob"
      * toCapWords("bOb is MY FRiend") -> "Bob Is My Friend"
+     *
      * @param text
      * @return
      */
-    public static String capWords(String text){
+    public static String capWords(String text) {
         String res = "";
         boolean capNext = true;
         String s;
 
-        for(char c: text.toLowerCase().toCharArray()){
+        for (char c : text.toLowerCase().toCharArray()) {
             s = Character.toString(c);
-            if(capNext){
+            if (capNext) {
                 s = s.toUpperCase();
             }
             res += s;

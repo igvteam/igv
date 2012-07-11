@@ -232,13 +232,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         String chrToken = tokens[0].trim();
-        String featureType = tokens[2].trim();
+        String featureType = StringUtils.intern(tokens[2].trim());
 
         if (ignoredTypes.contains(featureType)) {
             return null;
         }
 
-        String chromosome = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
+        String chromosome = genome == null ? StringUtils.intern(chrToken) : genome.getChromosomeAlias(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
@@ -396,7 +396,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 if (tokens.length >= 2) {
                     String key = tokens[0].trim().replaceAll("\"", "");
                     String value = tokens[1].trim().replaceAll("\"", "");
-                    kvalues.put(key, value);
+                    kvalues.put(StringUtils.intern(key), value);
                 }
             }
         }
@@ -527,7 +527,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                             value = value.substring(0, 50) + " ...";
                         }
                     }
-                    kvalues.put(key, value);
+                    kvalues.put(StringUtils.intern(key), value);
                 } else {
                     log.info("No attributes: " + description);
                 }
@@ -584,7 +584,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
                 if (tokens.size() >= 2) {
                     String key = tokens.get(0).trim().replaceAll("\"", "");
                     String value = tokens.get(1).trim().replaceAll("\"", "");
-                    kvalues.put(key, value);
+                    kvalues.put(StringUtils.intern(key), value);
                 }
             }
         }

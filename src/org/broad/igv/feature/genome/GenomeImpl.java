@@ -77,8 +77,12 @@ public class GenomeImpl implements Genome {
         if (str == null) {
             return str;
         } else {
-            String chr = chrAliasTable.get(str);
-            return chr == null ? str : chr;
+            //We intern strings used as chromosomes
+            //to prevent storing multiple times
+            if (!chrAliasTable.containsKey(str)) {
+                chrAliasTable.put(str, str);
+            }
+            return chrAliasTable.get(str);
         }
     }
 
