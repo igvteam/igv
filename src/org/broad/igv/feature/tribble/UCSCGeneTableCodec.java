@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
@@ -5,8 +16,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.Feature;
+import org.broad.igv.util.StringUtils;
 
 import java.util.List;
 
@@ -87,10 +97,10 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
             return null;
         }
 
-        String identifier = new String(tokens[idColumn].trim());
+        String identifier = tokens[idColumn].trim();
         String name = null;
         if (tokenCount > nameColumn && tokens[nameColumn] != null) {
-            name = new String(tokens[nameColumn]);
+            name = tokens[nameColumn];
         }
 
         if (name == null || name.length() == nameColumn) {
@@ -98,7 +108,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         }
 
         String chrToken = tokens[chrColumn].trim();
-        String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
+        String chr = genome == null ? StringUtils.intern(chrToken) : genome.getChromosomeAlias(chrToken);
 
         int start = Integer.parseInt(tokens[startColumn]) - startOffsetValue;
         int end = Integer.parseInt(tokens[endColumn]);
@@ -117,7 +127,7 @@ public class UCSCGeneTableCodec extends UCSCCodec<BasicFeature> {
         gene.setName(name);
         gene.setIdentifier(identifier);
 
-        if(tokenCount > 7) {
+        if (tokenCount > 7) {
             gene.setThickStart(Integer.parseInt(tokens[6]) - startOffsetValue);
             gene.setThickEnd(Integer.parseInt(tokens[7]));
         }
