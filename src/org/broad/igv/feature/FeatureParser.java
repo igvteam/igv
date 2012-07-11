@@ -26,6 +26,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ import java.util.List;
 public interface FeatureParser {
 
 
-    List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome);
+    List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) throws IOException;
 
     /**
      * Method description

@@ -352,7 +352,7 @@ public class TrackLoader {
     }
 
 
-    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
         if (featureParser != null) {

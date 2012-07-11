@@ -19,6 +19,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
@@ -27,6 +28,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -88,33 +90,33 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param locator
      * @return
      */
-    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
+    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) throws IOException {
 
-        List<Feature> features = loadFeatures(locator, -1);
-        if (features.size() == 0) {
-            //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
+        FeatureCodec codec = CodecFactory.getCodec(locator.getPath(), genome);
+        if (codec != null) {
+            AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
+            Iterable<Feature> iter = bfs.iterator();
+            Object header = bfs.getHeader();
+            TrackProperties trackProperties = getTrackProperties(header);
+            return AbstractFeatureParser.loadTracks(iter, locator, genome, trackProperties);
         }
-        return loadTracks(features, locator, genome, trackProperties);
+        else {
+
+            return null;
+        }
     }
 
-    private List<FeatureTrack> loadTracks(List<Feature> features, ResourceLocator locator, Genome genome) {
-        FeatureCollectionSource source = new FeatureCollectionSource(features, genome);
-        FeatureTrack track = new FeatureTrack(locator, source);
-        track.setName(locator.getTrackName());
-        track.setRendererClass(IGVFeatureRenderer.class);
-        track.setHeight(45);
-
-        //Nothing writes to trackType as far as I can tell -Jacob S
-        //if (trackType != null) {
-        //    track.setTrackType(trackType);
-        //}
-        if (trackProperties != null) {
-            track.setProperties(trackProperties);
+    public static TrackProperties getTrackProperties(Object header) {
+        try {
+            FeatureFileHeader ffHeader = (FeatureFileHeader) header;
+            if (ffHeader != null) {
+                return ffHeader.getTrackProperties();
+            } else {
+                return null;
+            }
+        } catch (ClassCastException e) {
+            return null;
         }
-
-        List<FeatureTrack> tracks = new ArrayList();
-        tracks.add(track);
-        return tracks;
     }
 
     public static List<FeatureTrack> loadTracks(Iterable<Feature> features, ResourceLocator locator, Genome genome,
@@ -152,33 +154,6 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     }
 
     /**
-     * Parse a limited number of lines in this file and return a list of features found.
-     *
-     * @param locator
-     * @param maxLines
-     * @return
-     */
-    public List<org.broad.tribble.Feature> loadFeatures(ResourceLocator locator, int maxLines) {
-
-        BufferedReader reader = null;
-        try {
-            reader = ParsingUtils.openBufferedReader(locator);
-            return loadFeatures(reader, maxLines);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-
-                }
-            }
-        }
-    }
-
-    /**
-     * Method description
      *
      * @param reader
      * @return
@@ -223,7 +198,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                                     log.error("Error converting track type: " + tokens[1]);
                                 }
                             }
-                        } else if (nextLine.startsWith("#track")) {
+                        } else if (nextLine.startsWith("#track") || nextLine.startsWith("track")) {
                             TrackProperties tp = new TrackProperties();
                             ParsingUtils.parseTrackLine(nextLine, tp);
                             setTrackProperties(tp);

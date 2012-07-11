@@ -316,7 +316,7 @@ public class IGVSessionReader implements SessionReader {
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(element, SessionAttribute.GENOME.getText());
         if (genomeId != null && genomeId.length() > 0) {
-            if (GenomeManager.getInstance().getGenomeId().equals(genomeId)) {
+            if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
                 // We don't have to reload the genome, but the gene track for the current genome should be restored.
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 IGV.getInstance().setGenomeTracks(genome.getGeneTrack());
