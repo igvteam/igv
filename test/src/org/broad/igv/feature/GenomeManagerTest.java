@@ -114,6 +114,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             try {
                 count++;
                 tstLoadGenome(genome.getLocation());
+                Runtime.getRuntime().gc();
             } catch (Exception e) {
                 failedGenomes.put(genome, e);
             }
