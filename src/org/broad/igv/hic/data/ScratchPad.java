@@ -17,7 +17,7 @@ public class ScratchPad {
         File f = new File("/Users/jrobinso/projects/hic/bin_chr14_1M.bin");
         //File f = new File("/Users/jrobinso/projects/hic/chr14_5e3_N17658_output.bin");
         //File f = new File("/Users/jrobinso/projects/hic/chr14_50K_test.bin");
-        createBlockIndexedFIle(f, null, 50);
+        createBlockIndexedFile(f, null, 50);
     }
 
     public static void readPearsons(File file) throws IOException {
@@ -75,7 +75,7 @@ public class ScratchPad {
     }
 
 
-    public static void createBlockIndexedFIle(File inputFile, File outputFile, int blockSize) throws IOException {
+    public static void createBlockIndexedFile(File inputFile, File outputFile, int blockSize) throws IOException {
 
         FileInputStream fis = null;
 
@@ -83,59 +83,70 @@ public class ScratchPad {
         BufferedInputStream bis = new BufferedInputStream(fis);
         LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
-        int nCols = les.readInt();
-        int nTot = nCols * nCols;
+        int nDataRows = les.readInt();
+        int nDataColumns = nDataRows;
+        int nTot = nDataRows * nDataColumns;
 
-        // Read a row of blocks
-        int nBlockCols = nCols / blockSize + 1;
-        int lastBlockSize = nCols - (nBlockCols - 1) * blockSize;
+        int nBlockColumns = nDataColumns / blockSize + 1;
+        int nBlockRows = nDataRows / blockSize + 1;
 
+        // The end blocks will in general be smaller
+        int lastRowBlockSize = nDataRows - (nBlockRows - 1) * blockSize;
+        int lastColBlockSize = nDataColumns - (nBlockColumns - 1) * blockSize;
+
+        // Now transform matrix from linear -> block layout
+        // Data is read in row-major order,  tranforming rows of blocks simultaneously
 
         int lastBlockRow = 0;
 
         int nBlockRow = 0;
-        Block[] blocksForRow = new Block[nBlockCols];
-        resetBlocks(blocksForRow, blockSize, nBlockCols, lastBlockSize, nBlockRow);
+        Block[] blocksForRow = new Block[nBlockColumns];
+        resetBlocks(blocksForRow, blockSize, nBlockColumns, lastColBlockSize, nBlockRow);
 
         for (int i = 0; i < nTot; i++) {
             //les.readByte();
 
-            int row = i / nCols;
+            int row = i / nDataColumns;
             nBlockRow = row / blockSize;
 
-            int col = (i - row * nCols);
+            int col = (i - row * nDataColumns);
             int nBlockCol = col / blockSize;
 
             if (nBlockRow != lastBlockRow) {
                 for (Block b : blocksForRow) {
-                    System.out.println(nBlockRow + "\t" + nBlockCol + "\t" + b.data.length);
-
+                    System.out.println(lastBlockRow + "\t" + nBlockCol + "\t" + b.data.length);
                 }
-                resetBlocks(blocksForRow, blockSize, nBlockCols, lastBlockSize, nBlockRow);
+                resetBlocks(blocksForRow, blockSize, nBlockColumns, lastColBlockSize, nBlockRow);
+                lastBlockRow = nBlockRow;
             }
 
             // Index within block
-            int startIdx = nBlockRow * blockSize * nCols + nBlockCol * blockSize;
+            int startIdx = nBlockRow * blockSize * nDataColumns + nBlockCol * blockSize;
             int idx = i - startIdx;
 
             Float f = les.readFloat();
             blocksForRow[nBlockCol].add(f);
-            //System.out.println(nBlockRow + "\t" + nBlockCol + "\t" + startIdx + "\t" + idx);
-
         }
+
+        for (Block b : blocksForRow) {
+            System.out.println(nBlockRow + "\t" + "" + "\t" + b.data.length);
+        }
+        resetBlocks(blocksForRow, blockSize, nBlockColumns, lastColBlockSize, nBlockRow);
+        lastBlockRow = nBlockRow;
+
 
 
         fis.close();
     }
 
     private static void resetBlocks(Block[] blocksForRow,
-                                       int blockSize, int nBlockCols, int lastBlockSize, int nBlockRow) {
+                                       int blockSize, int nBlockSize, int lastBlockSize, int nBlockRow) {
 
-        int tmp = nBlockRow > nBlockCols - 1 ? blockSize : lastBlockSize;
-        for (int i = 0; i < nBlockCols - 1; i++) {
+        int tmp = nBlockRow > nBlockSize - 1 ? lastBlockSize : blockSize;
+        for (int i = 0; i < nBlockSize - 1; i++) {
             blocksForRow[i] = new Block(tmp, blockSize);
         }
-        blocksForRow[nBlockCols - 1] = new Block(tmp, lastBlockSize);
+        blocksForRow[nBlockSize - 1] = new Block(tmp, lastBlockSize);
     }
 
 

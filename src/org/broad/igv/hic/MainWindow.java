@@ -22,6 +22,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.DatasetReader;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.hic.data.ScratchPad;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
