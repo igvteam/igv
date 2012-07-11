@@ -143,6 +143,7 @@ public class HeatmapRenderer {
                 int px = (rec.getX() - originX);
                 int py = (rec.getY() - originY);
                 g.setColor(color);
+                // TODO -- need to check right bounds before drawing
                 if (px > -1 && py > -1) {
                     g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 }
@@ -174,7 +175,7 @@ public class HeatmapRenderer {
         int nBinsX = rm.getColumnDimension();
         int nBinsY = rm.getRowDimension();
 
-
+                         // TODO -- need to check bounds before drawing
         for (int i = 0; i < nBinsX; i++) {
             for (int j = 0; j < nBinsY; j++) {
                 double score = rm.getEntry(i, j);

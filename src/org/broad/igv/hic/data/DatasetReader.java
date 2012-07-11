@@ -12,7 +12,8 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**    1334372501047
+/**
+ *
  * @author jrobinso
  * @date Aug 17, 2010
  */
@@ -29,8 +30,8 @@ public class DatasetReader {
     public DatasetReader(SeekableStream stream) {
         this.stream = stream;
         masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
-        dataset     = new Dataset(this);
-      }
+        dataset = new Dataset(this);
+    }
 
     public Dataset read() throws FileNotFoundException {
 
@@ -53,13 +54,21 @@ public class DatasetReader {
             // Read attribute dictionary.  Can contain arbitrary # of attributes as key-value pairs, including version
             version = 0;  // <= assumption
             int nAttributes = dis.readInt();
+            String genome = null;
             for (int i = 0; i < nAttributes; i++) {
                 String key = dis.readString();
                 String value = dis.readString();
-                if(key.equals("Version")) {
+                if (key.equalsIgnoreCase("version")) {
                     version = Integer.parseInt(value);
                 }
+                if (key.equalsIgnoreCase("genome")) {
+                   genome = value;
+                }
             }
+            if (genome == null) {
+                genome = inferGenome(chromosomes);
+            }
+            System.out.println("genome =" + genome);
 
             readMasterIndex(masterIndexPos);
 
@@ -70,6 +79,38 @@ public class DatasetReader {
 
 
         return dataset;
+
+    }
+
+    /**
+     * Infer a genome id by examining chromsome sizes.  This method provided for older hic files that do not have
+     * a genome id recorded.
+     *
+     * @param chromosomes
+     * @return
+     */
+    private String inferGenome(Chromosome[] chromosomes) {
+        // Initial implementation -- base on chr 1 size
+        int len = -1;
+        for (Chromosome chr : chromosomes) {
+            if (chr.getName().equals("1") || chr.getName().equals("chr1")) {
+                len = chr.getLength();
+            }
+            else if(chr.getName().equals("23011544")) {
+                return "dmel";
+            }
+        }
+
+        switch(len) {
+            case 249250621:
+                return "hg19";   //or b37
+            case 247249719:
+                return "hg18";
+            case 197195432:
+                return "mm9";
+            default:
+                return null;
+        }
 
     }
 

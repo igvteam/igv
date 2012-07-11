@@ -16,6 +16,7 @@ import com.jidesoft.swing.*;
 
 
 import org.apache.commons.math.linear.InvalidMatrixException;
+import org.apache.commons.math.linear.RealMatrix;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.tools.DensityUtil;
@@ -550,22 +551,22 @@ public class MainWindow extends JFrame {
         JMenuItem loadFeb = new JMenuItem("HiSeq Hi-C Human (02/01/2012)");
         loadFeb.addActionListener(new
 
-                ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            heatmapPanel.setObservedRange(0, 20);
-                            colorRangeSlider.setMaximum(2000);
-                            colorRangeSlider.setMinimum(0);
-                            colorRangeSlider.setMajorTickSpacing(100);
-                            colorRangeSlider.setUpperValue(1500);
-                            hic.reset();
-                            load("http://iwww.broadinstitute.org/igvdata/hic/HiSeq/120201.hic");
-                        } catch (IOException e1) {
-                            JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                        }
+                                  ActionListener() {
+                                      public void actionPerformed(ActionEvent e) {
+                                          try {
+                                              heatmapPanel.setObservedRange(0, 20);
+                                              colorRangeSlider.setMaximum(2000);
+                                              colorRangeSlider.setMinimum(0);
+                                              colorRangeSlider.setMajorTickSpacing(100);
+                                              colorRangeSlider.setUpperValue(1500);
+                                              hic.reset();
+                                              load("http://iwww.broadinstitute.org/igvdata/hic/HiSeq/120201.hic");
+                                          } catch (IOException e1) {
+                                              JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
+                                          }
 
-                    }
-                }
+                                      }
+                                  }
 
         );
         fileMenu.add(loadFeb);
@@ -593,7 +594,6 @@ public class MainWindow extends JFrame {
 
         );
         fileMenu.add(loadApr);
-
 
 
         fileMenu.addSeparator();
@@ -626,22 +626,22 @@ public class MainWindow extends JFrame {
         JMenuItem loadMar2 = new JMenuItem("MiSeq Hi-C Human (05/18/2012)");
         loadMar2.addActionListener(new
 
-                ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            heatmapPanel.setObservedRange(0, 1);
-                            colorRangeSlider.setMaximum(50);
-                            colorRangeSlider.setMinimum(0);
-                            colorRangeSlider.setUpperValue(20);
-                            colorRangeSlider.setMajorTickSpacing(10);
-                            hic.reset();
-                            load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/Elena_Human_120518.hic");
-                        } catch (IOException e1) {
-                            JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                        }
+                                   ActionListener() {
+                                       public void actionPerformed(ActionEvent e) {
+                                           try {
+                                               heatmapPanel.setObservedRange(0, 1);
+                                               colorRangeSlider.setMaximum(50);
+                                               colorRangeSlider.setMinimum(0);
+                                               colorRangeSlider.setUpperValue(20);
+                                               colorRangeSlider.setMajorTickSpacing(10);
+                                               hic.reset();
+                                               load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/Elena_Human_120518.hic");
+                                           } catch (IOException e1) {
+                                               JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
+                                           }
 
-                    }
-                }
+                                       }
+                                   }
 
         );
         fileMenu.add(loadMar2);
@@ -650,22 +650,22 @@ public class MainWindow extends JFrame {
         JMenuItem loadCoolAid = new JMenuItem("MiSeq COOL-AID Mouse (12/11/2011)");
         loadCoolAid.addActionListener(new
 
-                ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            heatmapPanel.setObservedRange(0, 1);
-                            colorRangeSlider.setMaximum(5);
-                            colorRangeSlider.setMinimum(0);
-                            colorRangeSlider.setUpperValue(1);
-                            colorRangeSlider.setMajorTickSpacing(1);
-                            hic.reset();
-                            load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/COOL-AID_Elena_Mouse_December11.hic");
-                        } catch (IOException e1) {
-                            JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                        }
+                                      ActionListener() {
+                                          public void actionPerformed(ActionEvent e) {
+                                              try {
+                                                  heatmapPanel.setObservedRange(0, 1);
+                                                  colorRangeSlider.setMaximum(5);
+                                                  colorRangeSlider.setMinimum(0);
+                                                  colorRangeSlider.setUpperValue(1);
+                                                  colorRangeSlider.setMajorTickSpacing(1);
+                                                  hic.reset();
+                                                  load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/COOL-AID_Elena_Mouse_December11.hic");
+                                              } catch (IOException e1) {
+                                                  JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
+                                              }
 
-                    }
-                }
+                                          }
+                                      }
 
         );
         fileMenu.add(loadCoolAid);
@@ -675,22 +675,22 @@ public class MainWindow extends JFrame {
         JMenuItem loadDmelDataset = new JMenuItem("Fly");
         loadDmelDataset.addActionListener(new
 
-                ActionListener() {
-                    public void actionPerformed
-                            (ActionEvent
-                                     e) {
-                        try {
-                            heatmapPanel.setObservedRange(0, 20000);
-                            colorRangeSlider.setMaximum(20000);
-                            colorRangeSlider.setMinimum(0);
-                            hic.reset();
-                            load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
+                                          ActionListener() {
+                                              public void actionPerformed
+                                                      (ActionEvent
+                                                               e) {
+                                                  try {
+                                                      heatmapPanel.setObservedRange(0, 20000);
+                                                      colorRangeSlider.setMaximum(20000);
+                                                      colorRangeSlider.setMinimum(0);
+                                                      hic.reset();
+                                                      load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
 
-                        } catch (IOException e1) {
-                            JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                        }
-                    }
-                }
+                                                  } catch (IOException e1) {
+                                                      JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
+                                                  }
+                                              }
+                                          }
 
         );
         fileMenu.add(loadDmelDataset);
@@ -1067,8 +1067,21 @@ public class MainWindow extends JFrame {
 
         contentPane.add(mainPanel, BorderLayout.CENTER);
 
-        //======== menuBar1 ========
-        JMenuBar menuBar1 = new JMenuBar();
+        JMenuBar menuBar = createMenuBar(hiCPanel);
+        contentPane.add(menuBar, BorderLayout.NORTH);
+
+        // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
+        rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
+        });
+
+    }
+
+
+    private JMenuBar createMenuBar(final JPanel hiCPanel) {
+
+
+        JMenuBar menuBar = new JMenuBar();
 
         //======== fileMenu ========
         JMenu fileMenu = new JMenu("File");
@@ -1149,11 +1162,11 @@ public class MainWindow extends JFrame {
         fileMenu.add(exit);
 
 
-        menuBar1.add(fileMenu);
+        menuBar.add(fileMenu);
 
-        //======== viewMenu ========
+        //======== Tracks menu ========
 
-        JMenu viewMenu = new JMenu("Tracks");
+        JMenu tracksMenu = new JMenu("Tracks");
 
         viewEigenvector = new JCheckBoxMenuItem("View Eigenvector...");
         viewEigenvector.addItemListener(new ItemListener() {
@@ -1172,7 +1185,7 @@ public class MainWindow extends JFrame {
             }
         });
         viewEigenvector.setEnabled(false);
-        viewMenu.add(viewEigenvector);
+        tracksMenu.add(viewEigenvector);
 
         JMenuItem loadItem = new JMenuItem("Load...");
         loadItem.addActionListener(new AbstractAction() {
@@ -1182,7 +1195,7 @@ public class MainWindow extends JFrame {
             }
 
         });
-        viewMenu.add(loadItem);
+        tracksMenu.add(loadItem);
 
         JMenuItem loadFromFileItem = new JMenuItem("Load from file...");
         loadFromFileItem.addActionListener(new AbstractAction() {
@@ -1192,16 +1205,31 @@ public class MainWindow extends JFrame {
             }
 
         });
-        viewMenu.add(loadFromFileItem);
+        tracksMenu.add(loadFromFileItem);
 
-        menuBar1.add(viewMenu);
-        contentPane.add(menuBar1, BorderLayout.NORTH);
+        menuBar.add(tracksMenu);
 
-        // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
-        rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
+        //======== Extras menu ========
+        JMenu extrasMenu = new JMenu("Extras");
+
+        JMenuItem dumpPearsons = new JMenuItem("Dump pearsons matrix ...");
+        dumpPearsons.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                 RealMatrix pearsons = hic.zd.getPearsons();
+                try {
+                    ScratchPad.dumpPearsonsBinary(pearsons);
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
         });
 
+        extrasMenu.add(dumpPearsons);
+        menuBar.add(extrasMenu);
+
+        return menuBar;
     }
 
 
