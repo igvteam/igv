@@ -15,6 +15,7 @@
  */
 package org.broad.igv.sam;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
@@ -24,6 +25,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -290,6 +292,54 @@ public class AlignmentInterval extends Locus implements Interval {
 
 
         return true;
+    }
+
+    /**
+     * Remove data outside the specified interval.
+     * This interval must contain the specified interval.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @return true if any trimming was performed, false if not
+     */
+    boolean trimTo(final String chr, final int start, final int end, int zoom) {
+        boolean toRet = false;
+        if (!this.contains(chr, start, end, zoom)) {
+            return false;
+        }
+
+        for (String groupKey : groupedAlignmentRows.keySet()) {
+            for (AlignmentInterval.Row row : groupedAlignmentRows.get(groupKey)) {
+                Iterator<Alignment> alIter = row.alignments.iterator();
+                Alignment al;
+                while (alIter.hasNext()) {
+                    al = alIter.next();
+                    if (al.getEnd() < start || al.getStart() > end) {
+                        alIter.remove();
+                        toRet |= true;
+                    }
+                }
+
+            }
+        }
+
+        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
+            @Override
+            public boolean evaluate(Feature object) {
+                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
+            }
+        };
+        Utilities.filter(this.getCounts(), overlapPredicate);
+        Utilities.filter(this.getDownsampledIntervals(), overlapPredicate);
+        Utilities.filter(this.getSpliceJunctions(), overlapPredicate);
+
+        this.start = Math.max(this.start, start);
+        this.end = Math.min(this.end, end);
+
+
+        return toRet;
     }
 
     /**

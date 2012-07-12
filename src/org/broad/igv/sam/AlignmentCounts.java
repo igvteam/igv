@@ -43,10 +43,6 @@ public interface AlignmentCounts extends Feature {
 
     void incCounts(Alignment alignment);
 
-    int getStart();
-
-    int getEnd();
-
     int getNumberOfPoints();
 
     int getMaxCount();

@@ -20,9 +20,7 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import static junit.framework.Assert.*;
 
@@ -57,7 +55,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         ArrayList<AlignmentInterval> baseIntervals = (ArrayList) baseManager.getLoadedIntervals();
         assertEquals(1, baseIntervals.size());
-        AlignmentInterval base = baseIntervals.get(0);
+        AlignmentInterval baseInterval = baseIntervals.get(0);
 
 
         Locus begLocus = new Locus(chr, start, start + halfwidth);
@@ -81,35 +79,72 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         AlignmentInterval merged = begInterval.get(0);
         merged.merge(endInterval.get(0));
 
-        assertEquals(base.getCounts().size(), merged.getCounts().size());
+        TestUtils.assertFeatureListsEqual(baseInterval.getCounts().iterator(), merged.getCounts().iterator());
 
-        Iterator<Alignment> iter1 = baseIntervals.get(0).getAlignmentIterator();
-        Iterator<Alignment> iter2 = merged.getAlignmentIterator();
+        TestUtils.assertFeatureListsEqual(baseInterval.getDownsampledIntervals().iterator(), merged.getDownsampledIntervals().iterator());
 
-        Alignment expected, actual;
-        int count = 0;
-        //Because we sort by start position, and some alignments have the same start position,
-        //there can be some ambiguitiy in which comes first, so we don't compare directly.
-        //Just make sure they end up the same in the end.
-        Set<String> expectedReadNames = new HashSet<String>();
-        Set<String> actualReadNames = new HashSet<String>();
-        while (iter1.hasNext()) {
-            assertTrue("Not enough alignments, empty at count " + count, iter2.hasNext());
-            expected = iter1.next();
-            actual = iter2.next();
+        TestUtils.assertFeatureListsEqual(baseInterval.getAlignmentIterator(), merged.getAlignmentIterator());
 
-            assertEquals(expected.getAlignmentStart(), actual.getAlignmentStart());
-            assertEquals(expected.getChr(), actual.getChr());
-            count++;
+//        Iterator<Alignment> iter1 = baseInterval.getAlignmentIterator();
+//        Iterator<Alignment> iter2 = merged.getAlignmentIterator();
+//
+//        Alignment expected, actual;
+//        int count = 0;
+//        //Because we sort by start position, and some alignments have the same start position,
+//        //there can be some ambiguitiy in which comes first, so we don't compare directly.
+//        //Just make sure they end up the same in the end.
+//        Set<String> expectedReadNames = new HashSet<String>();
+//        Set<String> actualReadNames = new HashSet<String>();
+//        while (iter1.hasNext()) {
+//            assertTrue("Not enough alignments, empty at count " + count, iter2.hasNext());
+//            expected = iter1.next();
+//            actual = iter2.next();
+//
+//            assertEquals(expected.getAlignmentStart(), actual.getAlignmentStart());
+//            assertEquals(expected.getChr(), actual.getChr());
+//            count++;
+//
+//            expectedReadNames.add(expected.getReadName());
+//            actualReadNames.add(actual.getReadName());
+//        }
+//
+//        //System.out.println(count + " Alignments");
+//        assertFalse(iter2.hasNext());
+//        assertTrue("No data loaded", count > 0);
+//
+//        assertEquals(expectedReadNames, actualReadNames);
 
-            expectedReadNames.add(expected.getReadName());
-            actualReadNames.add(actual.getReadName());
-        }
-
-        //System.out.println(count + " Alignments");
-        assertFalse(iter2.hasNext());
-        assertTrue("No data loaded", count > 0);
-
-        assertEquals(expectedReadNames, actualReadNames);
     }
+
+    @Test
+    public void testTrimTo() throws Exception {
+
+        String chr = "chr1";
+        int start = 151666494;
+        int halfwidth = 1000;
+        int end = start + 2 * halfwidth;
+        int panInterval = halfwidth;
+
+        int numPans = AlignmentDataManager.MAX_INTERVAL_MULTIPLE;
+        List<AlignmentInterval> intervals = (ArrayList<AlignmentInterval>)
+                AlignmentDataManagerTest.performPanning(chr, start, end, numPans, panInterval);
+        AlignmentInterval interval = intervals.get(0);
+        assertTrue(interval.contains(chr, start, end + numPans * panInterval));
+
+
+        //Now trim to the middle
+        int trimShift = (numPans / 2) * panInterval;
+        int trimStart = start + trimShift;
+        int trimEnd = end + trimShift;
+        assertTrue(interval.trimTo(chr, trimStart, trimEnd, -1));
+        assertFalse(interval.trimTo(chr, trimStart, trimEnd, -1));
+        assertFalse(interval.trimTo(chr, trimStart, trimEnd, -1));
+        assertFalse(interval.trimTo(chr, trimStart, trimEnd, -1));
+
+        assertFalse(interval.contains(chr, start, end + numPans * panInterval));
+        assertTrue(interval.contains(chr, trimStart, trimEnd, -1));
+
+    }
+
+
 }
