@@ -219,10 +219,37 @@ public class MatrixZoomData {
 
         if (oe == null)
             oe = computeOE(df);
+        RealMatrix rm = oe.copy();
+        int size = rm.getRowDimension();
+        BitSet bitSet = new BitSet(size);
+        double[] nans = new double[size];
+        for (int i = 0; i < size; i++)
+            nans[i] = Double.NaN;
 
+        for (int i = 0; i < size; i++) {
+            if (isZeros(rm.getRow(i))) {
+                bitSet.set(i);
+            }
+        }
 
-        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+        for (int i = 0; i < size; i++) {
+            if (bitSet.get(i)) {
+                rm.setRow(i, nans);
+                rm.setColumn(i, nans);
+            }
+        }
 
+        for (int i = 0; i < size; i++) {
+            RealVector v = rm.getRowVector(i);
+            double m = getVectorMean(v);
+            RealVector newV = v.mapSubtract(m);
+            rm.setRowVector(i, newV);
+        }
+        PearsonsResetNan resetNan = new PearsonsResetNan();
+        rm.walkInOptimizedOrder(resetNan);
+
+        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
+        rm = null;
         PearsonsMinMax minMax = new PearsonsMinMax();
         pearsons.walkInOptimizedOrder(minMax);
         pearsonsMax = minMax.getMaxValue();
@@ -334,33 +361,6 @@ public class MatrixZoomData {
                 }
             }
         }
-        int size = rm.getRowDimension();
-        BitSet bitSet = new BitSet(size);
-        double[] nans = new double[size];
-        for (int i = 0; i < size; i++)
-            nans[i] = Double.NaN;
-
-        for (int i = 0; i < size; i++) {
-            if (isZeros(rm.getRow(i))) {
-                bitSet.set(i);
-            }
-        }
-
-        for (int i = 0; i < size; i++) {
-            if (bitSet.get(i)) {
-                rm.setRow(i, nans);
-                rm.setColumn(i, nans);
-            }
-        }
-
-        for (int i = 0; i < size; i++) {
-            RealVector v = rm.getRowVector(i);
-            double m = getVectorMean(v);
-            RealVector newV = v.mapSubtract(m);
-            rm.setRowVector(i, newV);
-        }
-        PearsonsResetNan resetNan = new PearsonsResetNan();
-        rm.walkInOptimizedOrder(resetNan);
 
         return rm;
     }
