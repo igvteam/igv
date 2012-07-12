@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -272,66 +265,101 @@ public class AlignmentInterval extends Locus implements Interval {
 
     @Override
     public boolean merge(Interval i) {
-        if(!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
-                || !(i instanceof AlignmentInterval)){
+        if (!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
+                || !(i instanceof AlignmentInterval)) {
             return false;
         }
 
-        this.start = Math.min(getStart(), i.getStart());
-        this.end = Math.max(getEnd(), i.getEnd());
-
         AlignmentInterval other = (AlignmentInterval) i;
 
+        List<Alignment> allAlignments = (List<Alignment>) combineSortedFeatureListsNoDups(getAlignmentIterator(), other.getAlignmentIterator());
+
+        this.counts = combineSortedFeatureListsNoDups(this.counts, other.getCounts());
+        this.spliceJunctions = combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions());
+        this.downsampledIntervals = combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals());
+
+        //This must be done AFTER calling combineSortedFeatureListsNoDups for the last time,
+        //because we rely on the original start/end
+        this.start = Math.min(getStart(), i.getStart());
+        this.end = Math.max(getEnd(), i.getEnd());
         this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
 
-        //Combine alignments
-        Set<Alignment> allAlignments = new HashSet<Alignment>();
-        Iterator<Alignment> alIter = getAlignmentIterator();
-        while(alIter.hasNext()){
-            allAlignments.add(alIter.next());
-        }
-
-        alIter = other.getAlignmentIterator();
-        while(alIter.hasNext()){
-            allAlignments.add(alIter.next());
-        }
-
-        List<Alignment> alignments = new ArrayList<Alignment>(allAlignments);
-        FeatureUtils.sortFeatureList(alignments);
 
         AlignmentPacker packer = new AlignmentPacker();
-        this.groupedAlignmentRows = packer.packAlignments(alignments.iterator(), this.end, renderOptions);
+        this.groupedAlignmentRows = packer.packAlignments(allAlignments.iterator(), this.end, renderOptions);
 
-        if(this.counts != null && other.getCounts() != null){
-            int added = 0;
-            Set<AlignmentCounts> countsSet = new HashSet<AlignmentCounts>(this.counts);
-            for(AlignmentCounts oCounts: other.getCounts()){
-                if(!countsSet.contains(oCounts)){
-                    this.counts.add(oCounts);
-                    added++;
-                }
-            }
-            if(added > 0){
-                Collections.sort(counts, new Comparator<AlignmentCounts>() {
-
-                    public int compare(AlignmentCounts o1, AlignmentCounts o2) {
-                        return (o1.getStart() - o2.getStart());
-                    }
-                });
-            }
-
-
-        }
-
-        this.spliceJunctions = addToListNoDups(this.spliceJunctions, other.getSpliceJunctions());
-        this.downsampledIntervals = addToListNoDups(this.downsampledIntervals, other.getDownsampledIntervals());
 
         return true;
     }
 
-    private List addToListNoDups(List self, List other){
-        if(self == null) self = new ArrayList();
-        if(other != null){
+    /**
+     * Null safe version of {@linkplain #combineSortedFeatureListsNoDups(java.util.Iterator, java.util.Iterator)}
+     * If BOTH self and other are null, returns null. If only one is null,
+     * returns the other
+     *
+     * @param self
+     * @param other
+     * @return
+     */
+    private List combineSortedFeatureListsNoDups(List self, List other) {
+        if (self == null && other == null) {
+            return null;
+        } else if (self == null) {
+            return other;
+        } else if (other == null) {
+            return self;
+        }
+
+        return combineSortedFeatureListsNoDups(self.iterator(), other.iterator());
+    }
+
+    /**
+     * Features are sorted by start position. The interval being merged
+     * will have some features on the left or right that the current
+     * interval does not have. Both are sorted by start position.
+     * So we first add at the beginning, and then the end,
+     * only those alignments which don't overlap the original interval.
+     * <p/>
+     * NOTE: WE DO NOT USE GENERICS PROPERLY SO WE CAN REUSE THIS METHOD.
+     * BE CAREFUL.
+     *
+     * @param selfIter  iterator of features belonging to this interval
+     * @param otherIter iterator of features belonging to some other interval
+     * @return Combined sorted list.
+     * @throws ClassCastException If the elements of an iterator cannot be cast
+     *                            to a Feature.
+     */
+    private List combineSortedFeatureListsNoDups(Iterator selfIter, Iterator otherIter) {
+        List<Feature> allFeatures = new ArrayList<Feature>();
+        Feature otherFeat = null;
+
+        while (otherIter.hasNext()) {
+            otherFeat = (Feature) otherIter.next();
+            if (otherFeat.getEnd() > this.getStart()) break;
+            allFeatures.add(otherFeat);
+        }
+
+        while (selfIter.hasNext()) {
+            allFeatures.add((Feature) selfIter.next());
+        }
+
+        while (otherIter.hasNext()) {
+            if (otherFeat.getStart() >= this.getEnd()) {
+                allFeatures.add(otherFeat);
+            }
+            otherFeat = (Feature) otherIter.next();
+        }
+
+        if (otherFeat != null && otherFeat.getStart() >= this.getEnd()) {
+            allFeatures.add(otherFeat);
+        }
+
+        return allFeatures;
+    }
+
+    private List addToListNoDups(List self, List other) {
+        if (self == null) self = new ArrayList();
+        if (other != null) {
             Set selfSet = new HashSet(self);
             selfSet.addAll(other);
 
@@ -343,6 +371,7 @@ public class AlignmentInterval extends Locus implements Interval {
 
     /**
      * AlignmentInterval data is independent of zoom
+     *
      * @return
      */
     @Override

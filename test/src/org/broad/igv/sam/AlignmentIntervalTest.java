@@ -19,12 +19,12 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -42,7 +42,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         String chr = "chr1";
         int start = 151666494;
         int halfwidth = 1000;
-        int end = start + 2*halfwidth;
+        int end = start + 2 * halfwidth;
         Locus locus = new Locus(chr, start, end);
 
 
@@ -60,12 +60,12 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         AlignmentInterval base = baseIntervals.get(0);
 
 
-        Locus begLocus = new Locus(chr, start, start+halfwidth);
+        Locus begLocus = new Locus(chr, start, start + halfwidth);
         ReferenceFrame begFrame = new ReferenceFrame(frame);
         begFrame.setInterval(begLocus);
         RenderContextImpl begContext = new RenderContextImpl(null, null, begFrame, null);
 
-        Locus endLocus = new Locus(chr, start+halfwidth/2, end);
+        Locus endLocus = new Locus(chr, start + halfwidth / 2, end);
         ReferenceFrame endFrame = new ReferenceFrame(frame);
         endFrame.setInterval(endLocus);
         RenderContextImpl endContext = new RenderContextImpl(null, null, endFrame, null);
@@ -93,7 +93,8 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         //Just make sure they end up the same in the end.
         Set<String> expectedReadNames = new HashSet<String>();
         Set<String> actualReadNames = new HashSet<String>();
-        while(iter1.hasNext()){
+        while (iter1.hasNext()) {
+            assertTrue("Not enough alignments, empty at count " + count, iter2.hasNext());
             expected = iter1.next();
             actual = iter2.next();
 
@@ -105,7 +106,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
             actualReadNames.add(actual.getReadName());
         }
 
-
+        //System.out.println(count + " Alignments");
         assertFalse(iter2.hasNext());
         assertTrue("No data loaded", count > 0);
 
