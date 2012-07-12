@@ -22,15 +22,18 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.data.Interval;
+import org.broad.tribble.Feature;
+
 import java.text.NumberFormat;
 import java.util.Locale;
 
 /**
  * @author jrobinso
  */
-public class Locus {
+public class Locus implements Feature {
 
-    private String chr = null;
+    protected String chr = null;
     protected int start = -1;
     protected int end = -1;
 
@@ -117,5 +120,15 @@ public class Locus {
     public boolean overlaps(String chr, int start, int end) {
         return this.chr.equals(chr) && this.start <= end && this.end >= start;
     }
+
+//    @Override
+//    public boolean merge(Interval i) {
+//        if(!this.chr.equals(i.getChr())){
+//            return false;
+//        }
+//        this.start = Math.min(getStart(), i.getStart());
+//        this.end = Math.max(getEnd(), i.getEnd());
+//        return true;
+//    }
 
 }

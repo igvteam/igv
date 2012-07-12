@@ -797,6 +797,7 @@ public class CachingQueryReader {
         public String getValueString() {
             return "Interval [" + start + "-" + end + "] <br>" + count + " reads removed.";
         }
+
     }
 
 

@@ -24,7 +24,7 @@ import org.broad.igv.track.WindowFunction;
 
 /**
  * A feature class for splice junctions, with depth information for flanking regions if available.
- *
+ * <p/>
  * The interpretation of 'start' and 'end' for these features is the start and end of the flanking regions.
  * This is a bit counterintuitive, but it's required for popup text to display correctly in the feature track
  *
@@ -62,6 +62,7 @@ public class SpliceJunctionFeature extends BasicFeature {
     /**
      * Does this splice junction feature represent the same splice junction as another feature? This is used for
      * splice junction feature selection.
+     *
      * @param otherFeature
      * @return
      */
@@ -77,6 +78,7 @@ public class SpliceJunctionFeature extends BasicFeature {
      * (though that might be interesting, in the future), but we track depth of coverage information. By
      * adding all the reads one by one, we can build up the depth of coverage map for the flanking regions
      * and the junction itself.
+     *
      * @param readStart
      * @param readEnd
      */
@@ -84,11 +86,9 @@ public class SpliceJunctionFeature extends BasicFeature {
         junctionDepth++;
 
         int newStartFlankingRegionSize = junctionStart - readStart;
-        if (readStart < start)
-        {
+        if (readStart < start) {
             int[] newStartFlankArray = new int[newStartFlankingRegionSize];
-            if (startFlankingRegionDepthArray != null)
-            {
+            if (startFlankingRegionDepthArray != null) {
                 int offset = newStartFlankingRegionSize - getStartFlankingRegionLength();
                 System.arraycopy(startFlankingRegionDepthArray, 0, newStartFlankArray,
                         offset, getStartFlankingRegionLength());
@@ -96,23 +96,21 @@ public class SpliceJunctionFeature extends BasicFeature {
             startFlankingRegionDepthArray = newStartFlankArray;
             start = readStart;
         }
-        for (int i=getStartFlankingRegionLength() - newStartFlankingRegionSize;
-             i<getStartFlankingRegionLength(); i++)
-             startFlankingRegionDepthArray[i] = startFlankingRegionDepthArray[i] + 1;
+        for (int i = getStartFlankingRegionLength() - newStartFlankingRegionSize;
+             i < getStartFlankingRegionLength(); i++)
+            startFlankingRegionDepthArray[i] = startFlankingRegionDepthArray[i] + 1;
 
         int newEndFlankingRegionSize = readEnd - junctionEnd;
-        if (readEnd > end)
-        {
+        if (readEnd > end) {
             int[] newEndFlankArray = new int[newEndFlankingRegionSize];
-            if (endFlankingRegionDepthArray != null)
-            {
+            if (endFlankingRegionDepthArray != null) {
                 System.arraycopy(endFlankingRegionDepthArray, 0, newEndFlankArray,
                         0, getEndFlankingRegionLength());
             }
             endFlankingRegionDepthArray = newEndFlankArray;
             end = readEnd;
         }
-        for (int i=0; i<newEndFlankingRegionSize; i++)
+        for (int i = 0; i < newEndFlankingRegionSize; i++)
             endFlankingRegionDepthArray[i] = endFlankingRegionDepthArray[i] + 1;
     }
 
@@ -161,50 +159,47 @@ public class SpliceJunctionFeature extends BasicFeature {
         return ((startFlankingRegionDepthArray != null) && (endFlankingRegionDepthArray != null));
     }
 
-        /**
+    /**
      * Return a string for popup text, and related uses.  The default just
      * returns the feature name.  Its expected that this method will be
      * overriden in subclasses.
      *
      * @position -- 1 based coordinates
-         */
-        public String getValueString(double position, WindowFunction ignored) {
-            StringBuffer valueString = new StringBuffer();
-            String name = getName();
-            if (name != null) {
-                valueString.append(name);
-            }
-            if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
-                valueString.append("<br>" + identifier);
-            }
-
-            valueString.append("<br>");
-            valueString.append(chromosome + ":" + junctionStart + "-" + junctionEnd);
-
-            valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));
-            valueString.append("<br>Depth = " + junctionDepth + ", Flanking Widths: (" +
-                    this.getStartFlankingRegionLength() + "," +
-                    this.getEndFlankingRegionLength() + ")");
-            if (hasFlankingRegionDepthArrays())
-            {
-                if (position >= start && position < junctionStart)
-                {
-                    int index = (int) position-start;
-                    if (index < startFlankingRegionDepthArray.length)
-                        valueString.append("<br>Start Flanking, Depth = " +
-                                startFlankingRegionDepthArray[index]);
-                }
-                else if (position > junctionEnd && position <= end)
-                {
-                    int index = (int) position-junctionEnd;
-                    if (index < endFlankingRegionDepthArray.length)
-                        valueString.append("<br>End Flanking, Depth = " +
-                                endFlankingRegionDepthArray[index]);
-                }
-            }
-            if (description != null) {
-                valueString.append("<br>" + description);
-            }
-            return valueString.toString();
+     */
+    public String getValueString(double position, WindowFunction ignored) {
+        StringBuffer valueString = new StringBuffer();
+        String name = getName();
+        if (name != null) {
+            valueString.append(name);
         }
+        if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
+            valueString.append("<br>" + identifier);
+        }
+
+        valueString.append("<br>");
+        valueString.append(chromosome + ":" + junctionStart + "-" + junctionEnd);
+
+        valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));
+        valueString.append("<br>Depth = " + junctionDepth + ", Flanking Widths: (" +
+                this.getStartFlankingRegionLength() + "," +
+                this.getEndFlankingRegionLength() + ")");
+        if (hasFlankingRegionDepthArrays()) {
+            if (position >= start && position < junctionStart) {
+                int index = (int) position - start;
+                if (index < startFlankingRegionDepthArray.length)
+                    valueString.append("<br>Start Flanking, Depth = " +
+                            startFlankingRegionDepthArray[index]);
+            } else if (position > junctionEnd && position <= end) {
+                int index = (int) position - junctionEnd;
+                if (index < endFlankingRegionDepthArray.length)
+                    valueString.append("<br>End Flanking, Depth = " +
+                            endFlankingRegionDepthArray[index]);
+            }
+        }
+        if (description != null) {
+            valueString.append("<br>" + description);
+        }
+        return valueString.toString();
+    }
+
 }
