@@ -321,12 +321,14 @@ public class CommandExecutor {
         return loadFiles(fileString, locus, merge, name, null);
     }
 
-    String loadFiles(final String fileString, final String locus, final boolean merge, String name, Map<String, String> params) throws IOException {
+    String loadFiles(final String fileString, final String locus, final boolean merge, String nameString, Map<String, String> params) throws IOException {
 
 
         log.debug("Run load files");
 
         String[] files = fileString.split(",");
+        String[] names = nameString != null ? nameString.split(",") : null;
+        if(names != null && names.length != files.length) return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
         List<String> sessionPaths = new ArrayList<String>();
 
@@ -350,6 +352,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
+        int fi = 0;
         for (String f : files) {           
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
@@ -364,8 +367,8 @@ public class CommandExecutor {
                         return "Error: " + f + " does not exist.";
                     }
                 }
-                if (name != null) {
-                    rl.setName(name);
+                if (names != null) {
+                    rl.setName(names[fi]);
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);
@@ -373,6 +376,7 @@ public class CommandExecutor {
                 }
                 fileLocators.add(rl);
             }
+            fi++;
         }
 
         for (String sessionPath : sessionPaths) {
