@@ -1245,6 +1245,21 @@ public class MainWindow extends JFrame {
 
         });
 
+
+        JMenuItem dumpEigenvector = new JMenuItem("Dump eigenvector ...");
+        dumpEigenvector.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    ScratchPad.dumpEigenvector(hic);
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+        });
+        extrasMenu.add(dumpEigenvector);
+
         extrasMenu.add(dumpPearsons);
         menuBar.add(extrasMenu);
 

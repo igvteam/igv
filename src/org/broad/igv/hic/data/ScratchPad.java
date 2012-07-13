@@ -1,6 +1,7 @@
 package org.broad.igv.hic.data;
 
 import org.apache.commons.math.linear.RealMatrix;
+import org.broad.igv.hic.HiC;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
@@ -14,10 +15,11 @@ import java.io.*;
 public class ScratchPad {
 
     public static void main(String[] args) throws IOException {
-        File f = new File("/Users/jrobinso/projects/hic/bin_chr14_1M.bin");
-        //File f = new File("/Users/jrobinso/projects/hic/chr14_5e3_N17658_output.bin");
+        //File f = new File("/Users/jrobinso/projects/hic/bin_chr14_1M.bin");
+        File f = new File("/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin");
         //File f = new File("/Users/jrobinso/projects/hic/chr14_50K_test.bin");
-        createBlockIndexedFile(f, null, 50);
+        //createBlockIndexedFile(f, null, 50);
+        readPearsons(f);
     }
 
     public static void readPearsons(File file) throws IOException {
@@ -71,6 +73,50 @@ public class ScratchPad {
         los.close();
         bos.close();
         fos.close();
+
+    }
+
+
+    /**
+     * Dump the eigenvector  correlation -- for development
+     *
+
+     */
+    public static void dumpEigenvector(HiC hic) throws IOException {
+
+        int step =  hic.zd.getBinSize();
+        int chrIdx =  hic.zd.getChr1();
+        String chr = hic.getChromosomes()[chrIdx].getName();
+        double [] eigenvector = hic.getEigenvector(0);
+        // Assuming sqaure matrix for this test
+
+        OutputStream fos = null;
+
+        String fn = "eigenvector_" + chr + "_" + step + ".wig";
+
+
+        PrintWriter pw = new PrintWriter(new FileWriter(fn));
+        pw.println("track type=wiggle name=Eigenvector");
+
+        int start = 0;
+        // Skip throuh NaN
+        int idx=0;
+        for(; idx<eigenvector.length; idx++) {
+            if(Double.isNaN(eigenvector[idx])) {
+                start += step;
+            }
+            else {
+                break;
+            }
+        }
+
+        pw.println("fixedStep chrom=" + chr + " start=" + start + " step=" + step +" span=" + step);
+
+        for(; idx<eigenvector.length; idx++) {
+            pw.println(eigenvector[idx]);
+        }
+
+        pw.close();
 
     }
 
