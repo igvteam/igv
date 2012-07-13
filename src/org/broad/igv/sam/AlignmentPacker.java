@@ -52,16 +52,15 @@ public class AlignmentPacker {
      *
      * @param iter
      * @param end
-     * @param pairAlignments
      * @param renderOptions
      */
     public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(
             Iterator<Alignment> iter,
             int end,
-            boolean pairAlignments,
             AlignmentTrack.RenderOptions renderOptions) {
 
         LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
+        boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 
         if (iter == null || !iter.hasNext()) {
             return packedAlignments;

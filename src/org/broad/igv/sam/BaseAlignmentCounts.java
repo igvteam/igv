@@ -1,12 +1,21 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -46,7 +55,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
         countDeletedBasesCovered = prefs.getAsBoolean(PreferenceManager.SAM_COUNT_DELETED_BASES_COVERED);
 
-        if(!Globals.isHeadless() && bisulfiteContext != null){
+        if (!Globals.isHeadless() && bisulfiteContext != null) {
             bisulfiteCounts = new BisulfiteCounts(bisulfiteContext, GenomeManager.getInstance().getCurrentGenome());
         }
 
@@ -60,6 +69,10 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     public int getEnd() {
         return end;
+    }
+
+    public String getChr() {
+        return null;
     }
 
 
@@ -168,7 +181,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         if (filteredSnps == null || !filteredSnps.contains(pos + 1)) {
             float threshold = snpThreshold * getTotalQuality(pos);
             if (ref > 0) {
-                if(ref < 96) ref += 32;  // a fast "toLowercase"
+                if (ref < 96) ref += 32;  // a fast "toLowercase"
                 for (char c : nucleotides) {
                     if (c != ref && c != 'n' && getQuality(pos, (byte) c) > threshold) {
                         return true;
@@ -218,7 +231,6 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
 
     }
-
 
     protected abstract void incPositionCount(int pos, byte n, byte q, boolean negativeStrand);
 

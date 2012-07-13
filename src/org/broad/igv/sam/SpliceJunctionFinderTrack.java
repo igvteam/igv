@@ -125,23 +125,19 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     @Override
     protected void loadFeatures(String chr, int start, int end, RenderContext context) {
         parent = context.getPanel();
-        try {
-            final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
-            for(AlignmentInterval loadedInterval: loadedIntervals){
-                if (loadedInterval != null) {
-                    List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
-                    if (features == null) {
-                        features = Collections.emptyList();
-                    }
-                    int intervalStart = loadedInterval.getStart();
-                    int intervalEnd = loadedInterval.getEnd();
-                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
-                    packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
-                    if(context.getPanel() != null) context.getPanel().repaint();
+        final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
+        for (AlignmentInterval loadedInterval : loadedIntervals) {
+            if (loadedInterval != null) {
+                List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
+                if (features == null) {
+                    features = Collections.emptyList();
                 }
+                int intervalStart = loadedInterval.getStart();
+                int intervalEnd = loadedInterval.getEnd();
+                PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
+                packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                if (context.getPanel() != null) context.getPanel().repaint();
             }
-        } catch (IOException e) {
-            log.error("Error loading splice junctions", e);
         }
     }
 
