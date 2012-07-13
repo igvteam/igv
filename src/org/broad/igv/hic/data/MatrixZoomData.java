@@ -8,8 +8,11 @@ import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -169,6 +172,7 @@ public class MatrixZoomData {
     public double[] getEigenvector() {
         return eigenvector;
     }
+
 
     public double[] computeEigenvector(DensityFunction df, int which) {
 
