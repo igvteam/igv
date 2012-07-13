@@ -2,6 +2,8 @@ package org.broad.igv.hic.data;
 
 import org.apache.commons.math.linear.RealMatrix;
 import org.broad.igv.hic.HiC;
+import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.YunfanFormatMatrix2;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
@@ -15,35 +17,19 @@ import java.io.*;
 public class ScratchPad {
 
     public static void main(String[] args) throws IOException {
-        //File f = new File("/Users/jrobinso/projects/hic/bin_chr14_1M.bin");
-        File f = new File("/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin");
+        String path = "/Users/jrobinso/projects/hic/bin_chr14_1M.bin";
+        //String path = "/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin";
         //File f = new File("/Users/jrobinso/projects/hic/chr14_50K_test.bin");
         //createBlockIndexedFile(f, null, 50);
-        readPearsons(f);
+        BasicMatrix bm = readPearsons(path);
+        System.out.println(bm.getColumnDimension());
     }
 
-    public static void readPearsons(File file) throws IOException {
-
-        FileInputStream fis = null;
-
-        fis = new FileInputStream(file);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        LittleEndianInputStream les = new LittleEndianInputStream(bis);
-
-        int nRows = les.readInt();
-        int nTot = nRows * nRows;
-        int nBytes = 4;
-        for (int i = 0; i < nTot; i++) {
-            //les.readByte();
-            Float f = les.readFloat();
-            System.out.println(f);
-            nBytes += 4;
-
-        }
-        System.out.println("Nbytes=" + nBytes);
 
 
-        fis.close();
+    public static BasicMatrix readPearsons(String path) throws IOException {
+
+         return new YunfanFormatMatrix2(path);
     }
 
     /**

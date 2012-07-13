@@ -5,6 +5,8 @@ import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.renderer.ColorScale;
 
 import java.awt.*;
@@ -75,11 +77,11 @@ public class HeatmapRenderer {
         ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
-            RealMatrix pearsonsMatrix = zd.getPearsons();
-            if (pearsonsMatrix != null) {
-                ((HiCColorScale) colorScale).setMin((float) zd.getPearsonsMin());
-                ((HiCColorScale) colorScale).setMax((float) zd.getPearsonsMax());
-                renderMatrix(pearsonsMatrix, originX, originY, width, height, colorScale, g);
+            BasicMatrix bm =  zd.getBasicPearsons();
+            if (bm != null) {
+                ((HiCColorScale) colorScale).setMin(-1); //(float) zd.getPearsonsMin());
+                ((HiCColorScale) colorScale).setMax(1); //(float) zd.getPearsonsMax());
+                renderMatrix(bm, originX, originY, width, height, colorScale, g);
 
             }
         } else {
@@ -167,20 +169,18 @@ public class HeatmapRenderer {
      * @param colorScale
      * @param g
      */
-    private void renderMatrix(RealMatrix rm, int originX, int originY, int width, int height,
+    private void renderMatrix(BasicMatrix rm, int originX, int originY, int width, int height,
                               ColorScale colorScale, Graphics g) {
 
 
         int endX = Math.min(originX + width, rm.getColumnDimension());
         int endY = Math.min(originY + height, rm.getRowDimension());
 
-       RealMatrix subMatrix = rm.getSubMatrix(originY, endY-1, originX, endX-1);
-
         // TODO -- need to check bounds before drawing
-        for (int row = 0; row < subMatrix.getRowDimension(); row++) {
-            for (int col = 0; col < subMatrix.getColumnDimension(); col++) {
+        for (int row = originY; row < endY; row++) {
+            for (int col = originX; col < endX; col++) {
 
-                double score = subMatrix.getEntry(row, col);
+                double score = rm.getEntry(row, col);
                 Color color;
                 if (Double.isNaN(score)) {
                     color = Color.gray;

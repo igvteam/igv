@@ -4,6 +4,8 @@ import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
@@ -34,7 +36,10 @@ public class MatrixZoomData {
 
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
+
     private RealMatrix pearsons;
+    private BasicMatrix basicPearsons;  // Temporarily keep both during reactoring
+
     private double pearsonsMin = -1;
     private double pearsonsMax = 1;
     private RealMatrix oe;
@@ -50,6 +55,21 @@ public class MatrixZoomData {
         }
     }
 
+    public void setBasicPearsons(BasicMatrix basicPearsons) {
+        this.basicPearsons = basicPearsons;
+    }
+
+    public BasicMatrix getBasicPearsons() {
+        if(basicPearsons == null) {
+            if(pearsons == null) {
+                return null;
+            }
+            else {
+                basicPearsons = new RealMatrixWrapper(pearsons);
+            }
+        }
+        return basicPearsons;
+    }
 
     /**
      * Construct from a binary stream.

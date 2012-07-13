@@ -23,11 +23,13 @@ import org.broad.igv.hic.data.DatasetReader;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.data.ScratchPad;
+import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
 import org.broad.igv.hic.track.TrackPanel;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
@@ -1235,7 +1237,7 @@ public class MainWindow extends JFrame {
         dumpPearsons.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                 RealMatrix pearsons = hic.zd.getPearsons();
+                RealMatrix pearsons = hic.zd.getPearsons();
                 try {
                     ScratchPad.dumpPearsonsBinary(pearsons);
                 } catch (IOException e) {
@@ -1259,6 +1261,25 @@ public class MainWindow extends JFrame {
 
         });
         extrasMenu.add(dumpEigenvector);
+
+
+        JMenuItem readPearsons = new JMenuItem("Read pearsons...");
+        readPearsons.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    File f = FileDialogUtils.chooseFile("Pearsons file (Yunfan format)");
+                    if (f != null) {
+                        BasicMatrix bm = ScratchPad.readPearsons(f.getAbsolutePath());
+                        hic.zd.setBasicPearsons(bm);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+        });
+        extrasMenu.add(readPearsons);
 
         extrasMenu.add(dumpPearsons);
         menuBar.add(extrasMenu);
