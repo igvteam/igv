@@ -304,7 +304,7 @@ public class AlignmentInterval extends Locus implements Interval {
      * @param zoom
      * @return true if any trimming was performed, false if not
      */
-    boolean trimTo(final String chr, final int start, final int end, int zoom) {
+    public boolean trimTo(final String chr, final int start, final int end, int zoom) {
         boolean toRet = false;
         if (!this.contains(chr, start, end, zoom)) {
             return false;
