@@ -36,6 +36,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -57,6 +58,7 @@ public class HttpUtils {
 
     private String defaultUserName = null;
     private char[] defaultPassword = null;
+    private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 
     /**
      * @return the single instance
@@ -698,6 +700,15 @@ public class HttpUtils {
 
     public void shutdown() {
         // Do any cleanup required here
+    }
+
+    /**
+     * Checks if the string is a URL (not necessarily remote, can be any protocol)
+     * @param f
+     * @return
+     */
+    public static boolean isURL(String f) {
+        return f.startsWith("http:") || f.startsWith("ftp:") || f.startsWith("https:") || URLmatcher.matcher(f).matches();
     }
 
 

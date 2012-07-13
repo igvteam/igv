@@ -375,13 +375,21 @@ public class CommandExecutor {
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
-                ResourceLocator rl = new ResourceLocator(f);
+                ResourceLocator rl;
+                if(HttpUtils.isURL(f)){
+                    String fDecoded = StringUtils.decodeURL(f);
+                    rl = new ResourceLocator(fDecoded);
+                }else{
+                    rl = new ResourceLocator(f);
+                }
+
                 if (rl.isLocal()) {
                     File file = new File(f);
                     if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
                 }
+
                 if (names != null) {
                     rl.setName(names[fi]);
                 }
