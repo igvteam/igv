@@ -278,8 +278,7 @@ public class CommandExecutor {
      */
     private String load(String fileList, String param2, String param3) throws IOException {
 
-        fileList = URLDecoder.decode(fileList, "UTF-8");
-        String fileString = fileList.replace("\"", "").replace("'", "");
+        String fileString = fileList.replace("\"", "").replace("'", "");  // Todo <= what is this for?
 
         // Default for merge is "true" for session files,  "false" otherwise
         String file = fileString;
@@ -328,7 +327,23 @@ public class CommandExecutor {
 
         String[] files = fileString.split(",");
         String[] names = nameString != null ? nameString.split(",") : null;
-        if(names != null && names.length != files.length) return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
+        if(files.length == 1) {
+            // String might be URL encoded
+            files = fileString.split("%2C");
+            names = nameString != null ? nameString.split("%2C") : null;
+        }
+
+        if(names != null && names.length != files.length) {
+            return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
+        }
+
+        // Must decode local file paths, but leave remote paths as is
+        for(int i=0; i<files.length; i++) {
+            if(!FileUtils.isRemote(files[i])) {
+                files[i] =  URLDecoder.decode(files[i], "UTF-8");
+            }
+        }
+
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
         List<String> sessionPaths = new ArrayList<String>();
 
