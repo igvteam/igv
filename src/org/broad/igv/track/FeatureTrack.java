@@ -598,7 +598,7 @@ public class FeatureTrack extends AbstractTrack {
         String chr = context.getChr();
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation();
-        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
+        if (packedFeatures == null || !packedFeatures.contains(chr, start, end)) {
             loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), context);
         }
     }
@@ -698,7 +698,7 @@ public class FeatureTrack extends AbstractTrack {
 
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
-        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
+        if (packedFeatures == null || !packedFeatures.contains(chr, start, end)) {
             loadFeatures(chr, start, end, context);
             if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
                 // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
@@ -862,7 +862,7 @@ public class FeatureTrack extends AbstractTrack {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
-        if (packedFeatures != null && packedFeatures.containsInterval(chr, (int) center - 1, (int) center + 1)) {
+        if (packedFeatures != null && packedFeatures.contains(chr, (int) center - 1, (int) center + 1)) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
                 f = (forward ? FeatureUtils.getFeatureAfter(center + 1, packedFeatures.getFeatures()) :
                         FeatureUtils.getFeatureBefore(center - 1, packedFeatures.getFeatures()));

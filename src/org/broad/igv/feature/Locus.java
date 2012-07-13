@@ -121,14 +121,4 @@ public class Locus implements Feature {
         return this.chr.equals(chr) && this.start <= end && this.end >= start;
     }
 
-//    @Override
-//    public boolean merge(Interval i) {
-//        if(!this.chr.equals(i.getChr())){
-//            return false;
-//        }
-//        this.start = Math.min(getStart(), i.getStart());
-//        this.end = Math.max(getEnd(), i.getEnd());
-//        return true;
-//    }
-
 }
