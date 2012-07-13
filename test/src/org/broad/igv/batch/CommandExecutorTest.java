@@ -175,9 +175,13 @@ public class CommandExecutorTest extends AbstractHeadedTest{
 
     @Test
     public void testLoadURL() throws Exception{
-        String filePath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands with spaces.hg18.bed";
         String urlPath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
         exec.loadFiles(urlPath, null, true, "hasSpaces");
+
+        String localPath = TestUtils.DATA_DIR + "bed/test.bed";
+        exec.loadFiles(localPath, null, true, null);
+
+        assertEquals(2, igv.getAllTracks().size());
     }
 
 }
