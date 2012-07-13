@@ -337,9 +337,9 @@ public class CommandExecutor {
             return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
         }
 
-        // Must decode local file paths, but leave remote paths as is
+        // Must decode remote file paths, but leave local paths as is
         for(int i=0; i<files.length; i++) {
-            if(!FileUtils.isRemote(files[i])) {
+            if(FileUtils.isRemote(files[i])) {
                 files[i] =  URLDecoder.decode(files[i], "UTF-8");
             }
         }
@@ -375,13 +375,21 @@ public class CommandExecutor {
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
-                ResourceLocator rl = new ResourceLocator(f);
+                ResourceLocator rl;
+                if(HttpUtils.isURL(f)){
+                    String fDecoded = StringUtils.decodeURL(f);
+                    rl = new ResourceLocator(fDecoded);
+                }else{
+                    rl = new ResourceLocator(f);
+                }
+
                 if (rl.isLocal()) {
                     File file = new File(f);
                     if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
                 }
+
                 if (names != null) {
                     rl.setName(names[fi]);
                 }

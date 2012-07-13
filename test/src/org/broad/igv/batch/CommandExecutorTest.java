@@ -24,6 +24,7 @@ import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -170,6 +171,17 @@ public class CommandExecutorTest extends AbstractHeadedTest{
         exec.execute("snapshot " + outFileName);
 
         assertEquals(shouldSucceed, out.exists());
+    }
+
+    @Test
+    public void testLoadURL() throws Exception{
+        String urlPath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
+        exec.loadFiles(urlPath, null, true, "hasSpaces");
+
+        String localPath = TestUtils.DATA_DIR + "bed/test.bed";
+        exec.loadFiles(localPath, null, true, null);
+
+        assertEquals(2, igv.getAllTracks().size());
     }
 
 }
