@@ -1239,7 +1239,13 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 RealMatrix pearsons = hic.zd.getPearsons();
                 try {
-                    ScratchPad.dumpPearsonsBinary(pearsons);
+                    String chr = hic.getChromosomes()[hic.zd.getChr1()].getName();
+                    int binSize = hic.zd.getBinSize();
+                    File initFile = new File("pearsons_" + chr + "_" + binSize + ".bin");
+                    File f = FileDialogUtils.chooseFile("Save pearsons", null, initFile, FileDialogUtils.SAVE);
+                    if (f != null) {
+                        ScratchPad.dumpPearsonsBinary(pearsons, f);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }

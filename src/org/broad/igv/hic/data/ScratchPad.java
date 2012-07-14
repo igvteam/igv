@@ -4,8 +4,11 @@ import org.apache.commons.math.linear.RealMatrix;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.YunfanFormatMatrix2;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.*;
 
@@ -17,19 +20,53 @@ import java.io.*;
 public class ScratchPad {
 
     public static void main(String[] args) throws IOException {
-        String path = "/Users/jrobinso/projects/hic/bin_chr14_1M.bin";
-        //String path = "/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin";
+        //String path = "/Users/jrobinso/projects/hic/bin_chr14_1M.bin";
+        String path = "/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin";
         //File f = new File("/Users/jrobinso/projects/hic/chr14_50K_test.bin");
         //createBlockIndexedFile(f, null, 50);
-        BasicMatrix bm = readPearsons(path);
-        System.out.println(bm.getColumnDimension());
+        //BasicMatrix bm = readPearsons(path);
+        // System.out.println(bm.getColumnDimension());
+        countZeroes(path);
     }
-
 
 
     public static BasicMatrix readPearsons(String path) throws IOException {
 
-         return new YunfanFormatMatrix2(path);
+        YunfanFormatMatrix2 bm = new YunfanFormatMatrix2(path);
+        int totalPoints = bm.getColumnDimension() * bm.getRowDimension();
+        int zeroes = bm.getZeroCount();
+        float percentZeroes = (zeroes * 100.0f) / totalPoints;
+        System.out.println("Number of zeroes = " + bm.getZeroCount() + " (" + percentZeroes + "%)");
+        return bm;
+    }
+
+
+    public static void countZeroes(String path) throws IOException {
+        BufferedInputStream bis = null;
+        try {
+            InputStream is = ParsingUtils.openInputStream(path);
+            bis = new BufferedInputStream(is);
+            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+
+            int dim = les.readInt();
+            int total = dim * dim;
+            int zeroesCount = 0;
+            for (int i = 0; i < total; i++) {
+                float f = les.readFloat();
+                if (f == 0) zeroesCount++;
+
+            }
+
+
+            float percent = (zeroesCount * 100.0f) / total;
+            System.out.println("# zeroes = " + zeroesCount + " (" + percent + "%)");
+
+            bis.close();
+
+        } finally {
+            if (bis != null) bis.close();
+
+        }
     }
 
     /**
@@ -37,14 +74,14 @@ public class ScratchPad {
      *
      * @param pearsons
      */
-    public static void dumpPearsonsBinary(RealMatrix pearsons) throws IOException {
+    public static void dumpPearsonsBinary(RealMatrix pearsons, File f) throws IOException {
 
         int nCols = pearsons.getColumnDimension();
         // Assuming sqaure matrix for this test
 
         OutputStream fos = null;
 
-        fos = new FileOutputStream("test_out.bin");
+        fos = new FileOutputStream(f);
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         LittleEndianOutputStream los = new LittleEndianOutputStream(bos);
 
@@ -65,15 +102,13 @@ public class ScratchPad {
 
     /**
      * Dump the eigenvector  correlation -- for development
-     *
-
      */
     public static void dumpEigenvector(HiC hic) throws IOException {
 
-        int step =  hic.zd.getBinSize();
-        int chrIdx =  hic.zd.getChr1();
+        int step = hic.zd.getBinSize();
+        int chrIdx = hic.zd.getChr1();
         String chr = hic.getChromosomes()[chrIdx].getName();
-        double [] eigenvector = hic.getEigenvector(0);
+        double[] eigenvector = hic.getEigenvector(0);
         // Assuming sqaure matrix for this test
 
         OutputStream fos = null;
@@ -86,19 +121,18 @@ public class ScratchPad {
 
         int start = 0;
         // Skip throuh NaN
-        int idx=0;
-        for(; idx<eigenvector.length; idx++) {
-            if(Double.isNaN(eigenvector[idx])) {
+        int idx = 0;
+        for (; idx < eigenvector.length; idx++) {
+            if (Double.isNaN(eigenvector[idx])) {
                 start += step;
-            }
-            else {
+            } else {
                 break;
             }
         }
 
-        pw.println("fixedStep chrom=" + chr + " start=" + start + " step=" + step +" span=" + step);
+        pw.println("fixedStep chrom=" + chr + " start=" + start + " step=" + step + " span=" + step);
 
-        for(; idx<eigenvector.length; idx++) {
+        for (; idx < eigenvector.length; idx++) {
             pw.println(eigenvector[idx]);
         }
 
@@ -167,12 +201,11 @@ public class ScratchPad {
         lastBlockRow = nBlockRow;
 
 
-
         fis.close();
     }
 
     private static void resetBlocks(Block[] blocksForRow,
-                                       int blockSize, int nBlockSize, int lastBlockSize, int nBlockRow) {
+                                    int blockSize, int nBlockSize, int lastBlockSize, int nBlockRow) {
 
         int tmp = nBlockRow > nBlockSize - 1 ? lastBlockSize : blockSize;
         for (int i = 0; i < nBlockSize - 1; i++) {

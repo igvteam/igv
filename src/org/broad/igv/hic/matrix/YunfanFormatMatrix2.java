@@ -28,6 +28,7 @@ public class YunfanFormatMatrix2 implements BasicMatrix {
     // TODO -- store these in file
     String chr = "chr14";
     int binSize = 1000000;
+    private int zeroCount;
 
 
     public YunfanFormatMatrix2(String path) throws IOException {
@@ -67,7 +68,9 @@ public class YunfanFormatMatrix2 implements BasicMatrix {
             float[] rowData = new float[dim];
 
             for (int i = 0; i < dim; i++) {
-                rowData[i] = les.readFloat();
+                float f = les.readFloat();
+                rowData[i] = f;
+
             }
 
             les.close();
@@ -96,7 +99,7 @@ public class YunfanFormatMatrix2 implements BasicMatrix {
             rowData = loadRowData(row);
             rowDataCache.put(row, rowData);
         }
-
+        //System.out.println(rowData[col]);
         return rowData[col];
     }
 
@@ -127,5 +130,9 @@ public class YunfanFormatMatrix2 implements BasicMatrix {
         }
 
         return new YunfanFormatMatrix(subdata, dim);
+    }
+
+    public int getZeroCount() {
+        return zeroCount;
     }
 }
