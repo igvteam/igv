@@ -76,17 +76,46 @@ public class PackedFeaturesTest extends AbstractHeadlessTest{
         Iterable<Feature> iter2 = bfs.query(chr, start2, end2);
         Iterable<Feature> iterExp = bfs.query(chr, start1, end2);
 
-        PackedFeatures<Feature> pfeatsMerged = new PackedFeatures<Feature>(chr, start1, end1, iter1.iterator(), "iter1");
-        PackedFeatures<Feature> pfeats2 = new PackedFeatures<Feature>(chr, start2, end2, iter2.iterator(), "iter2");
-        PackedFeatures<Feature> pfeatsExp = new PackedFeatures<Feature>(chr, start1, end2, iterExp.iterator(), "iterExp");
+        PackedFeatures<Feature> pFeatsMerged = new PackedFeatures<Feature>(chr, start1, end1, iter1.iterator(), "iter1");
+        PackedFeatures<Feature> pFeats2 = new PackedFeatures<Feature>(chr, start2, end2, iter2.iterator(), "iter2");
+        PackedFeatures<Feature> pFeatsExp = new PackedFeatures<Feature>(chr, start1, end2, iterExp.iterator(), "iterExp");
 
-        pfeatsMerged.merge(pfeats2);
-        TestUtils.assertFeatureListsEqual(pfeatsExp.getFeatures().iterator(), pfeatsMerged.getFeatures().iterator());
-        assertTrue(pfeatsExp.getFeatures().size() > 0);
+        pFeatsMerged.merge(pFeats2);
 
-        assertEquals(pfeatsExp.getMaxFeatureLength(), pfeatsMerged.getMaxFeatureLength());
+        assertPackedFeaturesEqual(pFeatsExp, pFeatsMerged);
+    }
 
-        assertEquals(pfeatsExp.getRowCount(), pfeatsMerged.getRowCount());
+    private void assertPackedFeaturesEqual(PackedFeatures<? extends Feature> expected, PackedFeatures<? extends Feature> actual){
+
+        TestUtils.assertFeatureListsEqual(expected.getFeatures().iterator(), actual.getFeatures().iterator());
+        assertTrue(expected.getFeatures().size() > 0);
+        assertEquals(expected.getMaxFeatureLength(), actual.getMaxFeatureLength());
+        assertEquals(expected.getRowCount(), actual.getRowCount());
+    }
+
+    @Test
+    public void testTrimTo() throws Exception{
+
+        String filePath = TestUtils.DATA_DIR + "bed/test.bed";
+        TestUtils.createIndex(filePath);
+        String chr = "chr1";
+        int start1 = 0;
+        int end1 = 100010;
+
+        int start2 = 199;
+        int end2 = 250;
+
+        FeatureCodec codec = CodecFactory.getCodec(filePath, genome);
+        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(filePath, codec, true);
+        Iterable<Feature> iter1 = bfs.query(chr, start1, end1);
+        Iterable<Feature> iter2 = bfs.query(chr, start2, end2);
+
+        PackedFeatures<Feature> pFeatsTrimmed = new PackedFeatures<Feature>(chr, start1, end1, iter1.iterator(), "iter1");
+        PackedFeatures<Feature> pFeatsExp = new PackedFeatures<Feature>(chr, start2, end2, iter2.iterator(), "iter2");
+
+        pFeatsTrimmed.trimTo(chr, start2, end2, -1);
+
+        assertPackedFeaturesEqual(pFeatsExp, pFeatsTrimmed);
     }
 
     static class TestFeature implements Feature {

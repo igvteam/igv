@@ -16,6 +16,7 @@
  */
 package org.broad.igv.feature;
 
+import org.apache.commons.collections.Predicate;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -25,6 +26,16 @@ import java.util.*;
  */
 public class FeatureUtils {
 
+
+    public static Predicate<Feature> getOverlapPredicate(final String chr, final int start, final int end) {
+        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
+            @Override
+            public boolean evaluate(Feature object) {
+                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
+            }
+        };
+        return overlapPredicate;
+    }
 
     public static Map<String, List<IGVFeature>> divideByChromosome(List<IGVFeature> features) {
         Map<String, List<IGVFeature>> featureMap = new LinkedHashMap();

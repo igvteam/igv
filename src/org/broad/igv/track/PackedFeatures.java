@@ -11,11 +11,13 @@
 
 package org.broad.igv.track;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -273,7 +275,16 @@ public class PackedFeatures<T extends Feature> implements Interval{
 
     @Override
     public boolean trimTo(String chr, int start, int end, int zoom) {
-        return false; //TODO
+        Predicate overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
+
+        List<T> newFeatures = new ArrayList<T>(features);
+        Utilities.filter(newFeatures, overlapPredicate);
+        boolean anyLost = newFeatures.size() != features.size();
+
+        features.clear();
+        rows = packFeatures(newFeatures.iterator());
+
+        return anyLost;
     }
 
     @Override

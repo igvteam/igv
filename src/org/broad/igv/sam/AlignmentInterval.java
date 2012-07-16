@@ -326,12 +326,7 @@ public class AlignmentInterval extends Locus implements Interval {
             }
         }
 
-        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
-            @Override
-            public boolean evaluate(Feature object) {
-                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
-            }
-        };
+        Predicate<Feature> overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
         Utilities.filter(this.getCounts(), overlapPredicate);
         Utilities.filter(this.getDownsampledIntervals(), overlapPredicate);
         Utilities.filter(this.getSpliceJunctions(), overlapPredicate);
