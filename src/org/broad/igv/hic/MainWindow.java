@@ -24,6 +24,7 @@ import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.data.ScratchPad;
 import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
@@ -595,7 +596,6 @@ public class MainWindow extends JFrame {
         //---- loadFeb ----
         JMenuItem loadApr = new JMenuItem("HiSeq Hi-C Human (04/01/2012)");
         loadApr.addActionListener(new
-
                                   ActionListener() {
                                       public void actionPerformed(ActionEvent e) {
                                           try {
@@ -1239,7 +1239,15 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 RealMatrix pearsons = hic.zd.getPearsons();
                 try {
-                    ScratchPad.dumpPearsonsBinary(pearsons);
+                    String chr1 = hic.getChromosomes()[hic.zd.getChr1()].getName();
+                    String chr2 = hic.getChromosomes()[hic.zd.getChr2()].getName();
+                    int binSize = hic.zd.getBinSize();
+                    File initFile = new File("pearsons_" + chr1 + "_" + "_" + chr2 + "_" + binSize + ".bin");
+                    File f = FileDialogUtils.chooseFile("Save pearsons", null, initFile, FileDialogUtils.SAVE);
+                    if (f != null) {
+                        BasicMatrix bm = new RealMatrixWrapper(pearsons);
+                        ScratchPad.dumpPearsonsBinary(bm, chr1, chr2, hic.zd.getBinSize(), f);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }

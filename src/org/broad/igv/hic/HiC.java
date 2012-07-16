@@ -17,15 +17,16 @@ import java.util.concurrent.Future;
 public class HiC {
 
     MainWindow mainWindow;
-
     MainWindow.DisplayOption displayOption;
     Dataset dataset;
-    public Context xContext;
-    Context yContext;
-    Matrix matrix;
-    public MatrixZoomData zd;
     private Chromosome[] chromosomes;
     Map<Integer, DensityFunction> zoomToDensityMap = null;
+
+    public Context xContext;
+    Context yContext;
+
+    Matrix matrix;
+    public MatrixZoomData zd;
 
 
     public HiC(MainWindow mainWindow) {
@@ -255,7 +256,7 @@ public class HiC {
 
         if (this.displayOption != newDisplay) {
 
-            if (newDisplay == MainWindow.DisplayOption.PEARSON && zd.getPearsons() == null) {
+            if (newDisplay == MainWindow.DisplayOption.PEARSON && zd.getBasicPearsons() == null) {
                 if (zd.getZoom() > 3) {
                     int ans = JOptionPane.showConfirmDialog(mainWindow, "Pearson's calculation at " +
                             "this zoom will take a while.\nAre you sure you want to proceed?",

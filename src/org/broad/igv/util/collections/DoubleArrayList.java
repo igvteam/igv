@@ -72,6 +72,16 @@ public class DoubleArrayList {
         return elements[idx];
     }
 
+
+    public void set(int idx, double d) {
+
+        if(idx >= size) {
+            throw new IndexOutOfBoundsException("Index " + idx + " out of bounds.  Size = " + size);
+        }
+        elements[idx] = d;
+
+    }
+
     public int size() {
         return size;
     }
@@ -115,4 +125,5 @@ public class DoubleArrayList {
             elements = tmp;
         }
     }
+
 }

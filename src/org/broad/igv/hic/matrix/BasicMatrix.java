@@ -14,4 +14,8 @@ public interface BasicMatrix {
     int getColumnDimension();
 
     public BasicMatrix getSubMatrix(int startRow, int endRow, int startCol, int endCol);
+
+    float getLowerValue();
+
+    float getUpperValue();
 }

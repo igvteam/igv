@@ -79,8 +79,10 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
             BasicMatrix bm =  zd.getBasicPearsons();
             if (bm != null) {
-                ((HiCColorScale) colorScale).setMin(-1); //(float) zd.getPearsonsMin());
-                ((HiCColorScale) colorScale).setMax(1); //(float) zd.getPearsonsMax());
+                ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
+                ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
+ //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
+ //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
                 renderMatrix(bm, originX, originY, width, height, colorScale, g);
 
             }
@@ -185,7 +187,7 @@ public class HeatmapRenderer {
                 if (Double.isNaN(score)) {
                     color = Color.gray;
                 } else {
-                    color = score == 0 ? Color.black : colorScale.getColor((float) score);
+                     color = score == 0 ? Color.black : colorScale.getColor((float) score);
                 }
                 int px = col - originX;
                 int py = row - originY;
