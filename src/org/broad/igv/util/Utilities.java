@@ -33,10 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.zip.CRC32;
 
 /**
