@@ -1,7 +1,6 @@
 package org.broad.igv.hic.matrix;
 
 import org.broad.igv.util.ObjectCache;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
@@ -17,50 +16,44 @@ import java.io.*;
  *         Date: 7/13/12
  *         Time: 1:48 PM
  */
-public class YunfanFormatMatrix2 implements BasicMatrix {
+public class DiskResidentMatrix implements BasicMatrix {
 
 
     String path;
     int dim;
+    float lowerValue;
+    float upperValue;
+    int arrayStartPosition;
 
     ObjectCache<Integer, float[]> rowDataCache = new ObjectCache<Integer, float[]>(10000);
 
-    // TODO -- store these in file
-    String chr = "chr14";
-    int binSize = 1000000;
-    private int zeroCount;
-
-
-    public YunfanFormatMatrix2(String path) throws IOException {
-        this.path = path;
-        init();
+    public DiskResidentMatrix(String path, int dim) throws IOException {
+        this(path, 4, dim, -1, 1);
     }
 
-    public void init() throws IOException {
-        BufferedInputStream bis = null;
-        try {
-            InputStream is = ParsingUtils.openInputStream(path);
-            bis = new BufferedInputStream(is);
-            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+    public DiskResidentMatrix(String path, int arrayStartPosition, int dim, float lowerValue, float upperValue) throws IOException {
+        this.dim = dim;
+        this.path = path;
+        this.lowerValue = lowerValue;
+        this.upperValue = upperValue;
+        this.arrayStartPosition = arrayStartPosition;
+    }
 
-            dim = les.readInt();
+    public float getLowerValue() {
+        return lowerValue;
+    }
 
-            les.close();
-            bis.close();
-
-        } finally {
-            if (bis != null)
-                bis.close();
-        }
+    public float getUpperValue() {
+        return upperValue;
     }
 
     public float[] loadRowData(int row) {
-        System.out.println("Loading row " + row);
+        //System.out.println("Loading row " + row);
         SeekableStream is = null;
         try {
             is = SeekableStreamFactory.getStreamFor(path);
 
-            int startFilePosition = 4 * 1 + (row * dim) * 4;
+            int startFilePosition = arrayStartPosition + (row * dim) * 4;
             is.seek(startFilePosition);
             BufferedInputStream bis = new BufferedInputStream(is);
             LittleEndianInputStream les = new LittleEndianInputStream(bis);
@@ -129,10 +122,7 @@ public class YunfanFormatMatrix2 implements BasicMatrix {
             }
         }
 
-        return new YunfanFormatMatrix(subdata, dim);
+        return new InMemoryMatrix(subdata, dim);
     }
 
-    public int getZeroCount() {
-        return zeroCount;
-    }
 }

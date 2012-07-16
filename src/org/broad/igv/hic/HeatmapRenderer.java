@@ -79,8 +79,10 @@ public class HeatmapRenderer {
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
             BasicMatrix bm =  zd.getBasicPearsons();
             if (bm != null) {
-                ((HiCColorScale) colorScale).setMin(-0.03f); //(float) zd.getPearsonsMin());
-                ((HiCColorScale) colorScale).setMax(0.03f); //(float) zd.getPearsonsMax());
+                ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
+                ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
+ //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
+ //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
                 renderMatrix(bm, originX, originY, width, height, colorScale, g);
 
             }

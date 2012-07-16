@@ -14,54 +14,17 @@ import java.io.*;
  *         Date: 7/13/12
  *         Time: 1:48 PM
  */
-public class YunfanFormatMatrix implements BasicMatrix {
+public class InMemoryMatrix implements BasicMatrix {
 
 
-    String path;
     int dim;
     float[] data;
 
-    // TODO -- store these in file
-    String chr = "chr14";
-    int binSize = 1000000;
-
-
-    public YunfanFormatMatrix(float [] data, int dim) {
+    public InMemoryMatrix(float[] data, int dim) {
         this.data = data;
         this.dim = dim;
     }
 
-    public YunfanFormatMatrix(String path) throws IOException {
-        this.path = path;
-        readMatrix();
-    }
-
-    public void readMatrix() throws IOException {
-        BufferedInputStream bis = null;
-        try {
-            InputStream is = ParsingUtils.openInputStream(path);
-            bis = new BufferedInputStream(is);
-            LittleEndianInputStream les = new LittleEndianInputStream(bis);
-
-            dim = les.readInt();
-            int nTot = dim * dim;
-            data = new float[nTot];
-
-            for (int i = 0; i < nTot; i++) {
-                data[i] = les.readFloat();
-                System.out.println(data[i]);
-            }
-
-            les.close();
-            bis.close();
-
-        } finally {
-            if (bis != null)
-                bis.close();
-        }
-
-
-    }
 
     @Override
     public float getEntry(int row, int col) {
@@ -87,9 +50,19 @@ public class YunfanFormatMatrix implements BasicMatrix {
         int endIdx = endRow * dim + endCol;
         int dim = endRow - startRow + 1;
         // TODO -- assert matrix is square
-        float [] subdata = new float[endIdx - startIdx + 1];
+        float[] subdata = new float[endIdx - startIdx + 1];
         System.arraycopy(data, 0, subdata, 0, subdata.length);
 
-        return new YunfanFormatMatrix(subdata, dim);
+        return new InMemoryMatrix(subdata, dim);
+    }
+
+    @Override
+    public float getLowerValue() {
+        return -1;
+    }
+
+    @Override
+    public float getUpperValue() {
+        return 1;
     }
 }

@@ -438,12 +438,6 @@ public class AlignmentDataManager {
         }
     }
 
-
-    private boolean isMitochondria(String chr) {
-        return chr.equals("M") || chr.equals("chrM") ||
-                chr.equals("MT") || chr.equals("chrMT");
-    }
-
     /**
      * TODO -- hacked to get by for now,
      *
@@ -541,25 +535,14 @@ public class AlignmentDataManager {
             return downsample;
         }
 
-        public void setDownsample(boolean downsample) {
-            this.downsample = downsample;
-        }
-
         public int getSampleWindowSize() {
             return sampleWindowSize;
-        }
-
-        public void setSampleWindowSize(int sampleWindowSize) {
-            this.sampleWindowSize = sampleWindowSize;
         }
 
         public int getMaxReadCount() {
             return maxReadCount;
         }
 
-        public void setMaxReadCount(int maxReadCount) {
-            this.maxReadCount = maxReadCount;
-        }
     }
 }
 

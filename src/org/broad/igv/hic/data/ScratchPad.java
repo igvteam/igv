@@ -1,14 +1,17 @@
 package org.broad.igv.hic.data;
 
+import com.iontorrent.utils.StringTools;
 import org.apache.commons.math.linear.RealMatrix;
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.matrix.BasicMatrix;
-import org.broad.igv.hic.matrix.YunfanFormatMatrix2;
+import org.broad.igv.hic.matrix.DiskResidentMatrix;
+import org.broad.igv.hic.matrix.InMemoryMatrix;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.*;
 
@@ -22,27 +25,83 @@ public class ScratchPad {
     public static void main(String[] args) throws IOException {
         //String path = "/Users/jrobinso/projects/hic/bin_chr14_1M.bin";
         String path = "/Users/jrobinso/projects/hic/chr14_5e3_N17658_output 2.bin";
-        //File f = new File("/Users/jrobinso/projects/hic/chr14_50K_test.bin");
+        //String path = "/Users/jrobinso/projects/hic/pearsons_14__14_100000.bin";
         //createBlockIndexedFile(f, null, 50);
         //BasicMatrix bm = readPearsons(path);
         // System.out.println(bm.getColumnDimension());
-        countZeroes(path);
+        //readPearsons(path);
+        writeHeader("/Users/jrobinso/projects/hic/header.bin");
     }
 
 
     public static BasicMatrix readPearsons(String path) throws IOException {
 
-        YunfanFormatMatrix2 bm = new YunfanFormatMatrix2(path);
-        int totalPoints = bm.getColumnDimension() * bm.getRowDimension();
-        int zeroes = bm.getZeroCount();
-        float percentZeroes = (zeroes * 100.0f) / totalPoints;
-        System.out.println("Number of zeroes = " + bm.getZeroCount() + " (" + percentZeroes + "%)");
-        return bm;
+        // Peak at file to determine version
+        BufferedInputStream bis = null;
+        try {
+            InputStream is = ParsingUtils.openInputStream(path);
+            bis = new BufferedInputStream(is);
+            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+
+            int bytePosition = 0;
+            int magic = les.readInt();    // <= 6515048
+            bytePosition += 4;
+
+            if (magic == 6515048) {
+                // Version number
+                int version = les.readInt();
+                bytePosition += 4;
+
+                String genome = les.readString();
+                bytePosition += genome.length() + 1;
+
+                String chr1 = les.readString();
+                bytePosition += chr1.length() + 1;
+
+                String chr2 = les.readString();
+                bytePosition += chr2.length() + 1;
+
+                int binSize = les.readInt();
+                bytePosition += 4;
+
+                float lowerPercentile = les.readFloat();
+                bytePosition += 4;
+
+                float upperPercentile = les.readFloat();
+                bytePosition += 4;
+
+                int nRows = les.readInt();  // # rows, assuming square matrix
+                bytePosition += 4;
+
+                int nCols = les.readInt();
+                bytePosition += 4;
+
+                if (nRows != nCols) throw new RuntimeException("Non-square matrices not supported");
+
+                return new DiskResidentMatrix(path, bytePosition, nRows, lowerPercentile, upperPercentile);
+
+            } else {
+                int dim = magic;
+                DiskResidentMatrix bm = new DiskResidentMatrix(path, dim);
+                return bm;
+            }
+
+
+        } finally {
+            if (bis != null)
+                bis.close();
+        }
+
+
     }
 
 
-    public static void countZeroes(String path) throws IOException {
+    public static void estimatePercentiles(String path) throws IOException {
         BufferedInputStream bis = null;
+        float max = -1;
+        float min = 1;
+        DownsampledDoubleArrayList dataSampleList = new DownsampledDoubleArrayList(100000);
+
         try {
             InputStream is = ParsingUtils.openInputStream(path);
             bis = new BufferedInputStream(is);
@@ -50,16 +109,24 @@ public class ScratchPad {
 
             int dim = les.readInt();
             int total = dim * dim;
-            int zeroesCount = 0;
             for (int i = 0; i < total; i++) {
                 float f = les.readFloat();
-                if (f == 0) zeroesCount++;
-
+                if (f < 1) {
+                    max = f > max ? f : max;
+                    min = f < min ? f : min;
+                    dataSampleList.add((double) f);
+                }
             }
 
-
-            float percent = (zeroesCount * 100.0f) / total;
-            System.out.println("# zeroes = " + zeroesCount + " (" + percent + "%)");
+            double[] data = dataSampleList.toArray();
+            System.out.println("min = " + min);
+            System.out.println("2.5 % = " + StatUtils.percentile(data, 2.5));
+            System.out.println("5 % = " + StatUtils.percentile(data, 5));
+            System.out.println("10 % = " + StatUtils.percentile(data, 10));
+            System.out.println("90 % = " + StatUtils.percentile(data, 90));
+            System.out.println("95 % = " + StatUtils.percentile(data, 95));
+            System.out.println("97.5 % = " + StatUtils.percentile(data, 97.5));
+            System.out.println("max = " + max);
 
             bis.close();
 
@@ -69,12 +136,79 @@ public class ScratchPad {
         }
     }
 
+
+    public static void convertYunfanFormat(String path, String chr, int binSize) throws IOException {
+        BufferedInputStream bis = null;
+
+        try {
+            InputStream is = ParsingUtils.openInputStream(path);
+            bis = new BufferedInputStream(is);
+            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+
+            int dim = les.readInt();
+            int nPoints = dim*dim;
+            float [] data = new float[nPoints];
+            for(int i=0; i<nPoints; i++) {
+                data[i] = les.readFloat();
+            }
+
+            BasicMatrix bm = new InMemoryMatrix(data, dim);
+            File f = new File("pearsons_" + chr + "_" + chr + "_" + binSize);
+            dumpPearsonsBinary(bm, chr, chr, binSize, f);
+
+        } finally {
+            if (bis != null) bis.close();
+
+        }
+    }
+
+
+    public static void writeHeader(String path) throws IOException {
+
+        File f = new File(path);
+
+        FileOutputStream fos = new FileOutputStream(f);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        LittleEndianOutputStream los = new LittleEndianOutputStream(bos);
+
+        // Magic number - 4 bytes
+        los.writeByte('h');
+        los.writeByte('i');
+        los.writeByte('c');
+        los.writeByte(0);
+
+        // Version number
+        los.writeInt(1);
+
+        // Genome --
+        los.writeString("hg19");
+
+        // Chromosomes
+        los.writeString("14");
+        los.writeString("14");
+
+        // Resolution (bin size)
+        los.writeInt(5000);
+
+        // Statistics, other attributes
+        los.writeFloat(-0.004103539418429137f);
+        los.writeFloat(0.03536746241152287f);
+        los.writeInt(21458);  // # rows, assuming square matrix
+
+        los.close();
+        bos.close();
+        fos.close();
+
+    }
+
     /**
      * Dump the pearson's correlation -- for development
      *
      * @param pearsons
+     * @param chr1
+     * @param chr2
      */
-    public static void dumpPearsonsBinary(RealMatrix pearsons, File f) throws IOException {
+    public static void dumpPearsonsBinary(BasicMatrix pearsons, String chr1, String chr2, int binSize, File f) throws IOException {
 
         int nCols = pearsons.getColumnDimension();
         // Assuming sqaure matrix for this test
@@ -85,12 +219,52 @@ public class ScratchPad {
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         LittleEndianOutputStream los = new LittleEndianOutputStream(bos);
 
-        los.writeInt(nCols);
+        // Magic number - 4 bytes
+        los.writeByte('h');
+        los.writeByte('i');
+        los.writeByte('c');
+        los.writeByte(0);
 
-        double[][] data = pearsons.getData();
+        // Version number
+        los.writeInt(1);
+
+        // Genome --
+        los.writeString("hg19");
+
+        // Chromosomes
+        los.writeString(chr1);
+        los.writeString(chr2);
+
+        // Resolution (bin size)
+        los.writeInt(binSize);
+
+        // Statistics, other attributes
+        DoubleArrayList flattenedDataList = new DoubleArrayList(pearsons.getColumnDimension() * pearsons.getRowDimension());
+        double min = 1;
+        double max = -1;
+        for (int i = 0; i < pearsons.getRowDimension(); i++) {
+            for (int j = 0; j < pearsons.getColumnDimension(); j++) {
+                double value = pearsons.getEntry(i, j);
+                if (!Double.isNaN(value) && value != 1) {
+                    min = value < min ? value : min;
+                    max = value > max ? value : max;
+                    flattenedDataList.add(value);
+                }
+            }
+        }
+
+        // Stats
+        double [] flattenedData = flattenedDataList.toArray();
+        los.writeFloat((float) StatUtils.percentile(flattenedData, 5));
+        los.writeFloat((float) StatUtils.percentile(flattenedData, 95));
+
+
+        // Data
+        los.writeInt(nCols);  // # rows, assuming square matrix
+        los.writeInt(nCols);
         for (int r = 0; r < pearsons.getRowDimension(); r++) {
             for (int c = 0; c < pearsons.getColumnDimension(); c++) {
-                los.writeFloat((float) data[r][c]);
+                los.writeFloat(pearsons.getEntry(r, c));
             }
         }
         los.close();
