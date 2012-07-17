@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_33" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -15,6 +15,8 @@ new FormModel {
 						name: "featureTrackPanel"
 						add( new FormComponent( "com.jidesoft.swing.CheckBoxList" ) {
 							name: "featureTrackList"
+							"clickInCheckBoxOnly": false
+							"selectionMode": 0
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
