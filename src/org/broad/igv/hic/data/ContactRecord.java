@@ -4,7 +4,7 @@ package org.broad.igv.hic.data;
  * @author jrobinso
  * @date Aug 3, 2010
  */
-public class ContactRecord {
+public class ContactRecord implements Comparable<ContactRecord> {
 
     private int blockNumber;
 
@@ -48,5 +48,16 @@ public class ContactRecord {
 
     public int getCounts() {
         return counts;
+    }
+
+    @Override
+    public int compareTo(ContactRecord contactRecord) {
+        if(this.x != contactRecord.x) {
+            return x - contactRecord.x;
+        }
+        else if(this.y != contactRecord.y) {
+            return y - contactRecord.y;
+        }
+        else return 0;
     }
 }

@@ -30,9 +30,28 @@ public class ScratchPad {
         //BasicMatrix bm = readPearsons(path);
         // System.out.println(bm.getColumnDimension());
         //readPearsons(path);
-        writeHeader("/Users/jrobinso/projects/hic/header.bin");
+        //writeHeader("/Users/jrobinso/projects/hic/header.bin");
+        testReadPy();
     }
 
+
+    public static void testReadPy() throws IOException {
+        // Peak at file to determine version
+        BufferedInputStream bis = null;
+
+            InputStream is = ParsingUtils.openInputStream("/Users/jrobinso/foo.txt");
+            bis = new BufferedInputStream(is);
+            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+
+        int b;
+        while((b = les.read()) >= 0) {
+            System.out.println(b + "  " + ((char) b));
+        }
+
+//        String s = les.readString();
+//        System.out.println(s);
+       is.close();
+    }
 
     public static BasicMatrix readPearsons(String path) throws IOException {
 
@@ -91,8 +110,6 @@ public class ScratchPad {
             if (bis != null)
                 bis.close();
         }
-
-
     }
 
 

@@ -79,10 +79,6 @@ public class MainWindow extends JFrame {
     public static final int MAX_ZOOM = HiCGlobals.zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
-    //private int len;
-    private boolean showEigenvector = false;
-    private boolean showDNAseI = false;
-    private JPanel hiCPanel;
 
     // private DisplayOption displayOption = DisplayOption.OBSERVED;
 
@@ -1279,6 +1275,7 @@ public class MainWindow extends JFrame {
                     File f = FileDialogUtils.chooseFile("Pearsons file (Yunfan format)");
                     if (f != null) {
                         BasicMatrix bm = ScratchPad.readPearsons(f.getAbsolutePath());
+
                         hic.zd.setBasicPearsons(bm);
                     }
                 } catch (IOException e) {

@@ -9,6 +9,7 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -225,6 +226,7 @@ public class DatasetReader {
 
         }
 
+        Arrays.sort(records);
         return new Block(blockNumber, records);
 
     }
