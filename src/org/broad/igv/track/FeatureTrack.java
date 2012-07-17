@@ -23,7 +23,10 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CachedIntervals;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
@@ -393,7 +396,7 @@ public class FeatureTrack extends AbstractTrack {
         PackedFeatures<IGVFeature> packedFeatures = getPackedFeatures(frame.getChrName(),
                 intPos - 1, intPos + 1, frame.getZoom());
 
-        if(packedFeatures == null) return null;
+        if (packedFeatures == null) return null;
 
         List<Feature> feature = null;
 
@@ -693,13 +696,16 @@ public class FeatureTrack extends AbstractTrack {
             log.debug("renderFeatures: " + getName());
         }
 
-        preload(context);
-        if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
-            // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
-            return;
-        }
 
         PackedFeatures<IGVFeature> packedFeatures = getPackedFeatures(context.getReferenceFrame());
+        if (packedFeatures == null) {
+            preload(context);
+            if (!IGV.hasInstance() || !IGV.getInstance().isExportingSnapshot()) {
+                // DONT CALL REPAINT HERE!!! FEATURES ARE LOADING ASYNCHRONOUSLY, REPAINT CALLED WHEN LOADING IS DONE
+                return;
+            }
+        }
+
 
         try {
             renderFeatureImpl(context, inputRect, packedFeatures);
@@ -796,6 +802,7 @@ public class FeatureTrack extends AbstractTrack {
                     int expandedEnd = end + delta;
 
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
+                    packedFeaturesMap.setMaxIntervalSize((int) (context.getEndLocation() - context.getOrigin()));
                     if (iter == null) {
                         PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
                         packedFeaturesMap.put(pf);
@@ -855,7 +862,7 @@ public class FeatureTrack extends AbstractTrack {
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
         PackedFeatures<IGVFeature> packedFeatures = getPackedFeatures(frame.getChrName(), (int) center - 1, (int) center + 1, frame.getZoom());
 
-        if (packedFeatures!= null) {
+        if (packedFeatures != null) {
             if (packedFeatures.getFeatures().size() > 0 && canScroll) {
                 f = (forward ? FeatureUtils.getFeatureAfter(center + 1, packedFeatures.getFeatures()) :
                         FeatureUtils.getFeatureBefore(center - 1, packedFeatures.getFeatures()));
@@ -970,20 +977,21 @@ public class FeatureTrack extends AbstractTrack {
         return alternateExonColor;
     }
 
-    protected final PackedFeatures<IGVFeature> getPackedFeatures(ReferenceFrame frame){
+    protected final PackedFeatures<IGVFeature> getPackedFeatures(ReferenceFrame frame) {
         return getPackedFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
     }
 
     /**
      * In most cases we will only get one PackedFeatures instance back for an interval,
      * however they are stored as a list. We take the first one stored
+     *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @return
      */
-    protected final PackedFeatures<IGVFeature> getPackedFeatures(String chr, int start, int end, int zoom){
+    protected final PackedFeatures<IGVFeature> getPackedFeatures(String chr, int start, int end, int zoom) {
         List<PackedFeatures<IGVFeature>> packedFeaturesList = packedFeaturesMap.getContains(chr,
                 start, end, zoom);
 

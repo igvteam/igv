@@ -26,11 +26,10 @@ import java.util.*;
  * Represents a table of features, packed so there is no overlap.
  * Features are packed into rows, accessible via {@link #getRows}
  *
- *
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature> implements Interval{
+public class PackedFeatures<T extends Feature> implements Interval {
     protected String trackName;
     protected String chr;
     protected int start;
@@ -59,14 +58,14 @@ public class PackedFeatures<T extends Feature> implements Interval{
     }
 
 
-     /**
+    /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
+     *
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Feature feature)
-    {
+    protected int getFeatureStartForPacking(Feature feature) {
         return feature.getStart();
     }
 
@@ -74,11 +73,11 @@ public class PackedFeatures<T extends Feature> implements Interval{
     /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
+     *
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Feature feature)
-    {
+    protected int getFeatureEndForPacking(Feature feature) {
         return feature.getEnd();
     }
 
@@ -92,7 +91,7 @@ public class PackedFeatures<T extends Feature> implements Interval{
 
     @Override
     public boolean contains(String chr, int start, int end, int zoom) {
-        return contains(chr, start, end, -1);
+        return this.contains(chr, start, end);
     }
 
     @Override
@@ -104,7 +103,7 @@ public class PackedFeatures<T extends Feature> implements Interval{
      * Allocates each feature to the rows such that there is no overlap.
      *
      * @param iter TabixLineReader wrapping the collection of alignments. Note that this should
-     * really be an Iterator<T>, but it can't be subclassed if that's the case.
+     *             really be an Iterator<T>, but it can't be subclassed if that's the case.
      */
     List<FeatureRow> packFeatures(Iterator iter) {
 
@@ -155,13 +154,13 @@ public class PackedFeatures<T extends Feature> implements Interval{
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {
 
-                if(IGV.hasInstance()) {
-                String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
-                        ".<br>Not all features will be shown." +
-                        "<br>Please contact igv-team@broadinstitute.org";
+                if (IGV.hasInstance()) {
+                    String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
+                            ".<br>Not all features will be shown." +
+                            "<br>Please contact igv-team@broadinstitute.org";
 
-                log.error(msg);
-                MessageUtils.showMessage(msg);
+                    log.error(msg);
+                    MessageUtils.showMessage(msg);
                 }
                 break;
             }
@@ -254,12 +253,12 @@ public class PackedFeatures<T extends Feature> implements Interval{
         //It would be good to check the generic type parameters, but that is
         //not possible
         List<T> originalFeatures = features;
-        try{
+        try {
             PackedFeatures<T> other = (PackedFeatures<T>) i;
-            List<T> mergedFeatures = FeatureUtils.combineSortedFeatureListsNoDups(getFeatures(), other.getFeatures(),start, end);
+            List<T> mergedFeatures = FeatureUtils.combineSortedFeatureListsNoDups(getFeatures(), other.getFeatures(), start, end);
             features = new ArrayList<T>(mergedFeatures.size());
             rows = this.packFeatures(mergedFeatures.iterator());
-        }catch(ClassCastException e){
+        } catch (ClassCastException e) {
             //Try to undo if we hit this
             features = originalFeatures;
             return false;
