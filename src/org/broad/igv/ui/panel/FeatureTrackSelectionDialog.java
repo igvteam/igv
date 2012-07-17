@@ -87,7 +87,7 @@ public class FeatureTrackSelectionDialog extends JDialog {
         vSpacer1 = new JPanel(null);
         contentPanel = new JPanel();
         featureTrackPanel = new JScrollPane();
-        featureTrackList = new FeatureTrackSelectionDialog.RadioList();
+        featureTrackList = new RadioButtonSelectionList();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -167,7 +167,7 @@ public class FeatureTrackSelectionDialog extends JDialog {
     private JPanel vSpacer1;
     private JPanel contentPanel;
     private JScrollPane featureTrackPanel;
-    private FeatureTrackSelectionDialog.RadioList featureTrackList;
+    private RadioButtonSelectionList featureTrackList;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -185,64 +185,85 @@ public class FeatureTrackSelectionDialog extends JDialog {
             return track.getName();
         }
     }
+//
+//    /**
+//     * Just like a CheckBoxList, but renders with radio buttons
+//     * and only allows single selection.
+//     * User: jacob
+//     * Date: 2012-Jul-17
+//     */
+//    public static class RadioList extends CheckBoxList {
+//
+//        public RadioList() {
+//            super();
+//        }
+//
+//        @Override
+//        protected void init() {
+//            super.init();
+//            getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        }
+//
+//        @Override
+//        protected CheckBoxListCellRenderer createCellRenderer() {
+//            return new RadioListCellRenderer();
+//        }
+//
+//        @Override
+//        protected Handler createHandler() {
+//            return new SingleSelectionHandler(this);
+//        }
+//
+//
+//        protected static class SingleSelectionHandler extends CheckBoxList.Handler{
+//
+//            public SingleSelectionHandler(CheckBoxList list) {
+//                super(list);
+//            }
+//
+//            protected void toggleSelection(int index) {
+//                if(_list.getCheckBoxListSelectionModel().isSelectedIndex(index)){
+//                    return;
+//                }
+//                super.toggleSelection(index);
+//            }
+//        }
+//
+//    }
+//
+//    public static class RadioListCellRenderer extends CheckBoxListCellRenderer {
+//
+//        protected AbstractButton button = new NullRadioButton();
+//
+//        public RadioListCellRenderer() {
+//            this(null);
+//        }
+//
+//        public RadioListCellRenderer(ListCellRenderer renderer) {
+//            super(renderer);
+//            //Really have no idea why this is necessary, or how the check box gets added in the first place
+//            if (getComponentCount() > 0)
+//                remove(0);
+//            button.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+//            button.setOpaque(false);
+//            add(button, BorderLayout.BEFORE_LINE_BEGINS);
+//            set_checkBox(button);
+//        }
+//
+//        public void set_checkBox(AbstractButton button){
+//            //This is here for JFormDesigner
+//            //It gets a NoSuchFieldError when doing this.
+//            //Doesn't really matter to the compiled program, only makes
+//            //editing the dialog easier
+//            try{
+//                this._checkBox = button;
+//            }catch(NoSuchFieldError e){
+//
+//            }
+//
+//        }
+//    }
 
-    /**
-     * Just like a CheckBoxList, but renders with radio buttons
-     * and only allows single selection.
-     * User: jacob
-     * Date: 2012-Jul-17
-     */
-    public static class RadioList extends CheckBoxList {
-
-        public RadioList() {
-            super();
-        }
-
-        @Override
-        protected void init() {
-            super.init();
-            getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        }
-
-        @Override
-        protected CheckBoxListCellRenderer createCellRenderer() {
-            return new RadioListCellRenderer();
-        }
-
-    }
-
-    public static class RadioListCellRenderer extends CheckBoxListCellRenderer {
-
-        protected AbstractButton button = new NullRadioButton();
-
-        public RadioListCellRenderer() {
-            this(null);
-        }
-
-        public RadioListCellRenderer(ListCellRenderer renderer) {
-            super(renderer);
-            //Really have no idea why this is necessary, or how the check box gets added in the first place
-            if (getComponentCount() > 0)
-                remove(0);
-            button.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-            button.setOpaque(false);
-            add(button, BorderLayout.BEFORE_LINE_BEGINS);
-            set_checkBox(button);
-        }
-
-        public void set_checkBox(AbstractButton button){
-            //This is here for JFormDesigner
-            //It gets a NoSuchFieldError when doing this.
-            //Doesn't really matter to the compiled program, only makes
-            //editing the dialog easier
-            try{
-                this._checkBox = button;
-            }catch(NoSuchFieldError e){
-
-            }
-
-        }
-    }
 
 
 }

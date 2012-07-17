@@ -20,7 +20,7 @@ new FormModel {
 					name: "contentPanel"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "featureTrackPanel"
-						add( new FormComponent( "org.broad.igv.ui.panel.FeatureTrackSelectionDialog$RadioList" ) {
+						add( new FormComponent( "org.broad.igv.ui.panel.RadioButtonSelectionList" ) {
 							name: "featureTrackList"
 							"clickInCheckBoxOnly": false
 							"selectionMode": 0
