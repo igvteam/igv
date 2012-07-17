@@ -79,17 +79,17 @@ public class FrameManager {
 
         Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         List<FeatureTrack> featureTracks = IGV.getInstance().getFeatureTracks();
-        List<FeatureTrack> tracks;
+        FeatureTrack track;
         if (featureTracks.size() == 1) {
-            tracks = featureTracks;
+            track = featureTracks.get(0);
         } else {
             FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
             dlg.setVisible(true);
             if (dlg.isCanceled) return false;
-            tracks = dlg.getSelectedTracks();
+            track = dlg.getSelectedTrack();
         }
 
-        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, tracks.get(0));
+        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, track);
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
         exomeFrame.setInterval(locus);

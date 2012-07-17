@@ -48,6 +48,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
             TrackWrapper trackWrapper = new TrackWrapper(t);
             wrappers.add(trackWrapper);
         }
+
+        featureTrackList.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         featureTrackList.setListData(wrappers.toArray());
         featureTrackList.setSelectedObjects(selectedObjects.toArray());
 
@@ -69,14 +71,10 @@ public class FeatureTrackSelectionDialog extends JDialog {
         dispose();
     }
 
-    public java.util.List<FeatureTrack> getSelectedTracks() {
+    public FeatureTrack getSelectedTrack() {
         if (isCanceled) return null;
-        Object[] selections = featureTrackList.getSelectedValues();
-        ArrayList<FeatureTrack> tracks = new ArrayList<FeatureTrack>(selections.length);
-        for (Object wrapper : selections) {
-            tracks.add(((TrackWrapper) wrapper).track);
-        }
-        return tracks;
+        Object selection = featureTrackList.getCheckBoxListSelectedValue();
+        return ((TrackWrapper) selection).track;
     }
 
     private void initComponents() {
@@ -105,6 +103,10 @@ public class FeatureTrackSelectionDialog extends JDialog {
 
                 //======== featureTrackPanel ========
                 {
+
+                    //---- featureTrackList ----
+                    featureTrackList.setClickInCheckBoxOnly(false);
+                    featureTrackList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     featureTrackPanel.setViewportView(featureTrackList);
                 }
                 contentPanel.add(featureTrackPanel);
@@ -173,4 +175,5 @@ public class FeatureTrackSelectionDialog extends JDialog {
             return track.getName();
         }
     }
+
 }
