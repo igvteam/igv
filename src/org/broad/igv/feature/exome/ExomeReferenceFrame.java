@@ -58,7 +58,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
             String chr = chromosome.getName();
             List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
             if (features != null && features.size() > 0) {
-                processFeatures(chr, features);
+                createExomBlockData(chr, features);
             }
 
         }
@@ -68,13 +68,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         for (String chr : featureMap.keySet()) {
             List<Feature> features = featureMap.get(chr);
             if (features.size() > 0) {
-                processFeatures(chr, features);
+                createExomBlockData(chr, features);
             }
 
         }
     }
 
-    private void processFeatures(String chr, List<Feature> features) {
+    private void createExomBlockData(String chr, List<Feature> features) {
         List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
         List<Gene> genes = ExomeUtils.collapseToGenes(features);
         ExomeData exomeData = new ExomeData(blocks, genes);
@@ -119,6 +119,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         setOrigin(genomePosition, true);
     }
 
+    /**
+     * Recalculate exomeOrigin and firstBlockIdx
+     * based on current origin
+     */
     private void calcExomeOrigin() {
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
@@ -144,7 +148,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     @Override
     public void jumpTo(String chr, int start, int end) {
-        setInterval(new Locus(chr, start, end));
+        jumpTo(new Locus(chr, start, end));
         IGV.getInstance().repaintDataAndHeaderPanels();
         IGV.getInstance().repaintStatusAndZoomSlider();
 
@@ -156,8 +160,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
      * @param locus
      */
     @Override
-    public void setInterval(Locus locus) {
-
+    public void jumpTo(Locus locus) {
         this.initialLocus = locus;
         this.chrName = locus.getChr();
         this.origin = locus.getStart();    // Genome locus

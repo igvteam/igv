@@ -1358,7 +1358,7 @@ public class IGV {
         List<ReferenceFrame> frames = FrameManager.getFrames();
         if (frames.size() == loci.size()) {
             for (int i = 0; i < loci.size(); i++) {
-                frames.get(i).setInterval(new Locus(loci.get(i)));
+                frames.get(i).jumpTo(new Locus(loci.get(i)));
             }
             repaint();
         } else {

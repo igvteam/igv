@@ -93,7 +93,7 @@ public class FrameManager {
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, track);
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
-        exomeFrame.setInterval(locus);
+        exomeFrame.jumpTo(locus);
         defaultFrame = exomeFrame;
         frames.clear();
         frames.add(defaultFrame);
@@ -105,7 +105,7 @@ public class FrameManager {
         ReferenceFrame refFrame = new ReferenceFrame(defaultFrame);
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
-        refFrame.setInterval(locus);
+        refFrame.jumpTo(locus);
         defaultFrame = refFrame;
         frames.clear();
         frames.add(defaultFrame);
@@ -132,7 +132,7 @@ public class FrameManager {
         if (searchString != null) {
             Locus locus = getLocus(searchString, 0);
             if (locus != null) {
-                getDefaultFrame().setInterval(locus);
+                getDefaultFrame().jumpTo(locus);
             }
         }
         frames.add(getDefaultFrame());
@@ -165,7 +165,7 @@ public class FrameManager {
                         lociNotFound.add(searchString);
                     } else {
                         ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
-                        referenceFrame.setInterval(locus);
+                        referenceFrame.jumpTo(locus);
                         frames.add(referenceFrame);
                     }
                 }

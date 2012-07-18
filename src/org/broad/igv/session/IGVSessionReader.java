@@ -779,7 +779,7 @@ public class IGVSessionReader implements SessionReader {
                             int start = ParsingUtils.parseInt(startString);
                             int end = ParsingUtils.parseInt(endString);
                             org.broad.igv.feature.Locus locus = new Locus(chr, start, end);
-                            f.setInterval(locus);
+                            f.jumpTo(locus);
                         } catch (NumberFormatException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }

@@ -45,7 +45,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
 
         ReferenceFrame frame = new ReferenceFrame("test");
-        frame.setInterval(locus);
+        frame.jumpTo(locus);
 
         frame.setBounds(0, halfwidth);
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
@@ -60,12 +60,12 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         Locus begLocus = new Locus(chr, start, start + halfwidth);
         ReferenceFrame begFrame = new ReferenceFrame(frame);
-        begFrame.setInterval(begLocus);
+        begFrame.jumpTo(begLocus);
         RenderContextImpl begContext = new RenderContextImpl(null, null, begFrame, null);
 
         Locus endLocus = new Locus(chr, start + halfwidth / 2, end);
         ReferenceFrame endFrame = new ReferenceFrame(frame);
-        endFrame.setInterval(endLocus);
+        endFrame.jumpTo(endLocus);
         RenderContextImpl endContext = new RenderContextImpl(null, null, endFrame, null);
 
         testManager.preload(begContext, renderOptions, null, false);

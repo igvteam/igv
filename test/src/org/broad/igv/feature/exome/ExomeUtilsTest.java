@@ -33,7 +33,7 @@ public class ExomeUtilsTest extends AbstractHeadlessTest {
         Map<String, List<Feature>> allFeatures = loadTestFeatures();
 
         frame = new ExomeReferenceFrame(new ReferenceFrame("test"), allFeatures);
-        frame.setInterval(new Locus("chr6", 1, 100));
+        frame.jumpTo(new Locus("chr6", 1, 100));
     }
 
 
