@@ -17,14 +17,12 @@ package org.broad.igv.hic;
 
 import com.jidesoft.swing.JideButton;
 import org.apache.commons.math.linear.InvalidMatrixException;
-import org.apache.commons.math.linear.RealMatrix;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.DatasetReader;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.data.ScratchPad;
 import org.broad.igv.hic.matrix.BasicMatrix;
-import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
@@ -35,8 +33,6 @@ import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
 
 import javax.imageio.ImageIO;
@@ -79,23 +75,30 @@ public class MainWindow extends JFrame {
     public static final int MAX_ZOOM = HiCGlobals.zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
-    //private int len;
-    private boolean showEigenvector = false;
-    private boolean showDNAseI = false;
-    private JPanel hiCPanel;
-
+    private static MainWindow theInstance;
     // private DisplayOption displayOption = DisplayOption.OBSERVED;
 
 
     public static void main(String[] args) throws IOException {
 
-        final MainWindow mainWindow = new MainWindow();
-        mainWindow.setVisible(true);
+        theInstance = getInstance();
+        theInstance.setVisible(true);
         //mainWindow.setSize(950, 700);
-        mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        theInstance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public MainWindow() throws IOException {
+    public static synchronized MainWindow getInstance() {
+        if (theInstance == null) {
+            try {
+                theInstance = createMainWindow();
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+        return theInstance;
+    }
+
+    private MainWindow() throws IOException {
 
         hic = new HiC(this);
 
@@ -107,6 +110,10 @@ public class MainWindow extends JFrame {
         setDropTarget(target);
 
         colorRangeSlider.setUpperValue(1200);
+    }
+
+    public static MainWindow createMainWindow() throws IOException {
+        return new MainWindow();
     }
 
     public void createCursors() {
@@ -163,8 +170,7 @@ public class MainWindow extends JFrame {
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
 
-            SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
-            hic.dataset = (new DatasetReader(ss)).read();
+            hic.dataset = (new DatasetReader(file)).read();
             setChromosomes(hic.dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
@@ -427,9 +433,7 @@ public class MainWindow extends JFrame {
 
         Callable<Object> wrapper = new Callable<Object>() {
             public Object call() throws Exception {
-                final Component glassPane = getGlassPane();
-                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                glassPane.setVisible(true);
+                final Component glassPane = showGlassPane();
                 try {
                     runnable.run();
                     return "done";
@@ -441,6 +445,17 @@ public class MainWindow extends JFrame {
         };
 
         return threadExecutor.submit(wrapper);
+    }
+
+    public Component showGlassPane() {
+        final Component glassPane = getGlassPane();
+        glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        glassPane.setVisible(true);
+        return glassPane;
+    }
+
+    public void hideGlassPane() {
+        getGlassPane().setVisible(false);
     }
 
     public void updateTrackPanel() {
@@ -605,7 +620,7 @@ public class MainWindow extends JFrame {
                                               colorRangeSlider.setMajorTickSpacing(500);
                                               colorRangeSlider.setUpperValue(2500);
                                               hic.reset();
-                                              load("http://iwww.broadinstitute.org/igvdata/hic/HiSeq/120401.hic");
+                                              load("http://iwww.broadinstitute.org/igvdata/hic/files/April_2012/120401.hic");
                                           } catch (IOException e1) {
                                               JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
                                           }
@@ -1237,7 +1252,7 @@ public class MainWindow extends JFrame {
         dumpPearsons.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                RealMatrix pearsons = hic.zd.getPearsons();
+                BasicMatrix pearsons = hic.zd.getPearsons();
                 try {
                     String chr1 = hic.getChromosomes()[hic.zd.getChr1()].getName();
                     String chr2 = hic.getChromosomes()[hic.zd.getChr2()].getName();
@@ -1245,8 +1260,7 @@ public class MainWindow extends JFrame {
                     File initFile = new File("pearsons_" + chr1 + "_" + "_" + chr2 + "_" + binSize + ".bin");
                     File f = FileDialogUtils.chooseFile("Save pearsons", null, initFile, FileDialogUtils.SAVE);
                     if (f != null) {
-                        BasicMatrix bm = new RealMatrixWrapper(pearsons);
-                        ScratchPad.dumpPearsonsBinary(bm, chr1, chr2, hic.zd.getBinSize(), f);
+                        ScratchPad.dumpPearsonsBinary(pearsons, chr1, chr2, hic.zd.getBinSize(), f);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -1279,7 +1293,8 @@ public class MainWindow extends JFrame {
                     File f = FileDialogUtils.chooseFile("Pearsons file (Yunfan format)");
                     if (f != null) {
                         BasicMatrix bm = ScratchPad.readPearsons(f.getAbsolutePath());
-                        hic.zd.setBasicPearsons(bm);
+
+                        hic.zd.setPearsons(bm);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

@@ -281,8 +281,7 @@ public class HiCTools {
             System.exit(-1);
         }
 
-        SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
-        Dataset dataset = (new DatasetReader(ss)).read();
+        Dataset dataset = (new DatasetReader(file)).read();
         Chromosome[] tmp = dataset.getChromosomes();
 
         Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
@@ -343,8 +342,7 @@ public class HiCTools {
             }
         }
 
-        SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
-        Dataset dataset = (new DatasetReader(ss)).read();
+        Dataset dataset = (new DatasetReader(file)).read();
         Chromosome[] tmp = dataset.getChromosomes();
 
         Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
