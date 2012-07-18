@@ -87,6 +87,7 @@ public class FrameManager {
             dlg.setVisible(true);
             if (dlg.isCanceled) return false;
             track = dlg.getSelectedTrack();
+            if(track == null) return false;
         }
 
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, track);
