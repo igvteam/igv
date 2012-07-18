@@ -77,4 +77,7 @@ public class RealMatrixWrapper implements BasicMatrix {
     }
 
 
+    public RealMatrix getMatrix() {
+        return matrix;
+    }
 }

@@ -77,7 +77,7 @@ public class HeatmapRenderer {
         ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
-            BasicMatrix bm =  zd.getBasicPearsons();
+            BasicMatrix bm =  zd.getPearsons();
             if (bm != null) {
                 ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
                 ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
@@ -182,9 +182,9 @@ public class HeatmapRenderer {
         for (int row = originY; row < endY; row++) {
             for (int col = originX; col < endX; col++) {
 
-                double score = rm.getEntry(row, col);
+                float score = rm.getEntry(row, col);
                 Color color;
-                if (Double.isNaN(score)) {
+                if (Float.isNaN(score)) {
                     color = Color.gray;
                 } else {
                      color = score == 0 ? Color.black : colorScale.getColor((float) score);

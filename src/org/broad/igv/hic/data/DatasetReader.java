@@ -5,6 +5,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
@@ -14,28 +15,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author jrobinso
  * @date Aug 17, 2010
  */
 public class DatasetReader {
 
+    private String path;
     private SeekableStream stream;
-
     private Map<String, Preprocessor.IndexEntry> masterIndex;
-    private long totalCount;
-    private DensityFunction densityFunction;
     private Dataset dataset;
     private int version;
 
-    public DatasetReader(SeekableStream stream) {
-        this.stream = stream;
+    public DatasetReader(String path) throws IOException {
+        this.path = path;
+        this.stream = IGVSeekableStreamFactory.getStreamFor(path);
         masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
         dataset = new Dataset(this);
     }
 
-    public Dataset read() throws FileNotFoundException {
+    public String getPath() {
+        return path;
+    }
 
+    public Dataset read() throws FileNotFoundException {
 
         try {
             // Read the header
@@ -63,7 +65,7 @@ public class DatasetReader {
                     version = Integer.parseInt(value);
                 }
                 if (key.equalsIgnoreCase("genome")) {
-                   genome = value;
+                    genome = value;
                 }
             }
             if (genome == null) {
@@ -96,13 +98,12 @@ public class DatasetReader {
         for (Chromosome chr : chromosomes) {
             if (chr.getName().equals("1") || chr.getName().equals("chr1")) {
                 len = chr.getLength();
-            }
-            else if(chr.getName().equals("23011544")) {
+            } else if (chr.getName().equals("23011544")) {
                 return "dmel";
             }
         }
 
-        switch(len) {
+        switch (len) {
             case 249250621:
                 return "hg19";   //or b37
             case 247249719:
@@ -148,27 +149,6 @@ public class DatasetReader {
 
         return masterIndex;
 
-    }
-
-    private void readExpectedValues(LittleEndianInputStream dis) throws IOException {
-
-        totalCount = dis.readLong();
-
-        int gridSize = dis.readInt();
-        int nGrids = dis.readInt();
-        double[] densities = new double[nGrids];
-        for (int i = 0; i < nGrids; i++) {
-            densities[i] = dis.readDouble();
-        }
-
-        int nNormFactors = dis.readInt();
-        Map<Integer, Double> normFactors = new HashMap<Integer, Double>(nNormFactors);
-        for (int i = 0; i < nNormFactors; i++) {
-            Integer key = dis.readInt();
-            Double norm = dis.readDouble();
-            normFactors.put(key, norm);
-        }
-        densityFunction = new DensityFunction(gridSize, densities, normFactors);
     }
 
 

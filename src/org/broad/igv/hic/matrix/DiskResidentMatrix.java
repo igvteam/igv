@@ -1,11 +1,16 @@
 package org.broad.igv.hic.matrix;
 
+import org.broad.igv.hic.HiC;
+import org.broad.igv.hic.MainWindow;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ObjectCache;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Class for testing/development
@@ -24,6 +29,7 @@ public class DiskResidentMatrix implements BasicMatrix {
     float lowerValue;
     float upperValue;
     int arrayStartPosition;
+    boolean isLoading = false;
 
     ObjectCache<Integer, float[]> rowDataCache = new ObjectCache<Integer, float[]>(10000);
 
@@ -47,33 +53,36 @@ public class DiskResidentMatrix implements BasicMatrix {
         return upperValue;
     }
 
-    public float[] loadRowData(int row) {
+    public void loadRowData(int startRow, int lastRow) {
         //System.out.println("Loading row " + row);
         SeekableStream is = null;
         try {
+
+
             is = SeekableStreamFactory.getStreamFor(path);
 
-            int startFilePosition = arrayStartPosition + (row * dim) * 4;
+            int startFilePosition = arrayStartPosition + (startRow * dim) * 4;
+            int nBytes = (lastRow - startRow + 1) * dim * 4;
+            byte[] byteArray = new byte[nBytes];
+
             is.seek(startFilePosition);
-            BufferedInputStream bis = new BufferedInputStream(is);
+            is.readFully(byteArray);
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
             LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
-            float[] rowData = new float[dim];
 
-            for (int i = 0; i < dim; i++) {
-                float f = les.readFloat();
-                rowData[i] = f;
-
+            for (int row = startRow; row <= lastRow; row++) {
+                float[] rowData = new float[dim];
+                for (int i = 0; i < dim; i++) {
+                    float f = les.readFloat();
+                    rowData[i] = f;
+                }
+                rowDataCache.put(row, rowData);
             }
-
-            les.close();
-            bis.close();
-
-            return rowData;
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         } finally {
             if (is != null)
                 try {
@@ -85,15 +94,16 @@ public class DiskResidentMatrix implements BasicMatrix {
     }
 
     @Override
-    public float getEntry(int row, int col) {
+    public float getEntry(final int row, int col) {
 
-        float[] rowData = rowDataCache.get(row);
-        if (rowData == null) {
-            rowData = loadRowData(row);
-            rowDataCache.put(row, rowData);
+        if (!rowDataCache.containsKey(row)) {
+            MainWindow.getInstance().showGlassPane();
+            int lastRow = Math.min(dim, row + 500);
+            loadRowData(row, lastRow);
+            MainWindow.getInstance().hideGlassPane();
         }
-        //System.out.println(rowData[col]);
-        return rowData[col];
+        float[] rowData = rowDataCache.get(row);
+        return rowData == null ? Float.NaN : rowData[col];
     }
 
     @Override
