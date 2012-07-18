@@ -17,19 +17,6 @@ import com.iontorrent.data.ReadInfo;
 import com.iontorrent.utils.LocationListener;
 import com.iontorrent.utils.SimpleDialog;
 import com.iontorrent.views.FlowSignalDistributionPanel;
-
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.*;
-import javax.swing.*;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -59,6 +46,18 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -2030,8 +2029,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 //frame.jumpTo(frame.getChrName(), location, location);
 
                 frame.centerOnLocation(newLocation + 1);
-                IGV.getInstance().repaintDataAndHeaderPanels();
-                IGV.getInstance().repaintStatusAndZoomSlider();
+                IGV.repaintPanelsHeadlessSafe();
             }
         };
         distributionPanel.setListener(listener);

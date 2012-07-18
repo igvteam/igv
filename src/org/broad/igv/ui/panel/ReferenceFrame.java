@@ -162,6 +162,7 @@ public class ReferenceFrame {
     /**
      * Change the zoom level, keeping the center the same
      * zoom events "release" the frame, enabling pan and zoom
+     *
      * @param newZoom
      */
     private void zoomTo(int newZoom) {
@@ -302,6 +303,7 @@ public class ReferenceFrame {
 
     /**
      * Set the origin of the frame, guarding against chromosome boundaries
+     *
      * @param position
      * @param repaint
      */
@@ -325,6 +327,7 @@ public class ReferenceFrame {
     /**
      * Move the frame to the specified position. New zoom is calculated
      * based on limits.
+     *
      * @param chr
      * @param start
      * @param end
@@ -359,7 +362,7 @@ public class ReferenceFrame {
             if (widthInPixels > 0) {
                 setLocationScale(((double) (end - start)) / widthInPixels);
                 imputeZoom(start, end);
-            }else{
+            } else {
                 this.setEnd = end;
             }
         }
@@ -423,7 +426,8 @@ public class ReferenceFrame {
         return maxPixel;
     }
 
-    /** Change the frame to the specified chromosome.
+    /**
+     * Change the frame to the specified chromosome.
      *
      * @param name
      * @param force
@@ -642,7 +646,6 @@ public class ReferenceFrame {
 
     public void reset() {
         jumpTo(FrameManager.getLocus(name));
-        IGV.getInstance().repaintDataAndHeaderPanels();
     }
 
     public String getName() {
