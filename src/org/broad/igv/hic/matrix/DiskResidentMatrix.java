@@ -57,12 +57,10 @@ public class DiskResidentMatrix implements BasicMatrix {
         //System.out.println("Loading row " + row);
         SeekableStream is = null;
         try {
-
-
             is = SeekableStreamFactory.getStreamFor(path);
 
             int startFilePosition = arrayStartPosition + (startRow * dim) * 4;
-            int nBytes = (lastRow - startRow + 1) * dim * 4;
+            int nBytes = (lastRow - startRow) * dim * 4;
             byte[] byteArray = new byte[nBytes];
 
             is.seek(startFilePosition);
@@ -72,7 +70,7 @@ public class DiskResidentMatrix implements BasicMatrix {
             LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
 
-            for (int row = startRow; row <= lastRow; row++) {
+            for (int row = startRow; row < lastRow; row++) {
                 float[] rowData = new float[dim];
                 for (int i = 0; i < dim; i++) {
                     float f = les.readFloat();
