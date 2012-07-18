@@ -819,14 +819,15 @@ public class FeatureTrack extends AbstractTrack {
                         IGV.getInstance().layoutMainPanel();
                     }
                     if (context.getPanel() != null) context.getPanel().repaint();
-                } catch (Exception e) {
+                } catch (IOException e) {
+                    String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
+                    //MessageUtils.showMessage(msg);
+                    log.error(msg, e);
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
                     PackedFeatures pf = new PackedFeatures(chr, start, end);
                     packedFeaturesMap.put(pf);
-                    String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
-                    MessageUtils.showMessage(msg);
-                    log.error(msg, e);
+
                 } finally {
                     featuresLoading = false;
                 }

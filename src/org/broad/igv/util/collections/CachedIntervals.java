@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * Used for caching data oriented in a genomic interval.
  * Data is stored by sequence name (string), start, end, and zoom.
- *
+ * <p/>
  * Lookups are not designed to be efficient (not a B-tree)
  * User: jacob
  * Date: 2012-Jul-13
@@ -36,9 +36,10 @@ public class CachedIntervals<T extends Interval> {
     protected int cacheSize = DEFAULT_CACHE_SIZE;
     protected int maxIntervalSize = DEFAULT_MAX_INTERVAL_SIZE;
 
-    public CachedIntervals(){}
+    public CachedIntervals() {
+    }
 
-    public CachedIntervals(int cacheSize, int maxIntervalSize){
+    public CachedIntervals(int cacheSize, int maxIntervalSize) {
         this.cacheSize = cacheSize;
         this.maxIntervalSize = maxIntervalSize;
     }
@@ -46,13 +47,14 @@ public class CachedIntervals<T extends Interval> {
     /**
      * Get the list of intervals which contain the specified interval,
      * sorted by start position.
+     *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @return
      */
-    public List<T> getContains(final String chr, final int start, final int end, final int zoom){
+    public List<T> getContains(final String chr, final int start, final int end, final int zoom) {
         Predicate<Interval> pred = new Predicate<Interval>() {
             @Override
             public boolean evaluate(Interval interval) {
@@ -64,13 +66,14 @@ public class CachedIntervals<T extends Interval> {
 
     /**
      * Get the list of Intervals which overlap the specified interval, sorted by start position.
+     *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @return
      */
-    public List<T> getOverlaps(final String chr, final int start, final int end, final int zoom){
+    public List<T> getOverlaps(final String chr, final int start, final int end, final int zoom) {
         Predicate<Interval> pred = new Predicate<Interval>() {
             @Override
             public boolean evaluate(Interval interval) {
@@ -83,10 +86,11 @@ public class CachedIntervals<T extends Interval> {
     /**
      * Return all stored intervals for the specified seqName, sorted
      * by start position.
+     *
      * @param seqName
      * @return
      */
-    public List<T> get(String seqName){
+    public List<T> get(String seqName) {
         return getGen(seqName, null);
     }
 
@@ -94,18 +98,19 @@ public class CachedIntervals<T extends Interval> {
     /**
      * Retrieve stored intervals based which match predicate, sorted by start
      * If predicate is null, return all intervals for the specified chromosome
+     *
      * @param seqName
      * @param predicate
      * @return
      */
-    private List<T> getGen(String seqName, Predicate<Interval> predicate){
+    private List<T> getGen(String seqName, Predicate<Interval> predicate) {
         List<T> intervals = map.get(seqName);
 
-        if(intervals == null) return null;
+        if (intervals == null) return null;
 
         List<T> returnedIntervals = new ArrayList<T>(intervals);
 
-        if(predicate != null){
+        if (predicate != null) {
             Utilities.filter(returnedIntervals, predicate);
         }
         FeatureUtils.sortFeatureList(returnedIntervals);
@@ -118,16 +123,21 @@ public class CachedIntervals<T extends Interval> {
      * as the key. This interval will be available in
      * get(addingInterval.getChr()), although it may have
      * been merged into an existing interval.
+     * <p/>
+     * This method is synchronized because the internal contents
+     * of the map may be modified as a result, if intervals
+     * are merged.
+     *
      * @param addingInterval
      */
-    public void put(T addingInterval){
+    public synchronized void put(T addingInterval) {
         String key = addingInterval.getChr();
         List<T> intervals = map.get(key);
         boolean doAdd = true;
-        if(intervals == null){
+        if (intervals == null) {
             intervals = new LinkedList<T>();
             map.put(key, intervals);
-        }else{
+        } else {
 
             List<T> overlaps = getOverlaps(addingInterval.getChr(), addingInterval.getStart(), addingInterval.getEnd(),
                     addingInterval.getZoom());
@@ -149,7 +159,7 @@ public class CachedIntervals<T extends Interval> {
             }
         }
 
-        if(doAdd)
+        if (doAdd)
             intervals.add(addingInterval);
 
 
@@ -169,11 +179,11 @@ public class CachedIntervals<T extends Interval> {
         this.maxIntervalSize = maxIntervalSize < 0 ? Integer.MAX_VALUE : maxIntervalSize;
     }
 
-    public int size(){
+    public int size() {
         return map.size();
     }
 
-    public Collection<List<T>> values(){
+    public Collection<List<T>> values() {
         return map.values();
     }
 

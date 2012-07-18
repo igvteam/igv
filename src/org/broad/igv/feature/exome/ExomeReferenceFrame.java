@@ -119,18 +119,21 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         setOrigin(genomePosition, true);
     }
 
-
-    @Override
-    public void setOrigin(double genomePosition, boolean repaint) {
-
-        super.setOrigin(genomePosition, false);
-
-        //super.setOrigin(genomePosition, false);
+    private void calcExomeOrigin() {
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
         ExomeBlock firstBlock = blocks.get(firstBlockIdx);
 
-        exomeOrigin = firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+        exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
+                firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+    }
+
+
+    @Override
+    public void setOrigin(double genomePosition, boolean repaint) {
+        super.setOrigin(genomePosition, false);
+
+        calcExomeOrigin();
 
         if (repaint) {
             IGV.getInstance().repaintDataAndHeaderPanels();
@@ -141,7 +144,6 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
     @Override
     public void jumpTo(String chr, int start, int end) {
-
         setInterval(new Locus(chr, start, end));
         IGV.getInstance().repaintDataAndHeaderPanels();
         IGV.getInstance().repaintStatusAndZoomSlider();
@@ -161,12 +163,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         this.origin = locus.getStart();    // Genome locus
         int genomeEnd = locus.getEnd();
 
-        List<ExomeBlock> blocks = getBlocks(chrName);
-        firstBlockIdx = getIndexForGenomePosition(blocks, origin);
-        ExomeBlock firstBlock = blocks.get(firstBlockIdx);
-
-        exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
-                firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+        calcExomeOrigin();
 
         int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
 
@@ -195,6 +192,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         origin = exomeToGenomePosition(exomeOrigin);
         locationScale /= zoomFactor;
         zoom = newZoom;
+
+        List<ExomeBlock> blocks = getBlocks(chrName);
+        firstBlockIdx = getIndexForGenomePosition(blocks, origin);
 
         IGV.getInstance().repaintDataAndHeaderPanels();
         IGV.getInstance().repaintStatusAndZoomSlider();
