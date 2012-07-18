@@ -173,9 +173,7 @@ public class ReferenceFrame {
         invalidateLocationScale();
 
         // TODO -- do this with events,
-        if (IGV.hasInstance()) {
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     /**
@@ -320,8 +318,7 @@ public class ReferenceFrame {
         origin = newOrigin;
 
         if (repaint) {
-            IGV.getInstance().repaintDataAndHeaderPanels();
-            IGV.getInstance().repaintStatusAndZoomSlider();
+            IGV.repaintPanelsHeadlessSafe();
         }
     }
 
@@ -375,8 +372,8 @@ public class ReferenceFrame {
             log.debug("Scale = " + locationScale);
         }
 
-        IGV.getInstance().repaintDataAndHeaderPanels();
-        IGV.getInstance().repaintStatusAndZoomSlider();
+        //Mostly for testing
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     protected void imputeZoom(double start, double end) {
@@ -386,9 +383,7 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
-        if (IGV.hasInstance()) {
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     protected Genome getGenome() {
