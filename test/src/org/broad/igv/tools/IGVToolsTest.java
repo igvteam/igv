@@ -64,17 +64,19 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         igvTools = new IgvTools();
 
     }
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         igvTools = null;
     }
 
     private String doStandardIndex(String inputFile, String expectedExtension) throws IOException {
-        String indDir = TestUtils.DATA_DIR + "out";
+        String indDir = TestUtils.TMP_OUTPUT_DIR;
         TestUtils.clearOutputDir();
 
         String indPath = igvTools.doIndex(inputFile, indDir, IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
@@ -82,10 +84,16 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
         //Check that only the index file we intended exists
         assertTrue(indFile.exists());
+        assertTrue(indPath.endsWith(expectedExtension));
+
+        final Set<String> exts = new HashSet<String>();
+        for(String ext: new String[]{".idx", ".sai", ".bai", ".fai"}){
+            exts.add(ext);
+        }
         File[] files = (new File(indDir)).listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return !name.startsWith(".");
+                return exts.contains((Preprocessor.getExtension(name)));
             }
         });
         assertEquals("Extra files in output directory", 1, files.length);
