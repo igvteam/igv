@@ -17,6 +17,7 @@ import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.FastaIndex;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.Alignment;
@@ -72,22 +73,31 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         igvTools = null;
     }
 
+    private String doStandardIndex(String inputFile, String expectedExtension) throws IOException {
+        String indDir = TestUtils.DATA_DIR + "out";
+        TestUtils.clearOutputDir();
+
+        String indPath = igvTools.doIndex(inputFile, indDir, IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
+        File indFile = new File(indPath);
+
+        //Check that only the index file we intended exists
+        assertTrue(indFile.exists());
+        File[] files = (new File(indDir)).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return !name.startsWith(".");
+            }
+        });
+        assertEquals("Extra files in output directory", 1, files.length);
+
+        return indFile.getAbsolutePath();
+    }
+
 
     @Test
     public void testIndexSam() throws Exception {
         String samFile = TestUtils.DATA_DIR + "sam/NA12878.muc1.test2.sam";
-        String indPath = samFile + ".sai";
-        File indFile = new File(indPath);
-        indFile.delete();
-        indFile.deleteOnExit();
-
-
-        igvTools.doIndex(samFile, indPath, IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
-
-        //Check that only the index file we intended exists
-        assertTrue(indFile.exists());
-        assertFalse((new File(samFile + ".idx").exists()));
-        assertFalse((new File(indPath + ".idx").exists()));
+        String samFileIdx = doStandardIndex(samFile, "sai");
 
         FeatureIndex idx = SamUtils.getIndexFor(samFile);
         assertTrue(idx.containsChromosome("chr1"));
@@ -95,20 +105,23 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     }
 
     @Test
+    public void testIndexFasta() throws Exception {
+        String inFile = TestUtils.DATA_DIR + "fasta/ecoli_out.padded2.fasta";
+        String indPath = doStandardIndex(inFile, "fai");
+
+        FastaIndex index = new FastaIndex(indPath);
+        assertEquals(1, index.getSequenceNames().size());
+        assertNotNull(index.getIndexEntry("NC_000913_bb"));
+    }
+
+    @Test
     public void testLinearIndex() throws IOException {
 
         String bedFile = TestUtils.DATA_DIR + "bed/test.bed";
 
-        File idxFile = new File(bedFile + ".idx");
-        if (idxFile.exists()) {
-            idxFile.delete();
-        }
+        String idxPath = doStandardIndex(bedFile, "idx");
 
-        igvTools.doIndex(bedFile, 1, 16000);
-
-        assertTrue(idxFile.exists());
-
-        Index idx = IndexFactory.loadIndex(idxFile.getAbsolutePath());
+        Index idx = IndexFactory.loadIndex(idxPath);
 
         List<Block> blocks = idx.getBlocks("chr1", 100, 200);
         Block block = blocks.get(0);
@@ -137,7 +150,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        igvTools.doIndex(testFile, 2, 5);
+        igvTools.doIndex(testFile, null, 2, 5);
         indexFile.deleteOnExit();
 
         // Now use the index
@@ -638,7 +651,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testIndexedFasta() throws Exception {
+    public void testCountIndexedFasta() throws Exception {
         String fasta_file = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
         String infile = TestUtils.DATA_DIR + "bed/ecoli_out.test.bed";
         String outfile = TestUtils.DATA_DIR + "out/findextest.wig";

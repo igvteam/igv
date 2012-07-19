@@ -100,7 +100,7 @@ public class TestUtils {
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        (new IgvTools()).doIndex(file, indexType, binSize);
+        (new IgvTools()).doIndex(file, null, indexType, binSize);
         indexFile.deleteOnExit();
     }
 
