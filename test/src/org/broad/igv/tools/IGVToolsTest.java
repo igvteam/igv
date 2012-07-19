@@ -281,7 +281,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     public void tstCount(String inputFile, String outputBase, String outputExt,
                          String chr, int start, int end) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "out/" + outputBase + "_";
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + outputBase + "_";
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
 
@@ -514,7 +514,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     public void testSort() throws Exception {
         String inputFiname = "Unigene.unsorted.bed";
         String inputFile = TestUtils.DATA_DIR + "bed/" + inputFiname;
-        String outputFile = TestUtils.DATA_DIR + "out/" + inputFiname + ".sorted";
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + inputFiname + ".sorted";
         File oFile = new File(outputFile);
         oFile.deleteOnExit();
 
@@ -535,7 +535,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String inputFiname = "igv_test2";
         String ext = ".gct";
         String inputFile = TestUtils.DATA_DIR + "gct/" + inputFiname + ext;
-        String outputFile = TestUtils.DATA_DIR + "out/" + inputFiname + "_formatted" + ext;
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + inputFiname + "_formatted" + ext;
         File oFile = new File(outputFile);
         oFile.deleteOnExit();
 
@@ -553,8 +553,8 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String inputFiname = "test_5duplicates";
         String ext = ".sam";
         String inputFile = TestUtils.DATA_DIR + "sam/" + inputFiname + ext;
-        String outputFileND = TestUtils.DATA_DIR + "out/" + inputFiname + "_nodups" + ".tdf";
-        String outputFileWithDup = TestUtils.DATA_DIR + "out/" + inputFiname + "_withdups" + ".tdf";
+        String outputFileND = TestUtils.TMP_OUTPUT_DIR + inputFiname + "_nodups" + ".tdf";
+        String outputFileWithDup = TestUtils.TMP_OUTPUT_DIR + inputFiname + "_withdups" + ".tdf";
 
         String queryChr = "1";
 
