@@ -13,6 +13,7 @@ package util;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.types.Parameter;
+import org.junit.Ignore;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -35,6 +36,7 @@ import java.util.Set;
  * User: jacob
  * Date: 2012-Jul-18
  */
+@Ignore
 public class FailedTestSelector extends org.apache.tools.ant.types.selectors.BaseExtendSelector{
 
 
