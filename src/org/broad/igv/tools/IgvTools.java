@@ -24,11 +24,9 @@ import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
+import org.broad.igv.feature.genome.FastaUtils;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
@@ -46,7 +44,6 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.converters.DensitiesToBedGraph;
 import org.broad.igv.variant.util.VCFtoBed;
-import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
@@ -57,7 +54,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Command line parser for "igvtools".
+ * Command accessories for IGV.
  *
  * @author jrobinso
  */
@@ -199,7 +196,7 @@ public class IgvTools {
             System.exit(0);
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(-1);
         }
     }
 
@@ -321,7 +318,7 @@ public class IgvTools {
                 int defaultBinSize = indexType == LINEAR_INDEX ? LINEAR_BIN_SIZE : INTERVAL_SIZE;
                 int binSize = (Integer) parser.getOptionValue(binSizeOption, defaultBinSize);
                 String outputDir = (String) parser.getOptionValue(outputDirOption, null);
-                doIndex(ifile, outputDir, indexType, binSize);
+                doIndex(ifile, typeString, outputDir, indexType, binSize);
             } else if (command.equals(CMD_FORMATEXP)) {
                 validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 File inputFile = new File(nonOptionArgs[1]);
@@ -390,13 +387,13 @@ public class IgvTools {
                 String ofile = nonOptionArgs[2];
                 Boolean pairOption = (Boolean) parser.getOptionValue(pairedCoverageOpt, false);
                 BamToBed.convert(new File(ifile), new File(ofile), pairOption);
-            } else if (command.equalsIgnoreCase("genGenomeList")){
+            } else if (command.equalsIgnoreCase("genGenomeList")) {
                 //Generate a genomes.txt list file based on a directory
                 //TODO Probably a better place for this. Users won't generally use it
                 File inDir = new File(ifile);
                 GenomeManager manager = GenomeManager.getInstance();
                 manager.generateGenomeList(inDir, nonOptionArgs[2], nonOptionArgs[3]);
-            } else{
+            } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
@@ -722,64 +719,82 @@ public class IgvTools {
         UCSCUtils.convertWIBFile(txtFile, wibFile, wigFile, trackLine);
     }
 
-    /**
-     * Create an index for an alignment or feature file
-     *
-     * @param ifile
-     * @throws IOException
-     */
-
-    public void doIndex(String ifile, int indexType, int binSize) throws IOException {
-        doIndex(ifile, null, indexType, binSize);
+    public String doIndex(String ifile, String outputDir, int indexType, int binSize) throws IOException {
+        String typeString = Preprocessor.getExtension(ifile);
+        return doIndex(ifile, typeString, outputDir, indexType, binSize);
     }
 
-    public void doIndex(String ifile, String outputFileName, int indexType, int binSize) throws IOException {
-        if (ifile.endsWith(".gz")) {
+    /**
+     * Create an index for an alignment or feature file
+     * The output index will have the same base name is the input file, although
+     * it may be in a different directory. An appropriate index extension (.sai, .idx, etc.) will
+     * be appended.
+     *
+     * @param ifile
+     * @param typeString
+     * @param outputDir
+     * @param indexType
+     * @param binSize
+     * @throws IOException
+     */
+    public String doIndex(String ifile, String typeString, String outputDir, int indexType, int binSize) throws IOException {
+        File inputFile = new File(ifile);
+
+        if (outputDir == null) {
+            outputDir = inputFile.getParent();
+        }
+        String outputFileName = (new File(outputDir, inputFile.getName())).getAbsolutePath();
+
+        if (typeString.endsWith("gz")) {
             System.out.println("Cannot index a gzipped file");
             throw new PreprocessingException("Cannot index a gzipped file");
         }
 
-        if (ifile.endsWith(".bam")) {
+        if (typeString.endsWith("bam")) {
             String msg = "Cannot index a BAM file. Use the samtools package for sorting and indexing BAM files.";
             System.out.println(msg);
             throw new PreprocessingException(msg);
         }
 
-        if (outputFileName == null) {
-            outputFileName = ifile;
-        }
-
-
         //We have different naming conventions for different index files
-        if (ifile.endsWith(".sam") && !outputFileName.endsWith(".sai")) {
+        if (typeString.endsWith("sam") && !outputFileName.endsWith(".sai")) {
             outputFileName += ".sai";
-        } else if (ifile.endsWith(".bam") && !outputFileName.endsWith(".bai")) {
+        } else if (typeString.endsWith("bam") && !outputFileName.endsWith(".bai")) {
             outputFileName += ".bai";
-        } else if (!ifile.endsWith(".sam") && !ifile.endsWith(".bam") && !outputFileName.endsWith(".idx")) {
+        } else if (typeString.endsWith("fa") && !outputFileName.endsWith(".fai")) {
+            outputFileName += ".fai";
+        } else if (typeString.endsWith("fasta") && !outputFileName.endsWith(".fai")) {
+            outputFileName += ".fai";
+        } else if (!typeString.endsWith("sam") && !typeString.endsWith("bam") && !outputFileName.endsWith(".idx")) {
             outputFileName += ".idx";
         }
 
-        //Sam files are special
-        if (ifile.endsWith(".sam")) {
-            AlignmentIndexer indexer = AlignmentIndexer.getInstance(new File(ifile), null, null);
-            File outputFile = new File(outputFileName);
-            try {
+        File outputFile = new File(outputFileName);
+
+        //Sam/FASTA files are special
+        try {
+            if (typeString.endsWith("sam")) {
+                AlignmentIndexer indexer = AlignmentIndexer.getInstance(inputFile, null, null);
                 indexer.createSamIndex(outputFile);
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Delete output file as it is probably corrupt
-                if (outputFile.exists()) {
-                    outputFile.delete();
-                }
+                return outputFileName;
+            } else if (typeString.equals(".fa") || typeString.equals(".fasta")) {
+                FastaUtils.createIndexFile(inputFile.getAbsolutePath(), outputFileName);
+                return outputFileName;
             }
-            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Delete output file as it is probably corrupt
+            if (outputFile.exists()) {
+                outputFile.delete();
+            }
         }
+
 
         Genome genome = null;  // <= don't do chromosome conversion
         FeatureCodec codec = CodecFactory.getCodec(ifile, genome);
         if (codec != null) {
             try {
-                createTribbleIndex(ifile, new File(outputFileName), indexType, binSize, codec);
+                createTribbleIndex(ifile, outputFile, indexType, binSize, codec);
             } catch (TribbleException.MalformedFeatureFile e) {
                 StringBuffer buf = new StringBuffer();
                 buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
@@ -791,6 +806,7 @@ public class IgvTools {
             throw new DataLoadException("Unknown File Type", ifile);
         }
         System.out.flush();
+        return outputFileName;
 
     }
 

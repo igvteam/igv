@@ -39,6 +39,7 @@ import static org.junit.Assert.*;
 @Ignore
 public class TestUtils {
     public static final String DATA_DIR = "test/data/";
+    public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/";
     public static final String defaultGenome = DATA_DIR + "/genomes/hg18.unittest.genome";
     public static final String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
     public static final String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
@@ -96,11 +97,8 @@ public class TestUtils {
      * @throws IOException
      */
     public static void createIndex(String file, int indexType, int binSize) throws IOException {
-        File indexFile = new File(file + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        (new IgvTools()).doIndex(file, indexType, binSize);
+        String indexPath = (new IgvTools()).doIndex(file, null, indexType, binSize);
+        File indexFile = new File(indexPath);
         indexFile.deleteOnExit();
     }
 
@@ -116,7 +114,7 @@ public class TestUtils {
     }
 
     public static void clearOutputDir() throws IOException {
-        File outputDir = new File(DATA_DIR + "/out/");
+        File outputDir = new File(TMP_OUTPUT_DIR);
         if (outputDir.isDirectory()) {
             File[] listFiles = outputDir.listFiles();
             for (File fi : listFiles) {

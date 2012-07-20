@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -24,10 +17,14 @@ package org.broad.igv.tools.ui;
 
 import org.broad.igv.tools.IgvTools;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * @author Stan Diamond
@@ -42,7 +39,7 @@ public class IndexGui extends JDialog {
         initComponents();
 
         setTitle("Create Index");
-        
+
         // Hide output file field for now
         this.outputLabel.setVisible(true);
         this.outputField.setVisible(true);
@@ -76,7 +73,7 @@ public class IndexGui extends JDialog {
                     int binSize = IgvTools.LINEAR_BIN_SIZE;
 
                     runButton.setEnabled(false);
-                    igvTools.doIndex(ifile, indexType, binSize);
+                    igvTools.doIndex(ifile, null, indexType, binSize);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }
@@ -133,20 +130,20 @@ public class IndexGui extends JDialog {
                 //---- label2 ----
                 label2.setText("Input File");
                 requiredPanel.add(label2, new GridBagConstraints(1, 2, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- outputLabel ----
                 outputLabel.setText("Output File");
                 requiredPanel.add(outputLabel, new GridBagConstraints(1, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- outputButton ----
                 outputButton.setText("Browse");
                 requiredPanel.add(outputButton, new GridBagConstraints(3, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- inputField ----
                 inputField.addFocusListener(new FocusAdapter() {
@@ -161,8 +158,8 @@ public class IndexGui extends JDialog {
                     }
                 });
                 requiredPanel.add(inputField, new GridBagConstraints(2, 2, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- inputButton ----
                 inputButton.setText("Browse");
@@ -172,21 +169,21 @@ public class IndexGui extends JDialog {
                     }
                 });
                 requiredPanel.add(inputButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 requiredPanel.add(outputField, new GridBagConstraints(2, 3, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- genomeButton ----
                 genomeButton.setText("Browse");
                 requiredPanel.add(genomeButton, new GridBagConstraints(3, 4, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(requiredPanel, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== buttonPanel ========
             {
@@ -195,18 +192,18 @@ public class IndexGui extends JDialog {
                 //---- runButton ----
                 runButton.setText("Run");
                 buttonPanel.add(runButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- closeButton ----
                 closeButton.setText("Close");
                 buttonPanel.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(buttonPanel, new GridBagConstraints(1, 4, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== OutputPanel ========
             {
@@ -227,7 +224,7 @@ public class IndexGui extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < OutputPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < OutputPanel.getComponentCount(); i++) {
                         Rectangle bounds = OutputPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -240,14 +237,14 @@ public class IndexGui extends JDialog {
                 }
             }
             mainPanel.add(OutputPanel, new GridBagConstraints(1, 6, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
             mainPanel.add(separator1, new GridBagConstraints(1, 5, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
             mainPanel.add(progressBar, new GridBagConstraints(1, 7, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -270,7 +267,6 @@ public class IndexGui extends JDialog {
     private JTextArea outputText;
     private JProgressBar progressBar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
 
 
     public static void launch(boolean modal) {
