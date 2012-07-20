@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class CachedIntervals<T extends Interval> {
 
-    private Map<String, List<T>> map = new HashMap<String, List<T>>();
+    private Map<String, List<T>> map = Collections.synchronizedMap(new HashMap<String, List<T>>());
 
     private static final int DEFAULT_CACHE_SIZE = 5;
     private static final int DEFAULT_MAX_INTERVAL_SIZE = (int) 10e6;
@@ -109,7 +109,6 @@ public class CachedIntervals<T extends Interval> {
         if (intervals == null) return null;
 
         List<T> returnedIntervals = new ArrayList<T>(intervals);
-
         if (predicate != null) {
             Utilities.filter(returnedIntervals, predicate);
         }
@@ -131,14 +130,13 @@ public class CachedIntervals<T extends Interval> {
      * @param addingInterval
      */
     public synchronized void put(T addingInterval) {
+        boolean doAdd = true;
         String key = addingInterval.getChr();
         List<T> intervals = map.get(key);
-        boolean doAdd = true;
         if (intervals == null) {
             intervals = new LinkedList<T>();
             map.put(key, intervals);
         } else {
-
             List<T> overlaps = getOverlaps(addingInterval.getChr(), addingInterval.getStart(), addingInterval.getEnd(),
                     addingInterval.getZoom());
 
@@ -183,14 +181,12 @@ public class CachedIntervals<T extends Interval> {
         return map.size();
     }
 
-    public Collection<List<T>> values() {
-        return map.values();
-    }
-
     public Collection<T> getLoadedIntervals() {
         List<T> allLoadedIntervals = new ArrayList<T>(map.size());
-        for (Map.Entry<String, List<T>> entry : map.entrySet()) {
-            allLoadedIntervals.addAll(entry.getValue());
+        synchronized (map) {
+            for (Map.Entry<String, List<T>> entry : map.entrySet()) {
+                allLoadedIntervals.addAll(entry.getValue());
+            }
         }
         return allLoadedIntervals;
     }

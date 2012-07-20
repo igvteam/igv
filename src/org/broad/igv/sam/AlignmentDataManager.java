@@ -14,7 +14,6 @@ import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.Interval;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
@@ -160,7 +159,7 @@ public class AlignmentDataManager {
 
     public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
         List<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(referenceFrame.getChrName());
-        if(loadedIntervals == null) return;
+        if (loadedIntervals == null) return;
         for (AlignmentInterval loadedInterval : loadedIntervals) {
             if (loadedInterval != null) {
                 loadedInterval.sortRows(option, location, tag);
@@ -312,7 +311,7 @@ public class AlignmentDataManager {
         preload(context, renderOptions, bisulfiteContext, false);
 
         List<AlignmentInterval> overlaps = loadedIntervalMap.getOverlaps(chr, start, end, context.getZoom());
-        if (overlaps != null && overlaps.size() >= 1){
+        if (overlaps != null && overlaps.size() >= 1) {
             // If there is any overlap in the loaded interval and the requested interval return it.
             return overlaps.get(0).getGroupedAlignments();
         }
@@ -459,15 +458,13 @@ public class AlignmentDataManager {
 
     public int getNLevels() {
         int nLevels = 0;
-        for (List<AlignmentInterval> loadedIntervals : loadedIntervalMap.values()) {
-            for (AlignmentInterval loadedInterval : loadedIntervals) {
-                int intervalNLevels = 0;
-                Collection<List<AlignmentInterval.Row>> tmp = loadedInterval.getGroupedAlignments().values();
-                for (List<AlignmentInterval.Row> rows : tmp) {
-                    intervalNLevels += rows.size();
-                }
-                nLevels = Math.max(nLevels, intervalNLevels);
+        for (AlignmentInterval loadedInterval : loadedIntervalMap.getLoadedIntervals()) {
+            int intervalNLevels = 0;
+            Collection<List<AlignmentInterval.Row>> tmp = loadedInterval.getGroupedAlignments().values();
+            for (List<AlignmentInterval.Row> rows : tmp) {
+                intervalNLevels += rows.size();
             }
+            nLevels = Math.max(nLevels, intervalNLevels);
         }
         return nLevels;
     }
@@ -479,10 +476,8 @@ public class AlignmentDataManager {
     public int getMaxGroupCount() {
 
         int groupCount = 0;
-        for (List<AlignmentInterval> loadedIntervals : loadedIntervalMap.values()) {
-            for (AlignmentInterval loadedInterval : loadedIntervals) {
-                groupCount = Math.max(groupCount, loadedInterval.getGroupCount());
-            }
+        for (AlignmentInterval loadedInterval : loadedIntervalMap.getLoadedIntervals()) {
+            groupCount = Math.max(groupCount, loadedInterval.getGroupCount());
         }
         return groupCount;
     }

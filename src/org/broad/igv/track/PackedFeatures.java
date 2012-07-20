@@ -276,8 +276,7 @@ public class PackedFeatures<T extends Feature> implements Interval {
     public boolean trimTo(String chr, int start, int end, int zoom) {
         Predicate overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
 
-        List<T> newFeatures = new ArrayList<T>(features);
-        Utilities.filter(newFeatures, overlapPredicate);
+        Collection<T> newFeatures = Utilities.filteredCopy(features, overlapPredicate);
         boolean anyLost = newFeatures.size() != features.size();
 
         features.clear();
