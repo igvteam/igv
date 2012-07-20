@@ -467,30 +467,25 @@ public class SearchCommand implements Command {
         }
 
         //startEnd will have coordinates if found.
-        if (genome != null) {
-            chr = genome.getChromosomeAlias(chr);
-            Chromosome chromosome = genome.getChromosome(chr);
-            //If we couldn't find chromosome, check
-            //whole string
-            if (chromosome == null) {
-                chr = genome.getChromosomeAlias(tokens[0]);
-                chromosome = genome.getChromosome(chr);
-                if (chromosome != null) {
-                    //Found chromosome
-                    startEnd = null;
-                }
-            }
-
-            if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
-                return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
+        chr = genome.getChromosomeAlias(chr);
+        Chromosome chromosome = genome.getChromosome(chr);
+        //If we couldn't find chromosome, check
+        //whole string
+        if (chromosome == null) {
+            chr = genome.getChromosomeAlias(tokens[0]);
+            chromosome = genome.getChromosome(chr);
+            if (chromosome != null) {
+                //Found chromosome
+                startEnd = null;
             }
         }
 
-        if (startEnd != null) {
-            return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
+        if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
+            if (startEnd != null) {
+                return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
+            }
+            return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
         }
-
-
         return new SearchResult(ResultType.ERROR, chr, -1, -1);
     }
 

@@ -36,10 +36,7 @@ public class FrameManager {
     private static boolean exomeMode = false;
 
     static {
-        //TODO This is a hack.
-        if (!Globals.isHeadless()) {
-            frames.add(getDefaultFrame());
-        }
+        frames.add(getDefaultFrame());
     }
 
     public synchronized static ReferenceFrame getDefaultFrame() {
