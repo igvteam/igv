@@ -262,10 +262,11 @@
         </custom>
     </fileset>
 
+    <property name="input.test.reports" value="${test.reports}"/>
     <target name="failedtests">
         <delete dir="${test.reports.tmp}"/>
         <copy todir="${test.reports.tmp}" overwrite="true">
-            <fileset dir="${test.reports}">
+            <fileset dir="${input.test.reports}">
                 <include name="**/*.xml"/>
             </fileset>
         </copy>
