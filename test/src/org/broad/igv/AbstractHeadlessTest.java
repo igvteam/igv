@@ -49,7 +49,7 @@ public class AbstractHeadlessTest {
 
     @After
     public void tearDown() throws Exception {
-
+        TestUtils.clearOutputDir();
     }
 
 

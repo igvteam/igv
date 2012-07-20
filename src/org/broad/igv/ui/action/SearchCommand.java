@@ -424,9 +424,10 @@ public class SearchCommand implements Command {
 
     }
 
+
     /**
      * Parse a string of locus coordinates.
-     * Can have whitespace delimiters, and be mising second coordinate,
+     * Can have whitespace delimiters, and be missing second coordinate,
      * but must have 1st coordinate.
      *
      * @param searchString
@@ -507,7 +508,7 @@ public class SearchCommand implements Command {
      * numbered 0) and end-exclusive, but the display representation is "one" based (first base is
      * numbered 1) and end-inclusive.   Consequently 1 is subtracted from the parsed positions
      */
-    private int[] getStartEnd(String posString) {
+    private static int[] getStartEnd(String posString) {
         try {
             String[] posTokens = posString.split("-");
             String startString = posTokens[0].replaceAll(",", "");

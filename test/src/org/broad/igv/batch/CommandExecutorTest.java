@@ -38,7 +38,7 @@ import static junit.framework.Assert.*;
 public class CommandExecutorTest extends AbstractHeadedTest{
 
     CommandExecutor exec = new CommandExecutor();
-    private final String snapshotDir = TestUtils.DATA_DIR + "out/";
+    private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
 
     @Before
     public void setUp() throws Exception {

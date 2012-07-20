@@ -84,7 +84,7 @@ public class AlignmentReaderFactory {
                     reader = new BAMWebserviceReader(locator);
                 }
             }
-        } else if (pathLowerCase.endsWith(".bam.list")) {
+        } else if (pathLowerCase.endsWith(".bam.list") || pathLowerCase.endsWith(".sam.list")) {
             if (locator.getServerURL() != null) {
                 reader = new BAMWebserviceReader(locator);
             } else {

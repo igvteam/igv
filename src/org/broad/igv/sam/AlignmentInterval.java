@@ -406,17 +406,28 @@ public class AlignmentInterval extends Locus implements Interval {
                     case NUCELOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
-//                        if (base == 0) {      // Base not covered (splice junction)
-//                            setScore(Integer.MAX_VALUE);
-//                        } else
+
                         if (base == 'N' || base == 'n') {
                             setScore(Integer.MAX_VALUE - 2);  // Base is "n"
                         } else if (base == ref) {
                             setScore(Integer.MAX_VALUE - 1);  // Base is reference
                         } else {
-                            int count = interval.getCount(adjustedCenter, base);
+                            int count = interval.getDelCount(adjustedCenter);
+
+                            //If base is 0, base not covered (splice junction) or is deletion
+                            if (base == 0 && count <= 0) {
+                                //Base not covered, NOT a deletion
+                                setScore(Integer.MAX_VALUE);
+                                break;
+                            }
+
+                            //So we either have a deletion or standard count
+                            if (count <= 0) {
+                                count = interval.getCount(adjustedCenter, base);
+                            }
                             byte phred = centerAlignment.getPhred(adjustedCenter);
                             setScore(-(count + (phred / 100.0f)));
+
                         }
                         break;
                     case QUALITY:
