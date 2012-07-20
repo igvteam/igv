@@ -13,13 +13,8 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
@@ -38,7 +33,7 @@ public class FrameManager {
 
     private static List<ReferenceFrame> frames = new ArrayList();
     private static ReferenceFrame defaultFrame;
-    static boolean exomeMode = false;
+    private static boolean exomeMode = false;
 
     static {
         //TODO This is a hack.
@@ -47,7 +42,7 @@ public class FrameManager {
         }
     }
 
-    public static ReferenceFrame getDefaultFrame() {
+    public synchronized static ReferenceFrame getDefaultFrame() {
         if (defaultFrame == null) {
             defaultFrame = new ReferenceFrame("genome");
         }
@@ -55,11 +50,11 @@ public class FrameManager {
     }
 
     /**
-     * Set exome mode. We return true if a change was made,
-     * false if not.
+     * Set exome mode.
      *
      * @param b
-     * @return
+     * @return true if a change was made,
+     *         false if not.
      */
     public static boolean setExomeMode(boolean b) {
         if (b == exomeMode) return false;  // No change
@@ -87,7 +82,7 @@ public class FrameManager {
             dlg.setVisible(true);
             if (dlg.isCanceled) return false;
             track = dlg.getSelectedTrack();
-            if(track == null) return false;
+            if (track == null) return false;
         }
 
         ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, track);
@@ -202,15 +197,14 @@ public class FrameManager {
     }
 
     /**
-     * This will actually result in a double call when used from search box,
-     * because that calls to here as well. Not inifinite, won't overflow, just
-     * a waste of time.
+     * Runs a search for the specified string, and returns a locus
+     * of the given region with additional space on each side
      *
      * @param searchString
      * @param flankingRegion
-     * @return
+     * @return The found locus, null if not found
      */
-    public static Locus getLocusNew(String searchString, int flankingRegion) {
+    public static Locus getLocus(String searchString, int flankingRegion) {
         SearchCommand cmd = new SearchCommand(getDefaultFrame(), searchString);
         List<SearchCommand.SearchResult> results = cmd.runSearch(searchString);
         Locus locus = null;
@@ -222,44 +216,6 @@ public class FrameManager {
                         result.getEnd() + flankingRegion);
                 //We just take the first result
                 break;
-            }
-        }
-        return locus;
-    }
-
-
-    /**
-     * TODO This duplicates functionality in SearchCommand. Should merge these
-     *
-     * @param searchString
-     * @param flankingRegion
-     * @return
-     */
-    public static Locus getLocus(String searchString, int flankingRegion) {
-
-        Locus locus = null;
-        NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
-        if (feature != null) {
-            locus = new Locus(
-                    feature.getChr(),
-                    feature.getStart() - flankingRegion,
-                    feature.getEnd() + flankingRegion);
-        } else {
-            locus = new Locus(searchString);
-            String chr = locus.getChr();
-            if (chr != null) {
-                return locus;
-            } else {
-                locus = null;
-                if (IGV.hasInstance()) {
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    if (genome != null) {
-                        Chromosome chromsome = genome.getChromosome(searchString);
-                        if (chromsome != null) {
-                            locus = new Locus(chromsome.getName(), 0, chromsome.getLength());
-                        }
-                    }
-                }
             }
         }
         return locus;
