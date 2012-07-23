@@ -324,11 +324,14 @@ public class IGV {
     }
 
     public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
-
         contentPane.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
         contentPane.getCommandBar().updateComponentStates();
 
+    }
+
+    public void repaintStatusAndZoomSlider() {
+        contentPane.getCommandBar().repaint();
     }
 
     /**
@@ -370,6 +373,7 @@ public class IGV {
         } else {
             rootPane.repaint();
         }
+
         if (updateCommandBar) {
             contentPane.updateCurrentCoordinates();
         }
@@ -389,11 +393,6 @@ public class IGV {
         }
 
     }
-
-    public void repaintStatusAndZoomSlider() {
-        contentPane.getCommandBar().repaint();
-    }
-
 
     public void selectGenomeFromList(String genome) {
         contentPane.getCommandBar().selectGenomeFromList(genome);
@@ -710,10 +709,6 @@ public class IGV {
                 return "Set gene list";
             }
         });
-        //  }
-        // });
-
-
     }
 
     public void setDefaultFrame(String searchString) {
@@ -728,16 +723,14 @@ public class IGV {
         }
 
         contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
-        contentPane.getMainPanel().revalidate();
         contentPane.getMainPanel().applicationHeaderPanel.revalidate();
+        contentPane.getMainPanel().validate();
         contentPane.getMainPanel().repaint();
     }
 
 
     public void enableRemoveGenomes() {
-
         menuBar.enableRemoveGenomes();
-
     }
 
 

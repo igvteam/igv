@@ -17,23 +17,10 @@ import com.iontorrent.data.ReadInfo;
 import com.iontorrent.utils.LocationListener;
 import com.iontorrent.utils.SimpleDialog;
 import com.iontorrent.views.FlowSignalDistributionPanel;
-
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.*;
-import javax.swing.*;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.DataSource;
+import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
@@ -59,6 +46,18 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -173,7 +172,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
-    private RenderOptions renderOptions;
+    private final RenderOptions renderOptions = new RenderOptions();
     private int expandedHeight = 14;
     private int maxSquishedHeight = 4;
     private int squishedHeight = maxSquishedHeight;
@@ -223,8 +222,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             sequenceTrack.setHeight(14);
         }
 
-        renderOptions = new RenderOptions();
-
         if (renderOptions.getColorOption() == ColorOption.BISULFITE) {
             setExperimentType(ExperimentType.BISULFITE);
         }
@@ -250,6 +247,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
+        this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
     public CoverageTrack getCoverageTrack() {
@@ -307,7 +305,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void preload(RenderContext context) {
         System.out.println("preload " + (int) context.getOrigin() + "-" + (int) context.getEndLocation());
-        dataManager.preload(context, renderOptions, renderOptions.bisulfiteContext, true);
+        dataManager.preload(context, renderOptions, true);
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -371,7 +369,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         //log.debug("Render features");
         Map<String, List<AlignmentInterval.Row>> groups =
-                dataManager.getGroups(context, renderOptions, renderOptions.bisulfiteContext);
+                dataManager.getGroups(context, renderOptions);
 
         Map<String, PEStats> peStats = dataManager.getPEStats();
         if (peStats != null) {
@@ -732,6 +730,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0.0f;
+    }
+
+    AlignmentDataManager getDataManager() {
+        return dataManager;
     }
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
@@ -1936,7 +1938,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
                                 } else if (path.endsWith(".counts")) {
-                                    DataSource ds = new GobyCountArchiveDataSource(file);
+                                    CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
                                 } else {

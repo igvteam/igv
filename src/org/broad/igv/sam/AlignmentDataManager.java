@@ -258,7 +258,6 @@ public class AlignmentDataManager {
 
     public synchronized void preload(RenderContext context,
                                      AlignmentTrack.RenderOptions renderOptions,
-                                     AlignmentTrack.BisulfiteContext bisulfiteContext,
                                      boolean expandEnds) {
 
         final String chr = context.getChr();
@@ -293,20 +292,19 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (!haveInterval) {
-            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context, bisulfiteContext);
+            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
         }
 
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                                     AlignmentTrack.RenderOptions renderOptions,
-                                                                                     AlignmentTrack.BisulfiteContext bisulfiteContext) {
+                                                                                     AlignmentTrack.RenderOptions renderOptions) {
 
         final String chr = context.getChr();
         final int start = (int) context.getOrigin();
         final int end = (int) context.getEndLocation();
 
-        preload(context, renderOptions, bisulfiteContext, false);
+        preload(context, renderOptions, false);
 
         List<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(context.getReferenceFrame().getName());
         if (loadedIntervals == null) return null;
@@ -327,8 +325,7 @@ public class AlignmentDataManager {
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
                                             final AlignmentTrack.RenderOptions renderOptions,
-                                            final RenderContext context,
-                                            final AlignmentTrack.BisulfiteContext bisulfiteContext) {
+                                            final RenderContext context) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
@@ -336,6 +333,9 @@ public class AlignmentDataManager {
 
         log.debug("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
+        final AlignmentTrack.BisulfiteContext bisulfiteContext =
+                renderOptions != null ? renderOptions.bisulfiteContext : null;
+
         NamedRunnable runnable = new NamedRunnable() {
 
             public String getName() {
