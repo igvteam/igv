@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
-import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -83,6 +82,12 @@ public class CoverageTrack extends AbstractTrack {
     JMenuItem autoscaleItem;
     Genome genome;
 
+    public void setRenderOptions(AlignmentTrack.RenderOptions renderOptions) {
+        this.renderOptions = renderOptions;
+    }
+
+    private AlignmentTrack.RenderOptions renderOptions = null;
+
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
@@ -106,8 +111,8 @@ public class CoverageTrack extends AbstractTrack {
         this.dataManager = dataManager;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = (CoverageDataSource) dataSource;
+    public void setDataSource(CoverageDataSource dataSource) {
+        this.dataSource = dataSource;
         dataSourceRenderer = new BarChartRenderer();
         setDataRange(new DataRange(0, 0, 1.5f * (float) dataSource.getDataMax()));
 
@@ -156,6 +161,7 @@ public class CoverageTrack extends AbstractTrack {
             //
             Collection<AlignmentInterval> intervals = null;
             if (dataManager != null) {
+                dataManager.preload(context, renderOptions, true);
                 intervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
             }
             if (intervals != null) {
@@ -782,7 +788,7 @@ public class CoverageTrack extends AbstractTrack {
                         setDataSource(ds);
                         IGV.getInstance().repaintDataPanels();
                     } else if (path.endsWith(".counts")) {
-                        DataSource ds = new GobyCountArchiveDataSource(file);
+                        CoverageDataSource ds = new GobyCountArchiveDataSource(file);
                         setDataSource(ds);
                         IGV.getInstance().repaintDataPanels();
                     } else {

@@ -51,7 +51,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
 
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-        baseManager.preload(context, renderOptions, null, false);
+        baseManager.preload(context, renderOptions, false);
 
         ArrayList<AlignmentInterval> baseIntervals = (ArrayList) baseManager.getLoadedIntervals();
         assertEquals(1, baseIntervals.size());
@@ -68,12 +68,12 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         endFrame.jumpTo(endLocus);
         RenderContextImpl endContext = new RenderContextImpl(null, null, endFrame, null);
 
-        testManager.preload(begContext, renderOptions, null, false);
+        testManager.preload(begContext, renderOptions, false);
         ArrayList<AlignmentInterval> begInterval = (ArrayList) testManager.getLoadedIntervals();
         assertEquals(1, begInterval.size());
 
         testManager.clear();
-        testManager.preload(endContext, renderOptions, null, false);
+        testManager.preload(endContext, renderOptions, false);
         ArrayList<AlignmentInterval> endInterval = (ArrayList) testManager.getLoadedIntervals();
         assertEquals(1, endInterval.size());
         AlignmentInterval merged = begInterval.get(0);

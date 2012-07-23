@@ -359,7 +359,27 @@ public class MainWindow extends JFrame {
     }
 
     private void displayOptionComboBoxActionPerformed(ActionEvent e) {
-        hic.setDisplayOption((DisplayOption) (displayOptionComboBox.getSelectedItem()));
+
+        DisplayOption option = (DisplayOption) (displayOptionComboBox.getSelectedItem());
+        hic.setDisplayOption(option);
+        switch (option) {
+            case OBSERVED:
+                break;
+            case OE:
+                break;
+            case PEARSON:
+                BasicMatrix bm = hic.zd.getPearsons();
+                if(bm != null) {
+                    float lv = bm.getLowerValue();
+                    float uv = bm.getUpperValue();
+
+                   // colorRangeSlider.setLowerValue(lv);
+                   // colorRangeSlider.setUpperValue(uv);
+                }
+
+        }
+
+
     }
 
 
@@ -864,9 +884,9 @@ public class MainWindow extends JFrame {
 
         //======== panel11 ========
 
-        JPanel panel11 = new JPanel();
-        panel11.setBackground(new Color(204, 204, 204));
-        panel11.setLayout(new BorderLayout());
+        JPanel colorLabelPanel = new JPanel();
+        colorLabelPanel.setBackground(new Color(204, 204, 204));
+        colorLabelPanel.setLayout(new BorderLayout());
 
         //---- colorRangeLabel ----
         colorRangeLabel.setText("Color Range");
@@ -888,9 +908,9 @@ public class MainWindow extends JFrame {
                 rangeDialog.setVisible(true);
             }
         });
-        panel11.add(colorRangeLabel, BorderLayout.CENTER);
+        colorLabelPanel.add(colorRangeLabel, BorderLayout.CENTER);
 
-        colorRangePanel.add(panel11, BorderLayout.PAGE_START);
+        colorRangePanel.add(colorLabelPanel, BorderLayout.PAGE_START);
 
         //---- colorRangeSlider ----
         colorRangeSlider.setPaintTicks(true);
@@ -908,7 +928,20 @@ public class MainWindow extends JFrame {
                 colorRangeSliderStateChanged(e);
             }
         });
-        colorRangePanel.add(colorRangeSlider, BorderLayout.PAGE_END);
+        //colorRangePanel.add(colorRangeSlider, BorderLayout.PAGE_END);
+
+        JPanel colorRangeTextPanel = new JPanel();
+        colorRangeTextPanel.setLayout(new FlowLayout());
+        JTextField minField = new JTextField();
+        minField.setPreferredSize(new Dimension(50, 15));
+        colorRangeTextPanel.add(minField);
+        colorRangeTextPanel.add(new JLabel(" - "));
+        JTextField maxField = new JTextField();
+        maxField.setPreferredSize(new Dimension(50, 15));
+        colorRangeTextPanel.add(maxField);
+        colorRangeTextPanel.setPreferredSize(new Dimension(200, 52));
+        colorRangePanel.add(colorRangeTextPanel, BorderLayout.PAGE_END);
+
 
         toolbarPanel.add(colorRangePanel);
 

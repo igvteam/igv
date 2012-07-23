@@ -56,8 +56,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         int[] starts = new int[]{500, 5000, 15000, start, 500000, start * 2};
         int[] ends = new int[]{600, 10000, 20000, end, 600000, start * 2 + halfwidth};
         for (int ii = 0; ii < starts.length; ii++) {
+
             frame.jumpTo(new Locus(chr, starts[ii], ends[ii]));
-            manager.preload(context, renderOptions, null, false);
+            manager.preload(context, renderOptions, false);
 
             assertManagerHasInterval(manager, chr, starts[ii], ends[ii]);
         }
@@ -113,7 +114,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             Locus locus = new Locus(chr, start + shift, end + shift);
             frame.jumpTo(locus);
 
-            manager.preload(context, renderOptions, null, false);
+            manager.preload(context, renderOptions, false);
 
             assertManagerHasInterval(manager, chr, locus.getStart(), locus.getEnd());
         }

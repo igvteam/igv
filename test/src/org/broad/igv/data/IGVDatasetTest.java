@@ -42,7 +42,7 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
     public void testDataset() {
 
 
-        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome);
 
         // Get the start locations and data from sample yw280-4_44 on chr 1 
         int[] startLocations = ds.getStartLocations("chr1");
@@ -72,8 +72,8 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
 
         String[] tokens = headingsLine.split("\t");
 
-        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
-        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome, null);
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome);
+        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome);
 
         //parser.scan necessary to set values needed in getHeadings
         List<ChromosomeSummary> summaries = parser.scan(ds);
@@ -90,8 +90,8 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
      */
     @Test
     public void testScanDataset() {
-        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
-        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome, null);
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome);
+        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome);
         List<ChromosomeSummary> summaries = parser.scan(ds);
 
         assertEquals(24, summaries.size());
