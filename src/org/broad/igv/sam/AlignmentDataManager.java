@@ -42,7 +42,7 @@ public class AlignmentDataManager {
     private HashMap<String, List<AlignmentInterval>> loadedIntervalMap = new HashMap(50);
 
     private HashMap<String, String> chrMappings = new HashMap();
-    private boolean isLoading = false;
+    private volatile boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
 
