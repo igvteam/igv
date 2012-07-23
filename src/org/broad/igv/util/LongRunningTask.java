@@ -43,7 +43,7 @@ public class LongRunningTask implements Callable {
         }
     }
 
-    public LongRunningTask(Runnable runnable) {
+    private LongRunningTask(Runnable runnable) {
         this.runnable = runnable;
     }
 

@@ -61,6 +61,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
@@ -341,7 +342,7 @@ public class IGV {
     /**
      * Repaint the header and data panels.
      * <p/>
-     * Note:  If running in Batch mode a monitor is used to force synchrnous painting.  This is neccessary as the
+     * Note:  If running in Batch mode we force synchronous painting.  This is necessary as the
      * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
      * might execute before the data from a previous command has loaded.
      *
@@ -352,22 +353,18 @@ public class IGV {
             if (SwingUtilities.isEventDispatchThread()) {
                 rootPane.paintImmediately(rootPane.getBounds());
             } else {
-                synchronized (this) {
-                    Runnable r = new Runnable() {
-                        public void run() {
-                            synchronized (IGV.this) {
-                                rootPane.paintImmediately(rootPane.getBounds());
-                                IGV.this.notify();
-                            }
-                        }
-                    };
-                    UIUtilities.invokeOnEventThread(r);
-                    try {
-                        // Wait a maximum of 5 minutes
-                        this.wait(5 * 60 * 1000);
-                    } catch (InterruptedException e) {
-                        // Just continue
+                Runnable r = new Runnable() {
+                    public void run() {
+                        rootPane.paintImmediately(rootPane.getBounds());
                     }
+                };
+                try {
+                    SwingUtilities.invokeAndWait(r);
+                } catch (InterruptedException e) {
+                    // Just continue
+                } catch (InvocationTargetException e) {
+                    log.error(e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
         } else {
@@ -381,6 +378,7 @@ public class IGV {
     /**
      * Repaint the data panels.  Deprecated, but kept for backwards compatibility.
      */
+    @Deprecated
     public void repaintDataPanels() {
         repaintDataAndHeaderPanels(false);
     }
@@ -1457,7 +1455,7 @@ public class IGV {
 
         //Set<TrackPanel> changedPanels = new HashSet();
 
-        log.info("Loading" + locators.size() + " resources.");
+        log.info("Loading " + locators.size() + " resources.");
         final MessageCollection messages = new MessageCollection();
 
 
