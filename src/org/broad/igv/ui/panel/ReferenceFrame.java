@@ -334,7 +334,6 @@ public class ReferenceFrame {
                 MessageUtils.showMessage(chr + " is not a valid chromosome.");
                 return;
             }
-            setChromosomeName(chr);
         }
 
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
@@ -342,14 +341,15 @@ public class ReferenceFrame {
             end = Math.min(chromosome.getLength(), end);
         }
 
-        if (start >= 0) {
-
-            imputeZoom(start, end);
-
-            if (widthInPixels > 0) {
-                setLocationScale(((double) (end - start)) / widthInPixels);
+        synchronized (this){
+            setChromosomeName(chr);
+            if (start >= 0) {
+                    imputeZoom(start, end);
+                    if (widthInPixels > 0) {
+                        setLocationScale(((double) (end - start)) / widthInPixels);
+                    }
+                    origin = start;
             }
-            origin = start;
         }
 
         if (log.isDebugEnabled()) {
