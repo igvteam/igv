@@ -1,7 +1,17 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.charts;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
@@ -13,7 +23,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -178,7 +187,7 @@ public class ChartPanel extends JPanel implements Serializable {
 
             if (scatterPlot != null) {
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
-                scatterPlot.draw((Graphics2D) g, r, g.getClipRect());
+                scatterPlot.draw((Graphics2D) g, r, g.getClipBounds());
             }
 
 //            if (lassoPath != null && lassoPath.size() > 1) {

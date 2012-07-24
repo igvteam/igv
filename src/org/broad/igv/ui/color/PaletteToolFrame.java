@@ -1,15 +1,28 @@
 /*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Wed Nov 02 23:02:37 EDT 2011
  */
 
 package org.broad.igv.ui.color;
 
-import org.broad.igv.ui.util.FileChooser;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 /**
  * @author Stan Diamond
@@ -22,18 +35,18 @@ public class PaletteToolFrame extends JFrame {
 
     private void saveItemActionPerformed(ActionEvent e) {
         java.util.List<ColorPanel.Palette> paletteList = colorPanel.paletteList;
-        if(paletteList != null) {
-             java.awt.FileDialog fd = new FileDialog(this);
+        if (paletteList != null) {
+            java.awt.FileDialog fd = new FileDialog(this);
             fd.setMode(FileDialog.SAVE);
             fd.setVisible(true);
             String f = fd.getFile();
-            if(f != null) {
+            if (f != null) {
                 try {
                     File file = new File(fd.getDirectory(), f);
                     PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-                    for(ColorPanel.Palette p : paletteList) {
+                    for (ColorPanel.Palette p : paletteList) {
                         pw.println(p.label);
-                        for(ColorPanel.Swatch s : p.swatches) {
+                        for (ColorPanel.Swatch s : p.swatches) {
                             pw.println(ColorUtilities.colorToString(s.color));
                         }
                     }
@@ -46,7 +59,8 @@ public class PaletteToolFrame extends JFrame {
 
     private void showGrayScaleActionPerformed(ActionEvent e) {
         colorPanel.showGrayScale = desaturateCheckbox.isSelected();
-        colorPanel.repaint();;
+        colorPanel.repaint();
+        ;
     }
 
     private void initComponents() {
@@ -109,7 +123,7 @@ public class PaletteToolFrame extends JFrame {
     private ColorPanel colorPanel;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         (new PaletteToolFrame()).setVisible(true);
     }
 }

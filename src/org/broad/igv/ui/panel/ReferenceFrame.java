@@ -348,7 +348,6 @@ public class ReferenceFrame {
                 MessageUtils.showMessage(chr + " is not a valid chromosome.");
                 return;
             }
-            setChromosomeName(chr, false);
         }
 
         this.initialLocus = locus;
@@ -357,13 +356,14 @@ public class ReferenceFrame {
             end = Math.min(chromosome.getLength(), end);
         }
 
-        if (start >= 0) {
-            origin = start;
-            if (widthInPixels > 0) {
-                setLocationScale(((double) (end - start)) / widthInPixels);
-                imputeZoom(start, end);
-            } else {
-                this.setEnd = end;
+        synchronized (this){
+            setChromosomeName(chr);
+            if (start >= 0) {
+                    imputeZoom(start, end);
+                    if (widthInPixels > 0) {
+                        setLocationScale(((double) (end - start)) / widthInPixels);
+                    }
+                    origin = start;
             }
         }
 

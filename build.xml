@@ -191,7 +191,11 @@
 
     <fileset dir="${testtmp.dir}" id="uifileset">
         <include name="**/CommandBarTest.class"/>
+        <include name="**/CommandExecutorTest.class"/>
         <include name="**/MainTest.class"/>
+        <include name="**/IGVTestHeaded.class"/>
+        <include name="**/CoverageTrackTest.class"/>
+        <include name="**/TrackLoaderTestHeaded.class"/>
         <exclude name="**/*$*.class"/>
     </fileset>
 
