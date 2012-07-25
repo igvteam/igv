@@ -53,7 +53,7 @@ public class TestUtils {
 
     public static void setUpTestEnvironment() {
         Globals.setTesting(true);
-        Globals.setBatch(true);
+        //Globals.setBatch(true);
         PreferenceManager.getInstance().setPrefsFile("testprefs.properties");
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
