@@ -331,10 +331,6 @@
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
-             <string>label</string> 
-             <string>...</string> 
-            </void> 
-            <void method="setProperty"> 
              <string>text</string> 
              <string>Browse</string> 
             </void> 
@@ -476,10 +472,6 @@
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
-             <string>label</string> 
-             <string>...</string> 
-            </void> 
-            <void method="setProperty"> 
              <string>text</string> 
              <string>Browse</string> 
             </void> 
@@ -591,10 +583,6 @@
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
-             <string>label</string> 
-             <string>...</string> 
-            </void> 
-            <void method="setProperty"> 
              <string>text</string> 
              <string>Browse</string> 
             </void> 
@@ -701,10 +689,6 @@
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JButton</string> 
-            <void method="setProperty"> 
-             <string>label</string> 
-             <string>...</string> 
-            </void> 
             <void method="setProperty"> 
              <string>text</string> 
              <string>Browse</string> 

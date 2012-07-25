@@ -294,9 +294,9 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
                 fastaFileTextField.setBounds(145, 88, 548, 29);
 
                 //---- fastaFileButton ----
-                fastaFileButton.setLabel("...");
                 fastaFileButton.setText("Browse");
                 fastaFileButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         fastaFileButtonActionPerformed(e);
                     }
@@ -325,9 +325,9 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
                 cytobandFileTextField.setBounds(145, 22, 548, 29);
 
                 //---- cytobandFileButton ----
-                cytobandFileButton.setLabel("...");
                 cytobandFileButton.setText("Browse");
                 cytobandFileButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         cytobandFileButtonActionPerformed(e);
                     }
@@ -348,9 +348,9 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
                 refFlatFileTextField.setBounds(145, 56, 548, 29);
 
                 //---- refFlatFileButton ----
-                refFlatFileButton.setLabel("...");
                 refFlatFileButton.setText("Browse");
                 refFlatFileButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         refFlatFileButtonActionPerformed(e);
                     }
@@ -370,9 +370,9 @@ public class GenomeBuilderPane extends javax.swing.JPanel implements Serializabl
                 chrAliasField.setBounds(145, 90, 548, 29);
 
                 //---- chrAliasButton ----
-                chrAliasButton.setLabel("...");
                 chrAliasButton.setText("Browse");
                 chrAliasButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         chrAliasButtonActionPerformed(e);
                     }
