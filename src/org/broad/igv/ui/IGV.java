@@ -342,6 +342,10 @@ public class IGV {
         repaintDataAndHeaderPanels(true);
     }
 
+    public void repaintDataPanels() {
+        repaintDataAndHeaderPanels(false);
+    }
+
     /**
      * Repaint the header and data panels.
      * <p/>
@@ -377,14 +381,6 @@ public class IGV {
         if (updateCommandBar) {
             contentPane.updateCurrentCoordinates();
         }
-    }
-
-    /**
-     * Repaint the data panels.  Deprecated, but kept for backwards compatibility.
-     */
-    @Deprecated
-    public void repaintDataPanels() {
-        repaintDataAndHeaderPanels(false);
     }
 
     public void repaintNamePanels() {

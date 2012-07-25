@@ -41,21 +41,13 @@ public class ShutdownThread extends Thread {
         DBManager.shutdown();
         CommandListener.halt();
         cleanupBamIndexCache();
-        IGV.getInstance().saveStateForExit();
+        if (IGV.hasInstance())
+            IGV.getInstance().saveStateForExit();
     }
 
     @Override
     public void run() {
-
-        // Cleanup jnlp files
-        if (Globals.IS_MAC) {
-            FileUtils.cleanupJnlpFiles();
-        }
-
-        DBManager.shutdown();
-        CommandListener.halt();
-        cleanupBamIndexCache();
-        IGV.getInstance().saveStateForExit();
+        runS();
     }
 
     private static void cleanupBamIndexCache() {
