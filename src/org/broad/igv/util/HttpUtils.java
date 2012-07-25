@@ -416,7 +416,7 @@ public class HttpUtils {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return null;
+                        return new java.security.cert.X509Certificate[0];
                     }
 
                     public void checkClientTrusted(
