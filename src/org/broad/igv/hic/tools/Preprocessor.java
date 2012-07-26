@@ -124,7 +124,9 @@ public class Preprocessor {
                         MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
                         if (matrix != null) {
                             writeMatrix(matrix);
+                            matrix = null;
                         }
+                        System.gc();
                     } else {
                         final int fc1 = c1;
                         final int fc2 = c2;
