@@ -181,6 +181,7 @@
     </path>
 
     <property name="test.reports" value="${basedir}/reports"/>
+    <property name="test.reports.tmp" value="${basedir}/reportstmp"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
 
     <fileset dir="${testtmp.dir}" id="allfileset">
@@ -189,8 +190,12 @@
     </fileset>
 
     <fileset dir="${testtmp.dir}" id="uifileset">
-        <include name="**/IGVTest.class"/>
-        <include name="**/TrackLoaderTest.class"/>
+        <include name="**/CommandBarTest.class"/>
+        <include name="**/CommandExecutorTest.class"/>
+        <include name="**/MainTest.class"/>
+        <include name="**/IGVTestHeaded.class"/>
+        <include name="**/CoverageTrackTest.class"/>
+        <include name="**/TrackLoaderTestHeaded.class"/>
         <exclude name="**/*$*.class"/>
     </fileset>
 
@@ -248,6 +253,33 @@
         <antcall target="makereports">
             <param name="filesetid" value="uifileset"/>
         </antcall>
+    </target>
+
+
+    <!-- Re-run failed tests only. Copy reports to a temp file
+        because otherwise they would get deleted-->
+    <fileset dir="${testtmp.dir}" id="failedtests">
+        <include name="**/*.class"/>
+        <exclude name="**/*$*.class"/>
+        <custom classname="util.FailedTestSelector" classpath="${testtmp.dir}">
+            <param name="reportDir" value="${test.reports.tmp}"/>
+        </custom>
+    </fileset>
+
+    <property name="input.test.reports" value="${test.reports}"/>
+    <target name="failedtests">
+        <delete dir="${test.reports.tmp}"/>
+        <copy todir="${test.reports.tmp}" overwrite="true">
+            <fileset dir="${input.test.reports}">
+                <include name="**/*.xml"/>
+            </fileset>
+        </copy>
+
+        <antcall target="makereports">
+            <param name="filesetid" value="failedtests"/>
+        </antcall>
+
+        <delete dir="${test.reports.tmp}"/>
     </target>
 
     <!-- Deploy the application -->

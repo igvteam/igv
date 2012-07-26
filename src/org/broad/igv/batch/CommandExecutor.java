@@ -278,8 +278,7 @@ public class CommandExecutor {
      */
     private String load(String fileList, String param2, String param3) throws IOException {
 
-        fileList = URLDecoder.decode(fileList, "UTF-8");
-        String fileString = fileList.replace("\"", "").replace("'", "");
+        String fileString = fileList.replace("\"", "").replace("'", "");  // Todo <= what is this for?
 
         // Default for merge is "true" for session files,  "false" otherwise
         String file = fileString;
@@ -321,12 +320,30 @@ public class CommandExecutor {
         return loadFiles(fileString, locus, merge, name, null);
     }
 
-    String loadFiles(final String fileString, final String locus, final boolean merge, String name, Map<String, String> params) throws IOException {
+    String loadFiles(final String fileString, final String locus, final boolean merge, String nameString, Map<String, String> params) throws IOException {
 
 
         log.debug("Run load files");
 
         String[] files = fileString.split(",");
+        String[] names = nameString != null ? nameString.split(",") : null;
+        if(files.length == 1) {
+            // String might be URL encoded
+            files = fileString.split("%2C");
+            names = nameString != null ? nameString.split("%2C") : null;
+        }
+
+        if(names != null && names.length != files.length) {
+            return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
+        }
+
+        // Must decode remote file paths, but leave local paths as is
+        for(int i=0; i<files.length; i++) {
+            if(FileUtils.isRemote(files[i])) {
+                files[i] =  URLDecoder.decode(files[i], "UTF-8");
+            }
+        }
+
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
         List<String> sessionPaths = new ArrayList<String>();
 
@@ -350,6 +367,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
+        int fi = 0;
         for (String f : files) {           
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
@@ -357,15 +375,23 @@ public class CommandExecutor {
             if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
-                ResourceLocator rl = new ResourceLocator(f);
+                ResourceLocator rl;
+                if(HttpUtils.isURL(f)){
+                    String fDecoded = StringUtils.decodeURL(f);
+                    rl = new ResourceLocator(fDecoded);
+                }else{
+                    rl = new ResourceLocator(f);
+                }
+
                 if (rl.isLocal()) {
                     File file = new File(f);
                     if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
                 }
-                if (name != null) {
-                    rl.setName(name);
+
+                if (names != null) {
+                    rl.setName(names[fi]);
                 }
                 if (params != null) {
                     String trackLine = createTrackLine(params);
@@ -373,6 +399,7 @@ public class CommandExecutor {
                 }
                 fileLocators.add(rl);
             }
+            fi++;
         }
 
         for (String sessionPath : sessionPaths) {

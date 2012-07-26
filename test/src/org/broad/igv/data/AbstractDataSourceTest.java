@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
  * Time: 7:17:32 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AbstractDataSourceTest  extends AbstractHeadlessTest {
+public class AbstractDataSourceTest extends AbstractHeadlessTest {
 
     /**
      * # When viewed as a heatmap this feature shows a 1-pixel break at position 23,314,405  when the
@@ -92,7 +92,7 @@ public class AbstractDataSourceTest  extends AbstractHeadlessTest {
 
         ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "cn/multi_snp.cn");
         Genome genome = TestUtils.loadGenome();
-        IGVDataset ds = new IGVDataset(locator, genome, null);
+        IGVDataset ds = new IGVDataset(locator, genome);
         DatasetDataSource dataSource = new DatasetDataSource("Sample1", ds, genome);
         String chr = "chr10";
 

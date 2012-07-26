@@ -5,6 +5,8 @@ import org.broad.igv.hic.data.*;
 
 import javax.swing.*;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * This is the "model" class for the HiC viewer.
@@ -15,15 +17,16 @@ import java.util.Map;
 public class HiC {
 
     MainWindow mainWindow;
-
     MainWindow.DisplayOption displayOption;
     Dataset dataset;
-    public Context xContext;
-    Context yContext;
-    Matrix matrix;
-    MatrixZoomData zd;
     private Chromosome[] chromosomes;
     Map<Integer, DensityFunction> zoomToDensityMap = null;
+
+    public Context xContext;
+    Context yContext;
+
+    Matrix matrix;
+    public MatrixZoomData zd;
 
 
     public HiC(MainWindow mainWindow) {
@@ -304,7 +307,14 @@ public class HiC {
                         mainWindow.updateEigenvectorTrack(eigenvector, zd.getBinSize());
                     }
                 };
-                mainWindow.executeLongRunningTask(runnable);
+                Future future = mainWindow.executeLongRunningTask(runnable);
+                try {
+                    future.get();  // Forces a wait
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (ExecutionException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
         }
         return eigenvector;

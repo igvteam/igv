@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -22,23 +15,25 @@
  */
 package org.broad.igv.sam;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.Interval;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.Utilities;
+import org.broad.tribble.Feature;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
  * @author jrobinso
  */
-public class AlignmentInterval extends Locus {
+public class AlignmentInterval extends Locus implements Interval {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
@@ -48,12 +43,14 @@ public class AlignmentInterval extends Locus {
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions;
     private List<CachingQueryReader.DownsampledInterval> downsampledIntervals;
+    private AlignmentTrack.RenderOptions renderOptions;
 
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              List<AlignmentCounts> counts,
                              List<SpliceJunctionFeature> spliceJunctions,
-                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals) {
+                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals,
+                             AlignmentTrack.RenderOptions renderOptions) {
 
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
@@ -67,16 +64,7 @@ public class AlignmentInterval extends Locus {
 
         this.spliceJunctions = spliceJunctions;
         this.downsampledIntervals = downsampledIntervals;
-
-        // Force caclulation of splice junctions
-        boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        if (showSpliceJunctionTrack) {
-            try {
-                getSpliceJunctions();
-            } catch (IOException e) {
-                log.error("Error computing splice junctions", e);
-            }
-        }
+        this.renderOptions = renderOptions;
     }
 
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
@@ -126,8 +114,9 @@ public class AlignmentInterval extends Locus {
         return groupedAlignmentRows == null ? 0 : groupedAlignmentRows.size();
     }
 
-    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows) {
+    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows, AlignmentTrack.RenderOptions renderOptions) {
         this.groupedAlignmentRows = alignmentRows;
+        this.renderOptions = renderOptions;
     }
 
 
@@ -258,12 +247,186 @@ public class AlignmentInterval extends Locus {
         return new AlignmentIterator();
     }
 
-    public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
+    public List<SpliceJunctionFeature> getSpliceJunctions() {
         return spliceJunctions;
     }
 
     public List<CachingQueryReader.DownsampledInterval> getDownsampledIntervals() {
         return downsampledIntervals;
+    }
+
+    @Override
+    public boolean contains(String chr, int start, int end, int zoom) {
+        return super.contains(chr, start, end);
+    }
+
+    @Override
+    public boolean overlaps(String chr, int start, int end, int zoom) {
+        return super.overlaps(chr, start, end);
+    }
+
+    @Override
+    public boolean merge(Interval i) {
+        if (!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
+                || !(i instanceof AlignmentInterval)) {
+            return false;
+        }
+
+        AlignmentInterval other = (AlignmentInterval) i;
+
+        List<Alignment> allAlignments = (List<Alignment>) combineSortedFeatureListsNoDups(getAlignmentIterator(), other.getAlignmentIterator());
+
+        this.counts = combineSortedFeatureListsNoDups(this.counts, other.getCounts());
+        this.spliceJunctions = combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions());
+        this.downsampledIntervals = combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals());
+
+        //This must be done AFTER calling combineSortedFeatureListsNoDups for the last time,
+        //because we rely on the original start/end
+        this.start = Math.min(getStart(), i.getStart());
+        this.end = Math.max(getEnd(), i.getEnd());
+        this.maxCount = Math.max(this.getMaxCount(), other.getMaxCount());
+
+
+        AlignmentPacker packer = new AlignmentPacker();
+        this.groupedAlignmentRows = packer.packAlignments(allAlignments.iterator(), this.end, renderOptions);
+
+
+        return true;
+    }
+
+    /**
+     * Remove data outside the specified interval.
+     * This interval must contain the specified interval.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @return true if any trimming was performed, false if not
+     */
+    boolean trimTo(final String chr, final int start, final int end, int zoom) {
+        boolean toRet = false;
+        if (!this.contains(chr, start, end, zoom)) {
+            return false;
+        }
+
+        for (String groupKey : groupedAlignmentRows.keySet()) {
+            for (AlignmentInterval.Row row : groupedAlignmentRows.get(groupKey)) {
+                Iterator<Alignment> alIter = row.alignments.iterator();
+                Alignment al;
+                while (alIter.hasNext()) {
+                    al = alIter.next();
+                    if (al.getEnd() < start || al.getStart() > end) {
+                        alIter.remove();
+                        toRet |= true;
+                    }
+                }
+
+            }
+        }
+
+        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
+            @Override
+            public boolean evaluate(Feature object) {
+                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
+            }
+        };
+        Utilities.filter(this.getCounts(), overlapPredicate);
+        Utilities.filter(this.getDownsampledIntervals(), overlapPredicate);
+        Utilities.filter(this.getSpliceJunctions(), overlapPredicate);
+
+        this.start = Math.max(this.start, start);
+        this.end = Math.min(this.end, end);
+
+
+        return toRet;
+    }
+
+    /**
+     * Null safe version of {@linkplain #combineSortedFeatureListsNoDups(java.util.Iterator, java.util.Iterator)}
+     * If BOTH self and other are null, returns null. If only one is null,
+     * returns the other
+     *
+     * @param self
+     * @param other
+     * @return
+     */
+    private List combineSortedFeatureListsNoDups(List self, List other) {
+        if (self == null && other == null) {
+            return null;
+        } else if (self == null) {
+            return other;
+        } else if (other == null) {
+            return self;
+        }
+
+        return combineSortedFeatureListsNoDups(self.iterator(), other.iterator());
+    }
+
+    /**
+     * Features are sorted by start position. The interval being merged
+     * will have some features on the left or right that the current
+     * interval does not have. Both are sorted by start position.
+     * So we first add at the beginning, and then the end,
+     * only those alignments which don't overlap the original interval.
+     * <p/>
+     * NOTE: WE DO NOT USE GENERICS PROPERLY SO WE CAN REUSE THIS METHOD.
+     * BE CAREFUL.
+     *
+     * @param selfIter  iterator of features belonging to this interval
+     * @param otherIter iterator of features belonging to some other interval
+     * @return Combined sorted list.
+     * @throws ClassCastException If the elements of an iterator cannot be cast
+     *                            to a Feature.
+     */
+    private List combineSortedFeatureListsNoDups(Iterator selfIter, Iterator otherIter) {
+        List<Feature> allFeatures = new ArrayList<Feature>();
+        Feature otherFeat = null;
+
+        while (otherIter.hasNext()) {
+            otherFeat = (Feature) otherIter.next();
+            if (otherFeat.getEnd() > this.getStart()) break;
+            allFeatures.add(otherFeat);
+        }
+
+        while (selfIter.hasNext()) {
+            allFeatures.add((Feature) selfIter.next());
+        }
+
+        while (otherIter.hasNext()) {
+            if (otherFeat.getStart() >= this.getEnd()) {
+                allFeatures.add(otherFeat);
+            }
+            otherFeat = (Feature) otherIter.next();
+        }
+
+        if (otherFeat != null && otherFeat.getStart() >= this.getEnd()) {
+            allFeatures.add(otherFeat);
+        }
+
+        return allFeatures;
+    }
+
+    private List addToListNoDups(List self, List other) {
+        if (self == null) self = new ArrayList();
+        if (other != null) {
+            Set selfSet = new HashSet(self);
+            selfSet.addAll(other);
+
+            self = new ArrayList(selfSet);
+            FeatureUtils.sortFeatureList(self);
+        }
+        return self;
+    }
+
+    /**
+     * AlignmentInterval data is independent of zoom
+     *
+     * @return
+     */
+    @Override
+    public int getZoom() {
+        return -1;
     }
 
     public static class Row {
@@ -312,17 +475,28 @@ public class AlignmentInterval extends Locus {
                     case NUCELOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
-//                        if (base == 0) {      // Base not covered (splice junction)
-//                            setScore(Integer.MAX_VALUE);
-//                        } else
+
                         if (base == 'N' || base == 'n') {
                             setScore(Integer.MAX_VALUE - 2);  // Base is "n"
                         } else if (base == ref) {
                             setScore(Integer.MAX_VALUE - 1);  // Base is reference
                         } else {
-                            int count = interval.getCount(adjustedCenter, base);
+                            int count = interval.getDelCount(adjustedCenter);
+
+                            //If base is 0, base not covered (splice junction) or is deletion
+                            if (base == 0 && count <= 0) {
+                                //Base not covered, NOT a deletion
+                                setScore(Integer.MAX_VALUE);
+                                break;
+                            }
+
+                            //So we either have a deletion or standard count
+                            if (count <= 0) {
+                                count = interval.getCount(adjustedCenter, base);
+                            }
                             byte phred = centerAlignment.getPhred(adjustedCenter);
                             setScore(-(count + (phred / 100.0f)));
+
                         }
                         break;
                     case QUALITY:
@@ -413,6 +587,27 @@ public class AlignmentInterval extends Locus {
         public int getLastEnd() {
             return lastEnd;
         }
+
+//        @Override
+//        public boolean equals(Object object){
+//            if(!(object instanceof Row)){
+//                return false;
+//            }
+//            Row other = (Row) object;
+//            boolean equals = this.getStart() == other.getStart();
+//            equals &= this.getLastEnd() == other.getLastEnd();
+//            equals &= this.getScore() == other.getScore();
+//
+//            return equals;
+//
+//        }
+//
+//        @Override
+//        public int hashCode(){
+//            int score = (int) getScore();
+//            score = score != 0 ? score : 1;
+//            return (getStart() * getLastEnd() * score);
+//        }
 
     } // end class row
 

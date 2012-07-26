@@ -157,8 +157,6 @@ public class ReferenceFrame {
             }
         }
 
-
-        // TODO -- fire chromosome changed event rather than this
     }
 
     private void zoomTo(int newZoom) {
@@ -226,7 +224,6 @@ public class ReferenceFrame {
         } else {
             if (zoom != newZoom) {
                 zoomTo(newZoom);
-                computeLocationScale();
                 double newLocationScale = getScale();
                 // Adjust origin so newCenter is centered
                 double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * newLocationScale));
@@ -334,7 +331,6 @@ public class ReferenceFrame {
                 MessageUtils.showMessage(chr + " is not a valid chromosome.");
                 return;
             }
-            setChromosomeName(chr);
         }
 
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
@@ -342,14 +338,15 @@ public class ReferenceFrame {
             end = Math.min(chromosome.getLength(), end);
         }
 
-        if (start >= 0) {
-
-            imputeZoom(start, end);
-
-            if (widthInPixels > 0) {
-                setLocationScale(((double) (end - start)) / widthInPixels);
+        synchronized (this) {
+            setChromosomeName(chr);
+            if (start >= 0) {
+                imputeZoom(start, end);
+                if (widthInPixels > 0) {
+                    setLocationScale(((double) (end - start)) / widthInPixels);
+                }
+                origin = start;
             }
-            origin = start;
         }
 
         if (log.isDebugEnabled()) {
@@ -473,8 +470,8 @@ public class ReferenceFrame {
      *
      * @return
      */
-    public double getScale() {
-        if ((locationScale == 0) || !locationScaleValid || locationScale < 0) {
+    public synchronized double getScale() {
+        if ((locationScale <= 0) || !locationScaleValid) {
             computeLocationScale();
         }
 
@@ -487,21 +484,18 @@ public class ReferenceFrame {
         locationScaleValid = false;
     }
 
-    public void computeLocationScale() {
+    private synchronized void computeLocationScale() {
         Genome genome = getGenome();
 
         if (genome != null) {
 
             if (setEnd > 0) {
-                locationScale = (setEnd - origin) / widthInPixels;
-                locationScaleValid = true;
+                setLocationScale((setEnd - origin) / widthInPixels);
                 imputeZoom(origin, setEnd);
             } else {
                 computeMinZoom();
                 double virtualPixelSize = getTilesTimesBinsPerTile();
-
                 double nPixel = Math.max(virtualPixelSize, widthInPixels);
-
                 setLocationScale(((double) getChromosomeLength()) / nPixel);
             }
         }
@@ -632,7 +626,7 @@ public class ReferenceFrame {
 
     }
 
-    public void setInterval(Locus locus) {
+    public synchronized void setInterval(Locus locus) {
         this.initialLocus = locus;
 
         this.chrName = locus.getChr();

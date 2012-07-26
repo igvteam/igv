@@ -23,11 +23,6 @@ public class Dataset {
 
     public Dataset(DatasetReader reader) {
         this.reader = reader;
-        readChromosomes();
-    }
-
-    public void readChromosomes() {
-        // todo -- read the chromosome dictionary for the fil
     }
 
     public Matrix getMatrix(Chromosome chr1, Chromosome chr2) {
@@ -60,4 +55,5 @@ public class Dataset {
     public void setChromosomes(Chromosome[] chromosomes) {
         this.chromosomes = chromosomes;
     }
+
 }

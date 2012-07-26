@@ -4,12 +4,19 @@ import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author jrobinso
@@ -31,11 +38,14 @@ public class MatrixZoomData {
 
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
-    private RealMatrix pearsons;
-    private double pearsonsMin = -1;
-    private double pearsonsMax = 1;
+
+    private BasicMatrix pearsons;
     private RealMatrix oe;
     private double[] eigenvector;
+
+    public void setPearsons(BasicMatrix bm) {
+        this.pearsons = bm;
+    }
 
     public class ScaleParameters {
         double percentile90;
@@ -84,7 +94,18 @@ public class MatrixZoomData {
         blocks = new LinkedHashMap<Integer, Block>(nBlocks);
         this.reader = reader;
 
+        // If there's a pearson file available initialize it now
+        String rootPath = FileUtils.getParent(reader.getPath());
+        String folder = rootPath + "/" + chr1.getName();
+        String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".bin";
+        String fullPath = folder + "/" + file;
+        if(FileUtils.resourceExists(fullPath)) {
+            pearsons = ScratchPad.readPearsons(fullPath);
+        }
+
     }
+
+
 
 
     public int getBinSize() {
@@ -170,6 +191,7 @@ public class MatrixZoomData {
         return eigenvector;
     }
 
+
     public double[] computeEigenvector(DensityFunction df, int which) {
 
         if (pearsons == null) {
@@ -192,11 +214,20 @@ public class MatrixZoomData {
             if (!Double.isNaN(eigenvector[i]))
                 cols[numgood++] = i;
 
-        RealMatrix subMatrix = pearsons.getSubMatrix(cols, cols);
+        RealMatrix subMatrix = null;
+        if (pearsons instanceof RealMatrixWrapper) {
 
-        if (which >= subMatrix.getColumnDimension() || which < 0)
-            throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+            subMatrix = ((RealMatrixWrapper) pearsons).getMatrix().getSubMatrix(cols, cols);
 
+            if (which >= subMatrix.getColumnDimension() || which < 0)
+                throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
+
+
+        } else {
+            // TODO -- make submatrix from pearsons
+            throw new RuntimeException("Eigenvector calculation not implementated for matrix class: "
+                    + pearsons.getClass().getName());
+        }
 
         RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
         double[] ev = rv.toArray();
@@ -211,58 +242,18 @@ public class MatrixZoomData {
         return eigenvector;
     }
 
-    public RealMatrix getPearsons() {
+    public BasicMatrix getPearsons() {
         return pearsons;
     }
 
-    public RealMatrix computePearsons(DensityFunction df) {
+    public RealMatrixWrapper computePearsons(DensityFunction df) {
 
         if (oe == null)
             oe = computeOE(df);
-        RealMatrix rm = oe.copy();
-        int size = rm.getRowDimension();
-        BitSet bitSet = new BitSet(size);
-        double[] nans = new double[size];
-        for (int i = 0; i < size; i++)
-            nans[i] = Double.NaN;
 
-        for (int i = 0; i < size; i++) {
-            if (isZeros(rm.getRow(i))) {
-                bitSet.set(i);
-            }
-        }
-
-        for (int i = 0; i < size; i++) {
-            if (bitSet.get(i)) {
-                rm.setRow(i, nans);
-                rm.setColumn(i, nans);
-            }
-        }
-
-        for (int i = 0; i < size; i++) {
-            RealVector v = rm.getRowVector(i);
-            double m = getVectorMean(v);
-            RealVector newV = v.mapSubtract(m);
-            rm.setRowVector(i, newV);
-        }
-        PearsonsResetNan resetNan = new PearsonsResetNan();
-        rm.walkInOptimizedOrder(resetNan);
-
-        pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(rm);
-        rm = null;
-        PearsonsMinMax minMax = new PearsonsMinMax();
-        pearsons.walkInOptimizedOrder(minMax);
-        pearsonsMax = minMax.getMaxValue();
-        pearsonsMin = minMax.getMinValue();
+        RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+        RealMatrixWrapper pearsons = new RealMatrixWrapper(rm);
         return pearsons;
-    }
-
-    public double getPearsonsMin() {
-        return pearsonsMin;
-    }
-
-    public double getPearsonsMax() {
-        return pearsonsMax;
     }
 
     private RealMatrix readRealMatrix(String filename) throws IOException {
@@ -361,6 +352,33 @@ public class MatrixZoomData {
                 }
             }
         }
+        int size = rm.getRowDimension();
+        BitSet bitSet = new BitSet(size);
+        double[] nans = new double[size];
+        for (int i = 0; i < size; i++)
+            nans[i] = Double.NaN;
+
+        for (int i = 0; i < size; i++) {
+            if (isZeros(rm.getRow(i))) {
+                bitSet.set(i);
+            }
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (bitSet.get(i)) {
+                rm.setRow(i, nans);
+                rm.setColumn(i, nans);
+            }
+        }
+
+        for (int i = 0; i < size; i++) {
+            RealVector v = rm.getRowVector(i);
+            double m = getVectorMean(v);
+            RealVector newV = v.mapSubtract(m);
+            rm.setRowVector(i, newV);
+        }
+        PearsonsResetNan resetNan = new PearsonsResetNan();
+        rm.walkInOptimizedOrder(resetNan);
 
         return rm;
     }
@@ -423,12 +441,15 @@ public class MatrixZoomData {
         }
     }
 
+    /**
+     * Dump the O/E or Pearsons matrix to standard out in ascii format.
+     *
+     * @param df
+     * @param isOE
+     */
     public void dumpOE(DensityFunction df, boolean isOE) {
         oe = computeOE(df);
         if (isOE) {
-        //try {
-          //  PrintWriter pw = new PrintWriter("/broad/aidenlab/neva/output.txt");
-
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
@@ -441,18 +462,13 @@ public class MatrixZoomData {
                 System.out.println();
             }
             System.out.println();
-       // }
-       // catch (IOException error) {
-       //     System.err.println("Unable to print to /broad/aidenlab/neva/output.txt: " + error);
-       // }
-        }
-        else {
+        } else {
 
-            pearsons = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-            int rows = pearsons.getRowDimension();
-            int cols = pearsons.getColumnDimension();
+            RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+            int rows = rm.getRowDimension();
+            int cols = rm.getColumnDimension();
             System.out.println(rows + " " + cols);
-            double[][] matrix = pearsons.getData();
+            double[][] matrix = rm.getData();
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
                     System.out.print(matrix[i][j] + " ");
@@ -471,27 +487,5 @@ public class MatrixZoomData {
         }
     }
 
-    private class PearsonsMinMax extends DefaultRealMatrixPreservingVisitor {
-        private double minValue = Double.MAX_VALUE;
-        private double maxValue = Double.MIN_VALUE;
-
-        public void visit(int row, int column, double value) {
-            if (row != column) {
-                if (value < minValue)
-                    minValue = value;
-                if (value > maxValue)
-                    maxValue = value;
-            }
-        }
-
-        public double getMinValue() {
-            return minValue;
-        }
-
-        public double getMaxValue() {
-            return maxValue;
-        }
-
-    }
 
 }

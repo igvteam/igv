@@ -80,12 +80,27 @@ public class FeatureUtils {
         return segmentedLists;
     }
 
+    private static class StartComparator implements Comparator<Feature>{
+
+        private static StartComparator instance = null;
+        private StartComparator(){}
+
+        public static StartComparator getInstance(){
+            if(instance == null) instance = new StartComparator();
+            return instance;
+        }
+
+        public int compare(Feature o1, Feature o2) {
+            return (o1.getStart() - o2.getStart());
+        }
+    }
+
     /**
      * Sort the feature list by ascending start value
      */
     public static void sortFeatureList(List<? extends Feature> features) {
         Collections.sort(features, FEATURE_START_COMPARATOR);
-    }
+}
 
     /**
      * Return a feature from the supplied list at the given position.

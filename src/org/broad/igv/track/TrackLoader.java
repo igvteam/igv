@@ -86,9 +86,6 @@ public class TrackLoader {
 
     private static Logger log = Logger.getLogger(TrackLoader.class);
 
-    private IGV igv;
-
-
     /**
      * Calls {@linkplain TrackLoader#load(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
      * with genome from IGV instance (if not null).
@@ -98,7 +95,6 @@ public class TrackLoader {
      * @return
      */
     public List<Track> load(ResourceLocator locator, IGV igv) {
-        this.igv = igv;
         Genome genome = igv != null ? GenomeManager.getInstance().getCurrentGenome() : null;
         return load(locator, genome);
     }
@@ -352,7 +348,7 @@ public class TrackLoader {
     }
 
 
-    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
         if (featureParser != null) {
@@ -368,7 +364,7 @@ public class TrackLoader {
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>(mappings.size());
         features.addAll(mappings);
 
-        Genome genome = igv.getGenomeManager().getCurrentGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
         track.setName(locator.getTrackName());
         // track.setRendererClass(AlignmentBlockRenderer.class);
@@ -526,7 +522,7 @@ public class TrackLoader {
 
 
         String dsName = locator.getTrackName();
-        IGVDataset ds = new IGVDataset(locator, genome, igv);
+        IGVDataset ds = new IGVDataset(locator, genome);
         ds.setName(dsName);
 
         TrackProperties trackProperties = ds.getTrackProperties();

@@ -333,7 +333,7 @@ public class CombinedFeatureSource implements FeatureSource {
         CLOSEST("closest"),
         //TODO include -d option
         WINDOW("window -bed"),
-        COVERAGE("coverage"),
+        COVERAGE("coverage -split"),
         MULTIINTER("multiinter");
 
 

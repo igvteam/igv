@@ -15,14 +15,12 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
-import java.net.URLEncoder;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 
@@ -72,7 +70,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         String chr = genome == null ? c : genome.getChromosomeAlias(c);
 
         //BED format, and IGV, use starting element as 0.
-        int start = Integer.parseInt(tokens[1]) - startOffsetValue;
+        int start = Integer.parseInt(tokens[1]);
 
         int end = start + 1;
         if (tokenCount > 2) {
@@ -159,8 +157,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         }
 
         // Thick ends
-        if(tokenCount > 7) {
-            feature.setThickStart(Integer.parseInt(tokens[6]) - startOffsetValue);
+        if (tokenCount > 7) {
+            feature.setThickStart(Integer.parseInt(tokens[6]));
             feature.setThickEnd(Integer.parseInt(tokens[7]));
         }
 
@@ -230,7 +228,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
     private void createExons(int start, String[] tokens, BasicFeature gene, String chr,
                              Strand strand) throws NumberFormatException {
 
-        int cdStart = Integer.parseInt(tokens[6]) - startOffsetValue;
+        int cdStart = Integer.parseInt(tokens[6]);
         int cdEnd = Integer.parseInt(tokens[7]);
 
         int exonCount = Integer.parseInt(tokens[9]);
@@ -301,7 +299,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
                         buffer.append(kv[0].trim());
                         buffer.append("=");
                         String value = kv[1].trim();
-                        buffer.append(URLEncoder.encode(value));
+                        buffer.append(StringUtils.encodeURL(value));
                         buffer.append(";");
                     }
                 }

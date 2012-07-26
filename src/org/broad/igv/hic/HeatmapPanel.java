@@ -18,11 +18,18 @@ import java.io.*;
 public class HeatmapPanel extends JComponent implements Serializable {
 
 
-    enum DragMode {NONE, PAN, ZOOM};
+    enum DragMode {NONE, PAN, ZOOM}
+
+    ;
 
     MainWindow mainWindow;
     private HiC hic;
+
+    /**
+     * Image tile width in pixels
+     */
     private int imageTileWidth = 500;
+
     ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(100);
     private Rectangle zoomRectangle;
 
@@ -87,10 +94,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             // Pixels per bin -- used to scale image
             double pixelsPerBin = binSize / scale;
-            for (int i = tLeft; i <= tRight; i++) {
-                for (int j = tTop; j <= tBottom; j++) {
-
-                    ImageTile tile = getImageTile(i, j, pixelsPerBin, hic.getDisplayOption());
+            for (int tileRow = tTop; tileRow <= tBottom; tileRow++) {
+                for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
+                    ImageTile tile = getImageTile(tileRow, tileColumn, pixelsPerBin, hic.getDisplayOption());
                     if (tile != null) {
 
                         int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
@@ -160,13 +166,13 @@ public class HeatmapPanel extends JComponent implements Serializable {
     /**
      * Return the specified image tile, scaled by scaleFactor
      *
-     * @param i           column index of tile
-     * @param j           row index of tile
+     * @param tileColumn  column index of tile
+     * @param tileRow     row index of tile
      * @param scaleFactor
      * @return
      */
-    private ImageTile getImageTile(int i, int j, double scaleFactor, MainWindow.DisplayOption displayOption) {
-        String key = "_" + i + "_" + j + "_" + displayOption;
+    private ImageTile getImageTile(int tileRow, int tileColumn, double scaleFactor, MainWindow.DisplayOption displayOption) {
+        String key = "_" + tileRow + "_" + tileColumn + "_"  + displayOption;
         ImageTile tile = tileCache.get(key);
 
         if (tile == null) {
@@ -183,8 +189,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
             BufferedImage image = (BufferedImage) createImage(imageWidth, imageHeight);
             Graphics2D g2D = (Graphics2D) image.getGraphics();
 
-            final int bx0 = i * imageTileWidth;
-            final int by0 = j * imageTileWidth;
+            final int bx0 = tileColumn * imageTileWidth;
+            final int by0 = tileRow * imageTileWidth;
             renderer.render(bx0, by0, imageWidth, imageHeight, hic.zd, displayOption, g2D);
 
             if (scaleFactor > 0.999 && scaleFactor < 1.001) {

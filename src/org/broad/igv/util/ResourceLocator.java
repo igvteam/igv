@@ -94,13 +94,7 @@ public class ResourceLocator {
         if (serverURL != null) {
             this.serverURL = serverURL.replace("broad.mit.edu", "broadinstitute.org");
         }
-        if (path != null && path.startsWith("file://")) {
-            this.path = path.substring(7);
-        } else {
-            this.path = path;
-        }
-
-
+        this.setPath(path);
     }
 
     /**
@@ -222,7 +216,11 @@ public class ResourceLocator {
     }
 
     public void setPath(String path) {
-        this.path = path;
+        if (path != null && path.startsWith("file://")) {
+            this.path = path.substring(7);
+        } else {
+            this.path = path;
+        }
     }
 
     public String getTrackLine() {

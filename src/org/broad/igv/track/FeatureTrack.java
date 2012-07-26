@@ -23,10 +23,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
@@ -34,7 +31,6 @@ import org.broad.tribble.TribbleException;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
 
@@ -358,7 +354,7 @@ public class FeatureTrack extends AbstractTrack {
         if (url == null) {
             String trackURL = getUrl();
             if (trackURL != null && igvFeature.getIdentifier() != null) {
-                String encodedID = URLEncoder.encode(igvFeature.getIdentifier());
+                String encodedID = StringUtils.encodeURL(igvFeature.getIdentifier());
                 url = trackURL.replaceAll("\\$\\$", encodedID);
             }
         }

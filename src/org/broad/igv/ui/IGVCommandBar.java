@@ -416,8 +416,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         final String chrName = getDefaultReferenceFrame().getChrName();
 
         if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
-            chromosomeChanged(chrName);
-            chromosomeComboBox.setSelectedItem(chrName);
             IGV.getInstance().chromosomeChangeEvent(chrName, false);
         }
 

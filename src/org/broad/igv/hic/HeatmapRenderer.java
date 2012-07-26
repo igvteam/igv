@@ -5,6 +5,8 @@ import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.renderer.ColorScale;
 
 import java.awt.*;
@@ -50,8 +52,6 @@ public class HeatmapRenderer {
         int chr1 = zd.getChr1();
         int chr2 = zd.getChr2();
 
-        int maxX = originX + width;
-        int maxY = originY + height;
 
         int x = originX;
         int y = originY;
@@ -65,23 +65,25 @@ public class HeatmapRenderer {
             if (x > y) {
                 x = originY;
                 y = originX;
-            }
-            if (maxX > maxY) {
-                int tmp = maxX;
-                maxX = maxY;
-                maxY = tmp;
+                int tmp = width;
+                width = height;
+                height = tmp;
             }
         }
 
+        int maxX = x + width;
+        int maxY = y + height;
 
         ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
-            RealMatrix pearsonsMatrix = zd.getPearsons();
-            if (pearsonsMatrix != null) {
-                ((HiCColorScale) colorScale).setMin((float) zd.getPearsonsMin());
-                ((HiCColorScale) colorScale).setMax((float) zd.getPearsonsMax());
-                renderMatrix(originX, originY, pearsonsMatrix, colorScale, g, zd.getZoom());
+            BasicMatrix bm =  zd.getPearsons();
+            if (bm != null) {
+                ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
+                ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
+ //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
+ //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
+                renderMatrix(bm, originX, originY, width, height, colorScale, g);
 
             }
         } else {
@@ -143,6 +145,7 @@ public class HeatmapRenderer {
                 int px = (rec.getX() - originX);
                 int py = (rec.getY() - originY);
                 g.setColor(color);
+                // TODO -- need to check right bounds before drawing
                 if (px > -1 && py > -1) {
                     g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 }
@@ -159,35 +162,41 @@ public class HeatmapRenderer {
     }
 
     /**
-     * Used for Pearsons correlation (dense matrix)
+     * Used for Pearsons correlation (dense matrix).  The bitmap is drawn at 1 data point per pixel, scaling
+     * happens elsewhere.
      *
-     * @param originX
-     * @param originY
+     * @param originX    origin in pixels
+     * @param originY    origin in pixels
      * @param rm
      * @param colorScale
      * @param g
      */
-    private void renderMatrix(int originX, int originY, RealMatrix rm,
-                              ColorScale colorScale, Graphics g,
-                              int zoomLevel) {
-
-        int nBinsX = rm.getColumnDimension();
-        int nBinsY = rm.getRowDimension();
+    private void renderMatrix(BasicMatrix rm, int originX, int originY, int width, int height,
+                              ColorScale colorScale, Graphics g) {
 
 
-        for (int i = 0; i < nBinsX; i++) {
-            for (int j = 0; j < nBinsY; j++) {
-                double score = rm.getEntry(i, j);
-                //float logScore = (float) Math.log10(score);                                       
-                Color color = score == 0 ? Color.black : colorScale.getColor((float) score);
-                int px = i - originX;
-                int py = j - originY;
+        int endX = Math.min(originX + width, rm.getColumnDimension());
+        int endY = Math.min(originY + height, rm.getRowDimension());
+
+        // TODO -- need to check bounds before drawing
+        for (int row = originY; row < endY; row++) {
+            for (int col = originX; col < endX; col++) {
+
+                float score = rm.getEntry(row, col);
+                Color color;
+                if (Float.isNaN(score)) {
+                    color = Color.gray;
+                } else {
+                     color = score == 0 ? Color.black : colorScale.getColor((float) score);
+                }
+                int px = col - originX;
+                int py = row - originY;
                 g.setColor(color);
                 g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 // Assuming same chromosome
-                if (i != j) {
-                    px = (j - originX);
-                    py = (i - originY);
+                if (col != row) {
+                    px = (row - originX);
+                    py = (col - originY);
                     g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 }
             }

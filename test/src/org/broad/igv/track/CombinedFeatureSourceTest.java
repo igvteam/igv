@@ -115,8 +115,8 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
     private List<Feature> tstOperationBED(String pathA, String pathB,
                                           CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
         IgvTools igvTools = new IgvTools();
-        igvTools.doIndex(pathA, 1, 16000);
-        igvTools.doIndex(pathB, 1, 16000);
+        igvTools.doIndex(pathA, null, 1, 16000);
+        igvTools.doIndex(pathB, null, 1, 16000);
         FeatureSource sourceA = new TribbleFeatureSource(pathA, genome);
         FeatureSource sourceB = new TribbleFeatureSource(pathB, genome);
 

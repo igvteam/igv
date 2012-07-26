@@ -770,7 +770,7 @@ public class IGVMenuBar extends JMenuBar {
                 Runnable runnable = new Runnable() {
                     public void run() {
                         try {
-                            MainWindow mainWindow = new MainWindow();
+                            MainWindow mainWindow = MainWindow.createMainWindow();
                             mainWindow.setVisible(true);
                             mainWindow.setSize(780, 660);
                             mainWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

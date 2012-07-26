@@ -15,7 +15,10 @@
 
 package org.broad.igv.ui.panel;
 
+import com.jidesoft.swing.*;
 import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.CheckBoxListCellRenderer;
+import com.jidesoft.swing.NullRadioButton;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 
@@ -24,6 +27,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -48,8 +52,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
             TrackWrapper trackWrapper = new TrackWrapper(t);
             wrappers.add(trackWrapper);
         }
+
         featureTrackList.setListData(wrappers.toArray());
-        featureTrackList.setSelectedObjects(selectedObjects.toArray());
 
     }
 
@@ -69,23 +73,21 @@ public class FeatureTrackSelectionDialog extends JDialog {
         dispose();
     }
 
-    public java.util.List<FeatureTrack> getSelectedTracks() {
+    public FeatureTrack getSelectedTrack() {
         if (isCanceled) return null;
-        Object[] selections = featureTrackList.getSelectedValues();
-        ArrayList<FeatureTrack> tracks = new ArrayList<FeatureTrack>(selections.length);
-        for (Object wrapper : selections) {
-            tracks.add(((TrackWrapper) wrapper).track);
-        }
-        return tracks;
+        Object selection = featureTrackList.getCheckBoxListSelectedValue();
+        if(selection == null) return null;
+        return ((TrackWrapper) selection).track;
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
+        vSpacer1 = new JPanel(null);
         contentPanel = new JPanel();
         featureTrackPanel = new JScrollPane();
-        featureTrackList = new CheckBoxList();
+        featureTrackList = new RadioButtonSelectionList();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -97,7 +99,12 @@ public class FeatureTrackSelectionDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setMinimumSize(new Dimension(220, 220));
             dialogPane.setLayout(new BorderLayout());
+
+            //---- vSpacer1 ----
+            vSpacer1.setPreferredSize(new Dimension(10, 30));
+            dialogPane.add(vSpacer1, BorderLayout.NORTH);
 
             //======== contentPanel ========
             {
@@ -105,6 +112,10 @@ public class FeatureTrackSelectionDialog extends JDialog {
 
                 //======== featureTrackPanel ========
                 {
+
+                    //---- featureTrackList ----
+                    featureTrackList.setClickInCheckBoxOnly(false);
+                    featureTrackList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     featureTrackPanel.setViewportView(featureTrackList);
                 }
                 contentPanel.add(featureTrackPanel);
@@ -115,8 +126,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -127,8 +138,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -139,8 +150,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -153,9 +164,10 @@ public class FeatureTrackSelectionDialog extends JDialog {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
+    private JPanel vSpacer1;
     private JPanel contentPanel;
     private JScrollPane featureTrackPanel;
-    private CheckBoxList featureTrackList;
+    private RadioButtonSelectionList featureTrackList;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -173,4 +185,85 @@ public class FeatureTrackSelectionDialog extends JDialog {
             return track.getName();
         }
     }
+//
+//    /**
+//     * Just like a CheckBoxList, but renders with radio buttons
+//     * and only allows single selection.
+//     * User: jacob
+//     * Date: 2012-Jul-17
+//     */
+//    public static class RadioList extends CheckBoxList {
+//
+//        public RadioList() {
+//            super();
+//        }
+//
+//        @Override
+//        protected void init() {
+//            super.init();
+//            getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        }
+//
+//        @Override
+//        protected CheckBoxListCellRenderer createCellRenderer() {
+//            return new RadioListCellRenderer();
+//        }
+//
+//        @Override
+//        protected Handler createHandler() {
+//            return new SingleSelectionHandler(this);
+//        }
+//
+//
+//        protected static class SingleSelectionHandler extends CheckBoxList.Handler{
+//
+//            public SingleSelectionHandler(CheckBoxList list) {
+//                super(list);
+//            }
+//
+//            protected void toggleSelection(int index) {
+//                if(_list.getCheckBoxListSelectionModel().isSelectedIndex(index)){
+//                    return;
+//                }
+//                super.toggleSelection(index);
+//            }
+//        }
+//
+//    }
+//
+//    public static class RadioListCellRenderer extends CheckBoxListCellRenderer {
+//
+//        protected AbstractButton button = new NullRadioButton();
+//
+//        public RadioListCellRenderer() {
+//            this(null);
+//        }
+//
+//        public RadioListCellRenderer(ListCellRenderer renderer) {
+//            super(renderer);
+//            //Really have no idea why this is necessary, or how the check box gets added in the first place
+//            if (getComponentCount() > 0)
+//                remove(0);
+//            button.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+//            button.setOpaque(false);
+//            add(button, BorderLayout.BEFORE_LINE_BEGINS);
+//            set_checkBox(button);
+//        }
+//
+//        public void set_checkBox(AbstractButton button){
+//            //This is here for JFormDesigner
+//            //It gets a NoSuchFieldError when doing this.
+//            //Doesn't really matter to the compiled program, only makes
+//            //editing the dialog easier
+//            try{
+//                this._checkBox = button;
+//            }catch(NoSuchFieldError e){
+//
+//            }
+//
+//        }
+//    }
+
+
+
 }

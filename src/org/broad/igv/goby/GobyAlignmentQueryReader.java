@@ -181,6 +181,9 @@ public class GobyAlignmentQueryReader implements AlignmentReader {
      * @return True if this implementation can load the alignment corresponding to this filename.
      */
     public static boolean supportsFileType(String filename) {
+        if(!(filename.endsWith(".entries") || filename.endsWith(".header") || filename.endsWith(".index"))) {
+            return false;
+        }
         final boolean result = AlignmentReaderImpl.canRead(filename);
         LOG.debug(String.format("supportsFileType %s result=%b", filename, result));
         return result;

@@ -47,6 +47,7 @@ public class FastaUtils {
         BufferedWriter writer = null;
 
         try {
+            log.info("Creating index file at " + outputPath);
             reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
             writer = new BufferedWriter(new FileWriter(outputPath));
             String line = null;

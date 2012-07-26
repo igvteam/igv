@@ -21,17 +21,16 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
-
-import java.awt.*;
-import java.lang.reflect.Field;
-import java.util.*;
 
 /**
  * @author jrobinso
@@ -40,6 +39,7 @@ import java.util.*;
 @Ignore
 public class TestUtils {
     public static final String DATA_DIR = "test/data/";
+    public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/";
     public static final String defaultGenome = DATA_DIR + "/genomes/hg18.unittest.genome";
     public static final String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
     public static final String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
@@ -53,6 +53,7 @@ public class TestUtils {
 
     public static void setUpTestEnvironment() {
         Globals.setTesting(true);
+        //Globals.setBatch(true);
         PreferenceManager.getInstance().setPrefsFile("testprefs.properties");
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
@@ -97,11 +98,8 @@ public class TestUtils {
      * @throws IOException
      */
     public static void createIndex(String file, int indexType, int binSize) throws IOException {
-        File indexFile = new File(file + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        (new IgvTools()).doIndex(file, indexType, binSize);
+        String indexPath = (new IgvTools()).doIndex(file, null, indexType, binSize);
+        File indexFile = new File(indexPath);
         indexFile.deleteOnExit();
     }
 
@@ -117,7 +115,7 @@ public class TestUtils {
     }
 
     public static void clearOutputDir() throws IOException {
-        File outputDir = new File(DATA_DIR + "/out/");
+        File outputDir = new File(TMP_OUTPUT_DIR);
         if (outputDir.isDirectory()) {
             File[] listFiles = outputDir.listFiles();
             for (File fi : listFiles) {
@@ -157,7 +155,7 @@ public class TestUtils {
      * @param actIter
      * @throws AssertionError
      */
-    public static void assertFeatureListsEqual(Iterator<Feature> expected, Iterator<Feature> actIter) throws AssertionError {
+    public static void assertFeatureListsEqual(Iterator<? extends Feature> expected, Iterator<? extends Feature> actIter) throws AssertionError {
         while (expected.hasNext()) {
             Feature exp = expected.next();
             assertTrue(actIter.hasNext());
@@ -179,7 +177,7 @@ public class TestUtils {
      *                  if this is true it goes recursively all the way down. Recursion is breadth-first,
      *                  stops at each level when an object has only non-Component fields
      */
-    public static void setAllNames(Object parent, boolean recursive){
+    public static void setAllNames(Object parent, boolean recursive) {
         Field[] fields = parent.getClass().getDeclaredFields();
         java.util.List<Component> childComponents = new ArrayList<Component>(fields.length);
         try {
@@ -194,7 +192,7 @@ public class TestUtils {
                 //Null valued fields don't throw a CCE
                 //We don't overwrite names, this should also prevent
                 //infinite recursion
-                if(c == null || c.getName() != null){
+                if (c == null || c.getName() != null) {
                     continue;
                 }
                 //At this point, we've established
@@ -205,8 +203,8 @@ public class TestUtils {
                 f.setAccessible(false);
             }
 
-            if(recursive){
-                for(Component c: childComponents){
+            if (recursive) {
+                for (Component c : childComponents) {
                     setAllNames(c, recursive);
                 }
             }

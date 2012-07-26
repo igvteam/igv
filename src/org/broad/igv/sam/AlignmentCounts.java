@@ -1,12 +1,23 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
-import java.util.Set;
+import org.broad.tribble.Feature;
 
 /**
  * @author Jim Robinson
  * @date 11/22/11
  */
-public interface AlignmentCounts {
+public interface AlignmentCounts extends Feature {
 
     int getTotalCount(int pos);
 
@@ -31,10 +42,6 @@ public interface AlignmentCounts {
     int getAvgQuality(int pos, byte b);
 
     void incCounts(Alignment alignment);
-
-    int getStart();
-
-    int getEnd();
 
     int getNumberOfPoints();
 

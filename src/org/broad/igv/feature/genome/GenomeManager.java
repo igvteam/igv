@@ -197,7 +197,6 @@ public class GenomeManager {
                 fastaPath = archiveFile.getAbsolutePath();
                 fastaIndexPath = fastaPath + ".fai";
 
-                log.info("Creating index file at " + fastaIndexPath);
                 FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
             }
 

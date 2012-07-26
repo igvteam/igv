@@ -527,4 +527,10 @@ public class FileUtils {
             return f.exists() ? f.lastModified() : 0;
         }
     }
+
+    public static String getParent(String path) {
+        String piPath = getPlatformIndependentPath(path);
+        int lastSlashIdx = piPath.lastIndexOf("/");
+        return lastSlashIdx <= 0 ? path : path.substring(0, lastSlashIdx);
+    }
 }
