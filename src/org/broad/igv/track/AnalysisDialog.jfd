@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_33" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -11,26 +11,51 @@ new FormModel {
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jformdesigner.runtime.NullLayout ) ) {
 					name: "contentPanel"
-					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "track1Box"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label2"
+						"text": "Track A:"
+						"labelFor": new FormReference( "trackABox" )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 10
-						"y": 35
-						"width": 270
+						"x": 5
+						"y": 20
+					} )
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "trackABox"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+						"x": 70
+						"y": 15
+						"width": 205
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label4"
+						"text": "Operation:"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+						"x": 5
+						"y": 65
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "operation"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
 						"x": 70
-						"y": 75
+						"y": 60
 						"width": 150
 					} )
-					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "track2Box"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label3"
+						"text": "Track B:"
+						"labelFor": new FormReference( "trackBBox" )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
-						"x": 10
-						"y": 115
-						"width": 270
+						"width": 52
+						"height": 16
+						"x": 5
+						"y": 110
+					} )
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "trackBBox"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.NullConstraints ) {
+						"x": 70
+						"y": 105
+						"width": 205
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label1"
@@ -64,7 +89,7 @@ new FormModel {
 					"border": new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
-						"text": "OK"
+						"text": "  OK  "
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "okButtonActionPerformed", true ) )
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"hAlign": 0
