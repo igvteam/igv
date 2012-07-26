@@ -95,6 +95,14 @@ new FormModel {
 						"hAlign": 0
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "helpButton"
+						"text": "Help"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "helpButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridx": 1
+						"hAlign": 0
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "cancelButton"
 						"text": "Cancel"
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelButtonActionPerformed", true ) )

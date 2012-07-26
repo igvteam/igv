@@ -15,6 +15,7 @@
 
 package org.broad.igv.track;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
@@ -25,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -34,6 +36,8 @@ import java.util.List;
  * @author User #2
  */
 public class AnalysisDialog extends JDialog {
+
+    private static Logger log = Logger.getLogger(AnalysisDialog.class);
 
 
     public AnalysisDialog(Frame owner) {
@@ -97,6 +101,36 @@ public class AnalysisDialog extends JDialog {
         IGV.getInstance().repaint();
     }
 
+    private void helpButtonActionPerformed(ActionEvent e) {
+        String defInfo = "Error retrieving help. See the IGV User Guide.";
+        InputStream is = this.getClass().getResourceAsStream("/resources/bedtools_help.txt");
+        String info = ""; String line;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try{
+            while((line = reader.readLine()) != null){
+                info += line + "\n";
+            }
+        }catch(IOException exc){
+            log.error(exc);
+            info = defInfo;
+        }
+
+        JTextArea textArea = new JTextArea(info);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+
+        JOptionPane pane = new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE);
+        JDialog dialog = pane.createDialog(null, "Help");
+        dialog.setAlwaysOnTop(true);
+        dialog.setResizable(true);
+
+        dialog.setSize(400, 400);
+        dialog.setVisible(true);
+        //JOptionPane.showMessageDialog(this, scrollPane, "Help", JOptionPane.PLAIN_MESSAGE);
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -113,6 +147,7 @@ public class AnalysisDialog extends JDialog {
         resultName = new JTextArea();
         buttonBar = new JPanel();
         okButton = new JButton();
+        helpButton = new JButton();
         cancelButton = new JButton();
 
         //======== this ========
@@ -202,6 +237,18 @@ public class AnalysisDialog extends JDialog {
                     GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
                     new Insets(0, 0, 0, 0), 0, 0));
 
+                //---- helpButton ----
+                helpButton.setText("Help");
+                helpButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        helpButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(helpButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
+
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
                 cancelButton.addActionListener(new ActionListener() {
@@ -237,6 +284,7 @@ public class AnalysisDialog extends JDialog {
     private JTextArea resultName;
     private JPanel buttonBar;
     private JButton okButton;
+    private JButton helpButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
