@@ -1128,22 +1128,30 @@ public class MainWindow extends JFrame {
                 hiCPanel.paint(g);
 
                 JFileChooser fc = new JFileChooser();
-                fc.showSaveDialog(null);
-                File file = fc.getSelectedFile();
-                try {
-                    // default if they give no format or invalid format
-                    String fmt = "jpg";
-                    int ind = file.getName().indexOf(".");
-                    if (ind != -1) {
-                        String ext = file.getName().substring(ind + 1);
-                        String[] strs = ImageIO.getWriterFormatNames();
-                        for (String aStr : strs)
-                            if (ext.equals(aStr))
-                                fmt = ext;
+                fc.setSelectedFile(new File("image.png"));
+                int actionDialog = fc.showSaveDialog(null);
+                if (actionDialog == JFileChooser.APPROVE_OPTION ) {
+                    File file = fc.getSelectedFile();
+                    if (file.exists()) {
+                        actionDialog = JOptionPane.showConfirmDialog(null, "Replace existing file?");
+                        if (actionDialog == JOptionPane.NO_OPTION || actionDialog == JOptionPane.CANCEL_OPTION)
+                            return;
                     }
-                    ImageIO.write(image.getSubimage(0, 0, 600, 600), fmt, file);
-                } catch (IOException ie) {
-                    System.err.println("Unable to write " + file + ": " + ie);
+                    try {
+                        // default if they give no format or invalid format
+                        String fmt = "jpg";
+                        int ind = file.getName().indexOf(".");
+                        if (ind != -1) {
+                            String ext = file.getName().substring(ind + 1);
+                            String[] strs = ImageIO.getWriterFormatNames();
+                            for (String aStr : strs)
+                                if (ext.equals(aStr))
+                                    fmt = ext;
+                        }
+                        ImageIO.write(image.getSubimage(0, 0, 600, 600), fmt, file);
+                    } catch (IOException ie) {
+                        System.err.println("Unable to write " + file + ": " + ie);
+                    }
                 }
             }
         });
