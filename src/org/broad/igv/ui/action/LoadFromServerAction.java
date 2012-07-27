@@ -28,7 +28,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -64,36 +63,22 @@ public class LoadFromServerAction extends MenuAction {
         this.mainFrame = mainFrame;
     }
 
+    public static String getGenomeDataURL(String genomeId){
+        String urlString = PreferenceManager.getInstance().getDataServerURL();
+        String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
+        return genomeURL;
+    }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
 
         mainFrame.setStatusBarMessage("Loading ...");
-
-        String urlString = PreferenceManager.getInstance().getDataServerURL();
         String genomeId = GenomeManager.getInstance().getGenomeId();
-        String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
-        try {
-            InputStream is = null;
-            LinkedHashSet<String> nodeURLs = null;
-            try {
-                is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                nodeURLs = getResourceUrls(bufferedReader);
-            } catch (IOException e) {
-                MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
-                log.error("Error loading genome registry file", e);
-                return;
+        String genomeURL = getGenomeDataURL(genomeId);
 
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        log.error("Error closing input stream", e);
-                    }
-                }
-            }
+        try {
+
+            LinkedHashSet<String> nodeURLs = getNodeURLs(genomeURL);
 
             if (nodeURLs == null || nodeURLs.isEmpty()) {
                 MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
@@ -110,6 +95,30 @@ public class LoadFromServerAction extends MenuAction {
             mainFrame.showLoadedTrackCount();
         }
 
+    }
+
+    public static LinkedHashSet<String> getNodeURLs(String genomeURL){
+
+        InputStream is = null;
+        LinkedHashSet<String> nodeURLs = null;
+        try {
+            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+            nodeURLs = getResourceUrls(bufferedReader);
+        } catch (IOException e) {
+            MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
+            log.error("Error loading genome registry file", e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    log.error("Error closing input stream", e);
+                }
+            }
+        }
+
+        return nodeURLs;
     }
 
     public List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
@@ -250,7 +259,7 @@ public class LoadFromServerAction extends MenuAction {
      * @throws java.net.MalformedURLException
      * @throws java.io.IOException
      */
-    private LinkedHashSet<String> getResourceUrls(BufferedReader bufferedReader)
+    private static LinkedHashSet<String> getResourceUrls(BufferedReader bufferedReader)
             throws IOException {
 
         LinkedHashSet<String> xmlFileUrls = new LinkedHashSet();

@@ -46,11 +46,6 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
 
     static GenomeManager genomeManager;
 
-    static final String GENOME_URL = PreferenceManager.DEFAULT_GENOME_URL;
-
-    @Rule
-    public TestRule testTimeout = new Timeout((int) 600e3);
-
     public GenomeManagerTest() {
     }
 
@@ -97,43 +92,6 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             count++;
         }
         assertEquals(4, count);
-    }
-
-    @Test
-    public void testLoadServerGenomes() throws Exception {
-        String genomeListPath = PreferenceManager.DEFAULT_GENOME_URL;
-        PreferenceManager.getInstance().overrideGenomeServerURL(genomeListPath);
-        List<GenomeListItem> serverSideItemList = genomeManager.getServerGenomeArchiveList(null);
-        assertNotNull("Could not retrieve genome list from server", serverSideItemList);
-        assertTrue("Genome list empty", serverSideItemList.size() > 0);
-
-        Map<GenomeListItem, Exception> failedGenomes = new LinkedHashMap<GenomeListItem, Exception>(10);
-
-        int count = 0;
-        for (GenomeListItem genome : serverSideItemList) {
-            try {
-                count++;
-                tstLoadGenome(genome.getLocation());
-                Runtime.getRuntime().gc();
-            } catch (Exception e) {
-                failedGenomes.put(genome, e);
-            }
-        }
-        System.out.println("Attempted to load " + count + " genomes");
-        System.out.println(failedGenomes.size() + " of them failed");
-        for (Map.Entry<GenomeListItem, Exception> entry : failedGenomes.entrySet()) {
-            GenomeListItem item = entry.getKey();
-            System.out.println(String.format("Exception loading (%s\t%s\t%s): %s", item.getDisplayableName(),
-                    item.getLocation(), item.getId(), entry.getValue()));
-        }
-
-        assertEquals(0, failedGenomes.size());
-    }
-
-    public void tstLoadGenome(String path) throws Exception {
-        FeatureDB.clearFeatures();
-        Genome genome = GenomeManager.getInstance().loadGenome(path, null);
-        assertTrue(genome.getChromosomeNames().size() > 0);
     }
 
 }

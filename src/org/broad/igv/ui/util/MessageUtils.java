@@ -49,7 +49,7 @@ public class MessageUtils {
 
     public static synchronized void showMessage(String message) {
 
-        if (Globals.isHeadless() || Globals.isSuppressMessages()) { //|| !IGV.hasInstance()) {
+        if (Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting()) {
             log.info(message);
         } else {
             // Always use HTML for message displays, but first remove any embedded <html> tags.
