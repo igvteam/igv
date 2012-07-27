@@ -101,8 +101,6 @@ public class Preprocessor {
             fos.writeString("1");
 
             // Compute matrices.  Note that c2 is always >= c1
-            List<Thread> threads = new ArrayList();
-            final List<MatrixPP> matrices = new ArrayList<MatrixPP>();
             for (int c1 = 0; c1 < nChrs; c1++) {
                 for (int c2 = c1; c2 < nChrs; c2++) {
 
@@ -120,45 +118,14 @@ public class Preprocessor {
                         }
                     }
 
-                    if (nThreads <= 1) {
-                        MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
-                        if (matrix != null) {
-                            writeMatrix(matrix);
-                            matrix = null;
-                        }
-                        System.gc();
-                    } else {
-                        final int fc1 = c1;
-                        final int fc2 = c2;
-                        Runnable runnable = new Runnable() {
-                            public void run() {
-                                try {
-                                    MatrixPP matrix = computeMatrix(inputFileList, fc1, fc2);
-                                    if (matrix != null) {
-                                        matrices.add(matrix);
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        };
-                        threads.add(new Thread(runnable));
-
-                        // Thread queue is full.  Process it
-                        if (threads.size() >= nThreads) {
-                            processThreads(threads, matrices);
-                            threads.clear();
-                            matrices.clear();
-                        }
+                    MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
+                    if (matrix != null) {
+                        writeMatrix(matrix);
                     }
+                    System.gc();
                 }
             } // End of double loop through chromosomes
 
-            // Process any leftover threads
-            if (threads.size() > 0) {
-                processThreads(threads, matrices);
-            }
 
 
             masterIndexPosition = fos.getWrittenCount();
@@ -756,7 +723,7 @@ public class Preprocessor {
                 xBin = b1;
                 yBin = b2;
 
-                if(b1 != b2) {
+                if (b1 != b2) {
                     sum++;  // <= count for mirror cell.
                 }
             }
