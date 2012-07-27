@@ -481,22 +481,20 @@ public class AlignmentInterval extends Locus implements Interval {
                         } else if (base == ref) {
                             setScore(Integer.MAX_VALUE - 1);  // Base is reference
                         } else {
-                            int count = interval.getDelCount(adjustedCenter);
-
                             //If base is 0, base not covered (splice junction) or is deletion
-                            if (base == 0 && count <= 0) {
-                                //Base not covered, NOT a deletion
-                                setScore(Integer.MAX_VALUE);
-                                break;
+                            if (base == 0) {
+                                int delCount = interval.getDelCount(adjustedCenter);
+                                if (delCount > 0) {
+                                    setScore(-delCount);
+                                } else {
+                                    //Base not covered, NOT a deletion
+                                    setScore(Integer.MAX_VALUE);
+                                }
+                            } else {
+                                int count = interval.getCount(adjustedCenter, base);
+                                byte phred = centerAlignment.getPhred(adjustedCenter);
+                                setScore(-(count + (phred / 100.0f)));
                             }
-
-                            //So we either have a deletion or standard count
-                            if (count <= 0) {
-                                count = interval.getCount(adjustedCenter, base);
-                            }
-                            byte phred = centerAlignment.getPhred(adjustedCenter);
-                            setScore(-(count + (phred / 100.0f)));
-
                         }
                         break;
                     case QUALITY:
