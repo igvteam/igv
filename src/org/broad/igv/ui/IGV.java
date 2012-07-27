@@ -642,7 +642,7 @@ public class IGV {
                     }
 
                     contentPane.getMainPanel().invalidate();
-                    IGV.getInstance().showLoadedTrackCount();
+                    showLoadedTrackCount();
 
                     boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
                     if (affective) {
@@ -1535,6 +1535,10 @@ public class IGV {
                 track.setAttributeValue("NAME", track.getName());
                 track.setAttributeValue("DATA FILE", fn);
                 track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+
+                if (track instanceof TrackGroupEventListener) {
+                    addGroupEventListener((TrackGroupEventListener) track);
+                }
             }
         }
 
