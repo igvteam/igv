@@ -1,0 +1,25 @@
+IGV can use BEDTools to analyze data which is in view. BEDTools must be installed separately, and the account running IGV must have permission to execute the BEDTools files. 
+BEDTools documentation is at http://code.google.com/p/bedtools/#Documentation
+Of the many commands which BEDTools contains, IGV offers access to the following:
+
+intersect
+
+Identify regions of overlapping features in two tracks. Exons are treated as separate features (ie the "-split" flag is used)
+
+subtract
+
+Remove regions in one track from another. For example, if one had a track of features and wanted to find all regions NOT in a gene, one would subtract the gene track from the feature track
+
+INSERT SCREENSHOT HERE
+
+closest
+
+For each feature in the first track, find the closest matching feature in the second track. This may be an overlapping feature.
+
+window
+
+Similar to intersect, window searches for overlapping features. However, window adds a specified number (1000) of base pairs upstream and downstream of each feature in A. In effect, this allows features in B that are “near” features in A to be detected
+
+coverage
+
+Calculate the coverage of track A by track B.
