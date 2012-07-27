@@ -184,8 +184,17 @@
     <property name="test.reports.tmp" value="${basedir}/reportstmp"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
 
+    <!--Hosted data test explicitly excluded, never run automated, can run manual-->
     <fileset dir="${testtmp.dir}" id="allfileset">
         <include name="**/*.class"/>
+        <exclude name="**/*HostedDataTest*.class"/>
+        <exclude name="**/*$*.class"/>
+    </fileset>
+
+    <fileset dir="${testtmp.dir}" id="longfileset">
+        <include name="**/*HostedData*.class"/>
+        <include name="**/*IGVTools*.class"/>
+        <include name="**/*TrackLoader*.class"/>
         <exclude name="**/*$*.class"/>
     </fileset>
 

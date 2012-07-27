@@ -21,6 +21,7 @@ import org.broad.igv.track.TrackLoader;
 import org.broad.igv.ui.action.LoadFromServerAction;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.broad.igv.util.Utilities;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -34,23 +35,24 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test loading the data we host. Sometimes it gets corrupted,
  * or we make backwards-incompatible changes
- *
+ * <p/>
  * User: jacob
  * Date: 2012-Jul-27
  */
-public class HostedDataTest extends AbstractHeadlessTest{
+public class HostedDataTest extends AbstractHeadlessTest {
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 600e4);
+
+    private PrintStream errorWriter = System.out;
 
 
     /**
@@ -59,20 +61,20 @@ public class HostedDataTest extends AbstractHeadlessTest{
      *
      * @param topNode
      */
-    private void getPathsFromNode(Node topNode, Set<String> paths){
+    private void getPathsFromNode(Node topNode, Set<String> paths) {
         String pKey = "path";
 
-        try{
+        try {
             NamedNodeMap attrs = topNode.getAttributes();
             Node pathNode = attrs.getNamedItem(pKey);
             String path = pathNode.getTextContent().trim();
             paths.add(path);
-        }catch(NullPointerException e){
+        } catch (NullPointerException e) {
             //pass, node doesn't have path attribute
         }
 
         NodeList nodes = topNode.getChildNodes();
-        for(int nn = 0 ; nn < nodes.getLength(); nn++){
+        for (int nn = 0; nn < nodes.getLength(); nn++) {
             Node node = nodes.item(nn);
             getPathsFromNode(node, paths);
         }
@@ -80,17 +82,23 @@ public class HostedDataTest extends AbstractHeadlessTest{
 
     /**
      * Test loading all the data hosted for each genome
+     *
      * @throws Exception
      */
-    @Ignore
+
     @Test
-    public void tstLoadServerData() throws Exception{
+    public void testLoadServerData() throws Exception {
+
+        String outPath = TestUtils.DATA_DIR + "failed_loaded_files.txt";
+        errorWriter = new PrintStream(outPath);
+
         List<GenomeListItem> serverSideGenomeList = getServerGenomes();
         Map<String, Exception> failedFiles = new LinkedHashMap<String, Exception>(10);
         Set<String> fileURLs = new HashSet<String>(100);
 
-        for(GenomeListItem genomeItem: serverSideGenomeList){
+        for (GenomeListItem genomeItem : serverSideGenomeList) {
 
+            Runtime.getRuntime().gc();
             String genomeURL = LoadFromServerAction.getGenomeDataURL(genomeItem.getId());
 
             TrackLoader loader = new TrackLoader();
@@ -99,31 +107,32 @@ public class HostedDataTest extends AbstractHeadlessTest{
             LinkedHashSet<String> nodeURLs;
             try {
                 nodeURLs = LoadFromServerAction.getNodeURLs(genomeURL);
-                if(nodeURLs == null){
+                if (nodeURLs == null) {
                     System.out.println("Warning: No Data found for " + genomeURL);
                     continue;
                 }
             } catch (Exception e) {
-                failedFiles.put(genomeURL, e);
+                recordError(genomeURL, e, failedFiles);
                 continue;
             }
 
-            for(String nodeURL: nodeURLs){
-                try{
+            for (String nodeURL : nodeURLs) {
+                try {
                     InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(nodeURL));
                     Document xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
                     getPathsFromNode(xmlDocument, fileURLs);
 
-                    for(String fileURL: fileURLs){
-                        try{
+                    for (String fileURL : fileURLs) {
+                        try {
+                            System.out.println("Loading " + fileURL);
                             loader.load(new ResourceLocator(fileURL), curGenome);
-                        }catch (Exception e){
-                            failedFiles.put(fileURL, e);
+                        } catch (Exception e) {
+                            recordError(fileURL, e, failedFiles);
                         }
                     }
 
-                }catch(Exception e){
-                    failedFiles.put(nodeURL, e);
+                } catch (Exception e) {
+                    recordError(nodeURL, e, failedFiles);
                 }
             }
 
@@ -131,14 +140,22 @@ public class HostedDataTest extends AbstractHeadlessTest{
 
         for (Map.Entry<String, Exception> entry : failedFiles.entrySet()) {
             String item = entry.getKey();
-            System.out.println(String.format("Exception loading file %s: %s", item, entry.getValue().getMessage()));
+            errorWriter.println(String.format("Exception loading file %s: %s", item, entry.getValue().getMessage()));
         }
 
+        errorWriter.flush();
+        errorWriter.close();
         assertEquals(0, failedFiles.size());
 
     }
 
-    private List<GenomeListItem> getServerGenomes() throws IOException{
+    private void recordError(String path, Exception e, Map<String, Exception> failures) {
+        failures.put(path, e);
+        errorWriter.println(String.format("Exception loading %s: %s", path, e.getMessage()));
+        errorWriter.flush();
+    }
+
+    private List<GenomeListItem> getServerGenomes() throws IOException {
         String genomeListPath = PreferenceManager.DEFAULT_GENOME_URL;
         PreferenceManager.getInstance().overrideGenomeServerURL(genomeListPath);
         List<GenomeListItem> serverSideItemList = GenomeManager.getInstance().getServerGenomeArchiveList(null);
@@ -148,6 +165,7 @@ public class HostedDataTest extends AbstractHeadlessTest{
     }
 
 
+    @Ignore
     @Test
     public void testLoadServerGenomes() throws Exception {
 
