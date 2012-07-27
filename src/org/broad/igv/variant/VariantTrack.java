@@ -186,9 +186,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
 
-        // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
-        IGV.getInstance().addGroupEventListener(this);
-
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
         if (ParsingUtils.pathExists(bamListPath)) {
@@ -253,7 +250,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // setup groups according to the attribute used for sorting (loaded from a sample information file):
 
         AttributeManager manager = AttributeManager.getInstance();
-        String newGroupByAttribute = IGV.getInstance().getGroupByAttribute();
+        String newGroupByAttribute = !IGV.hasInstance() ? null : IGV.getInstance().getGroupByAttribute();
 
         // The first equality handles the case where both are null
         if ((newGroupByAttribute == groupByAttribute) ||
