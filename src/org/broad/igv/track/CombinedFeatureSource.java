@@ -107,7 +107,6 @@ public class CombinedFeatureSource implements FeatureSource {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
         int allNumCols = -1;
-        Map<String, Integer> props = new HashMap<String, Integer>(2);
         if (features != null) {
             IGVBEDCodec codec = new IGVBEDCodec();
             while (features.hasNext()) {
@@ -177,19 +176,11 @@ public class CombinedFeatureSource implements FeatureSource {
             cmd += " -i " + StringUtils.join(tempFiles.keySet(), " ");
         } else {
             assert tempFiles.size() == 2;
-            cmd += " -b " + fiNames[1] + " -a " + fiNames[0];
+            cmd += " -a " + fiNames[0] + " -b " + fiNames[1];
         }
 
         //Start bedtools process
         Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
-
-        //This is un-necessary I believe, and occasionally will hang
-//        try {
-//            pr.waitFor();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//            throw new IOException(e);
-//        }
 
         //Read back in the data which bedtools output
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
@@ -244,58 +235,6 @@ public class CombinedFeatureSource implements FeatureSource {
         err.close();
 
         return featuresList.iterator();
-    }
-
-    /**
-     * Certain bedtools commands output features side by side
-     * e.g.
-     * chr1 5   10  chr1    8   20
-     * <p/>
-     * might be one line, the first 3 columns representing data from file A
-     * and the second 3 representing data from file B
-     *
-     * @param tokens
-     * @param colsFeat1 Number of columns feature 1 has
-     * @param colsFeat2 Number of columns feature 2 has
-     * @return A 2-D string array. First index is length 2, second is length = the number of
-     *         columns each feature has. out[0] is the first feature, out[1] is the second
-     */
-    private String[][] splitDualFeatures(String[] tokens, int colsFeat1, int colsFeat2) {
-
-        assert tokens.length >= colsFeat1 + colsFeat2;
-
-        String[] feat1 = Arrays.copyOf(tokens, colsFeat1);
-        String[] feat2 = Arrays.copyOfRange(tokens, colsFeat1, colsFeat1 + colsFeat2);
-
-
-        String[][] out = new String[][]{feat1, feat2};
-        return out;
-
-    }
-
-    /**
-     * Bedtools reports certain features as:
-     * chr  start   end some_number
-     * Where some_number might be coverage, overlap, fraction, etc
-     *
-     * @param input
-     * @return
-     */
-    private String[] convertBedToolsOutToBed(String[] input) {
-        if (input.length < 3) {
-            throw new IllegalArgumentException("Input array has only " + input.length + " columns, need at least 3");
-        }
-
-        //No score data
-        if (input.length == 3) {
-            return input;
-        }
-
-        String[] output = new String[input.length + 1];
-        System.arraycopy(input, 0, output, 0, 3);
-        output[3] = "";
-        System.arraycopy(input, 3, output, 4, input.length - 3);
-        return output;
     }
 
     @Override
