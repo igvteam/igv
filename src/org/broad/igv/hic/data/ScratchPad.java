@@ -39,18 +39,18 @@ public class ScratchPad {
         // Peak at file to determine version
         BufferedInputStream bis = null;
 
-            InputStream is = ParsingUtils.openInputStream("/Users/jrobinso/foo.txt");
-            bis = new BufferedInputStream(is);
-            LittleEndianInputStream les = new LittleEndianInputStream(bis);
+        InputStream is = ParsingUtils.openInputStream("/Users/jrobinso/foo.txt");
+        bis = new BufferedInputStream(is);
+        LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
         int b;
-        while((b = les.read()) >= 0) {
+        while ((b = les.read()) >= 0) {
             System.out.println(b + "  " + ((char) b));
         }
 
 //        String s = les.readString();
 //        System.out.println(s);
-       is.close();
+        is.close();
     }
 
     public static BasicMatrix readPearsons(String path) throws IOException {
@@ -65,41 +65,52 @@ public class ScratchPad {
             int bytePosition = 0;
             int magic = les.readInt();    // <= 6515048
             bytePosition += 4;
+            System.out.println("Magic number = " + magic);
 
             if (magic == 6515048) {
                 // Version number
                 int version = les.readInt();
                 bytePosition += 4;
+                System.out.println("Version = " + version);
 
                 String genome = les.readString();
                 bytePosition += genome.length() + 1;
+                System.out.println("Genome = " + genome);
 
                 String chr1 = les.readString();
                 bytePosition += chr1.length() + 1;
+                System.out.println("Chr1 = " + chr1);
 
                 String chr2 = les.readString();
                 bytePosition += chr2.length() + 1;
+                System.out.println("Chr2 = " + chr2);
 
                 int binSize = les.readInt();
                 bytePosition += 4;
+                System.out.println("binSize = " + binSize);
 
                 float lowerPercentile = les.readFloat();
                 bytePosition += 4;
+                System.out.println("Lower value = " + lowerPercentile);
 
                 float upperPercentile = les.readFloat();
                 bytePosition += 4;
+                System.out.println("Upper value = " + upperPercentile);
 
                 int nRows = les.readInt();  // # rows, assuming square matrix
                 bytePosition += 4;
+                System.out.println("Row count = " + nRows);
 
                 int nCols = les.readInt();
                 bytePosition += 4;
+                System.out.println("Column count = " + nRows);
 
                 if (nRows != nCols) throw new RuntimeException("Non-square matrices not supported");
 
                 return new DiskResidentMatrix(path, bytePosition, nRows, lowerPercentile, upperPercentile);
 
             } else {
+                // Old style, not sure we need to support this anymore
                 int dim = magic;
                 DiskResidentMatrix bm = new DiskResidentMatrix(path, dim);
                 return bm;
@@ -163,9 +174,9 @@ public class ScratchPad {
             LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
             int dim = les.readInt();
-            int nPoints = dim*dim;
-            float [] data = new float[nPoints];
-            for(int i=0; i<nPoints; i++) {
+            int nPoints = dim * dim;
+            float[] data = new float[nPoints];
+            for (int i = 0; i < nPoints; i++) {
                 data[i] = les.readFloat();
             }
 
@@ -271,7 +282,7 @@ public class ScratchPad {
         }
 
         // Stats
-        double [] flattenedData = flattenedDataList.toArray();
+        double[] flattenedData = flattenedDataList.toArray();
         los.writeFloat((float) StatUtils.percentile(flattenedData, 5));
         los.writeFloat((float) StatUtils.percentile(flattenedData, 95));
 
