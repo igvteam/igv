@@ -61,14 +61,24 @@ public class HostedDataTest extends AbstractHeadlessTest {
      *
      * @param topNode
      */
-    private void getPathsFromNode(Node topNode, Set<String> paths) {
+    private void getPathsFromNode(Node topNode, Set<ResourceLocator> paths) {
         String pKey = "path";
+        String serverURLkey = "serverURL";
 
         try {
             NamedNodeMap attrs = topNode.getAttributes();
             Node pathNode = attrs.getNamedItem(pKey);
             String path = pathNode.getTextContent().trim();
-            paths.add(path);
+
+            Node serverURLNode = attrs.getNamedItem(serverURLkey);
+            String serverURL = null;
+            if (serverURLNode != null) {
+                serverURL = serverURLNode.getTextContent().trim();
+            }
+
+            ResourceLocator locator = new ResourceLocator(serverURL, path);
+            paths.add(locator);
+
         } catch (NullPointerException e) {
             //pass, node doesn't have path attribute
         }
@@ -93,18 +103,20 @@ public class HostedDataTest extends AbstractHeadlessTest {
         errorWriter = new PrintStream(outPath);
 
         List<GenomeListItem> serverSideGenomeList = getServerGenomes();
+
+
         Map<String, Exception> failedFiles = new LinkedHashMap<String, Exception>(10);
-        Set<String> fileURLs = new HashSet<String>(100);
+        LinkedHashSet<String> nodeURLs;
+        Set<ResourceLocator> fileLocators = new LinkedHashSet<ResourceLocator>(100);
 
         for (GenomeListItem genomeItem : serverSideGenomeList) {
 
-            Runtime.getRuntime().gc();
             String genomeURL = LoadFromServerAction.getGenomeDataURL(genomeItem.getId());
 
             TrackLoader loader = new TrackLoader();
             Genome curGenome = GenomeManager.getInstance().loadGenome(genomeItem.getLocation(), null);
 
-            LinkedHashSet<String> nodeURLs;
+
             try {
                 nodeURLs = LoadFromServerAction.getNodeURLs(genomeURL);
                 if (nodeURLs == null) {
@@ -117,17 +129,21 @@ public class HostedDataTest extends AbstractHeadlessTest {
             }
 
             for (String nodeURL : nodeURLs) {
+
+                fileLocators.clear();
                 try {
                     InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(nodeURL));
                     Document xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-                    getPathsFromNode(xmlDocument, fileURLs);
+                    getPathsFromNode(xmlDocument, fileLocators);
 
-                    for (String fileURL : fileURLs) {
+                    for (ResourceLocator locator : fileLocators) {
+                        FeatureDB.clearFeatures();
+
                         try {
-                            System.out.println("Loading " + fileURL);
-                            loader.load(new ResourceLocator(fileURL), curGenome);
+                            System.out.println("Loading " + locator);
+                            loader.load(locator, curGenome);
                         } catch (Exception e) {
-                            recordError(fileURL, e, failedFiles);
+                            recordError(locator.getPath(), e, failedFiles);
                         }
                     }
 
