@@ -33,9 +33,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.print.attribute.standard.DateTimeAtCompleted;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -64,6 +67,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
     private void getPathsFromNode(Node topNode, Set<ResourceLocator> paths) {
         String pKey = "path";
         String serverURLkey = "serverURL";
+        String nameKey = "name";
 
         try {
             NamedNodeMap attrs = topNode.getAttributes();
@@ -77,6 +81,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
             }
 
             ResourceLocator locator = new ResourceLocator(serverURL, path);
+            locator.setName(attrs.getNamedItem(nameKey).getTextContent().trim());
             paths.add(locator);
 
         } catch (NullPointerException e) {
@@ -98,14 +103,16 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadServerData() throws Exception {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH-mm-ss");
+        Date date = new Date();
 
-        String outPath = TestUtils.DATA_DIR + "failed_loaded_files.txt";
+        String outPath = TestUtils.DATA_DIR + "failed_loaded_files_" + dateFormat.format(date) +".txt";
         errorWriter = new PrintStream(outPath);
 
         List<GenomeListItem> serverSideGenomeList = getServerGenomes();
 
 
-        Map<String, Exception> failedFiles = new LinkedHashMap<String, Exception>(10);
+        Map<ResourceLocator, Exception> failedFiles = new LinkedHashMap<ResourceLocator, Exception>(10);
         LinkedHashSet<String> nodeURLs;
         Set<ResourceLocator> fileLocators = new LinkedHashSet<ResourceLocator>(100);
 
@@ -116,6 +123,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
             TrackLoader loader = new TrackLoader();
             Genome curGenome = GenomeManager.getInstance().loadGenome(genomeItem.getLocation(), null);
 
+            errorWriter.println("Genome: " + curGenome.getId());
 
             try {
                 nodeURLs = LoadFromServerAction.getNodeURLs(genomeURL);
@@ -130,6 +138,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
             for (String nodeURL : nodeURLs) {
 
+                errorWriter.println(nodeURL);
                 fileLocators.clear();
                 try {
                     InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(nodeURL));
@@ -140,10 +149,16 @@ public class HostedDataTest extends AbstractHeadlessTest {
                         FeatureDB.clearFeatures();
 
                         try {
+//                            if(locator.getServerURL() != null){
+//                                //System.out.println("server url " + locator.getServerURL());
+//                                //System.out.println("path " + locator.getPath());
+//                            }else{
+//                                continue;
+//                            }
                             System.out.println("Loading " + locator);
                             loader.load(locator, curGenome);
                         } catch (Exception e) {
-                            recordError(locator.getPath(), e, failedFiles);
+                            recordError(locator, e, failedFiles);
                         }
                     }
 
@@ -154,9 +169,9 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
         }
 
-        for (Map.Entry<String, Exception> entry : failedFiles.entrySet()) {
-            String item = entry.getKey();
-            errorWriter.println(String.format("Exception loading file %s: %s", item, entry.getValue().getMessage()));
+        for (Map.Entry<ResourceLocator, Exception> entry : failedFiles.entrySet()) {
+            ResourceLocator item = entry.getKey();
+            errorWriter.println(formatLocator(item) + "\terror: " + entry.getValue().getMessage());
         }
 
         errorWriter.flush();
@@ -165,9 +180,19 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
     }
 
-    private void recordError(String path, Exception e, Map<String, Exception> failures) {
-        failures.put(path, e);
-        errorWriter.println(String.format("Exception loading %s: %s", path, e.getMessage()));
+    private String formatLocator(ResourceLocator locator) {
+        return String.format("Name: %s\tPath: %s\t serverURL: %s",
+                locator.getName(), locator.getPath(), locator.getServerURL());
+    }
+
+    private void recordError(String path, Exception e, Map<ResourceLocator, Exception> failures) {
+        ResourceLocator locator = new ResourceLocator(path);
+        recordError(locator, e, failures);
+    }
+
+    private void recordError(ResourceLocator locator, Exception e, Map<ResourceLocator, Exception> failures) {
+        failures.put(locator, e);
+        errorWriter.println(formatLocator(locator) + "\terror: " + e.getStackTrace()[0]);
         errorWriter.flush();
     }
 

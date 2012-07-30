@@ -39,7 +39,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         String chr = "chr1";
         int start = 151666494;
-        int halfwidth = 1000;
+        int halfwidth = 1024;
         int end = start + 2 * halfwidth;
         Locus locus = new Locus(chr, start, end);
 
@@ -49,6 +49,10 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         frame.setBounds(0, halfwidth);
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
+
+
+        //End is not exact due to zooming
+        end = (int) frame.getEnd();
 
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         baseManager.preload(context, renderOptions, false);
