@@ -19,6 +19,7 @@ import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -122,6 +123,10 @@ public class GFFParser implements FeatureParser {
 
         //Combine the features
         List<Feature> iFeatures = new GFFFeatureSource.GFFCombiner().combineFeatures(features.iterator());
+
+        if (IGV.hasInstance()) {
+            FeatureDB.addFeatures(iFeatures);
+        }
 
         return iFeatures;
     }
