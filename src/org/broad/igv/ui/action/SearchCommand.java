@@ -175,8 +175,7 @@ public class SearchCommand implements Command {
                     break;
                 case CHROMOSOME:
                     referenceFrame.setChromosomeName(result.chr, true);
-                    IGV.getInstance().repaintDataAndHeaderPanels();
-                    IGV.getInstance().repaintStatusAndZoomSlider();
+                    IGV.repaintPanelsHeadlessSafe();
                     break;
                 case ERROR:
                 default: {

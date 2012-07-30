@@ -12,6 +12,7 @@
 package org.broad.igv.feature.exome;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
@@ -58,7 +59,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
             String chr = chromosome.getName();
             List<Feature> features = geneTrack.getFeatures(chr, 0, chromosome.getLength());
             if (features != null && features.size() > 0) {
-                processFeatures(chr, features);
+                createExomBlockData(chr, features);
             }
 
         }
@@ -68,13 +69,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         for (String chr : featureMap.keySet()) {
             List<Feature> features = featureMap.get(chr);
             if (features.size() > 0) {
-                processFeatures(chr, features);
+                createExomBlockData(chr, features);
             }
 
         }
     }
 
-    private void processFeatures(String chr, List<Feature> features) {
+    private void createExomBlockData(String chr, List<Feature> features) {
         List<ExomeBlock> blocks = ExomeUtils.collapseTranscripts(features);
         List<Gene> genes = ExomeUtils.collapseToGenes(features);
         ExomeData exomeData = new ExomeData(blocks, genes);
@@ -119,32 +120,36 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         setOrigin(genomePosition, true);
     }
 
-
-    @Override
-    public void setOrigin(double genomePosition, boolean repaint) {
-
-        super.setOrigin(genomePosition, false);
-
-        //super.setOrigin(genomePosition, false);
+    /**
+     * Recalculate exomeOrigin and firstBlockIdx
+     * based on current origin
+     */
+    private void calcExomeOrigin() {
         List<ExomeBlock> blocks = getBlocks(chrName);
         firstBlockIdx = getIndexForGenomePosition(blocks, origin);
         ExomeBlock firstBlock = blocks.get(firstBlockIdx);
 
-        exomeOrigin = firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+        exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
+                firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+    }
+
+
+    @Override
+    public void setOrigin(double genomePosition, boolean repaint) {
+        super.setOrigin(genomePosition, false);
+
+        calcExomeOrigin();
 
         if (repaint) {
-            IGV.getInstance().repaintDataAndHeaderPanels();
-            IGV.getInstance().repaintStatusAndZoomSlider();
+            IGV.repaintPanelsHeadlessSafe();
         }
 
     }
 
     @Override
     public void jumpTo(String chr, int start, int end) {
-
-        setInterval(new Locus(chr, start, end));
-        IGV.getInstance().repaintDataAndHeaderPanels();
-        IGV.getInstance().repaintStatusAndZoomSlider();
+        jumpTo(new Locus(chr, start, end));
+        IGV.repaintPanelsHeadlessSafe();
 
     }
 
@@ -154,19 +159,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
      * @param locus
      */
     @Override
-    public void setInterval(Locus locus) {
-
+    public void jumpTo(Locus locus) {
         this.initialLocus = locus;
         this.chrName = locus.getChr();
         this.origin = locus.getStart();    // Genome locus
         int genomeEnd = locus.getEnd();
 
-        List<ExomeBlock> blocks = getBlocks(chrName);
-        firstBlockIdx = getIndexForGenomePosition(blocks, origin);
-        ExomeBlock firstBlock = blocks.get(firstBlockIdx);
-
-        exomeOrigin = origin > firstBlock.getGenomeEnd() ? firstBlock.getExomeEnd() :
-                firstBlock.getExomeStart() + (int) (origin - firstBlock.getGenomeStart());
+        calcExomeOrigin();
 
         int exomeEnd = Math.max(exomeOrigin + 40, genomeToExomePosition(genomeEnd));
 
@@ -196,9 +195,10 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         locationScale /= zoomFactor;
         zoom = newZoom;
 
-        IGV.getInstance().repaintDataAndHeaderPanels();
-        IGV.getInstance().repaintStatusAndZoomSlider();
+        List<ExomeBlock> blocks = getBlocks(chrName);
+        firstBlockIdx = getIndexForGenomePosition(blocks, origin);
 
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     /**
