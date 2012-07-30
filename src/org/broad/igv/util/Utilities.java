@@ -33,10 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.zip.CRC32;
 
 /**
@@ -220,6 +217,28 @@ public class Utilities {
                 iter.remove();
             }
         }
+    }
+
+    /**
+     * Filters the provided collection in place. Only those objects for which
+     * predicate(object) returns true will be kept. Collection must support object
+     * removal.
+     *
+     * @param objects
+     * @param predicate
+     * @param <T>
+     */
+    public static <T> Collection<T> filteredCopy(Collection<? extends T> objects, Predicate<T> predicate) {
+        if (objects == null) return null;
+        Collection<T> coll = new ArrayList<T>(objects.size());
+        Iterator<? extends T> iter = objects.iterator();
+        while (iter.hasNext()) {
+            T next = iter.next();
+            if (predicate.evaluate(next)) {
+                coll.add(next);
+            }
+        }
+        return coll;
     }
 
 

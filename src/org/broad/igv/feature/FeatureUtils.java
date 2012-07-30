@@ -16,6 +16,7 @@
  */
 package org.broad.igv.feature;
 
+import org.apache.commons.collections.Predicate;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -25,6 +26,16 @@ import java.util.*;
  */
 public class FeatureUtils {
 
+
+    public static Predicate<Feature> getOverlapPredicate(final String chr, final int start, final int end) {
+        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
+            @Override
+            public boolean evaluate(Feature object) {
+                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
+            }
+        };
+        return overlapPredicate;
+    }
 
     public static Map<String, List<IGVFeature>> divideByChromosome(List<IGVFeature> features) {
         Map<String, List<IGVFeature>> featureMap = new LinkedHashMap();
@@ -80,27 +91,82 @@ public class FeatureUtils {
         return segmentedLists;
     }
 
-    private static class StartComparator implements Comparator<Feature>{
-
-        private static StartComparator instance = null;
-        private StartComparator(){}
-
-        public static StartComparator getInstance(){
-            if(instance == null) instance = new StartComparator();
-            return instance;
-        }
-
-        public int compare(Feature o1, Feature o2) {
-            return (o1.getStart() - o2.getStart());
-        }
-    }
-
     /**
      * Sort the feature list by ascending start value
      */
     public static void sortFeatureList(List<? extends Feature> features) {
         Collections.sort(features, FEATURE_START_COMPARATOR);
-}
+    }
+
+
+    /**
+     * Null safe version of {@linkplain #combineSortedFeatureListsNoDups(java.util.Iterator, java.util.Iterator, int, int)}
+     * If BOTH self and other are null, returns null. If only one is null,
+     * returns the other
+     *
+     * @param self
+     * @param other
+     * @param start
+     * @param end
+     * @return
+     */
+    public static List combineSortedFeatureListsNoDups(List self, List other, int start, int end) {
+        if (self == null && other == null) {
+            return null;
+        } else if (self == null) {
+            return other;
+        } else if (other == null) {
+            return self;
+        }
+
+        return combineSortedFeatureListsNoDups(self.iterator(), other.iterator(), start, end);
+    }
+
+    /**
+     * Features are sorted by start position. The interval being merged
+     * will have some features on the left or right that the current
+     * interval does not have. Both are sorted by start position.
+     * So we first add at the beginning, and then the end,
+     * only those alignments which don't overlap the original interval.
+     * <p/>
+     * NOTE: WE DO NOT USE GENERICS PROPERLY SO WE CAN REUSE THIS METHOD.
+     * BE CAREFUL.
+     *
+     * @param selfIter  iterator of features belonging to this interval
+     * @param otherIter iterator of features belonging to some other interval
+     * @param start the beginning of the interval from which selfIter was derived
+     * @param end   the end of the interval from which selfIter was derived
+     * @return Combined sorted list.
+     * @throws ClassCastException If the elements of an iterator cannot be cast
+     *                            to a Feature.
+     */
+    public static List combineSortedFeatureListsNoDups(Iterator selfIter, Iterator otherIter, int start, int end) {
+        List<Feature> allFeatures = new ArrayList<Feature>();
+        Feature otherFeat = null;
+
+        while (otherIter.hasNext()) {
+            otherFeat = (Feature) otherIter.next();
+            if (otherFeat.getEnd() > start) break;
+            allFeatures.add(otherFeat);
+        }
+
+        while (selfIter.hasNext()) {
+            allFeatures.add((Feature) selfIter.next());
+        }
+
+        while (otherIter.hasNext()) {
+            if (otherFeat.getStart() >= end) {
+                allFeatures.add(otherFeat);
+            }
+            otherFeat = (Feature) otherIter.next();
+        }
+
+        if (otherFeat != null && otherFeat.getStart() >= end) {
+            allFeatures.add(otherFeat);
+        }
+
+        return allFeatures;
+    }
 
     /**
      * Return a feature from the supplied list at the given position.

@@ -335,6 +335,18 @@ public class IGV {
     }
 
     /**
+     * Repaints dataAndHeaderPanels as well as
+     * zoom controls IFF IGV has instance && not headless.
+     * Mostly use for testing
+     */
+    public static void repaintPanelsHeadlessSafe(){
+        if(IGV.hasInstance() && !Globals.isHeadless()){
+            IGV.getInstance().repaintDataAndHeaderPanels();
+            IGV.getInstance().repaintStatusAndZoomSlider();
+        }
+    }
+
+    /**
      * Repaint panels containing data, specifically the dataTrackPanel,
      * featureTrackPanel, and headerPanel.
      */
@@ -1345,7 +1357,7 @@ public class IGV {
         List<ReferenceFrame> frames = FrameManager.getFrames();
         if (frames.size() == loci.size()) {
             for (int i = 0; i < loci.size(); i++) {
-                frames.get(i).setInterval(new Locus(loci.get(i)));
+                frames.get(i).jumpTo(new Locus(loci.get(i)));
             }
             repaint();
         } else {

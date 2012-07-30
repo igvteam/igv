@@ -45,7 +45,7 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
 
         ReferenceFrame frame = new ReferenceFrame("test");
-        frame.setInterval(locus);
+        frame.jumpTo(locus);
 
         frame.setBounds(0, halfwidth);
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
@@ -60,12 +60,12 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
         Locus begLocus = new Locus(chr, start, start + halfwidth);
         ReferenceFrame begFrame = new ReferenceFrame(frame);
-        begFrame.setInterval(begLocus);
+        begFrame.jumpTo(begLocus);
         RenderContextImpl begContext = new RenderContextImpl(null, null, begFrame, null);
 
         Locus endLocus = new Locus(chr, start + halfwidth / 2, end);
         ReferenceFrame endFrame = new ReferenceFrame(frame);
-        endFrame.setInterval(endLocus);
+        endFrame.jumpTo(endLocus);
         RenderContextImpl endContext = new RenderContextImpl(null, null, endFrame, null);
 
         testManager.preload(begContext, renderOptions, false);
@@ -84,35 +84,6 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         TestUtils.assertFeatureListsEqual(baseInterval.getDownsampledIntervals().iterator(), merged.getDownsampledIntervals().iterator());
 
         TestUtils.assertFeatureListsEqual(baseInterval.getAlignmentIterator(), merged.getAlignmentIterator());
-
-//        Iterator<Alignment> iter1 = baseInterval.getAlignmentIterator();
-//        Iterator<Alignment> iter2 = merged.getAlignmentIterator();
-//
-//        Alignment expected, actual;
-//        int count = 0;
-//        //Because we sort by start position, and some alignments have the same start position,
-//        //there can be some ambiguitiy in which comes first, so we don't compare directly.
-//        //Just make sure they end up the same in the end.
-//        Set<String> expectedReadNames = new HashSet<String>();
-//        Set<String> actualReadNames = new HashSet<String>();
-//        while (iter1.hasNext()) {
-//            assertTrue("Not enough alignments, empty at count " + count, iter2.hasNext());
-//            expected = iter1.next();
-//            actual = iter2.next();
-//
-//            assertEquals(expected.getAlignmentStart(), actual.getAlignmentStart());
-//            assertEquals(expected.getChr(), actual.getChr());
-//            count++;
-//
-//            expectedReadNames.add(expected.getReadName());
-//            actualReadNames.add(actual.getReadName());
-//        }
-//
-//        //System.out.println(count + " Alignments");
-//        assertFalse(iter2.hasNext());
-//        assertTrue("No data loaded", count > 0);
-//
-//        assertEquals(expectedReadNames, actualReadNames);
 
     }
 

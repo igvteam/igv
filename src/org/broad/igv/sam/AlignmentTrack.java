@@ -2032,8 +2032,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 //frame.jumpTo(frame.getChrName(), location, location);
 
                 frame.centerOnLocation(newLocation + 1);
-                IGV.getInstance().repaintDataAndHeaderPanels();
-                IGV.getInstance().repaintStatusAndZoomSlider();
+                IGV.repaintPanelsHeadlessSafe();
             }
         };
         distributionPanel.setListener(listener);

@@ -894,7 +894,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     protected Variant getFeatureClosest(double position, double maxDistance, ReferenceFrame frame) {
 
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<IGVFeature> packedFeatures = getPackedFeatures(frame);
 
         if (packedFeatures == null) {
             return null;

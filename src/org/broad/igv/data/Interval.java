@@ -57,5 +57,17 @@ public interface Interval extends Feature {
      */
     public boolean merge(Interval i);
 
+    /**
+     * Remove data outside the specified interval.
+     * This interval must contain the specified interval.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @return true if any trimming was performed, false if not
+     */
+    boolean trimTo(final String chr, final int start, final int end, int zoom);
+
     public int getZoom();
 }

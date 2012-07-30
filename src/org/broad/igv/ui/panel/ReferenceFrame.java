@@ -159,8 +159,14 @@ public class ReferenceFrame {
 
     }
 
+    /**
+     * Change the zoom level, keeping the center the same
+     * zoom events "release" the frame, enabling pan and zoom
+     *
+     * @param newZoom
+     */
     private void zoomTo(int newZoom) {
-        // All  zoom events "release" the frame, enabling pan and zoom
+
 
         zoom = Math.min(maxZoom, newZoom);
         nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
@@ -168,9 +174,7 @@ public class ReferenceFrame {
         invalidateLocationScale();
 
         // TODO -- do this with events,
-        if (IGV.hasInstance()) {
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     /**
@@ -250,8 +254,6 @@ public class ReferenceFrame {
             double endMB = startMB + getGenome().getChromosome(chr).getLength() / 1000.0;
 
             if ((locationMB > startMB) && (locationMB <= endMB)) {
-
-                // this.jumpTo(chr, -1, -1);
                 this.setChromosomeName(chr);
                 break;
             }
@@ -298,9 +300,13 @@ public class ReferenceFrame {
 
     }
 
-    /* Keep origin within data range */
+    /**
+     * Set the origin of the frame, guarding against chromosome boundaries
+     *
+     * @param position
+     * @param repaint
+     */
     public void setOrigin(double position, boolean repaint) {
-
 
         int windowLengthBP = (int) (widthInPixels * getScale());
         double newOrigin = origin;
@@ -312,19 +318,29 @@ public class ReferenceFrame {
         double delta = newOrigin - origin;
         origin = newOrigin;
 
-        // If zoomed in sufficiently track the center position
-        //if (locationScale < 10) {
-        //    IGV.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
-        //}
-
-        // Repaint
         if (repaint) {
-            IGV.getInstance().repaintDataAndHeaderPanels();
-            IGV.getInstance().repaintStatusAndZoomSlider();
+            IGV.repaintPanelsHeadlessSafe();
         }
     }
 
+    /**
+     * Move the frame to the specified position. New zoom is calculated
+     * based on limits.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     */
     public void jumpTo(String chr, int start, int end) {
+        Locus locus = new Locus(chr, start, end);
+        this.jumpTo(locus);
+    }
+
+    public void jumpTo(Locus locus) {
+        String chr = locus.getChr();
+        int start = locus.getStart();
+        int end = locus.getEnd();
+
         Genome genome = getGenome();
         if (chr != null) {
             if (genome.getChromosome(chr) == null && !chr.contains(Globals.CHR_ALL)) {
@@ -333,6 +349,7 @@ public class ReferenceFrame {
             }
         }
 
+        this.initialLocus = locus;
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
         if (chromosome != null) {
             end = Math.min(chromosome.getLength(), end);
@@ -357,11 +374,8 @@ public class ReferenceFrame {
             log.debug("Scale = " + locationScale);
         }
 
-
-        // Repaint
-        IGV.getInstance().repaintDataAndHeaderPanels();
-        IGV.getInstance().repaintStatusAndZoomSlider();
-
+        //Mostly for testing
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     protected void imputeZoom(double start, double end) {
@@ -371,9 +385,7 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
-        if (IGV.hasInstance()) {
-            IGV.getInstance().repaintStatusAndZoomSlider();
-        }
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     protected Genome getGenome() {
@@ -414,6 +426,8 @@ public class ReferenceFrame {
     }
 
     /**
+     * Change the frame to the specified chromosome.
+     *
      * @param name
      * @param force
      */
@@ -641,10 +655,8 @@ public class ReferenceFrame {
         }
     }
 
-
     public void reset() {
-        setInterval(FrameManager.getLocus(name));
-        IGV.getInstance().repaintDataAndHeaderPanels();
+        jumpTo(FrameManager.getLocus(name));
     }
 
     public String getName() {

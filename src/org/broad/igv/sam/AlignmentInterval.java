@@ -274,11 +274,12 @@ public class AlignmentInterval extends Locus implements Interval {
 
         AlignmentInterval other = (AlignmentInterval) i;
 
-        List<Alignment> allAlignments = (List<Alignment>) combineSortedFeatureListsNoDups(getAlignmentIterator(), other.getAlignmentIterator());
+        List<Alignment> allAlignments = (List<Alignment>) FeatureUtils.combineSortedFeatureListsNoDups(
+                getAlignmentIterator(), other.getAlignmentIterator(), start, end);
 
-        this.counts = combineSortedFeatureListsNoDups(this.counts, other.getCounts());
-        this.spliceJunctions = combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions());
-        this.downsampledIntervals = combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals());
+        this.counts = FeatureUtils.combineSortedFeatureListsNoDups(this.counts, other.getCounts(), start, end);
+        this.spliceJunctions = FeatureUtils.combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions(), start, end);
+        this.downsampledIntervals = FeatureUtils.combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals(), start, end);
 
         //This must be done AFTER calling combineSortedFeatureListsNoDups for the last time,
         //because we rely on the original start/end
@@ -304,7 +305,7 @@ public class AlignmentInterval extends Locus implements Interval {
      * @param zoom
      * @return true if any trimming was performed, false if not
      */
-    boolean trimTo(final String chr, final int start, final int end, int zoom) {
+    public boolean trimTo(final String chr, final int start, final int end, int zoom) {
         boolean toRet = false;
         if (!this.contains(chr, start, end, zoom)) {
             return false;
@@ -325,12 +326,7 @@ public class AlignmentInterval extends Locus implements Interval {
             }
         }
 
-        Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
-            @Override
-            public boolean evaluate(Feature object) {
-                return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
-            }
-        };
+        Predicate<Feature> overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
         Utilities.filter(this.getCounts(), overlapPredicate);
         Utilities.filter(this.getDownsampledIntervals(), overlapPredicate);
         Utilities.filter(this.getSpliceJunctions(), overlapPredicate);
@@ -340,71 +336,6 @@ public class AlignmentInterval extends Locus implements Interval {
 
 
         return toRet;
-    }
-
-    /**
-     * Null safe version of {@linkplain #combineSortedFeatureListsNoDups(java.util.Iterator, java.util.Iterator)}
-     * If BOTH self and other are null, returns null. If only one is null,
-     * returns the other
-     *
-     * @param self
-     * @param other
-     * @return
-     */
-    private List combineSortedFeatureListsNoDups(List self, List other) {
-        if (self == null && other == null) {
-            return null;
-        } else if (self == null) {
-            return other;
-        } else if (other == null) {
-            return self;
-        }
-
-        return combineSortedFeatureListsNoDups(self.iterator(), other.iterator());
-    }
-
-    /**
-     * Features are sorted by start position. The interval being merged
-     * will have some features on the left or right that the current
-     * interval does not have. Both are sorted by start position.
-     * So we first add at the beginning, and then the end,
-     * only those alignments which don't overlap the original interval.
-     * <p/>
-     * NOTE: WE DO NOT USE GENERICS PROPERLY SO WE CAN REUSE THIS METHOD.
-     * BE CAREFUL.
-     *
-     * @param selfIter  iterator of features belonging to this interval
-     * @param otherIter iterator of features belonging to some other interval
-     * @return Combined sorted list.
-     * @throws ClassCastException If the elements of an iterator cannot be cast
-     *                            to a Feature.
-     */
-    private List combineSortedFeatureListsNoDups(Iterator selfIter, Iterator otherIter) {
-        List<Feature> allFeatures = new ArrayList<Feature>();
-        Feature otherFeat = null;
-
-        while (otherIter.hasNext()) {
-            otherFeat = (Feature) otherIter.next();
-            if (otherFeat.getEnd() > this.getStart()) break;
-            allFeatures.add(otherFeat);
-        }
-
-        while (selfIter.hasNext()) {
-            allFeatures.add((Feature) selfIter.next());
-        }
-
-        while (otherIter.hasNext()) {
-            if (otherFeat.getStart() >= this.getEnd()) {
-                allFeatures.add(otherFeat);
-            }
-            otherFeat = (Feature) otherIter.next();
-        }
-
-        if (otherFeat != null && otherFeat.getStart() >= this.getEnd()) {
-            allFeatures.add(otherFeat);
-        }
-
-        return allFeatures;
     }
 
     private List addToListNoDups(List self, List other) {
