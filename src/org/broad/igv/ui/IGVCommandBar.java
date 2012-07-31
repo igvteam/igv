@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * IGVCommandBar.java
@@ -183,7 +176,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     public void updateComponentStates() {
 
-        if(exomeButton != null){
+        if (exomeButton != null) {
             exomeButton.setEnabled(!getDefaultReferenceFrame().getChrName().equalsIgnoreCase("all"));
         }
     }
@@ -198,6 +191,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
                     if (genomeListItem != null) {
                         final IGV igv = IGV.getInstance();
+
+                        // If we haven't changed genomes we're done.
+                        if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
+                            return;
+                        }
+
                         final ProgressMonitor monitor = new ProgressMonitor();
                         final ProgressBar bar =
                                 ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
@@ -212,15 +211,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 genome = AffectiveUtils.getGenome();
                                 igv.getGenomeManager().setCurrentGenome(genome);
                             } else {
-                                // If we haven't changed genomes we're done.
-                                if (genomeListItem.getId().equalsIgnoreCase(igv.getGenomeManager().getGenomeId())) {
-                                    return;
-                                    //genome = igv.getGenomeManager().getCurrentGenome();
-                                } else {
-                                    igv.resetSession(null);
-                                    genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
-
-                                }
+                                igv.resetSession(null);
+                                genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
                             }
 
                             updateGenome(genome);
@@ -561,33 +553,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         return ids;
     }
 
-    /**
-     * Selects the first genome from the list,
-     *
-     * @param genomeId
-     */
-    public void selectGenomeFromListWithNoImport(String genomeId) {
-
-        int itemCount = genomeComboBox.getItemCount();
-
-        for (int i = 0; i < itemCount; i++) {
-            Object object = genomeComboBox.getItemAt(i);
-
-            if (object instanceof GenomeListItem) {
-                GenomeListItem genomeListItem = (GenomeListItem) object;
-
-                // If the list genome matchs the one we are interested in
-                // process it
-                String id = genomeListItem.getId();
-                if ((id != null) && id.trim().equalsIgnoreCase(genomeId)) {
-                    genomeComboBox.setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
-    }
-
-
     public Collection<String> getSelectableGenomeIDs() {
 
         Set<String> ids = new HashSet<String>();
@@ -604,10 +569,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     /**
-     * Called from session loading,  command line listener, startup code
+     * Selects the first genome from the list which matches this genomeId.
+     * If {@code fallbackToFirst}, we select the first item if a matching
+     * item not found.
+     *
+     * @param genomeId
      */
-    public void selectGenomeFromList(final String genomeId) {
-
+    public void selectGenomeFromList(String genomeId, boolean fallbackToFirst) {
 
         // See if this genome is already loaded
         String currentGenomeId = GenomeManager.getInstance().getGenomeId();
@@ -615,33 +583,29 @@ public class IGVCommandBar extends javax.swing.JPanel {
             return;
         }
 
-
         log.debug("Run selectGenomeFromList");
 
-
         boolean wasFound = false;
-
-        // Now select this item in tne comboBox
+        GenomeListItem firstItem = null;
+        // Now select this item in the comboBox
 
         if (genomeId != null) {
-
             int itemCount = genomeComboBox.getItemCount();
             for (int i = 0; i < itemCount; i++) {
                 Object object = genomeComboBox.getItemAt(i);
-
                 if (object instanceof GenomeListItem) {
-
                     GenomeListItem genomeListItem = (GenomeListItem) object;
                     String id = genomeListItem.getId();
 
-                    // If the list genome matchs the one we are interested in
+                    if (firstItem == null) {
+                        firstItem = genomeListItem;
+                    }
+
+                    // If the list genome matches the one we are interested in
                     // process it
                     if ((id != null) && id.trim().equalsIgnoreCase(genomeId)) {
-
-                        genomeComboBox.setSelectedIndex(i);
+                        genomeComboBox.setSelectedItem(genomeListItem);
                         wasFound = true;
-
-
                         break;
                     }
                 }
@@ -652,22 +616,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         // If genome archive was not found use first item
         // we have in the list
-        if (!wasFound) {
-            int count = genomeComboBox.getItemCount();
-
-            for (int i = 0; i < count; i++) {
-                Object object = genomeComboBox.getItemAt(i);
-
-                if (object instanceof GenomeListItem) {
-                    GenomeListItem item = (GenomeListItem) object;
-
-                    // We found the genome we want moved it to the local cache
-                    // if it's not there already
-                    genomeComboBox.setSelectedIndex(i);
-                    break;
-
-                }
-            }
+        if (!wasFound && firstItem != null && fallbackToFirst) {
+            genomeComboBox.setSelectedItem(firstItem);
         }
         log.debug("Finish selectGenomeFromList");
 
@@ -980,7 +930,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     boolean newMode = !FrameManager.isExomeMode();
-                    if(!FrameManager.setExomeMode(newMode)) return;
+                    if (!FrameManager.setExomeMode(newMode)) return;
                     String label = newMode ? "Genome" : "Exome";
                     exomeButton.setText(label);
                     IGV.getInstance().resetFrames();

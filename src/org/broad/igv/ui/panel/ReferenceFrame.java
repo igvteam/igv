@@ -484,7 +484,7 @@ public class ReferenceFrame {
      *
      * @return
      */
-    public synchronized double getScale() {
+    public double getScale() {
         if ((locationScale <= 0) || !locationScaleValid) {
             computeLocationScale();
         }
@@ -498,7 +498,7 @@ public class ReferenceFrame {
         locationScaleValid = false;
     }
 
-    private synchronized void computeLocationScale() {
+    private void computeLocationScale() {
         Genome genome = getGenome();
 
         if (genome != null) {
@@ -640,7 +640,7 @@ public class ReferenceFrame {
 
     }
 
-    public synchronized void setInterval(Locus locus) {
+    public void setInterval(Locus locus) {
         this.initialLocus = locus;
 
         this.chrName = locus.getChr();
