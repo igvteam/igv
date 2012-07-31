@@ -183,6 +183,8 @@
     <property name="test.reports" value="${basedir}/reports"/>
     <property name="test.reports.tmp" value="${basedir}/reportstmp"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata/"/>
+    <!--Can override this on command line to see test output-->
+    <property name="show.test.out" value="no"/>
 
     <!--Hosted data test explicitly excluded, never run automated, can run manual-->
     <fileset dir="${testtmp.dir}" id="allfileset">
@@ -224,7 +226,7 @@
         <delete dir="${test.reports}"/>
         <mkdir dir="${test.reports}"/>
 
-        <junit haltonfailure="no" showoutput="no" printsummary="on" failureproperty="tests.failed" maxmemory="2000m">
+        <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed" maxmemory="2000m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
