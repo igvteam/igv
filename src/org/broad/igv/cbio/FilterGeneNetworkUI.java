@@ -25,7 +25,6 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.StringUtils;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -414,7 +413,6 @@ public class FilterGeneNetworkUI extends JDialog {
         contentPane = new JPanel();
         scrollPane1 = new JScrollPane();
         geneTable = new JTable();
-        panel3 = new JPanel();
         buttonBar = new JPanel();
         totNumGenes = new JLabel();
         keepIsolated = new JCheckBox();
@@ -504,6 +502,17 @@ public class FilterGeneNetworkUI extends JDialog {
                     contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
                 }
                 dialogPane.add(contentPane, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
+
+                //======== scrollPane1 ========
+                {
+
+                    //---- geneTable ----
+                    geneTable.setAutoCreateRowSorter(true);
+                    scrollPane1.setViewportView(geneTable);
+                }
+                dialogPane.add(scrollPane1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 0), 0, 0));
 
@@ -784,7 +793,6 @@ public class FilterGeneNetworkUI extends JDialog {
     private JPanel contentPane;
     private JScrollPane scrollPane1;
     private JTable geneTable;
-    private JPanel panel3;
     private JPanel buttonBar;
     private JLabel totNumGenes;
     private JCheckBox keepIsolated;
