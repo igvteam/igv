@@ -12,6 +12,7 @@
 package org.broad.igv.batch;
 
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
@@ -21,21 +22,23 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 
 /**
  * User: jacob
  * Date: 2012/03/21
  */
-public class CommandExecutorTest extends AbstractHeadedTest{
+public class CommandExecutorTest extends AbstractHeadedTest {
 
     CommandExecutor exec = new CommandExecutor();
     private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
@@ -43,6 +46,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        Globals.setBatch(true);
         igv.getSession().clearRegionsOfInterest();
         exec.setSnapshotDirectory(snapshotDir);
     }
@@ -50,6 +54,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     @After
     public void tearDown() throws Exception {
         igv.removeTracks(igv.getAllTracks());
+        Globals.setBatch(false);
     }
 
     @Test
@@ -98,6 +103,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
 
     @Test
     public void testSortByRegionScoreType() throws Exception {
+        TestUtils.startDeadlockChecker(1000);
         String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
         TestUtils.loadSession(igv, sessionPath);
         Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
@@ -128,42 +134,42 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     private final String outFileBase = "testSnap";
 
     @Test
-    public void testSnapShotPng() throws Exception{
-        String outFileName =  outFileBase + ".Png";
+    public void testSnapShotPng() throws Exception {
+        String outFileName = outFileBase + ".Png";
         tstSnapshot(outFileName);
     }
 
     @Test
-    public void testSnapShotJpeg() throws Exception{
+    public void testSnapShotJpeg() throws Exception {
         tstSnapshot(outFileBase + ".jpeg");
     }
 
     @Test
-    public void testSnapShotJpg() throws Exception{
+    public void testSnapShotJpg() throws Exception {
         tstSnapshot(outFileBase + ".jpg");
     }
 
     @Test
-    public void testSnapShotSvg() throws Exception{
-        String outFileName =  outFileBase + ".svG";
+    public void testSnapShotSvg() throws Exception {
+        String outFileName = outFileBase + ".svG";
         tstSnapshot(outFileName);
     }
 
     @Test
-    public void testSnapShotFails() throws Exception{
+    public void testSnapShotFails() throws Exception {
         String[] exts = new String[]{"abc", "svt", "pnq"};
-        for(String ext: exts){
-            String outFileName =  outFileBase + "." + ext;
+        for (String ext : exts) {
+            String outFileName = outFileBase + "." + ext;
             tstSnapshot(outFileName, false);
         }
     }
 
 
-    public void tstSnapshot(String outFileName) throws Exception{
+    public void tstSnapshot(String outFileName) throws Exception {
         tstSnapshot(outFileName, true);
     }
 
-    public void tstSnapshot(String outFileName, boolean shouldSucceed) throws Exception{
+    public void tstSnapshot(String outFileName, boolean shouldSucceed) throws Exception {
 
         File out = new File(snapshotDir, outFileName);
         assertFalse(out.exists());
@@ -174,7 +180,7 @@ public class CommandExecutorTest extends AbstractHeadedTest{
     }
 
     @Test
-    public void testLoadURL() throws Exception{
+    public void testLoadURL() throws Exception {
         String urlPath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
         exec.loadFiles(urlPath, null, true, "hasSpaces");
 

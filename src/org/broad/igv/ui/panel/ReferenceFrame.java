@@ -640,21 +640,6 @@ public class ReferenceFrame {
 
     }
 
-    public void setInterval(Locus locus) {
-        this.initialLocus = locus;
-
-        this.chrName = locus.getChr();
-        this.origin = locus.getStart();
-        if (widthInPixels > 0) {
-            locationScale = (locus.getEnd() - origin) / widthInPixels;
-            locationScaleValid = true;
-            imputeZoom(origin, locus.getEnd());
-        } else {
-            // Set end temporarily until scale can be calculated
-            this.setEnd = locus.getEnd();
-        }
-    }
-
     public void reset() {
         jumpTo(FrameManager.getLocus(name));
     }

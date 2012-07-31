@@ -390,21 +390,25 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
-    protected void chromosomeChanged(String chrName) {
-        roiToggleButton.setEnabled(!chrName.equals(Globals.CHR_ALL));
-        zoomControl.setEnabled(!chrName.equals(Globals.CHR_ALL));
+    protected void chromosomeChanged(final String chrName) {
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            @Override
+            public void run() {
+                roiToggleButton.setEnabled(!chrName.equals(Globals.CHR_ALL));
+                zoomControl.setEnabled(!chrName.equals(Globals.CHR_ALL));
 
-        if (chromosomeComboBox.getSelectedItem() != null) {
-            if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
-                chromosomeComboBox.setSelectedItem(chrName);
+                if (chromosomeComboBox.getSelectedItem() != null) {
+                    if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
+                        chromosomeComboBox.setSelectedItem(chrName);
+                    }
+                }
             }
-        }
+        });
+
     }
 
 
     public void updateCurrentCoordinates() {
-        searchTextField.setText("");
-
         final String chrName = getDefaultReferenceFrame().getChrName();
 
         if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
@@ -417,16 +421,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;
-        UIUtilities.invokeOnEventThread(new Runnable() {
+        final History history = IGV.getInstance().getSession().getHistory();
 
+        UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
                 searchTextField.setText(position);
+                forwardButton.setEnabled(history.canGoForward());
+                backButton.setEnabled(history.canGoBack());
             }
         });
-
-        final History history = IGV.getInstance().getSession().getHistory();
-        forwardButton.setEnabled(history.canGoForward());
-        backButton.setEnabled(history.canGoBack());
 
 
     }

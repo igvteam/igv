@@ -26,9 +26,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.junit.Assert.*;
 
@@ -211,6 +216,35 @@ public class TestUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    public static void checkDeadlockedThreads() throws IllegalThreadStateException {
+        ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+        long[] ids = tmx.findDeadlockedThreads();
+        if (ids != null) {
+            ThreadInfo[] infos = tmx.getThreadInfo(ids, true, true);
+            String log = "The following threads are deadlocked:\n";
+            for (ThreadInfo ti : infos) {
+                System.out.println(ti);
+                log += ti.toString() + "\n";
+            }
+
+            throw new IllegalThreadStateException(log);
+        }
+    }
+
+    public static void startDeadlockChecker(final int period) {
+
+        TimerTask checker = new TimerTask() {
+            @Override
+            public void run() {
+                //System.out.println("deadlock checker thread:" + Thread.currentThread().getName());
+                checkDeadlockedThreads();
+            }
+        };
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(checker, 0, period);
     }
 
 }
