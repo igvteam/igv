@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Timer;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -103,7 +104,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     public void testSortByRegionScoreType() throws Exception {
-        TestUtils.startDeadlockChecker(1000);
+        Timer deadlockChecker = TestUtils.startDeadlockChecker(1000);
         String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
         TestUtils.loadSession(igv, sessionPath);
         Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
@@ -127,8 +128,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
                 count++;
             }
         }
-
-
+        deadlockChecker.cancel();
+        deadlockChecker.purge();
     }
 
     private final String outFileBase = "testSnap";

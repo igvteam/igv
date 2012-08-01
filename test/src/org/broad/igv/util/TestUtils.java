@@ -234,7 +234,7 @@ public class TestUtils {
         }
     }
 
-    public static void startDeadlockChecker(final int period) {
+    public static Timer startDeadlockChecker(final int period) {
 
         TimerTask checker = new TimerTask() {
             @Override
@@ -245,6 +245,8 @@ public class TestUtils {
         };
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(checker, 0, period);
+        return timer;
     }
+
 
 }
