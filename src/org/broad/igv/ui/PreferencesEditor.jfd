@@ -3769,7 +3769,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Show junction track</string> 
+               <string>Show junction track</string>
               </void> 
               <void property="name"> 
                <string>showJunctionTrackCB</string> 
@@ -3794,7 +3794,38 @@
                <int>25</int> 
               </void> 
              </object> 
-            </void> 
+            </void>
+            <void method="add">
+             <object class="com.jformdesigner.model.FormComponent">
+              <string>javax.swing.JCheckBox</string>
+              <void method="setProperty">
+               <string>text</string>
+               <string>Show flanking regions</string>
+              </void>
+              <void property="name">
+               <string>showJunctionFlankingRegionsCB</string>
+              </void>
+              <void method="addEvent">
+               <object class="com.jformdesigner.model.FormEvent">
+                <string>java.awt.event.ActionListener</string>
+                <string>actionPerformed</string>
+                <string>showJunctionFlankingRegionsCBActionPerformed</string>
+                <boolean>true</boolean>
+               </object>
+              </void>
+             </object>
+             <object class="com.jformdesigner.model.FormLayoutConstraints">
+              <class>com.jformdesigner.runtime.NullConstraints</class>
+              <void method="setProperty">
+               <string>x</string>
+               <int>5</int>
+              </void>
+              <void method="setProperty">
+               <string>y</string>
+               <int>25</int>
+              </void>
+             </object>
+            </void>
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 

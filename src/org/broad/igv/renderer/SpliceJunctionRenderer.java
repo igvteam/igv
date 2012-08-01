@@ -21,6 +21,7 @@ package org.broad.igv.renderer;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
@@ -87,6 +88,11 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
             fontGraphics.setFont(font);
 
+            //determine whether to show flanking regions
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            boolean shouldShowFlankingRegions = prefs.getAsBoolean(
+            PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
+
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
             double trackRectangleMaxX = trackRectangle.getMaxX();
@@ -136,7 +142,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight, color);
+                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight, color,
+                            shouldShowFlankingRegions);
                 }
             }
 
@@ -203,7 +210,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                int pixelJunctionStart, int pixelJunctionEnd, float depth,
                                Rectangle trackRectangle, RenderContext context, Strand strand,
-                               SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor) {
+                               SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor,
+                               boolean shouldShowFlankingRegions) {
 
 
         boolean isPositiveStrand = true;
@@ -231,29 +239,31 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         //Height of top of an arc of maximum depth
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 
-        if (junctionFeature.hasFlankingRegionDepthArrays()) {
-            //draw a wigglegram of the splice junction flanking region depth of coverage
+        if (shouldShowFlankingRegions) {
+            if (junctionFeature.hasFlankingRegionDepthArrays()) {
+                //draw a wigglegram of the splice junction flanking region depth of coverage
 
-            int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
-            int endFlankingRegionPixelLength = pixelFeatureEnd - pixelJunctionEnd;
+                int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
+                int endFlankingRegionPixelLength = pixelFeatureEnd - pixelJunctionEnd;
 
-            drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
-                    junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
-                    trackRectangle, isPositiveStrand);
-            drawFlankingRegion(g2D, pixelJunctionEnd + 1, endFlankingRegionPixelLength,
-                    junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
-                    trackRectangle, isPositiveStrand);
-        } else {
-            //Draw rectangles indicating the overlap on each side of the junction
-            int overlapRectHeight = 3;
-            int overlapRectTopX = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
-            if (pixelFeatureStart < pixelJunctionStart) {
-                g2D.fillRect(pixelFeatureStart, overlapRectTopX,
-                        pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
-            }
-            if (pixelJunctionEnd < pixelFeatureEnd) {
-                g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
-                        pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+                drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
+                        junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
+                        trackRectangle, isPositiveStrand);
+                drawFlankingRegion(g2D, pixelJunctionEnd + 1, endFlankingRegionPixelLength,
+                        junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
+                        trackRectangle, isPositiveStrand);
+            } else {
+                //Draw rectangles indicating the overlap on each side of the junction
+                int overlapRectHeight = 3;
+                int overlapRectTopX = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
+                if (pixelFeatureStart < pixelJunctionStart) {
+                    g2D.fillRect(pixelFeatureStart, overlapRectTopX,
+                            pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
+                }
+                if (pixelJunctionEnd < pixelFeatureEnd) {
+                    g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
+                            pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+                }
             }
         }
 
