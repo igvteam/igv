@@ -126,17 +126,19 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     protected void loadFeatures(String chr, int start, int end, RenderContext context) {
         parent = context.getPanel();
         final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
-        for (AlignmentInterval loadedInterval : loadedIntervals) {
-            if (loadedInterval != null) {
-                List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
-                if (features == null) {
-                    features = Collections.emptyList();
+        if (loadedIntervals != null) {
+            for (AlignmentInterval loadedInterval : loadedIntervals) {
+                if (loadedInterval != null) {
+                    List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
+                    if (features == null) {
+                        features = Collections.emptyList();
+                    }
+                    int intervalStart = loadedInterval.getStart();
+                    int intervalEnd = loadedInterval.getEnd();
+                    PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
+                    packedFeaturesMap.put(pf);
+                    if (context.getPanel() != null) context.getPanel().repaint();
                 }
-                int intervalStart = loadedInterval.getStart();
-                int intervalEnd = loadedInterval.getEnd();
-                PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
-                packedFeaturesMap.put(pf);
-                if (context.getPanel() != null) context.getPanel().repaint();
             }
         }
     }

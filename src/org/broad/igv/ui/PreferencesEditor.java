@@ -298,6 +298,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label9 = new JLabel();
         panel3 = new JPanel();
         showJunctionTrackCB = new JCheckBox();
+        showJunctionFlankingRegionsCB = new JCheckBox();
         junctionFlankingTextField = new JTextField();
         label15 = new JLabel();
         label16 = new JLabel();
@@ -1596,6 +1597,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     panel3.add(showJunctionTrackCB);
                     showJunctionTrackCB.setBounds(new Rectangle(new Point(5, 25), showJunctionTrackCB.getPreferredSize()));
 
+                    //---- showJunctionFlankingRegionsCB ----
+                    showJunctionFlankingRegionsCB.setText("Show flanking");
+                    showJunctionFlankingRegionsCB.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            showJunctionFlankingRegionsCBActionPerformed(e);
+                        }
+                    });
+                    panel3.add(showJunctionFlankingRegionsCB);
+                    showJunctionFlankingRegionsCB.setBounds(new Rectangle(new Point(160, 25),
+                            showJunctionFlankingRegionsCB.getPreferredSize()));
+
+
                     //---- junctionFlankingTextField ----
                     junctionFlankingTextField.addActionListener(new ActionListener() {
                         @Override
@@ -1610,17 +1624,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel3.add(junctionFlankingTextField);
-                    junctionFlankingTextField.setBounds(325, 25, 80, junctionFlankingTextField.getPreferredSize().height);
+                    junctionFlankingTextField.setBounds(430, 25, 80, junctionFlankingTextField.getPreferredSize().height);
 
                     //---- label15 ----
                     label15.setText("Min flanking width:");
                     panel3.add(label15);
-                    label15.setBounds(185, 30, 125, label15.getPreferredSize().height);
+                    label15.setBounds(305, 30, 125, label15.getPreferredSize().height);
 
                     //---- label16 ----
                     label16.setText("Min junction coverage:");
                     panel3.add(label16);
-                    label16.setBounds(new Rectangle(new Point(460, 30), label16.getPreferredSize()));
+                    label16.setBounds(new Rectangle(new Point(520, 30), label16.getPreferredSize()));
 
                     //---- junctionCoverageTextField ----
                     junctionCoverageTextField.addActionListener(new ActionListener() {
@@ -1636,7 +1650,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel3.add(junctionCoverageTextField);
-                    junctionCoverageTextField.setBounds(615, 25, 80, 28);
+                    junctionCoverageTextField.setBounds(665, 25, 80, 28);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -2674,6 +2688,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_TRACK, String.valueOf(junctionTrackEnabled));
         junctionFlankingTextField.setEnabled(junctionTrackEnabled);
         junctionCoverageTextField.setEnabled(junctionTrackEnabled);
+        showJunctionFlankingRegionsCB.setEnabled(junctionTrackEnabled);
+    }
+
+    private void showJunctionFlankingRegionsCBActionPerformed(java.awt.event.ActionEvent evt) {
+        final boolean junctionFlankingRegionsEnabled = showJunctionFlankingRegionsCB.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS,
+                String.valueOf(junctionFlankingRegionsEnabled));
     }
 
     private void junctionFlankingTextFieldFocusLost(FocusEvent e) {
@@ -3625,6 +3646,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         final boolean junctionTrackEnabled = prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         showJunctionTrackCB.setSelected(junctionTrackEnabled);
+        showJunctionFlankingRegionsCB.setSelected(prefMgr.getAsBoolean(
+                PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS));
+        showJunctionFlankingRegionsCB.setEnabled(junctionTrackEnabled);
         junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
         junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
         junctionFlankingTextField.setEnabled(junctionTrackEnabled);
@@ -3888,6 +3912,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label9;
     private JPanel panel3;
     private JCheckBox showJunctionTrackCB;
+    private JCheckBox showJunctionFlankingRegionsCB;
     private JTextField junctionFlankingTextField;
     private JLabel label15;
     private JLabel label16;

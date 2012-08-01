@@ -101,6 +101,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
+    //dhmay adding 20120731
+    public static final String SAM_SHOW_JUNCTION_FLANKINGREGIONS = "SAM.SHOW_JUNCTION_FLANKINGREGIONS";
 
     public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
     public static final String SAM_COUNT_DELETED_BASES_COVERED = "SAM.COUNT_DELETED_BASES_COVERED";
