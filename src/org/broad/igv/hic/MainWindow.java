@@ -51,9 +51,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -564,192 +562,51 @@ public class MainWindow extends JFrame {
     }
 
     private void addPredefinedLoadItems(JMenu fileMenu) {
-        //---- loadGM ----
-        JMenuItem loadGM = new JMenuItem("GM cell line (human)");
-        loadGM.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    heatmapPanel.setObservedRange(0, 100);
-                    colorRangeSlider.setMaximum(100);
-                    colorRangeSlider.setMinimum(0);
-                    colorRangeSlider.setMajorTickSpacing(10);
-                    hic.reset();
-                    load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                }
+        InputStream is = null;
+        Properties properties = null;
 
+        try {
+            is = MainWindow.class.getResourceAsStream("mainwindow.properties");
+            properties = new Properties();
+            properties.load(is);
+        }
+        catch (IOException error) {
+            System.err.println("Can't find mainwindow.properties.");
+        }
+        // TreeSet is sorted, so properties file is implemented in order
+        TreeSet<String> keys = new TreeSet<String>(properties.stringPropertyNames());
+        for (String key : keys) {
+            String value = properties.getProperty(key);
+            final String[] values = value.split(",");
+            if (values.length != 3 && values.length != 1) {
+                System.err.println("Improperly formatted mainwindow.properties file");
+                return;
             }
-        });
-        fileMenu.add(loadGM);
-
-        //---- load562 ----
-        JMenuItem load562 = new JMenuItem("K562 cell line (human)");
-        load562.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    heatmapPanel.setObservedRange(0, 100);
-                    colorRangeSlider.setMaximum(100);
-                    colorRangeSlider.setMinimum(0);
-                    colorRangeSlider.setMajorTickSpacing(10);
-                    hic.reset();
-                    load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                }
-
+            if (values.length == 1) {
+                fileMenu.addSeparator();
             }
-        });
-        fileMenu.add(load562);
-        fileMenu.addSeparator();
+            else {
+                final int maxValue = Integer.parseInt(values[2]);
+                JMenuItem item = new JMenuItem(values[0]);
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            heatmapPanel.setObservedRange(0, maxValue);
+                            colorRangeSlider.setMaximum(maxValue);
+                            colorRangeSlider.setMinimum(0);
+                            colorRangeSlider.setMajorTickSpacing((int)(maxValue/10));
+                            colorRangeSlider.setUpperValue((int)(maxValue*3/4));
+                            hic.reset();
+                            load(values[1]);
+                        } catch (IOException e1) {
+                            JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
+                        }
 
-
-        //---- loadFeb ----
-        JMenuItem loadFeb = new JMenuItem("HiSeq Hi-C Human (02/01/2012)");
-        loadFeb.addActionListener(new
-
-                                  ActionListener() {
-                                      public void actionPerformed(ActionEvent e) {
-                                          try {
-                                              heatmapPanel.setObservedRange(0, 20);
-                                              colorRangeSlider.setMaximum(2000);
-                                              colorRangeSlider.setMinimum(0);
-                                              colorRangeSlider.setMajorTickSpacing(100);
-                                              colorRangeSlider.setUpperValue(1500);
-                                              hic.reset();
-                                              load("http://iwww.broadinstitute.org/igvdata/hic/HiSeq/120201.hic");
-                                          } catch (IOException e1) {
-                                              JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                                          }
-
-                                      }
-                                  }
-
-        );
-        fileMenu.add(loadFeb);
-
-        //---- loadFeb ----
-        JMenuItem loadApr = new JMenuItem("HiSeq Hi-C Human (04/01/2012)");
-        loadApr.addActionListener(new
-                                  ActionListener() {
-                                      public void actionPerformed(ActionEvent e) {
-                                          try {
-                                              heatmapPanel.setObservedRange(0, 20);
-                                              colorRangeSlider.setMaximum(3000);
-                                              colorRangeSlider.setMinimum(0);
-                                              colorRangeSlider.setMajorTickSpacing(500);
-                                              colorRangeSlider.setUpperValue(2500);
-                                              hic.reset();
-                                              load("http://iwww.broadinstitute.org/igvdata/hic/files/April_2012/120401.hic");
-                                          } catch (IOException e1) {
-                                              JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                                          }
-
-                                      }
-                                  }
-
-        );
-        fileMenu.add(loadApr);
-
-
-        fileMenu.addSeparator();
-
-        //---- loadHindIII ----
-        JMenuItem loadHindIII = new JMenuItem("MiSeq Hi-C Human (08/01/2011)");
-        loadHindIII.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    heatmapPanel.setObservedRange(0, 20);
-                    colorRangeSlider.setMaximum(50);
-                    colorRangeSlider.setMajorTickSpacing(10);
-                    colorRangeSlider.setMinimum(0);
-                    colorRangeSlider.setUpperValue(20);
-                    hic.reset();
-                    load("http://iwww.broadinstitute.org/igvdata/hic/MiSeq/Hi-C_HindIII_Human_August.hic");
-
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                }
-
+                    }
+                });
+                fileMenu.add(item);
             }
         }
-
-        );
-        fileMenu.add(loadHindIII);
-
-
-        //---- loadMar2 ----
-        JMenuItem loadMar2 = new JMenuItem("MiSeq Hi-C Human (05/18/2012)");
-        loadMar2.addActionListener(new
-
-                                   ActionListener() {
-                                       public void actionPerformed(ActionEvent e) {
-                                           try {
-                                               heatmapPanel.setObservedRange(0, 1);
-                                               colorRangeSlider.setMaximum(50);
-                                               colorRangeSlider.setMinimum(0);
-                                               colorRangeSlider.setUpperValue(20);
-                                               colorRangeSlider.setMajorTickSpacing(10);
-                                               hic.reset();
-                                               load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/Elena_Human_120518.hic");
-                                           } catch (IOException e1) {
-                                               JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                                           }
-
-                                       }
-                                   }
-
-        );
-        fileMenu.add(loadMar2);
-
-        //---- loadCoolAid ----
-        JMenuItem loadCoolAid = new JMenuItem("MiSeq COOL-AID Mouse (12/11/2011)");
-        loadCoolAid.addActionListener(new
-
-                                      ActionListener() {
-                                          public void actionPerformed(ActionEvent e) {
-                                              try {
-                                                  heatmapPanel.setObservedRange(0, 1);
-                                                  colorRangeSlider.setMaximum(5);
-                                                  colorRangeSlider.setMinimum(0);
-                                                  colorRangeSlider.setUpperValue(1);
-                                                  colorRangeSlider.setMajorTickSpacing(1);
-                                                  hic.reset();
-                                                  load("https://iwww.broadinstitute.org/igvdata/hic/MiSeq/COOL-AID_Elena_Mouse_December11.hic");
-                                              } catch (IOException e1) {
-                                                  JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                                              }
-
-                                          }
-                                      }
-
-        );
-        fileMenu.add(loadCoolAid);
-        fileMenu.addSeparator();
-
-        //---- loadDmelDataset ----
-        JMenuItem loadDmelDataset = new JMenuItem("Fly");
-        loadDmelDataset.addActionListener(new
-
-                                          ActionListener() {
-                                              public void actionPerformed
-                                                      (ActionEvent
-                                                               e) {
-                                                  try {
-                                                      heatmapPanel.setObservedRange(0, 20000);
-                                                      colorRangeSlider.setMaximum(20000);
-                                                      colorRangeSlider.setMinimum(0);
-                                                      hic.reset();
-                                                      load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
-
-                                                  } catch (IOException e1) {
-                                                      JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
-                                                  }
-                                              }
-                                          }
-
-        );
-        fileMenu.add(loadDmelDataset);
         fileMenu.addSeparator();
     }
 
