@@ -417,7 +417,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         String p = "";
 
-        if (!chrName.equals(Globals.CHR_ALL)) {
+        if (!chrName.equals(Globals.CHR_ALL) && !FrameManager.isGeneListMode()) {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;

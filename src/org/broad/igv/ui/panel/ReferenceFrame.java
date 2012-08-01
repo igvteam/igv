@@ -356,11 +356,14 @@ public class ReferenceFrame {
         }
 
         synchronized (this) {
-            setChromosomeName(chr);
+            this.chrName = chr;
             if (start >= 0) {
                 imputeZoom(start, end);
                 if (widthInPixels > 0) {
                     setLocationScale(((double) (end - start)) / widthInPixels);
+                } else {
+                    // Set end temporarily until scale can be calculated
+                    this.setEnd = locus.getEnd();
                 }
                 origin = start;
             }
@@ -385,7 +388,8 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
-        IGV.repaintPanelsHeadlessSafe();
+        if (IGV.hasInstance())
+            IGV.getInstance().repaintStatusAndZoomSlider();
     }
 
     protected Genome getGenome() {
