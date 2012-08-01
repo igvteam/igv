@@ -15,7 +15,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.Feature;
 
@@ -184,10 +186,30 @@ public class CombinedFeatureSource implements FeatureSource {
 
         //Read back in the data which bedtools output
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-        BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+        final BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
         List<Feature> featuresList = new ArrayList<Feature>();
-        IGVBEDCodec codec = new IGVBEDCodec();
+        //TODO This cast is here as a reminder that we want to use AsciiFeatureCodec
+        IGVBEDCodec codec = (IGVBEDCodec) CodecFactory.getCodec(".bed", null);
+
+        //Supposed to read error stream on separate thread to prevent blocking
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run(){
+                String line;
+                try{
+                    while ((line = err.readLine()) != null) {
+                        log.error(line);
+                    }
+                    err.close();
+                }catch (IOException e){
+                    log.error(e);
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        LongRunningTask.submit(runnable);
 
 
         String line;
@@ -195,7 +217,7 @@ public class CombinedFeatureSource implements FeatureSource {
         int numCols0 = tempFiles.get(fiNames[0]);
         int numCols1 = tempFiles.get(fiNames[1]);
         while ((line = in.readLine()) != null) {
-            System.out.println(line);
+            //System.out.println(line);
             String[] tokens = line.split("\t");
             if (operation.getCmd().contains("-split")){
                 //When we split, the returned feature still has the exons
@@ -227,12 +249,6 @@ public class CombinedFeatureSource implements FeatureSource {
         }
 
         in.close();
-
-
-        while ((line = err.readLine()) != null) {
-            log.error(line);
-        }
-        err.close();
 
         return featuresList.iterator();
     }

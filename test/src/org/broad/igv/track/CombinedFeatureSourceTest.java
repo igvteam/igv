@@ -91,7 +91,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
         int errlines = 0;
         while ((line = err.readLine()) != null) {
-            //System.out.println(line);
+            System.out.println(line);
             errlines++;
         }
 
