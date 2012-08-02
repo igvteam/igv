@@ -246,13 +246,13 @@ public class MatrixZoomData {
         return pearsons;
     }
 
-    public RealMatrixWrapper computePearsons(DensityFunction df) {
+    public BasicMatrix computePearsons(DensityFunction df) {
 
         if (oe == null)
             oe = computeOE(df);
 
         RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-        RealMatrixWrapper pearsons = new RealMatrixWrapper(rm);
+        pearsons = new RealMatrixWrapper(rm);
         return pearsons;
     }
 
