@@ -356,11 +356,14 @@ public class ReferenceFrame {
         }
 
         synchronized (this) {
-            setChromosomeName(chr);
+            this.chrName = chr;
             if (start >= 0) {
                 imputeZoom(start, end);
                 if (widthInPixels > 0) {
                     setLocationScale(((double) (end - start)) / widthInPixels);
+                } else {
+                    // Set end temporarily until scale can be calculated
+                    this.setEnd = locus.getEnd();
                 }
                 origin = start;
             }
@@ -385,7 +388,8 @@ public class ReferenceFrame {
             nTiles = (int) Math.pow(2, zoom);
             maxPixel = getTilesTimesBinsPerTile();
         }
-        IGV.repaintPanelsHeadlessSafe();
+        if (IGV.hasInstance())
+            IGV.getInstance().repaintStatusAndZoomSlider();
     }
 
     protected Genome getGenome() {
@@ -484,7 +488,7 @@ public class ReferenceFrame {
      *
      * @return
      */
-    public synchronized double getScale() {
+    public double getScale() {
         if ((locationScale <= 0) || !locationScaleValid) {
             computeLocationScale();
         }
@@ -498,7 +502,7 @@ public class ReferenceFrame {
         locationScaleValid = false;
     }
 
-    private synchronized void computeLocationScale() {
+    private void computeLocationScale() {
         Genome genome = getGenome();
 
         if (genome != null) {
@@ -638,21 +642,6 @@ public class ReferenceFrame {
         this.locationScale = locationScale;
         locationScaleValid = true;
 
-    }
-
-    public synchronized void setInterval(Locus locus) {
-        this.initialLocus = locus;
-
-        this.chrName = locus.getChr();
-        this.origin = locus.getStart();
-        if (widthInPixels > 0) {
-            locationScale = (locus.getEnd() - origin) / widthInPixels;
-            locationScaleValid = true;
-            imputeZoom(origin, locus.getEnd());
-        } else {
-            // Set end temporarily until scale can be calculated
-            this.setEnd = locus.getEnd();
-        }
     }
 
     public void reset() {

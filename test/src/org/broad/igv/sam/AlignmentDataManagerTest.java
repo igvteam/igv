@@ -32,13 +32,14 @@ import static junit.framework.Assert.assertTrue;
  * Date: 2012-Jul-12
  */
 public class AlignmentDataManagerTest extends AbstractHeadlessTest {
+    private final String chr = "chr1";
+    private final int start = 151666494;
+    private final int halfwidth = 1000;
+    private final int end = start + 2 * halfwidth;
 
     @Test
-    public void testPreload() throws Exception {
-        String chr = "chr1";
-        int start = 151666494;
-        int halfwidth = 1000;
-        int end = start + 2 * halfwidth;
+    public void testPreloadPanning() throws Exception {
+
         int panInterval = halfwidth;
 
         int numPans = 20 * (end - start) / (panInterval) * AlignmentDataManager.MAX_INTERVAL_MULTIPLE;
@@ -46,21 +47,29 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
         assertEquals(1, intervals.size());
 
+    }
+
+    @Test
+    public void testPreloadNoMerge() throws Exception {
+
         //Load separate intervals, check they don't merge
         AlignmentDataManager manager = getManager171();
         ReferenceFrame frame = new ReferenceFrame("test");
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         frame.setBounds(0, end - start);
+
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
 
-        int[] starts = new int[]{500, 5000, 15000, start, 500000, start * 2};
-        int[] ends = new int[]{600, 10000, 20000, end, 600000, start * 2 + halfwidth};
+        int lastStart = genome.getChromosome(chr).getLength() - 4 * halfwidth;
+        int[] starts = new int[]{500, 5000, 15000, start, 500000, lastStart};
+        int[] ends = new int[]{600, 10000, 20000, end, 600000, lastStart + 2*halfwidth};
         for (int ii = 0; ii < starts.length; ii++) {
-
             frame.jumpTo(new Locus(chr, starts[ii], ends[ii]));
+            int actEnd = (int) frame.getEnd();
+
             manager.preload(context, renderOptions, false);
 
-            assertManagerHasInterval(manager, chr, starts[ii], ends[ii]);
+            assertManagerHasInterval(manager, chr, starts[ii], actEnd);
         }
 
 

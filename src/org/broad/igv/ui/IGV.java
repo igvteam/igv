@@ -339,8 +339,8 @@ public class IGV {
      * zoom controls IFF IGV has instance && not headless.
      * Mostly use for testing
      */
-    public static void repaintPanelsHeadlessSafe(){
-        if(IGV.hasInstance() && !Globals.isHeadless()){
+    public static void repaintPanelsHeadlessSafe() {
+        if (IGV.hasInstance() && !Globals.isHeadless()) {
             IGV.getInstance().repaintDataAndHeaderPanels();
             IGV.getInstance().repaintStatusAndZoomSlider();
         }
@@ -403,7 +403,7 @@ public class IGV {
     }
 
     public void selectGenomeFromList(String genome) {
-        contentPane.getCommandBar().selectGenomeFromList(genome);
+        contentPane.getCommandBar().selectGenomeFromList(genome, true);
     }
 
     public Collection<String> getSelectableGenomeIDs() {
@@ -448,7 +448,7 @@ public class IGV {
                 enableRemoveGenomes();
 
                 contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-                contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+                contentPane.getCommandBar().selectGenomeFromList(genomeListItem.getId(), false);
             }
             if (monitor != null) {
                 monitor.fireProgressChange(100);
@@ -568,9 +568,10 @@ public class IGV {
         GenomeListItem genomeListItem = new GenomeListItem(name, path, id, true);
         getGenomeManager().addUserDefineGenomeItem(genomeListItem);
 
-        contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-        contentPane.getCommandBar().updateGenome(genome);
-        contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+        IGVCommandBar cmdBar = contentPane.getCommandBar();
+        cmdBar.addToUserDefinedGenomeItemList(genomeListItem);
+        cmdBar.selectGenomeFromList(genomeListItem.getId(), false);
+        cmdBar.updateGenome(genome);
 
 
         // Reset the session (unload all tracks)
@@ -2216,10 +2217,10 @@ public class IGV {
 
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
             if (igvArgs.getGenomeId() != null) {
-                selectGenomeFromList(igvArgs.getGenomeId());
+                contentPane.getCommandBar().selectGenomeFromList(igvArgs.getGenomeId(), false);
             } else if (igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
-                contentPane.getCommandBar().selectGenomeFromList(genomeId);
+                contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
             }
 
             //If there is an argument assume it is a session file or url
@@ -2252,7 +2253,7 @@ public class IGV {
                     }
                     if (!success) {
                         String genomeId = preferenceManager.getDefaultGenome();
-                        contentPane.getCommandBar().selectGenomeFromList(genomeId);
+                        contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
 
                     }
                 } else if (igvArgs.getDataFileString() != null) {
