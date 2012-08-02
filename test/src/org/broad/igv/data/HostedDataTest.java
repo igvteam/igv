@@ -69,24 +69,17 @@ public class HostedDataTest extends AbstractHeadlessTest {
         String serverURLkey = "serverURL";
         String nameKey = "name";
 
-        try {
-            NamedNodeMap attrs = topNode.getAttributes();
-            Node pathNode = attrs.getNamedItem(pKey);
-            String path = pathNode.getTextContent().trim();
+        NamedNodeMap attrs = topNode.getAttributes();
 
-            Node serverURLNode = attrs.getNamedItem(serverURLkey);
-            String serverURL = null;
-            if (serverURLNode != null) {
-                serverURL = serverURLNode.getTextContent().trim();
-            }
+        String path = Utilities.getNullSafe(attrs, pKey);
 
-            ResourceLocator locator = new ResourceLocator(serverURL, path);
-            locator.setName(attrs.getNamedItem(nameKey).getTextContent().trim());
-            paths.add(locator);
+        String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
 
-        } catch (NullPointerException e) {
-            //pass, node doesn't have path attribute
-        }
+        ResourceLocator locator = new ResourceLocator(serverURL, path);
+        locator.setName(Utilities.getNullSafe(attrs, nameKey));
+        paths.add(locator);
+
+
 
         NodeList nodes = topNode.getChildNodes();
         for (int nn = 0; nn < nodes.getLength(); nn++) {
