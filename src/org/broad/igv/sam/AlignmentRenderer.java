@@ -70,8 +70,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     private ColorTable tagValueColors;
 
     private final Color LR_COLOR = grey1; // "Normal" alignment color
-    private final Color LR_COLOR_12 = new Color(190, 190, 210);
-    private final Color LR_COLOR_21 = new Color(210, 190, 190);
+    //private final Color LR_COLOR_12 = new Color(190, 190, 210);
+    //private final Color LR_COLOR_21 = new Color(210, 190, 190);
     private final Color RL_COLOR = new Color(0, 150, 0);
     private final Color RR_COLOR = new Color(20, 50, 200);
     private final Color LL_COLOR = new Color(0, 150, 150);
@@ -127,12 +127,13 @@ public class AlignmentRenderer implements FeatureRenderer {
         sampleColors = new PaletteColorTable(palette);
         tagValueColors = new PaletteColorTable(palette);
 
+        // pre-seed from orienation colors
 
         // fr Orienations (e.g. Illumina paired-end libraries)
         frOrientationColors = new HashMap();
         //LR
-        frOrientationColors.put("F1R2", LR_COLOR_12);
-        frOrientationColors.put("F2R1", LR_COLOR_21);
+        frOrientationColors.put("F1R2", LR_COLOR);
+        frOrientationColors.put("F2R1", LR_COLOR);
         frOrientationColors.put("F R ", LR_COLOR);
         frOrientationColors.put("FR", LR_COLOR);
         //LL
@@ -154,10 +155,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         // rf orienation  (e.g. Illumina mate-pair libraries)
         rfOrientationColors = new HashMap();
         //LR
-        rfOrientationColors.put("R1F2", LR_COLOR_12);
-        rfOrientationColors.put("R2F1", LR_COLOR_21);
-        rfOrientationColors.put("R F ", LR_COLOR);
-        rfOrientationColors.put("RF", LR_COLOR);
+        rfOrientationColors.put("R1F2", LR_COLOR);
+        rfOrientationColors.put("R2F1", LR_COLOR);
+        //rfOrientationColors.put("R F ", LR_COLOR);
+        //rfOrientationColors.put("RF", LR_COLOR);
         //LL
         rfOrientationColors.put("R1R2", LL_COLOR);
         rfOrientationColors.put("R2R1", LL_COLOR);
@@ -178,8 +179,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         // ff orienation  (e.g. SOLID libraries)
         ffOrientationColors = new HashMap();
         //LR
-        ffOrientationColors.put("F1F2", LR_COLOR_12);
-        ffOrientationColors.put("R2R1", LR_COLOR_21);
+        ffOrientationColors.put("F1F2", LR_COLOR);
+        ffOrientationColors.put("R2R1", LR_COLOR);
         //LL -- switched with RR color per Bob's instructions
         ffOrientationColors.put("F1R2", RR_COLOR);
         ffOrientationColors.put("R2F1", RR_COLOR);
