@@ -41,6 +41,7 @@ public class MatrixZoomData {
 
     private BasicMatrix pearsons;
     private double[] eigenvector;
+    private int[] nonCentromereColumns;
 
     public void setPearsons(BasicMatrix bm) {
         this.pearsons = bm;
@@ -192,31 +193,15 @@ public class MatrixZoomData {
 
 
     public double[] computeEigenvector(DensityFunction df, int which) {
-        SparseRealMatrix oe = computeOE(df);
+        //SparseRealMatrix oe = computeOE(df);
         if (pearsons == null) {
             pearsons = computePearsons(df);
         }
-        int size = pearsons.getColumnDimension();
-        eigenvector = new double[size];
-        int numgood = 0;
-
-        for (int i = 0; i < size; i++) {
-            eigenvector[i] = Double.NaN;
-            if (!isZeros(oe.getRow(i))) {
-                eigenvector[i] = 1;
-                numgood++;
-            }
-        }
-        int[] cols = new int[numgood];
-        numgood = 0;
-        for (int i = 0; i < size; i++)
-            if (!Double.isNaN(eigenvector[i]))
-                cols[numgood++] = i;
 
         RealMatrix subMatrix = null;
         if (pearsons instanceof RealMatrixWrapper) {
 
-            subMatrix = ((RealMatrixWrapper) pearsons).getMatrix().getSubMatrix(cols, cols);
+            subMatrix = ((RealMatrixWrapper) pearsons).getMatrix().getSubMatrix(nonCentromereColumns, nonCentromereColumns);
 
             if (which >= subMatrix.getColumnDimension() || which < 0)
                 throw new NumberFormatException("Maximum eigenvector is " + subMatrix.getColumnDimension());
@@ -224,21 +209,28 @@ public class MatrixZoomData {
 
         } else {
             // TODO -- make submatrix from pearsons
-            throw new RuntimeException("Eigenvector calculation not implementated for matrix class: "
+            throw new RuntimeException("Eigenvector calculation not implemented for matrix class: "
                     + pearsons.getClass().getName());
         }
 
-        RealVector rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
-        double[] ev = rv.toArray();
-        numgood = 0;
-        for (int i = 0; i < size; i++) {
-            if (Double.isNaN(eigenvector[i]))
-                eigenvector[i] = 0;
-            else
-                eigenvector[i] = ev[numgood++];
-        }
+        RealVector rv;
+        rv = (new EigenDecompositionImpl(subMatrix, 0)).getEigenvector(which);
 
+        double[] ev = rv.toArray();
+
+        int size = pearsons.getColumnDimension();
+        eigenvector = new double[size];
+        int num = 0;
+        for (int i=0; i<size; i++) {
+            if (i == nonCentromereColumns[num]) {
+                eigenvector[i] = ev[num];
+                num++;
+            }
+            else
+                eigenvector[i] = 0;
+        }
         return eigenvector;
+
     }
 
     public BasicMatrix getPearsons() {
@@ -246,7 +238,7 @@ public class MatrixZoomData {
     }
 
     public BasicMatrix computePearsons(DensityFunction df) {
-        SparseRealMatrix oe = computeOE(df);
+        RealMatrix oe = computeOE(df);
 
         // below subtracts the empirical mean - necessary for mean-centered eigenvector
         int size = oe.getRowDimension();
@@ -260,8 +252,8 @@ public class MatrixZoomData {
         PearsonsResetNan resetNan = new PearsonsResetNan();
         oe.walkInOptimizedOrder(resetNan);
 
-
         RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+
         pearsons = new RealMatrixWrapper(rm);
         return pearsons;
     }
@@ -286,7 +278,7 @@ public class MatrixZoomData {
         return sum / count;
     }
 
-    public SparseRealMatrix computeOE(DensityFunction df) {
+    public RealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
@@ -294,7 +286,7 @@ public class MatrixZoomData {
 
         int nBins = chr1.getLength() / binSize + 1;
 
-        SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
+        RealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         for (int blockNumber : blockNumbers) {
@@ -326,10 +318,16 @@ public class MatrixZoomData {
             }
         }
 
+        nonCentromereColumns = new int[size - bitSet.cardinality()];
+
+        int num = 0;
         for (int i = 0; i < size; i++) {
             if (bitSet.get(i)) {
                 rm.setRow(i, nans);
                 rm.setColumn(i, nans);
+            }
+            else {
+                nonCentromereColumns[num++] = i;
             }
         }
 
@@ -411,7 +409,7 @@ public class MatrixZoomData {
     public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
 
         if (isOE) {
-            SparseRealMatrix oe = computeOE(df);
+            RealMatrix oe = computeOE(df);
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();

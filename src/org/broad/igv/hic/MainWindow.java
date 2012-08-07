@@ -400,6 +400,10 @@ public class MainWindow extends JFrame {
         trackPanel.repaint();
     }
 
+    public void setViewEigenvector(boolean flag) {
+        viewEigenvector.setSelected(flag);
+    }
+
 
     private void getEigenvectorActionPerformed(ActionEvent e) {
         double[] rv;

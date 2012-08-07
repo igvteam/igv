@@ -35,6 +35,10 @@ public class RealMatrixWrapper implements BasicMatrix {
         return matrix.getColumnDimension();
     }
 
+    public double[] getRow(int index) {
+        return matrix.getRow(index);
+    }
+
     public BasicMatrix getSubMatrix(int startRow, int endRow, int startCol, int endCol) {
         RealMatrix subMatrix = matrix.getSubMatrix(startRow, endRow, startCol, endCol);
         return new RealMatrixWrapper(subMatrix);
