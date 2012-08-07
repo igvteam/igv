@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_33" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -8,6 +8,7 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
+				"preferredSize": new java.awt.Dimension( 367, 500 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 					"axis": 1
 				} ) {
@@ -22,12 +23,10 @@ new FormModel {
 							"horizontalAlignment": 2
 							"maximumSize": &Dimension0 new java.awt.Dimension( 80, 16 )
 						} )
-						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "DBPath2"
-							"maximumSize": &Dimension1 new java.awt.Dimension( 250, 28 )
-							"preferredSize": &Dimension2 new java.awt.Dimension( 250, 28 )
-							"toolTipText": "mysql://my.awesomedb.com:8080/mytable"
-							"text": "My Awesome DB"
+						add( new FormComponent( "javax.swing.JComboBox" ) {
+							name: "nameComboBox"
+							"editable": true
+							"maximumRowCount": 100
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
@@ -42,10 +41,10 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "DBHost"
-							"maximumSize": #Dimension1
-							"preferredSize": #Dimension2
+							"maximumSize": &Dimension1 new java.awt.Dimension( 250, 28 )
+							"preferredSize": &Dimension2 new java.awt.Dimension( 250, 28 )
 							"toolTipText": "my.awesomedb.com"
-							"text": "mysql://my.awesomedb.com"
+							"text": "mysql://my.db.com"
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
@@ -59,7 +58,7 @@ new FormModel {
 							"maximumSize": #Dimension0
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "DBHost3"
+							name: "DBPath"
 							"maximumSize": #Dimension1
 							"preferredSize": #Dimension2
 							"toolTipText": "my.awesomedb.com"
@@ -77,7 +76,7 @@ new FormModel {
 							"maximumSize": #Dimension0
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "DBHost2"
+							name: "port"
 							"maximumSize": #Dimension1
 							"preferredSize": #Dimension2
 							"toolTipText": "my.awesomedb.com"
@@ -106,13 +105,14 @@ new FormModel {
 						"axis": 0
 					} ) {
 						name: "panel3"
+						"maximumSize": new java.awt.Dimension( 400, 28 )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "label3"
 							"text": "Password (opt.):"
-							"horizontalAlignment": 2
-							"maximumSize": #Dimension0
+							"maximumSize": new java.awt.Dimension( 120, 16 )
 							"minimumSize": #Dimension3
 							"preferredSize": #Dimension4
+							"horizontalAlignment": 2
 						} )
 						add( new FormComponent( "javax.swing.JPasswordField" ) {
 							name: "password"
@@ -136,7 +136,7 @@ new FormModel {
 							"maximumSize": #Dimension0
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "DBPath3"
+							name: "tableName"
 							"maximumSize": #Dimension1
 							"preferredSize": #Dimension2
 							"toolTipText": "mysql://my.awesomedb.com:8080/mytable"
@@ -154,9 +154,116 @@ new FormModel {
 							"maximumSize": #Dimension0
 						} )
 						add( new FormComponent( "javax.swing.JComboBox" ) {
-							name: "dataTypes"
+							name: "dataType"
 							"maximumSize": new java.awt.Dimension( 250, 28 )
 							"minimumSize": new java.awt.Dimension( 96, 28 )
+						} )
+					} )
+					add( new FormComponent( "javax.swing.JSeparator" ) {
+						name: "separator1"
+						"preferredSize": new java.awt.Dimension( 0, 1 )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel9"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label9"
+							"text": "Chromosome Column Name:"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "chromField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"text": "chrom"
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel10"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label10"
+							"text": "Position Start Column Name:"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "posStartField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"text": "txStart"
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel13"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label13"
+							"text": "Position End Column Name:"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "posEndField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"text": "txEnd"
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel11"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label11"
+							"text": "Data start column index (opt.):"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "startColField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"toolTipText": "Starting column index from which to read data (1-based)"
+							"text": "1"
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel12"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label12"
+							"text": "Data end column index (opt.):"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "endColField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"toolTipText": "Last column (1-based, inclusive end) from which to read data"
+						} )
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "panel14"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label14"
+							"text": "Bin column Name (opt.):"
+							"horizontalAlignment": 2
+							"maximumSize": #Dimension0
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "binColField"
+							"maximumSize": #Dimension1
+							"preferredSize": #Dimension2
+							"toolTipText": "Some databases use binning to speed up querying"
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
@@ -171,18 +278,20 @@ new FormModel {
 					name: "buttonBar"
 					"border": new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
 					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "saveButton"
+						"text": "Save Profile"
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
-						"text": "OK"
+						"text": "Load Data"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 1
-						"gridy": 0
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "cancelButton"
 						"text": "Cancel"
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 2
-						"gridy": 0
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "South"
@@ -192,7 +301,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 400 )
+			"size": new java.awt.Dimension( 400, 500 )
 		} )
 	}
 }
