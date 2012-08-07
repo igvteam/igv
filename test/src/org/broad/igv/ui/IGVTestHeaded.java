@@ -46,6 +46,8 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
         int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
         assertTrue(rangeDiff < 3);
+
+        assertEquals(1461, igv.getAllTracks().size());
     }
 
     /**
