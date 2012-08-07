@@ -40,7 +40,6 @@ public class MatrixZoomData {
     private DatasetReader reader;
 
     private BasicMatrix pearsons;
-    private RealMatrix oe;
     private double[] eigenvector;
 
     public void setPearsons(BasicMatrix bm) {
@@ -193,7 +192,7 @@ public class MatrixZoomData {
 
 
     public double[] computeEigenvector(DensityFunction df, int which) {
-
+        SparseRealMatrix oe = computeOE(df);
         if (pearsons == null) {
             pearsons = computePearsons(df);
         }
@@ -247,61 +246,24 @@ public class MatrixZoomData {
     }
 
     public BasicMatrix computePearsons(DensityFunction df) {
+        SparseRealMatrix oe = computeOE(df);
 
-        if (oe == null)
-            oe = computeOE(df);
+        // below subtracts the empirical mean - necessary for mean-centered eigenvector
+        int size = oe.getRowDimension();
+        for (int i = 0; i < size; i++) {
+            RealVector v = oe.getRowVector(i);
+            double m = getVectorMean(v);
+            RealVector newV = v.mapSubtract(m);
+            oe.setRowVector(i, newV);
+       }
+
+        PearsonsResetNan resetNan = new PearsonsResetNan();
+        oe.walkInOptimizedOrder(resetNan);
+
 
         RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
         pearsons = new RealMatrixWrapper(rm);
         return pearsons;
-    }
-
-    private RealMatrix readRealMatrix(String filename) throws IOException {
-        LittleEndianInputStream is = null;
-        RealMatrix rm = null;
-        try {
-            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename + this.zoom)));
-
-            int rows = is.readInt();
-            int cols = is.readInt();
-            double[][] matrix = new double[rows][cols];
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    matrix[i][j] = is.readDouble();
-                }
-            }
-            rm = new BlockRealMatrix(rows, cols);
-            rm.setSubMatrix(matrix, 0, 0);
-        } catch (IOException error) {
-            System.err.println("IO error when saving Pearson's: " + error);
-        } finally {
-            if (is != null)
-                is.close();
-        }
-        return rm;
-    }
-
-    private void outputRealMatrix(RealMatrix rm) throws IOException {
-        LittleEndianOutputStream os = null;
-        try {
-            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("pearsons" + this.zoom + ".bin")));
-
-            int rows = rm.getRowDimension();
-            int cols = rm.getColumnDimension();
-            os.writeInt(rows);
-            os.writeInt(cols);
-            double[][] matrix = rm.getData();
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    os.writeDouble(matrix[i][j]);
-                }
-            }
-        } catch (IOException error) {
-            System.err.println("IO error when saving Pearson's: " + error);
-        } finally {
-            if (os != null)
-                os.close();
-        }
     }
 
     private boolean isZeros(double[] array) {
@@ -371,15 +333,6 @@ public class MatrixZoomData {
             }
         }
 
-        for (int i = 0; i < size; i++) {
-            RealVector v = rm.getRowVector(i);
-            double m = getVectorMean(v);
-            RealVector newV = v.mapSubtract(m);
-            rm.setRowVector(i, newV);
-        }
-        PearsonsResetNan resetNan = new PearsonsResetNan();
-        rm.walkInOptimizedOrder(resetNan);
-
         return rm;
     }
 
@@ -423,19 +376,26 @@ public class MatrixZoomData {
     }
     // Dump the contents to standard out
 
-    public void dump() {
+    public void dump(LittleEndianOutputStream les) throws IOException {
 
         // Get the block index keys, and sort
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         Collections.sort(blockNumbers);
 
-        System.out.println("# " + chr1.getName() + " - " + chr2.getName());
+        if (les == null)
+            System.out.println("# " + chr1.getName() + " - " + chr2.getName());
 
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
                 for (ContactRecord rec : b.getContactRecords()) {
-                    System.out.println(rec.getX() * binSize + "\t" + rec.getY() * binSize + "\t" + rec.getCounts());
+                    if (les == null)
+                        System.out.println(rec.getX() * binSize + "\t" + rec.getY() * binSize + "\t" + rec.getCounts());
+                    else {
+                        les.writeInt(rec.getX());
+                        les.writeInt(rec.getY());
+                        les.writeInt(rec.getCounts());
+                    }
                 }
             }
         }
@@ -446,36 +406,54 @@ public class MatrixZoomData {
      *
      * @param df
      * @param isOE
+     * @param les
      */
-    public void dumpOE(DensityFunction df, boolean isOE) {
-        oe = computeOE(df);
+    public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
+
         if (isOE) {
+            SparseRealMatrix oe = computeOE(df);
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
-            System.out.println(rows + " " + cols);
+            if (les != null)
+                les.writeInt(rows);
+            else
+                System.out.println(rows + " " + cols);
             double[][] matrix = oe.getData();
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
-                    System.out.print(matrix[i][j] + " ");
+                    if (les != null)
+                        les.writeFloat((float)matrix[i][j]);
+                    else
+                        System.out.print(matrix[i][j] + " ");
                 }
-                System.out.println();
+                if (les == null)
+                    System.out.println();
             }
-            System.out.println();
+            if (les == null)
+                System.out.println();
         } else {
 
-            RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
+            RealMatrix rm = ((RealMatrixWrapper)computePearsons(df)).getMatrix();
             int rows = rm.getRowDimension();
             int cols = rm.getColumnDimension();
-            System.out.println(rows + " " + cols);
+            if (les != null)
+                les.writeInt(rows);
+            else
+                System.out.println(rows + " " + cols);
             double[][] matrix = rm.getData();
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
-                    System.out.print(matrix[i][j] + " ");
+                    if (les != null)
+                        les.writeFloat((float)matrix[i][j]);
+                    else
+                        System.out.print(matrix[i][j] + " ");
                 }
-                System.out.println();
+                if (les == null)
+                    System.out.println();
             }
-            System.out.println();
+            if (les == null)
+                System.out.println();
         }
     }
 
@@ -486,6 +464,54 @@ public class MatrixZoomData {
             return value;
         }
     }
+
+/*    private RealMatrix readRealMatrix(String filename) throws IOException {
+        LittleEndianInputStream is = null;
+        RealMatrix rm = null;
+        try {
+            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename + this.zoom)));
+
+            int rows = is.readInt();
+            int cols = is.readInt();
+            double[][] matrix = new double[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    matrix[i][j] = is.readDouble();
+                }
+            }
+            rm = new BlockRealMatrix(rows, cols);
+            rm.setSubMatrix(matrix, 0, 0);
+        } catch (IOException error) {
+            System.err.println("IO error when saving Pearson's: " + error);
+        } finally {
+            if (is != null)
+                is.close();
+        }
+        return rm;
+    }
+
+    private void outputRealMatrix(RealMatrix rm) throws IOException {
+        LittleEndianOutputStream os = null;
+        try {
+            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("pearsons" + this.zoom + ".bin")));
+
+            int rows = rm.getRowDimension();
+            int cols = rm.getColumnDimension();
+            os.writeInt(rows);
+            os.writeInt(cols);
+            double[][] matrix = rm.getData();
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    os.writeDouble(matrix[i][j]);
+                }
+            }
+        } catch (IOException error) {
+            System.err.println("IO error when saving Pearson's: " + error);
+        } finally {
+            if (os != null)
+                os.close();
+        }
+    }*/
 
 
 }
