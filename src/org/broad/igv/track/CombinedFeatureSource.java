@@ -17,6 +17,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.Feature;
 
@@ -45,7 +46,7 @@ public class CombinedFeatureSource implements FeatureSource {
      * @return
      */
     public static boolean checkBEDToolsPathValid() {
-        String path = Globals.BEDtoolsPath;
+        String path = FileUtils.findExecutableOnPath(Globals.BEDtoolsPath);
         File bedtoolsFile = new File(path);
         boolean pathValid = bedtoolsFile.isFile();
         if (pathValid && !bedtoolsFile.canExecute()) {

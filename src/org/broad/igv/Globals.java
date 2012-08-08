@@ -91,9 +91,11 @@ public class Globals {
     public static Map<Character, Color> nucleotideColors;
 
     //Location of bedtools executable
-    //Note: This must be the FULL path. Having bedtools on your systems path
-    //is not sufficient
-    public static String BEDtoolsPath = "/usr/local/bin/bedtools";
+    //Note: It is recommended you use an absolute path here.
+    //System paths can be finnicky and vary depending on how IGV is launched
+    //However, the path environment variable will be checked if the executable
+    //is named rather than the full path given
+    public static String BEDtoolsPath = "/usr/local/bin/bedtools"; //"bedtools"
     public static boolean toolsMenuEnabled = false;
 
     static {

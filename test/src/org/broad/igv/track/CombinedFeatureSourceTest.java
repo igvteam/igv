@@ -14,6 +14,7 @@ package org.broad.igv.track;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
@@ -25,6 +26,7 @@ import java.io.*;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -33,20 +35,29 @@ import static org.junit.Assert.assertTrue;
  */
 public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
+    static boolean haveBedTools;
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
-        boolean haveBedTools = CombinedFeatureSource.checkBEDToolsPathValid();
+        haveBedTools = CombinedFeatureSource.checkBEDToolsPathValid();
         Assume.assumeTrue(haveBedTools);
     }
 
     @Test
     public void testBedToolsPath() throws Exception {
-        String cmd = Globals.BEDtoolsPath;
+        String cmd = FileUtils.findExecutableOnPath(Globals.BEDtoolsPath);
         String resp = RuntimeUtils.executeShellCommand(cmd, null, null);
         String line0 = resp.split("\n")[0];
         assertEquals("bedtools: flexible tools for genome arithmetic and DNA sequence analysis.", line0.trim());
 
+    }
+
+    @Test
+    public void testGetPath() throws Exception{
+        String path = System.getenv("PATH");
+        System.out.println("System path: " + path);
+        assertNotNull(path);
     }
 
     //Test our ability to write to stdin and read from stdout
