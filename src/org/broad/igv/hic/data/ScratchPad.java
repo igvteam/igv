@@ -1,11 +1,9 @@
 package org.broad.igv.hic.data;
 
-import com.iontorrent.utils.StringTools;
-import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.matrix.BasicMatrix;
-import org.broad.igv.hic.matrix.DiskResidentMatrix;
+import org.broad.igv.hic.matrix.DiskResidentRowMatrix;
 import org.broad.igv.hic.matrix.InMemoryMatrix;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
@@ -107,12 +105,12 @@ public class ScratchPad {
 
                 if (nRows != nCols) throw new RuntimeException("Non-square matrices not supported");
 
-                return new DiskResidentMatrix(path, bytePosition, nRows, lowerPercentile, upperPercentile);
+                return new DiskResidentRowMatrix(path, bytePosition, nRows, lowerPercentile, upperPercentile);
 
             } else {
                 // Old style, not sure we need to support this anymore
                 int dim = magic;
-                DiskResidentMatrix bm = new DiskResidentMatrix(path, dim);
+                DiskResidentRowMatrix bm = new DiskResidentRowMatrix(path, dim);
                 return bm;
             }
 

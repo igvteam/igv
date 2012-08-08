@@ -23,6 +23,7 @@ import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.data.ScratchPad;
 import org.broad.igv.hic.matrix.BasicMatrix;
+import org.broad.igv.hic.matrix.DiskResidentBlockMatrix;
 import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
@@ -1192,9 +1193,9 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
-                    File f = FileDialogUtils.chooseFile("Pearsons file (Yunfan format)");
+                    File f = FileDialogUtils.chooseFile("Pearsons file (Yunfan format V2)");
                     if (f != null) {
-                        BasicMatrix bm = ScratchPad.readPearsons(f.getAbsolutePath());
+                        BasicMatrix bm = new DiskResidentBlockMatrix(f.getAbsolutePath());
 
                         hic.zd.setPearsons(bm);
                     }
