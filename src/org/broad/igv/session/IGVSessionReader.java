@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.session;
 
@@ -63,7 +56,8 @@ public class IGVSessionReader implements SessionReader {
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
     // Temporary values used in processing
 
-    private Collection<ResourceLocator> dataFiles;
+    //package-private for unit testing
+    Collection<ResourceLocator> dataFiles;
     private Collection<ResourceLocator> missingDataFiles;
     private static Map<String, String> attributeSynonymMap = new HashMap();
     private boolean panelElementPresent = false;
@@ -285,15 +279,17 @@ public class IGVSessionReader implements SessionReader {
         // section only (no Panel or Track elements).
         addLeftoverTracks(trackDictionary.values());
 
-        if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-            igv.setGroupByAttribute(session.getGroupTracksBy());
-        }
+        if (igv != null) {
+            if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
+                igv.setGroupByAttribute(session.getGroupTracksBy());
+            }
 
-        if (session.isRemoveEmptyPanels()) {
-            igv.getMainPanel().removeEmptyDataPanels();
-        }
+            if (session.isRemoveEmptyPanels()) {
+                igv.getMainPanel().removeEmptyDataPanels();
+            }
 
-        igv.resetOverlayTracks();
+            igv.resetOverlayTracks();
+        }
 
     }
 
@@ -572,7 +568,16 @@ public class IGVSessionReader implements SessionReader {
         dataFiles = null;
     }
 
-    private void processResource(Session session, Element element, HashMap additionalInformation) {
+    /**
+     * Load a single resource.
+     * <p/>
+     * Package private for unit testing
+     *
+     * @param session
+     * @param element
+     * @param additionalInformation
+     */
+    void processResource(Session session, Element element, HashMap additionalInformation) {
 
         String nodeName = element.getNodeName();
         boolean oldSession = nodeName.equals(SessionElement.DATA_FILE.getText());
@@ -586,8 +591,8 @@ public class IGVSessionReader implements SessionReader {
         String trackLine = getAttribute(element, SessionAttribute.TRACK_LINE.getText());
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
 
-        String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
-        boolean isRelativePath = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
+        //String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
+        //boolean isRelativePath = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
 
         // Older sessions used the "name" attribute for the path.
@@ -601,29 +606,21 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        ResourceLocator resourceLocator;
-        if (isRelativePath) {
-            final String sessionPath = session.getPath();
-
-            String absolutePath;
-            if (sessionPath == null) {
-                log.error("Null session path -- this is not expected");
-                MessageUtils.showMessage("Unexpected error loading session: null session path");
-                return;
-            }
-            absolutePath = FileUtils.getAbsolutePath(path, sessionPath);
-            fullToRelPathMap.put(absolutePath, path);
-            resourceLocator = new ResourceLocator(serverURL, absolutePath);
-
-            // If the resourceLocator is relative, we assume coverage is as well
-            if (coverage != null) {
-                String absoluteCoveragePath = FileUtils.getAbsolutePath(coverage, sessionPath);
-                resourceLocator.setCoverage(absoluteCoveragePath);
-            }
-        } else {
-            resourceLocator = new ResourceLocator(serverURL, path);
-            resourceLocator.setCoverage(coverage);
+        final String sessionPath = session.getPath();
+        if (sessionPath == null) {
+            log.error("Null session path -- this is not expected");
+            MessageUtils.showMessage("Unexpected error loading session: null session path");
+            return;
         }
+        String absolutePath = FileUtils.getAbsolutePath(path, sessionPath);
+        fullToRelPathMap.put(absolutePath, path);
+        ResourceLocator resourceLocator = new ResourceLocator(serverURL, absolutePath);
+
+        if (coverage != null) {
+            String absoluteCoveragePath = FileUtils.getAbsolutePath(coverage, sessionPath);
+            resourceLocator.setCoverage(absoluteCoveragePath);
+        }
+
 
         String url = getAttribute(element, SessionAttribute.URL.getText());
         if (url == null) {
@@ -953,7 +950,7 @@ public class IGVSessionReader implements SessionReader {
             for (final Track track : matchedTracks) {
 
                 // Special case for sequence & gene tracks,  they need to be removed before being placed.
-                if (version >= 4 && track == geneTrack || track == seqTrack) {
+                if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
                     igv.removeTracks(Arrays.asList(track));
                 }
 

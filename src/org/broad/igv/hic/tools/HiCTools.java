@@ -32,6 +32,7 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.tribble.util.LittleEndianOutputStream;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;
@@ -44,17 +45,22 @@ import java.util.regex.Pattern;
  */
 public class HiCTools {
 
+    public static void usage() {
+        System.out.println("Usage: hictools sort <infile> <outfile>");
+        System.out.println("       hictools pairsToBin <infile> <outfile> <genomeID>");
+        System.out.println("       hictools binToPairs <infile> <outfile>");
+        System.out.println("       hictools printmatrix <observed/oe/pearson> <hicFile> <chr1> <chr2> <binsize> [outfile]");
+        System.out.println("       hictools eigenvector <hicFile> <chr> <binsize>");
+        System.out.println("       hictools pre <options> <infile> <outfile> <genomeID>");
+        System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
+        System.out.println("           : -o calculate densities (observed/expected), write to file [false]");
+        System.out.println("           : -m <int> only write cells with count above threshold m [0]");
+        System.out.println("           : -t <int> use t threads [1]");
+        System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
+        System.out.println("           : -h print help");
+    }
 
     public static void main(String[] argv) throws IOException, CmdLineParser.UnknownOptionException, CmdLineParser.IllegalOptionValueException {
-
-        if (argv.length < 4) {
-            System.out.println("Usage: hictools pre <options> <inputFile> <outputFile> <genomeID>");
-            System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
-            System.out.println("           : -o calculate densities (observed/expected), write to file [false]");
-            System.out.println("           : -t <int> only write cells with count above threshold t [0]");
-            System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
-            System.exit(0);
-        }
 
         Globals.setHeadless(true);
 
@@ -62,22 +68,50 @@ public class HiCTools {
         parser.parse(argv);
         String[] args = parser.getRemainingArgs();
 
+        if (parser.getHelpOption()) {
+            usage();
+            System.exit(0);
+        }
+
+        if (args.length < 1) {
+            usage();
+            System.exit(1);
+        }
+
+        if (!(args[0].equals("sort") || args[0].equals("pairsToBin") || args[0].equals("binToPairs")
+                || args[0].equals("printmatrix") || args[0].equals("eigenvector") || args[0].equals("pre"))) {
+            usage();
+            System.exit(1);
+        }
+
         if (args[0].equals("sort")) {
+            if (args.length != 3) {
+                usage();
+                System.exit(1);
+            }
             AlignmentsSorter.sort(args[1], args[2], null);
         } else if (args[0].equals("pairsToBin")) {
+            if (args.length != 4) {
+                usage();
+                System.exit(1);
+            }
             String ifile = args[1];
             String ofile = args[2];
             String genomeId = args[3];
             List<Chromosome> chromosomes = loadChromosomes(genomeId);
             AsciiToBinConverter.convert(ifile, ofile, chromosomes);
         } else if (args[0].equals("binToPairs")) {
+            if (args.length != 3) {
+                usage();
+                System.exit(1);
+            }
             String ifile = args[1];
             String ofile = args[2];
             AsciiToBinConverter.convertBack(ifile, ofile);
         } else if (args[0].equals("printmatrix")) {
-            if (args.length < 5) {
-                System.err.println("Usage: hictools printmatrix <observed/oe/pearson> hicFile chr1 chr2 binsize");
-                System.exit(-1);
+            if (args.length != 6 && args.length != 7) {
+                usage();
+                System.exit(1);
             }
             String type = args[1];
             String file = args[2];
@@ -88,11 +122,15 @@ public class HiCTools {
             try {
                 binSize = Integer.parseInt(binSizeSt);
             } catch (NumberFormatException e) {
-                System.err.println("Integer expected.  Found: " + binSizeSt);
-                System.exit(-1);
+                System.err.println("Integer expected for bin size.  Found: " + binSizeSt);
+                System.exit(1);
+            }
+            String ofile = null;
+            if (args.length == 7) {
+                ofile = args[6];
             }
 
-            dumpMatrix(file, chr1, chr2, binSize, type);
+            dumpMatrix(file, chr1, chr2, binSize, type, ofile);
 
         } else if (args[0].equals("eigenvector")) {
             if (args.length < 4) {
@@ -194,7 +232,7 @@ public class HiCTools {
                 }
             }
 
-            // Add the "psuedo-chromosome" All, representing the whole genome.  Units are in kilo-bases
+            // Add the "pseudo-chromosome" All, representing the whole genome.  Units are in kilo-bases
             chromosomes.set(0, new ChromosomeImpl(0, "All", (int) (genomeLength / 1000)));
 
 
@@ -316,7 +354,7 @@ public class HiCTools {
         System.out.println();
     }
 
-    static void dumpMatrix(String file, String chr1, String chr2, int binsize, String type) throws IOException {
+    static void dumpMatrix(String file, String chr1, String chr2, int binsize, String type, String ofile) throws IOException {
 
         if (!file.endsWith("hic")) {
             System.err.println("Only 'hic' files are supported");
@@ -324,6 +362,8 @@ public class HiCTools {
         }
         // Load the expected density function, if it exists.
         Map<Integer, DensityFunction> zoomToDensityMap = null;
+        LittleEndianOutputStream les = null;
+        BufferedOutputStream bos = null;
         if (type.equals("oe") || type.equals("pearson")) {
             String densityFile = file + ".densities";
             if (FileUtils.resourceExists(densityFile)) {
@@ -341,6 +381,11 @@ public class HiCTools {
                 System.exit(-1);
             }
         }
+        if (ofile != null) {
+            bos = new BufferedOutputStream(new FileOutputStream(ofile));
+            les = new LittleEndianOutputStream(bos);
+        }
+
 
         Dataset dataset = (new DatasetReader(file)).read();
         Chromosome[] tmp = dataset.getChromosomes();
@@ -386,10 +431,28 @@ public class HiCTools {
                 System.err.println("Densities not calculated to this resolution.");
                 System.exit(-1);
             }
-            zd.dumpOE(df, type.equals("oe"));
+            try {
+                zd.dumpOE(df, type.equals("oe"), les);
+            }
+            finally {
+                if (les != null)
+                    les.close();
+                if (bos != null)
+                    bos.close();
+            }
         }
-        else
-            zd.dump();
+
+        else {
+            try {
+                zd.dump(les);
+            }
+            finally {
+                if (les != null)
+                    les.close();
+                if (bos != null)
+                    bos.close();
+            }
+        }
     }
 
 
@@ -397,15 +460,22 @@ public class HiCTools {
         private Option diagonalsOption = null;
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
-        private Option loadDensititesOption = null;
+        private Option loadDensitiesOption = null;
         private Option threadedOption = null;
+        private Option helpOption = null;
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
-            loadDensititesOption = addBooleanOption('o', "density");
+            loadDensitiesOption = addBooleanOption('o', "density");
             threadedOption = addIntegerOption('t', "threads");
+            helpOption = addBooleanOption('h', "help");
+        }
+
+        boolean getHelpOption() {
+            Object opt = getOptionValue(helpOption);
+            return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 
         boolean getDiagonalsOption() {
@@ -414,7 +484,7 @@ public class HiCTools {
         }
 
         boolean getDensitiesOption() {
-            Object opt = getOptionValue(loadDensititesOption);
+            Object opt = getOptionValue(loadDensitiesOption);
             return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 

@@ -16,31 +16,87 @@
 package org.broad.igv.dev.db;
 
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.util.Utilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author User #2
  */
 public class DBProfileEditor extends JDialog {
-    public DBProfileEditor(Frame owner) {
+
+    public DBProfileEditor(Frame owner, String initProfilePath) {
         super(owner);
         initComponents();
-        postInit();
+        postInit(initProfilePath);
     }
 
-    public DBProfileEditor(Dialog owner) {
+    public DBProfileEditor(Dialog owner, String initProfilePath) {
         super(owner);
         initComponents();
-        postInit();
+        postInit(initProfilePath);
     }
 
-    private void postInit() {
+    private void postInit(String initProfilePath) {
         //TODO Remember to add "." before extension when calling CodecFactory.getCodec
         DefaultComboBoxModel model = new DefaultComboBoxModel(CodecFactory.validExtensions.toArray(new String[0]));
-        dataTypes.setModel(model);
+        dataType.setModel(model);
+
+        if (initProfilePath != null) {
+            InputStream profileStream;
+            try {
+                profileStream = new FileInputStream(initProfilePath);
+                Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
+                NamedNodeMap dbAttrs = document.getAttributes();
+
+                String fullHost = "";
+                String subprotocol = Utilities.getNullSafe(dbAttrs, "subprotocol");
+                String host = Utilities.getNullSafe(dbAttrs, "host");
+                if (subprotocol != null && host != null) {
+                    fullHost = subprotocol + "://" + host;
+                }
+                DBPath.setText(fullHost);
+                port.setText(Utilities.getNullSafe(dbAttrs, "port"));
+                username.setText(Utilities.getNullSafe(dbAttrs, "username"));
+                password.setText(Utilities.getNullSafe(dbAttrs, "password"));
+
+                //TODO Can have more than 1 table, for now just take first
+                NodeList tables = document.getElementsByTagName("table");
+                Node table = tables.item(0);
+                NamedNodeMap tableAttrs = table.getAttributes();
+                tableName.setText(Utilities.getNullSafe(tableAttrs, "name"));
+                chromField.setText(Utilities.getNullSafe(tableAttrs, "chromoColName"));
+
+                posStartField.setText(Utilities.getNullSafe(tableAttrs, "posStartColName"));
+                posEndField.setText(Utilities.getNullSafe(tableAttrs, "posEndColName"));
+
+                startColField.setText(Utilities.getNullSafe(tableAttrs, "startColIndex"));
+                endColField.setText(Utilities.getNullSafe(tableAttrs, "endColIndex"));
+                binColField.setText(Utilities.getNullSafe(tableAttrs, "binColName"));
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private void initComponents() {
@@ -50,16 +106,16 @@ public class DBProfileEditor extends JDialog {
         contentPanel = new JPanel();
         panel4 = new JPanel();
         label4 = new JLabel();
-        DBPath2 = new JTextField();
+        nameComboBox = new JComboBox();
         panel1 = new JPanel();
         label1 = new JLabel();
         DBHost = new JTextField();
         panel6 = new JPanel();
         label6 = new JLabel();
-        DBHost3 = new JTextField();
+        DBPath = new JTextField();
         panel5 = new JPanel();
         label5 = new JLabel();
-        DBHost2 = new JTextField();
+        port = new JTextField();
         panel2 = new JPanel();
         label2 = new JLabel();
         username = new JTextField();
@@ -69,11 +125,31 @@ public class DBProfileEditor extends JDialog {
         checkBox1 = new JCheckBox();
         panel7 = new JPanel();
         label7 = new JLabel();
-        DBPath3 = new JTextField();
+        tableName = new JTextField();
         panel8 = new JPanel();
         label8 = new JLabel();
-        dataTypes = new JComboBox();
+        dataType = new JComboBox();
+        separator1 = new JSeparator();
+        panel9 = new JPanel();
+        label9 = new JLabel();
+        chromField = new JTextField();
+        panel10 = new JPanel();
+        label10 = new JLabel();
+        posStartField = new JTextField();
+        panel13 = new JPanel();
+        label13 = new JLabel();
+        posEndField = new JTextField();
+        panel11 = new JPanel();
+        label11 = new JLabel();
+        startColField = new JTextField();
+        panel12 = new JPanel();
+        label12 = new JLabel();
+        endColField = new JTextField();
+        panel14 = new JPanel();
+        label14 = new JLabel();
+        binColField = new JTextField();
         buttonBar = new JPanel();
+        saveButton = new JButton();
         okButton = new JButton();
         cancelButton = new JButton();
 
@@ -84,6 +160,7 @@ public class DBProfileEditor extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setPreferredSize(new Dimension(367, 500));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -100,12 +177,10 @@ public class DBProfileEditor extends JDialog {
                     label4.setMaximumSize(new Dimension(80, 16));
                     panel4.add(label4);
 
-                    //---- DBPath2 ----
-                    DBPath2.setMaximumSize(new Dimension(250, 28));
-                    DBPath2.setPreferredSize(new Dimension(250, 28));
-                    DBPath2.setToolTipText("mysql://my.awesomedb.com:8080/mytable");
-                    DBPath2.setText("My Awesome DB");
-                    panel4.add(DBPath2);
+                    //---- nameComboBox ----
+                    nameComboBox.setEditable(true);
+                    nameComboBox.setMaximumRowCount(100);
+                    panel4.add(nameComboBox);
                 }
                 contentPanel.add(panel4);
 
@@ -123,7 +198,7 @@ public class DBProfileEditor extends JDialog {
                     DBHost.setMaximumSize(new Dimension(250, 28));
                     DBHost.setPreferredSize(new Dimension(250, 28));
                     DBHost.setToolTipText("my.awesomedb.com");
-                    DBHost.setText("mysql://my.awesomedb.com");
+                    DBHost.setText("mysql://my.db.com");
                     panel1.add(DBHost);
                 }
                 contentPanel.add(panel1);
@@ -138,12 +213,12 @@ public class DBProfileEditor extends JDialog {
                     label6.setMaximumSize(new Dimension(80, 16));
                     panel6.add(label6);
 
-                    //---- DBHost3 ----
-                    DBHost3.setMaximumSize(new Dimension(250, 28));
-                    DBHost3.setPreferredSize(new Dimension(250, 28));
-                    DBHost3.setToolTipText("my.awesomedb.com");
-                    DBHost3.setText("hg19");
-                    panel6.add(DBHost3);
+                    //---- DBPath ----
+                    DBPath.setMaximumSize(new Dimension(250, 28));
+                    DBPath.setPreferredSize(new Dimension(250, 28));
+                    DBPath.setToolTipText("my.awesomedb.com");
+                    DBPath.setText("hg19");
+                    panel6.add(DBPath);
                 }
                 contentPanel.add(panel6);
 
@@ -157,12 +232,12 @@ public class DBProfileEditor extends JDialog {
                     label5.setMaximumSize(new Dimension(80, 16));
                     panel5.add(label5);
 
-                    //---- DBHost2 ----
-                    DBHost2.setMaximumSize(new Dimension(250, 28));
-                    DBHost2.setPreferredSize(new Dimension(250, 28));
-                    DBHost2.setToolTipText("my.awesomedb.com");
-                    DBHost2.setText("80");
-                    panel5.add(DBHost2);
+                    //---- port ----
+                    port.setMaximumSize(new Dimension(250, 28));
+                    port.setPreferredSize(new Dimension(250, 28));
+                    port.setToolTipText("my.awesomedb.com");
+                    port.setText("80");
+                    panel5.add(port);
                 }
                 contentPanel.add(panel5);
 
@@ -187,14 +262,15 @@ public class DBProfileEditor extends JDialog {
 
                 //======== panel3 ========
                 {
+                    panel3.setMaximumSize(new Dimension(400, 28));
                     panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
 
                     //---- label3 ----
                     label3.setText("Password (opt.):");
-                    label3.setHorizontalAlignment(SwingConstants.LEFT);
-                    label3.setMaximumSize(new Dimension(80, 16));
+                    label3.setMaximumSize(new Dimension(120, 16));
                     label3.setMinimumSize(new Dimension(66, 16));
                     label3.setPreferredSize(new Dimension(80, 16));
+                    label3.setHorizontalAlignment(SwingConstants.LEFT);
                     panel3.add(label3);
 
                     //---- password ----
@@ -219,12 +295,12 @@ public class DBProfileEditor extends JDialog {
                     label7.setMaximumSize(new Dimension(80, 16));
                     panel7.add(label7);
 
-                    //---- DBPath3 ----
-                    DBPath3.setMaximumSize(new Dimension(250, 28));
-                    DBPath3.setPreferredSize(new Dimension(250, 28));
-                    DBPath3.setToolTipText("mysql://my.awesomedb.com:8080/mytable");
-                    DBPath3.setText("DataTable");
-                    panel7.add(DBPath3);
+                    //---- tableName ----
+                    tableName.setMaximumSize(new Dimension(250, 28));
+                    tableName.setPreferredSize(new Dimension(250, 28));
+                    tableName.setToolTipText("mysql://my.awesomedb.com:8080/mytable");
+                    tableName.setText("DataTable");
+                    panel7.add(tableName);
                 }
                 contentPanel.add(panel7);
 
@@ -238,12 +314,125 @@ public class DBProfileEditor extends JDialog {
                     label8.setMaximumSize(new Dimension(80, 16));
                     panel8.add(label8);
 
-                    //---- dataTypes ----
-                    dataTypes.setMaximumSize(new Dimension(250, 28));
-                    dataTypes.setMinimumSize(new Dimension(96, 28));
-                    panel8.add(dataTypes);
+                    //---- dataType ----
+                    dataType.setMaximumSize(new Dimension(250, 28));
+                    dataType.setMinimumSize(new Dimension(96, 28));
+                    panel8.add(dataType);
                 }
                 contentPanel.add(panel8);
+
+                //---- separator1 ----
+                separator1.setPreferredSize(new Dimension(0, 1));
+                contentPanel.add(separator1);
+
+                //======== panel9 ========
+                {
+                    panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
+
+                    //---- label9 ----
+                    label9.setText("Chromosome Column Name:");
+                    label9.setHorizontalAlignment(SwingConstants.LEFT);
+                    label9.setMaximumSize(new Dimension(80, 16));
+                    panel9.add(label9);
+
+                    //---- chromField ----
+                    chromField.setMaximumSize(new Dimension(250, 28));
+                    chromField.setPreferredSize(new Dimension(250, 28));
+                    chromField.setText("chrom");
+                    panel9.add(chromField);
+                }
+                contentPanel.add(panel9);
+
+                //======== panel10 ========
+                {
+                    panel10.setLayout(new BoxLayout(panel10, BoxLayout.X_AXIS));
+
+                    //---- label10 ----
+                    label10.setText("Position Start Column Name:");
+                    label10.setHorizontalAlignment(SwingConstants.LEFT);
+                    label10.setMaximumSize(new Dimension(80, 16));
+                    panel10.add(label10);
+
+                    //---- posStartField ----
+                    posStartField.setMaximumSize(new Dimension(250, 28));
+                    posStartField.setPreferredSize(new Dimension(250, 28));
+                    posStartField.setText("txStart");
+                    panel10.add(posStartField);
+                }
+                contentPanel.add(panel10);
+
+                //======== panel13 ========
+                {
+                    panel13.setLayout(new BoxLayout(panel13, BoxLayout.X_AXIS));
+
+                    //---- label13 ----
+                    label13.setText("Position End Column Name:");
+                    label13.setHorizontalAlignment(SwingConstants.LEFT);
+                    label13.setMaximumSize(new Dimension(80, 16));
+                    panel13.add(label13);
+
+                    //---- posEndField ----
+                    posEndField.setMaximumSize(new Dimension(250, 28));
+                    posEndField.setPreferredSize(new Dimension(250, 28));
+                    posEndField.setText("txEnd");
+                    panel13.add(posEndField);
+                }
+                contentPanel.add(panel13);
+
+                //======== panel11 ========
+                {
+                    panel11.setLayout(new BoxLayout(panel11, BoxLayout.X_AXIS));
+
+                    //---- label11 ----
+                    label11.setText("Data start column index (opt.):");
+                    label11.setHorizontalAlignment(SwingConstants.LEFT);
+                    label11.setMaximumSize(new Dimension(80, 16));
+                    panel11.add(label11);
+
+                    //---- startColField ----
+                    startColField.setMaximumSize(new Dimension(250, 28));
+                    startColField.setPreferredSize(new Dimension(250, 28));
+                    startColField.setToolTipText("Starting column index from which to read data (1-based)");
+                    startColField.setText("1");
+                    panel11.add(startColField);
+                }
+                contentPanel.add(panel11);
+
+                //======== panel12 ========
+                {
+                    panel12.setLayout(new BoxLayout(panel12, BoxLayout.X_AXIS));
+
+                    //---- label12 ----
+                    label12.setText("Data end column index (opt.):");
+                    label12.setHorizontalAlignment(SwingConstants.LEFT);
+                    label12.setMaximumSize(new Dimension(80, 16));
+                    panel12.add(label12);
+
+                    //---- endColField ----
+                    endColField.setMaximumSize(new Dimension(250, 28));
+                    endColField.setPreferredSize(new Dimension(250, 28));
+                    endColField.setToolTipText("Last column (1-based, inclusive end) from which to read data");
+                    panel12.add(endColField);
+                }
+                contentPanel.add(panel12);
+
+                //======== panel14 ========
+                {
+                    panel14.setLayout(new BoxLayout(panel14, BoxLayout.X_AXIS));
+
+                    //---- label14 ----
+                    label14.setText("Bin column Name (opt.):");
+                    label14.setHorizontalAlignment(SwingConstants.LEFT);
+                    label14.setMaximumSize(new Dimension(80, 16));
+                    panel14.add(label14);
+
+                    //---- binColField ----
+                    binColField.setMaximumSize(new Dimension(250, 28));
+                    binColField.setPreferredSize(new Dimension(250, 28));
+                    binColField.setToolTipText("Some databases use binning to speed up querying");
+                    panel14.add(binColField);
+                }
+                contentPanel.add(panel14);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -254,8 +443,14 @@ public class DBProfileEditor extends JDialog {
                 ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
                 ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
+                //---- saveButton ----
+                saveButton.setText("Save Profile");
+                buttonBar.add(saveButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
                 //---- okButton ----
-                okButton.setText("OK");
+                okButton.setText("Load Data");
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
@@ -280,16 +475,16 @@ public class DBProfileEditor extends JDialog {
     private JPanel contentPanel;
     private JPanel panel4;
     private JLabel label4;
-    private JTextField DBPath2;
+    private JComboBox nameComboBox;
     private JPanel panel1;
     private JLabel label1;
     private JTextField DBHost;
     private JPanel panel6;
     private JLabel label6;
-    private JTextField DBHost3;
+    private JTextField DBPath;
     private JPanel panel5;
     private JLabel label5;
-    private JTextField DBHost2;
+    private JTextField port;
     private JPanel panel2;
     private JLabel label2;
     private JTextField username;
@@ -299,11 +494,31 @@ public class DBProfileEditor extends JDialog {
     private JCheckBox checkBox1;
     private JPanel panel7;
     private JLabel label7;
-    private JTextField DBPath3;
+    private JTextField tableName;
     private JPanel panel8;
     private JLabel label8;
-    private JComboBox dataTypes;
+    private JComboBox dataType;
+    private JSeparator separator1;
+    private JPanel panel9;
+    private JLabel label9;
+    private JTextField chromField;
+    private JPanel panel10;
+    private JLabel label10;
+    private JTextField posStartField;
+    private JPanel panel13;
+    private JLabel label13;
+    private JTextField posEndField;
+    private JPanel panel11;
+    private JLabel label11;
+    private JTextField startColField;
+    private JPanel panel12;
+    private JLabel label12;
+    private JTextField endColField;
+    private JPanel panel14;
+    private JLabel label14;
+    private JTextField binColField;
     private JPanel buttonBar;
+    private JButton saveButton;
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

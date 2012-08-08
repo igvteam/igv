@@ -289,20 +289,20 @@ public class HiC {
         if (zd == null) return null;
         double[] eigenvector = zd.getEigenvector();
         if (eigenvector == null) {
-
             final DensityFunction df = getDensityFunction();
             if (df != null) {
+                if (zd.getZoom() > 2) {
+                    String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
+                    str += "At this zoom, calculation might take a while.\n";
+                    str += "Are you sure you want to proceed?";
+                    int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
+                    if (ans == JOptionPane.NO_OPTION) {
+                        mainWindow.setViewEigenvector(false);
+                        return null;
+                    }
+                }
                 Runnable runnable = new Runnable() {
                     public void run() {
-                        if (zd.getZoom() > 3) {
-                            String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
-                            str += "At this zoom, calculation might take a while.\n";
-                            str += "Are you sure you want to proceed?";
-                            int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                            if (ans == JOptionPane.NO_OPTION) {
-                                return;
-                            }
-                        }
                         double[] eigenvector = zd.computeEigenvector(df, n);
                         mainWindow.updateEigenvectorTrack(eigenvector, zd.getBinSize());
                     }
@@ -313,10 +313,15 @@ public class HiC {
                 } catch (InterruptedException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (ExecutionException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    if (e.getMessage().indexOf("maximal number of") >= 0)
+                        JOptionPane.showMessageDialog(mainWindow, "Cannot complete eigenvector calculation.\nMaximal number of iterations (30) reached.", "Error in Eigenvector calculation", JOptionPane.ERROR_MESSAGE);
+                    else
+                        e.printStackTrace();
+                    mainWindow.setViewEigenvector(false);
                 }
             }
         }
+
         return eigenvector;
     }
 
