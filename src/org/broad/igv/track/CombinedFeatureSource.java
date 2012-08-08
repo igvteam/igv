@@ -17,7 +17,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.Feature;
 
@@ -193,23 +192,24 @@ public class CombinedFeatureSource implements FeatureSource {
         IGVBEDCodec codec = (IGVBEDCodec) CodecFactory.getCodec(".bed", null);
 
         //Supposed to read error stream on separate thread to prevent blocking
-        Runnable runnable = new Runnable() {
+        Thread runnable = new Thread() {
             @Override
-            public void run(){
+            public void run() {
                 String line;
-                try{
+                try {
                     while ((line = err.readLine()) != null) {
                         log.error(line);
                     }
                     err.close();
-                }catch (IOException e){
+                } catch (IOException e) {
                     log.error(e);
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
         };
-        LongRunningTask.submit(runnable);
+        //LongRunningTask.submit(runnable);
+        runnable.start();
 
 
         String line;
@@ -219,7 +219,7 @@ public class CombinedFeatureSource implements FeatureSource {
         while ((line = in.readLine()) != null) {
             //System.out.println(line);
             String[] tokens = line.split("\t");
-            if (operation.getCmd().contains("-split")){
+            if (operation.getCmd().contains("-split")) {
                 //When we split, the returned feature still has the exons
                 //We don't want to plot them all a zillion times
                 tokens = Arrays.copyOfRange(tokens, 0, Math.min(6, tokens.length));
