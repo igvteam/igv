@@ -526,4 +526,30 @@ public class FileUtils {
         int lastSlashIdx = piPath.lastIndexOf("/");
         return lastSlashIdx <= 0 ? path : path.substring(0, lastSlashIdx);
     }
+
+    /**
+     * Checks the system path for the provided executable.
+     * If {@code executable} is a path (contains a path separator)
+     * then it is returned unaltered
+     * @param executable
+     * @return
+     */
+    public static String findExecutableOnPath(String executable) {
+        if(executable.contains(File.separator)) return executable;
+
+        String systemPath = System.getenv("PATH");
+        if (systemPath == null) systemPath = System.getenv("path");
+
+        String[] pathDirs = systemPath.split(File.pathSeparator);
+
+        String fullPath = executable;
+        for (String pathDir : pathDirs) {
+            File file = new File(pathDir, executable);
+            if (file.isFile()) {
+                fullPath = file.getAbsolutePath();
+                break;
+            }
+        }
+        return fullPath;
+    }
 }

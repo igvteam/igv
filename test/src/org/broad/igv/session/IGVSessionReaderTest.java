@@ -76,7 +76,8 @@ public class IGVSessionReaderTest extends AbstractHeadlessTest {
             assertTrue(file.isAbsolute());
             assertTrue(file.canRead());
 
-            assertTrue(file.getAbsolutePath().contains(TestUtils.DATA_DIR));
+            File testDataDir = new File(TestUtils.DATA_DIR);
+            assertTrue(file.getAbsolutePath().contains(testDataDir.getAbsolutePath()));
 
             List<Track> testTrack = loader.load(locator, genome);
             assertEquals(1, testTrack.size());
