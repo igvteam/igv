@@ -704,6 +704,7 @@ public class HttpUtils {
 
     /**
      * Checks if the string is a URL (not necessarily remote, can be any protocol)
+     *
      * @param f
      * @return
      */
@@ -735,6 +736,9 @@ public class HttpUtils {
      */
     public class IGVAuthenticator extends Authenticator {
 
+        Hashtable<String, PasswordAuthentication> pwCache = new Hashtable<String, PasswordAuthentication>();
+        HashSet<String> cacheAttempts = new HashSet<String>();
+
         /**
          * Called when password authentication is needed.
          *
@@ -743,11 +747,25 @@ public class HttpUtils {
         @Override
         protected synchronized PasswordAuthentication getPasswordAuthentication() {
 
-
             RequestorType type = getRequestorType();
-            URL url = this.getRequestingURL();
-
+            String urlString = getRequestingURL().toString();
             boolean isProxyChallenge = type == RequestorType.PROXY;
+
+            // Cache user entered PWs.  In normal use this shouldn't be necessary as credentials are cached upstream,
+            // but if loading many files in parallel (e.g. from sessions) calls to this method can queue up before the
+            // user enters their credentials, causing needless reentry.
+            String pKey = type.toString() + getRequestingProtocol() + getRequestingHost();
+            PasswordAuthentication pw = pwCache.get(pKey);
+            if (pw != null) {
+                // Prevents infinite loop if credentials are incorrect
+                if (cacheAttempts.contains(urlString)) {
+                    cacheAttempts.remove(urlString);
+                } else {
+                    cacheAttempts.add(urlString);
+                    return pw;
+                }
+            }
+
             if (isProxyChallenge) {
                 if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                     return new PasswordAuthentication(proxySettings.user, proxySettings.pw.toCharArray());
@@ -760,13 +778,13 @@ public class HttpUtils {
 
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
-            boolean isGenomeSpace = GSUtils.isGenomeSpace(url);
+            boolean isGenomeSpace = GSUtils.isGenomeSpace(getRequestingURL());
             if (isGenomeSpace) {
                 // If we are being challenged by GS the token must be bad/expired
                 GSUtils.logout();
             }
 
-            LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), isProxyChallenge);
+            LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, urlString, isProxyChallenge);
             dlg.setVisible(true);
             if (dlg.isCanceled()) {
                 return null;
@@ -779,7 +797,9 @@ public class HttpUtils {
                     proxySettings.pw = new String(userPass);
                 }
 
-                return new PasswordAuthentication(userString, userPass);
+                pw = new PasswordAuthentication(userString, userPass);
+                pwCache.put(pKey, pw);
+                return pw;
             }
         }
     }
