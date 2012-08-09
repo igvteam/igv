@@ -278,7 +278,7 @@ public class MatrixZoomData {
         return sum / count;
     }
 
-    public RealMatrix computeOE(DensityFunction df) {
+    public SparseRealMatrix computeOE(DensityFunction df) {
 
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
@@ -286,7 +286,7 @@ public class MatrixZoomData {
 
         int nBins = chr1.getLength() / binSize + 1;
 
-        RealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
+        SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
         for (int blockNumber : blockNumbers) {
@@ -409,7 +409,7 @@ public class MatrixZoomData {
     public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
 
         if (isOE) {
-            RealMatrix oe = computeOE(df);
+            SparseRealMatrix oe = computeOE(df);
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();

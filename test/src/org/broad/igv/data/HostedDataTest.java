@@ -71,15 +71,14 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
         NamedNodeMap attrs = topNode.getAttributes();
 
-        String path = Utilities.getNullSafe(attrs, pKey);
+        if(attrs != null){
+            String path = Utilities.getNullSafe(attrs, pKey);
+            String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
 
-        String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
-
-        ResourceLocator locator = new ResourceLocator(serverURL, path);
-        locator.setName(Utilities.getNullSafe(attrs, nameKey));
-        paths.add(locator);
-
-
+            ResourceLocator locator = new ResourceLocator(serverURL, path);
+            locator.setName(Utilities.getNullSafe(attrs, nameKey));
+            paths.add(locator);
+        }
 
         NodeList nodes = topNode.getChildNodes();
         for (int nn = 0; nn < nodes.getLength(); nn++) {
@@ -148,7 +147,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 //                            }else{
 //                                continue;
 //                            }
-                            System.out.println("Loading " + locator);
+//                            System.out.println("Loading " + locator);
                             loader.load(locator, curGenome);
                         } catch (Exception e) {
                             recordError(locator, e, failedFiles);
