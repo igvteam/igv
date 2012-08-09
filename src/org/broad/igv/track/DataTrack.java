@@ -93,7 +93,7 @@ public abstract class DataTrack extends AbstractTrack {
             inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
         }
 
-        if (autoscale && !FrameManager.isGeneListMode()) {
+        if (autoscale && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
 
             InViewInterval inter = computeScale(start, end, inViewScores);
             if (inter.endIdx > inter.startIdx) {
@@ -131,8 +131,29 @@ public abstract class DataTrack extends AbstractTrack {
             int delta = (end - start) / 2;
             int adjustedStart = Math.max(0, start - delta);
             int adjustedEnd = end + delta;
-            load(context, chr, adjustedStart, adjustedEnd, zoom);
+            List<LocusScore> scores = load(context, chr, adjustedStart, adjustedEnd, zoom);
+
+            if (autoscale && FrameManager.isExomeMode()) {
+                InViewInterval inter = computeScale(start, end, scores);
+                if (inter.endIdx > inter.startIdx) {
+
+                    DataRange dr = getDataRange();
+                    float min = Math.min(0, inter.dataMin);
+                    float base = Math.max(min, dr.getBaseline());
+                    float max = inter.dataMax;
+                    // Pathological case where min ~= max  (no data in view)
+                    if (max - min <= (2 * Float.MIN_VALUE)) {
+                        max = min + 1;
+                    }
+
+                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                    newDR.setType(dr.getType());
+                    setDataRange(newDR);
+                }
+            }
+
         }
+
 
     }
 
