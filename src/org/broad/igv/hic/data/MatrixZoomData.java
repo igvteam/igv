@@ -323,8 +323,8 @@ public class MatrixZoomData {
         int num = 0;
         for (int i = 0; i < size; i++) {
             if (bitSet.get(i)) {
-                rm.setRow(i, nans);
-                rm.setColumn(i, nans);
+                //rm.setRow(i, nans);
+                //rm.setColumn(i, nans);
             }
             else {
                 nonCentromereColumns[num++] = i;
@@ -413,17 +413,36 @@ public class MatrixZoomData {
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
+            assert(rows == cols);
             if (les != null)
                 les.writeInt(rows);
             else
                 System.out.println(rows + " " + cols);
-            double[][] matrix = oe.getData();
+            int num = 0;
             for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    if (les != null)
-                        les.writeFloat((float)matrix[i][j]);
-                    else
-                        System.out.print(matrix[i][j] + " ");
+                if (num >= nonCentromereColumns.length || i == nonCentromereColumns[num]) {
+                    double[] row = oe.getRow(i);
+                    int num2 = 0;
+                    for (int j = 0; j < cols; j++) {
+                        float output = Float.NaN;
+                        if (num2 >= nonCentromereColumns.length || j == nonCentromereColumns[num2]) {
+                            output = (float)row[j];
+                            num2++;
+                        }
+                        if (les != null)
+                            les.writeFloat(output);
+                        else
+                            System.out.print(output + " ");
+                    }
+                    num++;
+                }
+                else {
+                    for (int j = 0; j < cols; j++) {
+                        if (les != null)
+                            les.writeFloat(Float.NaN);
+                        else
+                            System.out.print(Float.NaN + " ");
+                    }
                 }
                 if (les == null)
                     System.out.println();
@@ -463,31 +482,31 @@ public class MatrixZoomData {
         }
     }
 
-/*    private RealMatrix readRealMatrix(String filename) throws IOException {
+    public static void readRealMatrix(String filename) throws IOException {
         LittleEndianInputStream is = null;
         RealMatrix rm = null;
         try {
-            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename + this.zoom)));
+            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename)));
 
             int rows = is.readInt();
-            int cols = is.readInt();
-            double[][] matrix = new double[rows][cols];
+            System.out.println(rows);
+            double[][] matrix = new double[rows][rows];
             for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    matrix[i][j] = is.readDouble();
+                for (int j = 0; j < rows; j++) {
+                    matrix[i][j] = is.readFloat();
+                    System.out.println(matrix[i][j] + " ");
                 }
+                System.out.println();
             }
-            rm = new BlockRealMatrix(rows, cols);
-            rm.setSubMatrix(matrix, 0, 0);
         } catch (IOException error) {
             System.err.println("IO error when saving Pearson's: " + error);
         } finally {
             if (is != null)
                 is.close();
         }
-        return rm;
-    }
 
+    }
+     /*
     private void outputRealMatrix(RealMatrix rm) throws IOException {
         LittleEndianOutputStream os = null;
         try {
