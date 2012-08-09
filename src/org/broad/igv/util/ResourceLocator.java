@@ -265,7 +265,7 @@ public class ResourceLocator {
 
 
     /**
-     * FOR LOAD FROM SERVER (LEGACY)
+     * FOR LOAD FROM SERVER
      */
     public static enum AttributeType {
 
@@ -273,6 +273,7 @@ public class ResourceLocator {
         PATH("path"),
         DESCRIPTION("description"),
         HYPERLINK("hyperlink"),
+        INFOLINK("infolink"),
         ID("id"),
         SAMPLE_ID("sampleId"),
         NAME("name"),

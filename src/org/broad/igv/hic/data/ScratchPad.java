@@ -1,11 +1,10 @@
 package org.broad.igv.hic.data;
 
-import com.iontorrent.utils.StringTools;
-import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.matrix.BasicMatrix;
-import org.broad.igv.hic.matrix.DiskResidentMatrix;
+import org.broad.igv.hic.matrix.DiskResidentBlockMatrix;
+import org.broad.igv.hic.matrix.DiskResidentRowMatrix;
 import org.broad.igv.hic.matrix.InMemoryMatrix;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
@@ -57,70 +56,33 @@ public class ScratchPad {
 
         // Peak at file to determine version
         BufferedInputStream bis = null;
+        int magic;
+        int version;
         try {
             InputStream is = ParsingUtils.openInputStream(path);
             bis = new BufferedInputStream(is);
             LittleEndianInputStream les = new LittleEndianInputStream(bis);
 
-            int bytePosition = 0;
-            int magic = les.readInt();    // <= 6515048
-            bytePosition += 4;
-            System.out.println("Magic number = " + magic);
+            magic = les.readInt();
 
             if (magic == 6515048) {
-                // Version number
-                int version = les.readInt();
-                bytePosition += 4;
-                System.out.println("Version = " + version);
-
-                String genome = les.readString();
-                bytePosition += genome.length() + 1;
-                System.out.println("Genome = " + genome);
-
-                String chr1 = les.readString();
-                bytePosition += chr1.length() + 1;
-                System.out.println("Chr1 = " + chr1);
-
-                String chr2 = les.readString();
-                bytePosition += chr2.length() + 1;
-                System.out.println("Chr2 = " + chr2);
-
-                int binSize = les.readInt();
-                bytePosition += 4;
-                System.out.println("binSize = " + binSize);
-
-                float lowerPercentile = les.readFloat();
-                bytePosition += 4;
-                System.out.println("Lower value = " + lowerPercentile);
-
-                float upperPercentile = les.readFloat();
-                bytePosition += 4;
-                System.out.println("Upper value = " + upperPercentile);
-
-                int nRows = les.readInt();  // # rows, assuming square matrix
-                bytePosition += 4;
-                System.out.println("Row count = " + nRows);
-
-                int nCols = les.readInt();
-                bytePosition += 4;
-                System.out.println("Column count = " + nRows);
-
-                if (nRows != nCols) throw new RuntimeException("Non-square matrices not supported");
-
-                return new DiskResidentMatrix(path, bytePosition, nRows, lowerPercentile, upperPercentile);
-
+                version = les.readInt();
             } else {
-                // Old style, not sure we need to support this anymore
-                int dim = magic;
-                DiskResidentMatrix bm = new DiskResidentMatrix(path, dim);
-                return bm;
+                throw new RuntimeException("Unsupported format: " + path);
             }
-
-
         } finally {
             if (bis != null)
                 bis.close();
         }
+
+        if (version == 1) {
+            return new DiskResidentRowMatrix(path);
+
+        } else {
+            return new DiskResidentBlockMatrix(path);
+        }
+
+
     }
 
 

@@ -23,6 +23,7 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.batik.util.gui.xmleditor.XMLDocument;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -32,19 +33,16 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -63,7 +61,7 @@ public class LoadFromServerAction extends MenuAction {
         this.mainFrame = mainFrame;
     }
 
-    public static String getGenomeDataURL(String genomeId){
+    public static String getGenomeDataURL(String genomeId) {
         String urlString = PreferenceManager.getInstance().getDataServerURL();
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         return genomeURL;
@@ -91,13 +89,13 @@ public class LoadFromServerAction extends MenuAction {
             }
 
 
-        }  finally {
+        } finally {
             mainFrame.showLoadedTrackCount();
         }
 
     }
 
-    public static LinkedHashSet<String> getNodeURLs(String genomeURL){
+    public static LinkedHashSet<String> getNodeURLs(String genomeURL) {
 
         InputStream is = null;
         LinkedHashSet<String> nodeURLs = null;
@@ -128,95 +126,9 @@ public class LoadFromServerAction extends MenuAction {
             return null;
         }
 
-        StringBuffer buffer = new StringBuffer();
-        boolean xmlParsingError = false;
         try {
 
-            buffer.append("<html>The following urls could not be processed due to load failures:<br>");
-
-            Document masterDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-
-            Element rootNode = masterDocument.createElement("Global");
-            rootNode.setAttribute("name", "Available Datasets");
-            rootNode.setAttribute("version", "1");
-
-            masterDocument.appendChild(rootNode);
-
-            // Merge all documents into one xml document for processing
-            for (String url : xmlUrls) {
-
-                // Skip urls that have previously failed due to authorization
-                if (failedURLs.contains(url)) {
-                    continue;
-                }
-
-                try {
-                    InputStream is = null;
-                    Document xmlDocument = null;
-                    try {
-                        is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
-                        xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-                    } catch (java.net.SocketTimeoutException e) {
-                        xmlParsingError = true;
-                        buffer.append("Error. Connection time out reading: " + url.toString());
-                        continue;
-                    } catch (SAXParseException e) {
-                        log.error("Invalid XML resource: " + url, e);
-
-                        xmlParsingError = true;
-                        buffer.append(url);
-                        buffer.append("<br><i>");
-                        if (url.toString().contains("iwww.broad")) {
-                            buffer.append("File could not be loaded from the Broad Intranet");
-                        } else {
-                            buffer.append(e.getMessage());
-                        }
-                        buffer.append("");
-                        continue;
-                    } catch (FileNotFoundException e) {
-
-                        String message = "Could not find file represented by " + url.toString();
-                        log.error(message, e);
-
-                        xmlParsingError = true;
-                        buffer.append(url);
-                        buffer.append("\t  [");
-                        buffer.append(e.getMessage());
-                        buffer.append("]\n");
-                        continue;
-                    } catch (IOException e) {
-                        String msg = "Error accessing dataset list: " + e.toString();
-
-                        MessageUtils.showMessage(msg);
-                        log.error("Error accessing URL: " + url, e);
-                    } finally {
-                        if (is != null) is.close();
-                    }
-
-                    if (xmlDocument != null) {
-                        NodeList elements = xmlDocument.getElementsByTagName("Global");
-                        Element global = (Element) elements.item(0);
-                        NodeList nodes = global.getChildNodes();
-                        Element categoryNode = masterDocument.createElement("Category");
-                        categoryNode.setAttribute("name", global.getAttribute("name"));
-                        categoryNode.setAttribute("hyperlink", global.getAttribute("hyperlink"));
-                        rootNode.appendChild(categoryNode);
-                        int size = nodes.getLength();
-                        for (int i = 0; i < size; i++) {
-                            categoryNode.appendChild(masterDocument.importNode(nodes.item(i), true));
-                        }
-                    }
-                } catch (Exception e) {
-                    String message = "Cannot create an XML Document from " + url.toString();
-                    log.error(message, e);
-                    continue;
-                }
-
-            }
-            if (xmlParsingError) {
-                JOptionPane.showMessageDialog(mainFrame.getMainFrame(), buffer.toString());
-            }
-
+            Document masterDocument = createMasterDocument(xmlUrls);
 
             /**
              * Resource Tree
@@ -244,11 +156,127 @@ public class LoadFromServerAction extends MenuAction {
         } catch (Exception e) {
             log.error("Could not load information from server", e);
             return null;
+        }
+    }
+
+
+    private Document createMasterDocument(Collection<String> xmlUrls) throws ParserConfigurationException {
+
+        StringBuffer buffer = new StringBuffer();
+
+        Document masterDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+        Element rootNode = masterDocument.createElement("Global");
+        rootNode.setAttribute("name", "Available Datasets");
+        rootNode.setAttribute("version", "1");
+
+        masterDocument.appendChild(rootNode);
+
+
+        // Merge all documents into one xml document for processing
+        for (String url : xmlUrls) {
+
+            // Skip urls that have previously failed due to authorization
+            if (failedURLs.contains(url)) {
+                continue;
+            }
+
+            try {
+                Document xmlDocument = readXMLDocument(url, buffer);
+
+                if (xmlDocument != null) {
+                    Element global = xmlDocument.getDocumentElement();
+                    masterDocument.getDocumentElement().appendChild(masterDocument.importNode(global, true));
+
+                }
+            } catch (Exception e) {
+                String message = "Cannot create an XML Document from " + url.toString();
+                log.error(message, e);
+                continue;
+            }
+
+        }
+        if (buffer.length() > 0) {
+            String message = "<html>The following urls could not be processed due to load failures:<br>" + buffer.toString();
+            MessageUtils.showMessage(message);
+        }
+
+        return masterDocument;
+
+    }
+
+    private Document readXMLDocument(String url, StringBuffer errors) {
+        InputStream is = null;
+        Document xmlDocument = null;
+        try {
+            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
+            xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
+
+            xmlDocument = resolveIncludes(xmlDocument, errors);
+
+        } catch (SAXException e) {
+            log.error("Invalid XML resource: " + url, e);
+            errors.append(url + "<br><i>" + e.getMessage());
+        } catch (java.net.SocketTimeoutException e) {
+            log.error("Connection time out", e);
+            errors.append(url + "<br><i>Connection time out");
+        } catch (IOException e) {
+            log.error("Error accessing " + url.toString(), e);
+            errors.append(url + "<br><i>" + e.getMessage());
+        } catch (ParserConfigurationException e) {
+            log.error("Parser configuration error for:" + url, e);
+            errors.append(url + "<br><i>" + e.getMessage());
         } finally {
-            if (xmlParsingError) {
-                log.error(buffer.toString());
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    log.error("Error closing stream for: " + url, e);
+                }
             }
         }
+        return xmlDocument;
+    }
+
+    private Document resolveIncludes(Document document, StringBuffer errors) {
+
+        NodeList includeNodes = document.getElementsByTagName("Include");
+        if (includeNodes.getLength() == 0) {
+            return document;
+        }
+
+        int size = includeNodes.getLength();
+        // Copy the nodes as we'll be modifying the tree.  This is neccessary!
+        Node [] tmp = new Node[size];
+        for(int i=0; i<size; i++) {
+            tmp[i] = includeNodes.item(i);
+        }
+
+        for (Node item : tmp) {
+            NamedNodeMap nodeMap = item.getAttributes();
+            if (nodeMap == null) {
+                log.info("XML node " + item.getNodeName() + " has no attributes");
+            } else {
+                Attr path = (Attr) item.getAttributes().getNamedItem("path");
+                if (path == null) {
+                    log.info("XML node " + item.getNodeName() + " is missing a path attribute");
+                } else {
+                    Node parent = item.getParentNode();
+                    parent.removeChild(item);
+
+                    //log.info("Loading node " + path.getValue());
+                    Document doc = this.readXMLDocument(path.getValue(), errors);
+                    if (doc != null) {
+                        Element global = doc.getDocumentElement();
+                        parent.appendChild(parent.getOwnerDocument().importNode(global, true));
+                    }
+                }
+            }
+        }
+
+
+        return document;
+
     }
 
     /**

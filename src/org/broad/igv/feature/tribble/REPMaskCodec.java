@@ -120,11 +120,15 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
 
     /**
      * Return an abbreviated feature, containing only location information.  Used for indexing.
+     *
      * @param line
      * @return
      */
     public Feature decodeLoc(String line) {
         String[] tokens = Globals.singleTabMultiSpacePattern.split(line);
+        if(tokens.length < 15) {
+            return decodeLegacy(tokens);
+        }
         String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
         int start = Integer.parseInt(tokens[6]);
         int end = Integer.parseInt(tokens[7]);
@@ -141,7 +145,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         int tokenCount = tokens.length;
 
         if (tokenCount < 15) {
-            return null;
+            return decodeLegacy(tokens);
         }
 
         String chr = genome == null ? tokens[5] : genome.getChromosomeAlias(tokens[5]);
@@ -172,6 +176,56 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
         attributes.put("repeat start", tokens[13]);
         attributes.put("repeat end", tokens[14]);
         feature.setAttributes(attributes);
+
+        return feature;
+    }
+
+
+    public BasicFeature decodeLegacy(String [] tokens) {
+
+
+        // The first 3 columns are non optional for BED.  We will relax this
+        // and only require 2.
+        int tokenCount = tokens.length;
+
+        if (tokenCount < 2) {
+            return null;
+        }
+
+        String chr = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
+        int start = Integer.parseInt(tokens[1]);
+
+        int end = start + 1;
+        if (tokenCount > 2) {
+            end = Integer.parseInt(tokens[2]);
+        }
+
+        BasicFeature feature = new BasicFeature(chr, start, end);
+
+        // The rest of the columns are optional.  Stop parsing upon encountering
+        // a non-expected value
+
+        // Strand
+        if (tokenCount > 3) {
+            String strandString = tokens[3].trim();
+            char strand = (strandString.length() == 0) ? ' ' : strandString.charAt(0);
+
+            if (strand == '-') {
+                feature.setStrand(Strand.NEGATIVE);
+            } else if (strand == '+') {
+                feature.setStrand(Strand.POSITIVE);
+            } else {
+                feature.setStrand(Strand.NONE);
+            }
+        }
+
+        // Name
+        if (tokenCount > 4) {
+            String name = tokens[4].replaceAll("\"", "");
+            feature.setName(name);
+            feature.setIdentifier(name);
+        }
+
 
         return feature;
     }
