@@ -531,7 +531,7 @@ public class IGVSessionReader implements SessionReader {
                 // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
                 // EVERYTHING IS RUN SYNCHRONOUSLY FOR NOW UNTIL WE CAN FIGURE OUT WHAT TO DO TO PREVENT MULTIPLE
                 // AUTHENTICATION DIALOGS
-                if (true || isAlignment || Globals.isBatch() || !hasTrackElments) {
+                if (isAlignment || Globals.isBatch() || !hasTrackElments) {
                     synchronousLoads.add(runnable);
                 } else {
                     Thread t = new Thread(runnable);
