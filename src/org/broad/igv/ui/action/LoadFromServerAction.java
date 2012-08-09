@@ -246,7 +246,7 @@ public class LoadFromServerAction extends MenuAction {
         }
 
         int size = includeNodes.getLength();
-        // Copy the nodes as we'll be modifying the tree.  Its not clear if this is neccessary, but its safe
+        // Copy the nodes as we'll be modifying the tree.  This is neccessary!
         Node [] tmp = new Node[size];
         for(int i=0; i<size; i++) {
             tmp[i] = includeNodes.item(i);
@@ -264,8 +264,7 @@ public class LoadFromServerAction extends MenuAction {
                     Node parent = item.getParentNode();
                     parent.removeChild(item);
 
-                    log.info("Loading node " + path.getValue());
-
+                    //log.info("Loading node " + path.getValue());
                     Document doc = this.readXMLDocument(path.getValue(), errors);
                     if (doc != null) {
                         Element global = doc.getDocumentElement();

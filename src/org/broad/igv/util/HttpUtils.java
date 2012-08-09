@@ -741,7 +741,7 @@ public class HttpUtils {
          * @return
          */
         @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
+        protected synchronized PasswordAuthentication getPasswordAuthentication() {
 
 
             RequestorType type = getRequestorType();
