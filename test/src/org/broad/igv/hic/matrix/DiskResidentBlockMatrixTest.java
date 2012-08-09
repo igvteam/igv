@@ -18,7 +18,7 @@ public class DiskResidentBlockMatrixTest {
     @BeforeClass
     public static void setUp() throws Exception {
 
-        blockMatrix = new DiskResidentBlockMatrix("/Users/jrobinso/projects/hic/block_chr14.bin");
+        blockMatrix = new DiskResidentBlockMatrix("test/data/hic/block_chr14.bin");
 
     }
 
