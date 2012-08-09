@@ -40,19 +40,6 @@ public class DiskResidentRowMatrix implements BasicMatrix {
         init();
     }
 
-
-    public DiskResidentRowMatrix(String path, int dim) throws IOException {
-        this(path, 4, dim, -1, 1);
-    }
-
-    public DiskResidentRowMatrix(String path, int arrayStartPosition, int dim, float lowerValue, float upperValue) throws IOException {
-        this.dim = dim;
-        this.path = path;
-        this.lowerValue = lowerValue;
-        this.upperValue = upperValue;
-        this.arrayStartPosition = arrayStartPosition;
-    }
-
     public int getDim() {
         return dim;
     }
