@@ -18,6 +18,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.dev.plugin.PluginSpecReader;
+import org.broad.igv.dev.plugin.RunPlugin;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
@@ -39,6 +41,7 @@ import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.tribble.Feature;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -144,8 +147,33 @@ public class IGVMenuBar extends JMenuBar {
             }
         });
 
-        menuItems.add(analysisDialog);
+        //menuItems.add(analysisDialog);
         analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+
+        //-------------------------------------//
+
+        for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
+            for (final Element tool : pluginSpecReader.getTools()) {
+                String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
+                JMenu toolMenu = new JMenu(toolName);
+                for (final Element command : pluginSpecReader.getCommands(tool)) {
+                    final String cmdName = command.getAttribute("name");
+                    JMenuItem cmdItem = new JMenuItem(cmdName);
+                    toolMenu.add(cmdItem);
+
+                    cmdItem.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
+                        }
+                    });
+                }
+                menuItems.add(toolMenu);
+            }
+        }
+
+        //-------------------------------------//
+
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
         return MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);

@@ -15,6 +15,8 @@
  */
 package org.broad.igv.util;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.lang.instrument.Instrumentation;
 
@@ -22,6 +24,8 @@ import java.lang.instrument.Instrumentation;
  * @author jrobinso
  */
 public class RuntimeUtils {
+
+    private static Logger log = Logger.getLogger(RuntimeUtils.class);
 
     private static Instrumentation instrumentation;
 
@@ -62,14 +66,36 @@ public class RuntimeUtils {
 
 
     /**
-     * Start an external process with the provided message
+     * Start an external process with the provided message.
+     * Also starts a separate thread to read back error stream
      * <p/>
      * See {@link Runtime#exec(String, String[], File)} for explanation of arguments
      *
      * @return
      */
     public static Process startExternalProcess(String msg, String[] envp, File dir) throws IOException {
-        return Runtime.getRuntime().exec(msg, envp, dir);
+        Process pr = Runtime.getRuntime().exec(msg, envp, dir);
+        final BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+
+        //Supposed to read error stream on separate thread to prevent blocking
+        Thread runnable = new Thread() {
+            @Override
+            public void run() {
+                String line;
+                try {
+                    while ((line = err.readLine()) != null) {
+                        log.error(line);
+                    }
+                    err.close();
+                } catch (IOException e) {
+                    log.error(e);
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        runnable.start();
+        return pr;
     }
 
 
@@ -77,6 +103,7 @@ public class RuntimeUtils {
 
 
         Process pr = startExternalProcess(cmd, envp, dir);
+
         try {
             pr.waitFor();
         } catch (InterruptedException e) {
@@ -85,6 +112,7 @@ public class RuntimeUtils {
 
         InputStream inputStream = null;
         String line = "";
+
         try {
             inputStream = pr.getInputStream();
             BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));

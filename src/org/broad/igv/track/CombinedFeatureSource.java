@@ -186,32 +186,10 @@ public class CombinedFeatureSource implements FeatureSource {
 
         //Read back in the data which bedtools output
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-        final BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
         List<Feature> featuresList = new ArrayList<Feature>();
         //TODO This cast is here as a reminder that we want to use AsciiFeatureCodec
         IGVBEDCodec codec = (IGVBEDCodec) CodecFactory.getCodec(".bed", null);
-
-        //Supposed to read error stream on separate thread to prevent blocking
-        Thread runnable = new Thread() {
-            @Override
-            public void run() {
-                String line;
-                try {
-                    while ((line = err.readLine()) != null) {
-                        log.error(line);
-                    }
-                    err.close();
-                } catch (IOException e) {
-                    log.error(e);
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        //LongRunningTask.submit(runnable);
-        runnable.start();
-
 
         String line;
         Feature feat;
