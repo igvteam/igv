@@ -15,10 +15,6 @@
 
 package org.broad.igv.ui.panel;
 
-import com.jidesoft.swing.*;
-import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.CheckBoxListCellRenderer;
-import com.jidesoft.swing.NullRadioButton;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 
@@ -27,9 +23,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Stan Diamond
@@ -46,13 +41,7 @@ public class FeatureTrackSelectionDialog extends JDialog {
         setModal(true);
 
         Collection<FeatureTrack> tracks = IGV.getInstance().getFeatureTracks();
-        ArrayList<TrackWrapper> wrappers = new ArrayList<TrackWrapper>();
-        ArrayList<TrackWrapper> selectedObjects = new ArrayList<TrackWrapper>();
-        for (FeatureTrack t : tracks) {
-            TrackWrapper trackWrapper = new TrackWrapper(t);
-            wrappers.add(trackWrapper);
-        }
-
+        List<TrackWrapper> wrappers = TrackWrapper.wrapTracks(tracks);
         featureTrackList.setListData(wrappers.toArray());
 
     }
@@ -76,8 +65,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
     public FeatureTrack getSelectedTrack() {
         if (isCanceled) return null;
         Object selection = featureTrackList.getCheckBoxListSelectedValue();
-        if(selection == null) return null;
-        return ((TrackWrapper) selection).track;
+        if (selection == null) return null;
+        return ((TrackWrapper) selection).getTrack();
     }
 
     private void initComponents() {
@@ -126,8 +115,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -138,8 +127,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -150,8 +139,8 @@ public class FeatureTrackSelectionDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -174,18 +163,6 @@ public class FeatureTrackSelectionDialog extends JDialog {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-    static class TrackWrapper {
-        FeatureTrack track;
-
-        TrackWrapper(FeatureTrack track) {
-            this.track = track;
-        }
-
-        public String toString() {
-            return track.getName();
-        }
-    }
-//
 //    /**
 //     * Just like a CheckBoxList, but renders with radio buttons
 //     * and only allows single selection.
@@ -263,7 +240,6 @@ public class FeatureTrackSelectionDialog extends JDialog {
 //
 //        }
 //    }
-
 
 
 }
