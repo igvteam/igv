@@ -49,14 +49,16 @@ public class FrameManager {
     /**
      * Set exome mode.
      *
+     *
      * @param b
+     * @param showTrackMenu
      * @return true if a change was made,
      *         false if not.
      */
-    public static boolean setExomeMode(boolean b) {
+    public static boolean setExomeMode(boolean b, boolean showTrackMenu) {
         if (b == exomeMode) return false;  // No change
         if (b) {
-            return switchToExomeMode();
+            return switchToExomeMode(showTrackMenu);
         } else {
             return switchToGenomeMode();
         }
@@ -67,22 +69,27 @@ public class FrameManager {
         return exomeMode;
     }
 
-    private static boolean switchToExomeMode() {
+
+    static FeatureTrack exomeTrack = null;
+
+    private static boolean switchToExomeMode(boolean showTrackMenu) {
 
         Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
         List<FeatureTrack> featureTracks = IGV.getInstance().getFeatureTracks();
-        FeatureTrack track;
         if (featureTracks.size() == 1) {
-            track = featureTracks.get(0);
+            exomeTrack = featureTracks.get(0);
         } else {
-            FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
-            dlg.setVisible(true);
-            if (dlg.isCanceled) return false;
-            track = dlg.getSelectedTrack();
-            if (track == null) return false;
+            if (exomeTrack == null || showTrackMenu) {
+                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
+                dlg.setVisible(true);
+                if (dlg.isCanceled) return false;
+                exomeTrack = dlg.getSelectedTrack();
+            }
         }
 
-        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, track);
+        if (exomeTrack == null) return false;
+
+        ExomeReferenceFrame exomeFrame = new ExomeReferenceFrame(defaultFrame, exomeTrack);
 
         Locus locus = new Locus(defaultFrame.getChrName(), (int) defaultFrame.getOrigin(), (int) defaultFrame.getEnd());
         exomeFrame.jumpTo(locus);

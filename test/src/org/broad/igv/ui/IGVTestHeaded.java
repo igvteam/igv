@@ -77,7 +77,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
         assertEquals(2, tracks.size());
 
-        FrameManager.setExomeMode(true);
+        FrameManager.setExomeMode(true, true);
         IGV.getInstance().resetFrames();
 
         String locus = "chr7:55,208,260-55,240,460";
