@@ -29,6 +29,8 @@ public class AlignmentBlock {
     private int start;
     private byte[] bases;
     public byte[] qualities;
+    private byte[] counts;
+
     private boolean softClipped = false;
     private Alignment baseAlignment = null;
 
@@ -51,6 +53,8 @@ public class AlignmentBlock {
         } else {
             this.qualities = qualities;
         }
+
+        this.counts = null;
     }
 
     public Alignment getBaseAlignment() {
@@ -83,6 +87,18 @@ public class AlignmentBlock {
         return qualities;
     }
 
+    public byte[] getCounts() {
+        return counts;
+    }
+
+    public byte getCount(int i) {
+        return counts[i];
+    }
+
+    public void setCounts(byte[] counts) {
+        this.counts = counts;
+    }
+
     /**
      * Convenience method
      */
@@ -100,6 +116,10 @@ public class AlignmentBlock {
 
     public boolean hasFlowSignals() {
         return false;
+    }
+
+    public boolean hasCounts() {
+        return counts != null;
     }
 
     // Default implementation -- to be overriden
