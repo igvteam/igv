@@ -21,6 +21,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
@@ -113,6 +114,8 @@ public class CommandExecutor {
                     expand(trackName);
                 } else if (cmd.equalsIgnoreCase("tweakdivider")) {
                     igv.tweakPanelDivider();
+                } else if (cmd.equalsIgnoreCase("setDataRange")) {
+                    result = this.setDataRange(param1, param2);
                 } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equalsIgnoreCase("tofront")) {
@@ -164,6 +167,33 @@ public class CommandExecutor {
     private void newSession() {
         igv.resetSession(null);
         igv.setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
+    }
+
+    private String setDataRange(String dataRangeString, String trackName) {
+        List<Track> tracks = igv.getAllTracks();
+        String[] tokens = dataRangeString.split(",");
+        //Min,max or min,baseline,max
+        DataRange range;
+        try {
+            if (tokens.length == 2) {
+                range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]));
+            } else if (tokens.length == 3) {
+                range = new DataRange(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
+            } else {
+                throw new IllegalArgumentException(String.format("ERROR: parsing %s for data range. \n" +
+                        "String must be of form <min,max> or <min,baseline,max>", dataRangeString));
+            }
+        } catch (NumberFormatException e) {
+            return "ERROR: Could not parse input string as a Float. " + e.getMessage();
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+        for (Track track : tracks) {
+            if (trackName == null || trackName.equalsIgnoreCase(track.getName())) {
+                track.setDataRange(range);
+            }
+        }
+        return "OK";
     }
 
     private String setViewAsPairs(String vAPString, String trackName) {
@@ -327,20 +357,20 @@ public class CommandExecutor {
 
         String[] files = fileString.split(",");
         String[] names = nameString != null ? nameString.split(",") : null;
-        if(files.length == 1) {
+        if (files.length == 1) {
             // String might be URL encoded
             files = fileString.split("%2C");
             names = nameString != null ? nameString.split("%2C") : null;
         }
 
-        if(names != null && names.length != files.length) {
+        if (names != null && names.length != files.length) {
             return "Error: If files is a comma-separated list, names must also be a comma-separated list of the same length";
         }
 
         // Must decode remote file paths, but leave local paths as is
-        for(int i=0; i<files.length; i++) {
-            if(FileUtils.isRemote(files[i])) {
-                files[i] =  URLDecoder.decode(files[i], "UTF-8");
+        for (int i = 0; i < files.length; i++) {
+            if (FileUtils.isRemote(files[i])) {
+                files[i] = URLDecoder.decode(files[i], "UTF-8");
             }
         }
 
@@ -368,7 +398,7 @@ public class CommandExecutor {
 
         // Loop through files
         int fi = 0;
-        for (String f : files) {           
+        for (String f : files) {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
@@ -376,10 +406,10 @@ public class CommandExecutor {
                 sessionPaths.add(f);
             } else {
                 ResourceLocator rl;
-                if(HttpUtils.isURL(f)){
+                if (HttpUtils.isURL(f)) {
                     String fDecoded = StringUtils.decodeURL(f);
                     rl = new ResourceLocator(fDecoded);
-                }else{
+                } else {
                     rl = new ResourceLocator(f);
                 }
 
