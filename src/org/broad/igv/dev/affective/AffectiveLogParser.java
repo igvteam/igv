@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.tools.parsers.DataConsumer;
@@ -8,12 +19,10 @@ import org.broad.igv.util.ParsingUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -75,7 +84,8 @@ public class AffectiveLogParser {
         BufferedReader br = null;
 
         try {
-            br = ParsingUtils.openBufferedReader(file.getAbsolutePath());
+            br = new BufferedReader(new InputStreamReader(
+                    ParsingUtils.openInputStream(file.getAbsolutePath()), Charset.forName("UTF-8")));
 
             Header header = parseHeader(br);
             String chrName = header.getStartDate();
@@ -104,7 +114,7 @@ public class AffectiveLogParser {
                             float v;
                             try {
                                 v = Float.parseFloat(tokens[i]);
-                                if(i < 3) v = Math.abs(v);
+                                if (i < 3) v = Math.abs(v);
                             } catch (NumberFormatException e) {
                                 v = Float.NaN;
                             }
