@@ -105,13 +105,14 @@
     to include the main classes in the JAR and so it's easier to run
     tests later. -->
     <target name="compile" depends="init" description="Compile main source files to temp directory">
-        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" encoding="UTF-8">
+        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" encoding="${java.encoding}">
             <classpath refid="@jars"/>
         </javac>
     </target>
 
     <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
-        <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true" encoding="UTF-8">
+        <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
+               encoding="${java.encoding}">
             <classpath refid="test.classpath"/>
         </javac>
     </target>
@@ -226,8 +227,10 @@
         <delete dir="${test.reports}"/>
         <mkdir dir="${test.reports}"/>
 
-        <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed" maxmemory="2000m">
+        <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed"
+               maxmemory="2000m">
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
+            <jvmarg value="-Dfile.encoding=${java.encoding}"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
