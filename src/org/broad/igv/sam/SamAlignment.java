@@ -16,14 +16,12 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -79,7 +77,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private Strand secondOfPairStrand;
 
     private String flowOrder;
-    
+
     /**
      * Converts a DNA integer value to its reverse compliment integer value.
      */
@@ -101,6 +99,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N',
             'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N'
     };
+
+    public static final String REDUCE_READS_TAG = "RR";
 
     // Default constructor to support unit tests
     //SamAlignment() {}
@@ -152,7 +152,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             }
         }
 
-        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(),
+        createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities(), decodeReduceCounts(record),
                 getFlowSignals(flowOrder, keySequence), flowOrder, this.getFlowSignalsStart());
 
         Object colorTag = record.getAttribute("YC");
@@ -268,7 +268,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @param readBaseQualities
      */
     private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
-        createAlignmentBlocks(cigarString, readBases, readBaseQualities, null, null, -1);
+        createAlignmentBlocks(cigarString, readBases, readBaseQualities, null, null, null, -1);
     }
 
     /**
@@ -278,11 +278,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @param cigarString
      * @param readBases
      * @param readBaseQualities
-     * @param flowSignals       from the FZ tag, null if not present
-     * @param flowOrder         from the RG.FO header tag, null if not present
+     * @param readRepresentativeCounts the representative counts of each base in the read (translated from the reduce reads tag)
+     * @param flowSignals              from the FZ tag, null if not present
+     * @param flowOrder                from the RG.FO header tag, null if not present
      * @param flowOrderStart
      */
-    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities,
+    private void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities, byte[] readRepresentativeCounts,
                                        short[] flowSignals, String flowOrder, int flowOrderStart) {
 
         boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
@@ -373,6 +374,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
                     byte[] blockBases = new byte[op.nBases];
                     byte[] blockQualities = new byte[op.nBases];
+                    byte[] blockCounts = new byte[op.nBases];
                     AlignmentBlock block = null;
 
                     //Default value
@@ -395,6 +397,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     } else {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
+
+                    if (readRepresentativeCounts != null) {
+                        System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, op.nBases);
+                    }
                     
                     if (null != fBlockBuilder) {
                         block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, 
@@ -405,6 +411,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
+                    }
+                    if (readRepresentativeCounts != null) {
+                        block.setCounts(blockCounts);
                     }
                     alignmentBlocks[blockIdx++] = block;
 
@@ -427,6 +436,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
                     byte[] blockBases = new byte[op.nBases];
                     byte[] blockQualities = new byte[op.nBases];
+                    byte[] blockCounts = new byte[op.nBases];
 
                     if (readBases == null || readBases.length == 0) {
                         Arrays.fill(blockBases, (byte) '=');
@@ -439,14 +449,19 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     } else {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
-                    
+
+                    if (readRepresentativeCounts != null) {
+                        System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts , 0, op.nBases);
+                    }
                     if (null != fBlockBuilder) {
                         block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, 
                                 fBlockBuilder.getFlowSignalContext(readBases, fromIdx, op.nBases), this);
                     } else {
                         block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, this);
                     }
-
+                    if (readRepresentativeCounts != null) {
+                        block.setCounts(blockCounts);
+                    }
                     insertions[insertionIdx++] = block;
 
                     fromIdx += op.nBases;
@@ -821,5 +836,27 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
 
         return r;
+    }
+
+    /**
+     * The number of bases corresponding the i'th base of the reduced read.
+     *
+     * @param record the sam record for this read
+     * @return a byte array with the representative counts of each base in this read, or null if this is not a reduced read
+     */
+    public static byte [] decodeReduceCounts(SAMRecord record) {
+        byte[] encodedCounts = record.getByteArrayAttribute(REDUCE_READS_TAG);
+
+        // in case this read doesn't have the RR tag (is not a reduced read) return null
+        // so the subsequent routines know that this is not a reduced read
+        if (encodedCounts == null)
+            return null;
+
+        byte[] decodedCounts = new byte[encodedCounts.length];
+        for (int i=0; i<encodedCounts.length; i++) {
+            decodedCounts[i] = i == 0? encodedCounts[0] : (byte) Math.min(encodedCounts[0] + encodedCounts[i], Byte.MAX_VALUE);
+        }
+
+        return decodedCounts;
     }
 }
