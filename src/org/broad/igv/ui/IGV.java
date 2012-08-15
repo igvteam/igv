@@ -381,6 +381,7 @@ public class IGV {
                     SwingUtilities.invokeAndWait(r);
                 } catch (InterruptedException e) {
                     // Just continue
+                    log.error(e);
                 } catch (InvocationTargetException e) {
                     log.error(e.getMessage());
                     throw new RuntimeException(e);
@@ -1225,13 +1226,7 @@ public class IGV {
                 restoreSessionSynchronous(sessionPath, locus, merge);
             }
         };
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            LongRunningTask.submit(runnable);
-        } else {
-            runnable.run();
-        }
-
+        LongRunningTask.submit(runnable);
     }
 
     /**
@@ -2311,6 +2306,10 @@ public class IGV {
 
                 }
             });
+
+            synchronized (IGV.getInstance()) {
+                IGV.getInstance().notifyAll();
+            }
         }
     }
 
@@ -2343,7 +2342,7 @@ public class IGV {
      * Wrapper for igv.wait(timeout)
      *
      * @param timeout
-     * @return True if method completed before timeout or interruption, otherwise false
+     * @return True if method completed before interruption (not necessarily before timeout), otherwise false
      */
     public boolean waitForNotify(long timeout) {
         boolean completed = false;

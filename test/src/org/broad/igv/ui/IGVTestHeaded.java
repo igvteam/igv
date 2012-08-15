@@ -12,6 +12,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.ResourceLocator;
@@ -33,13 +34,29 @@ import static org.junit.Assert.assertTrue;
 public class IGVTestHeaded extends AbstractHeadedTest {
 
     @Test
-    public void testLoadSession() throws Exception {
+    public void testLoadSessionBatch() throws Exception{
+        try{
+            Globals.setBatch(true);
+            tstLoadSession();
+        }finally{
+            Globals.setBatch(false);
+        }
+
+    }
+
+    @Test
+    public void testLoadSessionNoBatch() throws Exception {
+        Globals.setBatch(false);
+        tstLoadSession();
+    }
+    public void tstLoadSession() throws Exception {
         //Pretty basic, but at some point loading this view
         //gave a class cast exception
         String sessionPath = TestUtils.DATA_DIR + "sessions/CCLE_testSession_chr2.xml";
         IGV igv = IGV.getInstance();
 
         TestUtils.loadSession(igv, sessionPath);
+
 
         assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
         assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
