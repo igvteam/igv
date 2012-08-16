@@ -219,7 +219,7 @@ public abstract class AbstractAlignment implements Alignment {
                 buf.append("Base = " + (char) base + "<br>");
                 buf.append("Base phred quality = " + quality + "<br>");
                 if (block.hasCounts()) {
-                    buf.append("Count = " + (byte) block.getCount(offset) + "<br>");
+                    buf.append("Count = " + block.getCount(offset) + "<br>");
                 }
                 // flow signals
                 if (block.hasFlowSignals()) {
