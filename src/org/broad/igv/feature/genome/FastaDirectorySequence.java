@@ -45,7 +45,7 @@ public class FastaDirectorySequence implements Sequence {
         for (FastaIndexedSequence fastaSequence : getFastaSequences()) {
             chromosomeNames.addAll(fastaSequence.getChromosomeNames());
         }
-        Collections.sort(chromosomeNames, new ChromosomeComparator());
+        Collections.sort(chromosomeNames, ChromosomeNameComparator.get());
 
         chrLengths = new HashMap<String, Integer>(chromosomeNames.size());
         for (FastaIndexedSequence fastaSequence : getFastaSequences()) {

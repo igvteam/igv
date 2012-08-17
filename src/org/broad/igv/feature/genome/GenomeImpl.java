@@ -60,15 +60,21 @@ public class GenomeImpl implements Genome {
         this.displayName = displayName;
         this.chrAliasTable = new HashMap<String, String>();
         this.sequence = sequence;
-        this.chromosomeNames = sequence.getChromosomeNames();
-        Collections.sort(this.chromosomeNames, new ChromosomeComparator());
-        chromosomeMap = new LinkedHashMap(chromosomeNames.size());
+        List<String> tmpChromoNames = sequence.getChromosomeNames();
 
-        for (int i = 0; i < chromosomeNames.size(); i++) {
-            String chr = chromosomeNames.get(i);
+        List<Chromosome> tmpChromos = new ArrayList<Chromosome>(tmpChromoNames.size());
+        int maxLength = -1;
+
+        for (int i = 0; i < tmpChromoNames.size(); i++) {
+            String chr = tmpChromoNames.get(i);
             int length = sequence.getChromosomeLength(chr);
-            chromosomeMap.put(chr, new ChromosomeImpl(i, chr, length));
+            maxLength = Math.max(maxLength, length);
+            tmpChromos.add(new ChromosomeImpl(-1, chr, length));
         }
+
+        chromosomeMap = ChromosomeComparator.sortChromosomeList(tmpChromos, maxLength / 10);
+        chromosomeNames = new ArrayList<String>(chromosomeMap.keySet());
+
         initializeChromosomeAliases();
     }
 

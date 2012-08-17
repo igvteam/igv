@@ -17,27 +17,19 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.ChromosomeComparator;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -61,7 +53,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         String[] chrs = {"chr12", "chr10", "chrMT", "chr1", "chrLongName", "chrLongName1"};
         String[] expectedResult = {"chr1", "chr10", "chr12", "chrLongName1", "chrLongName", "chrMT"};
 
-        Arrays.sort(chrs, new ChromosomeComparator());
+        Arrays.sort(chrs, ChromosomeNameComparator.get());
         for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }
@@ -69,7 +61,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
 
         chrs = new String[]{"scaffold_v2_10414", "scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10415"};
         expectedResult = new String[]{"scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10414", "scaffold_v2_10415"};
-        Arrays.sort(chrs, new ChromosomeComparator());
+        Arrays.sort(chrs, ChromosomeNameComparator.get());
         for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }

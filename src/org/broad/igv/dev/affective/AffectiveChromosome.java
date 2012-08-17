@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.feature.Chromosome;
@@ -11,11 +22,12 @@ import java.util.List;
 
 /**
  * Chromosome for the "Affective" project.  A "chromosome" in this project represents part of a calendar day.
- *
+ * <p/>
  * Date format is yyyy-MM-dd
- *
+ * <p/>
  * e.g. start time
- *   Start Time: 2011-04-06 08:57:35 Offset:-04
+ * Start Time: 2011-04-06 08:57:35 Offset:-04
+ *
  * @author Jim Robinson
  * @date 1/21/12
  */
@@ -59,5 +71,10 @@ public class AffectiveChromosome implements Chromosome {
     @Override
     public int getIndex() {
         return 0;
+    }
+
+    @Override
+    public void setIndex(int ii) {
+        //
     }
 }
