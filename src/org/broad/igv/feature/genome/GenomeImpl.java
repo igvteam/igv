@@ -56,24 +56,36 @@ public class GenomeImpl implements Genome {
     private FeatureTrack geneTrack;
 
     public GenomeImpl(String id, String displayName, Sequence sequence) {
+        this(id, displayName, sequence, false);
+    }
+
+    public GenomeImpl(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
         this.id = id;
         this.displayName = displayName;
         this.chrAliasTable = new HashMap<String, String>();
         this.sequence = sequence;
-        List<String> tmpChromoNames = sequence.getChromosomeNames();
+        chromosomeNames = sequence.getChromosomeNames();
 
-        List<Chromosome> tmpChromos = new ArrayList<Chromosome>(tmpChromoNames.size());
+        List<Chromosome> tmpChromos = new ArrayList<Chromosome>(chromosomeNames.size());
         int maxLength = -1;
+        chromosomeMap = new LinkedHashMap<String, Chromosome>(tmpChromos.size());
 
-        for (int i = 0; i < tmpChromoNames.size(); i++) {
-            String chr = tmpChromoNames.get(i);
+        for (int i = 0; i < chromosomeNames.size(); i++) {
+            String chr = chromosomeNames.get(i);
             int length = sequence.getChromosomeLength(chr);
             maxLength = Math.max(maxLength, length);
-            tmpChromos.add(new ChromosomeImpl(-1, chr, length));
+            Chromosome chromo = new ChromosomeImpl(i, chr, length);
+            tmpChromos.add(chromo);
+
+            if (chromosOrdered) {
+                chromosomeMap.put(chr, chromo);
+            }
         }
 
-        chromosomeMap = ChromosomeComparator.sortChromosomeList(tmpChromos, maxLength / 10);
-        chromosomeNames = new ArrayList<String>(chromosomeMap.keySet());
+        if (!chromosOrdered) {
+            ChromosomeComparator.sortChromosomeList(tmpChromos, maxLength / 10, chromosomeMap);
+            chromosomeNames = new ArrayList<String>(chromosomeMap.keySet());
+        }
 
         initializeChromosomeAliases();
     }

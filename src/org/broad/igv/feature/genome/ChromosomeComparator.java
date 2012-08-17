@@ -69,9 +69,10 @@ public class ChromosomeComparator implements Comparator<Chromosome> {
         return false;
     }
 
-    public static LinkedHashMap<String, Chromosome> sortChromosomeList(List<Chromosome> tmpChromos, int minBig) {
+    public static LinkedHashMap<String, Chromosome> sortChromosomeList(List<Chromosome> tmpChromos, int minBig,
+                                                                       LinkedHashMap<String, Chromosome> chromosomeMap) {
+        chromosomeMap.clear();
         Collections.sort(tmpChromos, new ChromosomeComparator(minBig));
-        LinkedHashMap<String, Chromosome> chromosomeMap = new LinkedHashMap(tmpChromos.size());
         for (int ii = 0; ii < tmpChromos.size(); ii++) {
             Chromosome chromo = tmpChromos.get(ii);
             chromo.setIndex(ii);

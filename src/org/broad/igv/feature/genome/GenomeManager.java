@@ -244,6 +244,8 @@ public class GenomeManager {
 
         String sequencePath = genomeDescriptor.getSequenceLocation();
         Sequence sequence = null;
+        //We preserve ordering only for legacy genomes
+        boolean chromosOrdered = false;
         if (sequencePath == null) {
             sequence = null;
         } else if (!isFasta) {
@@ -251,7 +253,8 @@ public class GenomeManager {
             sequencePath = SequenceWrapper.checkSequenceURL(sequencePath);
             IGVSequence igvSequence = new IGVSequence(sequencePath);
             if (cytobandMap != null) {
-                igvSequence.generateChromosomes(cytobandMap, genomeDescriptor.isChromosomesAreOrdered());
+                chromosOrdered = genomeDescriptor.isChromosomesAreOrdered();
+                igvSequence.generateChromosomes(cytobandMap, chromosOrdered);
             }
             sequence = new SequenceWrapper(igvSequence);
         } else if (fastaFiles != null) {
@@ -262,7 +265,7 @@ public class GenomeManager {
             sequence = new SequenceWrapper(fastaSequence);
         }
 
-        newGenome = new GenomeImpl(id, displayName, sequence);
+        newGenome = new GenomeImpl(id, displayName, sequence, chromosOrdered);
         if (cytobandMap != null) {
             newGenome.setCytobands(cytobandMap);
         }
@@ -490,49 +493,13 @@ public class GenomeManager {
                         sequenceLocation.replace('\\', '/');
                     }
 
-                    boolean chrNamesAltered = false;
-                    String chrNamesAlteredString = properties.getProperty("filenamesAltered");
-                    if (chrNamesAlteredString != null) {
-                        try {
-                            chrNamesAltered = Boolean.parseBoolean(chrNamesAlteredString);
-                        } catch (Exception e) {
-                            log.error("Error parsing chrNamesAlteredString string: " + chrNamesAlteredString);
-                        }
-                    }
+                    boolean chrNamesAltered = parseBooleanPropertySafe(properties, "filenamesAltered");
+                    boolean fasta = parseBooleanPropertySafe(properties, "fasta");
+                    boolean fastaDirectory = parseBooleanPropertySafe(properties, "fastaDirectory");
+                    boolean chromosomesAreOrdered = parseBooleanPropertySafe(properties, Globals.GENOME_ORDERED_KEY);
 
-                    boolean fasta = false;
-                    String fastaString = properties.getProperty("fasta");
-                    if (fastaString != null) {
-                        try {
-                            fasta = Boolean.parseBoolean(fastaString);
-                        } catch (Exception e) {
-                            log.error("Error parsing fastaString string: " + fastaString);
-                        }
-                    }
-
-
-                    boolean fastaDirectory = false;
-                    String fastaDirectoryString = properties.getProperty("fastaDirectory");
-                    if (fastaDirectoryString != null) {
-                        try {
-                            fastaDirectory = Boolean.parseBoolean(fastaString);
-                        } catch (Exception e) {
-                            log.error("Error parsing fastaDirectoryString string: " + fastaDirectoryString);
-                        }
-                    }
-
-                    boolean chromosomesAreOrdered = false;
-                    String tmp = properties.getProperty(Globals.GENOME_ORDERED_KEY);
-                    if (tmp != null) {
-                        try {
-                            chromosomesAreOrdered = Boolean.parseBoolean(tmp);
-                        } catch (Exception e) {
-                            log.error("Error parsing ordered string: " + tmp);
-                        }
-                    }
 
                     String fastaFileNameString = properties.getProperty("fastaFiles");
-
                     String url = properties.getProperty(Globals.GENOME_URL_KEY);
 
 
@@ -570,6 +537,11 @@ public class GenomeManager {
             }
         }
         return genomeDescriptor;
+    }
+
+    private boolean parseBooleanPropertySafe(Properties properties, String key) {
+        String propertyString = properties.getProperty(key);
+        return Boolean.parseBoolean(propertyString);
     }
 
     boolean serverGenomeListUnreachable = false;
