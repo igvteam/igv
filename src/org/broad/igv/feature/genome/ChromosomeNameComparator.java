@@ -14,14 +14,19 @@ package org.broad.igv.feature.genome;
 import java.util.Comparator;
 
 /**
- * Comparator for chromosome names. All pure string comparisons are case insensitive,
- * with some exceptions:
+ * Comparator for chromosome names. All pure string comparisons are case insensitive.
+ * In general, we compare strings lexicographically, but attempt to include numbers
+ * if they are in the same position
  * 0. Mitochondria are sorted to the end
  * 1. If BOTH strings contain a number starting at the same location,
  * we first by the leading string, then sort by that number. Examples:
- * chr1 < chr10 because 1 < 10
- * chrUn_12 > chr20 because chrUn > chr20
- * Alpha5 < gamma1 because Alpha < gamma (numbers in same location are ignored)
+ * a. "chr1" < "chr10" because 1 < 10
+ * b. "chrUn_12" > "chr20" because "chrUn" > "chr20"
+ * c. "Alpha5" < "gamma1" because Alpha < gamma (numbers in same location are ignored because
+ * string comparison takes precedence)
+ * 2. Numeric comparisons are performed recursively if numbers found are the same.
+ * For example, "scaffold_v2_100" < "scaffold_v2_1000". The first numbers match (2 == 2),
+ * but we then compare the trailing strings, and "_100" < "_1000"
  */
 public class ChromosomeNameComparator implements Comparator<String> {
 
@@ -42,33 +47,38 @@ public class ChromosomeNameComparator implements Comparator<String> {
     }
 
 
-    public int compare(String chr1, String chr2) {
+    public int compare(String chr0, String chr1) {
 
 
         // Special rule -- put the mitochondria at the end
         // Assuming we won't have 2
-        if (isMito(chr1)) {
+        if (isMito(chr0)) {
             return +1;
-        } else if (isMito(chr2)) {
+        } else if (isMito(chr1)) {
             return -1;
         }
 
+        int[] range0 = findDigitRange(chr0);
         int[] range1 = findDigitRange(chr1);
-        int[] range2 = findDigitRange(chr2);
 
-
-        if (range1 == null || range2 == null || range1[0] != range2[0]) {
-            return chr1.compareToIgnoreCase(chr2);
+        if (range0 == null || range1 == null || range0[0] != range1[0]) {
+            return chr0.compareToIgnoreCase(chr1);
         } else {
-            String alpha1 = chr1.substring(0, range1[0]);
-            String alpha2 = chr2.substring(0, range2[0]);
+            String alpha1 = chr0.substring(0, range0[0]);
+            String alpha2 = chr1.substring(0, range1[0]);
             int alphaCmp = alpha1.compareToIgnoreCase(alpha2);
             if (alphaCmp != 0) {
                 return alphaCmp;
             } else {
-                int dig1 = Integer.parseInt(chr1.substring(range1[0], range1[1]));
-                int dig2 = Integer.parseInt(chr2.substring(range2[0], range2[1]));
-                return dig1 - dig2;
+                int dig1 = Integer.parseInt(chr0.substring(range0[0], range0[1]));
+                int dig2 = Integer.parseInt(chr1.substring(range1[0], range1[1]));
+                int diff = dig1 - dig2;
+                if (diff != 0) {
+                    return diff;
+                } else {
+                    return compare(chr0.substring(range0[1]), chr1.substring(range1[1]));
+                }
+
             }
         }
 //        try {
