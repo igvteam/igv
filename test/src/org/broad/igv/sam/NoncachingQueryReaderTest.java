@@ -34,16 +34,13 @@ import static org.junit.Assert.*;
 /**
  * @author jrobinso
  */
-public class CachingQueryReaderTest extends AbstractHeadlessTest {
+public class NoncachingQueryReaderTest extends AbstractHeadlessTest {
 
     String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
     String sequence = "chr1";
     int start = 44680145;
     int end = 44789983;
     private boolean contained = false;
-
-    public CachingQueryReaderTest() {
-    }
 
     /**
      * Test of getHeader method, of class CachingQueryReader. The test compares

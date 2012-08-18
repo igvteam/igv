@@ -10,7 +10,6 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -44,7 +43,7 @@ public class AlignmentDataManager {
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
-    private CachingQueryReader reader;
+    private NoncachingQueryReader reader;
     private CoverageTrack coverageTrack;
 
     private static final int MAX_ROWS = 1000000;
@@ -66,7 +65,7 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
+        reader = new NoncachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         initChrMap(genome);
@@ -105,7 +104,7 @@ public class AlignmentDataManager {
         return experimentType;
     }
 
-    public CachingQueryReader getReader() {
+    public NoncachingQueryReader getReader() {
         return reader;
     }
 
@@ -312,13 +311,14 @@ public class AlignmentDataManager {
         if (overlaps != null && overlaps.size() >= 1) {
             // If there is any overlap in the loaded interval and the requested interval return it.
             return overlaps.get(0).getGroupedAlignments();
+        } else {
+            return null;
         }
-        return null;
     }
 
 
     public void clear() {
-        reader.clearCache();
+        // reader.clearCache();
         loadedIntervalMap.clear();
     }
 
@@ -330,7 +330,7 @@ public class AlignmentDataManager {
             return;
         }
 
-        log.debug("Load alignments.  isLoading=" + isLoading);
+        log.info("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
         final AlignmentTrack.BisulfiteContext bisulfiteContext =
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
@@ -347,34 +347,15 @@ public class AlignmentDataManager {
 
                 // Expand start and end to facilitate panning
 
-                int expandLength = reader.getTileSize(chr) / 2;
+                int expandLength = (end - start) / 2; // reader.getTileSize(chr) / 2;
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
-                DownsampleOptions downsampleOptions = new DownsampleOptions();
-
-                CloseableIterator<Alignment> iter = null;
-                //try {
-
                 String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
-                List<AlignmentCounts> counts = new ArrayList();
-                List<CachingQueryReader.DownsampledInterval> downsampledIntervals = new ArrayList<CachingQueryReader.DownsampledInterval>();
-                List<SpliceJunctionFeature> spliceJunctions = null;
-                if (showSpliceJunctions) {
-                    spliceJunctions = new ArrayList<SpliceJunctionFeature>();
-                }
 
-                iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions, downsampledIntervals,
-                        downsampleOptions, peStats, bisulfiteContext);
-
-                final AlignmentPacker alignmentPacker = new AlignmentPacker();
-
-                LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                        intervalEnd, renderOptions);
-
-                AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                        alignmentRows, counts, spliceJunctions, downsampledIntervals, renderOptions);
+                AlignmentInterval loadedInterval = reader.loadInterval(sequence, intervalStart, intervalEnd,
+                        showSpliceJunctions, renderOptions, peStats, bisulfiteContext);
 
                 addLoadedInterval(context, loadedInterval);
 
@@ -389,14 +370,6 @@ public class AlignmentDataManager {
                     context.getPanel().repaint();
                 }
 
-//                } catch (Exception exception) {
-//                    log.error("Error loading alignments", exception);
-//                    JOptionPane.showMessageDialog(IGV.getMainFrame(), "Error reading file: " + exception.getMessage());
-//                } finally {
-//
-                if (iter != null) {
-                    iter.close();
-                }
                 isLoading = false;
 //                }
             }

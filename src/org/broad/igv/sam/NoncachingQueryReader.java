@@ -24,6 +24,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.LRUCache;
+import org.broad.tribble.Feature;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -34,7 +35,7 @@ import java.util.*;
  *
  * @author jrobinso
  */
-public class CachingQueryReader {
+public class NoncachingQueryReader {
 
     private static Logger log = Logger.getLogger(CachingQueryReader.class);
 
@@ -42,7 +43,7 @@ public class CachingQueryReader {
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
     private static int MAX_TILE_COUNT = 10;
-    private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
+    private static Set<WeakReference<NoncachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
 
     /**
      * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
@@ -54,7 +55,6 @@ public class CachingQueryReader {
     private int tileSize;
     private AlignmentReader reader;
     private boolean cancel = false;
-    private LRUCache<Integer, AlignmentTile> cache;
     private boolean pairedEnd = false;
 
 
@@ -63,8 +63,8 @@ public class CachingQueryReader {
     //private PairedEndStats peStats;
 
     private static void cancelReaders() {
-        for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
-            CachingQueryReader reader = readerRef.get();
+        for (WeakReference<NoncachingQueryReader> readerRef : activeReaders) {
+            NoncachingQueryReader reader = readerRef.get();
             if (reader != null) {
                 reader.cancel = true;
             }
@@ -74,33 +74,11 @@ public class CachingQueryReader {
     }
 
 
-    public CachingQueryReader(AlignmentReader reader) {
+    public NoncachingQueryReader(AlignmentReader reader) {
         this.reader = reader;
-        activeReaders.add(new WeakReference<CachingQueryReader>(this));
-        updateCache();
+        activeReaders.add(new WeakReference<NoncachingQueryReader>(this));
     }
 
-    public static void visibilityWindowChanged() {
-        for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
-            CachingQueryReader reader = readerRef.get();
-            if (reader != null) {
-                reader.updateCache();
-            }
-        }
-    }
-
-    private void updateCache() {
-        float fvw = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-
-        // If the visibility window has changed by more than a factor of 2 change cache tile size
-        float ratio = fvw / visibilityWindow;
-        if (cache == null || (ratio < 0.5 || ratio > 2)) {
-            // Set tile size to  the visibility window
-            tileSize = (int) (fvw * KB);
-            cache = new LRUCache(this, MAX_TILE_COUNT);
-            visibilityWindow = fvw;
-        }
-    }
 
     public AlignmentReader getWrappedReader() {
         return reader;
@@ -122,115 +100,116 @@ public class CachingQueryReader {
         return reader.hasIndex();
     }
 
-    public CloseableIterator<Alignment> query(String sequence, int start, int end,
-                                              List<AlignmentCounts> counts,
-                                              List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                              List<DownsampledInterval> downsampledIntervals,
-                                              AlignmentDataManager.DownsampleOptions downsampleOptions,
-                                              Map<String, PEStats> peStats,
-                                              AlignmentTrack.BisulfiteContext bisulfiteContext) {
+    /*
+               List<AlignmentCounts> counts = new ArrayList();
+                List<DownsampledInterval> downsampledIntervals = new ArrayList<DownsampledInterval>();
+                List<SpliceJunctionFeature> spliceJunctions = null;
+                if (showSpliceJunctions) {
+                    spliceJunctions = new ArrayList<SpliceJunctionFeature>();
+                }
 
-        // Get the tiles covering this interval
-        int startTile = (start + 1) / getTileSize(sequence);
-        int endTile = end / getTileSize(sequence);    // <= inclusive
+                Iterator<Alignment> iter = reader.query(sequence, intervalStart, intervalEnd, counts,
+                        spliceJunctions, downsampledIntervals, downsampleOptions, peStats, bisulfiteContext);
 
-        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, downsampleOptions, peStats, bisulfiteContext);
-        if (tiles.size() == 0) {
-            return EmptyAlignmentIterator.getInstance();
+                 final AlignmentPacker alignmentPacker = new AlignmentPacker();
+
+                LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
+                        intervalEnd, renderOptions);
+
+                AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
+                        alignmentRows, counts, spliceJunctions, downsampledIntervals, renderOptions);
+
+     */
+
+    public AlignmentInterval loadInterval(String chr, int start, int end, boolean showSpliceJunctions,
+                                          AlignmentTrack.RenderOptions renderOptions,
+                                          Map<String, PEStats> peStats,
+                                          AlignmentTrack.BisulfiteContext bisulfiteContext) {
+
+        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+        List<AlignmentCounts> counts = new ArrayList();
+        List<DownsampledInterval> downsampledIntervals = new ArrayList<DownsampledInterval>();
+        List<SpliceJunctionFeature> spliceJunctions = null;
+        if (showSpliceJunctions) {
+            spliceJunctions = new ArrayList<SpliceJunctionFeature>();
+        }
+        Iterator<Alignment> iter = query(chr, start, end, counts,
+                spliceJunctions, downsampledIntervals, downsampleOptions, peStats, bisulfiteContext);
+
+        final AlignmentPacker alignmentPacker = new AlignmentPacker();
+
+        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
+                end, renderOptions);
+
+        return new AlignmentInterval(chr, start, end, alignmentRows, counts, spliceJunctions, downsampledIntervals,
+                renderOptions);
+
+    }
+
+    private Iterator<Alignment> query(String chr, int start, int end,
+                                     List<AlignmentCounts> counts,
+                                     List<SpliceJunctionFeature> spliceJunctionFeatures,
+                                     List<DownsampledInterval> downsampledIntervals,
+                                     AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                     Map<String, PEStats> peStats,
+                                     AlignmentTrack.BisulfiteContext bisulfiteContext) {
+
+
+        AlignmentTile t = loadTiles(chr, start, end, downsampleOptions, peStats, bisulfiteContext);
+
+        if (t == null) {
+            return (new ArrayList<Alignment>()).iterator();
         }
 
-        // Count total # of records
-        int recordCount = tiles.get(0).getOverlappingRecords().size();
-        for (AlignmentTile t : tiles) {
-            recordCount += t.getContainedRecords().size();
-        }
+        int sz = t.getContainedRecords().size() + t.getOverlappingRecords().size();
+        ArrayList<Alignment> alignments = new ArrayList<Alignment>(sz);
 
-        List<Alignment> alignments = new ArrayList(recordCount);
-        alignments.addAll(tiles.get(0).getOverlappingRecords());
+
+        alignments.addAll(t.getOverlappingRecords());
 
         if (spliceJunctionFeatures != null) {
-            List<SpliceJunctionFeature> tmp = tiles.get(0).getOverlappingSpliceJunctionFeatures();
+            List<SpliceJunctionFeature> tmp = t.getOverlappingSpliceJunctionFeatures();
             if (tmp != null) spliceJunctionFeatures.addAll(tmp);
         }
 
-        for (AlignmentTile t : tiles) {
-            alignments.addAll(t.getContainedRecords());
-            counts.add(t.getCounts());
-            downsampledIntervals.addAll(t.getDownsampledIntervals());
 
-            if (spliceJunctionFeatures != null) {
-                List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
-                if (tmp != null) spliceJunctionFeatures.addAll(tmp);
-            }
+        alignments.addAll(t.getContainedRecords());
+        counts.add(t.getCounts());
+        downsampledIntervals.addAll(t.getDownsampledIntervals());
+
+        if (spliceJunctionFeatures != null) {
+            List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
+            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
         }
+
 
         // Since we added in 2 passes, and downsampled,  we need to sort
         Collections.sort(alignments, new AlignmentSorter());
 
-        return new TiledIterator(start, end, alignments);
+        return alignments.iterator();
     }
 
-    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile,
-                                        AlignmentDataManager.DownsampleOptions downsampleOptions,
-                                        Map<String, PEStats> peStats,
-                                        AlignmentTrack.BisulfiteContext bisulfiteContext) {
-
-        if (!seq.equals(cachedChr)) {
-            cache.clear();
-            cachedChr = seq;
-        }
-
-        List<AlignmentTile> tiles = new ArrayList(endTile - startTile + 1);
-        List<AlignmentTile> tilesToLoad = new ArrayList(endTile - startTile + 1);
-
-        int tileSize = getTileSize(seq);
-        for (int t = startTile; t <= endTile; t++) {
-            AlignmentTile tile = cache.get(t);
-
-            if (tile == null) {
-                int start = t * tileSize;
-                int end = start + tileSize;
-
-                tile = new AlignmentTile(t, start, end, downsampleOptions, bisulfiteContext);
-            }
-
-            tiles.add(tile);
-
-            // The current tile is loaded,  load any preceding tiles we have pending and clear "to load" list
-            if (tile.isLoaded()) {
-                if (tilesToLoad.size() > 0) {
-                    boolean success = loadTiles(seq, tilesToLoad, peStats);
-                    if (!success) {
-                        // Loading was canceled, return what we have
-                        return tiles;
-                    }
-                }
-                tilesToLoad.clear();
-            } else {
-                tilesToLoad.add(tile);
-            }
-        }
-
-        if (tilesToLoad.size() > 0) {
-            loadTiles(seq, tilesToLoad, peStats);
-        }
-
-        return tiles;
-    }
 
     /**
      * Load alignments for the list of tiles
      *
      * @param chr     Only tiles on this chromosome will be loaded
-     * @param tiles
+     * @param start
+     * @param end
      * @param peStats
      * @return true if successful,  false if canceled.
      */
-    private boolean loadTiles(String chr, List<AlignmentTile> tiles, Map<String, PEStats> peStats) {
+    private AlignmentTile loadTiles(String chr, int start, int end,
+                                    AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                    Map<String, PEStats> peStats,
+                                    AlignmentTrack.BisulfiteContext bisulfiteContext) {
+
+        AlignmentTile t = new AlignmentTile(0, start, end, downsampleOptions, bisulfiteContext);
+
 
         //assert (tiles.size() > 0);
         if (corruptIndex) {
-            return false;
+            return null;
         }
 
         boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
@@ -238,23 +217,11 @@ public class CachingQueryReader {
         boolean showDuplicates = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
         int qualityThreshold = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
 
-        //maxReadCount = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_READS);
-
-        if (log.isDebugEnabled()) {
-            int first = tiles.get(0).getTileNumber();
-            int end = tiles.get(tiles.size() - 1).getTileNumber();
-            log.debug("Loading tiles: " + first + "-" + end);
-        }
-
-        int start = tiles.get(0).start;
-        int end = tiles.get(tiles.size() - 1).end;
-
-
         CloseableIterator<Alignment> iter = null;
 
         //log.debug("Loading : " + start + " - " + end);
         int alignmentCount = 0;
-        WeakReference<CachingQueryReader> ref = new WeakReference(this);
+        WeakReference<NoncachingQueryReader> ref = new WeakReference(this);
         try {
             ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
             ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
@@ -263,11 +230,10 @@ public class CachingQueryReader {
             activeReaders.add(ref);
             iter = reader.query(chr, start, end, false);
 
-            int tileSize = getTileSize(chr);
             while (iter != null && iter.hasNext()) {
 
                 if (cancel) {
-                    return false;
+                    return t;
                 }
 
                 Alignment record = iter.next();
@@ -311,27 +277,16 @@ public class CachingQueryReader {
                     continue;
                 }
 
-                // Range of tile indices that this alignment contributes to.
-                int aStart = record.getStart();
-                int aEnd = record.getEnd();
-                int idx0 = Math.max(0, (aStart - start) / tileSize);
-                int idx1 = Math.min(tiles.size() - 1, (aEnd - start) / tileSize);
-
-                // Loop over tiles this read overlaps
-                for (int i = idx0; i <= idx1; i++) {
-                    AlignmentTile t = null;
-                    t = tiles.get(i);
-                    t.addRecord(record);
-                }
+                t.addRecord(record);
 
                 alignmentCount++;
                 int interval = Globals.isTesting() ? 100000 : 1000;
                 if (alignmentCount % interval == 0) {
-                    if (cancel) return false;
+                    if (cancel) return null;
                     MessageUtils.setStatusBarMessage("Reads loaded: " + alignmentCount);
                     if (checkMemory() == false) {
                         cancelReaders();
-                        return false;        // <=  TODO need to cancel all readers
+                        return t;        // <=  TODO need to cancel all readers
                     }
                 }
 
@@ -368,27 +323,21 @@ public class CachingQueryReader {
                     mappedMate.setMateSequence(mate.getReadSequence());
                 }
             }
-            mappedMates = null;
-            unmappedMates = null;
+            t.setLoaded(true);
 
-            for (AlignmentTile t : tiles) {
-                t.setLoaded(true);
-                cache.put(t.getTileNumber(), t);
-            }
-
-            return true;
+            return t;
 
         } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
             corruptIndex = true;
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
                     "<br>This is often caused by a corrupt index file.");
-            return false;
+            return null;
 
         } catch (Exception e) {
             log.error("Error loading alignment data", e);
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString());
-            return false;
+            return null;
         } finally {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
@@ -418,21 +367,6 @@ public class CachingQueryReader {
         return true;
     }
 
-    /**
-     * @param chr Chromosome name
-     * @return the tileSize
-     */
-    public int getTileSize(String chr) {
-        if (chr.equals("M") || chr.equals("chrM") || chr.equals("MT") || chr.equals("chrMT")) {
-            return MITOCHONDRIA_TILE_SIZE;
-        } else {
-            return tileSize;
-        }
-    }
-
-    public void clearCache() {
-        if (cache != null) cache.clear();
-    }
 
     /**
      * Does this file contain paired end data?  Assume not until proven otherwise.
@@ -445,73 +379,9 @@ public class CachingQueryReader {
         return reader.getPlatforms();
     }
 
-    public class TiledIterator implements CloseableIterator<Alignment> {
-
-        Iterator<Alignment> currentSamIterator;
-        int end;
-        Alignment nextRecord;
-        int start;
-        List<Alignment> alignments;
-
-        TiledIterator(int start, int end, List<Alignment> alignments) {
-            this.alignments = alignments;
-            this.start = start;
-            this.end = end;
-            currentSamIterator = alignments.iterator();
-            advanceToFirstRecord();
-        }
-
-        public void close() {
-            // No-op
-        }
-
-        public boolean hasNext() {
-            return nextRecord != null;
-        }
-
-        public Alignment next() {
-            Alignment ret = nextRecord;
-
-            advanceToNextRecord();
-
-            return ret;
-        }
-
-        public void remove() {
-            // ignored
-        }
-
-        private void advanceToFirstRecord() {
-            advanceToNextRecord();
-        }
-
-        private void advanceToNextRecord() {
-            advance();
-
-            //We use exclusive end
-            while ((nextRecord != null) && (nextRecord.getEnd() <= start)) {
-                advance();
-            }
-        }
-
-        private void advance() {
-            if (currentSamIterator.hasNext()) {
-                nextRecord = currentSamIterator.next();
-
-                if (nextRecord.getStart() >= end) {
-                    nextRecord = null;
-                }
-            } else {
-                nextRecord = null;
-            }
-        }
-
-
-    }
-
     /**
      * Caches alignments, coverage, splice junctions, and downsampled intervals
-    */
+     */
 
     public static class AlignmentTile {
 

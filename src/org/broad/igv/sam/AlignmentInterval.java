@@ -40,16 +40,16 @@ public class AlignmentInterval extends Locus implements Interval {
     Genome genome;
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
-    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
+    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;  // The alignments
     private List<SpliceJunctionFeature> spliceJunctions;
-    private List<CachingQueryReader.DownsampledInterval> downsampledIntervals;
+    private List<DownsampledInterval> downsampledIntervals;
     private AlignmentTrack.RenderOptions renderOptions;
 
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
                              List<AlignmentCounts> counts,
                              List<SpliceJunctionFeature> spliceJunctions,
-                             List<CachingQueryReader.DownsampledInterval> downsampledIntervals,
+                             List<DownsampledInterval> downsampledIntervals,
                              AlignmentTrack.RenderOptions renderOptions) {
 
         super(chr, start, end);
@@ -251,7 +251,7 @@ public class AlignmentInterval extends Locus implements Interval {
         return spliceJunctions;
     }
 
-    public List<CachingQueryReader.DownsampledInterval> getDownsampledIntervals() {
+    public List<DownsampledInterval> getDownsampledIntervals() {
         return downsampledIntervals;
     }
 

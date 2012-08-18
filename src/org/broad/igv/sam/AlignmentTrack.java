@@ -304,8 +304,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public void preload(RenderContext context) {
-        System.out.println("preload " + (int) context.getOrigin() + "-" + (int) context.getEndLocation());
-        dataManager.preload(context, renderOptions, true);
+         dataManager.preload(context, renderOptions, true);
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -350,8 +349,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         Graphics2D g = context.getGraphic2DForColor(Color.black);
 
         for (AlignmentInterval loadedInterval : loadedIntervals) {
-            List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-            for (CachingQueryReader.DownsampledInterval interval : intervals) {
+            List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+            for (DownsampledInterval interval : intervals) {
                 int x0 = context.bpToScreenPixel(interval.getStart());
                 int x1 = context.bpToScreenPixel(interval.getEnd());
                 int w = Math.max(1, x1 - x0);
@@ -368,8 +367,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
 
         //log.debug("Render features");
-        Map<String, List<AlignmentInterval.Row>> groups =
-                dataManager.getGroups(context, renderOptions);
+        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroups(context, renderOptions);
 
         Map<String, PEStats> peStats = dataManager.getPEStats();
         if (peStats != null) {
@@ -744,8 +742,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 return null;
             } else {
                 for (AlignmentInterval loadedInterval : loadedIntervals) {
-                    List<CachingQueryReader.DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-                    CachingQueryReader.DownsampledInterval interval = (CachingQueryReader.DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
+                    List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+                    DownsampledInterval interval = (DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
                     if (interval != null) return interval.getValueString();
                 }
                 return null;
