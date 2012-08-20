@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ import java.util.Map;
 public class RunPlugin extends JDialog {
 
     private List<Argument> argumentList;
-    private String cmd;
+    private List<String> cmd = new ArrayList<String>();
     private Map<Argument, ArgumentPanel> argumentComponents;
     private Map<String, String> parsingAttrs;
 
@@ -57,9 +58,9 @@ public class RunPlugin extends JDialog {
 
     private void initArgumentComponents(String toolPath, String cmdName, String cmdVal) {
 
-        this.cmd = toolPath;
+        this.cmd.add(toolPath);
         if (cmdVal != null && cmdVal.trim().length() > 0) {
-            this.cmd += " " + cmdVal;
+            this.cmd.add(cmdVal);
         }
         argumentComponents = new LinkedHashMap<Argument, ArgumentPanel>(this.argumentList.size());
 

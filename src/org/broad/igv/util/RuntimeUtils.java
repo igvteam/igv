@@ -73,8 +73,13 @@ public class RuntimeUtils {
      *
      * @return
      */
-    public static Process startExternalProcess(String msg, String[] envp, File dir) throws IOException {
+    public static Process startExternalProcess(String[] msg, String[] envp, File dir) throws IOException {
         Process pr = Runtime.getRuntime().exec(msg, envp, dir);
+        startErrorReadingThread(pr);
+        return pr;
+    }
+
+    private static Process startErrorReadingThread(Process pr) {
         final BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
 
         //Supposed to read error stream on separate thread to prevent blocking
@@ -98,10 +103,21 @@ public class RuntimeUtils {
         return pr;
     }
 
-
+    /**
+     * @param cmd
+     * @param envp
+     * @param dir
+     * @return
+     * @throws IOException
+     * @deprecated Use {@link #executeShellCommand(String[], String[], File)}
+     */
+    @Deprecated
     public static String executeShellCommand(String cmd, String[] envp, File dir) throws IOException {
+        return executeShellCommand(new String[]{cmd}, envp, dir);
+    }
 
 
+    public static String executeShellCommand(String cmd[], String[] envp, File dir) throws IOException {
         Process pr = startExternalProcess(cmd, envp, dir);
 
         try {

@@ -43,6 +43,7 @@ public class ArgumentPanel extends JPanel {
     public static ArgumentPanel create(Argument argument) {
         ArgumentPanel panel = null;
         switch (argument.getType()) {
+            case LONGTEXT:
             case TEXT:
                 panel = new TextArgument(argument);
                 break;

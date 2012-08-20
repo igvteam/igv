@@ -11,7 +11,6 @@
 
 package org.broad.igv.dev.plugin;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -41,7 +40,11 @@ public class PluginFeatureSource implements FeatureSource {
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
-    private final String cmd;
+    /**
+     * Initial command tokens. This will typically include both
+     * the executable and command, e.g. {"/usr/bin/bedtools", "intersect"}
+     */
+    private final List<String> cmd;
     private final LinkedHashMap<Argument, Object> arguments;
 
     protected boolean strictParsing = true;
@@ -55,7 +58,7 @@ public class PluginFeatureSource implements FeatureSource {
      */
     protected Map<String, Integer> outputCols = new LinkedHashMap<String, Integer>(2);
 
-    public PluginFeatureSource(String cmd, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+    public PluginFeatureSource(List<String> cmd, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
         this.cmd = cmd;
         this.arguments = arguments;
 
@@ -108,34 +111,60 @@ public class PluginFeatureSource implements FeatureSource {
         return allNumCols;
     }
 
-    private String genFullCommand(String chr, int start, int end) throws IOException {
-        String fullCmd = cmd;
+    private String[] genFullCommand(String chr, int start, int end) throws IOException {
+
+        List<String> fullCmd = new ArrayList<String>(cmd);
+
         outputCols.clear();
+        Map<String, String[]> argValsById = new HashMap<String, String[]>(arguments.size());
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
-            fullCmd += " " + arg.getCmdArg();
+
             assert arg.isValidValue(entry.getValue());
-            String sVal = null;
+            String[] sVal = null;
+            String ts = null;
             switch (arg.getType()) {
+                case LONGTEXT:
                 case TEXT:
-                    sVal = (String) entry.getValue();
-                    if (sVal == null) continue;
+                    ts = (String) entry.getValue();
+                    if (ts == null || ts.trim().length() == 0) {
+                        continue;
+                    }
+                    sVal = new String[]{ts};
+                    if (arg.getType() == Argument.InputType.TEXT) {
+                        sVal = ts.split("\\s+");
+                    }
                     break;
                 case FEATURE_TRACK:
-                    sVal = createTempFile((FeatureTrack) entry.getValue(), arg, chr, start, end);
+                    sVal = createTempFiles((FeatureTrack) entry.getValue(), arg, chr, start, end);
                     break;
                 case MULTI_FEATURE_TRACK:
-                    sVal = StringUtils.join(createTempFiles((List<FeatureTrack>) entry.getValue(), arg, chr, start, end), " ");
+                    sVal = createTempFiles((List<FeatureTrack>) entry.getValue(), arg, chr, start, end);
                     break;
             }
-            fullCmd += " " + sVal;
+
+            if (arg.getId() != null) {
+                argValsById.put(arg.getId(), sVal);
+            }
+
+            if (arg.isOutput()) {
+                String cmdArg = arg.getCmdArg();
+                if (cmdArg.trim().length() > 0) {
+                    for (String argId : argValsById.keySet()) {
+                        cmdArg = cmdArg.replace("$" + argId, argValsById.get(argId)[0]);
+                    }
+
+                    fullCmd.add(cmdArg);
+                }
+                fullCmd.addAll(Arrays.asList(sVal));
+            }
         }
 
-        return fullCmd;
+        return fullCmd.toArray(new String[0]);
     }
 
     /**
-     * Convenience for calling {@link #createTempFile(org.broad.igv.track.FeatureTrack, Argument, String, int, int)};
+     * Convenience for calling {@link #createTempFiles(org.broad.igv.track.FeatureTrack, Argument, String, int, int)};
      * on each track
      *
      * @param tracks
@@ -149,7 +178,7 @@ public class PluginFeatureSource implements FeatureSource {
         String[] fileNames = new String[tracks.size()];
         int fi = 0;
         for (FeatureTrack track : tracks) {
-            fileNames[fi++] = (createTempFile(track, argument, chr, start, end));
+            fileNames[fi++] = (createTempFiles(track, argument, chr, start, end))[0];
         }
         return fileNames;
     }
@@ -162,12 +191,10 @@ public class PluginFeatureSource implements FeatureSource {
      * @param chr
      * @param start
      * @param end
-     * @return LinkedHashMap from TempFileName -> number of columns in data file
-     *         A LinkedHashMap has a predictable iteration order, which will be the same as the
-     *         insertion order, which will be the order of sources
+     * @return Array of strings with temp file names.
      * @throws java.io.IOException
      */
-    private String createTempFile(FeatureTrack track, Argument argument, String chr, int start, int end) throws IOException {
+    private String[] createTempFiles(FeatureTrack track, Argument argument, String chr, int start, int end) throws IOException {
 
         List<Feature> features = track.getFeatures(chr, start, end);
 
@@ -177,7 +204,7 @@ public class PluginFeatureSource implements FeatureSource {
         int numCols = writeFeaturesToStream(features.iterator(), new FileOutputStream(outFile), argument);
         String path = outFile.getAbsolutePath();
         outputCols.put(path, numCols);
-        return path;
+        return new String[]{path};
     }
 
     /**
@@ -193,7 +220,7 @@ public class PluginFeatureSource implements FeatureSource {
     @Override
     public final Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
 
-        String fullCmd = genFullCommand(chr, start, end);
+        String[] fullCmd = genFullCommand(chr, start, end);
 
         //Start plugin process
         Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
@@ -290,7 +317,7 @@ public class PluginFeatureSource implements FeatureSource {
 
     }
 
-    protected FeatureDecoder getDecodingCodec(String decodingCodec, URL[] libURLs, String cmd, Map<Argument, Object> argumentMap) {
+    protected FeatureDecoder getDecodingCodec(String decodingCodec, URL[] libURLs, List<String> cmd, Map<Argument, Object> argumentMap) {
         if (decodingCodec == null) return
                 new DecoderWrapper(CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome()));
 
@@ -302,7 +329,7 @@ public class PluginFeatureSource implements FeatureSource {
             );
 
             Class clazz = loader.loadClass(decodingCodec);
-            Constructor constructor = clazz.getConstructor(cmd.getClass(), Map.class);
+            Constructor constructor = clazz.getConstructor(List.class, Map.class);
             return (FeatureDecoder) constructor.newInstance(cmd, argumentMap);
 
         } catch (ClassNotFoundException e) {

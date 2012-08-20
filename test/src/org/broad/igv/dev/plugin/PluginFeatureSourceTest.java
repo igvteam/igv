@@ -22,6 +22,7 @@ import org.junit.Assume;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +61,7 @@ public class PluginFeatureSourceTest extends AbstractHeadlessTest {
         }
 
 
-        String cmd = tool.getAttribute("path") + " " + command.getAttribute("cmd_arg");
+        List<String> cmd = Arrays.asList(tool.getAttribute("path"), command.getAttribute("cmd_arg"));
         PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, reader.getParsingAttributes(tool, command), specPath);
 
         Iterator<Feature> featuresExp = ((FeatureTrack) arguments.get(argumentList.get(1))).getFeatures("chr2", 1, 30).iterator();

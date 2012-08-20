@@ -32,11 +32,23 @@ public final class BEDToolsCodec extends PluginCodec {
 
     private int[] numCols = null;
 
-    public BEDToolsCodec(String cmd, Map<Argument, Object> argumentMap) {
+    private boolean multiinter;
+    /**
+     * The output of the closest and window
+     * commands are somewhat different
+     */
+    private boolean closestOrSim;
+
+    public BEDToolsCodec(List<String> cmd, Map<Argument, Object> argumentMap) {
         super(cmd, argumentMap);
         BEDCodec = new IGVBEDCodec();
+        for (String cmdTok : cmd) {
+            hasSplit |= cmdTok.contains("-split");
+        }
+        multiinter = cmd.contains("multiinter");
+        closestOrSim = cmd.contains("window") || cmd.contains("closest");
 
-        hasSplit |= cmd.contains("-split");
+
         for (Map.Entry<Argument, Object> entry : argumentMap.entrySet()) {
             Argument argument = entry.getKey();
             hasSplit |= argument.getCmdArg().contains("-split");
@@ -70,14 +82,14 @@ public final class BEDToolsCodec extends PluginCodec {
             tokens = Arrays.copyOfRange(tokens, 0, Math.min(6, tokens.length));
         }
 
-        if (cmd.toLowerCase().contains("window") || cmd.toLowerCase().contains("closest")) {
+        if (closestOrSim) {
             String[] closest = Arrays.copyOfRange(tokens, numCols[0], numCols[0] + numCols[1]);
             //If not found, bedtools returns -1 for positions
             if (closest[1].trim().equalsIgnoreCase("-1")) {
                 return null;
             }
             feat = BEDCodec.decode(closest);
-        } else if (cmd.toLowerCase().contains("multiinter")) {
+        } else if (multiinter) {
             //We only look at regions common to ALL inputs
             //Columns: chr \t start \t \end \t # of files which contained this feature \t comma-separated list files +many more
             int numRegions = Integer.parseInt(tokens[3]);
