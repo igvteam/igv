@@ -30,6 +30,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.Globals;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -102,7 +103,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
             graphics2.transform(transform);
 
             // Now rotate text counter-clockwise 90 degrees
-            transform = AffineTransform.getRotateInstance(-Math.PI / 2);
+            transform = AffineTransform.getQuadrantRotateInstance(-1);
             graphics2.transform(transform);
             graphics2.setFont(font);
             FontMetrics fm = graphics2.getFontMetrics();
@@ -113,7 +114,15 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
             for (String key : keys) {
                 int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
                 x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
-                graphics2.drawString(key, 0, x);
+                String toDraw = key;
+                int stringOffset = 0;
+                //Workaround for Java 7 bug not applying transformation properly
+                if(System.getProperty("java.version").startsWith("1.7") &&
+                        Globals.IS_MAC ){
+                    toDraw = (new StringBuffer(key)).reverse().toString();
+                    stringOffset = fm.stringWidth(toDraw);
+                }
+                graphics2.drawString(toDraw, stringOffset, x);
             }
         }
     }
