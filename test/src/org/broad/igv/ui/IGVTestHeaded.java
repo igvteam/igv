@@ -36,11 +36,11 @@ import static org.junit.Assert.assertTrue;
 public class IGVTestHeaded extends AbstractHeadedTest {
 
     @Test
-    public void testLoadSessionBatch() throws Exception{
-        try{
+    public void testLoadSessionBatch() throws Exception {
+        try {
             Globals.setBatch(true);
             tstLoadSession();
-        }finally{
+        } finally {
             Globals.setBatch(false);
         }
 
@@ -70,7 +70,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
     }
 
     @Test
-    public void testHome() throws Exception{
+    public void testHome() throws Exception {
         IGV igv = IGV.getInstance();
         ReferenceFrame frame = FrameManager.getDefaultFrame();
         String chr = "chr1";
@@ -88,12 +88,13 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         FrameFixture frameFixture = new FrameFixture(IGV.getMainFrame());
         frameFixture.button("homeButton").click();
 
+        IGV.getInstance().waitForNotify(500);
+
         Assert.assertEquals(Globals.CHR_ALL, frame.getChrName());
 
         //In all genome view these should be the same
-        assertEquals(frame.getChromosomeLength() , frame.getCurrentRange().getEnd());
+        assertEquals(frame.getChromosomeLength(), frame.getCurrentRange().getEnd());
         Assert.assertEquals(0.0, frame.getOrigin());
-
 
 
     }
@@ -103,7 +104,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void scratchTestFEST() throws Exception {
 
         FrameFixture frame = new FrameFixture(IGV.getMainFrame());
