@@ -54,7 +54,7 @@ public class CombinedFeatureSource implements FeatureSource {
             return false;
         }
 
-        String cmd = path + " --version";
+        String[] cmd = new String[]{path, "--version"};
         String resp;
         try {
             resp = RuntimeUtils.executeShellCommand(cmd, null, null);
@@ -182,7 +182,7 @@ public class CombinedFeatureSource implements FeatureSource {
         }
 
         //Start bedtools process
-        Process pr = RuntimeUtils.startExternalProcess(cmd, null, null);
+        Process pr = RuntimeUtils.startExternalProcess(new String[]{cmd}, null, null);
 
         //Read back in the data which bedtools output
         BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));

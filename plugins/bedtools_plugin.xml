@@ -39,7 +39,13 @@ id
                    What type of input the user is expected to provide.
                    Allowed values:
                        "text"
-                           text is input passed to the command line
+                           text is input passed to the command line. Input
+                           is split by spaces, so "-bed -split" is passed to the command
+                           line as "-bed","-split"
+                        "longtext"
+                            text input passed to command line, with larger input area.
+                            Text is NOT split by spaces, so "{if ($4 ~ /EGFR/) print;}"
+                            stays one command
                        "feature_track"
                            feature_track is a single feature track
                        "multi_feature_track"

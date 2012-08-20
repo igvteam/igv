@@ -29,6 +29,19 @@ public class Argument {
     private InputType type;
     private String cmdArg;
     private String defaultValue;
+    /**
+     * Whether the argument gets written to the command line
+     * This is true by default (usually it will be). Some only exist
+     * to take user input, and feed the result to another argument
+     */
+    private boolean output;
+
+    /**
+     * id used by spec by which this argument can be referred.
+     * Does not need to be human readable, must be unique
+     * within a command
+     */
+    private String id;
 
     /**
      * Full class name of encoding codec to be used
@@ -47,18 +60,26 @@ public class Argument {
 
     public enum InputType {
         TEXT,
+        LONGTEXT,
         FEATURE_TRACK,
         MULTI_FEATURE_TRACK
     }
 
     Argument(String name, InputType type, String cmdArg, String defaultValue, String encodingCodec,
-             String libs, String specPath) {
+             String libs, String specPath, boolean isOutput, String id) {
         this.name = name;
         this.type = type;
         this.cmdArg = cmdArg != null ? cmdArg : "";
         this.defaultValue = defaultValue;
         this.encodingCodec = encodingCodec;
         this.libURLs = FileUtils.getURLsFromString(libs, specPath);
+        this.output = isOutput;
+        this.id = id;
+
+        if (!output && id == null) {
+            log.info(String.format("Argument %s is not output but it also has no id. This argument" +
+                    " will have no effect", (name)));
+        }
     }
 
     static Argument parseFromNode(Node node, String specPath) {
@@ -70,7 +91,12 @@ public class Argument {
         String encCodec = Utilities.getNullSafe(attrs, "encoding_codec");
         String libString = Utilities.getNullSafe(attrs, "libs");
         libString = libString != null ? libString : "";
-        return new Argument(name, type, cmdArg, defVal, encCodec, libString, specPath);
+
+        String soutput = Utilities.getNullSafe(attrs, "output");
+        boolean output = soutput == null || Boolean.parseBoolean(soutput);
+
+        String id = Utilities.getNullSafe(attrs, "id");
+        return new Argument(name, type, cmdArg, defVal, encCodec, libString, specPath, output, id);
     }
 
     boolean isValidValue(Object value) {
@@ -111,6 +137,14 @@ public class Argument {
 
     public URL[] getLibURLs() {
         return libURLs;
+    }
+
+    public boolean isOutput() {
+        return output;
+    }
+
+    public String getId() {
+        return id;
     }
 
 }

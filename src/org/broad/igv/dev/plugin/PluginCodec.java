@@ -13,6 +13,7 @@ package org.broad.igv.dev.plugin;
 
 import org.broad.tribble.Feature;
 
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  */
 public abstract class PluginCodec implements FeatureEncoder, FeatureDecoder {
 
-    protected String cmd;
+    protected List<String> cmd;
     protected Map<Argument, Object> argumentMap;
     protected Map<String, Integer> outputColumns;
 
@@ -36,7 +37,7 @@ public abstract class PluginCodec implements FeatureEncoder, FeatureDecoder {
      */
     protected Pattern columnDelimiter = Pattern.compile("\\t");
 
-    public PluginCodec(String cmd, Map<Argument, Object> argumentMap) {
+    public PluginCodec(List<String> cmd, Map<Argument, Object> argumentMap) {
         this.cmd = cmd;
         this.argumentMap = argumentMap;
     }
