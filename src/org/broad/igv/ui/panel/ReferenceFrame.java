@@ -209,6 +209,7 @@ public class ReferenceFrame {
             setOrigin(newOrigin);
             double end = setEnd > 0 ? setEnd : getEnd();
             imputeZoom(origin, end);
+            setEnd = -1;
         } else {
             int newZoom = Math.max(0, zoom + zoomFactor);
             zoomTo(newZoom, newCenter);
@@ -437,6 +438,7 @@ public class ReferenceFrame {
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
             origin = 0;
+            setEnd = -1;
             zoomTo(0);
             computeMaxZoom();
 

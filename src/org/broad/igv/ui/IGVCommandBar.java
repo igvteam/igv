@@ -987,11 +987,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
-            getDefaultReferenceFrame().setChromosomeName(chrName);
+            //getDefaultReferenceFrame().setChromosomeName(chrName);
             IGV.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
-            chromosomeComboBox.setSelectedItem(chrName);
-            updateCurrentCoordinates();
-            IGV.getInstance().chromosomeChangeEvent(chrName);
+            //chromosomeComboBox.setSelectedItem(chrName);
+            //updateCurrentCoordinates();
+            chromosomeChanged(chrName);
             IGV.getMainFrame().repaint();
         }
     }
