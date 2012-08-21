@@ -107,11 +107,25 @@ public abstract class AbstractAlignment implements Alignment {
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
-                byte qual = block.qualities[offset];
+                byte qual = block.getQuality(offset);
                 return qual;
             }
         }
         return 0;
+    }
+
+    private byte[] getQualityArray() {
+        int totLen = 0;
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            totLen += block.getQualities().length;
+        }
+        byte[] allQualities = new byte[totLen];
+        int start = 0;
+        for (AlignmentBlock block : this.alignmentBlocks) {
+            System.arraycopy(block.getQualities(), 0, allQualities, start, block.getQualities().length);
+            start += block.getQualities().length;
+        }
+        return allQualities;
     }
 
     private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
@@ -321,5 +335,6 @@ public abstract class AbstractAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
+
 
 }
