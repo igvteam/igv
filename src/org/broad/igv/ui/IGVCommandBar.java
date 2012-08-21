@@ -349,11 +349,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
         final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) return;
 
-        List<String> tmp = new LinkedList(genome.getChromosomeNames());
+        List<String> tmp = new ArrayList<String>(genome.getChromosomeNames().size());
+        tmp.addAll(genome.getChromosomeNames());
         if (tmp.size() > 1) {
             String homeChr = genome.getHomeChromosome();
             if (homeChr.equals(Globals.CHR_ALL)) {
-                tmp.add(Globals.CHR_ALL);
+                tmp.add(0, Globals.CHR_ALL);
             }
         }
 
@@ -990,11 +991,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
-            getDefaultReferenceFrame().setChromosomeName(chrName);
+            //getDefaultReferenceFrame().setChromosomeName(chrName);
             IGV.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
-            chromosomeComboBox.setSelectedItem(chrName);
-            updateCurrentCoordinates();
-            IGV.getInstance().chromosomeChangeEvent(chrName);
+            //chromosomeComboBox.setSelectedItem(chrName);
+            //updateCurrentCoordinates();
+            chromosomeChanged(chrName);
             IGV.getMainFrame().repaint();
         }
     }

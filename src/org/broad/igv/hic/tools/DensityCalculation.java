@@ -11,7 +11,7 @@ import java.util.*;
  * Computes an "expected" density vector.  Essentially there are 3 steps to using this class
  *
  * (1) instantiate it with a collection of Chromosomes (representing a genome) and a grid size
- * (2) loop through the pair data,  calling addDistance for each pair, to accumlate all counts
+ * (2) loop through the pair data,  calling addDistance for each pair, to accumulate all counts
  * (3) when data loop is complete, call computeDensity to do the calculation
  *
  * Methods are provided to save the result of the calculation to a binary file, and restore it.  See the
@@ -120,6 +120,7 @@ public class DensityCalculation {
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);
             }
+            // Lots of zeros at the end of this, because no contacts
 
 
         }
@@ -262,7 +263,7 @@ public class DensityCalculation {
         }
         os.writeInt(nonNullChrCount);
 
-        // Chromosome indeces
+        // Chromosome indices
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
             os.writeInt(chr.getIndex());

@@ -283,8 +283,9 @@ public class RulerPanel extends JPanel {
             }
             int chrLength = c.getLength();
 
-            int x = (int) (offset / (locationUnit * frame.getScale()));
-            int dw = (int) (chrLength / (locationUnit * frame.getScale()));
+            double scale = frame.getScale();
+            int x = (int) (offset / (locationUnit * scale));
+            int dw = (int) (chrLength / (locationUnit * scale));
 
             // Dont draw very small chromosome & contigs in whole genome view
             if (dw > 1) {

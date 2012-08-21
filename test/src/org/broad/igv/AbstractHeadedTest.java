@@ -23,6 +23,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Class from which headed tests can inherit
  * User: jacob
@@ -87,16 +89,17 @@ public class AbstractHeadedTest {
         Globals.setHeadless(false);
         IGV igv;
         //If IGV is already open, we get the instance.
-        try {
+        if(IGV.hasInstance()){
             igv = IGV.getInstance();
             IGV.getMainFrame().setVisible(true);
             System.out.println("Using old IGV");
-        } catch (RuntimeException e) {
+        } else {
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             Main.open(frame);
             System.out.println("Started new IGV");
             igv = IGV.getInstance();
+            assertTrue(IGV.getInstance().waitForNotify(1000));
         }
         if (genomeFile != null) {
             igv.loadGenome(genomeFile, null);
@@ -110,9 +113,7 @@ public class AbstractHeadedTest {
      * This closes the IGV window.
      */
     public static void stopGUI() {
-        try {
-            IGV igv = IGV.getInstance();
-        } catch (RuntimeException e) {
+        if(!IGV.hasInstance()){
             return;
         }
 

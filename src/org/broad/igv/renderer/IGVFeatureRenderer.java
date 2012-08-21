@@ -171,15 +171,16 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
                 } else {
 
-                    Graphics2D arrowGraphics = hasExons
-                            ? g2D
-                            : context.getGraphic2DForColor(Color.WHITE);
-
-                    //drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
 
                     if (hasExons) {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
                                 alternateExonColor, track.getColor(), track.getAltColor());
+                    }else{
+                        Graphics2D arrowGraphics = hasExons
+                                ? g2D
+                                : context.getGraphic2DForColor(Color.WHITE);
+                        drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
+                                displayMode, arrowGraphics);
                     }
 
                 }
@@ -416,6 +417,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
                     }
                 }
+
+                Graphics2D whiteArrowGraphics = context.getGraphic2DForColor(Color.white);
+                drawStrandArrows(gene.getStrand(), pStart + ARROW_SPACING / 2, pEnd, curYOffset, 0, mode,
+                        whiteArrowGraphics);
 
                 if (locationScale < 0.25) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,

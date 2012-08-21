@@ -172,14 +172,14 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
         int bp = exomeEnd - exomeOrigin;
         int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
-        locationScale = ((double) bp) / pw;
+        setLocationScale(((double) bp) / pw);
         locationScaleValid = true;
 
         imputeZoom(exomeOrigin, exomeEnd);
     }
 
     @Override
-    public void zoomTo(int newZoom, double newCenter) {
+    public synchronized void zoomTo(int newZoom, double newCenter) {
 
         newZoom = Math.max(0, Math.min(newZoom, maxZoom));
         double zoomFactor = Math.pow(2, newZoom - zoom);

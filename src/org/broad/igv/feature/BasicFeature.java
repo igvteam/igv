@@ -39,7 +39,6 @@ public class BasicFeature extends AbstractFeature {
 
     protected List<Exon> exons;
     protected int level = 1;
-    private String type;
     protected float score = Float.NaN;
     protected float confidence;
     String identifier;

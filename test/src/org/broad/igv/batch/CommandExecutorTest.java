@@ -15,7 +15,6 @@ import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -32,8 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -89,27 +87,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     }
 
-    private List<AlignmentTrack> getAlTracks(List<Track> tracks) {
-        List<AlignmentTrack> out = new ArrayList<AlignmentTrack>(tracks.size());
-        for (Track t : tracks) {
-            try {
-                out.add((AlignmentTrack) t);
-            } catch (ClassCastException e) {
-                continue;
-            }
-        }
-
-        return out;
-    }
-
     @Test
     public void testSortByRegionScoreType() throws Exception {
         Timer deadlockChecker = TestUtils.startDeadlockChecker(1000);
         String sessionPath = TestUtils.DATA_DIR + "sessions/BRCA_loh2.xml";
         TestUtils.loadSession(igv, sessionPath);
         Collection<RegionOfInterest> rois = igv.getSession().getAllRegionsOfInterest();
-
-        //assertEquals(1, rois.size());
 
         List<Track> tracks;
         int count = 0;
@@ -189,6 +172,26 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         exec.loadFiles(localPath, null, true, null);
 
         assertEquals(2, igv.getAllTracks().size());
+    }
+
+    @Test
+    public void testSetDataRange() throws Exception {
+        String dataFile = TestUtils.DATA_DIR + "igv/recombRate.ens.igv.txt";
+        exec.loadFiles(dataFile, null, true, null);
+
+        String[] goodArgSet = new String[]{"0,5.0 ", "0,1,5", "-1,0,1", "-1.32,10.21"};
+        for (String arg : goodArgSet) {
+            String resp = exec.execute("setDataRange " + arg);
+            assertEquals("OK", resp);
+        }
+
+        String[] badArgSet = new String[]{"0 ", "-1,0,2,3", "o,1o"};
+        for (String arg : badArgSet) {
+            String resp = exec.execute("setDataRange " + arg);
+            assertTrue(resp.toLowerCase().startsWith("error"));
+        }
+
+
     }
 
 }

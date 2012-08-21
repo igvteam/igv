@@ -11,9 +11,12 @@
 
 package org.broad.igv.ui;
 
+import junit.framework.Assert;
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.fest.swing.fixture.FrameFixture;
@@ -33,7 +36,23 @@ import static org.junit.Assert.assertTrue;
 public class IGVTestHeaded extends AbstractHeadedTest {
 
     @Test
-    public void testLoadSession() throws Exception {
+    public void testLoadSessionBatch() throws Exception {
+        try {
+            Globals.setBatch(true);
+            tstLoadSession();
+        } finally {
+            Globals.setBatch(false);
+        }
+
+    }
+
+    @Test
+    public void testLoadSessionNoBatch() throws Exception {
+        Globals.setBatch(false);
+        tstLoadSession();
+    }
+
+    public void tstLoadSession() throws Exception {
         //Pretty basic, but at some point loading this view
         //gave a class cast exception
         String sessionPath = TestUtils.DATA_DIR + "sessions/CCLE_testSession_chr2.xml";
@@ -41,13 +60,43 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
         TestUtils.loadSession(igv, sessionPath);
 
-        assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
-        assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
+        Assert.assertEquals("chr2", FrameManager.getDefaultFrame().getChrName());
+        Assert.assertEquals(1, FrameManager.getDefaultFrame().getCurrentRange().getStart());
 
         int rangeDiff = Math.abs(FrameManager.getDefaultFrame().getChromosomeLength() - FrameManager.getDefaultFrame().getCurrentRange().getEnd());
         assertTrue(rangeDiff < 3);
 
-        assertEquals(1461, igv.getAllTracks().size());
+        Assert.assertEquals(1461, igv.getAllTracks().size());
+    }
+
+    @Test
+    public void testHome() throws Exception {
+        IGV igv = IGV.getInstance();
+        ReferenceFrame frame = FrameManager.getDefaultFrame();
+        String chr = "chr1";
+        int start = 5;
+        int end = 5000;
+        int limit = 2;
+
+        frame.jumpTo(chr, start, end);
+
+        Assert.assertEquals(chr, frame.getChrName());
+        assertTrue(Math.abs(frame.getCurrentRange().getStart() - start) < limit);
+        assertTrue(Math.abs(frame.getCurrentRange().getEnd() - end) < limit);
+
+
+        FrameFixture frameFixture = new FrameFixture(IGV.getMainFrame());
+        frameFixture.button("homeButton").click();
+
+        IGV.getInstance().waitForNotify(500);
+
+        Assert.assertEquals(Globals.CHR_ALL, frame.getChrName());
+
+        //In all genome view these should be the same
+        assertEquals(frame.getChromosomeLength(), frame.getCurrentRange().getEnd());
+        Assert.assertEquals(0.0, frame.getOrigin());
+
+
     }
 
     /**
@@ -55,7 +104,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
      *
      * @throws Exception
      */
-    @Test
+    //@Test
     public void scratchTestFEST() throws Exception {
 
         FrameFixture frame = new FrameFixture(IGV.getMainFrame());
@@ -65,7 +114,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
 
         String[] chromos = commandBar.comboBox("chromosomeComboBox").contents();
-        assertEquals(26, chromos.length);
+        Assert.assertEquals(26, chromos.length);
     }
 
 
@@ -75,7 +124,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         Thread.sleep(10000);
         //TestUtils.loadSession(igv, TestUtils.DATA_DIR + "sessions/slx_ceu_father.xml");
 
-        assertEquals(2, tracks.size());
+        Assert.assertEquals(2, tracks.size());
 
         FrameManager.setExomeMode(true, true);
         IGV.getInstance().resetFrames();
