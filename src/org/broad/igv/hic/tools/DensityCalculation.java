@@ -1,10 +1,12 @@
 package org.broad.igv.hic.tools;
 
+import org.apache.commons.math.MathException;
 import org.broad.igv.feature.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -26,6 +28,7 @@ public class DensityCalculation {
     private int numberOfBins;
     private double[] actualDistances;    // genome wide
     private double[] possibleDistances;  // genome wide
+    private double[] rowSums;
     private double[] densityAvg;
     private List<Chromosome>  chromosomes;
 
@@ -55,6 +58,7 @@ public class DensityCalculation {
 
         numberOfBins = (int) (totalLen / gridSize) + 1;
         actualDistances = new double[numberOfBins];
+        rowSums = new double[numberOfBins];
         Arrays.fill(actualDistances, 0);
         chromosomeCounts = new HashMap<Integer,Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
@@ -107,7 +111,7 @@ public class DensityCalculation {
      */
     public void computeDensity() {
         double[] density;
-
+        int trueNumBins = 0;
 
         possibleDistances = new double[numberOfBins];
 
@@ -119,56 +123,101 @@ public class DensityCalculation {
             // of binSize, essentially.  it makes the numbers more reasonable and is what the Python code does.
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);
+                if (i > trueNumBins)
+                    trueNumBins = i;
             }
-            // Lots of zeros at the end of this, because no contacts
 
 
         }
         // Compute the non-smoothed "density",  which is the actual count / possible count for each bin
 
-        density = new double[numberOfBins];
-        densityAvg = new double[numberOfBins];
-        for (int i = 0; i < numberOfBins; i++) {
-            density[i] = actualDistances[i] / possibleDistances[i];
-            densityAvg[i] = density[i];  // <= initial value only,  this is "smoothed" below
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter("output" + gridSize + ".txt");
         }
+        catch (IOException e) {}
+
+        density = new double[trueNumBins];
+
+        densityAvg = new double[trueNumBins];
+        for (int i = 0; i < trueNumBins; i++) {
+            density[i] = actualDistances[i] / possibleDistances[i];
+            if (actualDistances[i] < 400) {
+                double tmp = actualDistances[i];
+                double poss = 0;
+                int window = 0;
+                while (tmp < 400) {
+                    window++;
+                    tmp = 0;
+                    for (int j=i-window; j <= i+window; j++)
+                        tmp += actualDistances[j];
+                }
+                tmp = 0;
+                for (int j=i-window; j <= i+window; j++) {
+                    tmp += actualDistances[j];
+                    poss += possibleDistances[j];
+                }
+                densityAvg[i] = tmp/poss;
+            }
+            else
+                densityAvg[i] = density[i];
+            pw.println(density[i]);
+        }
+        pw.close();
+
+
+
 
 
         // Smooth in 3 stages,  the window sizes are tuned to human.
 
-        // Smooth (1)
-        final int smoothingWidow1 = 15000000;
-        int start = smoothingWidow1 / gridSize;
-        int window = (int) (5 * (2000000f / gridSize));
-        if (window == 0) window = 1;
-        for (int i = start; i < numberOfBins; i++) {
-            int kMin = i - window;
-            int kMax = Math.min(i + window, numberOfBins);
-            double sum = 0;
-            for (int k = kMin; k < kMax; k++) {
-                sum += density[k];
-            }
-            densityAvg[i] = sum / (kMax - kMin);
-        }
+//        // Smooth (1)
+//        final int smoothingWidow1 = 15000000;
+//        int start = smoothingWidow1 / gridSize;
+//        int window = (int) (5 * (2000000f / gridSize));
+//        if (window == 0) window = 1;
+//        for (int i = start; i < numberOfBins; i++) {
+//            int kMin = i - window;
+//            int kMax = Math.min(i + window, numberOfBins);
+//            double sum = 0;
+//            for (int k = kMin; k < kMax; k++) {
+//                sum += density[k];
+//            }
+//            densityAvg[i] = sum / (kMax - kMin);
+//        }
+//
+//        // Smooth (2)
+//        start = 70000000 / gridSize;
+//        window = (int)(20 * (2000000f / gridSize));
+//        for (int i = start; i < numberOfBins; i++) {
+//            int kMin = i - window;
+//            int kMax = Math.min(i + window, numberOfBins);
+//            double sum = 0;
+//            for (int k = kMin; k < kMax; k++) {
+//                sum += density[k];
+//            }
+//            densityAvg[i] = sum / (kMax - kMin);
+//        }
+//
+//        // Smooth (3)
+//        start = 170000000 / gridSize;
+//        for (int i = start; i < numberOfBins; i++) {
+//            densityAvg[i] = densityAvg[start];
+//        }
 
-        // Smooth (2)
-        start = 70000000 / gridSize;
-        window = (int)(20 * (2000000f / gridSize));
-        for (int i = start; i < numberOfBins; i++) {
-            int kMin = i - window;
-            int kMax = Math.min(i + window, numberOfBins);
-            double sum = 0;
-            for (int k = kMin; k < kMax; k++) {
-                sum += density[k];
-            }
-            densityAvg[i] = sum / (kMax - kMin);
-        }
 
-        // Smooth (3)
-        start = 170000000 / gridSize;
-        for (int i = start; i < numberOfBins; i++) {
-            densityAvg[i] = densityAvg[start];
+        PrintWriter pw2 = null;
+        try {
+            pw2 = new PrintWriter("smoothed" + gridSize + ".txt");
         }
+        catch (IOException e) {}
+        for (int i = 0; i < trueNumBins; i++) {
+            try {
+                pw2.println(densityAvg[i]);
+            }
+            catch (Exception e) {}
+        }
+        pw2.close();
 
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
@@ -182,7 +231,7 @@ public class DensityCalculation {
             int len = chr.getLength();
             int nGrids = len / gridSize + 1;
             double expectedCount = 0;
-            for (int n = 0; n < nGrids; n++) {
+            for (int n = 0; n < trueNumBins; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
                     System.err.println("Density was NaN, this shouldn't happen; possibly due to smoothing non-human genome");
