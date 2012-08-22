@@ -292,7 +292,10 @@ public class HttpUtils {
             pw = Utilities.base64Decode(pwString);
         }
 
-        proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort);
+        String proxyTypeString = prefMgr.get(PreferenceManager.PROXY_TYPE, "HTTP");
+        Proxy.Type type = proxyTypeString.equals("SOCKS") ? Proxy.Type.SOCKS : Proxy.Type.HTTP;
+
+        proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort, type);
     }
 
     public boolean downloadFile(String url, File outputFile) throws IOException {
@@ -491,7 +494,7 @@ public class HttpUtils {
 
         HttpURLConnection conn;
         if (useProxy) {
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            Proxy proxy = new Proxy(proxySettings.type, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             conn = (HttpURLConnection) url.openConnection(proxy);
 
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
@@ -720,14 +723,21 @@ public class HttpUtils {
         boolean useProxy;
         String proxyHost;
         int proxyPort = -1;
+        Proxy.Type type;
 
         public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort) {
+            this(useProxy, user, pw, auth, proxyHost, proxyPort, Proxy.Type.HTTP);
+            this.auth = auth;
+        }
+
+        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort, Proxy.Type proxyType) {
             this.auth = auth;
             this.proxyHost = proxyHost;
             this.proxyPort = proxyPort;
             this.pw = pw;
             this.useProxy = useProxy;
             this.user = user;
+            this.type = proxyType;
         }
     }
 
