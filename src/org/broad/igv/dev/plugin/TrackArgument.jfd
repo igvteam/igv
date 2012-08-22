@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_33" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -7,14 +7,6 @@ new FormModel {
 			"axis": 0
 		} ) {
 			name: "this"
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "argName"
-				"text": "Argument: "
-			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "cmdArg"
-				"text": "text"
-			} )
 			add( new FormComponent( "javax.swing.JComboBox" ) {
 				name: "trackComboBox"
 			} )

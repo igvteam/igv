@@ -28,10 +28,9 @@ import java.awt.*;
 public class TrackArgument extends ArgumentPanel {
     public TrackArgument(Argument argument) {
         initComponents();
+        super.initCommon(argument);
 
         if (argument != null) {
-            argName.setText(argument.getName() + ":");
-            cmdArg.setText(argument.getCmdArg());
             trackComboBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
             trackComboBox.setRenderer(new TrackComboBoxRenderer());
         }
@@ -40,20 +39,10 @@ public class TrackArgument extends ArgumentPanel {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        argName = new JLabel();
-        cmdArg = new JLabel();
         trackComboBox = new JComboBox();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-        //---- argName ----
-        argName.setText("Argument: ");
-        add(argName);
-
-        //---- cmdArg ----
-        cmdArg.setText("text");
-        add(cmdArg);
         add(trackComboBox);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -65,8 +54,6 @@ public class TrackArgument extends ArgumentPanel {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JLabel argName;
-    private JLabel cmdArg;
     private JComboBox trackComboBox;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 

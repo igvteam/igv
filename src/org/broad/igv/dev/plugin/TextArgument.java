@@ -29,10 +29,9 @@ public class TextArgument extends ArgumentPanel {
 
     public TextArgument(Argument argument) {
         initComponents();
+        super.initCommon(argument);
 
         if (argument != null) {
-            argName.setText(argument.getName() + ":");
-            cmdArg.setText(argument.getCmdArg());
             argValue.setText(argument.getDefaultValue());
         }
     }
@@ -45,20 +44,10 @@ public class TextArgument extends ArgumentPanel {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        argName = new JLabel();
-        cmdArg = new JLabel();
         argValue = new JTextField();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-        //---- argName ----
-        argName.setText("Argument: ");
-        add(argName);
-
-        //---- cmdArg ----
-        cmdArg.setText("text");
-        add(cmdArg);
 
         //---- argValue ----
         argValue.setMaximumSize(new Dimension(5000, 28));
@@ -68,8 +57,6 @@ public class TextArgument extends ArgumentPanel {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JLabel argName;
-    private JLabel cmdArg;
     private JTextField argValue;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

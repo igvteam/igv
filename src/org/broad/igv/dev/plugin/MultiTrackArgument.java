@@ -31,14 +31,12 @@ public class MultiTrackArgument extends ArgumentPanel {
 
     public MultiTrackArgument(Argument argument) {
         initComponents();
+        super.initCommon(argument);
 
         if (argument != null) {
-            argName.setText(argument.getName() + ":");
-            cmdArg.setText(argument.getCmdArg());
             trackCheckBoxList.setListData(
                     TrackWrapper.wrapTracks(IGV.getInstance().getFeatureTracks()).toArray()
             );
-
         }
     }
 
@@ -56,21 +54,11 @@ public class MultiTrackArgument extends ArgumentPanel {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        argName = new JLabel();
-        cmdArg = new JLabel();
         scrollPane1 = new JScrollPane();
         trackCheckBoxList = new CheckBoxList();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-        //---- argName ----
-        argName.setText("Argument: ");
-        add(argName);
-
-        //---- cmdArg ----
-        cmdArg.setText("text");
-        add(cmdArg);
 
         //======== scrollPane1 ========
         {
@@ -82,8 +70,6 @@ public class MultiTrackArgument extends ArgumentPanel {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JLabel argName;
-    private JLabel cmdArg;
     private JScrollPane scrollPane1;
     private CheckBoxList trackCheckBoxList;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

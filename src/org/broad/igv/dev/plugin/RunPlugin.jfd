@@ -16,6 +16,7 @@ new FormModel {
 					"axis": 1
 				} ) {
 					name: "contentPanel"
+					"maximumSize": new java.awt.Dimension( 2000000, 16 )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "cmdName"
 						"text": "text"

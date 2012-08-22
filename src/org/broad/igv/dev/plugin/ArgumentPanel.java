@@ -9,9 +9,14 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
+/*
+ * Created by JFormDesigner on Mon Aug 06 15:31:39 EDT 2012
+ */
+
 package org.broad.igv.dev.plugin;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Base class for an argument row.
@@ -21,7 +26,7 @@ import javax.swing.*;
 public class ArgumentPanel extends JPanel {
 
     public ArgumentPanel() {
-        super();
+        initComponents();
     }
 
     /**
@@ -59,4 +64,59 @@ public class ArgumentPanel extends JPanel {
         return panel;
 
     }
+
+    /**
+     * I really have no idea why this is necessary,
+     * but it seems to be to keep the label from growing too
+     * big.
+     */
+    void fixCmdArgSize() {
+        int width = (int) Math.min(cmdArg.getMaximumSize().getWidth(), cmdArg.getWidth());
+        int height = (int) Math.min(cmdArg.getMaximumSize().getHeight(), cmdArg.getHeight());
+        Dimension newSize = new Dimension(width, height);
+        cmdArg.setPreferredSize(newSize);
+        cmdArg.setSize(newSize);
+    }
+
+    protected void setCmdArgText(String text) {
+        cmdArg.setText(text);
+        cmdArg.setToolTipText(text);
+    }
+
+    protected final void initCommon(Argument argument) {
+        if (argument != null) {
+            argName.setText(argument.getName() + ":");
+            setCmdArgText(argument.getCmdArg());
+        }
+    }
+
+    private void initComponents() {
+        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner non-commercial license
+        argName = new JLabel();
+        cmdArg = new JLabel();
+
+        //======== this ========
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+        //---- argName ----
+        argName.setText("Argument: ");
+        argName.setRequestFocusEnabled(false);
+        argName.setMinimumSize(new Dimension(80, 16));
+        add(argName);
+
+        //---- cmdArg ----
+        cmdArg.setText("text");
+        cmdArg.setMaximumSize(new Dimension(30, 16));
+        cmdArg.setRequestFocusEnabled(false);
+        add(cmdArg);
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner non-commercial license
+    private JLabel argName;
+    private JLabel cmdArg;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
+
 }
