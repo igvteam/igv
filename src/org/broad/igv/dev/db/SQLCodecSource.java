@@ -30,7 +30,10 @@ import org.w3c.dom.NodeList;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 
 
@@ -168,39 +171,10 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     @Override
     protected Feature processResult(ResultSet rs) throws SQLException {
-        String[] tokens = lineToArray(rs);
+        String[] tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
         //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
         return codec.decode(line);
-    }
-
-    /**
-     * Convert a the current line to an array of strings
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
-     */
-    protected String[] lineToArray(ResultSet rs) throws SQLException {
-        int colCount = Math.min(rs.getMetaData().getColumnCount(), endColIndex) - startColIndex + 1;
-        String[] tokens = new String[colCount];
-        String s;
-        int sqlCol;
-        for (int cc = 0; cc < colCount; cc++) {
-
-            //SQL indexes from 1
-            //Have to parse blobs specially, otherwise we get the pointer as a string
-            sqlCol = cc + startColIndex;
-            String clazz = rs.getMetaData().getColumnClassName(sqlCol).toLowerCase();
-            if (clazz.contains("blob") || clazz.equalsIgnoreCase("[b")) {
-                Blob b = rs.getBlob(sqlCol);
-                s = new String(b.getBytes(1l, (int) b.length()));
-            } else {
-                s = rs.getString(sqlCol);
-            }
-            tokens[cc] = s;
-        }
-        return tokens;
     }
 
     /**

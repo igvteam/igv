@@ -551,11 +551,11 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         byte[] byteData;
 
         if (gzip) {
-            ByteArrayOutputStreamChild gmlByteStream = new ByteArrayOutputStreamChild(string.length() / 20);
+            ByteArrayOutputStream gmlByteStream = new ByteArrayOutputStream(string.length() / 20);
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(gmlByteStream);
             gzipOutputStream.write(string.getBytes());
             gzipOutputStream.finish();
-            byteData = gmlByteStream.getBuf();
+            byteData = gmlByteStream.toByteArray();
             gmlByteStream.close();
         } else {
             byteData = string.getBytes();
@@ -816,22 +816,4 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
     }
 
-    /**
-     * Child class created so we can access the raw byte buffer,
-     * and avoid making another copy.
-     */
-    private static class ByteArrayOutputStreamChild extends ByteArrayOutputStream {
-
-        public ByteArrayOutputStreamChild() {
-            super();
-        }
-
-        public ByteArrayOutputStreamChild(int size) {
-            super(size);
-        }
-
-        public byte[] getBuf() {
-            return this.buf;
-        }
-    }
 }
