@@ -79,9 +79,8 @@ public class RunPlugin extends JDialog {
         for (ArgumentPanel panel : argumentComponents.values()) {
             minSize.setSize(minSize.getWidth(), minSize.getHeight() + panel.getHeight());
             this.setMinimumSize(minSize);
+            panel.fixCmdArgSize();
         }
-
-        this.validate();
 
         outputName.setText(cmdName + " result");
     }
@@ -142,6 +141,7 @@ public class RunPlugin extends JDialog {
 
             //======== contentPanel ========
             {
+                contentPanel.setMaximumSize(new Dimension(2000000, 16));
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- cmdName ----
