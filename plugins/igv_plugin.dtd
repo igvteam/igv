@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<!--
+
+plugin.dtd
+
+An XML DTD specifying a plugin for IGV which accepts
+some number of inputs from the user (which may be data loaded into IGV at runtime),
+and feeds those inputs to a command line program to create a new track.
+
+2012-Aug-21
+
+Version Alpha
+-->
+
+<!--
+igv_plugin, the root element under which all elements are contained
+api_version
+	The API version of IGV this plugin targets. Current
+name
+	A human readable name of this plugin (presented to users)
+id
+	A unique ID for this plugin
+plugin_version
+  	Your version string. The version of the plugin itself-->
+<!ELEMENT igv_plugin (tool+)>
+<!ATTLIST igv_plugin api_version (alpha) #REQUIRED
+    name CDATA #REQUIRED
+    id CDATA #REQUIRED
+    plugin_version CDATA #IMPLIED>
+
+<!-- tool element
+Each plugin can have multiple tools. These are parsed separately
+by IGV, just combined into 1 file for convenience of distribution.
+Each tool represents a command line executable.
+Attributes
+name
+    The name of the tool as it appears to the user
+path
+    Path to the executable. This can be an absolute path, if it
+    is a relative path the users PATH environment variable
+    is checked for the relevant tool. The developer is reminded
+    that the PATH environment variable can vary depending on how
+    IGV is launched.
+-->
+<!ELEMENT tool (default?, command+)>
+<!ATTLIST tool name CDATA #REQUIRED
+    path CDATA #REQUIRED>
+
+<!-- default element
+Default properties for each command.
+If no arguments are provided, the defaults are used. If ANY
+arguments are provided, they override all defaults.
+If a parser is provided, the default is not used.-->
+<!ELEMENT default (arg*, parser?)>
+
+<!-- command element
+Different commands available to the provided executable.
+Attributes
+ name
+    Human readable name
+ cmd
+    The exact text passed to the command line for this command-->
+<!ELEMENT command (arg*, parser?)>
+<!ATTLIST command name CDATA #REQUIRED
+    cmd CDATA "">
+
+
+<!-- parser element
+Consists of instructions for telling IGV how to parse the output
+returned from the tool.
+Attributes
+strict
+    If true (default), throw an error if we hit a line
+    that cannot be parsed. If false, just skip that line.
+format
+    The format returned. Must be a file extension readable by
+    IGV.
+decoding_codec
+    Class used for decoding the output.
+    Takes precedence over format if both provided
+libs
+    Location (relative to the directory in which the xml file is located)
+    to look for the decoding_codec. Multiple locations must be
+    separated by ":"
+-->
+<!ELEMENT parser EMPTY>
+<!ATTLIST parser
+    strict (true|false) "true"
+    format CDATA "bed"
+    libs CDATA #IMPLIED
+    decoding_codec CDATA #IMPLIED>
+
+
+<!-- arg element
+Represents arguments to the command line interface which require user input
+Attributes
+name
+    Name shown to user
+
+cmd_arg
+    If supplied, will be placed before the
+    input argument on the command line. In the case of tracks,
+    which are saved to a temporary file, it will be placed before
+    the name of the file
+
+type
+    What type of input the user is expected to provide
+    Data from feature tracks is exported to a temporary file, in
+    BED format. Each line may have anywhere from 3 to 12 columns,
+    not necessarily consistent.
+id
+    Unique identifier for this argument. Can be used by later
+    arguments to refer to this value
+output
+    optional, default true
+    If true this argument is written to the command line
+    If false it isn't. This is so we can feed inputs to a different command
+encoding_codec
+    Fully qualified class name to use for encoding features to strings.
+    Only applies to data arguments. Must implement FeatureEncoder interface.
+
+TODO Things I'd like to add but which don't exist yet
+format
+    bed, bam, etc. What format to write out the data from tracks,
+    if argument is of the appropriate type
+    -->
+<!ELEMENT arg EMPTY>
+<!ATTLIST arg
+    name CDATA #REQUIRED
+    cmd_arg CDATA ""
+    type (text|longtext|feature_track|multi_feature_track) #REQUIRED
+    default CDATA #IMPLIED
+    id ID #IMPLIED
+    output (true|false|TRUE|FALSE) "true"
+    encoding_codec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec">
+

@@ -8,72 +8,16 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-
-<!--
-plugin_version
-	Your version string. The version of the plugin itself
-api_version
-	The API version of IGV this plugin targets.
-name
-	A human readable name of this plugin (presented to users)
-id
-	A unique ID for this plugin-->
+<!DOCTYPE igv_plugin SYSTEM "plugins/igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
             id="org.broadinstitute.igv.plugin.bedtools">
     <tool name="BEDTools" path="/usr/local/bin/bedtools">
-        <!-- If no arguments are specified for a command, these will be the default values.
-      If you supply ANY argument tags at all, none of the defaults will be used -->
         <default>
             <arg name="Arguments" cmd_arg="" type="text" default=""/>
-            <!--
-               name:
-                   Name shown to user
-
-               cmd_arg:
-                   If supplied, will be placed before the
-                   input argument on the command line. In the case of tracks,
-                   which are saved to a temporary file, it will be placed before
-                   the name of the file
-
-               type:
-                   What type of input the user is expected to provide.
-                   Allowed values:
-                       "text"
-                           text is input passed to the command line. Input
-                           is split by spaces, so "-bed -split" is passed to the command
-                           line as "-bed","-split"
-                        "longtext"
-                            text input passed to command line, with larger input area.
-                            Text is NOT split by spaces, so "{if ($4 ~ /EGFR/) print;}"
-                            stays one command
-                       "feature_track"
-                           feature_track is a single feature track
-                       "multi_feature_track"
-                           allows a user to select an unspecified number of feature tracks.
-
-                   Data from feature tracks is exported to a temporary file, in
-                   BED format. Each line may have anywhere from 3 to 12 columns,
-                   not necessarily consistent.
-
-                   -->
             <arg name="Track A" cmd_arg="-a" type="feature_track" format="bed"/>
             <arg name="Track B" cmd_arg="-b" type="feature_track"
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
-            <!-- Instructions for telling IGV how to parse the output
-               format
-                   The format returned. Must be a file extension readable by
-                   IGV. Default is "bed"
-               decoding_codec
-                   Class used for decoding the output. TODO ADD SPECIFICATION
-                   Takes precedence over format if both provided
-               strict
-                   If true (default), throw an error if we hit a line
-                   that cannot be parsed. If false, just skip that line.
-               libs
-                   Location (relative to the directory in which the xml file is located)
-                   to look for the decoding_codec. Multiple locations must be
-                   separated by ":"
-               -->
+
             <parser format="bed" decoding_codec="org.broad.igv.dev.plugin.BEDToolsCodec"
                     strict="true" libs="BEDToolsPluginCodec.jar"/>
         </default>
