@@ -8,8 +8,8 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-
-<igv_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
+<!DOCTYPE igv_plugin SYSTEM "plugins/igv_plugin.dtd">
+<igv_plugin api_version="alpha" plugin_version="0.1" name="awk"
             id="org.broadinstitute.igv.plugin.awk">
     <tool name="awk" path="/usr/bin/awk">
         <default>
@@ -19,17 +19,10 @@
         </default>
 
         <command name="Arbitrary Input" cmd="">
-            <!-- Input field "long text" provides a larger area for the user to type.
-             Also, the input is NOT split by spaces-->
             <arg name="Arguments" cmd_arg="" type="longtext" default="{print}"/>
             <arg name="Track" cmd_arg="" type="feature_track" format="bed"/>
         </command>
         <command name="Filter by size" cmd="">
-            <!--
-                output: optional, default true
-                    If true this argument is written to the command line
-                    If false it isn't. This is so we can feed inputs to a different command
-            -->
             <arg name="Minimum" type="text" id="min" output="false"/>
             <arg name="Maximum" type="text" id="max" output="false"/>
             <!--
