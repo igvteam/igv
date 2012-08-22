@@ -17,7 +17,6 @@ import org.broad.igv.batch.CommandListener;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
-import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
@@ -3751,7 +3750,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             if (reloadSAM) {
                 if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
-                    CachingQueryReader.visibilityWindowChanged();
                     igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
                 }
                 igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);

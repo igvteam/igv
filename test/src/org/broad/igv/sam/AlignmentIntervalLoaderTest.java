@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 /**
  * @author jrobinso
  */
-public class CachingQueryReaderTest extends AbstractHeadlessTest {
+public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
 
     String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
     String sequence = "chr1";
@@ -42,25 +42,6 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
     int end = 44789983;
     private boolean contained = false;
 
-    public CachingQueryReaderTest() {
-    }
-
-    /**
-     * Test of getHeader method, of class CachingQueryReader. The test compares
-     * the results of CachingQueryReader with a non-caching reader which
-     * is assumed to be correct.
-     */
-    @Test
-    public void testGetHeader() throws IOException {
-
-        ResourceLocator loc = new ResourceLocator(testFile);
-        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        reader.close();
-
-        reader = AlignmentReaderFactory.getReader(loc);
-        CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        cachingReader.close();
-    }
 
     @Test
     public void testQuery() throws IOException {
@@ -68,12 +49,11 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Test of query method, of class CachingQueryReader.  The test compares
-     * the results of CachingQueryReader non-caching reader which
-     * is assumed to be correct.
+     * Test of query method, of class AlignmentIntervalLoader.  The test compares
+     * the results of AlignmentIntervalLoader  with an AlignmentReader.
      * <p/>
      * Note that SAMFileReader (which is the non-caching reader) is 1-based
-     * and inclusive-end. CachingQueryReader is 0-based and exclusive end.
+     * and inclusive-end. AlignmentIntervalLoader is 0-based and exclusive end.
      */
     public void tstQuery(String testFile, String sequence, int start, int end, boolean contained, int maxDepth) throws IOException {
 
@@ -112,17 +92,21 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
         reader.close();
 
         reader = AlignmentReaderFactory.getReader(loc);
-        CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
-        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<DownsampledInterval>(), downsampleOptions, null, null);
+        boolean showSpliceJunctions = false;
+        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
+        Map<String, PEStats> peStats = new HashMap<String, PEStats>();
+        AlignmentTrack.BisulfiteContext bisulfiteContext = null;
+
+        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
+                renderOptions, peStats, bisulfiteContext);
         List<Alignment> result = new ArrayList();
 
-        while (cachingIter.hasNext()) {
-            result.add(cachingIter.next());
+        Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
+        while (alignmentIterator.hasNext()) {
+            result.add(alignmentIterator.next());
         }
-        cachingReader.close();
 
 
         assertTrue(expectedResult.size() > 0);
@@ -170,7 +154,7 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
         //Edge location
         String sequence = "chr12";
@@ -178,7 +162,7 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
         int end = start + 1;
         int expSize = 1066;
 
-        tstSize(cachingReader, sequence, start, end, (int) (expSize * 1.6), expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, (int) (expSize * 1.6), expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Edge location, downsampled
@@ -188,9 +172,9 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
         expSize = 165;
 
         reader = AlignmentReaderFactory.getReader(loc);
-        cachingReader = new CachingQueryReader(reader);
+        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
-        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
@@ -201,9 +185,9 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
         expSize = 3288;
 
         reader = AlignmentReaderFactory.getReader(loc);
-        cachingReader = new CachingQueryReader(reader);
+        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
-        tstSize(cachingReader, sequence, start, end, expSize + 20, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
     }
 
@@ -215,7 +199,7 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
         //Edge location
         String sequence = "chr1";
@@ -223,13 +207,13 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
         int end = start + 1;
         int expSize = 40;
 
-        tstSize(cachingReader, sequence, start, end, expSize * 7, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, expSize * 7, expSize);
 
         loc = new ResourceLocator(path);
         reader = AlignmentReaderFactory.getReader(loc);
-        cachingReader = new CachingQueryReader(reader);
+        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
-        tstSize(cachingReader, sequence, start, end, expSize * 100, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, expSize * 100, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center, deep coverage region
@@ -241,109 +225,46 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
 
         loc = new ResourceLocator(path);
         reader = AlignmentReaderFactory.getReader(loc);
-        cachingReader = new CachingQueryReader(reader);
+        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
 
-        tstSize(cachingReader, sequence, start, end, coverageLim, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, coverageLim, expSize);
 
         coverageLim = 10000;
         expSize = 1408;
 
         loc = new ResourceLocator(path);
         reader = AlignmentReaderFactory.getReader(loc);
-        cachingReader = new CachingQueryReader(reader);
+        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
 
-        tstSize(cachingReader, sequence, start, end, coverageLim, expSize);
+        tstSize(alignmentIntervalLoader, sequence, start, end, coverageLim, expSize);
 
         tstQuery(path, sequence, start, end, false, coverageLim);
 
     }
 
-    public List<Alignment> tstSize(CachingQueryReader cachingReader, String sequence, int start, int end, int maxDepth, int expSize) {
+    public List<Alignment> tstSize(AlignmentIntervalLoader alignmentIntervalLoader, String sequence, int start, int end, int maxDepth, int expSize) {
 
+        boolean showSpliceJunctions = false;
+        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<DownsampledInterval>(), downsampleOptions, null, null);
+        Map<String, PEStats> peStats = new HashMap<String, PEStats>();
+        AlignmentTrack.BisulfiteContext bisulfiteContext = null;
+
+        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
+                renderOptions, peStats, bisulfiteContext);
         List<Alignment> result = new ArrayList();
 
-        while (cachingIter.hasNext()) {
-            result.add(cachingIter.next());
+        Iterator<Alignment> iter = interval.getAlignmentIterator();
+        while (iter.hasNext()) {
+            result.add(iter.next());
         }
 
         assertEquals(expSize, result.size());
         return result;
     }
 
-    /**
-     * Test that sampling keeps pairs together. Note that this test requires a lot of memory (2Gb on this devs machine)
-     * Pairs are only definitely kept together if they end up on the same tile, so we need 1 big tile.
-     *
-     * @throws Exception
-     */
-    @Ignore
-    @Test
-    public void testKeepPairs() throws Exception {
-        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SOLID.bam";
-
-
-        String sequence = "1";
-        int start = 1;
-        int end = 2000;
-        int maxDepth = 2;
-        String max_vis = PreferenceManager.getInstance().get(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, "" + (end - start));
-
-        try {
-            ResourceLocator loc = new ResourceLocator(path);
-            AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-            CachingQueryReader cachingReader = new CachingQueryReader(reader);
-            AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-
-            CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                    new ArrayList(), new ArrayList<DownsampledInterval>(), downsampleOptions, null, null);
-            int count = 0;
-            Map<String, Integer> pairedReads = new HashMap<String, Integer>();
-            while (iter.hasNext()) {
-                Alignment al = iter.next();
-                assertNotNull(al);
-                count++;
-
-                if (al.isPaired() && al.getMate().isMapped()) {
-                    //Mate may not be part of the query.
-                    //Make sure it's within bounds
-                    int mateStart = al.getMate().getStart();
-                    //All we require is some overlap
-                    boolean overlap = mateStart >= start && mateStart < end;
-                    if (overlap) {
-                        Integer rdCnt = pairedReads.get(al.getReadName());
-                        rdCnt = rdCnt != null ? rdCnt + 1 : 1;
-                        pairedReads.put(al.getReadName(), rdCnt);
-                    }
-                }
-            }
-
-            assertTrue(count > 0);
-
-            //Note: CachingQueryReader will not line alignments up properly if they land in different tiles
-            int countmissing = 0;
-            for (String readName : pairedReads.keySet()) {
-                int val = pairedReads.get(readName);
-                countmissing += 2 == val ? 0 : 1;
-                if (val != 2) {
-                    System.out.println("Read " + readName + " has val " + val);
-                }
-            }
-
-            //System.out.println("Number of paired reads: " + pairedReads.size());
-            assertTrue("No pairs in test data set", pairedReads.size() > 0);
-            assertEquals("Missing " + countmissing + " out of " + pairedReads.size() + " pairs", 0, countmissing);
-        } catch (Exception e) {
-            PreferenceManager.getInstance().put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, max_vis);
-            throw e;
-        }
-
-    }
 
     /**
      * The main purpose of this test is to see if we get a
@@ -357,20 +278,24 @@ public class CachingQueryReaderTest extends AbstractHeadlessTest {
 
         ResourceLocator loc = new ResourceLocator(path);
         AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        CachingQueryReader cachingReader = new CachingQueryReader(reader);
+        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
         String sequence = "MT";
         int start = 1000;
         int end = 3000;
-        int maxDepth = 500;
 
-        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-        CloseableIterator<Alignment> iter = cachingReader.query(sequence, start, end, new ArrayList(),
-                new ArrayList(), new ArrayList<DownsampledInterval>(), downsampleOptions, null, null);
+
+        boolean showSpliceJunctions = false;
+        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
+        Map<String, PEStats> peStats = new HashMap<String, PEStats>();
+        AlignmentTrack.BisulfiteContext bisulfiteContext = null;
+
+        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
+                renderOptions, peStats, bisulfiteContext);
+
+        Iterator<Alignment> iter = interval.getAlignmentIterator();
         int count = 0;
         while (iter.hasNext()) {
-            Alignment al = iter.next();
-            assertNotNull(al);
             count++;
         }
 

@@ -34,24 +34,17 @@ import java.util.*;
  *
  * @author jrobinso
  */
-public class NoncachingQueryReader {
+public class AlignmentIntervalLoader {
 
-    private static Logger log = Logger.getLogger(CachingQueryReader.class);
+    private static Logger log = Logger.getLogger(AlignmentIntervalLoader.class);
 
-    //private static final int LOW_MEMORY_THRESHOLD = 150000000;
-    private static final int KB = 1000;
-    private static final int MITOCHONDRIA_TILE_SIZE = 1000;
-    private static int MAX_TILE_COUNT = 10;
-    private static Set<WeakReference<NoncachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
+    private static Set<WeakReference<AlignmentIntervalLoader>> activeLoaders = Collections.synchronizedSet(new HashSet());
 
     /**
      * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
      */
     private boolean corruptIndex = false;
 
-    private float visibilityWindow = 16;    // Visibility window,  in KB
-    private String cachedChr = "";
-    private int tileSize;
     private AlignmentReader reader;
     private boolean cancel = false;
     private boolean pairedEnd = false;
@@ -62,25 +55,20 @@ public class NoncachingQueryReader {
     //private PairedEndStats peStats;
 
     private static void cancelReaders() {
-        for (WeakReference<NoncachingQueryReader> readerRef : activeReaders) {
-            NoncachingQueryReader reader = readerRef.get();
+        for (WeakReference<AlignmentIntervalLoader> readerRef : activeLoaders) {
+            AlignmentIntervalLoader reader = readerRef.get();
             if (reader != null) {
                 reader.cancel = true;
             }
         }
         log.debug("Readers canceled");
-        activeReaders.clear();
+        activeLoaders.clear();
     }
 
 
-    public NoncachingQueryReader(AlignmentReader reader) {
+    public AlignmentIntervalLoader(AlignmentReader reader) {
         this.reader = reader;
-        activeReaders.add(new WeakReference<NoncachingQueryReader>(this));
-    }
-
-
-    public AlignmentReader getWrappedReader() {
-        return reader;
+        activeLoaders.add(new WeakReference<AlignmentIntervalLoader>(this));
     }
 
     public void close() throws IOException {
@@ -99,26 +87,6 @@ public class NoncachingQueryReader {
         return reader.hasIndex();
     }
 
-    /*
-               List<AlignmentCounts> counts = new ArrayList();
-                List<DownsampledInterval> downsampledIntervals = new ArrayList<DownsampledInterval>();
-                List<SpliceJunctionFeature> spliceJunctions = null;
-                if (showSpliceJunctions) {
-                    spliceJunctions = new ArrayList<SpliceJunctionFeature>();
-                }
-
-                Iterator<Alignment> iter = reader.query(sequence, intervalStart, intervalEnd, counts,
-                        spliceJunctions, downsampledIntervals, downsampleOptions, peStats, bisulfiteContext);
-
-                 final AlignmentPacker alignmentPacker = new AlignmentPacker();
-
-                LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                        intervalEnd, renderOptions);
-
-                AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                        alignmentRows, counts, spliceJunctions, downsampledIntervals, renderOptions);
-
-     */
 
     public AlignmentInterval loadInterval(String chr, int start, int end, boolean showSpliceJunctions,
                                           AlignmentTrack.RenderOptions renderOptions,
@@ -128,7 +96,7 @@ public class NoncachingQueryReader {
 
         AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
 
-        AlignmentTile t = loadTiles(chr, start, end, downsampleOptions, peStats, bisulfiteContext);
+        AlignmentTile t = loadTile(chr, start, end, showSpliceJunctions, downsampleOptions, peStats, bisulfiteContext);
 
         List<Alignment> alignments =  t.getAlignments();
 
@@ -154,46 +122,13 @@ public class NoncachingQueryReader {
 
     }
 
-    private Iterator<Alignment> query(String chr, int start, int end,
-                                     List<AlignmentCounts> counts,
-                                     List<SpliceJunctionFeature> spliceJunctionFeatures,
-                                     List<DownsampledInterval> downsampledIntervals,
-                                     AlignmentDataManager.DownsampleOptions downsampleOptions,
-                                     Map<String, PEStats> peStats,
-                                     AlignmentTrack.BisulfiteContext bisulfiteContext) {
+    private AlignmentTile loadTile(String chr, int start, int end,
+                                   boolean showSpliceJunctions,
+                                   AlignmentDataManager.DownsampleOptions downsampleOptions,
+                                   Map<String, PEStats> peStats,
+                                   AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-
-        AlignmentTile t = loadTiles(chr, start, end, downsampleOptions, peStats, bisulfiteContext);
-
-        if (t == null) {
-            return (new ArrayList<Alignment>()).iterator();
-        }
-
-        List<Alignment> alignments =  t.getAlignments();
-
-        if (spliceJunctionFeatures != null) {
-            List<SpliceJunctionFeature> tmp = t.getSpliceJunctionFeatures();
-            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
-        }
-
-
-        counts.add(t.getCounts());
-        downsampledIntervals.addAll(t.getDownsampledIntervals());
-
-
-        // Since we added in 2 passes, and downsampled,  we need to sort
-        Collections.sort(alignments, new AlignmentSorter());
-
-        return alignments.iterator();
-    }
-
-
-    private AlignmentTile loadTiles(String chr, int start, int end,
-                                    AlignmentDataManager.DownsampleOptions downsampleOptions,
-                                    Map<String, PEStats> peStats,
-                                    AlignmentTrack.BisulfiteContext bisulfiteContext) {
-
-        AlignmentTile t = new AlignmentTile(start, end, downsampleOptions, bisulfiteContext);
+        AlignmentTile t = new AlignmentTile(start, end, showSpliceJunctions, downsampleOptions, bisulfiteContext);
 
 
         //assert (tiles.size() > 0);
@@ -210,13 +145,13 @@ public class NoncachingQueryReader {
 
         //log.debug("Loading : " + start + " - " + end);
         int alignmentCount = 0;
-        WeakReference<NoncachingQueryReader> ref = new WeakReference(this);
+        WeakReference<AlignmentIntervalLoader> ref = new WeakReference(this);
         try {
             ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
             ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
 
 
-            activeReaders.add(ref);
+            activeLoaders.add(ref);
             iter = reader.query(chr, start, end, false);
 
             while (iter != null && iter.hasNext()) {
@@ -331,7 +266,7 @@ public class NoncachingQueryReader {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
-            activeReaders.remove(ref);
+            activeLoaders.remove(ref);
             if (iter != null) {
                 iter.close();
             }
@@ -392,6 +327,7 @@ public class NoncachingQueryReader {
 
 
         AlignmentTile(int start, int end,
+                      boolean showSpliceJunctions,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.start = start;
@@ -415,8 +351,7 @@ public class NoncachingQueryReader {
             this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
             this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
-            // TODO -- only if splice junctions are on
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
+            if (showSpliceJunctions) {
                 spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
                 spliceJunctionHelper = new SpliceJunctionHelper();
             }

@@ -13,7 +13,6 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -43,7 +42,7 @@ public class AlignmentDataManager {
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
-    private NoncachingQueryReader reader;
+    private AlignmentIntervalLoader reader;
     private CoverageTrack coverageTrack;
 
     private static final int MAX_ROWS = 1000000;
@@ -65,7 +64,7 @@ public class AlignmentDataManager {
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        reader = new NoncachingQueryReader(AlignmentReaderFactory.getReader(locator));
+        reader = new AlignmentIntervalLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         initChrMap(genome);
@@ -104,7 +103,7 @@ public class AlignmentDataManager {
         return experimentType;
     }
 
-    public NoncachingQueryReader getReader() {
+    public AlignmentIntervalLoader getReader() {
         return reader;
     }
 
