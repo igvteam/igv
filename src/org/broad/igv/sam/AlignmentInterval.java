@@ -67,6 +67,10 @@ public class AlignmentInterval extends Locus implements Interval {
         this.renderOptions = renderOptions;
     }
 
+    static AlignmentInterval emptyAlignmentInterval(String chr, int start, int end) {
+        return new AlignmentInterval(chr, start, end, null, null, null, null, null);
+    }
+
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
 
         int leftBounds = 0;

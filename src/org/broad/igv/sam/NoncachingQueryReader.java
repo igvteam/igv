@@ -24,7 +24,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.LRUCache;
-import org.broad.tribble.Feature;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -126,15 +125,24 @@ public class NoncachingQueryReader {
                                           Map<String, PEStats> peStats,
                                           AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
+
         AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
+
+        AlignmentTile t = loadTiles(chr, start, end, downsampleOptions, peStats, bisulfiteContext);
+
+        List<Alignment> alignments =  t.getAlignments();
+
+        List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
+
         List<AlignmentCounts> counts = new ArrayList();
-        List<DownsampledInterval> downsampledIntervals = new ArrayList<DownsampledInterval>();
-        List<SpliceJunctionFeature> spliceJunctions = null;
-        if (showSpliceJunctions) {
-            spliceJunctions = new ArrayList<SpliceJunctionFeature>();
-        }
-        Iterator<Alignment> iter = query(chr, start, end, counts,
-                spliceJunctions, downsampledIntervals, downsampleOptions, peStats, bisulfiteContext);
+        counts.add(t.getCounts());
+
+        List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
+
+        // Since we (potentially) downsampled,  we need to sort
+        Collections.sort(alignments, new AlignmentSorter());
+
+        Iterator<Alignment> iter =  alignments.iterator();
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
@@ -161,26 +169,16 @@ public class NoncachingQueryReader {
             return (new ArrayList<Alignment>()).iterator();
         }
 
-        int sz = t.getContainedRecords().size() + t.getOverlappingRecords().size();
-        ArrayList<Alignment> alignments = new ArrayList<Alignment>(sz);
-
-
-        alignments.addAll(t.getOverlappingRecords());
+        List<Alignment> alignments =  t.getAlignments();
 
         if (spliceJunctionFeatures != null) {
-            List<SpliceJunctionFeature> tmp = t.getOverlappingSpliceJunctionFeatures();
+            List<SpliceJunctionFeature> tmp = t.getSpliceJunctionFeatures();
             if (tmp != null) spliceJunctionFeatures.addAll(tmp);
         }
 
 
-        alignments.addAll(t.getContainedRecords());
         counts.add(t.getCounts());
         downsampledIntervals.addAll(t.getDownsampledIntervals());
-
-        if (spliceJunctionFeatures != null) {
-            List<SpliceJunctionFeature> tmp = t.getContainedSpliceJunctionFeatures();
-            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
-        }
 
 
         // Since we added in 2 passes, and downsampled,  we need to sort
@@ -190,26 +188,17 @@ public class NoncachingQueryReader {
     }
 
 
-    /**
-     * Load alignments for the list of tiles
-     *
-     * @param chr     Only tiles on this chromosome will be loaded
-     * @param start
-     * @param end
-     * @param peStats
-     * @return true if successful,  false if canceled.
-     */
     private AlignmentTile loadTiles(String chr, int start, int end,
                                     AlignmentDataManager.DownsampleOptions downsampleOptions,
                                     Map<String, PEStats> peStats,
                                     AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-        AlignmentTile t = new AlignmentTile(0, start, end, downsampleOptions, bisulfiteContext);
+        AlignmentTile t = new AlignmentTile(start, end, downsampleOptions, bisulfiteContext);
 
 
         //assert (tiles.size() > 0);
         if (corruptIndex) {
-            return null;
+            return t;
         }
 
         boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
@@ -388,13 +377,10 @@ public class NoncachingQueryReader {
         private boolean loaded = false;
         private int end;
         private int start;
-        private int tileNumber;
         private AlignmentCounts counts;
-        private List<Alignment> containedRecords;
-        private List<Alignment> overlappingRecords;
+        private List<Alignment> alignments;
         private List<DownsampledInterval> downsampledIntervals;
-        private List<SpliceJunctionFeature> containedSpliceJunctionFeatures;
-        private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
+        private List<SpliceJunctionFeature> spliceJunctionFeatures;
         private SpliceJunctionHelper spliceJunctionHelper;
 
         private boolean downsample;
@@ -405,14 +391,12 @@ public class NoncachingQueryReader {
         private static final Random RAND = new Random(System.currentTimeMillis());
 
 
-        AlignmentTile(int tileNumber, int start, int end,
+        AlignmentTile(int start, int end,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
-            this.tileNumber = tileNumber;
             this.start = start;
             this.end = end;
-            containedRecords = new ArrayList(16000);
-            overlappingRecords = new ArrayList();
+            alignments = new ArrayList(16000);
             downsampledIntervals = new ArrayList();
 
             // Use a sparse array for large regions  (> 10 mb)
@@ -433,17 +417,11 @@ public class NoncachingQueryReader {
 
             // TODO -- only if splice junctions are on
             if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
-                containedSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
-                overlappingSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
+                spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
                 spliceJunctionHelper = new SpliceJunctionHelper();
             }
 
         }
-
-        public int getTileNumber() {
-            return tileNumber;
-        }
-
 
         public int getStart() {
             return start;
@@ -506,19 +484,11 @@ public class NoncachingQueryReader {
         private void allocateAlignment(Alignment alignment) {
             int aStart = alignment.getStart();
             int aEnd = alignment.getEnd();
-            if ((aStart >= start) && (aStart < end)) {
-                containedRecords.add(alignment);
-            } else if ((aEnd > start) && (aStart < start)) {
-                overlappingRecords.add(alignment);
-            }
+                alignments.add(alignment);
         }
 
-        public List<Alignment> getContainedRecords() {
-            return containedRecords;
-        }
-
-        public List<Alignment> getOverlappingRecords() {
-            return overlappingRecords;
+        public List<Alignment> getAlignments() {
+            return alignments;
         }
 
         public List<DownsampledInterval> getDownsampledIntervals() {
@@ -551,23 +521,15 @@ public class NoncachingQueryReader {
                 spliceJunctionHelper.finish();
                 List<SpliceJunctionFeature> features = spliceJunctionHelper.getFeatures();
                 for (SpliceJunctionFeature f : features) {
-                    if (f.getStart() >= start) {
-                        containedSpliceJunctionFeatures.add(f);
-                    } else {
-                        overlappingSpliceJunctionFeatures.add(f);
-                    }
+                        spliceJunctionFeatures.add(f);
                 }
             }
             spliceJunctionHelper = null;
         }
 
 
-        public List<SpliceJunctionFeature> getContainedSpliceJunctionFeatures() {
-            return containedSpliceJunctionFeatures;
-        }
-
-        public List<SpliceJunctionFeature> getOverlappingSpliceJunctionFeatures() {
-            return overlappingSpliceJunctionFeatures;
+        public List<SpliceJunctionFeature> getSpliceJunctionFeatures() {
+            return spliceJunctionFeatures;
         }
 
 
