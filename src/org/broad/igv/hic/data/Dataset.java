@@ -20,6 +20,7 @@ public class Dataset {
     Map<String, Matrix> matrices = new HashMap<String, Matrix>(25 * 25);
 
     private DatasetReader reader;
+    private Map<Integer, DensityFunction> df;
 
     public Dataset(DatasetReader reader) {
         this.reader = reader;
@@ -46,6 +47,14 @@ public class Dataset {
 
         return m;
 
+    }
+
+    public Map<Integer, DensityFunction> getZoomToDensity() {
+        return df;
+    }
+
+    public void setZoomToDensity(Map<Integer, DensityFunction> df) {
+        this.df = df;
     }
 
     public Chromosome[] getChromosomes() {

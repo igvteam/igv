@@ -3,6 +3,7 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.hic.tools.DensityUtil;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -23,6 +24,7 @@ public class DatasetReader {
     private String path;
     private SeekableStream stream;
     private Map<String, Preprocessor.IndexEntry> masterIndex;
+
     private Dataset dataset;
     private int version;
 
@@ -71,9 +73,9 @@ public class DatasetReader {
             if (genome == null) {
                 genome = inferGenome(chromosomes);
             }
-            System.out.println("genome =" + genome);
+            System.out.println("genome = " + genome);
 
-            readMasterIndex(masterIndexPos);
+            readMasterIndex(masterIndexPos, version);
 
 
         } catch (IOException e) {
@@ -120,7 +122,7 @@ public class DatasetReader {
         return version;
     }
 
-    private Map<String, Preprocessor.IndexEntry> readMasterIndex(long position) throws IOException {
+    private Map<String, Preprocessor.IndexEntry> readMasterIndex(long position, int version) throws IOException {
 
         stream.seek(position);
         byte[] buffer = new byte[4];
@@ -141,11 +143,9 @@ public class DatasetReader {
             masterIndex.put(key, new Preprocessor.IndexEntry(filePosition, sizeInBytes));
         }
 
-//        try {
-//         //   readExpectedValues(dis);
-//        } catch (IOException e) {
-//            System.err.println("Warning: No expected value information available.");
-//        }
+        if (version >= 2) {
+            dataset.setZoomToDensity(DensityUtil.readDensities(dis));
+        }
 
         return masterIndex;
 
