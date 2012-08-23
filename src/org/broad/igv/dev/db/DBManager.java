@@ -28,9 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
@@ -267,7 +265,8 @@ public class DBManager {
             //Have to parse blobs specially, otherwise we get the pointer as a string
             sqlCol = cc + startColIndex;
             int type = rs.getMetaData().getColumnType(sqlCol);
-            if (type == Types.BLOB) {
+
+            if (blobTypes.contains(type)) {
                 Blob b = rs.getBlob(sqlCol);
                 s = new String(b.getBytes(1l, (int) b.length()));
             } else {
@@ -276,6 +275,15 @@ public class DBManager {
             tokens[cc] = s;
         }
         return tokens;
+    }
+
+    private static final Set<Integer> blobTypes;
+    static{
+        int[] blobtypes = {Types.BINARY, Types.BLOB, Types.VARBINARY, Types.LONGVARBINARY};
+        blobTypes = new HashSet<Integer>(blobtypes.length);
+        for(int bt: blobtypes){
+            blobTypes.add(bt);
+        }
     }
 
 }
