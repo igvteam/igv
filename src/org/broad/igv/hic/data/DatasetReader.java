@@ -45,7 +45,6 @@ public class DatasetReader {
             // Read the header
             LittleEndianInputStream dis = new LittleEndianInputStream(new BufferedInputStream(stream));
             long masterIndexPos = dis.readLong();
-
             // Read chromosome dictionary
             int nchrs = dis.readInt();
             Chromosome[] chromosomes = new Chromosome[nchrs];
@@ -123,13 +122,11 @@ public class DatasetReader {
     }
 
     private Map<String, Preprocessor.IndexEntry> readMasterIndex(long position, int version) throws IOException {
-
         stream.seek(position);
         byte[] buffer = new byte[4];
         stream.readFully(buffer);
         LittleEndianInputStream dis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
         int nBytes = dis.readInt();
-
 
         buffer = new byte[nBytes];
         stream.readFully(buffer);

@@ -25,11 +25,11 @@ public class DensityUtil {
         String genomeID = "b37";
         List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
         calculate(chromosomes);
-        read("/xchip/igv/dev/hic/testFiles/test.hic.densities");
+        //read("/xchip/igv/dev/hic/testFiles/test.hic.densities");
         // dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
 
-    private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
+    /*private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
         InputStream is = ParsingUtils.openInputStream(path);
         Map<Integer, DensityFunction> d = readDensities(is);
         DensityFunction df = d.get(zoomNumber);
@@ -46,7 +46,7 @@ public class DensityUtil {
         InputStream is = ParsingUtils.openInputStream(ifile);
         return readDensities(is);
     }
-
+*/
     private static void calculate(List<Chromosome> chromosomes) throws IOException {
         //    String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
 
@@ -92,11 +92,11 @@ public class DensityUtil {
             calcs[z].computeDensity();
         }
 
-        outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/HindIII_Human_August.densities"));
+        //outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/HindIII_Human_August.densities"));
     }
 
 
-    private static void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
+/*    private static void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
 
         LittleEndianOutputStream os = null;
         try {
@@ -108,18 +108,16 @@ public class DensityUtil {
         } finally {
             if (os != null) os.close();
         }
-    }
+    }*/
 
     /**
      * Return a map of zoom level -> DensityFunction
      *
-     * @param is
+     * @param les
      * @return
      * @throws IOException
      */
-    public static Map<Integer, DensityFunction> readDensities(InputStream is) throws IOException {
-
-        LittleEndianInputStream les = new LittleEndianInputStream(new BufferedInputStream(is));
+    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
 
         int nZooms = les.readInt();
         Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
