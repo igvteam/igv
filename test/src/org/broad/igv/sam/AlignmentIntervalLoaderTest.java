@@ -18,9 +18,11 @@ package org.broad.igv.sam;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
+import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
@@ -91,16 +93,12 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         }
         reader.close();
 
-        reader = AlignmentReaderFactory.getReader(loc);
-        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
+        Genome genome = IgvTools.loadGenome("hg18", true);
+        AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
-        boolean showSpliceJunctions = false;
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-        Map<String, PEStats> peStats = new HashMap<String, PEStats>();
-        AlignmentTrack.BisulfiteContext bisulfiteContext = null;
 
-        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
-                renderOptions, peStats, bisulfiteContext);
+        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
         List<Alignment> result = new ArrayList();
 
         Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
@@ -153,8 +151,9 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
-        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
+
+        Genome genome = IgvTools.loadGenome("hg18", true);
+        AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
         //Edge location
         String sequence = "chr12";
@@ -162,7 +161,7 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         int end = start + 1;
         int expSize = 1066;
 
-        tstSize(alignmentIntervalLoader, sequence, start, end, (int) (expSize * 1.6), expSize);
+        tstSize(manager, sequence, start, end, (int) (expSize * 1.6), expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Edge location, downsampled
@@ -171,10 +170,8 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         end = start + 1;
         expSize = 165;
 
-        reader = AlignmentReaderFactory.getReader(loc);
-        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
 
-        tstSize(alignmentIntervalLoader, sequence, start, end, expSize + 20, expSize);
+        tstSize(manager, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center location
@@ -184,10 +181,7 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
 
         expSize = 3288;
 
-        reader = AlignmentReaderFactory.getReader(loc);
-        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
-
-        tstSize(alignmentIntervalLoader, sequence, start, end, expSize + 20, expSize);
+        tstSize(manager, sequence, start, end, expSize + 20, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
     }
 
@@ -198,8 +192,9 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);
-        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
-        AlignmentIntervalLoader alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
+
+        Genome genome = IgvTools.loadGenome("hg18", true);
+        AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
         //Edge location
         String sequence = "chr1";
@@ -207,13 +202,9 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         int end = start + 1;
         int expSize = 40;
 
-        tstSize(alignmentIntervalLoader, sequence, start, end, expSize * 7, expSize);
+        tstSize(manager, sequence, start, end, expSize * 7, expSize);
 
-        loc = new ResourceLocator(path);
-        reader = AlignmentReaderFactory.getReader(loc);
-        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
-
-        tstSize(alignmentIntervalLoader, sequence, start, end, expSize * 100, expSize);
+        tstSize(manager, sequence, start, end, expSize * 100, expSize);
         tstQuery(path, sequence, start, end, false, 10000);
 
         //Center, deep coverage region
@@ -223,37 +214,24 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         int coverageLim = 1000;
         expSize = 1408;
 
-        loc = new ResourceLocator(path);
-        reader = AlignmentReaderFactory.getReader(loc);
-        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
-
-
-        tstSize(alignmentIntervalLoader, sequence, start, end, coverageLim, expSize);
+        tstSize(manager, sequence, start, end, coverageLim, expSize);
 
         coverageLim = 10000;
         expSize = 1408;
 
-        loc = new ResourceLocator(path);
-        reader = AlignmentReaderFactory.getReader(loc);
-        alignmentIntervalLoader = new AlignmentIntervalLoader(reader);
-
-
-        tstSize(alignmentIntervalLoader, sequence, start, end, coverageLim, expSize);
+        tstSize(manager, sequence, start, end, coverageLim, expSize);
 
         tstQuery(path, sequence, start, end, false, coverageLim);
 
     }
 
-    public List<Alignment> tstSize(AlignmentIntervalLoader alignmentIntervalLoader, String sequence, int start, int end, int maxDepth, int expSize) {
+    public List<Alignment> tstSize(AlignmentDataManager manager, String sequence, int start, int end, int maxDepth, int expSize) {
 
-        boolean showSpliceJunctions = false;
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-        Map<String, PEStats> peStats = new HashMap<String, PEStats>();
-        AlignmentTrack.BisulfiteContext bisulfiteContext = null;
 
-        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
-                renderOptions, peStats, bisulfiteContext);
+        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
+
         List<Alignment> result = new ArrayList();
 
         Iterator<Alignment> iter = interval.getAlignmentIterator();
@@ -290,8 +268,11 @@ public class AlignmentIntervalLoaderTest extends AbstractHeadlessTest {
         Map<String, PEStats> peStats = new HashMap<String, PEStats>();
         AlignmentTrack.BisulfiteContext bisulfiteContext = null;
 
-        AlignmentInterval interval = alignmentIntervalLoader.loadInterval(sequence, start, end, showSpliceJunctions,
-                renderOptions, peStats, bisulfiteContext);
+
+        Genome genome = IgvTools.loadGenome("hg18", true);
+        AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
+
+        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
 
         Iterator<Alignment> iter = interval.getAlignmentIterator();
         int count = 0;

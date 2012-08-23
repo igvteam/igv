@@ -88,45 +88,12 @@ public class AlignmentIntervalLoader {
     }
 
 
-    public AlignmentInterval loadInterval(String chr, int start, int end, boolean showSpliceJunctions,
-                                          AlignmentTrack.RenderOptions renderOptions,
-                                          Map<String, PEStats> peStats,
-                                          AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-
-        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-
-        AlignmentTile t = loadTile(chr, start, end, showSpliceJunctions, downsampleOptions, peStats, bisulfiteContext);
-
-        List<Alignment> alignments =  t.getAlignments();
-
-        List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
-
-        List<AlignmentCounts> counts = new ArrayList();
-        counts.add(t.getCounts());
-
-        List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
-
-        // Since we (potentially) downsampled,  we need to sort
-        Collections.sort(alignments, new AlignmentSorter());
-
-        Iterator<Alignment> iter =  alignments.iterator();
-
-        final AlignmentPacker alignmentPacker = new AlignmentPacker();
-
-        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                end, renderOptions);
-
-        return new AlignmentInterval(chr, start, end, alignmentRows, counts, spliceJunctions, downsampledIntervals,
-                renderOptions);
-
-    }
-
-    private AlignmentTile loadTile(String chr, int start, int end,
-                                   boolean showSpliceJunctions,
-                                   AlignmentDataManager.DownsampleOptions downsampleOptions,
-                                   Map<String, PEStats> peStats,
-                                   AlignmentTrack.BisulfiteContext bisulfiteContext) {
+    AlignmentTile loadTile(String chr, int start, int end,
+                           boolean showSpliceJunctions,
+                           AlignmentDataManager.DownsampleOptions downsampleOptions,
+                           Map<String, PEStats> peStats,
+                           AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
         AlignmentTile t = new AlignmentTile(start, end, showSpliceJunctions, downsampleOptions, bisulfiteContext);
 
@@ -511,12 +478,6 @@ public class AlignmentIntervalLoader {
             public int getDownsampledCount() {
                 return downsampledCount;
             }
-        }
-    }
-
-    private static class AlignmentSorter implements Comparator<Alignment> {
-        public int compare(Alignment alignment, Alignment alignment1) {
-            return alignment.getStart() - alignment1.getStart();
         }
     }
 

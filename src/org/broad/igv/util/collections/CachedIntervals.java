@@ -157,8 +157,9 @@ public class CachedIntervals<T extends Interval> {
             }
         }
 
-        if (doAdd)
+        if (doAdd) {
             intervals.add(addingInterval);
+        }
 
 
         while (intervals.size() > cacheSize) {

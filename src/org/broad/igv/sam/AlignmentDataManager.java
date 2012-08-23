@@ -13,6 +13,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -331,8 +332,6 @@ public class AlignmentDataManager {
 
         log.info("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
-        final AlignmentTrack.BisulfiteContext bisulfiteContext =
-                renderOptions != null ? renderOptions.bisulfiteContext : null;
 
         NamedRunnable runnable = new NamedRunnable() {
 
@@ -350,11 +349,8 @@ public class AlignmentDataManager {
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
-                String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
+                AlignmentInterval loadedInterval = loadInterval(chr, intervalStart, intervalEnd, renderOptions);
 
-
-                AlignmentInterval loadedInterval = reader.loadInterval(sequence, intervalStart, intervalEnd,
-                        showSpliceJunctions, renderOptions, peStats, bisulfiteContext);
 
                 addLoadedInterval(context, loadedInterval);
 
@@ -377,6 +373,47 @@ public class AlignmentDataManager {
         LongRunningTask.submit(runnable);
 
 
+    }
+
+    AlignmentInterval loadInterval(String chr, int start, int end,
+                                   AlignmentTrack.RenderOptions renderOptions) {
+        String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
+
+        DownsampleOptions downsampleOptions = new DownsampleOptions();
+
+        final AlignmentTrack.BisulfiteContext bisulfiteContext =
+                renderOptions != null ? renderOptions.bisulfiteContext : null;
+
+
+        AlignmentIntervalLoader.AlignmentTile t = reader.loadTile(sequence, start, end, showSpliceJunctions,
+                downsampleOptions, peStats, bisulfiteContext);
+
+        List<Alignment> alignments =  t.getAlignments();
+
+        List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
+
+        List<AlignmentCounts> counts = new ArrayList();
+        counts.add(t.getCounts());
+
+        List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
+
+        // Since we (potentially) downsampled,  we need to sort
+        Comparator<Alignment> alignmentSorter = new Comparator<Alignment> () {
+            public int compare(Alignment alignment, Alignment alignment1) {
+                return alignment.getStart() - alignment1.getStart();
+            }
+        };
+        Collections.sort(alignments, alignmentSorter);
+
+        Iterator<Alignment> iter =  alignments.iterator();
+
+        final AlignmentPacker alignmentPacker = new AlignmentPacker();
+
+        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
+                end, renderOptions);
+
+        return new AlignmentInterval(chr, start, end, alignmentRows, counts, spliceJunctions, downsampledIntervals,
+                renderOptions);
     }
 
     private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
