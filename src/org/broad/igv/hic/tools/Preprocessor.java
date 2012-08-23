@@ -77,10 +77,6 @@ public class Preprocessor {
 
         try {
             System.out.println("Start preprocess");
-            if (loadDensities) {
-                File densitiesFile = new File(outputFile.getPath() + ".densities");
-                calculateDensities(inputFileList, densitiesFile);
-            }
 
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
@@ -98,7 +94,7 @@ public class Preprocessor {
             int nAttributes = 1;
             fos.writeInt(nAttributes);
             fos.writeString("Version");
-            fos.writeString("1");
+            fos.writeString("2");
 
             // Compute matrices.  Note that c2 is always >= c1
             for (int c1 = 0; c1 < nChrs; c1++) {
@@ -126,7 +122,7 @@ public class Preprocessor {
                 }
             } // End of double loop through chromosomes
 
-
+            calculateDensities(inputFileList, fos);
 
             masterIndexPosition = fos.getWrittenCount();
             writeMasterIndex();
@@ -162,16 +158,10 @@ public class Preprocessor {
      * the Hi-C viewer.
      *
      * @param paths         Files to calculate densities on
-     * @param densitiesFile Output file for densities
+     * @param fos           Output stream for densities
      * @throws IOException
      */
-    private void calculateDensities(List<String> paths, File densitiesFile) throws IOException {
-        // Limit calcs to 10KB
-        /*int[] gridSizeArray = new int[8];
-        for (int i = 0; i < 8; i++) {
-            gridSizeArray[i] = i];
-        } */
-
+    private void calculateDensities(List<String> paths, LittleEndianOutputStream fos) throws IOException {
         DensityCalculation[] calcs = new DensityCalculation[HiCGlobals.zoomBinSizes.length];
         for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
             calcs[z] = new DensityCalculation(chromosomes, HiCGlobals.zoomBinSizes[z]);
@@ -197,7 +187,7 @@ public class Preprocessor {
             calcs[z].computeDensity();
         }
 
-        outputDensities(calcs, densitiesFile);
+        outputDensities(calcs, fos);
 
     }
 
@@ -342,18 +332,10 @@ public class Preprocessor {
         fos.write(bytes);
     }
 
-    private void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
-
-        LittleEndianOutputStream os = null;
-        try {
-            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-
-            os.writeInt(calcs.length);
-            for (int i = 0; i < calcs.length; i++) {
-                calcs[i].outputBinary(os);
-            }
-        } finally {
-            if (os != null) os.close();
+    private void outputDensities(DensityCalculation[] calcs, LittleEndianOutputStream fos) throws IOException {
+        fos.writeInt(calcs.length);
+        for (int i = 0; i < calcs.length; i++) {
+            calcs[i].outputBinary(fos);
         }
     }
 
