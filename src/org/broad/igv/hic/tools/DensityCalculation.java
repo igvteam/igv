@@ -65,7 +65,7 @@ public class DensityCalculation {
         actualDistances = new double[numberOfBins];
         rowSums = new double[numberOfBins];
         coverageNorms = new double[numberOfBins];
-        Arrays.fill(coverageNorms, 0);
+        Arrays.fill(coverageNorms, 1);
         Arrays.fill(actualDistances, 0);
         Arrays.fill(rowSums, 0);
         chromosomeCounts = new HashMap<Integer,Integer>();
@@ -201,6 +201,7 @@ public class DensityCalculation {
 
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);
+
                 if (i > trueNumBins)
                     trueNumBins = i;
             }
@@ -232,6 +233,7 @@ public class DensityCalculation {
             }
             else
                 densityAvg[i] = density[i];
+
         }
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
@@ -295,7 +297,7 @@ public class DensityCalculation {
      * @param buffer      Stream to output to
      * @throws IOException    If error while writing
      */
-    public void outputBinary(Preprocessor.BufferedByteWriter buffer) throws IOException {
+    public void outputBinary(Preprocessor.BufferedByteWriter buffer, boolean isNewVersion) throws IOException {
 
         buffer.putInt(gridSize);
 
@@ -325,11 +327,12 @@ public class DensityCalculation {
         for (double aDensityAvg : densityAvg) {
             buffer.putDouble(aDensityAvg);
         }
-
         // Coverage normalizations
-        buffer.putInt(coverageNorms.length);
-        for (double aRowNorm : coverageNorms) {
-            buffer.putDouble(aRowNorm);
+        if (isNewVersion) {
+            buffer.putInt(coverageNorms.length);
+            for (double aRowNorm : coverageNorms) {
+                buffer.putDouble(aRowNorm);
+            }
         }
     }
 

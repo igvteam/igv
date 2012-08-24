@@ -34,6 +34,7 @@ public class Preprocessor {
 
     private int countThreshold;
     private boolean diagonalsOnly;
+    private boolean isNewVersion;
     private Set<String> includedChromosomes;
 
     public Preprocessor(File outputFile, List<Chromosome> chromosomes) {
@@ -45,6 +46,7 @@ public class Preprocessor {
 
         countThreshold = 0;
         diagonalsOnly = false;
+        isNewVersion = false;
         chromosomeOrdinals = new Hashtable<String, Integer>();
         for (int i = 0; i < chromosomes.size(); i++) {
             chromosomeOrdinals.put(chromosomes.get(i).getName(), i);
@@ -61,6 +63,9 @@ public class Preprocessor {
 
     public void setDiagonalsOnly(boolean diagonalsOnly) {
         this.diagonalsOnly = diagonalsOnly;
+    }
+    public void setNewVersion(boolean isNewVersion) {
+        this.isNewVersion = isNewVersion;
     }
 
     public void setIncludedChromosomes(Set<String> includedChromosomes) {
@@ -159,21 +164,25 @@ public class Preprocessor {
         for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
             calcs[z] = new DensityCalculation(chromosomes, HiCGlobals.zoomBinSizes[z]);
         }
-        System.out.println("Calculating expected normalization");
-        for (String path : paths) {
-            PairIterator iter = (path.endsWith(".bin")) ?
-                    new BinPairIterator(path) :
-                    new AsciiPairIterator(path, chromosomeOrdinals);
-            while (iter.hasNext()) {
-                AlignmentPair pair = iter.next();
-                for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
-                    calcs[z].addToRow(pair);
+        if (isNewVersion) {
+            System.out.println("Calculating coverage normalization");
+            for (String path : paths) {
+                PairIterator iter = (path.endsWith(".bin")) ?
+                        new BinPairIterator(path) :
+                        new AsciiPairIterator(path, chromosomeOrdinals);
+                while (iter.hasNext()) {
+                    AlignmentPair pair = iter.next();
+                    for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
+                        calcs[z].addToRow(pair);
+                    }
                 }
             }
+
+            for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
+                calcs[z].computeCoverageNormalization();
+            }
         }
-        for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
-            calcs[z].computeCoverageNormalization();
-        }
+        System.out.println("Calculating distance normalization");
         for (String path : paths) {
             PairIterator iter = (path.endsWith(".bin")) ?
                     new BinPairIterator(path) :
@@ -331,7 +340,7 @@ public class Preprocessor {
     private void outputDensities(DensityCalculation[] calcs, BufferedByteWriter buffer) throws IOException {
         buffer.putInt(calcs.length);
         for (int i = 0; i < calcs.length; i++) {
-            calcs[i].outputBinary(buffer);
+            calcs[i].outputBinary(buffer, isNewVersion);
         }
     }
 

@@ -131,6 +131,7 @@ public class DensityUtil {
     }
 
     public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
-        return readDensities(les, true);
+        return readDensities(les, false);
+    //    return readDensities(les, true);
     }
 }

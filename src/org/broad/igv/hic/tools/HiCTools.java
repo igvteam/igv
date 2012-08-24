@@ -57,6 +57,7 @@ public class HiCTools {
         System.out.println("           : -m <int> only write cells with count above threshold m [0]");
         System.out.println("           : -t <int> use t threads [1]");
         System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
+        System.out.println("           : -n use new version (coverage normalization)");
         System.out.println("           : -h print help");
     }
 
@@ -178,6 +179,7 @@ public class HiCTools {
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
+            preprocessor.setNewVersion(parser.getNewVersionOption());
             preprocessor.preprocess(files);
         }
     }
@@ -471,6 +473,7 @@ public class HiCTools {
 
     static class CommandLineParser extends CmdLineParser {
         private Option diagonalsOption = null;
+        private Option newVersionOption = null;
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
         private Option threadedOption = null;
@@ -478,6 +481,7 @@ public class HiCTools {
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
+            newVersionOption = addBooleanOption('n', "use new version");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
             threadedOption = addIntegerOption('t', "threads");
@@ -494,6 +498,10 @@ public class HiCTools {
             return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 
+        boolean getNewVersionOption() {
+            Object opt = getOptionValue(newVersionOption);
+            return opt == null ? false : ((Boolean) opt).booleanValue();
+        }
 
         Set<String> getChromosomeOption() {
             Object opt = getOptionValue(chromosomeOption);
