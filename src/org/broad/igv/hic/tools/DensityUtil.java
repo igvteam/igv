@@ -48,7 +48,6 @@ public class DensityUtil {
     }
 */
     private static void calculate(List<Chromosome> chromosomes) throws IOException {
-        //    String[] paths = {"/broad/aidenlab/Suhas/Hi-C_HindIII_Human_August/Completed_Alignment/formattedalignment.txt"};
 
         String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt", "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 
@@ -78,11 +77,10 @@ public class DensityUtil {
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == (pair.getChr2())) {
-                    int dist = Math.abs(pair.getPos1() - pair.getPos2());
 
                     int index = pair.getChr1();
                     for (int z = 0; z < gridSizeArray.length; z++) {
-                        calcs[z].addDistance(index, dist);
+                        calcs[z].addDistance(index, pair.getPos1(), pair.getPos2());
                     }
                 }
 
@@ -117,18 +115,22 @@ public class DensityUtil {
      * @return
      * @throws IOException
      */
-    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
+    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les, boolean isNewVersion) throws IOException {
 
         int nZooms = les.readInt();
         Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
         // TODO -- Its assumed densities are in number order and indeces match resolutions.  This is fragile,
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
-            DensityCalculation calc = new DensityCalculation(les);
+            DensityCalculation calc = new DensityCalculation(les, isNewVersion);
             densityMap.put(i, new DensityFunction(calc));
         }
 
         return densityMap;
 
+    }
+
+    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
+        return readDensities(les, true);
     }
 }

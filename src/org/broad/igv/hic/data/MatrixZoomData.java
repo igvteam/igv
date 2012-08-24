@@ -306,7 +306,9 @@ public class MatrixZoomData {
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    double normCounts = (rec.getCounts() / expected);
+                    double observed = df.getNormalizedCount(rec.getCounts(), chr1.getIndex(), x * binSize, chr2.getIndex(), y * binSize);
+                   // double normCounts = (rec.getCounts() / expected);
+                    double normCounts = observed / expected;
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
                         rm.addToEntry(y, x, normCounts);

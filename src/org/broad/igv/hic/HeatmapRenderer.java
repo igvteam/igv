@@ -128,14 +128,20 @@ public class HeatmapRenderer {
 
                 Color color = null;
                 double score;
-                // This is weirdly not the same as computeOE.  We opt for speed instead of
-                // showing the actual O/E with the mean subtracted, which is more appropriate.
+                // This is weirdly not the same as computeOE.
                 if (displayOption == MainWindow.DisplayOption.OE && df != null) {
                     int x = rec.getX();// * binSize;
                     int y = rec.getY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1, dist);
-                    score = rec.getCounts() / expected;
+                    double observed = df.getNormalizedCount(rec.getCounts(), chr1, (int)(x * binSizeMB), chr2, (int)(y * binSizeMB));
+                    // double normCounts = (rec.getCounts() / expected);
+                    score = observed / expected;
+              //      int x = rec.getX();// * binSize;
+              //      int y = rec.getY();// * binSize;
+              //      int dist = Math.abs(x - y);
+              //      double expected = df.getDensity(chr1, dist);
+              //      score = rec.getCounts() / expected;
                     score = Math.log10(score);
                 } else {
                     score = rec.getCounts() / binSizeMB2;

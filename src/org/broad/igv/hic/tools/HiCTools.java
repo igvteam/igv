@@ -54,7 +54,6 @@ public class HiCTools {
         System.out.println("       hictools eigenvector <hicFile> <chr> <binsize>");
         System.out.println("       hictools pre <options> <infile> <outfile> <genomeID>");
         System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
-        System.out.println("           : -o calculate densities (observed/expected), write to file [false]");
         System.out.println("           : -m <int> only write cells with count above threshold m [0]");
         System.out.println("           : -t <int> use t threads [1]");
         System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
@@ -474,7 +473,6 @@ public class HiCTools {
         private Option diagonalsOption = null;
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
-        private Option loadDensitiesOption = null;
         private Option threadedOption = null;
         private Option helpOption = null;
 
@@ -482,7 +480,6 @@ public class HiCTools {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
-            loadDensitiesOption = addBooleanOption('o', "density");
             threadedOption = addIntegerOption('t', "threads");
             helpOption = addBooleanOption('h', "help");
         }
@@ -497,10 +494,6 @@ public class HiCTools {
             return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 
-        boolean getDensitiesOption() {
-            Object opt = getOptionValue(loadDensitiesOption);
-            return opt == null ? false : ((Boolean) opt).booleanValue();
-        }
 
         Set<String> getChromosomeOption() {
             Object opt = getOptionValue(chromosomeOption);

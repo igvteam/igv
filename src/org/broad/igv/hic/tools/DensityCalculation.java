@@ -1,12 +1,8 @@
 package org.broad.igv.hic.tools;
 
-import org.apache.commons.math.MathException;
 import org.broad.igv.feature.Chromosome;
 import org.broad.tribble.util.LittleEndianInputStream;
-import org.broad.tribble.util.LittleEndianOutputStream;
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -15,6 +11,7 @@ import java.util.*;
  * (1) instantiate it with a collection of Chromosomes (representing a genome) and a grid size
  * (2) loop through the pair data,  calling addDistance for each pair, to accumulate all counts
  * (3) when data loop is complete, call computeDensity to do the calculation
+ *     - with new version, this will also compute coverage normalization
  *
  * Methods are provided to save the result of the calculation to a binary file, and restore it.  See the
  * DensityUtil class for example usage.
@@ -24,13 +21,21 @@ import java.util.*;
  */
 public class DensityCalculation {
 
-    private int gridSize;
-    private int numberOfBins;
-    private double[] actualDistances;    // genome wide
-    private double[] possibleDistances;  // genome wide
-    private double[] rowSums;
-    private double[] densityAvg;
-    private List<Chromosome>  chromosomes;
+    private int      gridSize;
+    private int      numberOfBins;
+    private long     totalReads;
+    /** Genome wide count of binned reads at a given distance */
+    private double[] actualDistances     = null;
+    /** Genome wide binned possible distances */
+    private double[] possibleDistances   = null;
+    /** Sum of counts in a row, used for coverage normalization */
+    private double[] rowSums             = null;
+    /** Coverage normalizations for each row (= column) */
+    private double[] coverageNorms       = null;
+    /** Expected count at a given binned distance from diagonal */
+    private double[] densityAvg          = null;
+    /** Chromosome in this genome, needed for normalizations */
+    private List<Chromosome> chromosomes = null;
 
     /** Map of chromosome index -> total count for that chromosome    */
     private Map<Integer, Integer> chromosomeCounts;
@@ -59,35 +64,47 @@ public class DensityCalculation {
         numberOfBins = (int) (totalLen / gridSize) + 1;
         actualDistances = new double[numberOfBins];
         rowSums = new double[numberOfBins];
+        coverageNorms = new double[numberOfBins];
+        Arrays.fill(coverageNorms, 0);
         Arrays.fill(actualDistances, 0);
+        Arrays.fill(rowSums, 0);
         chromosomeCounts = new HashMap<Integer,Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
+        totalReads = 0;
     }
-
 
     /**
      * Read a previously calculated density calculation from an input stream.
      *
      * @param les Stream to read from
+     * @param isNewVersion New version stores the coverage normalization as well
      */
-    public DensityCalculation(LittleEndianInputStream les) {
+    public DensityCalculation(LittleEndianInputStream les, boolean isNewVersion) {
         try {
-            read(les);
+            read(les, isNewVersion);
         } catch (IOException e) {
             System.err.println("Error reading density file");
             e.printStackTrace();
         }
     }
 
+    /**
+     * Set list of chromosomes; need to do this when reading from file
+     * @param chromosomes1    Array of chromosomes to set
+     */
+    public void setChromosomes(Chromosome[] chromosomes1) {
+        chromosomes = Arrays.asList(chromosomes1);
+    }
 
     /**
      * Add an observed distance.  This is called for each pair in the data set
      *
      * @param chr  Chromosome where observed, so can increment count
-     * @param dist Distance observed
+     * @param pos1 Position1 observed
+     * @param pos2 Position2 observed
      */
-    public void addDistance(Integer chr, int dist) {
-
+    public void addDistance(Integer chr, int pos1, int pos2) {
+        int dist = Math.abs(pos1 - pos2);
         Integer count = chromosomeCounts.get(chr);
         if (count == null) {
             chromosomeCounts.put(chr, 1);
@@ -96,8 +113,71 @@ public class DensityCalculation {
         }
         int bin = dist / gridSize;
 
-        actualDistances[bin]++;
+        int bin1 = getGenomicRowBin(chr, pos1);
+        int bin2 = getGenomicRowBin(chr, pos2);
 
+        actualDistances[bin]+= 1/(coverageNorms[bin1]*coverageNorms[bin2]);
+
+    }
+
+    /**
+     * Returns normalized version of count, based on place in genome-wide matrix
+     * @param count  Sum to normalize
+     * @param chr1   First chromosome
+     * @param pos1   First position
+     * @param chr2   Second chromosome
+     * @param pos2   Second position
+     * @return  If old version and we don't have normalization, return count.  Else look at genome-wide bin
+     * and divide by the normalizations for the row and column.
+     */
+    public double getNormalizedCount(int count, int chr1, int pos1, int chr2, int pos2) {
+        if (coverageNorms == null) {
+            return count;
+        }
+        int bin1 = getGenomicRowBin(chr1,pos1);
+        int bin2 = getGenomicRowBin(chr2,pos2);
+        return (double)count/(coverageNorms[bin1]*coverageNorms[bin2]);
+    }
+
+    /**
+     * Add to rowSums array, so that we can do coverage normalization later
+     * @param pair Pair to add
+     */
+    public void addToRow(AlignmentPair pair) {
+
+        int bin1 = getGenomicRowBin(pair.getChr1(), pair.getPos1());
+        int bin2 = getGenomicRowBin(pair.getChr2(), pair.getPos2());
+
+        rowSums[bin1]++;
+        // don't double count on the diagonal
+        if (bin1 != bin2)
+            rowSums[bin2]++;
+
+        totalReads++;
+    }
+
+    /**
+     * Find row bin in big genomic matrix
+     * @param chr Chromosome
+     * @param pos Position
+     * @return  Row bin in genomic matrix
+     */
+    public int getGenomicRowBin(int chr, int pos) {
+        long rowsBefore = 0;
+
+        for (int i = 1; i < chr; i++) {
+            rowsBefore += chromosomes.get(i).getLength();
+        }
+
+        rowsBefore += pos;
+        return (int)(rowsBefore / gridSize);
+    }
+
+    public void computeCoverageNormalization() {
+        double rowMean = totalReads / rowSums.length;
+        for (int i=0; i < rowSums.length; i++) {
+            coverageNorms[i] = rowSums[i] / rowMean;
+        }
     }
 
     /**
@@ -119,8 +199,6 @@ public class DensityCalculation {
             if (chr == null) continue;
             int nChrBins = chr.getLength() / gridSize;
 
-            // this is not actually the true "possible", which would count everything, but is off by a factor
-            // of binSize, essentially.  it makes the numbers more reasonable and is what the Python code does.
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);
                 if (i > trueNumBins)
@@ -129,13 +207,6 @@ public class DensityCalculation {
 
 
         }
-        // Compute the non-smoothed "density",  which is the actual count / possible count for each bin
-
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter("output" + gridSize + ".txt");
-        }
-        catch (IOException e) {}
 
         density = new double[trueNumBins];
 
@@ -161,64 +232,7 @@ public class DensityCalculation {
             }
             else
                 densityAvg[i] = density[i];
-            pw.println(density[i]);
         }
-        pw.close();
-
-
-
-
-
-        // Smooth in 3 stages,  the window sizes are tuned to human.
-
-//        // Smooth (1)
-//        final int smoothingWidow1 = 15000000;
-//        int start = smoothingWidow1 / gridSize;
-//        int window = (int) (5 * (2000000f / gridSize));
-//        if (window == 0) window = 1;
-//        for (int i = start; i < numberOfBins; i++) {
-//            int kMin = i - window;
-//            int kMax = Math.min(i + window, numberOfBins);
-//            double sum = 0;
-//            for (int k = kMin; k < kMax; k++) {
-//                sum += density[k];
-//            }
-//            densityAvg[i] = sum / (kMax - kMin);
-//        }
-//
-//        // Smooth (2)
-//        start = 70000000 / gridSize;
-//        window = (int)(20 * (2000000f / gridSize));
-//        for (int i = start; i < numberOfBins; i++) {
-//            int kMin = i - window;
-//            int kMax = Math.min(i + window, numberOfBins);
-//            double sum = 0;
-//            for (int k = kMin; k < kMax; k++) {
-//                sum += density[k];
-//            }
-//            densityAvg[i] = sum / (kMax - kMin);
-//        }
-//
-//        // Smooth (3)
-//        start = 170000000 / gridSize;
-//        for (int i = start; i < numberOfBins; i++) {
-//            densityAvg[i] = densityAvg[start];
-//        }
-
-
-        PrintWriter pw2 = null;
-        try {
-            pw2 = new PrintWriter("smoothed" + gridSize + ".txt");
-        }
-        catch (IOException e) {}
-        for (int i = 0; i < trueNumBins; i++) {
-            try {
-                pw2.println(densityAvg[i]);
-            }
-            catch (Exception e) {}
-        }
-        pw2.close();
-
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
         for (Chromosome chr : chromosomes) {
@@ -234,7 +248,7 @@ public class DensityCalculation {
             for (int n = 0; n < trueNumBins; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
-                    System.err.println("Density was NaN, this shouldn't happen; possibly due to smoothing non-human genome");
+                    System.err.println("Density was NaN, this shouldn't happen");
                 }
                 else {
                     // this is the sum of the diagonal for this particular chromosome.
@@ -248,36 +262,6 @@ public class DensityCalculation {
 
             normalizationFactors.put(chr.getIndex(), f);
         }
-    }
-
-    /**
-     * Debugging method that prints out everything.
-     * @param chrIndex Chromosome to print.
-     */
-    private void printDensities(int chrIndex) {
-        double norm = normalizationFactors.get(chrIndex);
-
-        long center = gridSize / 2;
-        System.out.println(gridSize);
-        for (int i = 0; i < numberOfBins; i++) {
-
-            System.out.println(center/1000000f + "M " +
-                    actualDistances[i]
-                    + "\t" + possibleDistances[i]
-                    // + "\t" + density[i]
-                    + "\t" + densityAvg[i]     + "\t" + norm
-                    + "\t" + densityAvg[i] / norm);
-            center += gridSize;
-        }
-
-    }
-
-    /**
-     * Accessor for grid size
-     * @return The grid size
-     */
-    public int getGridSize() {
-        return gridSize;
     }
 
     /**
@@ -297,7 +281,16 @@ public class DensityCalculation {
     }
 
     /**
-     * Output the density calculation to a binary file.
+     * Accessor for the coverage normalizations
+     * @return The coverage normalizations
+     */
+    public double[] getCoverageNorms()
+    {
+        return coverageNorms;
+    }
+
+    /**
+     * Output the density calculation to a binary file buffer.
      *
      * @param buffer      Stream to output to
      * @throws IOException    If error while writing
@@ -332,6 +325,12 @@ public class DensityCalculation {
         for (double aDensityAvg : densityAvg) {
             buffer.putDouble(aDensityAvg);
         }
+
+        // Coverage normalizations
+        buffer.putInt(coverageNorms.length);
+        for (double aRowNorm : coverageNorms) {
+            buffer.putDouble(aRowNorm);
+        }
     }
 
     /**
@@ -340,7 +339,7 @@ public class DensityCalculation {
      * @param is  Stream to read
      * @throws IOException      If error while reading stream
      */
-    public void read(LittleEndianInputStream is) throws IOException {
+    public void read(LittleEndianInputStream is, boolean isNewVersion) throws IOException {
         gridSize = is.readInt();
         int nChromosomes = is.readInt();
 
@@ -365,10 +364,59 @@ public class DensityCalculation {
             densityAvg[i] = is.readDouble();
         }
 
+        if (isNewVersion) {
+            // Norms
+            int nNorms = is.readInt();
+            coverageNorms = new double[nNorms];
+            for (int i=0; i < nNorms; i++) {
+                coverageNorms[i] = is.readDouble();
+            }
+        }
 
     }
 
 }
+
+
+
+
+
+
+// Smooth in 3 stages,  the window sizes are tuned to human.
+
+//        // Smooth (1)
+//        final int smoothingWidow1 = 15000000;
+//        int start = smoothingWidow1 / gridSize;
+//        int window = (int) (5 * (2000000f / gridSize));
+//        if (window == 0) window = 1;
+//        for (int i = start; i < numberOfBins; i++) {
+//            int kMin = i - window;
+//            int kMax = Math.min(i + window, numberOfBins);
+//            double sum = 0;
+//            for (int k = kMin; k < kMax; k++) {
+//                sum += density[k];
+//            }
+//            densityAvg[i] = sum / (kMax - kMin);
+//        }
+//
+//        // Smooth (2)
+//        start = 70000000 / gridSize;
+//        window = (int)(20 * (2000000f / gridSize));
+//        for (int i = start; i < numberOfBins; i++) {
+//            int kMin = i - window;
+//            int kMax = Math.min(i + window, numberOfBins);
+//            double sum = 0;
+//            for (int k = kMin; k < kMax; k++) {
+//                sum += density[k];
+//            }
+//            densityAvg[i] = sum / (kMax - kMin);
+//        }
+//
+//        // Smooth (3)
+//        start = 170000000 / gridSize;
+//        for (int i = start; i < numberOfBins; i++) {
+//            densityAvg[i] = densityAvg[start];
+//        }
 
 
 /*

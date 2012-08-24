@@ -29,6 +29,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -182,6 +183,8 @@ public class HttpUtils {
     public InputStream openConnectionStream(URL url, Map<String, String> requestProperties) throws IOException {
 
         HttpURLConnection conn = openConnection(url, requestProperties);
+        if (conn == null)
+            return null;
         InputStream input = conn.getInputStream();
         if ("gzip".equals(conn.getContentEncoding())) {
             input = new GZIPInputStream(input);
@@ -207,6 +210,7 @@ public class HttpUtils {
 
     public String getHeaderField(URL url, String key) throws IOException {
         HttpURLConnection conn = openConnection(url, null, "HEAD");
+        if (conn == null) return null;
         return conn.getHeaderField(key);
     }
 
@@ -550,7 +554,15 @@ public class HttpUtils {
                 if (code == 404) {
                     message = "File not found: " + url.toString();
                     throw new FileNotFoundException(message);
-                } else {
+                }
+                else if (code == 401) {
+                    // Looks like this only happens when user hits "Cancel".
+                   // message = "Not authorized to view this file";
+                   // JOptionPane.showMessageDialog(null, message, "HTTP error", JOptionPane.ERROR_MESSAGE);
+                    redirectCount = MAX_REDIRECTS + 1;
+                    return null;
+                }
+                else {
                     message = conn.getResponseMessage();
                 }
                 String details = readErrorStream(conn);

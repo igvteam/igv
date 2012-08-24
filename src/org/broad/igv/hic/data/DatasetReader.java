@@ -25,14 +25,18 @@ public class DatasetReader {
     private SeekableStream stream;
     private Map<String, Preprocessor.IndexEntry> masterIndex;
 
-    private Dataset dataset;
-    private int version;
+    private Dataset dataset = null;
+    private int version = -1;
 
     public DatasetReader(String path) throws IOException {
         this.path = path;
         this.stream = IGVSeekableStreamFactory.getStreamFor(path);
-        masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
-        dataset = new Dataset(this);
+        if (this.stream != null)
+        {
+            masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
+            dataset = new Dataset(this);
+            version = 0;
+        }
     }
 
     public String getPath() {

@@ -1,45 +1,60 @@
 package org.broad.igv.hic.data;
 
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.tools.DensityCalculation;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 /**
+ * Utility holder for Density calculation, for O/E maps.
  * @author Jim Robinson
- * @date 12/5/11
+ * @author Neva Cherniavsky
+ * @since 8/27/12
  */
 public class DensityFunction {
 
-    private double[] density;
-    //private int gridSize;
-    private int nPoints;
-    private Map<Integer, Double> normFactors;
+    private DensityCalculation densityCalculation;
 
-    public DensityFunction(int gridSize, double[] densities, Map<Integer, Double> normFactors) {
-        //this.gridSize = gridSize;
-        this.density = densities;
-        this.nPoints = densities.length;
-        this.normFactors = normFactors;
-    }
-
+    /**
+     * Constructor sets the density calculation.
+     *
+     * @param calculation Density calculation, containing distance expectation and coverage normalization
+     */
     public DensityFunction(DensityCalculation calculation) {
-        this(calculation.getGridSize(), calculation.getDensityAvg(), calculation.getNormalizationFactors());
+        this.densityCalculation = calculation;
     }
-    
+
+    public void setChromosomes(Chromosome[] chromosomes) {
+        densityCalculation.setChromosomes(chromosomes);
+    }
+
+    /**
+     * Gets the expected value, distance and coverage normalized
+     * @param chrIdx Chromosome index
+     * @param distance Distance from diagonal
+     * @return  Expected value, distance and coverage normalized
+     */
     public double getDensity(int chrIdx, int distance) {
-
+       Map<Integer, Double> normFactors = densityCalculation.getNormalizationFactors();
        double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
+       double density[] = densityCalculation.getDensityAvg();
+        if (distance >= density.length) {
 
-        if (distance >= nPoints) {
-
-            return density[nPoints - 1] / normFactor;
+            return density[density.length - 1] / normFactor;
         } else {
             return density[distance] / normFactor;
         }
     }
 
+    /**
+     * Returns normalized observed count
+     * @param count Original count
+     * @param chr1  Chromosome 1
+     * @param pos1  Position 1
+     * @param chr2  Chromosome 2
+     * @param pos2  Position 2
+     * @return Normalized count by coverage
+     */
+    public double getNormalizedCount(int count, int chr1, int pos1, int chr2, int pos2) {
+        return densityCalculation.getNormalizedCount(count, chr1, pos1, chr2, pos2);
+    }
 }

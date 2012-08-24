@@ -170,8 +170,11 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
-
-            hic.dataset = (new DatasetReader(file)).read();
+            DatasetReader reader = new DatasetReader(file);
+            // file not actually read, usually canceled the read of password-protected file
+            if (reader.getVersion() == -1)
+                return;
+            hic.dataset = reader.read();
             setChromosomes(hic.dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
@@ -186,7 +189,7 @@ public class MainWindow extends JFrame {
                     try {
                         is = ParsingUtils.openInputStream(densityFile);
 
-                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
                         displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
                                 DisplayOption.OBSERVED,
                                 DisplayOption.OE,

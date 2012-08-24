@@ -17,7 +17,7 @@ import java.util.List;
  * @author Jim Robinson
  * @date 1/21/12
  */
-public interface Chromosome {
+public interface Chromosome  {
     int getLength();
 
     String getName();

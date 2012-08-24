@@ -55,6 +55,10 @@ public class Dataset {
 
     public void setZoomToDensity(Map<Integer, DensityFunction> df) {
         this.df = df;
+        for (Map.Entry<Integer, DensityFunction> entry : df.entrySet())
+        {
+            entry.getValue().setChromosomes(chromosomes);
+        }
     }
 
     public Chromosome[] getChromosomes() {

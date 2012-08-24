@@ -36,7 +36,6 @@ public class Preprocessor {
     private boolean diagonalsOnly;
     private Set<String> includedChromosomes;
 
-
     public Preprocessor(File outputFile, List<Chromosome> chromosomes) {
         this.outputFile = outputFile;
         this.chromosomes = chromosomes;
@@ -119,7 +118,6 @@ public class Preprocessor {
 
 
             masterIndexPosition = fos.getWrittenCount();
-            System.out.println(masterIndexPosition);
             writeMasterIndex(inputFileList);
 
 
@@ -161,7 +159,21 @@ public class Preprocessor {
         for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
             calcs[z] = new DensityCalculation(chromosomes, HiCGlobals.zoomBinSizes[z]);
         }
-
+        System.out.println("Calculating expected normalization");
+        for (String path : paths) {
+            PairIterator iter = (path.endsWith(".bin")) ?
+                    new BinPairIterator(path) :
+                    new AsciiPairIterator(path, chromosomeOrdinals);
+            while (iter.hasNext()) {
+                AlignmentPair pair = iter.next();
+                for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
+                    calcs[z].addToRow(pair);
+                }
+            }
+        }
+        for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
+            calcs[z].computeCoverageNormalization();
+        }
         for (String path : paths) {
             PairIterator iter = (path.endsWith(".bin")) ?
                     new BinPairIterator(path) :
@@ -169,11 +181,9 @@ public class Preprocessor {
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == pair.getChr2()) {
-                    int dist = Math.abs(pair.getPos1() - pair.getPos2());
-
                     int index = pair.getChr1();
                     for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
-                        calcs[z].addDistance(index, dist);
+                        calcs[z].addDistance(index, pair.getPos1(), pair.getPos2());
                     }
                 }
             }
@@ -181,13 +191,13 @@ public class Preprocessor {
         for (int z = 0; z < HiCGlobals.zoomBinSizes.length; z++) {
             calcs[z].computeDensity();
         }
-
+        System.out.println("Writing expected normalizations");
         outputDensities(calcs, buffer);
 
     }
 
     /**
-     * Compute matrix for the given chromosome combination.  This resultes in full pass through the input files
+     * Compute matrix for the given chromosome combination.  This results in full pass through the input files
      * for each chromosome combination.  This is done to save memory, at the expense of longer running times.
      *
      * @param inputFileList
@@ -257,20 +267,12 @@ public class Preprocessor {
 
         if (chr2 > chr1) {
             //transpose
-            int tc2 = chr2;
             int tp2 = pos2;
-            chr2 = chr1;
             pos2 = pos1;
-            chr1 = tc2;
             pos1 = tp2;
         }
 
         matrix.incrementCount(pos1, pos2);
-
-        if (chr1 == chr2) {
-            int dist = Math.abs(pos1 - pos2);
-            //densityCalculation.addDistance(chr1, dist);
-        }
     }
 
 
