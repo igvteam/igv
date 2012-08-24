@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * Time: 10:15:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureDecoder, FeatureEncoder{
+public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncoder<Feature>, FeatureDecoder<BasicFeature> {
 
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
@@ -379,6 +379,11 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureDecod
     @Override
     public int getNumCols(String line) {
         return line.split("\t").length;
+    }
+
+    @Override
+    public String getHeader() {
+        return null;
     }
 
     @Override

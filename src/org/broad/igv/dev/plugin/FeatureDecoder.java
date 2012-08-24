@@ -19,13 +19,14 @@ import java.util.Map;
  * User: jacob
  * Date: 2012-Aug-02
  */
-public interface FeatureDecoder {
+public interface FeatureDecoder<T extends Feature> {
 
     /**
-     *
      * @param line
      * @return null to skip, or else decoded Feature
      */
-    public Feature decode(String line);
-    public void setOutputColumns(Map<String, Integer> outputColumns);
+    T decode(String line);
+
+
+    void setOutputColumns(Map<String, Integer> outputColumns);
 }

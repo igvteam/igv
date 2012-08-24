@@ -18,12 +18,28 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Reads the output from a command line utility,
- * decodes it into a feature.
+ * Base class for writing/reading to/from command line.
+ * Can encode/decode features.
+ * <p/>
+ * Type parameters are (in order):
+ * encoding feature type
+ * decoding feature type
+ * <p/>
+ * Example:
+ * {@code <br>
+ * public class MyClazz extends PluginCodec&lt;Feature, BasicFeature&gt;{
+ * <br>
+ *
+ * @Override public String encode(Feature){...}
+ * <br>
+ * @Override public BasicFeature decode(String line){...}
+ * <p/>
+ * }
+ * }
  * User: jacob
  * Date: 2012-Aug-01
  */
-public abstract class PluginCodec implements FeatureEncoder, FeatureDecoder {
+public abstract class PluginCodec<E extends Feature, D extends Feature> implements FeatureEncoder<E>, FeatureDecoder<D> {
 
     protected List<String> cmd;
     protected Map<Argument, Object> argumentMap;
@@ -42,17 +58,27 @@ public abstract class PluginCodec implements FeatureEncoder, FeatureDecoder {
         this.argumentMap = argumentMap;
     }
 
+    @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
         this.outputColumns = outputColumns;
     }
 
-    public Feature decode(String line) {
+    public abstract D decode(String[] tokens);
+
+    @Override
+    public D decode(String line) {
         return decode(columnDelimiter.split(line));
     }
 
-    public abstract Feature decode(String[] tokens);
-
+    @Override
     public int getNumCols(String line) {
         return columnDelimiter.split(line).length;
     }
+
+
+    @Override
+    public String getHeader() {
+        return null;
+    }
+
 }

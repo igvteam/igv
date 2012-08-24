@@ -62,6 +62,7 @@ public class Argument {
         TEXT,
         LONGTEXT,
         FEATURE_TRACK,
+        DATA_TRACK,
         MULTI_FEATURE_TRACK
     }
 
