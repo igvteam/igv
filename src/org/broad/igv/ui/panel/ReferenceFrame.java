@@ -17,6 +17,7 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.Interval;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
@@ -667,6 +668,10 @@ public class ReferenceFrame {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean overlaps(Interval interval) {
+        return this.getChrName().equals(interval.getChr()) && this.getOrigin() <= interval.getEnd() && this.getEnd() >= interval.getStart();
     }
 
     public static class Range {

@@ -43,7 +43,7 @@ public class AlignmentDataManager {
 
     private HashMap<String, String> chrMappings = new HashMap();
     private volatile boolean isLoading = false;
-    private AlignmentIntervalLoader reader;
+    private AlignmentTileLoader reader;
     private CoverageTrack coverageTrack;
 
     private static final int MAX_ROWS = 1000000;
@@ -59,13 +59,13 @@ public class AlignmentDataManager {
      * Don't wont to allow intervals to get too big. In general,
      * will trim a cached interval it's bigger than MAX_INTERVAL_MULTIPLE * current interval size
      */
-    static final int MAX_INTERVAL_MULTIPLE = 5;
+    static final int MAX_INTERVAL_MULTIPLE = 3;
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        reader = new AlignmentIntervalLoader(AlignmentReaderFactory.getReader(locator));
+        reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         initChrMap(genome);
@@ -104,7 +104,7 @@ public class AlignmentDataManager {
         return experimentType;
     }
 
-    public AlignmentIntervalLoader getReader() {
+    public AlignmentTileLoader getReader() {
         return reader;
     }
 
@@ -385,7 +385,7 @@ public class AlignmentDataManager {
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
 
-        AlignmentIntervalLoader.AlignmentTile t = reader.loadTile(sequence, start, end, showSpliceJunctions,
+        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, showSpliceJunctions,
                 downsampleOptions, peStats, bisulfiteContext);
 
         List<Alignment> alignments =  t.getAlignments();
@@ -419,33 +419,6 @@ public class AlignmentDataManager {
     private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
         loadedIntervalMap.setMaxIntervalSize(MAX_INTERVAL_MULTIPLE * (int) (context.getEndLocation() - context.getOrigin()));
         loadedIntervalMap.put(interval);
-//        String key = context.getReferenceFrame().getChrName();
-//        List<AlignmentInterval> currentValue = loadedIntervalMap.get(key);
-//        if (currentValue != null) {
-//            for (AlignmentInterval loadedInterval : currentValue) {
-//                if (loadedInterval.overlaps(interval.getChr(), interval.getStart(), interval.getEnd(), interval.getZoom())) {
-//                    loadedInterval.merge(interval);
-//
-//                    //Prevent interval from growing without bound
-//                    int intervalSize = loadedInterval.getEnd() - loadedInterval.getStart();
-//                    if (intervalSize > MAX_INTERVAL_MULTIPLE * (context.getEndLocation() - context.getOrigin())) {
-//                        int newStart = Math.min((int) context.getOrigin(), interval.getStart());
-//                        int newEnd = Math.max((int) context.getEndLocation(), interval.getEnd());
-//                        loadedInterval.trimTo(interval.getChr(), newStart, newEnd, interval.getZoom());
-//                    }
-//
-//                    return;
-//                }
-//            }
-//            currentValue.add(interval);
-//            while (currentValue.size() > CACHE_SIZE) {
-//                currentValue.remove(0);
-//            }
-//        } else {
-//            List<AlignmentInterval> valueList = new LinkedList<AlignmentInterval>();
-//            valueList.add(interval);
-//            loadedIntervalMap.put(key, valueList);
-//        }
     }
 
     /**
