@@ -32,6 +32,7 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 import org.broad.tribble.util.SeekableStream;
 
@@ -178,7 +179,6 @@ public class HiCTools {
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
-            preprocessor.setLoadDensities(parser.getDensitiesOption());
             preprocessor.preprocess(files);
         }
     }
@@ -301,25 +301,32 @@ public class HiCTools {
             System.exit(-1);
 
         }
+        Dataset dataset = (new DatasetReader(file)).read();
+
         // Load the expected density function, if it exists.
         Map<Integer, DensityFunction> zoomToDensityMap = null;
-        String densityFile = file + ".densities";
-        if (FileUtils.resourceExists(densityFile)) {
-            InputStream is = null;
-            try {
-                is = ParsingUtils.openInputStream(densityFile);
-                zoomToDensityMap = DensityUtil.readDensities(is);
 
-            } finally {
-                if (is != null) is.close();
+        if (dataset.getVersion() <= 1) {
+            String densityFile = file + ".densities";
+            if (FileUtils.resourceExists(densityFile)) {
+                InputStream is = null;
+                try {
+                    is = ParsingUtils.openInputStream(densityFile);
+                    zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+
+                } finally {
+                    if (is != null) is.close();
+                }
             }
+            else {
+                System.err.println("Densities file doesn't exist");
+                System.exit(-1);
+            }
+
         }
         else {
-            System.err.println("Densities file doesn't exist");
-            System.exit(-1);
+            zoomToDensityMap = dataset.getZoomToDensity();
         }
-
-        Dataset dataset = (new DatasetReader(file)).read();
         Chromosome[] tmp = dataset.getChromosomes();
 
         Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
@@ -364,22 +371,29 @@ public class HiCTools {
         Map<Integer, DensityFunction> zoomToDensityMap = null;
         LittleEndianOutputStream les = null;
         BufferedOutputStream bos = null;
-        if (type.equals("oe") || type.equals("pearson")) {
-            String densityFile = file + ".densities";
-            if (FileUtils.resourceExists(densityFile)) {
-                InputStream is = null;
-                try {
-                    is = ParsingUtils.openInputStream(densityFile);
-                    zoomToDensityMap = DensityUtil.readDensities(is);
+        Dataset dataset = (new DatasetReader(file)).read();
 
-                } finally {
-                    if (is != null) is.close();
+        if (dataset.getVersion() <= 1) {
+            if (type.equals("oe") || type.equals("pearson")) {
+                String densityFile = file + ".densities";
+                if (FileUtils.resourceExists(densityFile)) {
+                    InputStream is = null;
+                    try {
+                        is = ParsingUtils.openInputStream(densityFile);
+                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+
+                    } finally {
+                        if (is != null) is.close();
+                    }
+                }
+                else {
+                    System.err.println("Densities file doesn't exist, cannot calculate O/E or Pearson's");
+                    System.exit(-1);
                 }
             }
-            else {
-                System.err.println("Densities file doesn't exist, cannot calculate O/E or Pearson's");
-                System.exit(-1);
-            }
+        }
+        else {
+            zoomToDensityMap = dataset.getZoomToDensity();
         }
         if (ofile != null) {
             bos = new BufferedOutputStream(new FileOutputStream(ofile));
@@ -387,7 +401,7 @@ public class HiCTools {
         }
 
 
-        Dataset dataset = (new DatasetReader(file)).read();
+
         Chromosome[] tmp = dataset.getChromosomes();
 
         Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();

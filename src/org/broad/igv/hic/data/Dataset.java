@@ -65,4 +65,7 @@ public class Dataset {
         this.chromosomes = chromosomes;
     }
 
+    public int getVersion() {
+        return reader.getVersion();
+    }
 }

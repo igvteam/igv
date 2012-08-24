@@ -250,23 +250,23 @@ public class DensityCalculation {
     /**
      * Output the density calculation to a binary file.
      *
-     * @param os      Stream to output to
+     * @param buffer      Stream to output to
      * @throws IOException    If error while writing
      */
-    public void outputBinary(LittleEndianOutputStream os) throws IOException {
+    public void outputBinary(Preprocessor.BufferedByteWriter buffer) throws IOException {
 
-        os.writeInt(gridSize);
+        buffer.putInt(gridSize);
 
         int nonNullChrCount = 0;
         for (Chromosome chr : chromosomes) {
             if (chr != null) nonNullChrCount++;
         }
-        os.writeInt(nonNullChrCount);
+        buffer.putInt(nonNullChrCount);
 
         // Chromosome indices
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
-            os.writeInt(chr.getIndex());
+            buffer.putInt(chr.getIndex());
         }
 
         // Normalization factors
@@ -274,14 +274,14 @@ public class DensityCalculation {
             if (chr == null) continue;
             Integer idx = chr.getIndex();
             Double normFactor = normalizationFactors.get(idx);
-            os.writeInt(idx);
-            os.writeDouble(normFactor == null ? 0 : normFactor);
+            buffer.putInt(idx);
+            buffer.putDouble(normFactor == null ? 0 : normFactor);
         }
 
         // Expected value (densityAvg)
-        os.writeInt(densityAvg.length);
+        buffer.putInt(densityAvg.length);
         for (double aDensityAvg : densityAvg) {
-            os.writeDouble(aDensityAvg);
+            buffer.putDouble(aDensityAvg);
         }
     }
 
