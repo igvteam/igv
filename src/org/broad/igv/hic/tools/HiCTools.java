@@ -313,7 +313,7 @@ public class HiCTools {
                 InputStream is = null;
                 try {
                     is = ParsingUtils.openInputStream(densityFile);
-                    zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                    zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
 
                 } finally {
                     if (is != null) is.close();
@@ -381,7 +381,7 @@ public class HiCTools {
                     InputStream is = null;
                     try {
                         is = ParsingUtils.openInputStream(densityFile);
-                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
 
                     } finally {
                         if (is != null) is.close();

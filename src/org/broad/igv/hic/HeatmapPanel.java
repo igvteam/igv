@@ -69,7 +69,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         // Same scale used for X & Y (square pixels)
         if (hic != null && hic.zd != null) {
-
+            if (hic.xContext == null)
+                return;
             final double scale = hic.xContext.getScale();
             if (scale <= 0) return;
 

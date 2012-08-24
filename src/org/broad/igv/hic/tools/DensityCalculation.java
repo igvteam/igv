@@ -24,6 +24,7 @@ public class DensityCalculation {
     private int      gridSize;
     private int      numberOfBins;
     private long     totalReads;
+    private boolean  isNewVersion;
     /** Genome wide count of binned reads at a given distance */
     private double[] actualDistances     = null;
     /** Genome wide binned possible distances */
@@ -71,6 +72,7 @@ public class DensityCalculation {
         chromosomeCounts = new HashMap<Integer,Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
         totalReads = 0;
+        isNewVersion = true;
     }
 
     /**
@@ -82,6 +84,7 @@ public class DensityCalculation {
     public DensityCalculation(LittleEndianInputStream les, boolean isNewVersion) {
         try {
             read(les, isNewVersion);
+            this.isNewVersion = isNewVersion;
         } catch (IOException e) {
             System.err.println("Error reading density file");
             e.printStackTrace();
@@ -113,11 +116,15 @@ public class DensityCalculation {
         }
         int bin = dist / gridSize;
 
-        int bin1 = getGenomicRowBin(chr, pos1);
-        int bin2 = getGenomicRowBin(chr, pos2);
+        if (isNewVersion) {
 
-        actualDistances[bin]+= 1/(coverageNorms[bin1]*coverageNorms[bin2]);
+            int bin1 = getGenomicRowBin(chr, pos1);
+            int bin2 = getGenomicRowBin(chr, pos2);
 
+            actualDistances[bin]+= 1/(coverageNorms[bin1]*coverageNorms[bin2]);
+        }
+        else
+            actualDistances[bin]++;
     }
 
     /**
@@ -280,15 +287,6 @@ public class DensityCalculation {
      */
     public double[] getDensityAvg() {
         return densityAvg;
-    }
-
-    /**
-     * Accessor for the coverage normalizations
-     * @return The coverage normalizations
-     */
-    public double[] getCoverageNorms()
-    {
-        return coverageNorms;
     }
 
     /**

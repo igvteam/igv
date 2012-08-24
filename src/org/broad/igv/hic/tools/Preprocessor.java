@@ -93,7 +93,11 @@ public class Preprocessor {
             int nAttributes = 1;
             fos.writeInt(nAttributes);
             fos.writeString("Version");
-            fos.writeString("2");
+            if (isNewVersion)          {
+                fos.writeString("3");
+            }
+            else
+                fos.writeString("2");
 
             // Compute matrices.  Note that c2 is always >= c1
             for (int c1 = 0; c1 < nChrs; c1++) {

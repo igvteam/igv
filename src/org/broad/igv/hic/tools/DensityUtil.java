@@ -119,7 +119,7 @@ public class DensityUtil {
 
         int nZooms = les.readInt();
         Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
-        // TODO -- Its assumed densities are in number order and indeces match resolutions.  This is fragile,
+        // TODO -- Its assumed densities are in number order and indices match resolutions.  This is fragile,
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
             DensityCalculation calc = new DensityCalculation(les, isNewVersion);
@@ -128,10 +128,5 @@ public class DensityUtil {
 
         return densityMap;
 
-    }
-
-    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
-        return readDensities(les, false);
-    //    return readDensities(les, true);
     }
 }

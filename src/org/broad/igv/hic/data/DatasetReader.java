@@ -145,7 +145,7 @@ public class DatasetReader {
         }
 
         if (version >= 2) {
-            dataset.setZoomToDensity(DensityUtil.readDensities(dis));
+            dataset.setZoomToDensity(DensityUtil.readDensities(dis, version >= 3));
         }
 
         return masterIndex;
