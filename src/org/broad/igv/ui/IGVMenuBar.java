@@ -657,7 +657,7 @@ public class IGVMenuBar extends JMenuBar {
         exomeModeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                FrameManager.setExomeMode(exomeModeItem.isSelected());
+                FrameManager.setExomeMode(exomeModeItem.isSelected(), true);
                 igv.resetFrames();
             }
         });

@@ -34,6 +34,7 @@ import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.util.LittleEndianInputStream;
 import slider.RangeSlider;
 
 import javax.imageio.ImageIO;
@@ -49,6 +50,7 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,23 +180,32 @@ public class MainWindow extends JFrame {
             // Load the expected density function, if it exists.
             Map<Integer, DensityFunction> zoomToDensityMap = null;
             String densityFile = file + ".densities";
-            if (FileUtils.resourceExists(densityFile)) {
-                InputStream is = null;
-                try {
-                    is = ParsingUtils.openInputStream(densityFile);
+            if (hic.dataset.getVersion() <= 1) {
+                if (FileUtils.resourceExists(densityFile)) {
+                    InputStream is = null;
+                    try {
+                        is = ParsingUtils.openInputStream(densityFile);
 
-                    zoomToDensityMap = DensityUtil.readDensities(is);
-                    displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
-                            DisplayOption.OBSERVED,
-                            DisplayOption.OE,
-                            DisplayOption.PEARSON}));
+                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                        displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
+                                DisplayOption.OBSERVED,
+                                DisplayOption.OE,
+                                DisplayOption.PEARSON}));
 
-                } finally {
-                    if (is != null) is.close();
+                    } finally {
+                        if (is != null) is.close();
+                    }
+                } else {
+                    displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{DisplayOption.OBSERVED}));
+                    zoomToDensityMap = null;
                 }
-            } else {
-                displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{DisplayOption.OBSERVED}));
-                zoomToDensityMap = null;
+            }
+            else {
+                zoomToDensityMap = hic.dataset.getZoomToDensity();
+                displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
+                        DisplayOption.OBSERVED,
+                        DisplayOption.OE,
+                        DisplayOption.PEARSON}));
             }
             displayOptionComboBox.setSelectedIndex(0);
             setTitle(file);

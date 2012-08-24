@@ -168,6 +168,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String PROXY_NTLM = "PROXY.NTLM";
     final public static String PROXY_USER = "PROXY.USERNAME";
     final public static String PROXY_PW = "PROXY.PW";
+    final public static String PROXY_TYPE = "PROXY.TYPE";
 
     final public static String KNOWN_SNPS = "KNOWN_SNPS_FILE";
 
@@ -897,6 +898,7 @@ public class PreferenceManager implements PropertyManager {
         remove(PreferenceManager.PROXY_AUTHENTICATE);
         remove(PreferenceManager.PROXY_USER);
         remove(PreferenceManager.PROXY_PW);
+        remove(PreferenceManager.PROXY_TYPE);
         HttpUtils.getInstance().updateProxySettings();
     }
 

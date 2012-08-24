@@ -14,6 +14,8 @@ package org.broad.igv.util.collections;
 import org.apache.commons.collections.Predicate;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.Utilities;
 
 import java.util.*;
@@ -130,12 +132,13 @@ public class CachedIntervals<T extends Interval> {
      * @param addingInterval
      */
     public synchronized void put(T addingInterval) {
-        boolean doAdd = true;
+
         String key = addingInterval.getChr();
         List<T> intervals = map.get(key);
         if (intervals == null) {
             intervals = new LinkedList<T>();
             map.put(key, intervals);
+            intervals.add(addingInterval);
         } else {
             List<T> overlaps = getOverlaps(addingInterval.getChr(), addingInterval.getStart(), addingInterval.getEnd(),
                     addingInterval.getZoom());
@@ -145,26 +148,91 @@ public class CachedIntervals<T extends Interval> {
             if (overlaps != null && overlaps.size() > 0) {
                 Interval overlap = overlaps.get(0);
                 overlap.merge(addingInterval);
-                doAdd = false;
 
                 //Prevent interval from growing without bound
+
                 int intervalSize = overlap.getEnd() - overlap.getStart();
                 if (intervalSize > maxIntervalSize) {
-                    int newStart = Math.min(overlap.getStart(), addingInterval.getStart());
-                    int newEnd = Math.max(overlap.getEnd(), overlap.getEnd());
-                    overlap.trimTo(overlap.getChr(), newStart, newEnd, overlap.getZoom());
+                    trimInterval(overlap);
+                }
+            } else {
+                intervals.add(addingInterval);
+            }
+        }
+
+
+        int effectiveCacheSize = FrameManager.getFrames().size() + cacheSize;
+        if (intervals.size() > effectiveCacheSize) {
+            removeOrphanedIntervals();
+        }
+    }
+
+    /**
+     * Trim the interval of "excess" region, defined as regions not close to any in-view reference frame.  Note
+     * that normally there is a single reference frame, multiple frames arise from the gene list and alignment
+     * split-screen options.
+     *
+     * @param interval
+     */
+    private void trimInterval(Interval interval) {
+
+        List<ReferenceFrame> frames = FrameManager.getFrames();
+        int s = interval.getStart();
+        int e = interval.getEnd();
+        boolean trim = false;
+        for (ReferenceFrame frame : frames) {
+            if (frame.overlaps(interval)) {
+                s = Math.max((int) frame.getOrigin(), interval.getStart());
+                e = Math.min((int) frame.getEnd(), interval.getEnd());
+                trim = true;
+            }
+        }
+        if (trim) {
+            interval.trimTo(interval.getChr(), s, e, interval.getZoom());
+        }
+    }
+
+    /**
+     * Trim interval collection by removing all intervals that are not overlapping a reference frame.
+     *
+     * @return
+     */
+    private synchronized void removeOrphanedIntervals() {
+
+        Map<String, List<T>> newMap = Collections.synchronizedMap(new HashMap<String, List<T>>());
+
+        // Build a hash of reference frames by chr name for fast lookup
+        HashMap<String, List<ReferenceFrame>> framesMap = new HashMap<String, List<ReferenceFrame>>();
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            List<ReferenceFrame> frameList = framesMap.get(frame.getChrName());
+            if (frameList == null) {
+                frameList = new ArrayList<ReferenceFrame>();
+                framesMap.put(frame.getChrName(), frameList);
+            }
+            frameList.add(frame);
+        }
+
+        for (Map.Entry<String, List<T>> entry : map.entrySet()) {
+            String chr = entry.getKey();
+            List<ReferenceFrame> frameList = framesMap.get(chr);
+            if (frameList != null) {
+                List<T> intervalList = entry.getValue();
+                for (T interval : intervalList) {
+                    for (ReferenceFrame frame : frameList) {
+                        if (frame.overlaps(interval)) {
+                            List<T> newIntervalList = newMap.get(chr);
+                            if (newIntervalList == null) {
+                                newIntervalList = new ArrayList<T>();
+                                newMap.put(chr, newIntervalList);
+                            }
+                            newIntervalList.add(interval);
+                        }
+                    }
                 }
             }
         }
 
-        if (doAdd)
-            intervals.add(addingInterval);
-
-
-        while (intervals.size() > cacheSize) {
-            intervals.remove(0);
-        }
-
+        this.map = newMap;
 
     }
 

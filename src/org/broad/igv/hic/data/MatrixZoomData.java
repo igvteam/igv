@@ -242,18 +242,27 @@ public class MatrixZoomData {
 
         // below subtracts the empirical mean - necessary for mean-centered eigenvector
         int size = oe.getRowDimension();
+        int num = 0;
         for (int i = 0; i < size; i++) {
-            RealVector v = oe.getRowVector(i);
-            double m = getVectorMean(v);
-            RealVector newV = v.mapSubtract(m);
-            oe.setRowVector(i, newV);
+            if (i == nonCentromereColumns[num]) {
+                RealVector v = oe.getRowVector(i);
+                double m = getVectorMean(v);
+                RealVector newV = v.mapSubtract(m);
+                oe.setRowVector(i, newV);
+                num++;
+            }
        }
 
-        PearsonsResetNan resetNan = new PearsonsResetNan();
-        oe.walkInOptimizedOrder(resetNan);
-
         RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
-
+        RealVector v = new ArrayRealVector(size);
+        num = 0;
+        for (int i = 0; i < size; i++) {
+            if (i != nonCentromereColumns[num]) {
+                rm.setRowVector(i, v);
+                rm.setColumnVector(i, v);
+            }
+            else num++;
+        }
         pearsons = new RealMatrixWrapper(rm);
         return pearsons;
     }
@@ -307,9 +316,6 @@ public class MatrixZoomData {
         }
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
-        double[] nans = new double[size];
-        for (int i = 0; i < size; i++)
-            nans[i] = Double.NaN;
 
         for (int i = 0; i < size; i++) {
             if (isZeros(rm.getRow(i))) {
@@ -321,11 +327,7 @@ public class MatrixZoomData {
 
         int num = 0;
         for (int i = 0; i < size; i++) {
-            if (bitSet.get(i)) {
-                //rm.setRow(i, nans);
-                //rm.setColumn(i, nans);
-            }
-            else {
+            if (!bitSet.get(i)) {
                 nonCentromereColumns[num++] = i;
             }
         }
@@ -472,62 +474,6 @@ public class MatrixZoomData {
                 System.out.println();
         }
     }
-
-    private class PearsonsResetNan extends DefaultRealMatrixChangingVisitor {
-        public double visit(int row, int column, double value) {
-            if (Double.isNaN(value))
-                return 0;
-            return value;
-        }
-    }
-
-    public static void readRealMatrix(String filename) throws IOException {
-        LittleEndianInputStream is = null;
-        RealMatrix rm = null;
-        try {
-            is = new LittleEndianInputStream(new BufferedInputStream(new FileInputStream(filename)));
-
-            int rows = is.readInt();
-            System.out.println(rows);
-            double[][] matrix = new double[rows][rows];
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < rows; j++) {
-                    matrix[i][j] = is.readFloat();
-                    System.out.println(matrix[i][j] + " ");
-                }
-                System.out.println();
-            }
-        } catch (IOException error) {
-            System.err.println("IO error when saving Pearson's: " + error);
-        } finally {
-            if (is != null)
-                is.close();
-        }
-
-    }
-     /*
-    private void outputRealMatrix(RealMatrix rm) throws IOException {
-        LittleEndianOutputStream os = null;
-        try {
-            os = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream("pearsons" + this.zoom + ".bin")));
-
-            int rows = rm.getRowDimension();
-            int cols = rm.getColumnDimension();
-            os.writeInt(rows);
-            os.writeInt(cols);
-            double[][] matrix = rm.getData();
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    os.writeDouble(matrix[i][j]);
-                }
-            }
-        } catch (IOException error) {
-            System.err.println("IO error when saving Pearson's: " + error);
-        } finally {
-            if (os != null)
-                os.close();
-        }
-    }*/
 
 
 }

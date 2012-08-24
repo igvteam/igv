@@ -31,18 +31,21 @@ import static junit.framework.Assert.assertFalse;
  */
 public class DBManagerTest extends AbstractHeadlessTest {
 
-
-    @Test
-    public void testConnectSQLite() throws Exception {
-        String path = "sql/unigene.db";
+    static ResultSet getAllFromSQLTable(String path, String table) throws Exception {
         File dataDir = new File(TestUtils.DATA_DIR);
         String url = DBManager.createConnectionURL("sqlite", dataDir.getAbsolutePath(), path, null);
         ResourceLocator locator = new ResourceLocator(url);
         Connection conn = DBManager.getConnection(locator);
 
-        String query = "SELECT * FROM unigene";
+        String query = "SELECT * FROM " + table;
         Statement st = conn.createStatement();
-        ResultSet rs = st.executeQuery(query);
+        return st.executeQuery(query);
+    }
+
+    @Test
+    public void testConnectSQLite() throws Exception {
+        String path = "sql/unigene.db";
+        ResultSet rs = getAllFromSQLTable(path, "unigene");
 
         assertEquals(12, rs.getMetaData().getColumnCount());
     }

@@ -933,8 +933,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
+
+                    int modifiers = actionEvent.getModifiers();
+                    boolean showTrackMenu =  (modifiers & ActionEvent.ALT_MASK) > 0;
+
                     boolean newMode = !FrameManager.isExomeMode();
-                    if (!FrameManager.setExomeMode(newMode)) return;
+                    if (!FrameManager.setExomeMode(newMode, showTrackMenu)) return;
                     String label = newMode ? "Genome" : "Exome";
                     exomeButton.setText(label);
                     IGV.getInstance().resetFrames();

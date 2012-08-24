@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_33" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -3769,7 +3769,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Show junction track</string>
+               <string>Show junction track</string> 
               </void> 
               <void property="name"> 
                <string>showJunctionTrackCB</string> 
@@ -3794,38 +3794,38 @@
                <int>25</int> 
               </void> 
              </object> 
-            </void>
-            <void method="add">
-             <object class="com.jformdesigner.model.FormComponent">
-              <string>javax.swing.JCheckBox</string>
-              <void method="setProperty">
-               <string>text</string>
-               <string>Show flanking regions</string>
-              </void>
-              <void property="name">
-               <string>showJunctionFlankingRegionsCB</string>
-              </void>
-              <void method="addEvent">
-               <object class="com.jformdesigner.model.FormEvent">
-                <string>java.awt.event.ActionListener</string>
-                <string>actionPerformed</string>
-                <string>showJunctionFlankingRegionsCBActionPerformed</string>
-                <boolean>true</boolean>
-               </object>
-              </void>
-             </object>
-             <object class="com.jformdesigner.model.FormLayoutConstraints">
-              <class>com.jformdesigner.runtime.NullConstraints</class>
-              <void method="setProperty">
-               <string>x</string>
-               <int>5</int>
-              </void>
-              <void method="setProperty">
-               <string>y</string>
-               <int>25</int>
-              </void>
-             </object>
-            </void>
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Show flanking regions</string> 
+              </void> 
+              <void property="name"> 
+               <string>showJunctionFlankingRegionsCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showJunctionFlankingRegionsCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>5</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>25</int> 
+              </void> 
+             </object> 
+            </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
@@ -4845,7 +4845,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Username</string> 
+                 <string>Username:</string> 
                 </void> 
                 <void property="name"> 
                  <string>jLabel28</string> 
@@ -4899,7 +4899,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Password</string> 
+                 <string>Password:</string> 
                 </void> 
                 <void property="name"> 
                  <string>jLabel29</string> 
@@ -4923,6 +4923,10 @@
                 <void method="setProperty"> 
                  <string>text</string> 
                  <string>jPasswordField1</string> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>enabled</string> 
+                 <boolean>false</boolean> 
                 </void> 
                 <void property="name"> 
                  <string>proxyPasswordField</string> 
@@ -4961,7 +4965,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>263</int> 
+               <int>315</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -5069,7 +5073,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Proxy port</string> 
+                 <string>Proxy port:</string> 
                 </void> 
                 <void property="name"> 
                  <string>jLabel27</string> 
@@ -5083,7 +5087,15 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>112</int> 
+                 <int>108</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>95</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>25</int> 
                 </void> 
                </object> 
               </void> 
@@ -5092,7 +5104,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Proxy host</string> 
+                 <string>Proxy host:</string> 
                 </void> 
                 <void property="name"> 
                  <string>jLabel23</string> 
@@ -5106,7 +5118,15 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>76</int> 
+                 <int>72</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>95</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>25</int> 
                 </void> 
                </object> 
               </void> 
@@ -5141,6 +5161,78 @@
                 </void> 
                </object> 
               </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JComboBox</string> 
+                <void method="setProperty"> 
+                 <string>model</string> 
+                 <object class="javax.swing.DefaultComboBoxModel"> 
+                  <void property="selectedItem"> 
+                   <string>HTTP</string> 
+                  </void> 
+                  <void method="addElement"> 
+                   <string>HTTP</string> 
+                  </void> 
+                  <void method="addElement"> 
+                   <string>SOCKS</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>proxyTypeCB</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>proxyTypeCBActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>115</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>145</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Proxy type:</string> 
+                </void> 
+                <void property="name"> 
+                 <string>label27</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>20</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>145</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>95</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>25</int> 
+                </void> 
+               </object> 
+              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
@@ -5151,6 +5243,10 @@
               <void method="setProperty"> 
                <string>y</string> 
                <int>91</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>199</int> 
               </void> 
              </object> 
             </void> 
@@ -5208,11 +5304,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>17</int> 
+               <int>35</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>390</int> 
+               <int>475</int> 
               </void> 
              </object> 
             </void> 
