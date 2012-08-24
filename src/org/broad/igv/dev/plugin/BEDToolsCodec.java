@@ -11,6 +11,7 @@
 
 package org.broad.igv.dev.plugin;
 
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.tribble.Feature;
 
@@ -23,7 +24,7 @@ import java.util.Map;
  * User: jacob
  * Date: 2012-Aug-02
  */
-public final class BEDToolsCodec extends PluginCodec {
+public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
 
     private IGVBEDCodec BEDCodec;
     private boolean hasSplit = false;
@@ -73,8 +74,8 @@ public final class BEDToolsCodec extends PluginCodec {
     }
 
     @Override
-    public Feature decode(String[] tokens) {
-        Feature feat;
+    public BasicFeature decode(String[] tokens) {
+        BasicFeature feat;
 
         if (hasSplit) {
             //When we split, the returned feature still has the exons

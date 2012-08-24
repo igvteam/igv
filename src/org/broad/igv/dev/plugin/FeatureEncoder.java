@@ -17,21 +17,29 @@ import org.broad.tribble.Feature;
  * User: jacob
  * Date: 2012-Aug-02
  */
-public interface FeatureEncoder {
+public interface FeatureEncoder<T extends Feature> {
 
     /**
      * Create a single data line (excluding newline character)
      * from this Feature. Return null to skip encoding
+     *
      * @param feature
      * @return
      */
-    public String encode(Feature feature);
+    String encode(T feature);
 
     /**
-     *
      * @param line
      * @return The number of data columns contained in this line.
-     * Some decoders need this information
+     *         Some decoders need this information
      */
-    public int getNumCols(String line);
+    int getNumCols(String line);
+
+    /**
+     * Get header for this encoder. This will
+     * be written before any features
+     *
+     * @return
+     */
+    String getHeader();
 }
