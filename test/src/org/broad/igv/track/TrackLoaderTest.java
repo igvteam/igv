@@ -112,14 +112,14 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadGFFAliasedChrs() throws Exception {
-        String filepath = TestUtils.DATA_DIR + "gff/aliased.gff";
+        String filepath = TestUtils.DATA_DIR + "gff/aliased.unsorted.gff";
         TrackLoader loader = new TrackLoader();
         Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
         List<Track> tracks = loader.load(new ResourceLocator(filepath), genome);
         assertEquals(1, tracks.size());
         FeatureTrack track = (FeatureTrack) tracks.get(0);
 
-        assertEquals("aliased.gff", track.getName());
+        assertEquals("aliased.unsorted.gff", track.getName());
 
         List<Feature> features = track.getFeatures("chr1", 0, Integer.MAX_VALUE);
         assertEquals(56, features.size());
@@ -181,7 +181,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     static String[] filenames = new String[]{"/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
             "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
-            "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
+            "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.unsorted.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
             "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz", "/psl/fishBlat.psl", "/sam/test_2.sam",
             "/seg/canFam2_hg18.seg", "/wig/test.wig"};
 
