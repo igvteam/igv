@@ -16,9 +16,11 @@ package org.broad.igv;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.maf.MAFManager;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
@@ -26,7 +28,6 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 
 import java.awt.*;
 import java.io.File;
@@ -58,13 +59,15 @@ public class PreferenceManager implements PropertyManager {
     public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
     public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
 
-    /** Added by Chantal Roth, June 25th 2012 */
+    /**
+     * Added by Chantal Roth, June 25th 2012
+     */
     public static final String IONTORRENT_FLOWDIST_HIDE_FIRST_HP = "IONTORRENT.FLOWDIST_HIDE_FIRST_HP";
     public static final String IONTORRENT_FLOWDIST_BINSIZE = "IONTORRENT.FLOWDIST_BINSIZE";
     public static final String IONTORRENT_FLOWDIST_CHARTTYPE = "IONTORRENT.FLOWDIST_CHARTTYPE";
     public static final String IONTORRENT_SERVER = "IONTORRENT.SERVER";
     public static final String IONTORRENT_RESULTS = "IONTORRENT.RESULTS";
-    
+
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
@@ -131,6 +134,8 @@ public class PreferenceManager implements PropertyManager {
     final static public String LAST_SESSION_DIRECTORY = "LAST_SESSION_DIRECTORY";
     final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
     final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
+    final static public String HISTORY_DELIMITER = ";";
+    final static public String GENOME_HISTORY_KEY = "GENOME_HISTORY";
 
     final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
@@ -944,7 +949,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(IONTORRENT_FLOWDIST_CHARTTYPE, "LINE");
         defaultValues.put(IONTORRENT_SERVER, "ioneast.ite");
         defaultValues.put(IONTORRENT_RESULTS, "/results/analysis/output/Home/");
-        
+
         defaultValues.put(CHART_DRAW_TOP_BORDER, "false");
         defaultValues.put(CHART_DRAW_BOTTOM_BORDER, "false");
         defaultValues.put(CHART_COLOR_BORDERS, "true");
@@ -1088,4 +1093,24 @@ public class PreferenceManager implements PropertyManager {
         }
     }
 
+    public void saveGenomeHistory(List<GenomeListItem> serverGenomeItemList) {
+        String genomeString = "";
+
+        for (GenomeListItem serverItem : serverGenomeItemList) {
+            genomeString += serverItem.getId() + HISTORY_DELIMITER;
+        }
+
+        genomeString = genomeString.substring(0, genomeString.length() - 1);
+        preferences.put(GENOME_HISTORY_KEY, genomeString);
+    }
+
+    public String[] getGenomeHistory() {
+        String genomeIds = get(GENOME_HISTORY_KEY);
+        if (genomeIds == null) {
+            return new String[0];
+        } else {
+            return genomeIds.split(HISTORY_DELIMITER);
+        }
+
+    }
 }

@@ -274,7 +274,7 @@ public class CommandExecutor {
         String result;
         String genomeID = param1;
 
-        if (igv.getGenomeIds().contains(genomeID)) {
+        if (igv.getSelectableGenomeIDs().contains(genomeID)) {
             igv.selectGenomeFromList(genomeID);
         } else {
             String genomePath = genomeID;

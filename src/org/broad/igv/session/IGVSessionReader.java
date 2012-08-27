@@ -320,7 +320,7 @@ public class IGVSessionReader implements SessionReader {
                 // Selecting a genome will actually "reset" the session so we have to
                 // save the path and restore it.
                 String sessionPath = session.getPath();
-                if (IGV.getInstance().getGenomeIds().contains(genomeId)) {
+                if (IGV.getInstance().getSelectableGenomeIDs().contains(genomeId)) {
                     IGV.getInstance().selectGenomeFromList(genomeId);
                 } else {
                     String genomePath = genomeId;
