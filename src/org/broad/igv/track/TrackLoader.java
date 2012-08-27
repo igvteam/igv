@@ -175,10 +175,9 @@ public class TrackLoader {
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
                 loadIGVFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
-                    typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
+                    typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")
+                    || typeString.endsWith(".seg.zip")) {
                 loadSegFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".seg.zip")) {
-                loadBinarySegFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gistic")) {
                 loadGisticFile(locator, newTracks);
             } else if (typeString.endsWith(".gs")) {
@@ -805,7 +804,6 @@ public class TrackLoader {
     /**
      * Load a rnai gene score file and create a datasource and track.
      * <p/>
-     * // TODO -- change parser to use resource locator rather than path.
      *
      * @param locator
      * @param newTracks
@@ -1007,41 +1005,6 @@ public class TrackLoader {
         }
     }
 
-    private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-
-        // TODO - -handle remote resource
-        SegmentFileParser parser = new SegmentFileParser(locator);
-        SegmentedAsciiDataSet ds = parser.loadSegments(locator, genome);
-
-        String path = locator.getPath();
-        TrackProperties props = ds.getTrackProperties();
-
-        // The "freq" track.  TODO - make this optional
-        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
-                ds.getSampleNames().size() > 4) {
-            FreqData fd = new FreqData(ds, genome);
-            String freqTrackId = path;
-            String freqTrackName = "CNV Summary";
-            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-            newTracks.add(freqTrack);
-        }
-
-        for (String trackName : ds.getDataHeadings()) {
-            String trackId = path + "_" + trackName;
-            SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setRendererClass(HeatmapRenderer.class);
-            track.setTrackType(ds.getType());
-
-            if (props != null) {
-                track.setProperties(props);
-            }
-
-            newTracks.add(track);
-        }
-    }
-
-
     private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks) throws IOException {
         List<SQLCodecSource> sources = SQLCodecSource.getFromProfile(locator.getPath(), null);
         for (SQLCodecSource source : sources) {
@@ -1056,47 +1019,47 @@ public class TrackLoader {
     private void loadFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (".seg".equals(locator.getType())) {
-
             SegmentedAsciiDataSet ds = (new SegmentedSQLReader(locator, genome)).load();
-
-            String path = locator.getPath();
-            TrackProperties props = ds.getTrackProperties();
-
-            // The "freq" track.  TODO - make this optional
-            if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
-                    ds.getSampleNames().size() > 4) {
-                FreqData fd = new FreqData(ds, genome);
-                String freqTrackId = path;
-                String freqTrackName = "CNV Summary";
-                CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-                newTracks.add(freqTrack);
-            }
-
-            for (String trackName : ds.getDataHeadings()) {
-                String trackId = path + "_" + trackName;
-                SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-                track.setRendererClass(HeatmapRenderer.class);
-                track.setTrackType(ds.getType());
-
-                if (props != null) {
-                    track.setProperties(props);
-                }
-
-                newTracks.add(track);
-            }
+            loadSegTrack(locator, newTracks, genome, ds);
         } else {
             (new SampleInfoSQLReader(locator)).load();
         }
     }
 
+    private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
-    private void loadBinarySegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+        // TODO - -handle remote resource
+        SegmentedDataSet ds;
+        String path = locator.getPath().toLowerCase();
 
-        SegmentedBinaryDataSet ds = new SegmentedBinaryDataSet(locator);
+        if (path.endsWith("seg.zip")) {
+            ds = new SegmentedBinaryDataSet(locator);
+        } else {
+            SegmentFileParser parser = new SegmentFileParser(locator);
+            ds = parser.loadSegments(locator, genome);
+        }
+
+        loadSegTrack(locator, newTracks, genome, ds);
+    }
+
+    /**
+     * Add the provided SegmentedDataSet to the list of tracks,
+     * set other relevant properties
+     *
+     * @param locator
+     * @param newTracks
+     * @param genome
+     * @param ds
+     */
+    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
         String path = locator.getPath();
 
-        // The "freq" track.  Make this optional?
+        TrackProperties props = null;
+        if (ds instanceof SegmentedAsciiDataSet) {
+            props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
+        }
+
+        // The "freq" track.  TODO - make this optional
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
                 ds.getSampleNames().size() > 4) {
             FreqData fd = new FreqData(ds, genome);
@@ -1112,10 +1075,14 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
+
+            if (props != null) {
+                track.setProperties(props);
+            }
+
             newTracks.add(track);
         }
     }
-
 
     private void loadDASResource(ResourceLocator locator, List<Track> currentTracks) {
 
