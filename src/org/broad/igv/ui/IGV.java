@@ -498,11 +498,6 @@ public class IGV {
         return contentPane.getCommandBar().getGenomeDisplayNames();
     }
 
-    public Collection<String> getGenomeIds() {
-        return contentPane.getCommandBar().getGenomeIds();
-    }
-
-
     /**
      * Load a .genome file directly.  This method really belongs in IGVMenuBar.
      *
@@ -572,7 +567,7 @@ public class IGV {
         IGVCommandBar cmdBar = contentPane.getCommandBar();
         cmdBar.addToUserDefinedGenomeItemList(genomeListItem);
         cmdBar.selectGenomeFromList(genomeListItem.getId(), false);
-        cmdBar.updateGenome(genome);
+        cmdBar.updateChromosFromGenome(genome);
 
 
         // Reset the session (unload all tracks)
@@ -1314,8 +1309,8 @@ public class IGV {
     }
 
 
-    public void rebuildGenomeDropdownList(Set excludedArchivesUrls) {
-        contentPane.getCommandBar().rebuildGenomeItemList(excludedArchivesUrls);
+    public void rebuildGenomeDropdownList() {
+        contentPane.getCommandBar().rebuildGenomeItemList();
     }
 
     public void showLoadedTrackCount() {
