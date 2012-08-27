@@ -1,5 +1,6 @@
 package org.broad.igv.hic.track;
 
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
@@ -17,6 +18,7 @@ public class EigenvectorTrack extends AbstractTrack {
     double step;
     double[] data;
     private double dataMax;
+    private double median;
 
     public EigenvectorTrack(String id, String name) {
         super(id, name);
@@ -25,6 +27,7 @@ public class EigenvectorTrack extends AbstractTrack {
     public void setData(double step, double[] data) {
         this.step = step;
         this.data = data;
+        this.median = StatUtils.percentile(data, 50);
         dataMax = 0;
         for (double aData : data) {
             if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
@@ -58,8 +61,11 @@ public class EigenvectorTrack extends AbstractTrack {
 
             if (xPixel > lastXPixel && lastXPixel >= 0) {
 
-                int myh = (int) ((data[i] / dataMax) * h);
-                if (data[i] > 0) {
+                double x = data[i] - median;
+                double max = dataMax - median;
+
+                int myh = (int) ((x / max) * h);
+                if (x > 0) {
                     g2d.fillRect(lastXPixel, rect.y + h - myh, (xPixel - lastXPixel), myh);
                 } else {
                     g2d.fillRect(lastXPixel, rect.y + h, xPixel - lastXPixel, -myh);
