@@ -1,5 +1,6 @@
 package org.broad.igv.hic.track;
 
+import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
@@ -39,6 +40,8 @@ public class EigenvectorTrack extends AbstractTrack {
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void render(RenderContext context, Rectangle rect) {
+
+
 
         if (data == null) return;
 

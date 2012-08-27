@@ -588,9 +588,8 @@ public class MainWindow extends JFrame {
         Properties properties = null;
 
         try {
-            String url = System.getProperty("org.broad.hic.load-menu");
+            String url = System.getProperty("loadMenu");
             if(url == null) url = DEFAULT_LOAD_MENU;
-
             is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);

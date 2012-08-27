@@ -3,12 +3,17 @@ package org.broad.igv.hic.data;
 import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.broad.igv.data.WiggleDataset;
+import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
@@ -99,13 +104,11 @@ public class MatrixZoomData {
         String folder = rootPath + "/" + chr1.getName();
         String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".bin";
         String fullPath = folder + "/" + file;
-        if(FileUtils.resourceExists(fullPath)) {
+        if (FileUtils.resourceExists(fullPath)) {
             pearsons = ScratchPad.readPearsons(fullPath);
         }
 
     }
-
-
 
 
     public int getBinSize() {
@@ -188,7 +191,47 @@ public class MatrixZoomData {
     }
 
     public double[] getEigenvector() {
+        if (eigenvector == null) {
+            readEigenvector();
+        }
         return eigenvector;
+    }
+
+    private void readEigenvector() {
+
+        String rootPath = FileUtils.getParent(reader.getPath());
+        String folder = rootPath + "/" + chr1.getName();
+        String file = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".wig";
+        String fullPath = folder + "/" + file;
+        if (FileUtils.resourceExists(fullPath)) {
+            //Lots of assumptions made here about structure of wig file
+            BufferedReader br = null;
+
+            try {
+                br = ParsingUtils.openBufferedReader(fullPath);
+                String nextLine = br.readLine();  // The track line, ignored
+                DoubleArrayList arrayList = new DoubleArrayList(10000);  // TODO -- can size this exactly
+                while ((nextLine = br.readLine()) != null) {
+                    if(nextLine.startsWith("track") || nextLine.startsWith("fixedStep") || nextLine.startsWith("#")) {
+                        continue;
+                    }
+                    arrayList.add(Double.parseDouble(nextLine));
+                }
+                eigenvector = arrayList.toArray();
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (NumberFormatException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } finally {
+                if(br != null) try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+        }
+
     }
 
 
@@ -221,12 +264,11 @@ public class MatrixZoomData {
         int size = pearsons.getColumnDimension();
         eigenvector = new double[size];
         int num = 0;
-        for (int i=0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             if (i == nonCentromereColumns[num]) {
                 eigenvector[i] = ev[num];
                 num++;
-            }
-            else
+            } else
                 eigenvector[i] = 0;
         }
         return eigenvector;
@@ -251,7 +293,7 @@ public class MatrixZoomData {
                 oe.setRowVector(i, newV);
                 num++;
             }
-       }
+        }
 
         RealMatrix rm = (new PearsonsCorrelation()).computeCorrelationMatrix(oe);
         RealVector v = new ArrayRealVector(size);
@@ -260,8 +302,7 @@ public class MatrixZoomData {
             if (i != nonCentromereColumns[num]) {
                 rm.setRowVector(i, v);
                 rm.setColumnVector(i, v);
-            }
-            else num++;
+            } else num++;
         }
         pearsons = new RealMatrixWrapper(rm);
         return pearsons;
@@ -307,7 +348,7 @@ public class MatrixZoomData {
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
                     double observed = df.getNormalizedCount(rec.getCounts(), chr1.getIndex(), x * binSize, chr2.getIndex(), y * binSize);
-                   // double normCounts = (rec.getCounts() / expected);
+                    // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
@@ -416,7 +457,7 @@ public class MatrixZoomData {
 
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
-            assert(rows == cols);
+            assert (rows == cols);
             if (les != null)
                 les.writeInt(rows);
             else
@@ -429,7 +470,7 @@ public class MatrixZoomData {
                     for (int j = 0; j < cols; j++) {
                         float output = Float.NaN;
                         if (num2 >= nonCentromereColumns.length || j == nonCentromereColumns[num2]) {
-                            output = (float)row[j];
+                            output = (float) row[j];
                             num2++;
                         }
                         if (les != null)
@@ -438,8 +479,7 @@ public class MatrixZoomData {
                             System.out.print(output + " ");
                     }
                     num++;
-                }
-                else {
+                } else {
                     for (int j = 0; j < cols; j++) {
                         if (les != null)
                             les.writeFloat(Float.NaN);
@@ -454,7 +494,7 @@ public class MatrixZoomData {
                 System.out.println();
         } else {
 
-            RealMatrix rm = ((RealMatrixWrapper)computePearsons(df)).getMatrix();
+            RealMatrix rm = ((RealMatrixWrapper) computePearsons(df)).getMatrix();
             int rows = rm.getRowDimension();
             int cols = rm.getColumnDimension();
             if (les != null)
@@ -465,7 +505,7 @@ public class MatrixZoomData {
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
                     if (les != null)
-                        les.writeFloat((float)matrix[i][j]);
+                        les.writeFloat((float) matrix[i][j]);
                     else
                         System.out.print(matrix[i][j] + " ");
                 }
