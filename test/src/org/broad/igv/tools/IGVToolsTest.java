@@ -87,7 +87,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         assertTrue(indPath.endsWith(expectedExtension));
 
         final Set<String> exts = new HashSet<String>();
-        for(String ext: new String[]{".idx", ".sai", ".bai", ".fai"}){
+        for (String ext : new String[]{".idx", ".sai", ".bai", ".fai"}) {
             exts.add(ext);
         }
         File[] files = (new File(indDir)).listFiles(new FilenameFilter() {
@@ -520,7 +520,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
         String input = "sort --tmpDir=./ --maxRecords=50 " + inputFile + " " + outputFile;
         igvTools.run(input.split("\\s+"));
-        int numlines = SorterTest.checkBedSorted(oFile);
+        int numlines = SorterTest.checkFileSorted(oFile, 0, 1);
         assertEquals(71, numlines);
     }
 

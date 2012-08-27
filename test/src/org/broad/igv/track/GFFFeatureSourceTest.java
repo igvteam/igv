@@ -51,8 +51,9 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testGetAll() throws Exception {
-        String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/gene.gff3";
+        String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/gene.sorted.gff3";
         TestUtils.createIndex(filepath);
+
         GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
         String chr = "chr1";
         int start = 0;
@@ -86,7 +87,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery_01() throws Exception {
-        String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.gff";
+        String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.sorted.gff";
         TestUtils.createIndex(filepath);
         Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
 

@@ -84,7 +84,7 @@ public class TestUtils {
     }
 
     /**
-     * See TestUtils.createIndex(file, indexType, binSize)
+     * See {@link #createIndex(String, int, int)}
      *
      * @param file
      * @throws IOException
