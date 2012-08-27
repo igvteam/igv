@@ -13,7 +13,7 @@
 "version" refers to the spec version, not the database-->
 <database version="0"
           host="genome-mysql.cse.ucsc.edu"
-          path="hg19"
+          path="hg18"
           port=""
           subprotocol="mysql"
           username="genome"
@@ -24,14 +24,15 @@
     <table name="knownGene" format="ucscgene" description="Gene prediction track"
            chromoColName="chrom" posStartColName="txStart" posEndColName="txEnd"/>
 
-    <table name="affyExonProbesetCore" format="bed" description="Core PS"
-           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd" startColIndex="2" binColName="bin"/>
+    <table name="affyExonTissues" format="bed" description="Core PS"
+           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd" startColIndex="2"
+           endColIndex="13" binColName="bin"/>
 
     <table name="all_mrna" format="psl" description="Human mRNAs from GenBank"
            chromoColName="tName" posStartColName="tStart" posEndColName="tEnd" startColIndex="2" binColName="bin"/>
-           
-	<table name="snp135" format="bed" description="Polymorphism data from dbSNP"
-           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd" startColIndex="2" 
+
+    <table name="snp126" format="bed" description="Polymorphism data from dbSNP"
+           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd" startColIndex="2"
            endColIndex="7" binColName="bin"/>
 </database>
 	

@@ -21,7 +21,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
 import org.junit.Test;
 
 import java.io.File;
@@ -76,7 +75,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
         String host = "genome-mysql.cse.ucsc.edu";
 
-        String path = "hg19";
+        String path = "hg18";
         String port = null;
 
         String url = DBManager.createConnectionURL("mysql", host, path, port);
@@ -95,7 +94,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
             SQLFeatures.next();
             count++;
         }
-        assertEquals(9, count);
+        assertEquals(12, count);
 
         /**
          * We should be getting unique names only
@@ -118,7 +117,7 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadUCSCFromProfileBED() throws Exception {
-        tstLoadFromProfile(profilePath, "affyExonProbesetCore");
+        tstLoadFromProfile(profilePath, "affyExonTissues");
     }
 
     @Test
@@ -128,10 +127,10 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testLoadUCSCFromProfileSNP() throws Exception {
-        SQLCodecSource source = tstLoadFromProfile(profilePath, "snp135");
+        SQLCodecSource source = tstLoadFromProfile(profilePath, "snp126");
         Iterator<Feature> feats = source.getFeatures("chr2", 10000, 100000);
         int count = 0;
-        while(feats.hasNext()){
+        while (feats.hasNext()) {
             BasicFeature f = (BasicFeature) feats.next();
             assertEquals(0.0f, f.getScore());
             assertFalse(f.hasExons());
@@ -176,16 +175,16 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testQueryWithBins() throws Exception{
+    public void testQueryWithBins() throws Exception {
         tstQueryWithBins(profilePath, "all_mrna", "chr3", 500, 500000);
     }
 
     @Test
-    public void testQueryWithBins_big() throws Exception{
+    public void testQueryWithBins_big() throws Exception {
         tstQueryWithBins(profilePath, "all_mrna", "chr1", 0, (int) 247e4);
     }
 
-    public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception{
+    public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception {
         SQLCodecSource binSource = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
         assertNotNull(binSource.binColName);
 
@@ -215,7 +214,6 @@ public class SQLCodecSourceTest extends AbstractHeadlessTest {
         }
 
         assertFalse(noBinFeats.hasNext());
-
 
 
     }
