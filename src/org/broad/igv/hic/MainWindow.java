@@ -65,6 +65,9 @@ import java.util.concurrent.Future;
  */
 public class MainWindow extends JFrame {
 
+    //private static String DEFAULT_LOAD_MENU = "http://www.broadinstitute.org/igvdata/hic/hicExternalMenu.properties";
+    private static String DEFAULT_LOAD_MENU = "http://iwww.broadinstitute.org/igvdata/hic/files/hicInternalMenu.properties";
+
     private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
     HiC hic;
@@ -585,7 +588,10 @@ public class MainWindow extends JFrame {
         Properties properties = null;
 
         try {
-            is = MainWindow.class.getResourceAsStream("mainwindow.properties");
+            String url = System.getProperty("org.broad.hic.load-menu");
+            if(url == null) url = DEFAULT_LOAD_MENU;
+
+            is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);
         }
