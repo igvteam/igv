@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
@@ -16,7 +27,7 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(SparseAlignmentCounts.class);
     private int maxCount = 0;
-    List<Integer> indeces;
+    List<Integer> indices;
 
 
     /**
@@ -47,30 +58,33 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
 
     public SparseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        this(start, end, bisulfiteContext, 1000);
+    }
 
+    public SparseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext, int initSize) {
         super(start, end, bisulfiteContext);
 
-        indexMap = new HashMap<Integer, Integer>(1000);
-        posA = new IntArrayList(1000);
-        posT = new IntArrayList(1000);
-        posC = new IntArrayList(1000);
-        posG = new IntArrayList(1000);
-        posN = new IntArrayList(1000);
-        posTotal = new IntArrayList(1000);
-        negA = new IntArrayList(1000);
-        negT = new IntArrayList(1000);
-        negC = new IntArrayList(1000);
-        negG = new IntArrayList(1000);
-        negN = new IntArrayList(1000);
-        negTotal = new IntArrayList(1000);
-        qA = new IntArrayList(1000);
-        qT = new IntArrayList(1000);
-        qC = new IntArrayList(1000);
-        qG = new IntArrayList(1000);
-        qN = new IntArrayList(1000);
-        del = new IntArrayList(1000);
-        ins = new IntArrayList(1000);
-        totalQ = new IntArrayList(1000);
+        indexMap = new HashMap<Integer, Integer>(initSize);
+        posA = new IntArrayList(initSize);
+        posT = new IntArrayList(initSize);
+        posC = new IntArrayList(initSize);
+        posG = new IntArrayList(initSize);
+        posN = new IntArrayList(initSize);
+        posTotal = new IntArrayList(initSize);
+        negA = new IntArrayList(initSize);
+        negT = new IntArrayList(initSize);
+        negC = new IntArrayList(initSize);
+        negG = new IntArrayList(initSize);
+        negN = new IntArrayList(initSize);
+        negTotal = new IntArrayList(initSize);
+        qA = new IntArrayList(initSize);
+        qT = new IntArrayList(initSize);
+        qC = new IntArrayList(initSize);
+        qG = new IntArrayList(initSize);
+        qN = new IntArrayList(initSize);
+        del = new IntArrayList(initSize);
+        ins = new IntArrayList(initSize);
+        totalQ = new IntArrayList(initSize);
     }
 
     public int getStart() {
@@ -82,11 +96,11 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
     public int getNumberOfPoints() {
-        return indeces == null ? 0 : indeces.size();
+        return indices == null ? 0 : indices.size();
     }
 
     public int getPosition(int idx) {
-        return indeces.get(idx);
+        return indices.get(idx);
     }
 
 
@@ -424,9 +438,74 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
     public void finish() {
-        indeces = new ArrayList<Integer>(indexMap.keySet());
-        Collections.sort(indeces);
+        indices = new ArrayList<Integer>(indexMap.keySet());
+        Collections.sort(indices);
+    }
 
+    public AlignmentCounts merge(AlignmentCounts other, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        if (other.getClass() != this.getClass()) {
+            throw new IllegalArgumentException("Cannot merge different types of AlignmentCount instances");
+        }
+        return SparseAlignmentCounts.merge(this, (SparseAlignmentCounts) other, bisulfiteContext);
+    }
+
+    private static SparseAlignmentCounts merge(SparseAlignmentCounts first, SparseAlignmentCounts second, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        if (second.getStart() < first.getStart()) {
+            SparseAlignmentCounts tmp = first;
+            first = second;
+            second = tmp;
+        }
+
+        int totalPoints = first.getNumberOfPoints() + second.getNumberOfPoints();
+
+        SparseAlignmentCounts result = new SparseAlignmentCounts(first.getStart(), second.getEnd(), bisulfiteContext, totalPoints);
+
+        addRawCounts(result, first);
+        addRawCounts(result, second);
+        result.maxCount = Math.max(first.getMaxCount(), second.getMaxCount());
+        result.finish();
+        return result;
+    }
+
+    /**
+     * Take raw data from input and place it into result. Indexing is
+     * consistent within {@code result}, which may not be the same as input.
+     * Previous data is not overwritten
+     *
+     * @param result
+     * @param input
+     */
+    private static void addRawCounts(SparseAlignmentCounts result, SparseAlignmentCounts input) {
+
+        IntArrayList[] inputArrs = getCountArrs(input);
+        IntArrayList[] destArrs = getCountArrs(result);
+        IntArrayList destArr;
+
+        for (int arrayPos = 0; arrayPos < input.getNumberOfPoints(); arrayPos++) {
+            int genomePos = input.indices.get(arrayPos);
+            if (!result.indexMap.containsKey(genomePos)) {
+                for (int arnum = 0; arnum < destArrs.length; arnum++) {
+                    destArr = destArrs[arnum];
+                    destArr.add(inputArrs[arnum].get(arrayPos));
+                }
+                result.getIndex(genomePos);
+            }
+        }
+    }
+
+    /**
+     * Create an array of the arrays we use to keep track of data
+     *
+     * @param counts
+     * @return
+     */
+    private static IntArrayList[] getCountArrs(SparseAlignmentCounts counts) {
+
+        IntArrayList[] result = {counts.posA, counts.posT, counts.posC, counts.posG, counts.posN,
+                counts.negA, counts.negT, counts.negC, counts.negG, counts.negN,
+                counts.qA, counts.qT, counts.qC, counts.qG, counts.qN, counts.posTotal, counts.negTotal,
+                counts.del, counts.ins, counts.totalQ};
+        return result;
     }
 
 }

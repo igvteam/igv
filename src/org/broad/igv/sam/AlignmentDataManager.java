@@ -388,9 +388,6 @@ public class AlignmentDataManager {
 
         List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
 
-        List<AlignmentCounts> counts = new ArrayList();
-        counts.add(t.getCounts());
-
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
 
         // Since we (potentially) downsampled,  we need to sort
@@ -408,7 +405,7 @@ public class AlignmentDataManager {
         LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
                 end, renderOptions);
 
-        return new AlignmentInterval(chr, start, end, alignmentRows, counts, spliceJunctions, downsampledIntervals,
+        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctions, downsampledIntervals,
                 renderOptions);
     }
 

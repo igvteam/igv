@@ -17,6 +17,7 @@ import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -31,15 +32,30 @@ import static junit.framework.Assert.*;
 public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
     @Test
-    public void testMerge() throws Exception {
+    public void testMergeDense() throws Exception {
         String infilepath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+        String chr = "chr1";
+        int start = 151666494;
+        int halfwidth = 1024;
+        tstMerge(infilepath, chr, start, halfwidth);
+    }
+
+    @Ignore
+    @Test
+    public void testMergeSparse() throws Exception {
+        String infilepath = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_JPT.1.bam";
+        String chr = "chr1";
+        int halfwidth = 2 * 10000000;
+        int start = 151666494 - halfwidth;
+        tstMerge(infilepath, chr, start, halfwidth);
+    }
+
+    public void tstMerge(String infilepath, String chr, int start, int halfwidth) throws Exception {
+
         ResourceLocator locator = new ResourceLocator(infilepath);
         AlignmentDataManager baseManager = new AlignmentDataManager(locator, genome);
         AlignmentDataManager testManager = new AlignmentDataManager(locator, genome);
 
-        String chr = "chr1";
-        int start = 151666494;
-        int halfwidth = 1024;
         int end = start + 2 * halfwidth;
         Locus locus = new Locus(chr, start, end);
 
@@ -83,11 +99,41 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         AlignmentInterval merged = begInterval.get(0);
         merged.merge(endInterval.get(0));
 
-        TestUtils.assertFeatureListsEqual(baseInterval.getCounts().iterator(), merged.getCounts().iterator());
+        assertAlignmentCountsEqual(baseInterval.getCounts(), merged.getCounts());
 
         TestUtils.assertFeatureListsEqual(baseInterval.getDownsampledIntervals().iterator(), merged.getDownsampledIntervals().iterator());
 
         TestUtils.assertFeatureListsEqual(baseInterval.getAlignmentIterator(), merged.getAlignmentIterator());
+
+    }
+
+    private void assertAlignmentCountsEqual(AlignmentCounts expected, AlignmentCounts actual) {
+        assertEquals(expected.getMaxCount(), actual.getMaxCount());
+        assertEquals(expected.getNumberOfPoints(), actual.getNumberOfPoints());
+        TestUtils.assertFeaturesEqual(expected, actual);
+        byte[] bases = {'a', 'A', 'c', 'C', 'g', 'G', 't', 'T', 'n', 'N'};
+
+        for (int pos = expected.getStart(); pos < expected.getEnd(); pos++) {
+            assertEquals(expected.getDelCount(pos), actual.getDelCount(pos));
+            assertEquals(expected.getInsCount(pos), actual.getInsCount(pos));
+
+            assertEquals(expected.getTotalCount(pos), actual.getTotalCount(pos));
+            assertEquals(expected.getTotalQuality(pos), actual.getTotalQuality(pos));
+
+            //We don't test these because they aren't used anywhere else
+            //assertEquals(expected.getPosTotal(pos), actual.getPosTotal(pos));
+            //assertEquals(expected.getNegTotal(pos), actual.getNegTotal(pos));
+
+            for (byte b : bases) {
+                assertEquals(expected.getCount(pos, b), actual.getCount(pos, b));
+                assertEquals(expected.getNegCount(pos, b), actual.getNegCount(pos, b));
+                assertEquals(expected.getPosCount(pos, b), actual.getPosCount(pos, b));
+                assertEquals(expected.getQuality(pos, b), actual.getQuality(pos, b));
+
+                //Not used anywhere
+                //assertEquals(expected.getAvgQuality(pos, b), actual.getAvgQuality(pos, b));
+            }
+        }
 
     }
 
