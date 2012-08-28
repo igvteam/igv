@@ -290,7 +290,6 @@ public class AlignmentDataManager {
             }
         }
 
-
         if (expandEnds) {
             int length = Math.max(100000, end - start);
             adjustedStart = Math.max(0, start - length / 2);
@@ -349,14 +348,7 @@ public class AlignmentDataManager {
 
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
-                // Expand start and end to facilitate panning
-                int expandLength = (end - start) / 2; // reader.getTileSize(chr) / 2;
-                int intervalStart = start - expandLength;
-                int intervalEnd = end + expandLength;
-
-                AlignmentInterval loadedInterval = loadInterval(chr, intervalStart, intervalEnd, renderOptions);
-
-
+                AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
                 addLoadedInterval(context, loadedInterval);
 
 
@@ -371,7 +363,6 @@ public class AlignmentDataManager {
                 }
 
                 isLoading = false;
-//                }
             }
         };
 
