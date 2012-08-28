@@ -504,6 +504,7 @@ public class MainWindow extends JFrame {
         } else {
             trackPanel.setVisible(false);
         }
+        invalidate();
         pack();
         repaint();
 

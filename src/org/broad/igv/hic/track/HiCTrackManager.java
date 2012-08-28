@@ -67,7 +67,7 @@ public class HiCTrackManager {
                     Genome genome = loadGenome();
 
                     String path = f.getAbsolutePath();
-                   // genome = GenomeManager.getInstance().getCurrentGenome();
+                    // genome = GenomeManager.getInstance().getCurrentGenome();
                     ResourceLocator locator = new ResourceLocator(path);
                     List<Track> tracks = (new TrackLoader()).load(locator, genome);
                     loadedTracks.addAll(tracks);
@@ -91,33 +91,42 @@ public class HiCTrackManager {
             final Collection<String> selectedTracks = dlg.getSelectedTracks();
 
             // Unload de-selected tracks
+            boolean trackRemoved = false;
             Iterator<Track> trackIterator = loadedTracks.iterator();
             final Set<String> loadedTrackNames = new HashSet<String>();
             while (trackIterator.hasNext()) {
                 final Track track = trackIterator.next();
                 if (!selectedTracks.contains(track.getName())) {
                     trackIterator.remove();
+                    trackRemoved = true;
                 } else {
                     loadedTrackNames.add(track.getName());
                 }
             }
 
-            // Load new tracks
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    for (String trackName : selectedTracks) {
-                        if (!loadedTrackNames.contains(trackName)) {
-                            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                            ResourceLocator locator = locatorMap.get(trackName);
-                            List<Track> tracks = (new TrackLoader()).load(locator, genome);
-                            loadedTracks.addAll(tracks);
-                        }
-                    }
-                    parent.updateTrackPanel();
+            if (trackRemoved) {
+                parent.updateTrackPanel();
+            }
 
-                }
-            };
-            parent.executeLongRunningTask(runnable);
+
+            // Load new tracks
+            if (selectedTracks.size() > 0) {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        for (String trackName : selectedTracks) {
+                            if (!loadedTrackNames.contains(trackName)) {
+                                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                                ResourceLocator locator = locatorMap.get(trackName);
+                                List<Track> tracks = (new TrackLoader()).load(locator, genome);
+                                loadedTracks.addAll(tracks);
+                            }
+                        }
+                        parent.updateTrackPanel();
+
+                    }
+                };
+                parent.executeLongRunningTask(runnable);
+            }
         }
 
     }
@@ -134,13 +143,6 @@ public class HiCTrackManager {
             }
         }
         return genome;
-    }
-
-
-    public static void addTrack(Track track) {
-        if (track != null && !loadedTracks.contains(track)) {
-            loadedTracks.add(track);
-        }
     }
 
     public static List<Track> getLoadedTracks() {
