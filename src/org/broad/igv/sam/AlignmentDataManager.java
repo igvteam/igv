@@ -276,10 +276,16 @@ public class AlignmentDataManager {
                     haveInterval = true;
                     break;
                 } else if (loadedInterval.overlaps(chr, start, end, context.getZoom())) {
-                    //We have part of the interval, only need to lead the portion
-                    //we don't have
-                    adjustedStart = Math.max(start, loadedInterval.getStart() - 1);
-                    adjustedEnd = Math.min(end, loadedInterval.getEnd() + 1);
+                    //We have part of the interval, only need to load the portion we don't have
+                    if (start < loadedInterval.getStart() && end <= loadedInterval.getEnd()) {
+                        //new interval on left side
+                        adjustedEnd = loadedInterval.getStart() + 1;
+                    } else if (start >= loadedInterval.getStart() && end > loadedInterval.getEnd()) {
+                        //new interval on right side
+                        adjustedStart = loadedInterval.getEnd() - 1;
+                    }
+                    //Ignoring the case where start < loadedInterval.getStart() && end > loadedInterval.getEnd()
+                    //Shouldn't happen too much, and only loss is of efficiency not correctness
                 }
             }
         }
@@ -344,7 +350,6 @@ public class AlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
                 // Expand start and end to facilitate panning
-
                 int expandLength = (end - start) / 2; // reader.getTileSize(chr) / 2;
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
@@ -388,7 +393,7 @@ public class AlignmentDataManager {
         AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, showSpliceJunctions,
                 downsampleOptions, peStats, bisulfiteContext);
 
-        List<Alignment> alignments =  t.getAlignments();
+        List<Alignment> alignments = t.getAlignments();
 
         List<SpliceJunctionFeature> spliceJunctions = t.getSpliceJunctionFeatures();
 
@@ -398,14 +403,14 @@ public class AlignmentDataManager {
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
 
         // Since we (potentially) downsampled,  we need to sort
-        Comparator<Alignment> alignmentSorter = new Comparator<Alignment> () {
+        Comparator<Alignment> alignmentSorter = new Comparator<Alignment>() {
             public int compare(Alignment alignment, Alignment alignment1) {
                 return alignment.getStart() - alignment1.getStart();
             }
         };
         Collections.sort(alignments, alignmentSorter);
 
-        Iterator<Alignment> iter =  alignments.iterator();
+        Iterator<Alignment> iter = alignments.iterator();
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
