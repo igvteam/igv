@@ -109,7 +109,7 @@ public class TestUtils {
     }
 
     /**
-     * Load a test genome, do some test setup
+     * Load a test genome
      *
      * @return
      * @throws IOException

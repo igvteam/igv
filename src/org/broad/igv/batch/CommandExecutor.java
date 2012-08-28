@@ -271,7 +271,7 @@ public class CommandExecutor {
         if (param1 == null) {
             return "ERROR missing genome parameter";
         }
-        String result;
+        String result = "OK";
         String genomeID = param1;
 
         if (igv.getSelectableGenomeIDs().contains(genomeID)) {
@@ -279,7 +279,7 @@ public class CommandExecutor {
         } else {
             String genomePath = genomeID;
             if (!ParsingUtils.pathExists(genomePath)) {
-                String workingDirectory = (new File("tmp")).getParent();
+                String workingDirectory = System.getProperty("user.dir", "");
                 genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
             }
             if (ParsingUtils.pathExists(genomePath)) {
@@ -289,11 +289,11 @@ public class CommandExecutor {
                     throw new RuntimeException("Error loading genome: " + genomeID);
                 }
             } else {
-                MessageUtils.showMessage("Warning: Could not locate genome: " + genomeID);
+                result = "ERROR: Could not locate genome: " + genomeID;
+                MessageUtils.showMessage(result);
             }
         }
 
-        result = "OK";
         return result;
     }
 

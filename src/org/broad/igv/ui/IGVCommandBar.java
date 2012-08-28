@@ -572,7 +572,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         Set<String> displayNames = new HashSet<String>();
         Set<Object> listItems = combineGenomeLists(false, Integer.MAX_VALUE);
         for (Object object : listItems) {
-            if (!(object instanceof GenomeListItem)) {
+            if (object instanceof GenomeListItem) {
                 GenomeListItem genomeListItem = (GenomeListItem) object;
                 displayNames.add(genomeListItem.getDisplayableName());
             }
@@ -590,7 +590,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         Set<String> ids = new HashSet<String>();
         Set<Object> listItems = combineGenomeLists(false, Integer.MAX_VALUE);
         for (Object object : listItems) {
-            if (!(object instanceof GenomeListItem)) {
+            if (object instanceof GenomeListItem) {
                 GenomeListItem genomeListItem = (GenomeListItem) object;
                 ids.add(genomeListItem.getId());
             }
@@ -605,17 +605,18 @@ public class IGVCommandBar extends javax.swing.JPanel {
      * @param item
      */
     private void selectGenomeListItem(GenomeListItem item) {
-        if (!getSelectableGenomeIDs().contains(item.getId())) {
+        //No way of knowing of this item is actually in the combo box
+        //we just try and set it, and if that fails load it in
+        genomeComboBox.setSelectedItem(item);
+        if (genomeComboBox.getSelectedItem() != item) {
             if (item.isUserDefined()) {
                 userDefinedGenomeItemList.add(0, item);
             } else {
                 getServerGenomeItemList().add(0, item);
             }
             rebuildGenomeItemList();
+            genomeComboBox.setSelectedItem(item);
         }
-        genomeComboBox.setSelectedItem(item);
-
-
     }
 
     /**
