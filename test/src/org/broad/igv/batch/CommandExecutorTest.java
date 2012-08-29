@@ -15,6 +15,7 @@ import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -46,6 +47,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     public void setUp() throws Exception {
         super.setUp();
         Globals.setBatch(true);
+        igv.loadGenome(TestUtils.defaultGenome, null);
+        igv.removeTracks(igv.getAllTracks());
         igv.getSession().clearRegionsOfInterest();
         exec.setSnapshotDirectory(snapshotDir);
     }
@@ -165,13 +168,18 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     public void testLoadURL() throws Exception {
+        //This is mostly to ruggedize test setup. The setup may load
+        //reference/sequence tracks, we'd like to be able to change
+        //test setup and not worry about this test.
+        int beginTracks = igv.getAllTracks().size();
+
         String urlPath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
         exec.loadFiles(urlPath, null, true, "hasSpaces");
 
         String localPath = TestUtils.DATA_DIR + "bed/test.bed";
         exec.loadFiles(localPath, null, true, null);
 
-        assertEquals(2, igv.getAllTracks().size());
+        assertEquals(2, igv.getAllTracks().size() - beginTracks);
     }
 
     @Test
@@ -192,6 +200,27 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         }
 
 
+    }
+
+    @Test
+    public void testLoadGenomesSuccess() throws Exception {
+        String[] genomeIds = new String[]{"hg19", "mm10", "rn5", "canFam2", "bosTau7", "sacCer3", "WS220"};
+        for (String genomeId : genomeIds) {
+            String result = exec.execute("genome " + genomeId);
+            assertEquals("OK", result);
+            assertEquals(genomeId, GenomeManager.getInstance().getCurrentGenome().getId());
+        }
+    }
+
+    @Test
+    public void testLoadGenomesFail() throws Exception {
+        String startId = genome.getId();
+        String[] genomeIds = new String[]{"hg1920", "inch10", "doctor5"};
+        for (String genomeId : genomeIds) {
+            String result = exec.execute("genome " + genomeId);
+            assertTrue(result.toLowerCase().startsWith(("error")));
+            assertEquals(startId, GenomeManager.getInstance().getCurrentGenome().getId());
+        }
     }
 
 }

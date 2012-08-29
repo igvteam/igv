@@ -49,12 +49,21 @@ public interface AlignmentCounts extends Feature {
 
     String getValueStringAt(int pos);
 
-    public boolean isMismatch(int pos, byte ref, String chr, float snpThreshold);
+    boolean isMismatch(int pos, byte ref, String chr, float snpThreshold);
 
     BisulfiteCounts getBisulfiteCounts();
 
     void finish();
 
+    /**
+     * Return the result of merging this alignment with {@code other}.
+     * This alignment is not changed
+     *
+     * @param other
+     * @param bisulfiteContext
+     * @return
+     */
+    AlignmentCounts merge(AlignmentCounts other, AlignmentTrack.BisulfiteContext bisulfiteContext);
 
     static interface PositionIterator {
         int nextPosition();

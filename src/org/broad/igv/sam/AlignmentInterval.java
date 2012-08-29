@@ -39,7 +39,7 @@ public class AlignmentInterval extends Locus implements Interval {
 
     Genome genome;
     private int maxCount = 0;
-    private List<AlignmentCounts> counts;
+    private AlignmentCounts counts;
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;  // The alignments
     private List<SpliceJunctionFeature> spliceJunctions;
     private List<DownsampledInterval> downsampledIntervals;
@@ -47,7 +47,7 @@ public class AlignmentInterval extends Locus implements Interval {
 
     public AlignmentInterval(String chr, int start, int end,
                              LinkedHashMap<String, List<Row>> groupedAlignmentRows,
-                             List<AlignmentCounts> counts,
+                             AlignmentCounts counts,
                              List<SpliceJunctionFeature> spliceJunctions,
                              List<DownsampledInterval> downsampledIntervals,
                              AlignmentTrack.RenderOptions renderOptions) {
@@ -58,9 +58,7 @@ public class AlignmentInterval extends Locus implements Interval {
 
         //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
-        for (AlignmentCounts c : counts) {
-            maxCount = Math.max(maxCount, c.getMaxCount());
-        }
+        this.maxCount = counts.getMaxCount();
 
         this.spliceJunctions = spliceJunctions;
         this.downsampledIntervals = downsampledIntervals;
@@ -168,7 +166,7 @@ public class AlignmentInterval extends Locus implements Interval {
         return genome.getReference(getChr(), pos);
     }
 
-    public List<AlignmentCounts> getCounts() {
+    public AlignmentCounts getCounts() {
         return counts;
     }
 
@@ -180,10 +178,9 @@ public class AlignmentInterval extends Locus implements Interval {
      * @return
      */
     public int getCount(int pos, byte b) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getCount(pos, b);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getCount(pos, b);
         }
         return 0;
     }
@@ -193,56 +190,50 @@ public class AlignmentInterval extends Locus implements Interval {
     }
 
     public AlignmentCounts getAlignmentCounts(int pos) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c;
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c;
         }
         return null;
 
     }
 
     public int getTotalCount(int pos) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getTotalCount(pos);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getTotalCount(pos);
         }
         return 0;
     }
 
     public int getNegCount(int pos, byte b) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getNegCount(pos, b);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getNegCount(pos, b);
         }
         return 0;
     }
 
     public int getPosCount(int pos, byte b) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getPosCount(pos, b);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getPosCount(pos, b);
         }
         return 0;
     }
 
     public int getDelCount(int pos) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getDelCount(pos);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getDelCount(pos);
         }
         return 0;
     }
 
     public int getInsCount(int pos) {
-        for (AlignmentCounts c : counts) {
-            if (pos >= c.getStart() && pos < c.getEnd()) {
-                return c.getInsCount(pos);
-            }
+        AlignmentCounts c = counts;
+        if (pos >= c.getStart() && pos < c.getEnd()) {
+            return c.getInsCount(pos);
         }
         return 0;
     }
@@ -281,7 +272,7 @@ public class AlignmentInterval extends Locus implements Interval {
         List<Alignment> allAlignments = (List<Alignment>) FeatureUtils.combineSortedFeatureListsNoDups(
                 getAlignmentIterator(), other.getAlignmentIterator(), start, end);
 
-        this.counts = FeatureUtils.combineSortedFeatureListsNoDups(this.counts, other.getCounts(), start, end);
+        this.counts = counts.merge(other.getCounts(), renderOptions.bisulfiteContext);
         this.spliceJunctions = FeatureUtils.combineSortedFeatureListsNoDups(this.spliceJunctions, other.getSpliceJunctions(), start, end);
         this.downsampledIntervals = FeatureUtils.combineSortedFeatureListsNoDups(this.downsampledIntervals, other.getDownsampledIntervals(), start, end);
 
@@ -331,7 +322,7 @@ public class AlignmentInterval extends Locus implements Interval {
         }
 
         Predicate<Feature> overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
-        Utilities.filter(this.getCounts(), overlapPredicate);
+        //getCounts().trimTo(chr, start, end);
         Utilities.filter(this.getDownsampledIntervals(), overlapPredicate);
         Utilities.filter(this.getSpliceJunctions(), overlapPredicate);
 

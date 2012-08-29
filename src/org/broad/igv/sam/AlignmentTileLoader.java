@@ -88,7 +88,6 @@ public class AlignmentTileLoader {
     }
 
 
-
     AlignmentTile loadTile(String chr, int start, int end,
                            boolean showSpliceJunctions,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
@@ -417,7 +416,7 @@ public class AlignmentTileLoader {
                 spliceJunctionHelper.finish();
                 List<SpliceJunctionFeature> features = spliceJunctionHelper.getFeatures();
                 for (SpliceJunctionFeature f : features) {
-                        spliceJunctionFeatures.add(f);
+                    spliceJunctionFeatures.add(f);
                 }
             }
             spliceJunctionHelper = null;
@@ -445,7 +444,6 @@ public class AlignmentTileLoader {
 
             public void add(Alignment alignment) {
                 // If the current bucket is < max depth we keep it.  Otherwise,  keep with probability == samplingProb
-                // If we have the mate in the bucket already, always keep it.
                 if (alignments.size() < samplingDepth) {
                     alignments.add(alignment);
                 } else {
