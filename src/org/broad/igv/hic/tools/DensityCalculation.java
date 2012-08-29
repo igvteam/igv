@@ -72,7 +72,7 @@ public class DensityCalculation {
             numberOfBins = (int) totalLen;
         else
             numberOfBins = (int) (totalLen / gridSize) + 1;
-        System.out.println(numberOfBins);
+
         actualDistances = new double[numberOfBins];
         rowSums = new double[numberOfBins];
         coverageNorms = new double[numberOfBins];

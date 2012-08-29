@@ -175,7 +175,10 @@ public class Preprocessor {
     private void calculateDensities(List<String> paths, BufferedByteWriter buffer) throws IOException {
         DensityCalculation[] calcs = new DensityCalculation[Dataset.getNumberZooms()];
         for (int z = 0; z < Dataset.getNumberZooms(); z++) {
-            calcs[z] = new DensityCalculation(chromosomes, Dataset.getZoom(z), fragmentCalculation, isNewVersion);
+            if (fragmentCalculation == null && Dataset.getZoom(z) == 1)
+                calcs[z] = null;
+            else
+                calcs[z] = new DensityCalculation(chromosomes, Dataset.getZoom(z), fragmentCalculation, isNewVersion);
         }
         if (isNewVersion) {
             System.out.println("Calculating coverage normalization");
@@ -192,7 +195,8 @@ public class Preprocessor {
             }
 
             for (int z = 0; z < Dataset.getNumberZooms(); z++) {
-                calcs[z].computeCoverageNormalization();
+                if (calcs[z] != null)
+                    calcs[z].computeCoverageNormalization();
             }
         }
         System.out.println("Calculating distance normalization");
@@ -205,13 +209,15 @@ public class Preprocessor {
                 if (pair.getChr1() == pair.getChr2()) {
                     int index = pair.getChr1();
                     for (int z = 0; z < Dataset.getNumberZooms(); z++) {
-                        calcs[z].addDistance(index, pair.getPos1(), pair.getPos2());
+                        if (calcs[z] != null)
+                            calcs[z].addDistance(index, pair.getPos1(), pair.getPos2());
                     }
                 }
             }
         }
         for (int z = 0; z < Dataset.getNumberZooms(); z++) {
-            calcs[z].computeDensity();
+            if (calcs[z] != null)
+                calcs[z].computeDensity();
         }
         System.out.println("Writing expected normalizations");
         outputDensities(calcs, buffer);
@@ -286,14 +292,17 @@ public class Preprocessor {
     }
 
     private static void incrementCount(MatrixPP matrix, int chr1, int pos1, int chr2, int pos2) {
-
-        if (chr2 > chr1) {
-            //transpose
-            int tp2 = pos2;
-            pos2 = pos1;
-            pos1 = tp2;
-        }
-
+         // I don't understand why we did this.  And chr1, chr2 are redundant
+//        if (chr2 > chr1) {
+//            //transpose
+//            int tc2 = chr2;
+//            int tp2 = pos2;
+//            chr2 = chr1;
+//            pos2 = pos1;
+//            chr1 = tc2;
+//            pos1 = tp2;
+//        }
+         System.out.println("chr1 = " + chr1 + " chr2 = " + chr2 + " pos1 = " + pos1 + " pos2 = " + pos2);
         matrix.incrementCount(pos1, pos2);
     }
 
@@ -351,9 +360,15 @@ public class Preprocessor {
     }
 
     private void outputDensities(DensityCalculation[] calcs, BufferedByteWriter buffer) throws IOException {
-        buffer.putInt(calcs.length);
+        int numCalcs = 0;
+        for (int i=0; i < calcs.length; i++)
+            if (calcs[i] != null)
+                numCalcs++;
+
+        buffer.putInt(numCalcs);
         for (int i = 0; i < calcs.length; i++) {
-            calcs[i].outputBinary(buffer, isNewVersion);
+            if (calcs[i] != null)
+                calcs[i].outputBinary(buffer, isNewVersion);
         }
     }
 
@@ -368,15 +383,18 @@ public class Preprocessor {
         fos.writeInt(matrix.getChr2());
         fos.writeInt(matrix.getZoomData().length);
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
-            writeZoomHeader(zd);
+            if (zd != null)
+                writeZoomHeader(zd);
         }
         int size = (int) (fos.getWrittenCount() - position);
         matrixPositions.put(matrix.getKey(), new IndexEntry(position, size));
 
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
-            IndexEntry[] blockIndex = writeZoomData(zd);
-            final String blockKey = getBlockKey(zd);
-            blockIndexMap.put(blockKey, blockIndex);
+            if (zd != null) {
+                IndexEntry[] blockIndex = writeZoomData(zd);
+                final String blockKey = getBlockKey(zd);
+                blockIndexMap.put(blockKey, blockIndex);
+            }
         }
 
         System.out.println("Done writing matrix: " + matrix.getKey());
@@ -572,14 +590,18 @@ public class Preprocessor {
                 if (binSize == 1 && fragmentCalculation != null) {
                     // Size block (submatrices) to be ~500 bins wide.
                     nBins = Math.max(fragmentCalculation.getNumberFragments(chrom1), fragmentCalculation.getNumberFragments(chrom2));
+                    int nColumns = Math.max(1, nBins / 500);
+                    zoomData[zoom] = new MatrixZoomDataPP(chrom1, chrom2, binSize, nColumns, zoom);
+
                 }
-                else  {       // this might break in the meantime, before frags are completely implemented.
+                else  if (binSize > 1) {       // this might break in the meantime, before frags are completely implemented.
                     // Size block (submatrices) to be ~500 bins wide.
                     int len = Math.max(chrom1.getLength(), chrom2.getLength());
                     nBins = len / binSize;   // Size of chrom in bins
+                    int nColumns = Math.max(1, nBins / 500);
+                    zoomData[zoom] = new MatrixZoomDataPP(chrom1, chrom2, binSize, nColumns, zoom);
+
                 }
-                int nColumns = Math.max(1, nBins / 500);
-                zoomData[zoom] = new MatrixZoomDataPP(chrom1, chrom2, binSize, nColumns, zoom);
 
             }
         }
@@ -614,14 +636,16 @@ public class Preprocessor {
         void incrementCount(int pos1, int pos2) {
 
             for (int i = 0; i < zoomData.length; i++) {
-                zoomData[i].incrementCount(pos1, pos2);
+                if (zoomData[i] != null)   // fragment level could be null
+                    zoomData[i].incrementCount(pos1, pos2);
             }
 
         }
 
         void parsingComplete() {
             for (MatrixZoomDataPP zd : zoomData) {
-                zd.parsingComplete();
+                if (zd != null) // fragment level could be null
+                    zd.parsingComplete();
             }
         }
 
@@ -730,8 +754,10 @@ public class Preprocessor {
             int yBin;
 
             if (binSize == 1) {
+
                 xBin = fragmentCalculation.getBin(chr1, pos1);
                 yBin = fragmentCalculation.getBin(chr2, pos2);
+                System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
             }
             else {
                 xBin = pos1 / getBinSize();

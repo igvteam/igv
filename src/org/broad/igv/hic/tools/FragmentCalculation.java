@@ -75,19 +75,25 @@ public class FragmentCalculation {
         return binarySearch(fragmentMap.get(chromosome), position);
     }
 
+    /**
+     * Return fragment that this position lies on.  Fragment 0 means position < sites[0].
+     * Fragment 1 means position >= sites[0] and <= sites[1].  (Equal should not happen in practice.)
+     * @param sites  The sorted array of fragment sites for the chromosome
+     * @param position The position to search for within that array
+     * @return    The fragment location such that position > sites[retVal-1] and position < sites[retVal]
+     */
     private int binarySearch(int[] sites, int position) {
         int lo = 0;
         int hi = sites.length - 1;
         while (lo <= hi) {
             // Base case - found range
             int mid = lo + (hi - lo) / 2;
+
             if (position > sites[mid])      lo = mid + 1;
             else if (position < sites[mid]) hi = mid - 1;
             else return mid;
         }
-        // position should be > sites[hi] and < sites[hi+1] in this case, since hi < lo
-        // if position is in first fragment, hi will be -1.
-        return Math.max(0, hi);
+        return lo;
     }
 
 }
