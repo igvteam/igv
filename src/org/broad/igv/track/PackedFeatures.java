@@ -245,11 +245,18 @@ public class PackedFeatures<T extends Feature> implements Interval {
     }
 
     @Override
-    public boolean merge(Interval i) {
+    public boolean canMerge(Interval i) {
         if (!overlaps(i.getChr(), i.getStart(), i.getEnd(), i.getZoom())
                 || !(i instanceof PackedFeatures)) {
             return false;
         }
+        return true;
+    }
+
+    @Override
+    public boolean merge(Interval i) {
+        boolean canMerge = this.canMerge(i);
+        if (!canMerge) return false;
         //It would be good to check the generic type parameters, but that is
         //not possible
         List<T> originalFeatures = features;

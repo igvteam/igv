@@ -225,14 +225,14 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         for (int i = 0; i < result.size(); i++) {
             Alignment rec = result.get(i);
 
-            if (i % 2 == 0 && rec.isPaired()) {
-                //Check that paired reads are together
-
-                System.out.println(rec.getReadName());
-
-                System.out.println(result.get(i + 1).getReadName());
-                //assertEquals(rec.getReadName(), result.get(i+1).getReadName());
-            }
+//            if (i % 2 == 0 && rec.isPaired()) {
+//                //Check that paired reads are together
+//
+//                System.out.println(rec.getReadName());
+//
+//                System.out.println(result.get(i + 1).getReadName());
+//                //assertEquals(rec.getReadName(), result.get(i+1).getReadName());
+//            }
 
             if (contained) {
                 Assert.assertTrue(rec.getStart() >= start);
@@ -377,12 +377,17 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
 
         Iterator<Alignment> iter = interval.getAlignmentIterator();
+
         int count = 0;
         while (iter.hasNext()) {
             count++;
+            Alignment al = iter.next();
+            assertTrue(al.getStart() <= end);
+            assertTrue(al.getEnd() >= start);
         }
 
         Assert.assertTrue(count > 0);
+        System.out.println(count + " alignments loaded");
 
     }
 

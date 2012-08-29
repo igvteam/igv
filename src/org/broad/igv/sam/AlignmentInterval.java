@@ -261,11 +261,18 @@ public class AlignmentInterval extends Locus implements Interval {
     }
 
     @Override
-    public boolean merge(Interval i) {
+    public boolean canMerge(Interval i) {
         if (!super.overlaps(i.getChr(), i.getStart(), i.getEnd())
                 || !(i instanceof AlignmentInterval)) {
             return false;
         }
+        return getCounts().getClass().equals(((AlignmentInterval) i).getCounts().getClass());
+    }
+
+    @Override
+    public boolean merge(Interval i) {
+        boolean canMerge = this.canMerge(i);
+        if (!canMerge) return false;
 
         AlignmentInterval other = (AlignmentInterval) i;
 

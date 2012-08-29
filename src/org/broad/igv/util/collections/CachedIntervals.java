@@ -145,12 +145,16 @@ public class CachedIntervals<T extends Interval> {
 
             //If it overlaps an existing interval, merge it in.
             //Otherwise, just add it to the end
+            Interval overlap = null;
+            boolean doMerge = false;
             if (overlaps != null && overlaps.size() > 0) {
-                Interval overlap = overlaps.get(0);
+                overlap = overlaps.get(0);
+                doMerge = overlap.canMerge(addingInterval);
+            }
+            if (doMerge) {
                 overlap.merge(addingInterval);
 
                 //Prevent interval from growing without bound
-
                 int intervalSize = overlap.getEnd() - overlap.getStart();
                 if (intervalSize > maxIntervalSize) {
                     trimInterval(overlap);
@@ -158,6 +162,7 @@ public class CachedIntervals<T extends Interval> {
             } else {
                 intervals.add(addingInterval);
             }
+
         }
 
 

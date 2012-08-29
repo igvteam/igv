@@ -97,7 +97,10 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         ArrayList<AlignmentInterval> endInterval = (ArrayList) testManager.getLoadedIntervals();
         assertEquals(1, endInterval.size());
         AlignmentInterval merged = begInterval.get(0);
-        merged.merge(endInterval.get(0));
+
+        assertTrue(merged.canMerge(endInterval.get(0)));
+
+        assertTrue(merged.merge(endInterval.get(0)));
 
         assertAlignmentCountsEqual(baseInterval.getCounts(), merged.getCounts());
 
@@ -145,12 +148,13 @@ public class AlignmentIntervalTest extends AbstractHeadlessTest {
         int halfwidth = 1000;
         int end = start + 2 * halfwidth;
         int panInterval = halfwidth;
+        int buffer = halfwidth / 100;
 
         int numPans = AlignmentDataManager.MAX_INTERVAL_MULTIPLE;
         List<AlignmentInterval> intervals = (ArrayList<AlignmentInterval>)
                 AlignmentDataManagerTest.performPanning(chr, start, end, numPans, panInterval);
         AlignmentInterval interval = intervals.get(0);
-        assertTrue(interval.contains(chr, start, end + numPans * panInterval));
+        assertTrue(interval.contains(chr, start, end + numPans * panInterval - buffer));
 
 
         //Now trim to the middle
