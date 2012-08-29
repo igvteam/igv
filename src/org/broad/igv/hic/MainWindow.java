@@ -595,8 +595,9 @@ public class MainWindow extends JFrame {
             properties = new Properties();
             properties.load(is);
         }
-        catch (IOException error) {
+        catch (Exception error) {
             System.err.println("Can't find mainwindow.properties.");
+            return;
         }
         // TreeSet is sorted, so properties file is implemented in order
         TreeSet<String> keys = new TreeSet<String>(properties.stringPropertyNames());
