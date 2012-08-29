@@ -293,16 +293,15 @@ public class Preprocessor {
 
     private static void incrementCount(MatrixPP matrix, int chr1, int pos1, int chr2, int pos2) {
          // I don't understand why we did this.  And chr1, chr2 are redundant
-//        if (chr2 > chr1) {
-//            //transpose
-//            int tc2 = chr2;
-//            int tp2 = pos2;
-//            chr2 = chr1;
-//            pos2 = pos1;
-//            chr1 = tc2;
-//            pos1 = tp2;
-//        }
-         System.out.println("chr1 = " + chr1 + " chr2 = " + chr2 + " pos1 = " + pos1 + " pos2 = " + pos2);
+        if (chr2 > chr1) {
+            //transpose
+            int tc2 = chr2;
+            int tp2 = pos2;
+            chr2 = chr1;
+            pos2 = pos1;
+            chr1 = tc2;
+            pos1 = tp2;
+        }
         matrix.incrementCount(pos1, pos2);
     }
 
