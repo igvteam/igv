@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.sam;
@@ -394,6 +387,55 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             int tmp = posTotal[offset] + negTotal[offset];
             maxCount = tmp > maxCount ? tmp : maxCount;
         }
+    }
+
+    public AlignmentCounts merge(AlignmentCounts other, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        if (other.getClass() != this.getClass()) {
+            throw new IllegalArgumentException("Cannot merge different types of AlignmentCount instances");
+        }
+        return DenseAlignmentCounts.merge(this, (DenseAlignmentCounts) other, bisulfiteContext);
+    }
+
+    private static DenseAlignmentCounts merge(DenseAlignmentCounts first, DenseAlignmentCounts second, AlignmentTrack.BisulfiteContext bisulfiteContext) {
+        if (second.getStart() < first.getStart()) {
+            DenseAlignmentCounts tmp = first;
+            first = second;
+            second = tmp;
+        }
+
+        int firstLength = first.getEnd() - first.getStart();
+        int lengthIncrease = second.getEnd() - first.getEnd();
+
+        int[][] firstSrcArrs = getCountArrs(first);
+        int[][] secondSrcArrs = getCountArrs(second);
+
+        DenseAlignmentCounts result = new DenseAlignmentCounts(first.getStart(), second.getEnd(), bisulfiteContext);
+        int[][] destArrs = getCountArrs(result);
+        int number = firstSrcArrs.length;
+        int secondOffset = first.getEnd() - second.getStart();
+        int[] destArr;
+        for (int arnum = 0; arnum < number; arnum++) {
+            destArr = destArrs[arnum];
+            System.arraycopy(firstSrcArrs[arnum], 0, destArr, 0, firstLength);
+            System.arraycopy(secondSrcArrs[arnum], secondOffset, destArr, firstLength, lengthIncrease);
+        }
+        result.maxCount = Math.max(first.getMaxCount(), second.getMaxCount());
+        return result;
+    }
+
+    /**
+     * Create an array of the arrays we use to keep track of data
+     *
+     * @param counts
+     * @return
+     */
+    private static int[][] getCountArrs(DenseAlignmentCounts counts) {
+
+        int[][] result = {counts.posA, counts.posT, counts.posC, counts.posG, counts.posN,
+                counts.negA, counts.negT, counts.negC, counts.negG, counts.negN,
+                counts.qA, counts.qT, counts.qC, counts.qG, counts.qN, counts.posTotal, counts.negTotal,
+                counts.del, counts.ins, counts.totalQ};
+        return result;
     }
 
 

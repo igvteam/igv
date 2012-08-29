@@ -99,8 +99,10 @@ public class TrackMenuUtils {
             }
 
             private void close() {
-                IGV.getInstance().clearSelections();
-                IGV.getInstance().repaint();
+                if (IGV.hasInstance()) {
+                    IGV.getInstance().clearSelections();
+                    IGV.getInstance().repaint();
+                }
             }
 
         });
@@ -621,18 +623,18 @@ public class TrackMenuUtils {
         Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
         Track.DisplayMode currentMode = null;
 
-        for(Track t: tracks){
+        for (Track t : tracks) {
             Track.DisplayMode mode = t.getDisplayMode();
-            if(counts.containsKey(mode)){
+            if (counts.containsKey(mode)) {
                 counts.put(mode, counts.get(mode) + 1);
-            }else{
+            } else {
                 counts.put(mode, 1);
             }
         }
 
         int maxCount = -1;
-        for(Map.Entry<Track.DisplayMode, Integer> count: counts.entrySet()){
-            if(count.getValue() > maxCount){
+        for (Map.Entry<Track.DisplayMode, Integer> count : counts.entrySet()) {
+            if (count.getValue() > maxCount) {
                 currentMode = count.getKey();
                 maxCount = count.getValue();
             }
@@ -644,7 +646,7 @@ public class TrackMenuUtils {
         modes.put("Expanded", Track.DisplayMode.EXPANDED);
         modes.put("Squished", Track.DisplayMode.SQUISHED);
         boolean showAS = Boolean.parseBoolean(System.getProperty("showAS", "false"));
-        if(showAS){
+        if (showAS) {
             modes.put("Alternative Splice", Track.DisplayMode.ALTERNATIVE_SPLICE);
         }
         for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
@@ -949,8 +951,10 @@ public class TrackMenuUtils {
     }
 
     public static void refresh() {
-        IGV.getInstance().showLoadedTrackCount();
-        IGV.getInstance().doRefresh();
+        if (IGV.hasInstance()) {
+            IGV.getInstance().showLoadedTrackCount();
+            IGV.getInstance().doRefresh();
+        }
     }
 
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {

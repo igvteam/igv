@@ -425,11 +425,7 @@ public class ParsingUtils {
                 }
             }
 
-        } catch (
-                Exception exception
-                )
-
-        {
+        } catch (Exception exception) {
             MessageUtils.showMessage("Error parsing track line: " + nextLine + " (" + exception.getMessage() + ")");
         }
 

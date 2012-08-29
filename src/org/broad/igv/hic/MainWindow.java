@@ -62,6 +62,9 @@ import java.util.concurrent.Future;
  */
 public class MainWindow extends JFrame {
 
+    //private static String DEFAULT_LOAD_MENU = "http://www.broadinstitute.org/igvdata/hic/hicExternalMenu.properties";
+    private static String DEFAULT_LOAD_MENU = "http://iwww.broadinstitute.org/igvdata/hic/files/hicInternalMenu.properties";
+
     private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
     private HiC hic;
@@ -500,6 +503,7 @@ public class MainWindow extends JFrame {
         } else {
             trackPanel.setVisible(false);
         }
+        invalidate();
         pack();
         repaint();
 
@@ -584,12 +588,15 @@ public class MainWindow extends JFrame {
         Properties properties = null;
 
         try {
-            is = MainWindow.class.getResourceAsStream("mainwindow.properties");
+            String url = System.getProperty("loadMenu");
+            if(url == null) url = DEFAULT_LOAD_MENU;
+            is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);
         }
-        catch (IOException error) {
+        catch (Exception error) {
             System.err.println("Can't find mainwindow.properties.");
+            return;
         }
         // TreeSet is sorted, so properties file is implemented in order
         TreeSet<String> keys = new TreeSet<String>(properties.stringPropertyNames());

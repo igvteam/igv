@@ -18,7 +18,7 @@ import org.broad.tribble.Feature;
  * Interface used to represent data which spans an interval,
  * including the zoom level. If data is different for different
  * zoom levels, merging may not be possible
- *
+ * <p/>
  * User: jacob
  * Date: 2012-Jul-05
  */
@@ -27,35 +27,47 @@ public interface Interval extends Feature {
     /**
      * Determine whether this interval fully contains the specified
      * input interval
+     *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @return
      */
-    public boolean contains(String chr, int start, int end, int zoom);
+    boolean contains(String chr, int start, int end, int zoom);
 
     /**
      * Determine whether this interval overlaps the specified
      * interval at all
+     *
      * @param chr
      * @param start
      * @param end
      * @param zoom
      * @return
      */
-    public boolean overlaps(String chr, int start, int end, int zoom);
+    boolean overlaps(String chr, int start, int end, int zoom);
 
 
     /**
      * Merge another interval with this one
+     *
      * @param i
      * @return True if the interval was merged, false
-     * if not. Cannot necessarily merge an interval if there
-     * is no overlap; if the Interval contains data
-     * that data would be missing
+     *         if not. Cannot necessarily merge an interval if there
+     *         is no overlap; if the Interval contains data
+     *         that data would be missing
      */
-    public boolean merge(Interval i);
+    boolean merge(Interval i);
+
+
+    /**
+     * Whether the provided interval can be merged with this one
+     *
+     * @param addingInterval
+     * @return
+     */
+    boolean canMerge(Interval addingInterval);
 
     /**
      * Remove data outside the specified interval.
@@ -69,5 +81,6 @@ public interface Interval extends Feature {
      */
     boolean trimTo(final String chr, final int start, final int end, int zoom);
 
-    public int getZoom();
+    int getZoom();
+
 }

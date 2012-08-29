@@ -14,7 +14,7 @@ package org.broad.igv.util.collections;
 import org.apache.commons.collections.Predicate;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.Utilities;
 
@@ -37,6 +37,11 @@ public class CachedIntervals<T extends Interval> {
 
     protected int cacheSize = DEFAULT_CACHE_SIZE;
     protected int maxIntervalSize = DEFAULT_MAX_INTERVAL_SIZE;
+
+    /**
+     * Map<chromosome, list of locuses> we want to keep and not purge
+     */
+    protected Map<String, List<Locus>> keepLocuses;
 
     public CachedIntervals() {
     }
@@ -145,12 +150,16 @@ public class CachedIntervals<T extends Interval> {
 
             //If it overlaps an existing interval, merge it in.
             //Otherwise, just add it to the end
+            Interval overlap = null;
+            boolean doMerge = false;
             if (overlaps != null && overlaps.size() > 0) {
-                Interval overlap = overlaps.get(0);
+                overlap = overlaps.get(0);
+                doMerge = overlap.canMerge(addingInterval);
+            }
+            if (doMerge) {
                 overlap.merge(addingInterval);
 
                 //Prevent interval from growing without bound
-
                 int intervalSize = overlap.getEnd() - overlap.getStart();
                 if (intervalSize > maxIntervalSize) {
                     trimInterval(overlap);
@@ -158,10 +167,11 @@ public class CachedIntervals<T extends Interval> {
             } else {
                 intervals.add(addingInterval);
             }
+
         }
 
 
-        int effectiveCacheSize = FrameManager.getFrames().size() + cacheSize;
+        int effectiveCacheSize = keepLocuses.size() + cacheSize;
         if (intervals.size() > effectiveCacheSize) {
             removeOrphanedIntervals();
         }
@@ -176,14 +186,16 @@ public class CachedIntervals<T extends Interval> {
      */
     private void trimInterval(Interval interval) {
 
-        List<ReferenceFrame> frames = FrameManager.getFrames();
+        List<Locus> locusList = keepLocuses.get(interval.getChr());
+        if (locusList == null || locusList.size() == 0) return;
+
         int s = interval.getStart();
         int e = interval.getEnd();
         boolean trim = false;
-        for (ReferenceFrame frame : frames) {
-            if (frame.overlaps(interval)) {
-                s = Math.max((int) frame.getOrigin(), interval.getStart());
-                e = Math.min((int) frame.getEnd(), interval.getEnd());
+        for (Locus locus : locusList) {
+            if (locus.overlaps(interval.getChr(), interval.getStart(), interval.getEnd())) {
+                s = Math.max(locus.getStart(), interval.getStart());
+                e = Math.min(locus.getEnd(), interval.getEnd());
                 trim = true;
             }
         }
@@ -201,31 +213,22 @@ public class CachedIntervals<T extends Interval> {
 
         Map<String, List<T>> newMap = Collections.synchronizedMap(new HashMap<String, List<T>>());
 
-        // Build a hash of reference frames by chr name for fast lookup
-        HashMap<String, List<ReferenceFrame>> framesMap = new HashMap<String, List<ReferenceFrame>>();
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            List<ReferenceFrame> frameList = framesMap.get(frame.getChrName());
-            if (frameList == null) {
-                frameList = new ArrayList<ReferenceFrame>();
-                framesMap.put(frame.getChrName(), frameList);
-            }
-            frameList.add(frame);
-        }
-
         for (Map.Entry<String, List<T>> entry : map.entrySet()) {
             String chr = entry.getKey();
-            List<ReferenceFrame> frameList = framesMap.get(chr);
+            List<Locus> frameList = keepLocuses.get(chr);
             if (frameList != null) {
                 List<T> intervalList = entry.getValue();
                 for (T interval : intervalList) {
-                    for (ReferenceFrame frame : frameList) {
-                        if (frame.overlaps(interval)) {
+                    for (Locus keepLocus : frameList) {
+                        if (keepLocus.overlaps(chr, interval.getStart(), interval.getEnd())) {
                             List<T> newIntervalList = newMap.get(chr);
                             if (newIntervalList == null) {
                                 newIntervalList = new ArrayList<T>();
                                 newMap.put(chr, newIntervalList);
                             }
                             newIntervalList.add(interval);
+                            //Don't want to add interval multiple times
+                            break;
                         }
                     }
                 }
@@ -262,4 +265,19 @@ public class CachedIntervals<T extends Interval> {
     public void clear() {
         map.clear();
     }
+
+    public void setLocusList(List<ReferenceFrame> allFramesList) {
+        // Build a hash of reference frames by chr name for fast lookup
+        HashMap<String, List<Locus>> locusMap = new HashMap<String, List<Locus>>();
+        for (ReferenceFrame frame : allFramesList) {
+            List<Locus> chrFrameList = locusMap.get(frame.getChrName());
+            if (chrFrameList == null) {
+                chrFrameList = new ArrayList<Locus>();
+                locusMap.put(frame.getChrName(), chrFrameList);
+            }
+            chrFrameList.add(new Locus(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd()));
+        }
+        this.keepLocuses = locusMap;
+    }
+
 }

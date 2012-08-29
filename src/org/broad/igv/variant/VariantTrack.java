@@ -327,7 +327,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     public int getHeight() {
         int sampleCount = allSamples.size();
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
         } else {
             final int groupCount = samplesByGroups.size();
@@ -442,7 +442,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                         renderer.renderSiteBand(variant, rect, x, w, context);
                     }
 
-                    if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+                    if (getDisplayMode() != DisplayMode.COLLAPSED) {
                         rect.y += rect.height;
                         rect.height = getGenotypeBandHeight();
 
@@ -543,7 +543,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
-        if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
             drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
@@ -595,7 +595,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             super.renderAttributes(g2D, rect, visibleRectangle, attributeNames, mouseRegions);
         }
 
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED) {
             return;
         }
 
@@ -688,7 +688,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                                 BackgroundType type) {
 
 
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED) {
             return;
         }
 
@@ -735,7 +735,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                               boolean coloredLast, Rectangle textRectangle, List<String> sampleList,
                               BackgroundType type) {
 
-        boolean supressFill = (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4);
+        boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
 
         for (String sample : sampleList) {
 
@@ -941,11 +941,18 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip.append("<br><b>Alleles:</b>");
         toolTip.append(getAlleleToolTip(variant));
 
-        double af = variant.getAlleleFreq();
-        if (af < 0 && variant.getSampleNames().size() > 0) {
-            af = variant.getAlleleFraction();
+        double[] af = variant.getAlleleFreqs();
+        if (af[0] < 0 && variant.getSampleNames().size() > 0) {
+            af = new double[]{variant.getAlleleFraction()};
         }
-        toolTip.append("<br>Allele Frequency: " + (af >= 0 ? numFormat.format(af) : "Unknown") + "<br>");
+        String afMsg = "Unknown";
+        if (af[0] >= 0) {
+            afMsg = numFormat.format(af[0]);
+            for (int ii = 1; ii < af.length; ii++) {
+                afMsg += ", " + numFormat.format(af[ii]);
+            }
+        }
+        toolTip.append("<br>Allele Frequency: " + afMsg + "<br>");
 
         if (variant.getSampleNames().size() > 0) {
             double afrac = variant.getAlleleFraction();

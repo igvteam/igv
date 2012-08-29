@@ -84,7 +84,7 @@ public class TestUtils {
     }
 
     /**
-     * See TestUtils.createIndex(file, indexType, binSize)
+     * See {@link #createIndex(String, int, int)}
      *
      * @param file
      * @throws IOException
@@ -109,7 +109,7 @@ public class TestUtils {
     }
 
     /**
-     * Load a test genome, do some test setup
+     * Load a test genome
      *
      * @return
      * @throws IOException
@@ -165,11 +165,16 @@ public class TestUtils {
             Feature exp = expected.next();
             assertTrue(actIter.hasNext());
             Feature act = actIter.next();
-            assertEquals(exp.getChr(), act.getChr());
-            assertEquals(exp.getStart(), act.getStart());
-            assertEquals(exp.getEnd(), act.getEnd());
+            assertFeaturesEqual(exp, act);
         }
         assertFalse(actIter.hasNext());
+    }
+
+
+    public static void assertFeaturesEqual(Feature exp, Feature act) {
+        assertEquals(exp.getChr(), act.getChr());
+        assertEquals(exp.getStart(), act.getStart());
+        assertEquals(exp.getEnd(), act.getEnd());
     }
 
     /*
@@ -247,6 +252,5 @@ public class TestUtils {
         timer.scheduleAtFixedRate(checker, 0, period);
         return timer;
     }
-
 
 }

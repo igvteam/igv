@@ -35,6 +35,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
+import org.broad.igv.util.collections.CI;
 
 import java.awt.*;
 import java.io.*;
@@ -63,8 +64,10 @@ public class GenomeManager {
     private Genome currentGenome;
 
     private List<GenomeListItem> userDefinedGenomeArchiveList;
-    private List<GenomeListItem> cachedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
+    private List<GenomeListItem> cachedGenomeArchiveList;
+    //ID comparison will be case insensitive
+    private Map<String, GenomeListItem> genomeItemMap = new CI.CIHashMap<GenomeListItem>();
 
     public static void main(String[] args) {
         if (args.length >= 1 && args[0].equals("genList")) {
@@ -563,7 +566,7 @@ public class GenomeManager {
         }
 
         if (serverGenomeArchiveList == null) {
-            serverGenomeArchiveList = new LinkedList();
+            serverGenomeArchiveList = new LinkedList<GenomeListItem>();
             BufferedReader dataReader = null;
             InputStream inputStream = null;
             String genomeListURLString = "";
@@ -607,6 +610,7 @@ public class GenomeManager {
                                 String id = fields[2];
                                 GenomeListItem item = new GenomeListItem(name, url, id, false);
                                 serverGenomeArchiveList.add(item);
+                                genomeItemMap.put(item.getId(), item);
                             } catch (Exception e) {
                                 log.error("Error reading a line from server genome list" + " line was: [" +
                                         genomeRecord + "]", e);
@@ -631,8 +635,35 @@ public class GenomeManager {
                     inputStream.close();
                 }
             }
+            rearrangeGenomeListFromSaved(serverGenomeArchiveList);
         }
+
         return serverGenomeArchiveList;
+    }
+
+    private void rearrangeGenomeListFromSaved(List<GenomeListItem> genomeListItems) {
+        if (genomeListItems == null) return;
+        //Rearrange according to saved order
+        String[] genomeIds = PreferenceManager.getInstance().getGenomeHistory();
+        int position = 0;
+        for (String genomeId : genomeIds) {
+            GenomeListItem listItem = getGenomeListItemById(genomeId);
+            if (listItem != null) {
+                Utilities.moveInList(genomeListItems, position, listItem);
+                position++;
+            }
+        }
+    }
+
+    /**
+     * Searches through currently loaded GenomeListItems and returns
+     * that with a matching ID. null if not found
+     *
+     * @param genomeId
+     * @return
+     */
+    public GenomeListItem getGenomeListItemById(String genomeId) {
+        return genomeItemMap.get(genomeId);
     }
 
     /**
@@ -651,7 +682,7 @@ public class GenomeManager {
 
             boolean updateClientGenomeListFile = false;
 
-            userDefinedGenomeArchiveList = new LinkedList();
+            userDefinedGenomeArchiveList = new LinkedList<GenomeListItem>();
 
             File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
@@ -687,6 +718,7 @@ public class GenomeManager {
 
                     GenomeListItem item = new GenomeListItem(fields[0], file, fields[2], true);
                     userDefinedGenomeArchiveList.add(item);
+                    genomeItemMap.put(item.getId(), item);
                 }
             } finally {
                 if (reader != null) reader.close();
@@ -724,7 +756,7 @@ public class GenomeManager {
             throws IOException {
 
         if (cachedGenomeArchiveList == null) {
-            cachedGenomeArchiveList = new LinkedList();
+            cachedGenomeArchiveList = new LinkedList<GenomeListItem>();
 
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
                 return cachedGenomeArchiveList;
@@ -776,6 +808,7 @@ public class GenomeManager {
                                     properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
                                     false);
                     cachedGenomeArchiveList.add(item);
+                    genomeItemMap.put(item.getId(), item);
                 } catch (ZipException ex) {
                     log.error("\nZip error unzipping cached genome.", ex);
                     try {
@@ -807,8 +840,8 @@ public class GenomeManager {
                     }
                 }
             }
+            rearrangeGenomeListFromSaved(cachedGenomeArchiveList);
         }
-
         return cachedGenomeArchiveList;
     }
 

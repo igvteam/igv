@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<!-- Profile describing how to load data from a SQL database-->
+
+<!-- A database element describes a connection to a single database.
+This includes separate path elements (host, path, port).
+
+version
+   Version of the descriptive file, not the database. Used to ensure
+   compatibility with future versions
+name
+    Human-readable name of database
+description
+    Human-readable description
+-->
+<!ELEMENT database (table+)>
+<!ATTLIST database
+      version (alpha) #REQUIRED
+      host CDATA #REQUIRED
+      path CDATA #REQUIRED
+      port CDATA #REQUIRED
+      subprotocol CDATA #REQUIRED
+      username CDATA #REQUIRED
+      name CDATA #REQUIRED
+      description CDATA #IMPLIED>
+
+
+<!--
+A database can have any number of tables within it.
+For each table, we have to specify the location
+of certain columns.
+name
+    Exact name of the table
+description
+    Human-readable description of data
+binColName
+    For efficient lookups, many databases use an r-tree,
+    and store the bin number. See
+    http://genomewiki.ucsc.edu/index.php/Bin_indexing_system
+    for UCSC binning structure. If this column name is provided,
+    we assume such column exists and it uses this binning structure.
+chromoColName
+    Column name which stores chromosome names
+format
+    Table must be in a format which IGV can read, that is,
+    the rows must be in the same order/meaning as one
+    of the file formats IGV can read. "format" is file extension
+    that the table is similar to (e.g. bed, psl, ucscgene).
+    We say "similar" because the startColIndex/endColIndex
+    fields can be used to take a subset of columns
+posStartColName
+    The name of the column which contains the start positions
+    of each feature. Necessary for constructing queries.
+posEndColName
+    Name of the column which contains end positions of each feature.
+startColIndex
+    1-based Column index from which to start reading data. Default 1.
+ endColIndex
+    1-based column index, inclusive, at which to stop reading data.
+    Default 2147483646 (Integer.MAX_VALUE - 1, ie all)
+
+-->
+<!ELEMENT table (#PCDATA)>
+<!ATTLIST table
+      name CDATA #REQUIRED
+      description CDATA #IMPLIED
+      binColName CDATA #IMPLIED
+      chromoColName CDATA #REQUIRED
+      format CDATA #REQUIRED
+      posStartColName CDATA #REQUIRED
+      posEndColName CDATA #REQUIRED
+      startColIndex CDATA "1"
+      endColIndex CDATA "2147483646">
+

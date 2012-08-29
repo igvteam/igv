@@ -21,6 +21,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -799,6 +800,7 @@ public class FeatureTrack extends AbstractTrack {
 
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     packedFeaturesMap.setMaxIntervalSize((int) (context.getEndLocation() - context.getOrigin()));
+                    packedFeaturesMap.setLocusList(FrameManager.getFrames());
                     if (iter == null) {
                         PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
                         packedFeaturesMap.put(pf);

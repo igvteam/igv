@@ -30,22 +30,26 @@ import static org.junit.Assert.assertTrue;
  * User: jrobinso
  * Date: Sep 18, 2009
  * Time: 6:19:28 PM
- * To change this template use File | Settings | File Templates.
  */
 public class SorterTest {
 
 
     @Test
     public void testSortBed() throws Exception {
-        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed");
+        testSort(TestUtils.DATA_DIR + "bed/Unigene.unsorted.bed", 0, 1);
     }
 
     @Test
     public void testSortVCF() throws Exception {
-        testSort(TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf");
+        testSort(TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf", 0, 1);
     }
 
-    public void testSort(String infile) throws IOException {
+    @Test
+    public void testSortGFF() throws Exception {
+        testSort(TestUtils.DATA_DIR + "gff/aliased.unsorted.gff", 0, 3);
+    }
+
+    public void testSort(String infile, int chrCol, int startCol) throws IOException {
 
         File ifile = new File(infile);
         File ofile = new File(infile + ".sorted");
@@ -55,10 +59,10 @@ public class SorterTest {
         sorter.setMaxRecords(10);  // <= force text of serialization
         sorter.run();
 
-        checkBedSorted(ofile);
+        checkFileSorted(ofile, chrCol, startCol);
     }
 
-    public static int checkBedSorted(File ofile) {
+    public static int checkFileSorted(File ofile, int chrCol, int startCol) {
         BufferedReader reader = null;
         int numlines = 0;
         try {
@@ -72,9 +76,9 @@ public class SorterTest {
                     continue;
                 }
                 String[] tokens = nextLine.split("\t");
-                String chr = tokens[0];
+                String chr = tokens[chrCol];
 
-                int start = Integer.parseInt(tokens[1]);
+                int start = Integer.parseInt(tokens[startCol]);
                 if (chr.equals(lastChr)) {
                     assertTrue(start >= lastStart);
                 } else {
