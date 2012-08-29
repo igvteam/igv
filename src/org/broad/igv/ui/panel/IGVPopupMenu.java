@@ -28,7 +28,7 @@ import java.util.HashSet;
 /**
  * Extension of JPopupMenu that provides an instance cache, and closeAll method.  Created so that popup
  * menus can be closed if the IGV main window looses focus.
- * 
+ *
  * @author jrobinso
  * @date Jul 9, 2011
  */
@@ -55,8 +55,10 @@ public class IGVPopupMenu extends JPopupMenu {
             }
 
             private void close() {
-                IGV.getInstance().clearSelections();
-                IGV.getInstance().repaint();
+                if (IGV.hasInstance()) {
+                    IGV.getInstance().clearSelections();
+                    IGV.getInstance().repaint();
+                }
                 instances.remove(IGVPopupMenu.this);
             }
 
@@ -64,8 +66,8 @@ public class IGVPopupMenu extends JPopupMenu {
     }
 
     public static void closeAll() {
-        synchronized(instances) {
-            for(IGVPopupMenu inst : instances) {
+        synchronized (instances) {
+            for (IGVPopupMenu inst : instances) {
                 inst.setVisible(false);
             }
             instances.clear();

@@ -17,6 +17,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.MainWindow;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
@@ -118,6 +119,15 @@ public class HiCTrackManager {
                                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                                 ResourceLocator locator = locatorMap.get(trackName);
                                 List<Track> tracks = (new TrackLoader()).load(locator, genome);
+
+                                // If the track supports a 90% window function use it.
+                                for(Track t : tracks) {
+                                    Collection<WindowFunction> wfs =  t.getAvailableWindowFunctions();
+                                    if(wfs != null && wfs.contains(WindowFunction.percentile90)) {
+                                        t.setWindowFunction(WindowFunction.percentile90);
+                                    }
+                                }
+
                                 loadedTracks.addAll(tracks);
                             }
                         }
