@@ -18,10 +18,7 @@ package org.broad.igv.hic;
 import com.jidesoft.swing.JideButton;
 import org.apache.commons.math.linear.InvalidMatrixException;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.hic.data.DatasetReader;
-import org.broad.igv.hic.data.DensityFunction;
-import org.broad.igv.hic.data.MatrixZoomData;
-import org.broad.igv.hic.data.ScratchPad;
+import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.DiskResidentBlockMatrix;
 import org.broad.igv.hic.tools.DensityUtil;
@@ -67,13 +64,10 @@ public class MainWindow extends JFrame {
 
     private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
-    HiC hic;
+    private HiC hic;
     private EigenvectorTrack eigenvectorTrack;
 
-
     public static Cursor fistCursor;
-
-    public static final int MAX_ZOOM = HiCGlobals.zoomBinSizes.length;
     public static final int BIN_PIXEL_WIDTH = 1;
 
     private static MainWindow theInstance;
@@ -141,6 +135,11 @@ public class MainWindow extends JFrame {
         resolutionSlider.setValue(newZoom);
         updateEigenvectorTrack();
     }
+
+    public int getMaximumZoom() {
+        return hic.dataset.getNumberZooms();
+    }
+
 
 
     /**
@@ -850,7 +849,7 @@ public class MainWindow extends JFrame {
 
         //---- resolutionSlider ----
         resolutionSlider = new JSlider();
-        resolutionSlider.setMaximum(8);
+        resolutionSlider.setMaximum(9);
         resolutionSlider.setMajorTickSpacing(1);
         resolutionSlider.setPaintTicks(true);
         resolutionSlider.setSnapToTicks(true);
@@ -859,9 +858,9 @@ public class MainWindow extends JFrame {
 
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
-        for (int i = 0; i < HiCGlobals.zoomLabels.length; i++) {
+        for (int i = 0; i < Dataset.getNumberZooms(); i++) {
             if ((i + 1) % 2 == 0) {
-                final JLabel tickLabel = new JLabel(HiCGlobals.zoomLabels[i]);
+                final JLabel tickLabel = new JLabel(Dataset.getZoomLabel(i));
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
             }
@@ -875,7 +874,7 @@ public class MainWindow extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 if (!resolutionSlider.getValueIsAdjusting()) {
                     int idx = resolutionSlider.getValue();
-                    idx = Math.max(0, Math.min(idx, MAX_ZOOM));
+                    idx = Math.max(0, Math.min(idx, hic.dataset.getNumberZooms()));
 
                     if (hic.zd != null && idx == hic.zd.getZoom()) {
                         // Nothing to do

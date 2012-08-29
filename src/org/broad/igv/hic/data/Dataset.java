@@ -12,6 +12,12 @@ import java.util.Map;
  */
 public class Dataset {
 
+    // this needs to be read in from the file instead of left as a global
+    // will need to be part of the header.
+    private static final int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 1}; //,  2500, 1000};
+    private static final String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "frag"};//, "2.5 KB", "1 KB"};
+    private static final int nZooms = 10;
+
     private boolean caching = true;
 
     //Chromosome lookup table
@@ -47,6 +53,23 @@ public class Dataset {
 
         return m;
 
+    }
+
+    public static int getNumberZooms() {
+        return nZooms;
+    }
+
+//    public static int getNumberZoomBinsToWrite(){
+//        return zoomLabels.length;
+//    }
+
+
+    public static String getZoomLabel(int index) {
+        return zoomLabels[index];
+    }
+
+    public static int getZoom(int index) {
+        return zoomBinSizes[index];
     }
 
     public Map<Integer, DensityFunction> getZoomToDensity() {

@@ -45,24 +45,34 @@ public class DensityCalculation {
       * the "expected total"  == observed total */
     private LinkedHashMap<Integer, Double> normalizationFactors;
 
+    /** Stores restriction site fragment information for fragment maps */
+    private FragmentCalculation fragmentCalculation;
+
     /**
      * Instantiate a DensityCalculation.  This constructor is used to compute the "expected" density from pair data.
      *
      * @param chromosomes List of chromosomes, mainly used for size
      * @param gridSize    Grid size, used for binning appropriately
      */
-    DensityCalculation(List<Chromosome> chromosomes, int gridSize) {
+    DensityCalculation(List<Chromosome> chromosomes, int gridSize, FragmentCalculation fragmentCalculation, boolean isNewVersion) {
 
         this.gridSize = gridSize;
 
         this.chromosomes = chromosomes;
         long totalLen = 0;
-        for(Chromosome chromosome : chromosomes) {
-            if (chromosome != null)
-                totalLen += chromosome.getLength();
+        for (Chromosome chromosome : chromosomes) {
+            if (chromosome != null) {
+                if (gridSize == 1)
+                    totalLen += fragmentCalculation.getNumberFragments(chromosome);
+                else
+                    totalLen += chromosome.getLength();
+            }
         }
-
-        numberOfBins = (int) (totalLen / gridSize) + 1;
+        if (gridSize == 1)
+            numberOfBins = (int) totalLen;
+        else
+            numberOfBins = (int) (totalLen / gridSize) + 1;
+        System.out.println(numberOfBins);
         actualDistances = new double[numberOfBins];
         rowSums = new double[numberOfBins];
         coverageNorms = new double[numberOfBins];
@@ -72,7 +82,8 @@ public class DensityCalculation {
         chromosomeCounts = new HashMap<Integer,Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
         totalReads = 0;
-        isNewVersion = true;
+        this.isNewVersion = isNewVersion;
+        this.fragmentCalculation = fragmentCalculation;
     }
 
     /**
@@ -107,12 +118,20 @@ public class DensityCalculation {
      * @param pos2 Position2 observed
      */
     public void addDistance(Integer chr, int pos1, int pos2) {
-        int dist = Math.abs(pos1 - pos2);
+        int dist;
         Integer count = chromosomeCounts.get(chr);
         if (count == null) {
             chromosomeCounts.put(chr, 1);
         } else {
             chromosomeCounts.put(chr, count + 1);
+        }
+        if (gridSize == 1) {
+            int bin1 = fragmentCalculation.getBin(chr, pos1);
+            int bin2 = fragmentCalculation.getBin(chr, pos2);
+            dist = Math.abs(bin1 - bin2);
+        }
+        else {
+            dist = Math.abs(pos1 - pos2);
         }
         int bin = dist / gridSize;
 
@@ -204,7 +223,13 @@ public class DensityCalculation {
 
         for (Chromosome chr : chromosomes) {
             if (chr == null) continue;
-            int nChrBins = chr.getLength() / gridSize;
+            int nChrBins;
+            if (gridSize == 1)
+                nChrBins = fragmentCalculation.getNumberFragments(chr);
+            else
+                nChrBins = chr.getLength();
+
+            nChrBins = nChrBins / gridSize;
 
             for (int i = 0; i < nChrBins; i++) {
                 possibleDistances[i] += (nChrBins - i);

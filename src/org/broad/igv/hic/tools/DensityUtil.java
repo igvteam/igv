@@ -24,7 +24,7 @@ public class DensityUtil {
 
         String genomeID = "b37";
         List<Chromosome> chromosomes = HiCTools.loadChromosomes(genomeID);
-        calculate(chromosomes);
+       // calculate(chromosomes);
         //read("/xchip/igv/dev/hic/testFiles/test.hic.densities");
         // dumpDensities("/xchip/igv/dev/hic/testFiles/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
@@ -47,7 +47,7 @@ public class DensityUtil {
         return readDensities(is);
     }
 */
-    private static void calculate(List<Chromosome> chromosomes) throws IOException {
+ /*   private static void calculate(List<Chromosome> chromosomes) throws IOException {
 
         String[] paths = {"/xchip/igv/dev/hic/testFiles/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt", "/xchip/igv/dev/hic/testFiles/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 
@@ -92,7 +92,7 @@ public class DensityUtil {
 
         //outputDensities(calcs, new File("/xchip/igv/dev/hic/testFiles/HindIII_Human_August.densities"));
     }
-
+*/
 
 /*    private static void outputDensities(DensityCalculation[] calcs, File outputFile) throws IOException {
 

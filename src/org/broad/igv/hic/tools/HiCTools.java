@@ -180,6 +180,7 @@ public class HiCTools {
             preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setNewVersion(parser.getNewVersionOption());
+            preprocessor.setFragmentOption(parser.getFragmentOption());
             preprocessor.preprocess(files);
         }
     }
@@ -212,7 +213,7 @@ public class HiCTools {
             }
 
             List<Chromosome> chromosomes = new ArrayList();
-            chromosomes.add(0, null);   // Index 0 reserved for "whole genome" psuedo-chromosome
+            chromosomes.add(0, null);   // Index 0 reserved for "whole genome" pseudo-chromosome
 
             Pattern pattern = Pattern.compile("\t");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -341,8 +342,8 @@ public class HiCTools {
         }
         int zoomIdx = 0;
         boolean found = false;
-        for (; zoomIdx < HiCGlobals.zoomBinSizes.length; zoomIdx++) {
-            if (HiCGlobals.zoomBinSizes[zoomIdx] == binsize) {
+        for (; zoomIdx < dataset.getNumberZooms(); zoomIdx++) {
+            if (dataset.getZoom(zoomIdx) == binsize) {
                 found = true;
                 break;
             }
@@ -427,8 +428,8 @@ public class HiCTools {
 
         int zoomIdx = 0;
         boolean found = false;
-        for (; zoomIdx < HiCGlobals.zoomBinSizes.length; zoomIdx++) {
-            if (HiCGlobals.zoomBinSizes[zoomIdx] == binsize) {
+        for (; zoomIdx < dataset.getNumberZooms(); zoomIdx++) {
+            if (dataset.getZoom(zoomIdx) == binsize) {
                 found = true;
                 break;
             }
@@ -478,6 +479,7 @@ public class HiCTools {
         private Option countThresholdOption = null;
         private Option threadedOption = null;
         private Option helpOption = null;
+        private Option fragmentOption = null;
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
@@ -485,6 +487,7 @@ public class HiCTools {
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
             threadedOption = addIntegerOption('t', "threads");
+            fragmentOption = addStringOption('f', "restriction fragment site file");
             helpOption = addBooleanOption('h', "help");
         }
 
@@ -512,6 +515,16 @@ public class HiCTools {
                 return null;
             }
         }
+
+        String getFragmentOption() {
+            Object opt = getOptionValue(fragmentOption);
+            if (opt != null) {
+                return opt.toString();
+            } else {
+                return null;
+            }
+        }
+
 
         int getCountThresholdOption() {
             Object opt = getOptionValue(countThresholdOption);

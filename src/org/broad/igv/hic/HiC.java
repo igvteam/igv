@@ -98,7 +98,7 @@ public class HiC {
      */
     public void setZoom(int newZoom, final int centerLocationX, final int centerLocationY, boolean updateSlider) {
 
-        if (newZoom < 0 || newZoom > MainWindow.MAX_ZOOM) return;
+        if (newZoom < 0 || newZoom > dataset.getNumberZooms()) return;
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
@@ -169,9 +169,9 @@ public class HiC {
     public void zoomTo(final double xBP, final double yBP, final double scale) {
 
         // Find zoom level closest to prescribed scale
-        int newZoom = HiCGlobals.zoomBinSizes.length - 1;
-        for (int z = 1; z < HiCGlobals.zoomBinSizes.length; z++) {
-            if (HiCGlobals.zoomBinSizes[z] < scale) {
+        int newZoom = dataset.getNumberZooms() - 1;
+        for (int z = 1; z < dataset.getNumberZooms(); z++) {
+            if (dataset.getZoom(z) < scale) {
                 newZoom = z - 1;
                 break;
             }

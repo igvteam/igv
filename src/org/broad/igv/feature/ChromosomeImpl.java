@@ -71,6 +71,7 @@ public class ChromosomeImpl implements Chromosome {
         this.cytobands = cytobands;
     }
 
+
     /**
      * /**
      * Return the length of the chromosome, which is the end of the last cytoband
@@ -87,4 +88,7 @@ public class ChromosomeImpl implements Chromosome {
         return name;
     }
 
+    public boolean equals(Object obj) {
+        return ((Chromosome)obj).getIndex() == index;
+    }
 }
