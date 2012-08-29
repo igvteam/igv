@@ -411,6 +411,7 @@ public class AlignmentDataManager {
 
     private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
         loadedIntervalMap.setMaxIntervalSize(MAX_INTERVAL_MULTIPLE * (int) (context.getEndLocation() - context.getOrigin()));
+        loadedIntervalMap.setLocusList(FrameManager.getFrames());
         loadedIntervalMap.put(interval);
     }
 

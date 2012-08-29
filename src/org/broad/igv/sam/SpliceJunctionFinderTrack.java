@@ -24,20 +24,23 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -127,6 +130,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         parent = context.getPanel();
         final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
         if (loadedIntervals != null) {
+            packedFeaturesMap.setLocusList(FrameManager.getFrames());
             for (AlignmentInterval loadedInterval : loadedIntervals) {
                 if (loadedInterval != null) {
                     List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
