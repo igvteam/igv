@@ -44,7 +44,6 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.Utilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -59,6 +58,8 @@ import java.io.IOException;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.util.collections.CollUtils.moveInList;
 
 /**
  * @author jrobinso
@@ -230,7 +231,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         }
 
                         List<GenomeListItem> serverGLI = getServerGenomeItemList();
-                        Utilities.moveInList(serverGLI, 0, genomeListItem);
+                        moveInList(serverGLI, 0, genomeListItem);
                         List<GenomeListItem> toWrite;
                         if (serverGLI.size() < MAX_SERVER_GENOMES_SHOWN) {
                             toWrite = new ArrayList<GenomeListItem>(serverGLI);
