@@ -91,7 +91,7 @@ public class CollUtils {
 
     /**
      * Search through an to find an object of matching value.
-     * Lots of our enums have a String value, intended to be human readable
+     * Some our enums have a String value, intended to be human readable
      *
      * @param valuedCollection
      * @param value

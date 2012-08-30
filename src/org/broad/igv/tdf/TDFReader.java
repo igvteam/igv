@@ -366,7 +366,7 @@ public class TDFReader {
     private Double getValue(WindowFunction wf) {
         if (!valueCache.containsKey(wf)) {
             TDFGroup rootGroup = getGroup("/");
-            String maxString = rootGroup.getAttribute(wf.getDisplayName());
+            String maxString = rootGroup.getAttribute(wf.getValue());
             try {
                 valueCache.put(wf, Double.parseDouble(maxString));
             } catch (Exception e) {
