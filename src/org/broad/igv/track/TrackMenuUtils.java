@@ -28,6 +28,7 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
@@ -787,8 +788,8 @@ public class TrackMenuUtils {
 
 
         int origValue = featureTracks.iterator().next().getVisibilityWindow();
-        int origValueKB = Math.max(1, origValue / 1000);
-        int value = getIntValue("Visibility window (kb)", origValueKB);
+        double origValueKB =  (origValue / 1000.0);
+        double value = getNumericValue("Visibility window (kb)", origValueKB);
         if (value == Integer.MIN_VALUE) {
             return;
         }
@@ -840,6 +841,27 @@ public class TrackMenuUtils {
             } catch (NumberFormatException numberFormatException) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         parameter + " must be an integer number.");
+            }
+        }
+    }
+
+    public static double getNumericValue(String parameter, double value) {
+
+        while (true) {
+
+            String height = JOptionPane.showInputDialog(
+                    IGV.getMainFrame(), parameter + ": ",
+                    String.valueOf(value));
+
+            if ((height == null) || height.trim().equals("")) {
+                return Double.MIN_VALUE;   // <= the logical "null" value
+            }
+
+            try {
+                value = Double.parseDouble(height);
+                return value;
+            } catch (NumberFormatException numberFormatException) {
+                MessageUtils.showMessage(parameter + " must be a number.");
             }
         }
     }
