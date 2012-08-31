@@ -1037,7 +1037,10 @@ public class GenomeManager {
 
         if (reader != null) {
             FeatureParser parser;
-            if (GFFFeatureSource.isGFF(geneFileName)) {
+            if(geneFileName.endsWith(".embl")) {
+                parser = new EmblFeatureTableParser();
+            }
+            else if (GFFFeatureSource.isGFF(geneFileName)) {
                 parser = new GFFParser(geneFileName);
             } else {
                 parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
