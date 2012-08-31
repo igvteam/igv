@@ -888,21 +888,22 @@ public class IGV {
 
     final public void createSnapshot(final Component target, final File defaultFile) {
 
-        CursorToken token = WaitCursorManager.showWaitCursor();
-        contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
         File file = selectSnapshotFile(defaultFile);
         if (file == null) {
             return;
         }
 
-        try {
-            createSnapshotNonInteractive(target, file);
+        CursorToken token = null;
+         try {
+             token =  WaitCursorManager.showWaitCursor();
+             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
+             createSnapshotNonInteractive(target, file);
         } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
                     + e.getMessage()));
         } finally {
-            WaitCursorManager.removeWaitCursor(token);
+            if(token != null) WaitCursorManager.removeWaitCursor(token);
             resetStatusMessage();
         }
 
