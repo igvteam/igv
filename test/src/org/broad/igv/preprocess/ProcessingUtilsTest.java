@@ -16,7 +16,6 @@
 
 package org.broad.igv.preprocess;
 
-import org.broad.igv.data.DataStatistics;
 import org.broad.igv.data.ProcessingUtils;
 import org.broad.igv.track.WindowFunction;
 import org.junit.*;
@@ -57,14 +56,14 @@ public class ProcessingUtilsTest {
     public void computePercentile() {
         Random random = new Random(94863198);
         int nPts = 10000;
-        float [] values = new float[nPts];
+        float[] values = new float[nPts];
         for (int i = 0; i < nPts; i++) {
             values[i] = random.nextFloat();
         }
 
         WindowFunction wf = WindowFunction.percentile10;
         float v = ProcessingUtils.computeStat(values, wf);
-        assertEquals(wf.getDisplayName(), 0.1, v, 1.0e-2);
+        assertEquals(wf.getValue(), 0.1, v, 1.0e-2);
 
     }
 }

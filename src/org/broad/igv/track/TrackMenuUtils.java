@@ -256,7 +256,7 @@ public class TrackMenuUtils {
             menu.add(statisticsHeading);
 
             for (final WindowFunction wf : ORDERED_WINDOW_FUNCTIONS) {
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(wf.getDisplayName());
+                JCheckBoxMenuItem item = new JCheckBoxMenuItem(wf.getValue());
                 if (avaibleWindowFunctions.contains(wf) || currentWindowFunctions.contains(wf)) {
                     if (currentWindowFunctions.contains(wf)) {
                         item.setSelected(true);

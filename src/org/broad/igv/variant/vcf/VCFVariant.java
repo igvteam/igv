@@ -36,7 +36,7 @@ public class VCFVariant implements Variant {
     private boolean isIndel;
 
     String chr;
-    private double alleleFreq;
+    private double[] alleleFreqs;
     private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
     private double coveredSampleFraction = Double.NaN;
 
@@ -56,22 +56,35 @@ public class VCFVariant implements Variant {
 
         // TODO -- deal with multiple value allele freq, e.g. [0.01,0.001]
         String afString = null;
+        String[] alleleFreqKeys = {"AF", "GMAF"};
         try {
-            afString = variantContext.getAttributeAsString("AF", "-1");
-            alleleFreq = Double.parseDouble(afString);
-        } catch (NumberFormatException e) {
-            alleleFreq = -1;
-            log.error("Error parsing allele fraction: " + afString);
-        }
-        if (alleleFreq < 0) {
-            try {
-                afString = variantContext.getAttributeAsString("GMAF", "-1");
-                alleleFreq = Double.parseDouble(afString);
-            } catch (NumberFormatException e) {
-                alleleFreq = -1;
-                log.error("Error parsing allele fraction: " + afString);
+            for (String alleleFreqKey : alleleFreqKeys) {
+                afString = variantContext.getAttributeAsString(alleleFreqKey, "-1");
+                alleleFreqs = parseAFString(afString);
+                if (alleleFreqs[0] >= 0) break;
             }
+        } catch (NumberFormatException e) {
+            alleleFreqs = new double[]{-1};
+            log.error("Error parsing allele frequency: " + afString);
         }
+
+    }
+
+    /**
+     * Allele frequency is a comma separated list of doubles
+     * We strip away brackets and parentheses
+     *
+     * @param afString
+     * @return
+     */
+    private double[] parseAFString(String afString) {
+        afString = afString.replaceAll("[\\[\\]\\(\\)]", "");
+        String[] tokens = afString.split(",");
+        double[] result = new double[tokens.length];
+        for (int ii = 0; ii < tokens.length; ii++) {
+            result[ii] = Double.parseDouble(tokens[ii]);
+        }
+        return result;
     }
 
     /**
@@ -135,12 +148,11 @@ public class VCFVariant implements Variant {
 
 
     /**
-     * 1503292
      * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
      * no annotation (unknown allele frequency).
      */
-    public double getAlleleFreq() {
-        return alleleFreq;
+    public double[] getAlleleFreqs() {
+        return alleleFreqs;
     }
 
     /**

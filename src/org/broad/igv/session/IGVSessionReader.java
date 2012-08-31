@@ -39,6 +39,7 @@ import org.broad.igv.util.FilterElement.Operator;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
+import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.*;
 
 import java.awt.*;
@@ -831,9 +832,10 @@ public class IGVSessionReader implements SessionReader {
         String value = getAttribute(element, SessionAttribute.VALUE.getText());
         String booleanOperator = getAttribute(element, SessionAttribute.BOOLEAN_OPERATOR.getText());
 
+        Operator opEnum = CollUtils.findValueOf(Operator.values(), operator);
+        BooleanOperator boolEnum = BooleanOperator.valueOf(booleanOperator.toUpperCase());
         TrackFilterElement trackFilterElement = new TrackFilterElement(filter, item,
-                Operator.findEnum(operator), value,
-                BooleanOperator.findEnum(booleanOperator));
+                opEnum, value, boolEnum);
         filter.add(trackFilterElement);
 
         NodeList elements = element.getChildNodes();

@@ -31,3 +31,8 @@ build/
 /batik-codec.jar
 /goby-io-igv.jar
 /launcher/dist
+/test/largedata
+
+#Ignore index files
+*.*.idx
+!isect_res.bed.idx

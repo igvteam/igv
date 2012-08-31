@@ -286,7 +286,7 @@ public class MatrixZoomData {
         int size = oe.getRowDimension();
         int num = 0;
         for (int i = 0; i < size; i++) {
-            if (i == nonCentromereColumns[num]) {
+            if (num < nonCentromereColumns.length && i == nonCentromereColumns[num]) {
                 RealVector v = oe.getRowVector(i);
                 double m = getVectorMean(v);
                 RealVector newV = v.mapSubtract(m);
@@ -299,7 +299,7 @@ public class MatrixZoomData {
         RealVector v = new ArrayRealVector(size);
         num = 0;
         for (int i = 0; i < size; i++) {
-            if (i != nonCentromereColumns[num]) {
+            if (num < nonCentromereColumns.length && i != nonCentromereColumns[num]) {
                 rm.setRowVector(i, v);
                 rm.setColumnVector(i, v);
             } else num++;
