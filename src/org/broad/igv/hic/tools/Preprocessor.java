@@ -756,7 +756,7 @@ public class Preprocessor {
 
                 xBin = fragmentCalculation.getBin(chr1, pos1);
                 yBin = fragmentCalculation.getBin(chr2, pos2);
-                System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
+                //System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
             }
             else {
                 xBin = pos1 / getBinSize();

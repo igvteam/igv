@@ -310,13 +310,13 @@ public abstract class AbstractDataSource implements DataSource {
     }
 
     private LocusScore getCompositeScore(Accumulator accumulator, int accumulatedStart, int accumulatedEnd) {
-        LocusScore ls;
+        LocusScore ls = null;
         if (accumulator.getNpts() == 1) {
-            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getRepData()[0], accumulator.getRepProbes()[0]);
+      //      ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getRepData()[0], accumulator.getRepProbes()[0]);
         } else {
             float value = accumulator.getValue();
-            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getRepData(),
-                    accumulator.getRepProbes(), windowFunction);
+        //    ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getRepData(),
+          //          accumulator.getRepProbes(), windowFunction);
         }
         return ls;
 
