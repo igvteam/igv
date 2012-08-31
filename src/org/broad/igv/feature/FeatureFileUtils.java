@@ -12,8 +12,12 @@
 package org.broad.igv.feature;
 
 
+import org.broad.igv.Globals;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 
 import java.io.*;
 import java.util.*;
@@ -22,6 +26,107 @@ import java.util.*;
  * @author jrobinso
  */
 public class FeatureFileUtils {
+
+
+    /**
+     * Compute feature density in units of # / window.  Note: This function could be extended to other file types by
+     * using codecs.
+     *
+     * @param iFile       - a bed file
+     * @param windowSize
+     * @param step
+     */
+    static void computeBedDensity(String iFile, String oFile, int windowSize, int step) throws IOException {
+
+        //FeatureCodec codec = CodecFactory.getCodec(iFile, null);
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = ParsingUtils.openBufferedReader(iFile);
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(oFile)));
+
+            String nextLine;
+            Map<Integer, Window> openWindows = new LinkedHashMap<Integer, Window>();
+            int lastWindowOutput = 0;
+            String lastChr = null;
+
+            while ((nextLine = br.readLine()) != null) {
+                if (nextLine.startsWith("track") || nextLine.startsWith("#")) continue;
+
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if (tokens.length < 3) continue;
+
+                String chr = tokens[0];
+                int start = Integer.parseInt(tokens[1]);
+                int end = Integer.parseInt(tokens[2]);
+
+                if(!chr.equals(lastChr)) {
+                    lastWindowOutput = 0;
+                    for(Window window : openWindows.values()) {
+                        int w = window.idx;
+                        int windowCenter = w * step + (windowSize / 2);
+                        int windowStart = windowCenter - step/2;
+                        int windowEnd = windowStart + step;
+                        pw.println(lastChr + "\t" + windowStart + "\t" + windowEnd + "\t" + window.count);
+                    }
+                    openWindows.clear();
+                    lastChr = chr;
+                }
+
+                int startWindow = start / step;
+                int endWindow = (end + windowSize) / step;
+                for (int w = startWindow; w < endWindow; w++) {
+                    Window window = openWindows.get(w);
+                    if (window == null) {
+                        window = new Window(w);
+                        openWindows.put(w, window);
+                    }
+                    window.increment();
+                }
+
+                // File is sorted by start position, will never see windows < startWindow aganin
+                if(startWindow > lastWindowOutput) {
+                   for(int w = lastWindowOutput; w < startWindow; w++) {
+                       Window window = openWindows.get(w);
+                       if (window != null) {
+                           int windowCenter = w * step + (windowSize / 2);
+                           int windowStart = windowCenter - step/2;
+                           int windowEnd = windowStart + step;
+                           pw.println(chr + "\t" + windowStart + "\t" + windowEnd + "\t" + window.count);
+                       }
+                   }
+                    for(int w = lastWindowOutput; w < startWindow; w++) {
+                        openWindows.remove(w);
+                    }
+                    lastWindowOutput = startWindow - 1;
+                }
+            }
+        } finally {
+            if(br != null) {
+                br.close();
+            }
+            if(pw != null) {
+                pw.close();
+            }
+        }
+
+    }
+
+    static class Window {
+        int idx;
+        int count;
+
+        Window(int idx) {
+            this.idx = idx;
+        }
+
+        void increment() {
+            count++;
+        }
+    }
+
 
     /**
      * Create a "canonical" gene file from an annotation UCSC refseq type annotation file.  The "canonical" file
