@@ -25,11 +25,9 @@ package org.broad.igv.tdf;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,27 +44,24 @@ public class Accumulator {
 
     boolean isFinished = false;
     WindowFunction windowFunction;
-    List<PercentileValue> percentiles;
     float sum = 0.0f;
     int basesCovered = 0;
     int nPts = 0;
     float value = Float.NaN;
-    DoubleArrayList values;
+    DownsampledDoubleArrayList valueList;
 
 
     // Optional -- keep some representative data and probe names for popup text
     int nRepValues;
-    float[] data;
-    String[] probes;
-    private int npts;
-    private String[] names;
+    float[] repData;
+    String[] repProbes;
 
     public Accumulator(WindowFunction windowFunction, int nRepValues) {
         this(windowFunction);
         if (nRepValues > 0) {
             this.nRepValues = nRepValues;
-            data = new float[nRepValues];
-            probes = new String[nRepValues];
+            this.repData = new float[nRepValues];
+            this.repProbes = new String[nRepValues];
         }
     }
 
@@ -74,8 +69,7 @@ public class Accumulator {
     public Accumulator(WindowFunction windowFunction) {
         this.windowFunction = windowFunction;
         if (PERCENTILE_WINDOW_FUNCTIONS.contains(windowFunction)) {
-            values = new DoubleArrayList();
-            percentiles = new ArrayList();
+            valueList = new DownsampledDoubleArrayList(MAX_VALUE_COUNT);
         }
     }
 
@@ -90,9 +84,9 @@ public class Accumulator {
         if (nBases < 1) nBases = 1;
 
         if (!Float.isNaN(v)) {
-            if (data != null && nPts < data.length) {
-                data[nPts] = v;
-                probes[nPts] = probe;
+            if (repData != null && nPts < repData.length) {
+                repData[nPts] = v;
+                repProbes[nPts] = probe;
             }
             switch (windowFunction) {
                 case min:
@@ -105,12 +99,8 @@ public class Accumulator {
                     sum += nBases * v;
                     break;
                 default:
-                    if (values != null) {
-                        values.add(v);
-                        if (values.size() > MAX_VALUE_COUNT) {
-                            computePercentiles();
-                            values.clear();
-                        }
+                    if (valueList != null) {
+                        valueList.add(v);
                     }
             }
             nPts++;
@@ -127,58 +117,40 @@ public class Accumulator {
 
         if (windowFunction == WindowFunction.mean) {
             value = Float.isNaN(sum) ? Float.NaN : sum / basesCovered;
-        } else if (values != null) {
-            if (values.size() == 1) {
-                value = (float) values.get(0);
+        } else if (valueList != null) {
+            if (valueList.size() == 0) {
+                value = Float.NaN;
+            } else if (valueList.size() == 1) {
+                value = (float) valueList.get(0);
             } else {
-                if (values.size() > 1) {
-                    computePercentiles();
+                double[] valueArray = valueList.toArray();
+                double p = this.getPercentile(windowFunction);
+                if (p > 0) {
+                    value = (float) StatUtils.percentile(valueArray, p);
+                } else {
+                    value = Float.NaN;
                 }
-
-
-                float v = Float.NaN; // <= Default,
-                if (percentiles != null && percentiles.size() > 0) {
-                    double weightedSum = 0;
-                    double sumOfWeights = 0;
-                    for (PercentileValue pv : percentiles) {
-                        double weight = (double) pv.nPoints / basesCovered;
-                        sumOfWeights += weight;
-                        weightedSum += weight * pv.value;
-                    }
-                    v = (float) (weightedSum / sumOfWeights);
-                }
-                value = v;
-
-
             }
+
         }
-        values = null;
+
+        valueList = null;
         isFinished = true;
 
     }
 
-    private void computePercentiles() {
-        if (values != null) {
-            double[] valueArray = values.toArray();
-            double p = this.getPercentile(windowFunction);
-            if (p > 0) {
-                float v = (float) StatUtils.percentile(valueArray, p);
-                if (Float.isInfinite(v)) {
-                    log.error("Infinite percentile (" + windowFunction + ")");
-                } else {
-                    percentiles.add(new PercentileValue(valueArray.length, v));
-                }
-            }
-        }
 
-
+    public int getNpts() {
+        return nPts;
     }
 
+    public String[] getRepProbes() {
+        return repProbes;
+    }
 
     public float getValue() {
         if (!isFinished) finish();
         return value;
-
     }
 
 
@@ -199,16 +171,8 @@ public class Accumulator {
         }
     }
 
-    public int getNpts() {
-        return npts;
-    }
-
-    public String[] getNames() {
-        return names;
-    }
-
-    public float[] getData() {
-        return data;
+    public float[] getRepData() {
+        return repData;
     }
 
 

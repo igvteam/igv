@@ -38,7 +38,14 @@ public class DownsampledDoubleArrayList {
             downsampledCount++;
 
         }
+    }
 
+    public double get(int idx) {
+        return data.get(idx);
+    }
+
+    public int size() {
+        return data.size();
     }
 
     public boolean isSampled() {

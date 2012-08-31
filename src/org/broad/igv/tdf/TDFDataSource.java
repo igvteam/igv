@@ -39,17 +39,14 @@ public class TDFDataSource implements CoverageDataSource {
 
     private static Logger log = Logger.getLogger(TDFDataSource.class);
 
-    int maxPrecomputedZoom = 6;
     TDFReader reader;
+    int maxPrecomputedZoom = 6;
     private int trackNumber = 0;
     String trackName;
     LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(this, 20);
     Genome genome;
-    Interval currentInterval;
     WindowFunction windowFunction = WindowFunction.mean;
     List<WindowFunction> availableFunctions;
-
-    private boolean aggregateLikeBins = true;
 
     boolean normalizeCounts = false;
     int totalCount = 0;
@@ -60,8 +57,6 @@ public class TDFDataSource implements CoverageDataSource {
     public TDFDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
 
         this.genome = genome;
-
-        // TODO -- a single reader will be shared across data sources
         this.trackNumber = trackNumber;
         this.trackName = trackName;
         this.reader = reader;
@@ -135,10 +130,6 @@ public class TDFDataSource implements CoverageDataSource {
 
     public double getDataMin() {
         return reader.getLowerLimit() * normalizationFactor;
-    }
-
-    public void setAggregateLikeBins(boolean aggregateLikeBins) {
-        this.aggregateLikeBins = aggregateLikeBins;
     }
 
     class Interval {
@@ -366,11 +357,11 @@ public class TDFDataSource implements CoverageDataSource {
     private LocusScore getCompositeScore(Accumulator accumulator, int accumulatedStart, int accumulatedEnd) {
         LocusScore ls;
         if (accumulator.getNpts() == 1) {
-            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getRepData()[0], accumulator.getRepProbes()[0]);
         } else {
             float value = accumulator.getValue();
-            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
-                    accumulator.getNames(), windowFunction);
+            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getRepData(),
+                    accumulator.getRepProbes(), windowFunction);
         }
         return ls;
 

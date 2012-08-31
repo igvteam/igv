@@ -59,13 +59,11 @@ public class EWigTrack extends AbstractTrack {
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
         scoreSource = new TDFDataSource(reader, 4, "Pi", genome);
-        scoreSource.setAggregateLikeBins(false);
 
         setDataRange(new DataRange(0, 0, 10));
         baseSources = new HashMap();
         for (int i = 0; i < 4; i++) {
             TDFDataSource src = new TDFDataSource(reader, i, Character.toString(nucleotides[i]), genome);
-            src.setAggregateLikeBins(false);
             baseSources.put(nucleotides[i], src);
         }
     }
