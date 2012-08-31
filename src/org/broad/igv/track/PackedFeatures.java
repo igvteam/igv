@@ -17,10 +17,11 @@ import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
 
 import java.util.*;
+
+import static org.broad.igv.util.collections.CollUtils.filteredCopy;
 
 /**
  * Represents a table of features, packed so there is no overlap.
@@ -283,7 +284,7 @@ public class PackedFeatures<T extends Feature> implements Interval {
     public boolean trimTo(String chr, int start, int end, int zoom) {
         Predicate overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
 
-        Collection<T> newFeatures = Utilities.filteredCopy(features, overlapPredicate);
+        Collection<T> newFeatures = filteredCopy(features, overlapPredicate);
         boolean anyLost = newFeatures.size() != features.size();
 
         features.clear();

@@ -50,6 +50,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import static org.broad.igv.util.collections.CollUtils.moveInList;
+
 /**
  * @author jrobinso
  */
@@ -649,7 +651,7 @@ public class GenomeManager {
         for (String genomeId : genomeIds) {
             GenomeListItem listItem = getGenomeListItemById(genomeId);
             if (listItem != null) {
-                Utilities.moveInList(genomeListItems, position, listItem);
+                moveInList(genomeListItems, position, listItem);
                 position++;
             }
         }

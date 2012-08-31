@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class HiCTrackManager {
 
-    static String path = "http://www.broadinstitute.org/igvdata/encode/hg19/hg19_encode.xml";
+    static String path = "http://www.broadinstitute.org/igvdata/hic/tracksMenu.xml";
     //static String path = "/Users/jrobinso/Documents/IGV/hg19_encode.xml";
 
     // Category => list of locators

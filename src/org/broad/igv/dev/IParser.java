@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc. 
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+package org.broad.igv.dev;
+
+import org.broad.igv.exceptions.ParserException;
+
+/**
+ * User: jacob
+ * Date: 2012-Aug-30
+ */
+public interface IParser<TContainer, TIndex> {
+
+    byte getByte(TContainer obj, TIndex index) throws ParserException;
+
+    short getShort(TContainer obj, TIndex index) throws ParserException;
+
+    int getInt(TContainer obj, TIndex index) throws ParserException;
+
+    float getFloat(TContainer obj, TIndex index) throws ParserException;
+
+    double getDouble(TContainer obj, TIndex index) throws ParserException;
+
+    String getString(TContainer obj, TIndex index) throws ParserException;
+
+    /**
+     * Return the number of data objects contained.
+     * For an array, this would be the length
+     *
+     * @param obj
+     * @return
+     * @throws ParserException
+     */
+    int size(TContainer obj) throws ParserException;
+}

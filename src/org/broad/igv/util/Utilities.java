@@ -13,7 +13,6 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -33,7 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.StringTokenizer;
 import java.util.zip.CRC32;
 
 /**
@@ -198,68 +198,5 @@ public class Utilities {
 
         return fileName;
     }
-
-    /**
-     * Filters the provided collection in place. Only those objects for which
-     * predicate(object) returns true will be kept. Collection must support object
-     * removal.
-     *
-     * @param objects
-     * @param predicate
-     * @param <T>
-     */
-    public static <T> void filter(Collection<? extends T> objects, Predicate<T> predicate) {
-        if (objects == null) return;
-        Iterator<? extends T> iter = objects.iterator();
-        while (iter.hasNext()) {
-            T next = iter.next();
-            if (!predicate.evaluate(next)) {
-                iter.remove();
-            }
-        }
-    }
-
-    /**
-     * Filters the provided collection in place. Only those objects for which
-     * predicate(object) returns true will be kept. Collection must support object
-     * removal.
-     *
-     * @param objects
-     * @param predicate
-     * @param <T>
-     */
-    public static <T> Collection<T> filteredCopy(Collection<? extends T> objects, Predicate<T> predicate) {
-        if (objects == null) return null;
-        Collection<T> coll = new ArrayList<T>(objects.size());
-        Iterator<? extends T> iter = objects.iterator();
-        while (iter.hasNext()) {
-            T next = iter.next();
-            if (predicate.evaluate(next)) {
-                coll.add(next);
-            }
-        }
-        return coll;
-    }
-
-
-    /**
-     * Move the element of the list from its current location
-     * to the specified index. If {@code list} does not contain
-     * {@code listItem}, has no effect.
-     *
-     * @param list
-     * @param index
-     * @param listItem
-     * @param <T>
-     * @return True for success
-     */
-    public static <T> boolean moveInList(List<T> list, int index, T listItem) {
-        boolean moved = list.remove(listItem);
-        if (moved) {
-            list.add(index, listItem);
-        }
-        return moved;
-    }
-
 
 }

@@ -139,23 +139,25 @@ public abstract class AbstractDataSource implements DataSource {
         }
         endLocation = Math.min(endLocation, chrLength);
 
-        // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
-        //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;
-        //int z = Math.min(zReq, maxZoom);
-        int z = zReq;
-        int nTiles = (int) Math.pow(2, z);
-        //double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
-
 
         int adjustedStart = Math.max(0, startLocation);
         int adjustedEnd = Math.min(chrLength, endLocation);
 
 
         if (cacheSummaryTiles && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
-            double tileWidth = ((double) chrLength) / nTiles;
+
+            // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+            //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;
+            //int z = Math.min(zReq, maxZoom);
+            int z = zReq;
+            int virtualTileCount = (int) Math.pow(2, z);
+
+            double tileWidth = ((double) chrLength) / virtualTileCount;
             int startTile = (int) (adjustedStart / tileWidth);
             int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;
-            List<SummaryTile> tiles = new ArrayList(nTiles);
+            List<SummaryTile> tiles = null;
+
+            tiles = new ArrayList(endTile - startTile + 1);
             for (int t = startTile; t <= endTile; t++) {
                 int tileStart = (int) (t * tileWidth);
                 int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
@@ -310,11 +312,11 @@ public abstract class AbstractDataSource implements DataSource {
     private LocusScore getCompositeScore(Accumulator accumulator, int accumulatedStart, int accumulatedEnd) {
         LocusScore ls;
         if (accumulator.getNpts() == 1) {
-            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getRepData()[0], accumulator.getRepProbes()[0]);
         } else {
             float value = accumulator.getValue();
-            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
-                    accumulator.getNames(), windowFunction);
+            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getRepData(),
+                    accumulator.getRepProbes(), windowFunction);
         }
         return ls;
 

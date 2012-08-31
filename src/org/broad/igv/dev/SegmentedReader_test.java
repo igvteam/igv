@@ -1,0 +1,255 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+package org.broad.igv.dev;
+
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.data.seg.SegmentedAsciiDataSet;
+import org.broad.igv.dev.db.SQLLineParser;
+import org.broad.igv.dev.db.WholeTableDBReader;
+import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.exceptions.ParserException;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.TrackType;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
+
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Experimental class to explore using a SQL database as a data store
+ *
+ * @author Jim Robinson
+ * @date 10/14/11
+ */
+public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataSet> {
+
+    private static Logger log = Logger.getLogger(SegmentedReader_test.class);
+    private Genome genome;
+    private SegmentedAsciiDataSet dataset;
+    private IParser parser;
+    private String[] headings;
+
+    private boolean birdsuite = false;
+    private int sampleColumn = 0;
+    private int chrColumn = 1;
+    private int startColumn = 2;
+    private int endColumn = 3;
+    //int snpCountColumn = 4;    // Default value
+    private int dataColumn = 5;
+    private ResourceLocator locator;
+
+    enum Type {
+        SEG, BIRDSUITE, NEXUS
+    }
+
+    public SegmentedReader_test(ResourceLocator locator) {
+        this(locator, null);
+    }
+
+    public SegmentedReader_test(ResourceLocator locator, Genome genome) {
+        //TODO Don't hardcode table name, this might note even be right for our target case
+        super(locator, "CNV");
+        this.genome = genome;
+
+        if (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls")) {
+            birdsuite = true;
+        }
+    }
+
+    /**
+     * Return a map of trackId -> segment datasource
+     *
+     * @return
+     */
+    public SegmentedAsciiDataSet loadSegments(ResourceLocator locator, Genome genome) {
+
+        dataset = new SegmentedAsciiDataSet(genome);
+
+        if (birdsuite) {
+            dataset.setTrackType(TrackType.CNV);
+        }
+
+        AsciiLineReader reader = null;
+        String nextLine = null;
+        int lineNumber = 0;
+        try {
+            reader = ParsingUtils.openAsciiReader(locator);
+            lineNumber = readHeader(reader);
+
+            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+                lineNumber++;
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                parseLine(tokens);
+            }
+
+        } catch (DataLoadException pe) {
+            throw pe;
+        } catch (Exception e) {
+            if (nextLine != null && lineNumber != 0) {
+                throw new ParserException(e.getMessage(), e, lineNumber, nextLine);
+            } else {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        dataset.sortLists();
+        return dataset;
+    }
+
+    @Override
+    protected SegmentedAsciiDataSet processResultSet(ResultSet rs) throws SQLException {
+
+        this.readHeader(rs);
+
+        while (rs.next()) {
+            parseLine(rs);
+        }
+
+        dataset.sortLists();
+        return dataset;
+    }
+
+
+    /**
+     * Note:  This is an exact copy of the method in ExpressionFileParser.  Refactor to merge these
+     * two parsers, or share a common base class.
+     *
+     * @param comment
+     * @param dataset
+     */
+    private void parseComment(String comment, SegmentedAsciiDataSet dataset) {
+
+        String tmp = comment.substring(1, comment.length());
+        if (tmp.startsWith("track")) {
+            ParsingUtils.parseTrackLine(tmp, dataset.getTrackProperties());
+        } else {
+            String[] tokens = tmp.split("=");
+
+            String key = tokens[0].trim().toLowerCase();
+            if (key.equals("type")) {
+                if (tokens.length != 2) {
+                    return;
+                }
+                try {
+                    dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                } catch (Exception exception) {
+                    log.error("Unknown track type: " + tokens[1].trim().toUpperCase());
+                }
+            }
+
+        }
+    }
+
+    protected int readHeader(AsciiLineReader reader) throws IOException {
+        // Parse comments, if any
+        String nextLine = reader.readLine();
+        int lineNumber = 0;
+        while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
+            lineNumber++;
+            if (nextLine.length() > 0) {
+                parseComment(nextLine, dataset);
+            }
+            nextLine = reader.readLine();
+        }
+
+        // Read column headings
+        headings = nextLine.split("\t");
+
+        if (birdsuite) {
+            //sample	sample_index	copy_number	chr	start	end	confidence
+            sampleColumn = 0;
+            dataColumn = 2;
+            chrColumn = 3;
+            startColumn = 4;
+            endColumn = 5;
+
+        } else {
+            sampleColumn = 0;
+            chrColumn = 1;
+            startColumn = 2;
+            endColumn = 3;
+            dataColumn = headings.length - 1;
+        }
+
+        return lineNumber;
+    }
+
+    protected int readHeader(ResultSet rs) throws SQLException {
+        this.dataset = new SegmentedAsciiDataSet(genome);
+        sampleColumn = rs.findColumn("Sample");
+        chrColumn = rs.findColumn("chr");
+        startColumn = rs.findColumn("start");
+        endColumn = rs.findColumn("end");
+        dataColumn = rs.findColumn("value");
+        //descColumn = rs.findColumn("description");
+        return 0;
+    }
+
+    protected void parseLine(Object rs) throws ParserException {
+
+        if (rs instanceof ResultSet) {
+            parser = new SQLLineParser();
+        } else if (rs instanceof String[]) {
+            parser = new StringArrayParser();
+        } else {
+            throw new IllegalArgumentException("Line must be a ResultSet or String[], not" + rs.getClass());
+        }
+
+        int nTokens = parser.size(rs);
+        if (nTokens > 4) {
+
+            String sample = parser.getString(rs, sampleColumn);
+            String chr = parser.getString(rs, chrColumn);
+            int start = parser.getInt(rs, startColumn);
+            int end = parser.getInt(rs, endColumn);
+            float value = parser.getFloat(rs, dataColumn);
+
+
+            if (genome != null) {
+                chr = genome.getChromosomeAlias(chr);
+            }
+
+            String trackId = sample;
+
+            StringBuffer desc = null;
+            if (birdsuite) {
+                desc = new StringBuffer();
+                desc.append("<br>");
+                desc.append(headings[6]);
+                desc.append("=");
+                desc.append(parser.getString(rs, 6));
+            } else {
+                if (nTokens > 4) {
+                    desc = new StringBuffer();
+                    for (int i = 4; i < parser.size(rs) - 1; i++) {
+                        desc.append("<br>");
+                        desc.append(headings[i]);
+                        desc.append(": ");
+                        desc.append(parser.getString(rs, i));
+                    }
+                }
+            }
+            String description = desc == null ? null : desc.toString();
+            dataset.addSegment(trackId, chr, start, end, value, description);
+        }
+
+    }
+
+}

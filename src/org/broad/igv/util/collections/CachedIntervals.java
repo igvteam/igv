@@ -16,9 +16,10 @@ import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.Utilities;
 
 import java.util.*;
+
+import static org.broad.igv.util.collections.CollUtils.filter;
 
 /**
  * Used for caching data oriented in a genomic interval.
@@ -117,7 +118,7 @@ public class CachedIntervals<T extends Interval> {
 
         List<T> returnedIntervals = new ArrayList<T>(intervals);
         if (predicate != null) {
-            Utilities.filter(returnedIntervals, predicate);
+            filter(returnedIntervals, predicate);
         }
         FeatureUtils.sortFeatureList(returnedIntervals);
 

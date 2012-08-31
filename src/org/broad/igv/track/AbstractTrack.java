@@ -645,9 +645,11 @@ public abstract class AbstractTrack implements Track {
     public ContinuousColorScale getColorScale() {
         if (colorScale == null) {
 
-            ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
-            if (defaultScale != null) {
-                return defaultScale;
+            if (IGV.hasInstance()) {
+                ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
+                if (defaultScale != null) {
+                    return defaultScale;
+                }
             }
 
             double min = dataRange == null ? 0 : dataRange.getMinimum();
