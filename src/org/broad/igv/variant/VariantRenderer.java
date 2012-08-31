@@ -99,7 +99,12 @@ public class VariantRenderer { //extends FeatureRenderer {
         } else {
             alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand; // Red
             double af = variant.getAlleleFraction();
-            if (af < 0) af = variant.getAlleleFreqs()[0];
+            if (af < 0) {
+                double[] afreqs = variant.getAlleleFreqs();
+                if(afreqs != null && afreqs.length > 0) {
+                    af = afreqs[0];
+                }
+            }
             percent = Math.min(1, af);
             if (percent <= 0) {
                 percent = 0;
