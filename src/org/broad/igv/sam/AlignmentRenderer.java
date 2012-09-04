@@ -670,9 +670,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();
 
-        int start = block.getStart();
-        int end = start + read.length;
-        byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
+        final int start = block.getStart();
+        final int end = start + read.length;
+        final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
+        final int referenceLength = reference.length;
 
 
         if (read != null && read.length > 0 && reference != null) {
@@ -715,11 +716,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                     final byte readbase = read[idx];
                     misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
                 } else {
-                    final byte refbase = reference[idx];
+                    final byte refbase = idx < referenceLength ? reference[idx] : 0;
                     final byte readbase = read[idx];
                     misMatch = readbase != '=' &&
                             reference != null &&
-                            idx < reference.length &&
+                            idx < referenceLength &&
                             refbase != 0 &&
                             !AlignmentUtils.compareBases(refbase, readbase);
                 }
