@@ -262,13 +262,13 @@ public class LoadFromServerAction extends MenuAction {
                     log.info("XML node " + item.getNodeName() + " is missing a path attribute");
                 } else {
                     Node parent = item.getParentNode();
-                    parent.removeChild(item);
 
                     //log.info("Loading node " + path.getValue());
                     Document doc = this.readXMLDocument(path.getValue(), errors);
                     if (doc != null) {
                         Element global = doc.getDocumentElement();
-                        parent.appendChild(parent.getOwnerDocument().importNode(global, true));
+                        Node expandedNode = parent.getOwnerDocument().importNode(global, true);
+                        parent.replaceChild(expandedNode, item);
                     }
                 }
             }

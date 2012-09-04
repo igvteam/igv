@@ -39,8 +39,9 @@ import java.util.Set;
  */
 public class Accumulator {
 
-    public static int MAX_VALUE_COUNT = 100000;
     private static Logger log = Logger.getLogger(Accumulator.class);
+
+    private static int MAX_VALUE_COUNT = 100000;
 
     boolean isFinished = false;
     WindowFunction windowFunction;
@@ -48,7 +49,8 @@ public class Accumulator {
     int basesCovered = 0;
     int nPts = 0;
     float value = Float.NaN;
-    DownsampledDoubleArrayList valueList;
+
+    DownsampledDoubleArrayList valueList;  // List used to accumulate values for percentile calculations
 
 
     // Optional -- keep some representative data and probe names for popup text
@@ -78,6 +80,11 @@ public class Accumulator {
     }
 
     public void add(int nBases, float v, String probe) {
+
+        if (isFinished) {
+            log.error("Attempt to add data to a finalized accumulator");
+            throw new RuntimeException("Attempt to add data to a finalized accumulator");
+        }
 
         // Some older TDF files created in previous versions of igvtools from wig files were improperly coded,
         // with start=end, resulting in an nBases value of zero.  This is not a possible value, so threshold it
