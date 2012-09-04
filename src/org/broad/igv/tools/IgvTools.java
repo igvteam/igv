@@ -427,7 +427,7 @@ public class IgvTools {
                 separateBasesOption = parser.addBooleanOption("bases");
                 strandOption = parser.addStringOption("strands");
                 queryStringOpt = parser.addStringOption("query");
-                minMapQualityOpt = parser.addStringOption("minMapQuality");
+                minMapQualityOpt = parser.addIntegerOption("minMapQuality");
                 includeDupsOpt = parser.addBooleanOption("includeDuplicates");
                 pairedCoverageOpt = parser.addBooleanOption("pairs");
 
@@ -653,13 +653,17 @@ public class IgvTools {
     /**
      * Compute coverage or density of an alignment or feature file.
      *
-     * @param ifile           Alignement or feature file
+     * @param ifile           Alignment or feature file
      * @param ofile           Output file
      * @param genomeId        Genome id (e.g. hg18) or full path to a .genome file (e.g. /xchip/igv/scer2.genome)
      * @param maxZoomValue    Maximum zoom level to precompute.  Default value is 7
      * @param windowFunctions
      * @param windowSizeValue
      * @param extFactorValue
+     * @param trackLine
+     * @param queryString
+     * @param minMapQuality
+     * @param countFlags
      * @throws IOException
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
