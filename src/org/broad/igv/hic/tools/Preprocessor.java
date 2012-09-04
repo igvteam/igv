@@ -380,7 +380,14 @@ public class Preprocessor {
 
         fos.writeInt(matrix.getChr1());
         fos.writeInt(matrix.getChr2());
-        fos.writeInt(matrix.getZoomData().length);
+        int numberZooms = 0;
+        for (MatrixZoomDataPP zd : matrix.getZoomData()) {
+            if (zd != null) {
+                numberZooms++;
+            }
+        }
+        fos.writeInt(numberZooms);
+        //fos.writeInt(matrix.getZoomData().length);
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
             if (zd != null)
                 writeZoomHeader(zd);

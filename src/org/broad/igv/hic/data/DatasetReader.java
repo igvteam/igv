@@ -167,7 +167,6 @@ public class DatasetReader {
         int c1 = dis.readInt();
         int c2 = dis.readInt();
         int nZooms = dis.readInt();
-
        // dataset.setNumberZooms(nZooms);
         Chromosome chr1 = dataset.getChromosomes()[c1];
         Chromosome chr2 = dataset.getChromosomes()[c2];
