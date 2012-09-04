@@ -959,6 +959,7 @@ public class IgvTools {
                 typeString.endsWith("snp") ||
                 typeString.endsWith("xcn") ||
                 typeString.endsWith("gct") ||
+                typeString.endsWith("tab") ||
                 typeString.endsWith("mage-tab") ||
                 typeString.endsWith("bedgraph") ||
                 Preprocessor.isAlignmentFile(typeString) ||
