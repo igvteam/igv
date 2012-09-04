@@ -257,49 +257,80 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     @Test
     public void testCountTDF() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        tstCount(inputFile, "testtdf", "tdf", null, -1, -1);
+        tstCountStrandOpts(inputFile, "testtdf", "tdf", null, -1, -1);
     }
 
     @Test
     public void testCountWIG() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        tstCount(inputFile, "testwig", "wig", null, -1, -1);
-        tstCount(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
+        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
+        tstCountStrandOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
+
+        tstCountStrandMapOpts(inputFile, "testwig", "wig", null, -1, -1);
+        tstCountStrandMapOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
     }
 
     @Test
     public void testCountSAM() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "sam/test_2.sam";
-        tstCount(inputFile, "testwig", "wig", null, -1, -1);
+        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
     }
 
     @Test
     public void testCountBAM() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
-        tstCount(inputFile, "testwig", "wig", null, -1, -1);
+        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
+        tstCountStrandMapOpts(inputFile, "testwig", "wig", null, -1, -1);
     }
 
-    public void tstCount(String inputFile, String outputBase, String outputExt,
-                         String chr, int start, int end) throws Exception {
-        String outputFile = TestUtils.TMP_OUTPUT_DIR + outputBase + "_";
+    public void tstCountStrandOpts(String inputFile, String outputBase, String outputExt,
+                                   String chr, int start, int end) throws Exception {
+
+        String[] opts = new String[]{"--bases", "--strands=read", "--strands=first", "--strands=read --bases"};
+        tstCountOptsGen(inputFile, outputBase, outputExt, chr, start, end, "", opts);
+
+    }
+
+    public void tstCountStrandMapOpts(String inputFile, String outputBase, String outputExt,
+                                      String chr, int start, int end) throws Exception {
+
+        String refOpt = "--minMapQuality 1";
+        String[] opts = new String[]{"--strands=read " + refOpt, "--bases " + refOpt};
+        tstCountOptsGen(inputFile, outputBase, outputExt, chr, start, end, refOpt, opts);
+    }
+
+    /**
+     * Compare the output of count with the various options against the output of {@code refOpt}. That is,
+     * we assume the row total for each will be equal.
+     *
+     * @param inputFile
+     * @param outputBase
+     * @param outputExt
+     * @param chr
+     * @param start
+     * @param end
+     * @param opts
+     */
+    public void tstCountOptsGen(String inputFile, String outputBase, String outputExt,
+                                String chr, int start, int end, String refOpt, String[] opts) throws Exception {
 
         boolean query = chr != null && start >= 0 && end >= start + 1;
+        String outputFile = TestUtils.TMP_OUTPUT_DIR + outputBase + "_";
 
+        Map<String, float[]> rowTotals = new HashMap<String, float[]>(opts.length + 1);
+        String[] allOpts = new String[opts.length + 1];
+        allOpts[0] = refOpt;
+        System.arraycopy(opts, 0, allOpts, 1, opts.length);
 
-        String[] opts = new String[]{"", "--bases", "--strands=read", "--strands=first", "--strands=read --bases"};
-        Map<String, float[]> rowTotals = new HashMap<String, float[]>(opts.length);
-        String refOpt = null;
-
-        for (int ind = 0; ind < opts.length; ind++) {
-            String opt = opts[ind];
+        for (int ind = 0; ind < allOpts.length; ind++) {
+            String opt = allOpts[ind];
             int winsize = 5;
             if (query) {
                 opt += " --windowSize " + winsize + " --query " + chr + ":" + start + "-" + end;
             }
 
-            if (ind == 0) {
-                refOpt = opt;
-            }
+            //In case me modify the option for querying as above
+            if (ind == 0) refOpt = opt;
 
             String fullout = outputFile + ind + "." + outputExt;
             String input = "count " + opt + " " + inputFile + " " + fullout + " " + hg18id;
