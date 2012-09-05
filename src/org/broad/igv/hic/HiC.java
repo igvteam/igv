@@ -122,6 +122,7 @@ public class HiC {
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
+                    mainWindow.updateEigenvectorTrack();
                     mainWindow.refresh();
                     updateState2(newZD, centerLocationX, centerLocationY);
                 }

@@ -136,7 +136,6 @@ public class MainWindow extends JFrame {
 
     public void updateZoom(int newZoom) {
         resolutionSlider.setValue(newZoom);
-        updateEigenvectorTrack();
     }
 
     public int getMaximumZoom() {
@@ -398,7 +397,7 @@ public class MainWindow extends JFrame {
     }
 
 
-    private void updateEigenvectorTrack() {
+    void updateEigenvectorTrack() {
         boolean show = viewEigenvector.isSelected();
         if (show) {
             trackPanel.setEigenvectorTrack(eigenvectorTrack);
