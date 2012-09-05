@@ -307,18 +307,8 @@ public class HiC {
                         mainWindow.updateEigenvectorTrack(eigenvector, zd.getBinSize());
                     }
                 };
-                Future future = mainWindow.executeLongRunningTask(runnable);
-                try {
-                    future.get();  // Forces a wait
-                } catch (InterruptedException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (ExecutionException e) {
-                    if (e.getMessage().indexOf("maximal number of") >= 0)
-                        JOptionPane.showMessageDialog(mainWindow, "Cannot complete eigenvector calculation.\nMaximal number of iterations (30) reached.", "Error in Eigenvector calculation", JOptionPane.ERROR_MESSAGE);
-                    else
-                        e.printStackTrace();
-                    mainWindow.setViewEigenvector(false);
-                }
+                mainWindow.executeLongRunningTask(runnable);
+
             }
         }
 
