@@ -333,12 +333,13 @@ public class MatrixZoomData {
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
-
+        // NEVA this is where the error is
         int nBins = chr1.getLength() / binSize + 1;
 
         SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
 
         List<Integer> blockNumbers = new ArrayList<Integer>(blockIndex.keySet());
+
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
@@ -359,13 +360,15 @@ public class MatrixZoomData {
         }
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
-
+        System.err.println("size " + size);
+        int mod = size/100;
         for (int i = 0; i < size; i++) {
+                     if (i%mod == 0) System.err.println(i/size);
             if (isZeros(rm.getRow(i))) {
                 bitSet.set(i);
             }
         }
-
+           System.err.println("size " + size + " card " + bitSet.cardinality());
         nonCentromereColumns = new int[size - bitSet.cardinality()];
 
         int num = 0;
@@ -453,8 +456,9 @@ public class MatrixZoomData {
     public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
 
         if (isOE) {
+            System.err.println("here1");
             SparseRealMatrix oe = computeOE(df);
-
+                                     System.err.println("here2");
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
             assert (rows == cols);

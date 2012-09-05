@@ -374,7 +374,6 @@ public class HiCTools {
         LittleEndianOutputStream les = null;
         BufferedOutputStream bos = null;
         Dataset dataset = (new DatasetReader(file)).read();
-
         if (dataset.getVersion() <= 1) {
             if (type.equals("oe") || type.equals("pearson")) {
                 String densityFile = file + ".densities";
@@ -401,8 +400,6 @@ public class HiCTools {
             bos = new BufferedOutputStream(new FileOutputStream(ofile));
             les = new LittleEndianOutputStream(bos);
         }
-
-
 
         Chromosome[] tmp = dataset.getChromosomes();
 
@@ -434,7 +431,6 @@ public class HiCTools {
                 break;
             }
         }
-
         if (!found) {
             System.err.println("Unknown bin size: " + binsize);
         }
