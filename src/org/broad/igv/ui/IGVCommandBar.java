@@ -231,7 +231,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         }
 
                         List<GenomeListItem> serverGLI = getServerGenomeItemList();
-                        moveInList(serverGLI, 0, genomeListItem);
+
+                        //Move genome to the top, iff it wasn't already shown
+                        int currentPos = serverGLI.indexOf(genomeListItem);
+                        if (currentPos >= MAX_SERVER_GENOMES_SHOWN) {
+                            moveInList(serverGLI, 0, genomeListItem);
+                        }
                         List<GenomeListItem> toWrite;
                         if (serverGLI.size() < MAX_SERVER_GENOMES_SHOWN) {
                             toWrite = new ArrayList<GenomeListItem>(serverGLI);
