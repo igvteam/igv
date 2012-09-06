@@ -22,12 +22,14 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -68,8 +70,10 @@ public class GenomeManager {
     private List<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
+    private Set<String> excludedArchivesUrls = new HashSet();
+
     //ID comparison will be case insensitive
-    private Map<String, GenomeListItem> genomeItemMap = new CI.CIHashMap<GenomeListItem>();
+    private Map<String, GenomeListItem> genomeItemMap = new CI.CILinkedHashMap<GenomeListItem>();
 
     public static void main(String[] args) {
         if (args.length >= 1 && args[0].equals("genList")) {
@@ -556,7 +560,7 @@ public class GenomeManager {
      * IGV knows about.
      *
      * @param excludedArchivesUrls The set of file location to exclude in the return list.
-     * @return LinkedHashSet<GenomeListItem>
+     * @return List<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
@@ -612,7 +616,6 @@ public class GenomeManager {
                                 String id = fields[2];
                                 GenomeListItem item = new GenomeListItem(name, url, id, false);
                                 serverGenomeArchiveList.add(item);
-                                genomeItemMap.put(item.getId(), item);
                             } catch (Exception e) {
                                 log.error("Error reading a line from server genome list" + " line was: [" +
                                         genomeRecord + "]", e);
@@ -637,7 +640,6 @@ public class GenomeManager {
                     inputStream.close();
                 }
             }
-            rearrangeGenomeListFromSaved(serverGenomeArchiveList);
         }
 
         return serverGenomeArchiveList;
@@ -646,7 +648,7 @@ public class GenomeManager {
     private void rearrangeGenomeListFromSaved(List<GenomeListItem> genomeListItems) {
         if (genomeListItems == null) return;
         //Rearrange according to saved order
-        String[] genomeIds = PreferenceManager.getInstance().getGenomeHistory();
+        String[] genomeIds = PreferenceManager.getInstance().getGenomeIdDisplayList();
         int position = 0;
         for (String genomeId : genomeIds) {
             GenomeListItem listItem = getGenomeListItemById(genomeId);
@@ -667,6 +669,110 @@ public class GenomeManager {
     public GenomeListItem getGenomeListItemById(String genomeId) {
         return genomeItemMap.get(genomeId);
     }
+
+    public Collection<GenomeListItem> getGenomes() {
+        return genomeItemMap.values();
+    }
+
+    /**
+     * Completely rebuild the genome drop down info.
+     * This will load genomes from server/cached/user defined (as appropriate),
+     * and only keep the ones that the user has chosen to be displayed
+     */
+    public void buildGenomeItemList() {
+
+        // Build a single available genome list from both client, server
+        // and cached information. This allows us to process
+        // everything the same way.
+        List<GenomeListItem> tmpuserDefinedGenomeList = null;
+        List<GenomeListItem> tmpcachedGenomeItemList = new ArrayList<GenomeListItem>();
+        List<GenomeListItem> tmpserverGenomeItemList = null;
+
+        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+        if (affectiveMode) {
+            tmpserverGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
+        } else {
+            try {
+                tmpserverGenomeItemList = getServerGenomeArchiveList(this.excludedArchivesUrls);
+
+
+                /**
+                 * Only show cached genomes if we couldn't load them from the server
+                 */
+                if (tmpserverGenomeItemList == null || tmpserverGenomeItemList.isEmpty()) {
+                    tmpcachedGenomeItemList = getCachedGenomeArchiveList();
+                }
+
+                tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
+
+            } catch (IOException e) {
+                MessageUtils.showMessage(UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+            }
+        }
+
+        combineGenomeLists(tmpuserDefinedGenomeList, tmpserverGenomeItemList,
+                tmpcachedGenomeItemList);
+
+    }
+
+
+    /**
+     * Combine our different lists of genomeListItems
+     *
+     * @return A List of GenomeListItems
+     */
+    private void combineGenomeLists(List<GenomeListItem> userDefinedGenomeItemList,
+                                    List<GenomeListItem> serverGenomeItemList,
+                                    List<GenomeListItem> cachedGenomeItemList) {
+
+        //We use a LinkedHashSet to prevent loading duplicates
+        genomeItemMap = new LinkedHashMap<String, GenomeListItem>();
+
+        String[] genomeIdArray = PreferenceManager.getInstance().getGenomeIdDisplayList();
+
+        if (genomeIdArray.length == 0) {
+            genomeIdArray = new String[]{PreferenceManager.getInstance().getDefaultGenome(), "hg18"};
+        }
+
+        if ((userDefinedGenomeItemList != null) && !userDefinedGenomeItemList.isEmpty()) {
+            addAllInSet(userDefinedGenomeItemList, genomeIdArray, genomeItemMap);
+        }
+
+        /**
+         * We show EITHER the serverGenomeList, or the cached list, but not both
+         */
+        List<GenomeListItem> next = serverGenomeItemList;
+        if (!((serverGenomeItemList != null) && !serverGenomeItemList.isEmpty())) {
+            next = cachedGenomeItemList;
+        }
+        addAllInSet(next, genomeIdArray, genomeItemMap);
+    }
+
+    /**
+     * Adds the GenomeListItems to the map by their ids,
+     * in order of keepGenomeIds,
+     * iff the id is in genomeIds and NOT in genomeMap
+     *
+     * @param genomeListItems
+     * @param genomeIdArray
+     * @param genomeMap
+     */
+    private void addAllInSet(List<GenomeListItem> genomeListItems, String[] genomeIdArray, Map<String, GenomeListItem> genomeMap) {
+        for (String id : genomeIdArray) {
+            GenomeListItem genomeListItem = null;
+            for (GenomeListItem curListItem : genomeListItems) {
+                if (curListItem.getId().equals(id)) {
+                    genomeListItem = curListItem;
+                    break;
+                }
+            }
+            if (!genomeMap.containsKey(id)) {
+                genomeMap.put(id, genomeListItem);
+            }
+
+        }
+    }
+
 
     /**
      * Gets a list of all the user-defined genome archive files that
@@ -720,7 +826,6 @@ public class GenomeManager {
 
                     GenomeListItem item = new GenomeListItem(fields[0], file, fields[2], true);
                     userDefinedGenomeArchiveList.add(item);
-                    genomeItemMap.put(item.getId(), item);
                 }
             } finally {
                 if (reader != null) reader.close();
@@ -754,7 +859,7 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public List<GenomeListItem> getCachedGenomeArchiveList()
+    private List<GenomeListItem> getCachedGenomeArchiveList()
             throws IOException {
 
         if (cachedGenomeArchiveList == null) {
@@ -810,7 +915,6 @@ public class GenomeManager {
                                     properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
                                     false);
                     cachedGenomeArchiveList.add(item);
-                    genomeItemMap.put(item.getId(), item);
                 } catch (ZipException ex) {
                     log.error("\nZip error unzipping cached genome.", ex);
                     try {
@@ -842,7 +946,6 @@ public class GenomeManager {
                     }
                 }
             }
-            rearrangeGenomeListFromSaved(cachedGenomeArchiveList);
         }
         return cachedGenomeArchiveList;
     }
@@ -957,7 +1060,7 @@ public class GenomeManager {
         if (monitor != null) monitor.fireProgressChange(75);
 
         GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId, true);
-        addUserDefineGenomeItem(newItem);
+        addGenomeItem(newItem);
         return newItem;
 
     }
@@ -970,9 +1073,14 @@ public class GenomeManager {
         return currentGenome;
     }
 
-    public void addUserDefineGenomeItem(GenomeListItem genomeListItem) {
-        userDefinedGenomeArchiveList.add(0, genomeListItem);
-        updateImportedGenomePropertyFile();
+    public void addGenomeItem(GenomeListItem genomeListItem) {
+        Map<String, GenomeListItem> newMap = new CI.CILinkedHashMap<GenomeListItem>(genomeItemMap.size() + 1);
+        newMap.put(genomeListItem.getId(), genomeListItem);
+        for (String key : genomeItemMap.keySet()) {
+            newMap.put(key, genomeItemMap.get(key));
+        }
+        genomeItemMap = newMap;
+        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
     }
 
     /**
@@ -1037,10 +1145,9 @@ public class GenomeManager {
 
         if (reader != null) {
             FeatureParser parser;
-            if(geneFileName.endsWith(".embl")) {
+            if (geneFileName.endsWith(".embl")) {
                 parser = new EmblFeatureTableParser();
-            }
-            else if (GFFFeatureSource.isGFF(geneFileName)) {
+            } else if (GFFFeatureSource.isGFF(geneFileName)) {
                 parser = new GFFParser(geneFileName);
             } else {
                 parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
@@ -1089,5 +1196,17 @@ public class GenomeManager {
         geneFeatureTrack.setColor(Color.BLUE.darker());
 
         return geneFeatureTrack;
+    }
+
+    public void excludedUrl(String location) {
+        excludedArchivesUrls.add(location);
+    }
+
+    public boolean hasUserDefinedGenomes() {
+        try {
+            return getUserDefinedGenomeArchiveList().isEmpty();
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

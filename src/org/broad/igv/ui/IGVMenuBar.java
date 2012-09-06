@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
@@ -102,7 +103,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
-        if(Globals.toolsMenuEnabled){
+        if (Globals.toolsMenuEnabled) {
             menus.add(createToolsMenu());
         }
         menus.add(createGenomeSpaceMenu());
@@ -232,12 +233,8 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        boolean hasImportedGenomes = true;
-        try {
-            hasImportedGenomes = !igv.getGenomeManager().getUserDefinedGenomeArchiveList().isEmpty();
-        } catch (IOException iOException) {
-            // Ignore
-        }
+        boolean hasImportedGenomes = !GenomeManager.getInstance().hasUserDefinedGenomes();
+
         removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
         removeImportedGenomeAction.setEnabled(hasImportedGenomes);
         removeImportedGenomeAction.setToolTipText(UIConstants.REMOVE_IMPORTED_GENOME_TOOLTIP);

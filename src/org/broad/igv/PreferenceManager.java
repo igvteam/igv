@@ -135,7 +135,7 @@ public class PreferenceManager implements PropertyManager {
     final static public String DEFAULT_GENOME_KEY = "DEFAULT_GENOME_KEY";
     final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
     final static public String HISTORY_DELIMITER = ";";
-    final static public String GENOME_HISTORY_KEY = "GENOME_HISTORY";
+    final static public String GENOME_ID_DISPLAY_LIST_KEY = "GENOME_LIST";
 
     final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
@@ -1097,7 +1097,7 @@ public class PreferenceManager implements PropertyManager {
         }
     }
 
-    public void saveGenomeHistory(List<GenomeListItem> serverGenomeItemList) {
+    public void saveGenomeIdDisplayList(Collection<GenomeListItem> serverGenomeItemList) {
         String genomeString = "";
 
         for (GenomeListItem serverItem : serverGenomeItemList) {
@@ -1105,11 +1105,16 @@ public class PreferenceManager implements PropertyManager {
         }
 
         genomeString = genomeString.substring(0, genomeString.length() - 1);
-        preferences.put(GENOME_HISTORY_KEY, genomeString);
+        preferences.put(GENOME_ID_DISPLAY_LIST_KEY, genomeString);
     }
 
-    public String[] getGenomeHistory() {
-        String genomeIds = get(GENOME_HISTORY_KEY);
+    /**
+     * Returns a list of genomeIds to display in the combo box
+     *
+     * @return
+     */
+    public String[] getGenomeIdDisplayList() {
+        String genomeIds = get(GENOME_ID_DISPLAY_LIST_KEY);
         if (genomeIds == null) {
             return new String[0];
         } else {

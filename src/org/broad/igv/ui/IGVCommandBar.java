@@ -59,8 +59,6 @@ import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
 
-import static org.broad.igv.util.collections.CollUtils.moveInList;
-
 /**
  * @author jrobinso
  */
@@ -70,13 +68,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     final static String DISABLE_POPUP_TOOLTIP = "Disable popup text in data panels.";
     final static String ENABLE_POPUP_TOOLTIP = "Enable popup text in data panels.";
-
-
-    // TODO -- THESE LISTS ARE ALSO DEFINED IN GENOME MANAGER  ???
-    private List<GenomeListItem> userDefinedGenomeItemList;
-    private List<GenomeListItem> serverGenomeItemList;
-    private List<GenomeListItem> cachedGenomeItemList;
-    private Set<String> excludedArchivesUrls = new HashSet();
 
     private JComboBox chromosomeComboBox;
     private JComboBox genomeComboBox;
@@ -98,7 +89,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private boolean suppressTooltip = false;
     private JideButton exomeButton;
 
-    public static int MAX_SERVER_GENOMES_SHOWN = 10;
     /**
      * Special value to pull up dialog with rest of genomes
      */
@@ -123,25 +113,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     /**
-     * Method description
-     *
-     * @param genome
-     * @return
-     */
-    public boolean isGenomeCached(String genome) {
-        boolean isCached = false;
-
-        if ((cachedGenomeItemList != null) && !cachedGenomeItemList.isEmpty()) {
-            for (GenomeListItem item : cachedGenomeItemList) {
-                if (item.getId().equalsIgnoreCase(genome)) {
-                    isCached = true;
-                }
-            }
-        }
-        return isCached;
-    }
-
-    /**
      * This method is called once on startup
      *
      * @param monitor
@@ -162,7 +133,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         genomeComboBox.removeAllItems();
         genomeComboBox.setRenderer(new ComboBoxRenderer());
         genomeComboBox.setToolTipText(UIConstants.CHANGE_GENOME_TOOLTIP);
-        rebuildGenomeItemList();
+
+        GenomeManager.getInstance().buildGenomeItemList();
+        refreshGenomeListComboBox();
 
         if (monitor != null) {
             monitor.fireProgressChange(50);
@@ -223,36 +196,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         updateChromosFromGenome(genome);
                         monitor.fireProgressChange(25);
 
-                        // TODO -- warn user.
                         PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
 
-                        if (!isGenomeCached(genomeListItem.getId())) {
-                            cachedGenomeItemList.add(0, genomeListItem);
-                        }
-
-                        List<GenomeListItem> serverGLI = getServerGenomeItemList();
-
-                        //Move genome to the top, iff it wasn't already shown
-                        int currentPos = serverGLI.indexOf(genomeListItem);
-                        if (currentPos >= MAX_SERVER_GENOMES_SHOWN) {
-                            moveInList(serverGLI, 0, genomeListItem);
-                        }
-                        List<GenomeListItem> toWrite;
-                        if (serverGLI.size() < MAX_SERVER_GENOMES_SHOWN) {
-                            toWrite = new ArrayList<GenomeListItem>(serverGLI);
-                        } else {
-                            toWrite = serverGLI.subList(0, MAX_SERVER_GENOMES_SHOWN);
-                        }
-                        PreferenceManager.getInstance().saveGenomeHistory(toWrite);
-
-
-                        //Move most recently loaded genome to the top
-                        //Have to rebuild the list to reflect new order.
-                        rebuildGenomeItemList();
                         genomeComboBox.setSelectedItem(genomeListItem);
 
                         monitor.fireProgressChange(25);
-
 
                         IGV.getInstance().doRefresh();
 
@@ -273,8 +221,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                         "", JOptionPane.OK_CANCEL_OPTION);
 
                         if (choice == JOptionPane.OK_OPTION) {
-                            excludedArchivesUrls.add(genomeListItem.getLocation());
-                            rebuildGenomeItemList();
+                            GenomeManager.getInstance().excludedUrl(genomeListItem.getLocation());
+                            GenomeManager.getInstance().buildGenomeItemList();
                         }
                     } catch (Exception e) {
                         log.error("Error initializing genome", e);
@@ -303,7 +251,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             if (genomeListItem == VIEW_MORE_GENOMES) {
                 //Bring up dialog showing user the full list
 
-                Object[] allGenomes = combineGenomeLists(false, Integer.MAX_VALUE).toArray();
+                Object[] allGenomes = GenomeManager.getInstance().getGenomes().toArray();
                 GenomeSelectionDialog selectionDialog = new GenomeSelectionDialog(IGV.getMainFrame(), allGenomes,
                         null);
                 selectionDialog.setVisible(true);
@@ -328,76 +276,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         }
     }
-
-    /**
-     * Adds the new user-defined genome to the drop down list.
-     *
-     * @param newItem
-     */
-    public void addToUserDefinedGenomeItemList(GenomeListItem newItem) {
-
-
-        if (userDefinedGenomeItemList == null) {
-            userDefinedGenomeItemList = new LinkedList<GenomeListItem>();
-            userDefinedGenomeItemList.add(newItem);
-        } else {
-            userDefinedGenomeItemList = new LinkedList<GenomeListItem>(userDefinedGenomeItemList);
-            userDefinedGenomeItemList.add(0, newItem);
-        }
-        genomeComboBox.setModel(getModelForGenomeListComboBox());
-
-    }
-
-    /**
-     * Completely rebuild the genome drop down info from scratch.
-     */
-    public void rebuildGenomeItemList() {
-        try {
-            // Build a single available genome list from both client, server
-            // and cached information. This allows us to process
-            // everything the same way.
-            List<GenomeListItem> tmpuserDefinedGenomeList = null;
-            List<GenomeListItem> tmpcachedGenomeItemList = new ArrayList<GenomeListItem>();
-            List<GenomeListItem> tmpserverGenomeItemList = null;
-
-            boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
-            if (affectiveMode) {
-                tmpserverGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
-            } else {
-                final GenomeManager genomeManager = GenomeManager.getInstance();
-                try {
-                    tmpserverGenomeItemList = genomeManager.getServerGenomeArchiveList(this.excludedArchivesUrls);
-                } catch (Exception e) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-                            JOptionPane.showMessageDialog(
-                                    IGV.getMainFrame(),
-                                    UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-                        }
-                    });
-                }
-
-                /**
-                 * Only show cached genomes if we couldn't load them from the server
-                 */
-                if (tmpserverGenomeItemList == null || tmpserverGenomeItemList.isEmpty()) {
-                    tmpcachedGenomeItemList = genomeManager.getCachedGenomeArchiveList();
-                }
-
-                tmpuserDefinedGenomeList = genomeManager.getUserDefinedGenomeArchiveList();
-            }
-            this.userDefinedGenomeItemList = tmpuserDefinedGenomeList;
-            this.cachedGenomeItemList = tmpcachedGenomeItemList;
-            this.serverGenomeItemList = tmpserverGenomeItemList;
-
-            genomeComboBox.setModel(getModelForGenomeListComboBox());
-
-        } catch (Exception e) {
-            log.error("Failed to get genome archive list " + "information from the server!", e);
-        }
-    }
-
 
     void updateChromosomeDropdown() {
 
@@ -580,7 +458,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public Collection<String> getGenomeDisplayNames() {
 
         Set<String> displayNames = new HashSet<String>();
-        Set<Object> listItems = combineGenomeLists(false, Integer.MAX_VALUE);
+        Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
         for (Object object : listItems) {
             if (object instanceof GenomeListItem) {
                 GenomeListItem genomeListItem = (GenomeListItem) object;
@@ -598,7 +476,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public Collection<String> getSelectableGenomeIDs() {
 
         Set<String> ids = new HashSet<String>();
-        Set<Object> listItems = combineGenomeLists(false, Integer.MAX_VALUE);
+        Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
         for (Object object : listItems) {
             if (object instanceof GenomeListItem) {
                 GenomeListItem genomeListItem = (GenomeListItem) object;
@@ -609,27 +487,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     /**
-     * Select a given GenomeListItem, adding it to the
-     * combo box if necessary
-     *
-     * @param item
-     */
-    private void selectGenomeListItem(GenomeListItem item) {
-        //No way of knowing of this item is actually in the combo box
-        //we just try and set it, and if that fails load it in
-        genomeComboBox.setSelectedItem(item);
-        if (genomeComboBox.getSelectedItem() != item) {
-            if (item.isUserDefined()) {
-                userDefinedGenomeItemList.add(0, item);
-            } else {
-                getServerGenomeItemList().add(0, item);
-            }
-            rebuildGenomeItemList();
-            genomeComboBox.setSelectedItem(item);
-        }
-    }
-
-    /**
      * Selects the first genome from the list which matches this genomeId.
      * If {@code fallbackToFirst}, we select the first item if a matching
      * item not found.
@@ -637,15 +494,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
      * @param genomeId
      */
     public void selectGenomeFromList(String genomeId, boolean fallbackToFirst) {
-
         // Now select this item in the comboBox
         GenomeListItem matchingItem = GenomeManager.getInstance().getGenomeListItemById(genomeId);
-        if (matchingItem != null) {
-            selectGenomeListItem(matchingItem);
-        } else if (fallbackToFirst) {
+        if (matchingItem == null && fallbackToFirst) {
             // If genome archive was not found use first item
             // we have in the list
-            genomeComboBox.setSelectedItem(firstGenome);
+            matchingItem = firstGenome;
+        }
+        if (matchingItem != null) {
+            genomeComboBox.setSelectedItem(matchingItem);
         }
     }
 
@@ -666,53 +523,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
-    /**
-     * Get the serverGenomeList, or if it's null, fall back to cached list
-     * (which might be empty but not null).
-     *
-     * @return
-     */
-    private List<GenomeListItem> getServerGenomeItemList() {
-        List<GenomeListItem> toRet = serverGenomeItemList;
-        if (!((serverGenomeItemList != null) && !serverGenomeItemList.isEmpty())) {
-            toRet = cachedGenomeItemList;
-        }
-        return toRet;
-    }
-
-    /**
-     * Combine our different lists of genomeListItems
-     *
-     * @param includeSeparators Whether to include separators, such as if intending to display list
-     * @param nonUserSizeLimit  Limit on the number of cached|server genomes included. Negative implies unlimited
-     * @return A LinkedHashSet of GenomeListItems, which maybe include 1 or more separators.
-     */
-    private LinkedHashSet<Object> combineGenomeLists(boolean includeSeparators, int nonUserSizeLimit) {
-        LinkedHashSet<Object> list = new LinkedHashSet<Object>();
-        boolean addSep = false;
-
-        if ((userDefinedGenomeItemList != null) && !userDefinedGenomeItemList.isEmpty()) {
-            addSep = includeSeparators;
-            list.addAll(userDefinedGenomeItemList);
-        }
-
-        /**
-         * We show EITHER the serverGenomeList, or the cached list, but not both
-         */
-
-        List<GenomeListItem> next = getServerGenomeItemList();
-        if (addSep) {
-            list.add(UIConstants.GENOME_LIST_SEPARATOR);
-        }
-
-        nonUserSizeLimit = nonUserSizeLimit >= 0 ? nonUserSizeLimit : Integer.MAX_VALUE;
-        int maxIndex = Math.min(next.size(), nonUserSizeLimit);
-        List<GenomeListItem> subList = next.subList(0, maxIndex);
-        list.addAll(subList);
-        if (maxIndex < next.size()) {
-            list.add(VIEW_MORE_GENOMES);
-        }
-        return list;
+    void refreshGenomeListComboBox() {
+        genomeComboBox.setModel(getModelForGenomeListComboBox());
     }
 
     /**
@@ -720,11 +532,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
      *
      * @return
      */
-    public DefaultComboBoxModel getModelForGenomeListComboBox() {
-        LinkedHashSet<Object> list = combineGenomeLists(true, MAX_SERVER_GENOMES_SHOWN);
-        Object[] genomes = list.toArray();
-        firstGenome = (GenomeListItem) genomes[0];
-        return new DefaultComboBoxModel(genomes);
+    private DefaultComboBoxModel<GenomeListItem> getModelForGenomeListComboBox() {
+        GenomeListItem[] genomes = GenomeManager.getInstance().getGenomes().toArray(new GenomeListItem[0]);
+        firstGenome = genomes[0];
+        return new DefaultComboBoxModel<GenomeListItem>(genomes);
     }
 
     /**

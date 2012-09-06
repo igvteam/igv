@@ -448,7 +448,7 @@ public class IGV {
             if (genomeListItem != null) {
                 enableRemoveGenomes();
 
-                contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+                contentPane.getCommandBar().refreshGenomeListComboBox();
                 contentPane.getCommandBar().selectGenomeFromList(genomeListItem.getId(), false);
             }
             if (monitor != null) {
@@ -562,16 +562,12 @@ public class IGV {
         final String id = genome.getId();
 
         GenomeListItem genomeListItem = new GenomeListItem(name, path, id, true);
-        getGenomeManager().addUserDefineGenomeItem(genomeListItem);
+        getGenomeManager().addGenomeItem(genomeListItem);
 
         IGVCommandBar cmdBar = contentPane.getCommandBar();
-        cmdBar.addToUserDefinedGenomeItemList(genomeListItem);
+        cmdBar.refreshGenomeListComboBox();
         cmdBar.selectGenomeFromList(genomeListItem.getId(), false);
         cmdBar.updateChromosFromGenome(genome);
-
-
-        // Reset the session (unload all tracks)
-
     }
 
 
@@ -894,16 +890,16 @@ public class IGV {
         }
 
         CursorToken token = null;
-         try {
-             token =  WaitCursorManager.showWaitCursor();
-             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-             createSnapshotNonInteractive(target, file);
+        try {
+            token = WaitCursorManager.showWaitCursor();
+            contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
+            createSnapshotNonInteractive(target, file);
         } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
                     + e.getMessage()));
         } finally {
-            if(token != null) WaitCursorManager.removeWaitCursor(token);
+            if (token != null) WaitCursorManager.removeWaitCursor(token);
             resetStatusMessage();
         }
 
@@ -1309,9 +1305,9 @@ public class IGV {
 
     }
 
-
     public void rebuildGenomeDropdownList() {
-        contentPane.getCommandBar().rebuildGenomeItemList();
+        GenomeManager.getInstance().buildGenomeItemList();
+        contentPane.getCommandBar().refreshGenomeListComboBox();
     }
 
     public void showLoadedTrackCount() {
