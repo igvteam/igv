@@ -353,9 +353,6 @@ public class MatrixZoomData {
         if (chr1 != chr2) {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
-        // NEVA this is where the error is
-        //  System.out.println(blockBinCount);   // block size in bins
-        //System.out.println(blockColumnCount);     // number of block columns
 
         int nBins = blockBinCount * blockColumnCount;
         //int nBins = chr1.getLength() / binSize + 1;
@@ -384,13 +381,12 @@ public class MatrixZoomData {
         }
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
-        int mod = size / 100;
+
         for (int i = 0; i < size; i++) {
             if (isZeros(rm.getRow(i))) {
                 bitSet.set(i);
             }
         }
-        System.err.println("size " + size + " card " + bitSet.cardinality());
         nonCentromereColumns = new int[size - bitSet.cardinality()];
 
         int num = 0;
