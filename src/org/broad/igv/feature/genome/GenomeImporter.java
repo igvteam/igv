@@ -71,8 +71,6 @@ public class GenomeImporter {
 
 
         File propertyFile = null;
-
-        File archive = null;
         FileWriter propertyFileWriter = null;
         try {
             boolean fastaDirectory = false;
@@ -141,19 +139,18 @@ public class GenomeImporter {
             // Create archive
             createGenomeArchive(genomeFile, inputFiles, propertyBytes);
 
-
         } finally {
             if (propertyFileWriter != null) {
                 try {
                     propertyFileWriter.close();
                 } catch (IOException ex) {
-                    log.error("Failed to close genome archive: +" + archive.getAbsolutePath(), ex);
+                    log.error("Failed to close genome archive: +" + genomeFile.getAbsolutePath(), ex);
                 }
             }
 
             if (propertyFile != null) propertyFile.delete();
         }
-        return archive;
+        return genomeFile;
     }
 
 
