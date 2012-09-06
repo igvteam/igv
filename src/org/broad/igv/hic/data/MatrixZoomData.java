@@ -86,6 +86,11 @@ public class MatrixZoomData {
         this.blockBinCount = dis.readInt();
         this.blockColumnCount = dis.readInt();
 
+        // Special hack for fragment maps
+        if(binSize <= 1) {
+            binSize = (int)  ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
+        }
+
         int nBlocks = dis.readInt();
         this.blockIndex = new HashMap<Integer, Preprocessor.IndexEntry>(nBlocks);
 
@@ -212,7 +217,7 @@ public class MatrixZoomData {
                 String nextLine = br.readLine();  // The track line, ignored
                 DoubleArrayList arrayList = new DoubleArrayList(10000);  // TODO -- can size this exactly
                 while ((nextLine = br.readLine()) != null) {
-                    if(nextLine.startsWith("track") || nextLine.startsWith("fixedStep") || nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("track") || nextLine.startsWith("fixedStep") || nextLine.startsWith("#")) {
                         continue;
                     }
                     arrayList.add(Double.parseDouble(nextLine));
@@ -223,7 +228,7 @@ public class MatrixZoomData {
             } catch (NumberFormatException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } finally {
-                if(br != null) try {
+                if (br != null) try {
                     br.close();
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -349,10 +354,10 @@ public class MatrixZoomData {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
         // NEVA this is where the error is
-      //  System.out.println(blockBinCount);   // block size in bins
+        //  System.out.println(blockBinCount);   // block size in bins
         //System.out.println(blockColumnCount);     // number of block columns
 
-          int nBins = blockBinCount*blockColumnCount;
+        int nBins = blockBinCount * blockColumnCount;
         //int nBins = chr1.getLength() / binSize + 1;
 
         SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
@@ -379,13 +384,13 @@ public class MatrixZoomData {
         }
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
-        int mod = size/100;
+        int mod = size / 100;
         for (int i = 0; i < size; i++) {
             if (isZeros(rm.getRow(i))) {
                 bitSet.set(i);
             }
         }
-           System.err.println("size " + size + " card " + bitSet.cardinality());
+        System.err.println("size " + size + " card " + bitSet.cardinality());
         nonCentromereColumns = new int[size - bitSet.cardinality()];
 
         int num = 0;
@@ -475,7 +480,7 @@ public class MatrixZoomData {
         if (isOE) {
             System.err.println("here1");
             SparseRealMatrix oe = computeOE(df);
-                                     System.err.println("here2");
+            System.err.println("here2");
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
             assert (rows == cols);
