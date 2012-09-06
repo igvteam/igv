@@ -107,9 +107,9 @@ public class GenomeImporter {
                             throw new GenomeException(msg);
                         }
 
-                        File indexFile = new File(fastaIndexPath);
+                        File indexFile = new File(sequenceInputFile, file.getName() + ".fai");
                         if (!indexFile.exists()) {
-                            FastaUtils.createIndexFile(fastaFile, fastaIndexPath);
+                            FastaUtils.createIndexFile(file.getAbsolutePath(), indexFile.getAbsolutePath());
                         }
                         fastaIndexPathList.add(fastaIndexPath);
                         fastaFileNames.add(file.getName());
