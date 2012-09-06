@@ -334,7 +334,11 @@ public class MatrixZoomData {
             throw new RuntimeException("Cannot yet compute Pearson's for different chromosomes");
         }
         // NEVA this is where the error is
-        int nBins = chr1.getLength() / binSize + 1;
+      //  System.out.println(blockBinCount);   // block size in bins
+        //System.out.println(blockColumnCount);     // number of block columns
+
+          int nBins = blockBinCount*blockColumnCount;
+        //int nBins = chr1.getLength() / binSize + 1;
 
         SparseRealMatrix rm = new OpenMapRealMatrix(nBins, nBins);
 
@@ -360,10 +364,8 @@ public class MatrixZoomData {
         }
         int size = rm.getRowDimension();
         BitSet bitSet = new BitSet(size);
-        System.err.println("size " + size);
         int mod = size/100;
         for (int i = 0; i < size; i++) {
-                     if (i%mod == 0) System.err.println(i/size);
             if (isZeros(rm.getRow(i))) {
                 bitSet.set(i);
             }
