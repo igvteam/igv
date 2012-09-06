@@ -71,8 +71,6 @@ public class GenomeImporter {
 
 
         File propertyFile = null;
-
-        File archive = null;
         FileWriter propertyFileWriter = null;
         try {
             boolean fastaDirectory = false;
@@ -107,9 +105,9 @@ public class GenomeImporter {
                             throw new GenomeException(msg);
                         }
 
-                        File indexFile = new File(fastaIndexPath);
+                        File indexFile = new File(sequenceInputFile, file.getName() + ".fai");
                         if (!indexFile.exists()) {
-                            FastaUtils.createIndexFile(fastaFile, fastaIndexPath);
+                            FastaUtils.createIndexFile(file.getAbsolutePath(), indexFile.getAbsolutePath());
                         }
                         fastaIndexPathList.add(fastaIndexPath);
                         fastaFileNames.add(file.getName());
@@ -141,19 +139,18 @@ public class GenomeImporter {
             // Create archive
             createGenomeArchive(genomeFile, inputFiles, propertyBytes);
 
-
         } finally {
             if (propertyFileWriter != null) {
                 try {
                     propertyFileWriter.close();
                 } catch (IOException ex) {
-                    log.error("Failed to close genome archive: +" + archive.getAbsolutePath(), ex);
+                    log.error("Failed to close genome archive: +" + genomeFile.getAbsolutePath(), ex);
                 }
             }
 
             if (propertyFile != null) propertyFile.delete();
         }
-        return archive;
+        return genomeFile;
     }
 
 

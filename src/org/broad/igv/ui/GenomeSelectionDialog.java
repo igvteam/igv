@@ -57,19 +57,22 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     }
 
+    private void rebuildGenomeList() {
+        String filterText = genomeEntry.getText().trim().toLowerCase();
+        rebuildGenomeList(filterText);
+    }
+
     /**
      * Filter the list of displayed genomes so we only show this
      * with the text the user entered.
      */
-    private void rebuildGenomeList() {
+    private void rebuildGenomeList(String filterText) {
         if (genomeListModel == null) {
             genomeListModel = new DefaultListModel();
             genomeList.setModel(genomeListModel);
         }
         genomeListModel.clear();
-
-        String filterText = genomeEntry.getText().trim().toLowerCase();
-
+        filterText = filterText.toLowerCase().trim();
         for (GenomeListItem listItem : allListItems) {
             if (listItem.getDisplayableName().toLowerCase().contains(filterText)) {
                 genomeListModel.addElement(listItem);
@@ -84,7 +87,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     private void genomeEntryKeyTyped(KeyEvent e) {
-        rebuildGenomeList();
+
     }
 
     /**
@@ -103,6 +106,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 okButtonActionPerformed(null);
                 break;
         }
+    }
+
+    private void genomeEntryKeyReleased(KeyEvent e) {
+        rebuildGenomeList(genomeEntry.getText());
     }
 
     public boolean isCanceled() {
@@ -136,6 +143,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setPreferredSize(new Dimension(250, 500));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -149,10 +157,11 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
                 //---- genomeEntry ----
                 genomeEntry.setToolTipText("Filter genome list");
+                genomeEntry.setMaximumSize(new Dimension(2147483647, 28));
                 genomeEntry.addKeyListener(new KeyAdapter() {
                     @Override
-                    public void keyTyped(KeyEvent e) {
-                        genomeEntryKeyTyped(e);
+                    public void keyReleased(KeyEvent e) {
+                        genomeEntryKeyReleased(e);
                     }
                 });
                 contentPanel.add(genomeEntry);
