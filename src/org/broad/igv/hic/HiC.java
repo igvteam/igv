@@ -122,7 +122,7 @@ public class HiC {
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
-                    mainWindow.updateEigenvectorTrack();
+                    //mainWindow.updateEigenvectorTrack();
                     mainWindow.refresh();
                     updateState2(newZD, centerLocationX, centerLocationY);
                 }
@@ -304,8 +304,8 @@ public class HiC {
                 }
                 Runnable runnable = new Runnable() {
                     public void run() {
-                        double[] eigenvector = zd.computeEigenvector(df, n);
-                        mainWindow.updateEigenvectorTrack(eigenvector, zd.getBinSize());
+                        zd.computeEigenvector(df, n);
+                        mainWindow.updateEigenvectorTrack();
                     }
                 };
                 mainWindow.executeLongRunningTask(runnable);
@@ -315,7 +315,6 @@ public class HiC {
 
         return eigenvector;
     }
-
 
 
 }

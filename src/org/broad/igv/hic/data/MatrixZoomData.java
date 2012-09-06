@@ -251,9 +251,24 @@ public class MatrixZoomData {
 
 
         } else {
+            JOptionPane.showMessageDialog(null, "Eigenvector file not found");
+            eigenvector = new double[0];
+            return eigenvector;
             // TODO -- make submatrix from pearsons
-            throw new RuntimeException("Eigenvector calculation not implemented for matrix class: "
-                    + pearsons.getClass().getName());
+            // Can't do this on precomputed matrix because we don't know the "nonCentromereColumns".
+//            RealMatrix rm = new org.apache.commons.math.linear.BlockRealMatrix(pearsons.getRowDimension(), pearsons.getColumnDimension());
+//            try {
+//                for(int i=0; i<pearsons.getRowDimension(); i++) {
+//                    for(int j=0; j<pearsons.getColumnDimension(); j++) {
+//                        rm.setEntry(i, j, pearsons.getEntry(i, j));
+//                    }
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
+//
+//            subMatrix = rm.getSubMatrix(nonCentromereColumns, nonCentromereColumns);
+
         }
 
         RealVector rv;

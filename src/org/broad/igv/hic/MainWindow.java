@@ -401,19 +401,9 @@ public class MainWindow extends JFrame {
         boolean show = viewEigenvector.isSelected();
         if (show) {
             trackPanel.setEigenvectorTrack(eigenvectorTrack);
-        }
-        if (show && hic.zd != null) {
-            double[] rv = hic.getEigenvector(0);
-            if (rv != null) {
-                updateEigenvectorTrack(rv, hic.zd.getBinSize());
-            }
+            eigenvectorTrack.forceRefresh();
         }
         updateTrackPanel();
-    }
-
-    public void updateEigenvectorTrack(double[] eigenvector, double binSize) {
-        eigenvectorTrack.setData(binSize, eigenvector);
-        trackPanel.repaint();
     }
 
     public void setViewEigenvector(boolean flag) {
@@ -1131,15 +1121,16 @@ public class MainWindow extends JFrame {
             public void itemStateChanged(ItemEvent e) {
                 if (viewEigenvector.isSelected()) {
                     if (eigenvectorTrack == null) {
-                        eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors");
+                        eigenvectorTrack = new EigenvectorTrack("eigen", "Eigenvectors", hic);
+                        trackPanel.setEigenvectorTrack(eigenvectorTrack);
                     }
-                    updateEigenvectorTrack();
                 } else {
                     trackPanel.setEigenvectorTrack(null);
                     if (HiCTrackManager.getLoadedTracks().isEmpty()) {
                         trackPanel.setVisible(false);
                     }
                 }
+                updateTrackPanel();
             }
         });
         viewEigenvector.setEnabled(false);

@@ -2,6 +2,7 @@ package org.broad.igv.hic.track;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.data.WiggleDataset;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
@@ -19,12 +20,15 @@ public class EigenvectorTrack extends AbstractTrack {
     double[] data;
     private double dataMax;
     private double median;
+    HiC hic;
+    int currentZoom = -1;
 
-    public EigenvectorTrack(String id, String name) {
+    public EigenvectorTrack(String id, String name, HiC hic) {
         super(id, name);
+        this.hic = hic;
     }
 
-    public void setData(double step, double[] data) {
+    private void setData(double step, double[] data) {
         this.step = step;
         this.data = data;
         this.median = StatUtils.percentile(data, 50);
@@ -44,9 +48,17 @@ public class EigenvectorTrack extends AbstractTrack {
      */
     public void render(RenderContext context, Rectangle rect) {
 
+        int zoom = hic.zd.getZoom();
+        if (zoom != currentZoom) {
+            currentZoom = zoom;
 
+            double[] eigen = hic.getEigenvector(0);
+            if (eigen == null) return;
 
-        if (data == null) return;
+            setData(hic.zd.getBinSize(), eigen);
+        }
+
+        if (data == null || data.length == 0) return;
 
         int h = rect.height / 2;
         Graphics2D g2d = context.getGraphics();
@@ -78,5 +90,9 @@ public class EigenvectorTrack extends AbstractTrack {
 
     public Renderer getRenderer() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void forceRefresh() {
+        currentZoom = -1;
     }
 }
