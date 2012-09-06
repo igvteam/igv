@@ -299,10 +299,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 //Bring up dialog showing user the full list
 
                 Object[] allGenomes = combineGenomeLists(false, Integer.MAX_VALUE).toArray();
-                Object selectedValue = JOptionPane.showInputDialog(IGVCommandBar.this,
-                        "Genomes", "Choose a genome to load",
-                        JOptionPane.QUESTION_MESSAGE, null,
-                        allGenomes, allGenomes[0]);
+                GenomeSelectionDialog selectionDialog = new GenomeSelectionDialog(IGV.getMainFrame(), allGenomes,
+                        null);
+                selectionDialog.setVisible(true);
+                GenomeListItem selectedValue = selectionDialog.getSelectedItem();
+//                Object selectedValue = JOptionPane.showInputDialog(IGVCommandBar.this,
+//                        "Genomes", "Choose a genome to load",
+//                        JOptionPane.QUESTION_MESSAGE, null,
+//                        allGenomes, allGenomes[0]);
 
                 //Defensive programming. First we reset the combobox so if anything goes
                 //wrong we don't end up in a screwy state.

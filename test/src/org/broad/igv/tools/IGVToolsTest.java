@@ -199,7 +199,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     public void testTileCNFile() throws IOException {
 
         String inputFile = TestUtils.DATA_DIR + "cn/HindForGISTIC.hg16.cn";
-        testTile(inputFile, 5000000, 6000000);
+        testTile(inputFile, 5000000, 5500000);
     }
 
 

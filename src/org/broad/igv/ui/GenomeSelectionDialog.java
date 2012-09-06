@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -24,49 +17,96 @@
 
 package org.broad.igv.ui;
 
-import java.awt.*;
-import java.awt.Component;
-import java.awt.event.*;
-import org.broad.igv.feature.genome.GenomeDescriptor;
+import org.broad.igv.feature.genome.GenomeListItem;
 
 import javax.swing.*;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * @author eflakes
+ * Dialog box for selecting genomes. User can choose from a list,
+ * which is filtered according
  */
 public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private boolean isCanceled = true;
+    private GenomeListItem selectedItem = null;
+    private List<GenomeListItem> allListItems;
+    private DefaultListModel genomeListModel;
 
-    /**
-     * Creates new form GenomeSelectionDialog
-     */
-    public GenomeSelectionDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public GenomeSelectionDialog(java.awt.Frame parent, Object[] allListItems, GenomeListItem defaultItem) {
+        super(parent);
         initComponents();
         setLocationRelativeTo(parent);
+
+        initData(allListItems, defaultItem);
     }
 
-    public void setModel(ComboBoxModel model) {
-        genomeComboBox.setModel(model);
+    private void initData(Object[] inputListItems, GenomeListItem defaultItem) {
+        this.selectedItem = defaultItem;
+        this.allListItems = new ArrayList<GenomeListItem>(inputListItems.length);
+        for (Object listItem : inputListItems) {
+            if (listItem instanceof GenomeListItem) {
+                this.allListItems.add((GenomeListItem) listItem);
+            }
+        }
+        rebuildGenomeList();
+
     }
 
-    public GenomeDescriptor getSelectedItem() {
-        return (isCanceled ? null : (GenomeDescriptor) genomeComboBox.getSelectedItem());
+    /**
+     * Filter the list of displayed genomes so we only show this
+     * with the text the user entered.
+     */
+    private void rebuildGenomeList() {
+        if (genomeListModel == null) {
+            genomeListModel = new DefaultListModel();
+            genomeList.setModel(genomeListModel);
+        }
+        genomeListModel.clear();
+
+        String filterText = genomeEntry.getText().trim().toLowerCase();
+
+        for (GenomeListItem listItem : allListItems) {
+            if (listItem.getDisplayableName().toLowerCase().contains(filterText)) {
+                genomeListModel.addElement(listItem);
+            }
+        }
+
+    }
+
+
+    public GenomeListItem getSelectedItem() {
+        return selectedItem;//(isCanceled ? null : selectedItem);
+    }
+
+    private void genomeEntryKeyTyped(KeyEvent e) {
+        rebuildGenomeList();
+    }
+
+    /**
+     * If a genome is single clicked, we just store the selection.
+     * When a genome is double clicked, we treat that as the user
+     * wanting to load the genome.
+     *
+     * @param e
+     */
+    private void genomeListMouseClicked(MouseEvent e) {
+        switch (e.getClickCount()) {
+            case 1:
+                selectedItem = (GenomeListItem) genomeList.getSelectedValue();
+                break;
+            case 2:
+                okButtonActionPerformed(null);
+                break;
+        }
     }
 
     public boolean isCanceled() {
         return isCanceled;
-    }
-
-    public void setCancelingEnabled(boolean isEnabled) {
-        cancelButton.setEnabled(isEnabled);
-    }
-
-    public void setDefaultGenome(GenomeDescriptor genome) {
-        genomeComboBox.setSelectedItem(genome);
     }
 
     /**
@@ -78,104 +118,123 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        genomeComboBox = new JComboBox();
-        genomeComboBoxLabel = new JLabel();
+        dialogPane = new JPanel();
+        contentPanel = new JPanel();
+        label1 = new JLabel();
+        genomeEntry = new JTextField();
+        scrollPane1 = new JScrollPane();
+        genomeList = new JList();
+        buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
 
         //======== this ========
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Choose Genome");
-        setResizable(false);
+        setModal(true);
         Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
 
-        //---- genomeComboBox ----
-        genomeComboBox.setEditable(false);
+        //======== dialogPane ========
+        {
+            dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setLayout(new BorderLayout());
 
-        //---- genomeComboBoxLabel ----
-        genomeComboBoxLabel.setText("Genome");
+            //======== contentPanel ========
+            {
+                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        //---- okButton ----
-        okButton.setText("Ok");
-        okButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                okButtonActionPerformed(e);
+                //---- label1 ----
+                label1.setText("Genomes");
+                label1.setHorizontalAlignment(SwingConstants.LEFT);
+                contentPanel.add(label1);
+
+                //---- genomeEntry ----
+                genomeEntry.setToolTipText("Filter genome list");
+                genomeEntry.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyTyped(KeyEvent e) {
+                        genomeEntryKeyTyped(e);
+                    }
+                });
+                contentPanel.add(genomeEntry);
+
+                //======== scrollPane1 ========
+                {
+
+                    //---- genomeList ----
+                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    genomeList.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            genomeListMouseClicked(e);
+                        }
+                    });
+                    scrollPane1.setViewportView(genomeList);
+                }
+                contentPanel.add(scrollPane1);
             }
-        });
+            dialogPane.add(contentPanel, BorderLayout.CENTER);
 
-        //---- cancelButton ----
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cancelButtonActionPerformed(e);
+            //======== buttonBar ========
+            {
+                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                buttonBar.setLayout(new GridBagLayout());
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+
+                //---- okButton ----
+                okButton.setText("OK");
+                okButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
+
+                //---- cancelButton ----
+                cancelButton.setText("Cancel");
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
-        });
-
-        GroupLayout contentPaneLayout = new GroupLayout(contentPane);
-        contentPane.setLayout(contentPaneLayout);
-        contentPaneLayout.setHorizontalGroup(
-            contentPaneLayout.createParallelGroup()
-                .add(GroupLayout.TRAILING, contentPaneLayout.createSequentialGroup()
-                    .add(24, 24, 24)
-                    .add(contentPaneLayout.createParallelGroup()
-                        .add(contentPaneLayout.createSequentialGroup()
-                            .add(genomeComboBoxLabel)
-                            .add(20, 20, 20)
-                            .add(genomeComboBox, GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
-                        .add(GroupLayout.TRAILING, contentPaneLayout.createSequentialGroup()
-                            .addPreferredGap(LayoutStyle.RELATED, 120, GroupLayout.PREFERRED_SIZE)
-                            .add(okButton)
-                            .addPreferredGap(LayoutStyle.RELATED)
-                            .add(cancelButton)
-                            .add(195, 195, 195)))
-                    .addContainerGap())
-        );
-        contentPaneLayout.linkSize(new Component[] {cancelButton, okButton}, GroupLayout.HORIZONTAL);
-        contentPaneLayout.setVerticalGroup(
-            contentPaneLayout.createParallelGroup()
-                .add(contentPaneLayout.createSequentialGroup()
-                    .add(34, 34, 34)
-                    .add(contentPaneLayout.createParallelGroup(GroupLayout.BASELINE)
-                        .add(genomeComboBoxLabel)
-                        .add(genomeComboBox, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE))
-                    .add(25, 25, 25)
-                    .add(contentPaneLayout.createParallelGroup(GroupLayout.BASELINE)
-                        .add(okButton)
-                        .add(cancelButton))
-                    .addContainerGap(130, Short.MAX_VALUE))
-        );
-        contentPaneLayout.linkSize(new Component[] {cancelButton, okButton}, GroupLayout.VERTICAL);
+            dialogPane.add(buttonBar, BorderLayout.SOUTH);
+        }
+        contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
+        selectedItem = null;
         setVisible(false);
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
+        selectedItem = (GenomeListItem) genomeList.getSelectedValue();
         setVisible(false);
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GenomeSelectionDialog(new javax.swing.JFrame(), true).setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JComboBox genomeComboBox;
-    private JLabel genomeComboBoxLabel;
+    private JPanel dialogPane;
+    private JPanel contentPanel;
+    private JLabel label1;
+    private JTextField genomeEntry;
+    private JScrollPane scrollPane1;
+    private JList genomeList;
+    private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
     // End of variables declaration//GEN-END:variables
