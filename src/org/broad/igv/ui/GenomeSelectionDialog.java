@@ -55,14 +55,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
-        this.allListItems = new ArrayList<GenomeListItem>(inputListItems.size());
-        for (Object listItem : inputListItems) {
-            if (listItem instanceof GenomeListItem) {
-                this.allListItems.add((GenomeListItem) listItem);
-            }
-        }
+        this.allListItems = new ArrayList<GenomeListItem>(inputListItems);
+        //We don't show those currently in the box
+        this.allListItems.removeAll(GenomeManager.getInstance().getGenomes());
         rebuildGenomeList();
-
     }
 
     private void rebuildGenomeList() {
