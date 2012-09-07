@@ -50,11 +50,11 @@ public class EigenvectorTrack extends AbstractTrack {
 
         int zoom = hic.zd.getZoom();
         if (zoom != currentZoom) {
-            currentZoom = zoom;
 
             double[] eigen = hic.getEigenvector(0);
             if (eigen == null) return;
 
+            currentZoom = zoom;
             setData(hic.zd.getBinSize(), eigen);
         }
 
