@@ -64,7 +64,7 @@ public class FragmentCalculation {
 
     public int getBin(Integer integer, int position) {
         for (Chromosome chromosome : fragmentMap.keySet()) {
-            if (chromosome.getIndex() == integer.intValue()) {
+            if (chromosome.getIndex() == integer) {
                 return getBin(chromosome, position);
             }
         }
@@ -77,10 +77,10 @@ public class FragmentCalculation {
 
     /**
      * Return fragment that this position lies on.  Fragment 0 means position < sites[0].
-     * Fragment 1 means position >= sites[0] and <= sites[1].  (Equal should not happen in practice.)
+     * Fragment 1 means position >= sites[0] and < sites[1].
      * @param sites  The sorted array of fragment sites for the chromosome
      * @param position The position to search for within that array
-     * @return    The fragment location such that position > sites[retVal-1] and position < sites[retVal]
+     * @return          The fragment location such that position >= sites[retVal-1] and position <  sites[retVal]
      */
     private int binarySearch(int[] sites, int position) {
         int lo = 0;
@@ -91,7 +91,7 @@ public class FragmentCalculation {
 
             if (position > sites[mid])      lo = mid + 1;
             else if (position < sites[mid]) hi = mid - 1;
-            else return mid;
+            else return mid+1;
         }
         return lo;
     }
