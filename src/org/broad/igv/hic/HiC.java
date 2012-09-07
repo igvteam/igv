@@ -298,7 +298,7 @@ public class HiC {
                     str += "Are you sure you want to proceed?";
                     int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
                     if (ans == JOptionPane.NO_OPTION) {
-                        mainWindow.setViewEigenvector(false);
+                       // mainWindow.setViewEigenvector(false);
                         return null;
                     }
                 }
