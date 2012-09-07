@@ -48,7 +48,7 @@ public enum WindowFunction implements CollUtils.Valued {
     }
 
     static public WindowFunction getWindowFunction(String name) {
-        return CollUtils.findValueOf(values(), name);
+        return CollUtils.findValueOf(WindowFunction.class, name);
     }
 
 }
