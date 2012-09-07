@@ -52,8 +52,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import static org.broad.igv.util.collections.CollUtils.moveInList;
-
 /**
  * @author jrobinso
  */
@@ -665,20 +663,6 @@ public class GenomeManager {
         }
 
         return serverGenomeArchiveList;
-    }
-
-    private void rearrangeGenomeListFromSaved(List<GenomeListItem> genomeListItems) {
-        if (genomeListItems == null) return;
-        //Rearrange according to saved order
-        String[] genomeIds = PreferenceManager.getInstance().getGenomeIdDisplayList();
-        int position = 0;
-        for (String genomeId : genomeIds) {
-            GenomeListItem listItem = getGenomeListItemById(genomeId);
-            if (listItem != null) {
-                moveInList(genomeListItems, position, listItem);
-                position++;
-            }
-        }
     }
 
     /**

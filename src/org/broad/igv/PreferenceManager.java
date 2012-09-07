@@ -1097,10 +1097,10 @@ public class PreferenceManager implements PropertyManager {
         }
     }
 
-    public void saveGenomeIdDisplayList(Collection<GenomeListItem> serverGenomeItemList) {
+    public void saveGenomeIdDisplayList(Collection<GenomeListItem> genomeListItems) {
         String genomeString = "";
 
-        for (GenomeListItem serverItem : serverGenomeItemList) {
+        for (GenomeListItem serverItem : genomeListItems) {
             genomeString += serverItem.getId() + HISTORY_DELIMITER;
         }
 

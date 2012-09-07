@@ -15,15 +15,23 @@
 
 package org.broad.igv.ui;
 
-import java.awt.*;
-import java.awt.event.*;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 
-
 import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.Frame;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,19 +50,32 @@ public class ManageGenomesDialog extends JDialog {
     }
 
     private void initData() {
-        genomeList.setListData(GenomeManager.getInstance().getGenomes().toArray());
+        allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
+        buildList();
         genomeList.setTransferHandler(new SimpleTransferHandler());
+    }
+
+
+    private void buildList() {
+        genomeList.setListData(allListItems.toArray());
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         cancelled = true;
-        dispose();
+        setVisible(false);
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
         cancelled = false;
+        PreferenceManager.getInstance().saveGenomeIdDisplayList(allListItems);
+        setVisible(false);
+    }
 
-        dispose();
+    private void genomeListKeyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+            allListItems.remove(genomeList.getSelectedIndex());
+            buildList();
+        }
     }
 
     private void initComponents() {
@@ -69,6 +90,8 @@ public class ManageGenomesDialog extends JDialog {
         cancelButton = new JButton();
 
         //======== this ========
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -87,7 +110,15 @@ public class ManageGenomesDialog extends JDialog {
 
                     //---- genomeList ----
                     genomeList.setMaximumSize(new Dimension(39, 5000));
+                    genomeList.setDropMode(DropMode.INSERT);
                     genomeList.setDragEnabled(true);
+                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    genomeList.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent e) {
+                            genomeListKeyReleased(e);
+                        }
+                    });
                     scrollPane1.setViewportView(genomeList);
                 }
                 contentPanel.add(scrollPane1);
@@ -99,8 +130,8 @@ public class ManageGenomesDialog extends JDialog {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setPreferredSize(new Dimension(196, 51));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -111,8 +142,8 @@ public class ManageGenomesDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -123,8 +154,8 @@ public class ManageGenomesDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -149,16 +180,62 @@ public class ManageGenomesDialog extends JDialog {
         return cancelled;
     }
 
+    private int findItem(String text) {
+        int index = 0;
+        for (GenomeListItem item : allListItems) {
+            if (item.getId().equals(text) || item.getDisplayableName().equals(text)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+
+    }
+
     private class SimpleTransferHandler extends TransferHandler {
+        @Override
+        public int getSourceActions(JComponent c) {
+            return TransferHandler.MOVE;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            return new StringSelection(((GenomeListItem) genomeList.getSelectedValue()).getDisplayableName());
+        }
 
         @Override
         public boolean importData(TransferSupport support) {
-            return canImport(support);
+            if (!canImport(support)) {
+                return false;
+            }
+            JList.DropLocation dropLocation = (JList.DropLocation) support.getDropLocation();
+            int toIndex = dropLocation.getIndex();
+            int fromIndex = -1;
+            try {
+                fromIndex = findItem((String) support.getTransferable().getTransferData(DataFlavor.stringFlavor));
+            } catch (UnsupportedFlavorException e) {
+                return false;
+            } catch (IOException e) {
+                return false;
+            }
+            if (fromIndex < 0 || fromIndex >= allListItems.size() || fromIndex == toIndex) {
+                return false;
+            }
+            //We need to account for the fact that the proper
+            //insertion location is one smaller, once the item being moved
+            //is removed.
+            if (toIndex > fromIndex) toIndex--;
+            GenomeListItem item = allListItems.remove(fromIndex);
+            allListItems.add(toIndex, item);
+            buildList();
+            return true;
         }
 
         @Override
         public boolean canImport(TransferSupport support) {
+            support.setShowDropLocation(true);
             return support.isDrop();
         }
     }
+
 }

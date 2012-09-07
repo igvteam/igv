@@ -240,9 +240,11 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new MenuAction("Manage Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                ManageGenomesDialog dialog = new ManageGenomesDialog(IGV.getMainFrame());
-                dialog.setVisible(true);
-                if (!dialog.isCancelled()) {
+                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
+                dialog2.setVisible(true);
+                boolean cancelled = dialog2.isCancelled();
+                if (!cancelled) {
+                    GenomeManager.getInstance().buildGenomeItemList();
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
                 }
             }

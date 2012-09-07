@@ -6,6 +6,8 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
 			"$sizePolicy": 0
+			"defaultCloseOperation": 2
+			"modalityType": enum java.awt.Dialog$ModalityType DOCUMENT_MODAL
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
@@ -19,7 +21,10 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JList" ) {
 							name: "genomeList"
 							"maximumSize": new java.awt.Dimension( 39, 5000 )
+							"dropMode": enum javax.swing.DropMode INSERT
 							"dragEnabled": true
+							"selectionMode": 0
+							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeListKeyReleased", true ) )
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
