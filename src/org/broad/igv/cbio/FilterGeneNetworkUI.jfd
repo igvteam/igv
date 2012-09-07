@@ -23,8 +23,16 @@
        <string>modalityType</string> 
        <object class="java.lang.Enum" method="valueOf"> 
         <class>java.awt.Dialog$ModalityType</class> 
-        <string>DOCUMENT_MODAL</string> 
+        <string>APPLICATION_MODAL</string> 
        </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>alwaysOnTop</string> 
+       <boolean>true</boolean> 
+      </void> 
+      <void method="setProperty"> 
+       <string>defaultCloseOperation</string> 
+       <int>2</int> 
       </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
@@ -641,7 +649,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.7</string> 
+               <string>0.9</string> 
               </void> 
               <void method="setProperty"> 
                <string>minimumSize</string> 
@@ -862,7 +870,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.7</string> 
+               <string>0.9</string> 
               </void> 
               <void method="setProperty"> 
                <string>minimumSize</string> 
@@ -1214,6 +1222,37 @@
             <void method="setProperty"> 
              <string>height</string> 
              <int>40</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Reset to Defaults</string> 
+            </void> 
+            <void property="name"> 
+             <string>resetToDefaultsButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>resetToDefaultsButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>10</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>50</int> 
             </void> 
            </object> 
           </void> 
