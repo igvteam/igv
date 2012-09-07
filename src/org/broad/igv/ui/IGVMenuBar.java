@@ -236,6 +236,20 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText("Select genomes available on the server to appear in menu");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Manage Genomes...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                ManageGenomesDialog dialog = new ManageGenomesDialog(IGV.getMainFrame());
+                dialog.setVisible(true);
+                if (!dialog.isCancelled()) {
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                }
+            }
+        };
+        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         //loadGenome(file.getAbsolutePath(), monitor);
         menuAction =
