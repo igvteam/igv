@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
@@ -217,6 +218,22 @@ public class IGVMenuBar extends JMenuBar {
         // Load genome from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
         menuAction.setToolTipText("Load a FASTA or .genome file");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Load Genome from Server...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame());
+                dialog.setVisible(true);
+                List<GenomeListItem> selectedValues = dialog.getSelectedItems();
+                if (selectedValues != null) {
+                    GenomeManager.getInstance().addGenomeItems(selectedValues);
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                }
+            }
+        };
+        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 

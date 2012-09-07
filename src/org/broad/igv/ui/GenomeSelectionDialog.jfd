@@ -29,7 +29,6 @@ new FormModel {
 						name: "scrollPane1"
 						add( new FormComponent( "javax.swing.JList" ) {
 							name: "genomeList"
-							"selectionMode": 0
 							addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "genomeListMouseClicked", true ) )
 						} )
 					} )

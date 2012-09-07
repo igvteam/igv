@@ -17,13 +17,18 @@
 
 package org.broad.igv.ui;
 
+import org.apache.log4j.Level;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,21 +38,24 @@ import java.util.List;
 public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private boolean isCanceled = true;
-    private GenomeListItem selectedItem = null;
+    private List<GenomeListItem> selectedItems = null;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
-    public GenomeSelectionDialog(java.awt.Frame parent, Object[] allListItems, GenomeListItem defaultItem) {
+    public GenomeSelectionDialog(java.awt.Frame parent) {
         super(parent);
         initComponents();
         setLocationRelativeTo(parent);
 
-        initData(allListItems, defaultItem);
+        try {
+            initData(GenomeManager.getInstance().getGenomeArchiveList());
+        } catch (IOException e) {
+            MessageUtils.showMessage(Level.ERROR, UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+        }
     }
 
-    private void initData(Object[] inputListItems, GenomeListItem defaultItem) {
-        this.selectedItem = defaultItem;
-        this.allListItems = new ArrayList<GenomeListItem>(inputListItems.length);
+    private void initData(Collection<GenomeListItem> inputListItems) {
+        this.allListItems = new ArrayList<GenomeListItem>(inputListItems.size());
         for (Object listItem : inputListItems) {
             if (listItem instanceof GenomeListItem) {
                 this.allListItems.add((GenomeListItem) listItem);
@@ -81,15 +89,6 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     }
 
-
-    public GenomeListItem getSelectedItem() {
-        return selectedItem;//(isCanceled ? null : selectedItem);
-    }
-
-    private void genomeEntryKeyTyped(KeyEvent e) {
-
-    }
-
     /**
      * If a genome is single clicked, we just store the selection.
      * When a genome is double clicked, we treat that as the user
@@ -99,9 +98,6 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
      */
     private void genomeListMouseClicked(MouseEvent e) {
         switch (e.getClickCount()) {
-            case 1:
-                selectedItem = (GenomeListItem) genomeList.getSelectedValue();
-                break;
             case 2:
                 okButtonActionPerformed(null);
                 break;
@@ -110,6 +106,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void genomeEntryKeyReleased(KeyEvent e) {
         rebuildGenomeList(genomeEntry.getText());
+    }
+
+    public List<GenomeListItem> getSelectedItems() {
+        return selectedItems;
     }
 
     public boolean isCanceled() {
@@ -170,7 +170,6 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 {
 
                     //---- genomeList ----
-                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     genomeList.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
@@ -223,14 +222,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
-        selectedItem = null;
+        selectedItems = null;
         setVisible(false);
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
-        selectedItem = (GenomeListItem) genomeList.getSelectedValue();
+        selectedItems = genomeList.getSelectedValuesList();
         setVisible(false);
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed

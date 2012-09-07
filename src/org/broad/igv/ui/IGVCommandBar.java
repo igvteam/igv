@@ -92,7 +92,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     /**
      * Special value to pull up dialog with rest of genomes
      */
-    public static final GenomeListItem VIEW_MORE_GENOMES = new GenomeListItem("More...", null, "VIEW_MORE_GENOMES", false);
+    //public static final GenomeListItem VIEW_MORE_GENOMES = new GenomeListItem("More...", null, "VIEW_MORE_GENOMES", false);
     private GenomeListItem firstGenome;
 
     /**
@@ -248,32 +248,31 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 return;
             }
             GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
-            if (genomeListItem == VIEW_MORE_GENOMES) {
-                //Bring up dialog showing user the full list
+//            if (genomeListItem == VIEW_MORE_GENOMES) {
+            //Bring up dialog showing user the full list
 
-                Object[] allGenomes = GenomeManager.getInstance().getGenomes().toArray();
-                GenomeSelectionDialog selectionDialog = new GenomeSelectionDialog(IGV.getMainFrame(), allGenomes,
-                        null);
-                selectionDialog.setVisible(true);
-                GenomeListItem selectedValue = selectionDialog.getSelectedItem();
-//                Object selectedValue = JOptionPane.showInputDialog(IGVCommandBar.this,
-//                        "Genomes", "Choose a genome to load",
-//                        JOptionPane.QUESTION_MESSAGE, null,
-//                        allGenomes, allGenomes[0]);
-
-                //Defensive programming. First we reset the combobox so if anything goes
-                //wrong we don't end up in a screwy state.
-                String oldId = GenomeManager.getInstance().getGenomeId();
-                selectGenomeFromList(oldId, true);
-                if (selectedValue != null) {
-                    loadGenomeListItem((GenomeListItem) selectedValue);
-                    genomeComboBox.setSelectedItem(selectedValue);
-                }
-            } else {
-                //Normal case, just load the genome
-                loadGenomeListItem(genomeListItem);
-                //genomeComboBox.setSelectedItem(genomeListItem);
-            }
+//                Object[] allGenomes = GenomeManager.getInstance().getGenomes().toArray();
+//                GenomeSelectionDialog selectionDialog = new GenomeSelectionDialog(IGV.getMainFrame());
+//                selectionDialog.setVisible(true);
+//               // GenomeListItem selectedValue = selectionDialog.getSelectedItem();
+////                Object selectedValue = JOptionPane.showInputDialog(IGVCommandBar.this,
+////                        "Genomes", "Choose a genome to load",
+////                        JOptionPane.QUESTION_MESSAGE, null,
+////                        allGenomes, allGenomes[0]);
+//
+//                //Defensive programming. First we reset the combobox so if anything goes
+//                //wrong we don't end up in a screwy state.
+//                String oldId = GenomeManager.getInstance().getGenomeId();
+//                selectGenomeFromList(oldId, true);
+//                if (selectedValue != null) {
+//                    loadGenomeListItem((GenomeListItem) selectedValue);
+//                    genomeComboBox.setSelectedItem(selectedValue);
+//                }
+//            } else {
+            //Normal case, just load the genome
+            loadGenomeListItem(genomeListItem);
+            //genomeComboBox.setSelectedItem(genomeListItem);
+//            }
         }
     }
 
@@ -524,7 +523,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     void refreshGenomeListComboBox() {
+        Object item = genomeComboBox.getSelectedItem();
         genomeComboBox.setModel(getModelForGenomeListComboBox());
+        genomeComboBox.setSelectedItem(item);
     }
 
     /**

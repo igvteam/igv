@@ -556,6 +556,27 @@ public class GenomeManager {
     boolean serverGenomeListUnreachable = false;
 
     /**
+     * Get the server genome list, if accessible. If not,
+     * get the list of cached genomes
+     *
+     * @return
+     * @throws IOException
+     */
+    public List<GenomeListItem> getGenomeArchiveList() throws IOException {
+        List<GenomeListItem> genomeArchiveList = null;
+        try {
+            genomeArchiveList = getServerGenomeArchiveList(this.excludedArchivesUrls);
+        } catch (IOException e) {
+            log.error(UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST + e.getMessage());
+        }
+
+        if (genomeArchiveList == null) {
+            genomeArchiveList = getCachedGenomeArchiveList();
+        }
+        return genomeArchiveList;
+    }
+
+    /**
      * Gets a list of all the server genome archive files that
      * IGV knows about.
      *
@@ -628,6 +649,7 @@ public class GenomeManager {
                 }
             } catch (Exception e) {
                 serverGenomeListUnreachable = true;
+                serverGenomeArchiveList = null;
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                         genomeListURLString + ").    Only locally defined genomes will be available.",
@@ -685,24 +707,14 @@ public class GenomeManager {
         // and cached information. This allows us to process
         // everything the same way.
         List<GenomeListItem> tmpuserDefinedGenomeList = null;
-        List<GenomeListItem> tmpcachedGenomeItemList = new ArrayList<GenomeListItem>();
-        List<GenomeListItem> tmpserverGenomeItemList = null;
+        List<GenomeListItem> tmpArchiveGenomeItemList = null;
 
         boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (affectiveMode) {
-            tmpserverGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
+            tmpArchiveGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
         } else {
             try {
-                tmpserverGenomeItemList = getServerGenomeArchiveList(this.excludedArchivesUrls);
-
-
-                /**
-                 * Only show cached genomes if we couldn't load them from the server
-                 */
-                if (tmpserverGenomeItemList == null || tmpserverGenomeItemList.isEmpty()) {
-                    tmpcachedGenomeItemList = getCachedGenomeArchiveList();
-                }
-
+                tmpArchiveGenomeItemList = getGenomeArchiveList();
                 tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
 
             } catch (IOException e) {
@@ -710,8 +722,7 @@ public class GenomeManager {
             }
         }
 
-        combineGenomeLists(tmpuserDefinedGenomeList, tmpserverGenomeItemList,
-                tmpcachedGenomeItemList);
+        combineGenomeLists(tmpuserDefinedGenomeList, tmpArchiveGenomeItemList);
 
     }
 
@@ -719,11 +730,12 @@ public class GenomeManager {
     /**
      * Combine our different lists of genomeListItems
      *
+     * @param userDefinedGenomeItemList
+     * @param archiveGenomeItemList     Either server or cached genomes
      * @return A List of GenomeListItems
      */
     private void combineGenomeLists(List<GenomeListItem> userDefinedGenomeItemList,
-                                    List<GenomeListItem> serverGenomeItemList,
-                                    List<GenomeListItem> cachedGenomeItemList) {
+                                    List<GenomeListItem> archiveGenomeItemList) {
 
         //We use a LinkedHashSet to prevent loading duplicates
         genomeItemMap = new LinkedHashMap<String, GenomeListItem>();
@@ -738,14 +750,7 @@ public class GenomeManager {
             addAllInSet(userDefinedGenomeItemList, genomeIdArray, genomeItemMap);
         }
 
-        /**
-         * We show EITHER the serverGenomeList, or the cached list, but not both
-         */
-        List<GenomeListItem> next = serverGenomeItemList;
-        if (!((serverGenomeItemList != null) && !serverGenomeItemList.isEmpty())) {
-            next = cachedGenomeItemList;
-        }
-        addAllInSet(next, genomeIdArray, genomeItemMap);
+        addAllInSet(archiveGenomeItemList, genomeIdArray, genomeItemMap);
     }
 
     /**
@@ -766,7 +771,7 @@ public class GenomeManager {
                     break;
                 }
             }
-            if (!genomeMap.containsKey(id)) {
+            if (!genomeMap.containsKey(id) && genomeListItem != null) {
                 genomeMap.put(id, genomeListItem);
             }
 
@@ -1073,13 +1078,15 @@ public class GenomeManager {
         return currentGenome;
     }
 
-    public void addGenomeItem(GenomeListItem genomeListItem) {
-        Map<String, GenomeListItem> newMap = new CI.CILinkedHashMap<GenomeListItem>(genomeItemMap.size() + 1);
-        newMap.put(genomeListItem.getId(), genomeListItem);
-        for (String key : genomeItemMap.keySet()) {
-            newMap.put(key, genomeItemMap.get(key));
+    public void addGenomeItems(Collection<GenomeListItem> genomeListItems) {
+        for (GenomeListItem genomeListItem : genomeListItems) {
+            genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         }
-        genomeItemMap = newMap;
+        PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
+    }
+
+    public void addGenomeItem(GenomeListItem genomeListItem) {
+        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
     }
 
