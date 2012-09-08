@@ -224,14 +224,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
 
-    /**
-     * The preference cache
-     */
     IGVPreferences preferences;
-
-    /**
-     * Default values
-     */
     Map<String, String> defaultValues;
 
 
@@ -268,6 +261,17 @@ public class PreferenceManager implements PropertyManager {
 
     public String get(String key) {
         return get(key, defaultValues.get(key));
+    }
+
+    /**
+     * Get the default value for the specified key.
+     * May be null.
+     *
+     * @param key
+     * @return
+     */
+    public String getDefaultValue(String key) {
+        return defaultValues.get(key);
     }
 
 

@@ -91,20 +91,26 @@ public class CollUtils {
 
     /**
      * Search through an to find an object of matching value.
+     * Will match either the text name of the enum, or the human readable name
      * Some our enums have a String value, intended to be human readable
      *
-     * @param valuedCollection
+     * @param collectionClass
      * @param value
      * @param <T>
      * @return
      */
-    public static <T extends Valued> T findValueOf(T[] valuedCollection, String value) {
+    public static <T extends Enum<T> & Valued> T findValueOf(Class<T> collectionClass, String value) {
         if (value == null) {
             return null;
         }
 
-        for (T valued : valuedCollection) {
-            if (value.equals(valued.getValue())) {
+        T[] enumConstants = collectionClass.getEnumConstants();
+        if (enumConstants == null) {
+            throw new IllegalArgumentException("Input must be an enum: " + collectionClass);
+        }
+
+        for (T valued : enumConstants) {
+            if (value.equals(valued.name()) || value.equals(valued.getValue())) {
                 return valued;
             }
         }

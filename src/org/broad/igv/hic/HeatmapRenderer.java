@@ -136,7 +136,8 @@ public class HeatmapRenderer {
                     double expected = df.getDensity(chr1, dist);
                     double observed = df.getNormalizedCount(rec.getCounts(), chr1, (int)(x * binSizeMB), chr2, (int)(y * binSizeMB));
                     // double normCounts = (rec.getCounts() / expected);
-                    score = observed / expected;
+                    double normCounts = observed / expected;
+                    score = normCounts;
               //      int x = rec.getX();// * binSize;
               //      int y = rec.getY();// * binSize;
               //      int dist = Math.abs(x - y);

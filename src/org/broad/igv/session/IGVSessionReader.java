@@ -832,7 +832,7 @@ public class IGVSessionReader implements SessionReader {
         String value = getAttribute(element, SessionAttribute.VALUE.getText());
         String booleanOperator = getAttribute(element, SessionAttribute.BOOLEAN_OPERATOR.getText());
 
-        Operator opEnum = CollUtils.findValueOf(Operator.values(), operator);
+        Operator opEnum = CollUtils.findValueOf(Operator.class, operator);
         BooleanOperator boolEnum = BooleanOperator.valueOf(booleanOperator.toUpperCase());
         TrackFilterElement trackFilterElement = new TrackFilterElement(filter, item,
                 opEnum, value, boolEnum);
