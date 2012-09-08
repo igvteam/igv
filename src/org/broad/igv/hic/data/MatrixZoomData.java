@@ -86,10 +86,6 @@ public class MatrixZoomData {
         this.blockBinCount = dis.readInt();
         this.blockColumnCount = dis.readInt();
 
-        // Special hack for fragment maps
-        if(binSize <= 1) {
-            binSize = (int)  ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
-        }
 
         int nBlocks = dis.readInt();
         this.blockIndex = new HashMap<Integer, Preprocessor.IndexEntry>(nBlocks);
@@ -112,6 +108,11 @@ public class MatrixZoomData {
         if (FileUtils.resourceExists(fullPath)) {
             pearsons = ScratchPad.readPearsons(fullPath);
         }
+        // Special hack for fragment maps
+        if(binSize <= 1) {
+            binSize = (int)  ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
+        }
+
 
     }
 
@@ -203,10 +204,13 @@ public class MatrixZoomData {
     }
 
     private void readEigenvector() {
-
+        int binSizeName = binSize;
+        if (binSize == (int)  ((double) chr1.getLength() / (blockBinCount * blockColumnCount))) {
+            binSizeName = 1;
+        }
         String rootPath = FileUtils.getParent(reader.getPath());
         String folder = rootPath + "/" + chr1.getName();
-        String file = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".wig";
+        String file = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSizeName + ".wig";
         String fullPath = folder + "/" + file;
         if (FileUtils.resourceExists(fullPath)) {
             //Lots of assumptions made here about structure of wig file
@@ -236,6 +240,7 @@ public class MatrixZoomData {
             }
 
         }
+        else System.err.println("Doesn't exist");
 
     }
 
