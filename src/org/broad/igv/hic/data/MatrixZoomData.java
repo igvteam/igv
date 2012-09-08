@@ -87,8 +87,8 @@ public class MatrixZoomData {
         this.blockColumnCount = dis.readInt();
 
         // Special hack for fragment maps
-        if(binSize <= 1) {
-            binSize = (int)  ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
+        if (binSize <= 1) {
+            binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
         }
 
         int nBlocks = dis.readInt();
@@ -220,12 +220,14 @@ public class MatrixZoomData {
                     if (nextLine.startsWith("track") || nextLine.startsWith("fixedStep") || nextLine.startsWith("#")) {
                         continue;
                     }
-                    arrayList.add(Double.parseDouble(nextLine));
+                    try {
+                        arrayList.add(Double.parseDouble(nextLine));
+                    } catch (NumberFormatException e) {
+                        arrayList.add(Double.NaN);
+                    }
                 }
                 eigenvector = arrayList.toArray();
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (NumberFormatException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } finally {
                 if (br != null) try {

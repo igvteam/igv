@@ -6,6 +6,7 @@ import org.broad.igv.hic.HiC;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.awt.*;
 
@@ -31,10 +32,18 @@ public class EigenvectorTrack extends AbstractTrack {
     private void setData(double step, double[] data) {
         this.step = step;
         this.data = data;
-        this.median = StatUtils.percentile(data, 50);
-        dataMax = 0;
-        for (double aData : data) {
-            if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
+
+        DoubleArrayList tmp = new DoubleArrayList(data.length);
+        for(int i=0; i<data.length; i++) {
+            if(!Double.isNaN(data[i])) {
+                tmp.add(data[i]);
+            }
+            double[] tmpArray = tmp.toArray();
+            this.median = StatUtils.percentile(tmpArray, 50);
+            dataMax = 0;
+            for (double aData : tmpArray) {
+                if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
+            }
         }
 
     }
@@ -67,6 +76,8 @@ public class EigenvectorTrack extends AbstractTrack {
         int lastXPixel = -1;
 
         for (int i = 0; i < data.length; i++) {
+
+            if(Double.isNaN(data[i])) continue;
 
             int genomicPosition = (int) (step * i);
             int xPixel = context.bpToScreenPixel(genomicPosition);
