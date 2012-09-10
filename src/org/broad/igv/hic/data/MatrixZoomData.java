@@ -84,6 +84,8 @@ public class MatrixZoomData {
 
         int fileBinSize = dis.readInt();
 
+        this.blockBinCount = dis.readInt();
+        this.blockColumnCount = dis.readInt();
         if(fileBinSize > 1) {
             binSize = fileBinSize;
         }
@@ -91,8 +93,6 @@ public class MatrixZoomData {
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
         }
 
-        this.blockBinCount = dis.readInt();
-        this.blockColumnCount = dis.readInt();
 
         int nBlocks = dis.readInt();
         this.blockIndex = new HashMap<Integer, Preprocessor.IndexEntry>(nBlocks);
@@ -115,6 +115,15 @@ public class MatrixZoomData {
         if (FileUtils.resourceExists(fullPath)) {
             pearsons = ScratchPad.readPearsons(fullPath);
         }
+
+        // If there's an eigenvector file load it
+        String eigenFile = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + fileBinSize + ".wig";
+        String fullEigenPath = folder + "/" + eigenFile;
+        if (FileUtils.resourceExists(fullEigenPath)) {
+            readEigenvector(fullEigenPath);
+        }
+
+
 
     }
 
@@ -199,18 +208,11 @@ public class MatrixZoomData {
     }
 
     public double[] getEigenvector() {
-        if (eigenvector == null) {
-            readEigenvector();
-        }
-        return eigenvector;
+         return eigenvector;
     }
 
-    private void readEigenvector() {
+    private void readEigenvector(String fullPath) {
 
-        String rootPath = FileUtils.getParent(reader.getPath());
-        String folder = rootPath + "/" + chr1.getName();
-        String file = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".wig";
-        String fullPath = folder + "/" + file;
         if (FileUtils.resourceExists(fullPath)) {
             //Lots of assumptions made here about structure of wig file
             BufferedReader br = null;

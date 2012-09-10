@@ -34,17 +34,18 @@ public class EigenvectorTrack extends AbstractTrack {
         this.data = data;
 
         DoubleArrayList tmp = new DoubleArrayList(data.length);
-        for(int i=0; i<data.length; i++) {
-            if(!Double.isNaN(data[i])) {
+        for (int i = 0; i < data.length; i++) {
+            if (!Double.isNaN(data[i])) {
                 tmp.add(data[i]);
             }
-            double[] tmpArray = tmp.toArray();
-            this.median = StatUtils.percentile(tmpArray, 50);
-            dataMax = 0;
-            for (double aData : tmpArray) {
-                if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
-            }
         }
+        double[] tmpArray = tmp.toArray();
+        this.median = StatUtils.percentile(tmpArray, 50);
+        dataMax = 0;
+        for (double aData : tmpArray) {
+            if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
+        }
+
 
     }
 
@@ -77,7 +78,7 @@ public class EigenvectorTrack extends AbstractTrack {
 
         for (int i = 0; i < data.length; i++) {
 
-            if(Double.isNaN(data[i])) continue;
+            if (Double.isNaN(data[i])) continue;
 
             int genomicPosition = (int) (step * i);
             int xPixel = context.bpToScreenPixel(genomicPosition);
