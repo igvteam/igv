@@ -82,14 +82,17 @@ public class MatrixZoomData {
             dis.readInt();              // sum but we're not using this anymore
         }
 
-        this.binSize = dis.readInt();
-        this.blockBinCount = dis.readInt();
-        this.blockColumnCount = dis.readInt();
+        int fileBinSize = dis.readInt();
 
-        // Special hack for fragment maps
-        if (binSize <= 1) {
+        if(fileBinSize > 1) {
+            binSize = fileBinSize;
+        }
+        else {
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
         }
+
+        this.blockBinCount = dis.readInt();
+        this.blockColumnCount = dis.readInt();
 
         int nBlocks = dis.readInt();
         this.blockIndex = new HashMap<Integer, Preprocessor.IndexEntry>(nBlocks);
@@ -107,7 +110,7 @@ public class MatrixZoomData {
         // If there's a pearson file available initialize it now
         String rootPath = FileUtils.getParent(reader.getPath());
         String folder = rootPath + "/" + chr1.getName();
-        String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".bin";
+        String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + fileBinSize + ".bin";
         String fullPath = folder + "/" + file;
         if (FileUtils.resourceExists(fullPath)) {
             pearsons = ScratchPad.readPearsons(fullPath);
