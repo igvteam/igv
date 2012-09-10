@@ -272,14 +272,14 @@ public class FilterGeneNetworkUI extends JDialog {
             if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
                 float min = Float.parseFloat(filter.minVal.getText());
                 float max = Float.parseFloat(filter.maxVal.getText());
-                network.filterNodesRange(filt_el, min / 100, max / 100);
+                network.filterGenesRange(filt_el, min / 100, max / 100);
             }
         }
         if (!keepIsolated.isSelected()) {
             network.pruneGraph();
         }
 
-        totNumGenes.setText("Total Genes: " + network.vertexSetFiltered().size());
+        totNumGenes.setText("Total Genes: " + network.geneVertexSetFiltered().size());
 
         this.listModel.markDirty();
     }
@@ -319,7 +319,7 @@ public class FilterGeneNetworkUI extends JDialog {
         if (keepRows.length > 0) {
             final Set<Node> keepNodes = new HashSet<Node>(keepRows.length);
             GraphListModel model = (GraphListModel) geneTable.getModel();
-            List<Node> vertices = model.getVertices();
+            List<Node> vertices = model.getGeneVertices();
             for (Integer loc : keepRows) {
                 keepNodes.add(vertices.get(loc));
             }
@@ -331,7 +331,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     return keepNodes.contains(object);
                 }
             };
-            network.filterNodes(selectedPredicated);
+            network.filterGenes(selectedPredicated);
         }
 
         //setVisible(false);
@@ -882,26 +882,24 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private class GraphListModel extends AbstractTableModel {
 
-        private List<Node> vertices = null;
+        private List<Node> geneVertices = null;
 
-        private List<Node> getVertices() {
-            if (vertices == null) {
-                Set<Node> nodes = network.vertexSetFiltered();
-                vertices = Arrays.asList(nodes.toArray(new Node[0]));
+        private List<Node> getGeneVertices() {
+            if (geneVertices == null) {
+                Set<Node> nodes = network.geneVertexSetFiltered();
+                geneVertices = Arrays.asList(nodes.toArray(new Node[0]));
             }
-            return vertices;
-
-            //Collections.sort(vertexNames);
+            return geneVertices;
         }
 
         public void markDirty() {
-            this.vertices = null;
+            this.geneVertices = null;
             this.fireTableStructureChanged();
         }
 
         @Override
         public int getRowCount() {
-            return getVertices().size();
+            return getGeneVertices().size();
         }
 
         @Override
@@ -916,7 +914,7 @@ public class FilterGeneNetworkUI extends JDialog {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            Node n = getVertices().get(rowIndex);
+            Node n = getGeneVertices().get(rowIndex);
             String nm = GeneNetwork.getNodeKeyData(n, "label");
             switch (columnIndex) {
                 case 0:

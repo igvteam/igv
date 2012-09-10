@@ -17,6 +17,7 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.*;
+import org.broad.igv.util.collections.CollUtils;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.VertexFactory;
 import org.jgrapht.generate.WheelGraphGenerator;
@@ -30,10 +31,7 @@ import org.w3c.dom.Node;
 
 import javax.imageio.metadata.IIOMetadataNode;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
@@ -54,7 +52,8 @@ import static org.junit.Assert.*;
  */
 public class GeneNetworkTest extends AbstractHeadlessTest {
 
-    private static String testpath = TestUtils.DATA_DIR + "tp53network.xml";
+    private static String testpath = TestUtils.DATA_DIR + "xml/tp53network.xml";
+    private static String drugTestPath = TestUtils.DATA_DIR + "xml/EGFR_withdrugs.xml.gz";
     private GeneNetwork network;
 
     @Before
@@ -85,6 +84,30 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         assertTrue("Failed to load network", network.loadNetwork(testpath) > 0);
     }
 
+    /**
+     * Test that we don't filter out drug nodes
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFilterWithDrugs() throws Exception {
+        assertTrue("Failed to load network", network.loadNetwork(drugTestPath) > 0);
+        Collection<Node> nonGenesBeforeFilter = CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGenePredicate);
+        assertTrue("Bad test setup, no non-gene nodes", nonGenesBeforeFilter.size() > 0);
+
+        doTestAnnotation(network);
+        int genesRemoved = network.filterGenesRange("PERCENT_MUTATED", 0, 10.0f);
+        assertTrue("Bad test setup, Filter didn't remove any genes", genesRemoved > 0);
+        network.finalizeFilters();
+        Set<Node> nonGenesAfterFilter =
+                new HashSet<Node>(CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGenePredicate));
+        for (Node nonGene : nonGenesBeforeFilter) {
+            String msg = String.format("Filtered out node %s which we shouldn't have", GeneNetwork.getNodeKeyData(nonGene, GeneNetwork.LABEL));
+            assertTrue(msg, nonGenesAfterFilter.contains(nonGene));
+        }
+
+    }
+
     @Test
     public void testFilter() throws Exception {
         Predicate tPred = new Predicate() {
@@ -101,18 +124,18 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         };
 
         network.loadNetwork(testpath);
-        boolean removed = network.filterNodes(tPred) > 0;
+        boolean removed = network.filterGenes(tPred) > 0;
         assertTrue(removed);
 
         //Test that we can get the filtered edges of a node
         Set<Node> keptNodes = new HashSet<Node>();
-        for (Node n : network.vertexSetFiltered()) {
+        for (Node n : network.geneVertexSetFiltered()) {
             for (Node e : network.edgesOfFiltered(n)) {
                 keptNodes.add(network.getEdgeSource(e));
                 keptNodes.add(network.getEdgeTarget(e));
             }
         }
-        assertEquals(network.vertexSetFiltered().size(), keptNodes.size());
+        assertEquals(network.geneVertexSetFiltered().size(), keptNodes.size());
         assertTrue("Soft filtering not performed", keptNodes.size() < network.vertexSet().size());
     }
 
@@ -144,7 +167,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     @Test
     public void testOutputNoGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz";
         //String networkPath = testpath;
         assertTrue(network.loadNetwork(networkPath) > 0);
         String outPath = TestUtils.DATA_DIR + "out/test.xml";
@@ -153,7 +176,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     @Test
     public void testOutputGzip() throws Exception {
-        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
+        String networkPath = TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz";
         assertTrue(network.loadNetwork(networkPath) > 0);
         String outPath = TestUtils.DATA_DIR + "out/test.xml.gz";
         tstOutputNetwork(network, outPath);
@@ -184,18 +207,22 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     }
 
-
-    @Test
-    public void testAnnotateAll() throws Exception {
-
-        String networkPath = TestUtils.DATA_DIR + "egfr_brca1.xml.gz";
-        assertTrue(network.loadNetwork(networkPath) > 0);
+    private void doTestAnnotation(GeneNetwork network) throws Exception {
 
         //Load some tracks
         String dataPath = TestUtils.DATA_DIR + "seg/Broad.080528.subtypes.seg.gz";
         ResourceLocator locator = new ResourceLocator(dataPath);
         List<Track> tracks = new TrackLoader().load(locator, genome);
         network.annotateAll(tracks);
+    }
+
+
+    @Test
+    public void testAnnotateAll() throws Exception {
+
+        String networkPath = TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz";
+        assertTrue(network.loadNetwork(networkPath) > 0);
+        doTestAnnotation(network);
 
         //Check data
         Set<Node> nodes = network.vertexSet();
@@ -222,7 +249,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     @Test
     public void testFilterGraph() throws Exception {
         GeneNetwork geneNetwork = new GeneNetwork();
-        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "egfr_brca1.xml.gz") > 0);
+        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz") > 0);
 
         final String badname = "NA";
 
@@ -288,7 +315,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     @Test
     public void testOutputForcBioView() throws Exception {
-        assertTrue(network.loadNetwork(TestUtils.DATA_DIR + "tp53network.xml") > 0);
+        assertTrue(network.loadNetwork(testpath) > 0);
         String outPath = network.outputForcBioView();
 
         //Now attempt to read back in
