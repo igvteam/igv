@@ -101,12 +101,18 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     static final Predicate<Node> isNotGenePredicate;
     static final Predicate<Node> isGenePredicate;
 
+    static final String PERCENT_MUTATED = "PERCENT_MUTATED";
+    static final String PERCENT_CNA_AMPLIFIED = "PERCENT_CNA_AMPLIFIED";
+    static final String PERCENT_CNA_HOMOZYGOUSLY_DELETED = "PERCENT_CNA_HOMOZYGOUSLY_DELETED";
+    static final String PERCENT_MRNA_WAY_UP = "PERCENT_MRNA_WAY_UP";
+    static final String PERCENT_MRNA_WAY_DOWN = "PERCENT_MRNA_WAY_DOWN";
+
     static {
-        attributeMap.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
-        attributeMap.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
-        attributeMap.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
-        attributeMap.put("PERCENT_MRNA_WAY_UP", RegionScoreType.EXPRESSION);
-        attributeMap.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
+        attributeMap.put(PERCENT_MUTATED, RegionScoreType.MUTATION_COUNT);
+        attributeMap.put(PERCENT_CNA_AMPLIFIED, RegionScoreType.AMPLIFICATION);
+        attributeMap.put(PERCENT_CNA_HOMOZYGOUSLY_DELETED, RegionScoreType.DELETION);
+        attributeMap.put(PERCENT_MRNA_WAY_UP, RegionScoreType.EXPRESSION);
+        attributeMap.put(PERCENT_MRNA_WAY_DOWN, RegionScoreType.EXPRESSION);
 
         geneTypes.add("Protein");
         isGenePredicate = new Predicate<Node>() {
@@ -135,21 +141,21 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         float max_val = 2 << 10;
 
         float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD));
-        bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
+        bounds.put(PERCENT_MUTATED, new float[]{mut, max_val});
 
         //See GISTIC supplement, page 20
         float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD));
-        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{amp, max_val});
+        bounds.put(PERCENT_CNA_AMPLIFIED, new float[]{amp, max_val});
 
         float del = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_DELETION_THRESHOLD));
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{del, max_val});
+        bounds.put(PERCENT_CNA_HOMOZYGOUSLY_DELETED, new float[]{del, max_val});
 
         //See GISTIC supplement, page 5, just gives greater than or less than 0
         float expUp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD));
-        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{expUp, max_val});
+        bounds.put(PERCENT_MRNA_WAY_UP, new float[]{expUp, max_val});
 
         float expDown = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD));
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -expDown});
+        bounds.put(PERCENT_MRNA_WAY_DOWN, new float[]{-max_val, -expDown});
 
 
     }

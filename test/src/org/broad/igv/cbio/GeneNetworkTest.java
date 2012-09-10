@@ -96,7 +96,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         assertTrue("Bad test setup, no non-gene nodes", nonGenesBeforeFilter.size() > 0);
 
         doTestAnnotation(network);
-        int genesRemoved = network.filterGenesRange("PERCENT_MUTATED", 0, 10.0f);
+        int genesRemoved = network.filterGenesRange(GeneNetwork.PERCENT_MUTATED, 0, 10.0f);
         assertTrue("Bad test setup, Filter didn't remove any genes", genesRemoved > 0);
         network.finalizeFilters();
         Set<Node> nonGenesAfterFilter =
