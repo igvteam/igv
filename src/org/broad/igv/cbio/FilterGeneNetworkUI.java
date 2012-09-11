@@ -25,6 +25,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -284,18 +285,22 @@ public class FilterGeneNetworkUI extends JDialog {
         this.listModel.markDirty();
     }
 
-    /**
-     * TODO This should run on a separate thread
-     */
     private void showNetwork() {
 
-        try {
-            String url = network.outputForcBioView();
-            url = "file://" + url;
-            BrowserLauncher.openURL(url);
-        } catch (IOException err) {
-            MessageUtils.showMessage("Error opening network for viewing. " + err.getMessage());
-        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String url = network.outputForcBioView();
+                    url = "file://" + url;
+                    BrowserLauncher.openURL(url);
+                } catch (IOException err) {
+                    log.error(err);
+                    MessageUtils.showMessage("Error opening network for viewing. " + err.getMessage());
+                }
+            }
+        };
+        LongRunningTask.submit(runnable);
     }
 
     /**
