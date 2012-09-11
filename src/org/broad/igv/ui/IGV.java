@@ -446,8 +446,6 @@ public class IGV {
                     genomeId, genomeFileName, monitor);
 
             if (genomeListItem != null) {
-                enableRemoveGenomes();
-
                 contentPane.getCommandBar().refreshGenomeListComboBox();
                 contentPane.getCommandBar().selectGenomeFromList(genomeListItem.getId(), false);
             }
@@ -728,12 +726,6 @@ public class IGV {
         contentPane.getMainPanel().validate();
         contentPane.getMainPanel().repaint();
     }
-
-
-    public void enableRemoveGenomes() {
-        menuBar.enableRemoveGenomes();
-    }
-
 
     final public void doViewPreferences() {
         doViewPreferences(null);

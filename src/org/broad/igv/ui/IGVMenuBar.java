@@ -66,7 +66,7 @@ public class IGVMenuBar extends JMenuBar {
     private static Logger log = Logger.getLogger(IGVMenuBar.class);
 
     private JMenu extrasMenu;
-    private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
+    //private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     IGV igv;
@@ -101,6 +101,7 @@ public class IGVMenuBar extends JMenuBar {
 
         List<AbstractButton> menus = new ArrayList<AbstractButton>();
         menus.add(createFileMenu());
+        menus.add(createGenomesMenu());
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
@@ -201,80 +202,6 @@ public class IGVMenuBar extends JMenuBar {
 
         menuItems.add(new JSeparator());
 
-        // Load genome
-        menuAction =
-                new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                        igv.doLoadGenome(monitor);
-
-                    }
-                };
-
-        menuAction.setToolTipText("Load a FASTA or .genome file");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Load genome from URL
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
-        menuAction.setToolTipText("Load a FASTA or .genome file");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Add genome to combo box from server
-        menuAction = new MenuAction("Load Genome from Server...", null) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame());
-                dialog.setVisible(true);
-                List<GenomeListItem> selectedValues = dialog.getSelectedItems();
-                if (selectedValues != null) {
-                    GenomeManager.getInstance().addGenomeItems(selectedValues);
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-                }
-            }
-        };
-        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Add genome to combo box from server
-        menuAction = new MenuAction("Manage Genomes...", null) {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
-                dialog2.setVisible(true);
-                boolean cancelled = dialog2.isCancelled();
-                if (!cancelled) {
-                    GenomeManager.getInstance().buildGenomeItemList();
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-                }
-            }
-        };
-        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        //loadGenome(file.getAbsolutePath(), monitor);
-        menuAction =
-                new MenuAction("Import Genome...", null, KeyEvent.VK_D) {
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                        igv.doDefineGenome(monitor);
-                    }
-                };
-
-        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        boolean hasImportedGenomes = !GenomeManager.getInstance().hasUserDefinedGenomes();
-
-        removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
-        removeImportedGenomeAction.setEnabled(hasImportedGenomes);
-        removeImportedGenomeAction.setToolTipText(UIConstants.REMOVE_IMPORTED_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(removeImportedGenomeAction));
-
-        menuItems.add(new JSeparator());
-
         // ***** Snapshots
         // Snapshot Application
         menuAction =
@@ -356,6 +283,88 @@ public class IGVMenuBar extends JMenuBar {
         MenuAction fileMenuAction = new MenuAction("File", null, KeyEvent.VK_F);
         return MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
     }
+
+
+    private JMenu createGenomesMenu() {
+        List<JComponent> menuItems = new ArrayList<JComponent>();
+        MenuAction menuAction = null;
+
+        // Load genome
+        menuAction =
+                new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        igv.doLoadGenome(monitor);
+
+                    }
+                };
+
+        menuAction.setToolTipText("Load a FASTA or .genome file");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Load genome from URL
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
+        menuAction.setToolTipText("Load a FASTA or .genome file");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Load Genome from Server...", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame());
+                dialog.setVisible(true);
+                List<GenomeListItem> selectedValues = dialog.getSelectedItems();
+                if (selectedValues != null) {
+                    GenomeManager.getInstance().addGenomeItems(selectedValues);
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                }
+            }
+        };
+        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Add genome to combo box from server
+        menuAction = new MenuAction("Manage Genome List", null) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
+                dialog2.setVisible(true);
+                boolean cancelled = dialog2.isCancelled();
+                if (!cancelled) {
+                    GenomeManager.getInstance().buildGenomeItemList();
+                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                }
+            }
+        };
+        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
+        //loadGenome(file.getAbsolutePath(), monitor);
+        menuAction =
+                new MenuAction("Import Genome...", null, KeyEvent.VK_D) {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                        igv.doDefineGenome(monitor);
+                    }
+                };
+
+        menuAction.setToolTipText(UIConstants.IMPORT_GENOME_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+//        boolean hasImportedGenomes = !GenomeManager.getInstance().hasUserDefinedGenomes();
+//        removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
+//        removeImportedGenomeAction.setEnabled(hasImportedGenomes);
+//        removeImportedGenomeAction.setToolTipText(UIConstants.REMOVE_IMPORTED_GENOME_TOOLTIP);
+//        menuItems.add(MenuAndToolbarUtils.createMenuItem(removeImportedGenomeAction));
+
+
+        MenuAction genomeMenuAction = new MenuAction("Genomes", null);
+        return MenuAndToolbarUtils.createMenu(menuItems, genomeMenuAction);
+    }
+
 
     private JMenu createTracksMenu() {
 
@@ -822,12 +831,11 @@ public class IGVMenuBar extends JMenuBar {
     }
 
 
-    public void enableRemoveGenomes() {
-        if (removeImportedGenomeAction != null) {
-            removeImportedGenomeAction.setEnabled(true);
-        }
-
-    }
+//    public void enableRemoveGenomes() {
+//        if (removeImportedGenomeAction != null) {
+//            removeImportedGenomeAction.setEnabled(true);
+//        }
+//    }
 
     public void resetSessionActions() {
         if (filterTracksAction != null) {
