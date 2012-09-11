@@ -299,16 +299,17 @@ public class Preprocessor {
     }
 
     private static void incrementCount(MatrixPP matrix, int chr1, int pos1, int chr2, int pos2) {
-         // I don't understand why we did this.  And chr1, chr2 are redundant
-        if (chr2 > chr1) {
-            //transpose
-            int tc2 = chr2;
-            int tp2 = pos2;
-            chr2 = chr1;
-            pos2 = pos1;
-            chr1 = tc2;
-            pos1 = tp2;
-        }
+        // I don't understand why we did this.  And chr1, chr2 are redundant
+        // this produces incorrect results for fragment so I'm removing it.
+//        if (chr2 > chr1) {
+//            //transpose
+//            int tc2 = chr2;
+//            int tp2 = pos2;
+//            chr2 = chr1;
+//            pos2 = pos1;
+//            chr1 = tc2;
+//            pos1 = tp2;
+//        }
         matrix.incrementCount(pos1, pos2);
     }
 
@@ -770,7 +771,7 @@ public class Preprocessor {
 
                 xBin = fragmentCalculation.getBin(chr1, pos1);
                 yBin = fragmentCalculation.getBin(chr2, pos2);
-                //System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
+                System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
             }
             else {
                 xBin = pos1 / getBinSize();

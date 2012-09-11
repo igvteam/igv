@@ -223,7 +223,6 @@ public class DensityCalculation {
 
         for (Chromosome chr : chromosomes) {
             Integer count = chromosomeCounts.get(chr.getIndex());
-            System.out.println(chr + " " + count);
             // didn't see anything at all from a chromosome, then don't include it in possDists.
             if (count == null) continue;
             if (chr == null) continue;
@@ -386,6 +385,7 @@ public class DensityCalculation {
             Integer chrIdx = is.readInt();
             double normFactor = is.readDouble();
             normalizationFactors.put(chrIdx, normFactor);
+            System.out.println(chrIdx + " " +normFactor);
         }
 
         // Densities
@@ -393,6 +393,7 @@ public class DensityCalculation {
         densityAvg = new double[nDensities];
         for (int i = 0; i < nDensities; i++) {
             densityAvg[i] = is.readDouble();
+
         }
 
         if (isNewVersion) {
@@ -401,6 +402,7 @@ public class DensityCalculation {
             coverageNorms = new double[nNorms];
             for (int i=0; i < nNorms; i++) {
                 coverageNorms[i] = is.readDouble();
+
             }
         }
 
