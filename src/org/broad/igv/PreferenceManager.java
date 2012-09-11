@@ -1097,7 +1097,7 @@ public class PreferenceManager implements PropertyManager {
         }
     }
 
-    public void saveGenomeIdDisplayList(Collection<GenomeListItem> genomeListItems) {
+    public static String generateGenomeIdString(Collection<GenomeListItem> genomeListItems) {
         String genomeString = "";
 
         for (GenomeListItem serverItem : genomeListItems) {
@@ -1105,7 +1105,11 @@ public class PreferenceManager implements PropertyManager {
         }
 
         genomeString = genomeString.substring(0, genomeString.length() - 1);
-        preferences.put(GENOME_ID_DISPLAY_LIST_KEY, genomeString);
+        return genomeString;
+    }
+
+    public void saveGenomeIdDisplayList(Collection<GenomeListItem> genomeListItems) {
+        preferences.put(GENOME_ID_DISPLAY_LIST_KEY, generateGenomeIdString(genomeListItems));
     }
 
     /**

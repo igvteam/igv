@@ -73,7 +73,7 @@ public class ManageGenomesDialog extends JDialog {
 
     private void genomeListKeyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-            allListItems.remove(genomeList.getSelectedIndex());
+            allListItems.removeAll(genomeList.getSelectedValuesList());
             buildList();
         }
     }
@@ -112,7 +112,7 @@ public class ManageGenomesDialog extends JDialog {
                     genomeList.setMaximumSize(new Dimension(39, 5000));
                     genomeList.setDropMode(DropMode.INSERT);
                     genomeList.setDragEnabled(true);
-                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
                     genomeList.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyReleased(KeyEvent e) {
@@ -200,7 +200,7 @@ public class ManageGenomesDialog extends JDialog {
 
         @Override
         protected Transferable createTransferable(JComponent c) {
-            return new StringSelection(((GenomeListItem) genomeList.getSelectedValue()).getDisplayableName());
+            return new StringSelection(PreferenceManager.generateGenomeIdString(genomeList.getSelectedValuesList()));
         }
 
         @Override
@@ -210,25 +210,38 @@ public class ManageGenomesDialog extends JDialog {
             }
             JList.DropLocation dropLocation = (JList.DropLocation) support.getDropLocation();
             int toIndex = dropLocation.getIndex();
-            int fromIndex = -1;
+            String[] genomeIds;
             try {
-                fromIndex = findItem((String) support.getTransferable().getTransferData(DataFlavor.stringFlavor));
+                String genomeIdString = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
+                genomeIds = genomeIdString.split(PreferenceManager.HISTORY_DELIMITER);
             } catch (UnsupportedFlavorException e) {
                 return false;
             } catch (IOException e) {
                 return false;
             }
-            if (fromIndex < 0 || fromIndex >= allListItems.size() || fromIndex == toIndex) {
+
+            if (genomeIds == null || genomeIds.length == 0) {
                 return false;
             }
-            //We need to account for the fact that the proper
-            //insertion location is one smaller, once the item being moved
-            //is removed.
-            if (toIndex > fromIndex) toIndex--;
-            GenomeListItem item = allListItems.remove(fromIndex);
-            allListItems.add(toIndex, item);
+
+            int numMoved = 0;
+            for (String genomeId : genomeIds) {
+                int fromIndex = findItem(genomeId);
+                if (fromIndex < 0 || fromIndex >= allListItems.size() || fromIndex == toIndex) {
+                    continue;
+                }
+                //We need to account for the fact that the proper
+                //insertion location is one smaller, once the item being moved
+                //is removed.
+                if (toIndex > fromIndex) toIndex--;
+                GenomeListItem item = allListItems.remove(fromIndex);
+                allListItems.add(toIndex, item);
+                numMoved++;
+                //Account for adding multiple items, want to add them to successive indices
+                toIndex++;
+            }
             buildList();
-            return true;
+            return numMoved > 0;
         }
 
         @Override

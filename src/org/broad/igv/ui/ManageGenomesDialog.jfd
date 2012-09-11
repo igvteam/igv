@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.1.63" Java: "1.6.0_33" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.1.63" Java: "1.6.0_35" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -23,7 +23,7 @@ new FormModel {
 							"maximumSize": new java.awt.Dimension( 39, 5000 )
 							"dropMode": enum javax.swing.DropMode INSERT
 							"dragEnabled": true
-							"selectionMode": 0
+							"selectionMode": 1
 							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeListKeyReleased", true ) )
 						} )
 					} )
