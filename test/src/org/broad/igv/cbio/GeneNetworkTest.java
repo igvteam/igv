@@ -92,15 +92,15 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     @Test
     public void testFilterWithDrugs() throws Exception {
         assertTrue("Failed to load network", network.loadNetwork(drugTestPath) > 0);
-        Collection<Node> nonGenesBeforeFilter = CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGenePredicate);
+        Collection<Node> nonGenesBeforeFilter = CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGene);
         assertTrue("Bad test setup, no non-gene nodes", nonGenesBeforeFilter.size() > 0);
 
         doTestAnnotation(network);
         int genesRemoved = network.filterGenesRange(GeneNetwork.PERCENT_MUTATED, 0, 10.0f);
         assertTrue("Bad test setup, Filter didn't remove any genes", genesRemoved > 0);
-        network.finalizeFilters();
+
         Set<Node> nonGenesAfterFilter =
-                new HashSet<Node>(CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGenePredicate));
+                new HashSet<Node>(CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGene));
         for (Node nonGene : nonGenesBeforeFilter) {
             String msg = String.format("Filtered out node %s which we shouldn't have", GeneNetwork.getNodeKeyData(nonGene, GeneNetwork.LABEL));
             assertTrue(msg, nonGenesAfterFilter.contains(nonGene));
@@ -124,19 +124,20 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         };
 
         network.loadNetwork(testpath);
-        boolean removed = network.filterGenes(tPred) > 0;
-        assertTrue(removed);
+        int initSize = network.vertexSet().size();
+        int numRemoved = network.filterGenes(tPred);
+        assertTrue(numRemoved > 0);
 
         //Test that we can get the filtered edges of a node
         Set<Node> keptNodes = new HashSet<Node>();
-        for (Node n : network.geneVertexSetFiltered()) {
-            for (Node e : network.edgesOfFiltered(n)) {
+        for (Node n : network.geneVertexSet()) {
+            for (Node e : network.edgesOf(n)) {
                 keptNodes.add(network.getEdgeSource(e));
                 keptNodes.add(network.getEdgeTarget(e));
             }
         }
-        assertEquals(network.geneVertexSetFiltered().size(), keptNodes.size());
-        assertTrue("Soft filtering not performed", keptNodes.size() < network.vertexSet().size());
+        assertEquals(network.geneVertexSet().size(), keptNodes.size());
+        assertTrue("Filtering not performed", keptNodes.size() < initSize);
     }
 
     /**
@@ -264,7 +265,6 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         //This is true if any modifications are made.
         assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
 
-        geneNetwork.finalizeFilters();
         for (Node e : geneNetwork.edgeSet()) {
             assertTrue(has_evidence.evaluate(e));
         }
@@ -306,10 +306,10 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         //At this point, toRem should be isolated
         assertEquals(0, graph.edgesOf(toRem).size());
         assertTrue(graph.pruneGraph());
-        graph.finalizeFilters();
 
         assertEquals(size - 1, graph.vertexSet().size());
         assertEquals(exp_edges - 3, graph.edgeSet().size());
+
         assertFalse(graph.containsVertex(toRem));
     }
 
