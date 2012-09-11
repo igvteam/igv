@@ -20,7 +20,6 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
-import org.broad.tribble.TribbleException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
 
-    @Test(expected = TribbleException.class)
+    @Test(expected = RuntimeException.class)
     public void testBEDCodec1() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/NA12878.deletions.10kbp.het.gq99.hand_curated.hg19.bed";
         tstLoadFi(filepath, null, false);
