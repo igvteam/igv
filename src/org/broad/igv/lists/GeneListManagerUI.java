@@ -15,7 +15,6 @@
 
 package org.broad.igv.lists;
 
-import javax.swing.plaf.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
@@ -327,7 +326,6 @@ public class GeneListManagerUI extends JDialog {
 
     private void viewNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
-            this.closeButton.doClick();
             GeneList geneList = geneLists.get(selectedList);
             FilterGeneNetworkUI fgnUI = new FilterGeneNetworkUI(IGV.getMainFrame(), geneList);
             fgnUI.setVisible(true);
@@ -571,12 +569,18 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                        "All"
+                                            "All"
                                     };
+
                                     @Override
-                                    public int getSize() { return values.length; }
+                                    public int getSize() {
+                                        return values.length;
+                                    }
+
                                     @Override
-                                    public Object getElementAt(int i) { return values[i]; }
+                                    public Object getElementAt(int i) {
+                                        return values[i];
+                                    }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {

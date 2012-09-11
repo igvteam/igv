@@ -334,7 +334,7 @@ public class FilterGeneNetworkUI extends JDialog {
             network.filterGenes(selectedPredicated);
         }
 
-        //setVisible(false);
+        setVisible(false);
         showNetwork();
     }
 
