@@ -507,7 +507,7 @@ public class ReferenceFrame {
 
         if (genome != null) {
 
-            if (setEnd > 0) {
+            if (setEnd > 0 && widthInPixels > 0) {
                 setLocationScale((setEnd - origin) / widthInPixels);
                 imputeZoom(origin, setEnd);
                 setEnd = -1;
