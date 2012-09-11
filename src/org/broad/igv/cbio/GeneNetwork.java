@@ -100,8 +100,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      * We keep the original graph so we can reset filters
      */
     private DirectedMultigraph<Node, Node> origGraph;
-    private Set<Node> rejectedVertexes = new HashSet<Node>();
-    private Set<Node> rejectedEdges = new HashSet<Node>();
 
     /**
      * We only filter certain node types (e.g. "Protein", others we just leave alone)
@@ -203,10 +201,9 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      *
      * @param predicate
      * @param objects
-     * @param rejectSet
      * @return
      */
-    private Set<Node> filter(Predicate<Node> predicate, Collection<Node> objects, Set rejectSet) {
+    private Set<Node> filter(Predicate<Node> predicate, Collection<Node> objects) {
         Set<Node> rejectedSet = new HashSet<Node>(objects.size());
         for (Node v : objects) {
             String in_query = getNodeAttrValue(v, KEY, "IN_QUERY");
@@ -221,7 +218,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     }
 
     private int filterNodes(Predicate<Node> predicate) {
-        Set<Node> rejectedSet = this.filter(predicate, this.vertexSet(), rejectedVertexes);
+        Set<Node> rejectedSet = this.filter(predicate, this.vertexSet());
         this.removeAllVertices(rejectedSet);
         return rejectedSet.size();
     }
@@ -255,7 +252,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     }
 
     public int filterEdges(Predicate<Node> predicate) {
-        Set<Node> rejectedSet = this.filter(predicate, this.edgeSet(), rejectedEdges);
+        Set<Node> rejectedSet = this.filter(predicate, this.edgeSet());
         this.removeAllEdges(rejectedSet);
         return rejectedSet.size();
     }
@@ -269,68 +266,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         Set<Node> filteredSet = new HashSet<Node>(vertexSet());
         CollUtils.filter(filteredSet, isGene);
         return filteredSet;
-    }
-
-    /**
-     * Returns a set over all contained vertices. Filters
-     * are applied, so only those which have not been
-     * filtered out are contained
-     *
-     * @return Set of vertexes which have not been rejected
-     */
-//    @Override
-//    public Set<Node> vertexSet() {
-//        Set<Node> filteredSet = new HashSet<Node>(super.vertexSet());
-//        filteredSet.removeAll(rejectedVertexes);
-//        return filteredSet;
-//    }
-//
-//    /**
-//     * Returns a set over all contained edges. Filters
-//     * are applied, so only those which have not been
-//     * filtered out are contained
-//     * @return Set of edges which have not been rejected
-//     */
-//    @Override
-//    public Set<Node> edgeSet() {
-//        Set<Node> filteredSet = new HashSet<Node>(super.edgeSet());
-//        filteredSet.removeAll(rejectedEdges);
-//        return filteredSet;
-//    }
-//
-//    /**
-//     * Return the set of edges connected to this node, whose neighbors
-//     * are not filtered out. If this node is filtered out, will
-//     * return the empty set.
-//     *
-//     * @param n
-//     * @return
-//     */
-//    @Override
-//    public Set<Node> edgesOf(Node n) {
-//        if (rejectedVertexes.contains(n)) {
-//            return new HashSet<Node>(0);
-//        }
-//        Set<Node> filteredEdges = new HashSet<Node>(super.edgesOf(n).size());
-//        for (Node edge : this.outgoingEdgesOf(n)) {
-//            if (!rejectedVertexes.contains(this.getEdgeTarget(edge)) && !rejectedEdges.contains(edge)) {
-//                filteredEdges.add(edge);
-//            }
-//        }
-//
-//        for (Node edge : this.incomingEdgesOf(n)) {
-//            if (!rejectedVertexes.contains(this.getEdgeSource(edge)) && !rejectedEdges.contains(edge)) {
-//                filteredEdges.add(edge);
-//            }
-//        }
-//        return filteredEdges;
-//    }
-    public void clearNodeFilters() {
-        this.rejectedVertexes.clear();
-    }
-
-    public void clearEdgeFilters() {
-        this.rejectedEdges.clear();
     }
 
     /**
@@ -348,8 +283,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         this.removeAllEdges(new HashSet<Node>(this.edgeSet()));
 
         copyGraph(this.origGraph);
-        //this.clearNodeFilters();
-        //this.clearEdgeFilters();
     }
 
     public boolean pruneGraph() {
