@@ -207,6 +207,13 @@ public class Preprocessor {
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == pair.getChr2()) {
+                    // Optionally filter on chromosome
+                    if (includedChromosomes != null) {
+                        String c1Name = chromosomes.get(pair.getChr1()).getName();
+                        if (!(includedChromosomes.contains(c1Name))) {
+                            continue;
+                        }
+                    }
                     int index = pair.getChr1();
                     for (int z = 0; z < Dataset.getNumberZooms(); z++) {
                         if (calcs[z] != null)
