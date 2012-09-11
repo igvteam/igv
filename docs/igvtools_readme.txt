@@ -180,9 +180,12 @@ Options:
   --strands [arg] By default, counting is combined among both strands.
                 This setting outputs the count for each strand separately.
                 Legal argument values are 'read' or 'first'.
-                'read' Separates count by 'read' strand, 'first' uses the first in pair strand"
+                'read' Separates count by 'read' strand, 'first' uses the first in pair strand".
+                Results are saved in a separate column for .wig output, and a separate track
+                for TDF output.
 
-  --bases		Count the occurrence of each base (A,G,C,T,N). Takes no arguments
+  --bases		Count the occurrence of each base (A,G,C,T,N). Takes no arguments.
+                Results are saved in a separate column for .wig output, and a separate track for TDF output.
   
   --query [querystring]	Only count a specific region. Query string has syntax <chr>:<start>-<end>. e.g. chr1:100-1000.
                         Input file must be indexed.

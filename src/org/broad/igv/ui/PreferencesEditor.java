@@ -1607,7 +1607,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     panel3.add(showJunctionFlankingRegionsCB);
-                    showJunctionFlankingRegionsCB.setBounds(new Rectangle(new Point(5, 25), showJunctionFlankingRegionsCB.getPreferredSize()));
+                    showJunctionFlankingRegionsCB.setBounds(new Rectangle(new Point(5, 50), showJunctionFlankingRegionsCB.getPreferredSize()));
 
                     //---- junctionFlankingTextField ----
                     junctionFlankingTextField.addActionListener(new ActionListener() {
@@ -1666,7 +1666,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(panel3);
-                panel3.setBounds(10, 361, 755, 69);
+                panel3.setBounds(10, 355, 755, 85);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();

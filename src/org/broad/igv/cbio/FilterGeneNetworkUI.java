@@ -25,6 +25,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -272,30 +273,34 @@ public class FilterGeneNetworkUI extends JDialog {
             if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
                 float min = Float.parseFloat(filter.minVal.getText());
                 float max = Float.parseFloat(filter.maxVal.getText());
-                network.filterNodesRange(filt_el, min / 100, max / 100);
+                network.filterGenesRange(filt_el, min / 100, max / 100);
             }
         }
         if (!keepIsolated.isSelected()) {
             network.pruneGraph();
         }
 
-        totNumGenes.setText("Total Genes: " + network.vertexSetFiltered().size());
+        totNumGenes.setText("Total Genes: " + network.geneVertexSetFiltered().size());
 
         this.listModel.markDirty();
     }
 
-    /**
-     * TODO This should run on a separate thread
-     */
     private void showNetwork() {
 
-        try {
-            String url = network.outputForcBioView();
-            url = "file://" + url;
-            BrowserLauncher.openURL(url);
-        } catch (IOException err) {
-            MessageUtils.showMessage("Error opening network for viewing. " + err.getMessage());
-        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String url = network.outputForcBioView();
+                    url = "file://" + url;
+                    BrowserLauncher.openURL(url);
+                } catch (IOException err) {
+                    log.error(err);
+                    MessageUtils.showMessage("Error opening network for viewing. " + err.getMessage());
+                }
+            }
+        };
+        LongRunningTask.submit(runnable);
     }
 
     /**
@@ -319,7 +324,7 @@ public class FilterGeneNetworkUI extends JDialog {
         if (keepRows.length > 0) {
             final Set<Node> keepNodes = new HashSet<Node>(keepRows.length);
             GraphListModel model = (GraphListModel) geneTable.getModel();
-            List<Node> vertices = model.getVertices();
+            List<Node> vertices = model.getGeneVertices();
             for (Integer loc : keepRows) {
                 keepNodes.add(vertices.get(loc));
             }
@@ -331,10 +336,10 @@ public class FilterGeneNetworkUI extends JDialog {
                     return keepNodes.contains(object);
                 }
             };
-            network.filterNodes(selectedPredicated);
+            network.filterGenes(selectedPredicated);
         }
 
-        //setVisible(false);
+        setVisible(false);
         showNetwork();
     }
 
@@ -882,26 +887,24 @@ public class FilterGeneNetworkUI extends JDialog {
 
     private class GraphListModel extends AbstractTableModel {
 
-        private List<Node> vertices = null;
+        private List<Node> geneVertices = null;
 
-        private List<Node> getVertices() {
-            if (vertices == null) {
-                Set<Node> nodes = network.vertexSetFiltered();
-                vertices = Arrays.asList(nodes.toArray(new Node[0]));
+        private List<Node> getGeneVertices() {
+            if (geneVertices == null) {
+                Set<Node> nodes = network.geneVertexSetFiltered();
+                geneVertices = Arrays.asList(nodes.toArray(new Node[0]));
             }
-            return vertices;
-
-            //Collections.sort(vertexNames);
+            return geneVertices;
         }
 
         public void markDirty() {
-            this.vertices = null;
+            this.geneVertices = null;
             this.fireTableStructureChanged();
         }
 
         @Override
         public int getRowCount() {
-            return getVertices().size();
+            return getGeneVertices().size();
         }
 
         @Override
@@ -916,7 +919,7 @@ public class FilterGeneNetworkUI extends JDialog {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            Node n = getVertices().get(rowIndex);
+            Node n = getGeneVertices().get(rowIndex);
             String nm = GeneNetwork.getNodeKeyData(n, "label");
             switch (columnIndex) {
                 case 0:

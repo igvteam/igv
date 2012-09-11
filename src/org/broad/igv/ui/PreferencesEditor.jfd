@@ -3822,7 +3822,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>25</int> 
+               <int>50</int> 
               </void> 
              </object> 
             </void> 
@@ -3967,7 +3967,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>361</int> 
+             <int>355</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -3975,7 +3975,7 @@
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
-             <int>69</int> 
+             <int>85</int> 
             </void> 
            </object> 
           </void> 
