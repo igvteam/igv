@@ -16,6 +16,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.dev.plugin.TrackArgument;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
@@ -26,11 +27,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author User #2
@@ -49,12 +52,13 @@ public class AnalysisDialog extends JDialog {
         dialogOperations.remove(CombinedFeatureSource.Operation.MULTIINTER);
 
         operation.setModel(new DefaultComboBoxModel(dialogOperations.toArray()));
-        trackABox.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks()).toArray()));
-        trackBBox.setModel(new DefaultComboBoxModel(getFeatureTracks(IGV.getInstance().getAllTracks()).toArray()));
+        trackABox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
+        trackBBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
 
         operation.setRenderer(new OperationComboBoxRenderer());
-        trackABox.setRenderer(new TrackComboBoxRenderer());
-        trackBBox.setRenderer(new TrackComboBoxRenderer());
+
+        trackABox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
+        trackBBox.setRenderer(new TrackArgument.TrackComboBoxRenderer());
 
         ItemListener listener = new SetOutputTrackNameListener();
         trackABox.addItemListener(listener);
@@ -63,17 +67,6 @@ public class AnalysisDialog extends JDialog {
 
         setOutputTrackName();
 
-    }
-
-    private List<FeatureTrack> getFeatureTracks(List<Track> tracks) {
-
-        List<FeatureTrack> featureTracks = new ArrayList<FeatureTrack>();
-        for (Track t : tracks) {
-            if (t instanceof FeatureTrack) {
-                featureTracks.add((FeatureTrack) t);
-            }
-        }
-        return featureTracks;
     }
 
     public AnalysisDialog(Frame owner, Iterator<Track> tracks) {
@@ -104,13 +97,14 @@ public class AnalysisDialog extends JDialog {
     private void helpButtonActionPerformed(ActionEvent e) {
         String defInfo = "Error retrieving help. See the IGV User Guide.";
         InputStream is = this.getClass().getResourceAsStream("/resources/bedtools_help.txt");
-        String info = ""; String line;
+        String info = "";
+        String line;
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        try{
-            while((line = reader.readLine()) != null){
+        try {
+            while ((line = reader.readLine()) != null) {
                 info += line + "\n";
             }
-        }catch(IOException exc){
+        } catch (IOException exc) {
             log.error(exc);
             info = defInfo;
         }
@@ -204,7 +198,7 @@ public class AnalysisDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -222,8 +216,8 @@ public class AnalysisDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("  OK  ");
@@ -234,8 +228,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- helpButton ----
                 helpButton.setText("Help");
@@ -246,8 +240,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(helpButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -258,8 +252,8 @@ public class AnalysisDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -288,19 +282,7 @@ public class AnalysisDialog extends JDialog {
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    private class TrackComboBoxRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Track track = (Track) value;
-            String toShow = track.getName();
-            return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
-        }
-    }
-
-
-
-    private class OperationComboBoxRenderer extends DefaultListCellRenderer{
+    private class OperationComboBoxRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             CombinedFeatureSource.Operation op = (CombinedFeatureSource.Operation) value;

@@ -914,34 +914,17 @@ public class IGVSessionReader implements SessionReader {
 
         String id = getAttribute(element, SessionAttribute.ID.getText());
 
-        // TODo -- put in utility method, extacts attributes from element **Definitely need to do this
-        HashMap<String, String> tAttributes = new HashMap();
-        HashMap<String, String> drAttributes = null;
+        Map<String, String> tAttributes = Utilities.getAttributes(element);
 
-        NamedNodeMap tNodeMap = element.getAttributes();
-        for (int i = 0; i < tNodeMap.getLength(); i++) {
-            Node node = tNodeMap.item(i);
-            String value = node.getNodeValue();
-            if (value != null && value.length() > 0) {
-                tAttributes.put(node.getNodeName(), value);
-            }
-        }
+        Map<String, String> drAttributes = null;
 
 
         if (element.hasChildNodes()) {
-            drAttributes = new HashMap();
             Node childNode = element.getFirstChild();
             Node sibNode = childNode.getNextSibling();
             String sibName = sibNode.getNodeName();
             if (sibName.equals(SessionElement.DATA_RANGE.getText())) {
-                NamedNodeMap drNodeMap = sibNode.getAttributes();
-                for (int i = 0; i < drNodeMap.getLength(); i++) {
-                    Node node = drNodeMap.item(i);
-                    String value = node.getNodeValue();
-                    if (value != null && value.length() > 0) {
-                        drAttributes.put(node.getNodeName(), value);
-                    }
-                }
+                drAttributes = Utilities.getAttributes(sibNode);
             }
         }
 

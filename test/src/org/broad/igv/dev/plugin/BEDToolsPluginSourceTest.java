@@ -9,18 +9,21 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.track;
+package org.broad.igv.dev.plugin;
 
-import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
-import org.broad.igv.tools.IgvTools;
+import org.broad.igv.track.FeatureSource;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.*;
@@ -31,20 +34,17 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012/05/01
  */
-public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
-
-    static boolean haveBedTools;
+public class BEDToolsPluginSourceTest extends AbstractPluginTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        AbstractHeadlessTest.setUpClass();
-        haveBedTools = CombinedFeatureSource.checkBEDToolsPathValid();
-        Assume.assumeTrue(haveBedTools);
+        pluginPath = "plugins/bedtools_plugin.xml";
+        AbstractPluginTest.setUpClass();
     }
 
     @Test
     public void testBedToolsPath() throws Exception {
-        String cmd = FileUtils.findExecutableOnPath(Globals.BEDtoolsPath);
+        String cmd = FileUtils.findExecutableOnPath(toolPath);
         String resp = RuntimeUtils.executeShellCommand(new String[]{cmd}, null, null);
         String line0 = resp.split("\n")[0];
         assertEquals("bedtools: flexible tools for genome arithmetic and DNA sequence analysis.", line0.trim());
@@ -54,7 +54,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
     @Test
     public void testGetPath() throws Exception {
         String path = System.getenv("PATH");
-        System.out.println("System path: " + path);
+        //System.out.println("System path: " + path);
         assertNotNull(path);
     }
 
@@ -109,64 +109,91 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     }
 
-    private List<Feature> tstOperationBED3(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
+    private List<Feature> tstOperationBED3(String cmdArg, int expectedNumFeatures) throws Exception {
         String pathA = TestUtils.DATA_DIR + "bed/test.bed";
         String pathB = TestUtils.DATA_DIR + "bed/test2.bed";
-        return tstOperationBED(pathA, pathB, operation, expectedNumFeatures);
+        return tstOperationBED(new String[]{pathA, pathB}, cmdArg, expectedNumFeatures);
     }
 
-    private List<Feature> tstOperationBED6(CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
+    private List<Feature> tstOperationBED6(String cmdArg, int expectedNumFeatures) throws Exception {
         String pathA = TestUtils.DATA_DIR + "bed/H3K4me1_sample_bed6.bed";
         String pathB = TestUtils.DATA_DIR + "bed/H3K4me3_sample_bed6.bed";
-        return tstOperationBED(pathA, pathB, operation, expectedNumFeatures);
+        return tstOperationBED(new String[]{pathA, pathB}, cmdArg, expectedNumFeatures);
     }
 
-    private List<Feature> tstOperationBED(String pathA, String pathB,
-                                          CombinedFeatureSource.Operation operation, int expectedNumFeatures) throws Exception {
-        IgvTools igvTools = new IgvTools();
-        igvTools.doIndex(pathA, null, 1, 16000);
-        igvTools.doIndex(pathB, null, 1, 16000);
-        FeatureSource sourceA = new TribbleFeatureSource(pathA, genome);
-        FeatureSource sourceB = new TribbleFeatureSource(pathB, genome);
+    private List<Feature> tstOperationBED(String[] paths,
+                                          String cmd, int expectedNumFeatures) throws Exception {
 
+        //Find the command element
+        Element command = null;
+        for (Element curCmd : reader.getCommands(tool)) {
+            if (curCmd.getAttribute("cmd").equals(cmd)) {
+                command = curCmd;
+                break;
+            }
+        }
 
-        CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(new FeatureSource[]{sourceA, sourceB}, operation);
+        List<Argument> argumentList = reader.getArguments(tool, command);
+        LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
+        int argnum = 0;
+        arguments.put(argumentList.get(argnum), argumentList.get(argnum).getDefaultValue());
+        argnum++;
+
+        List<FeatureTrack> trackList = new ArrayList<FeatureTrack>(paths.length);
+        TrackLoader loader = new TrackLoader();
+        for (String path : paths) {
+            TestUtils.createIndex(path);
+            FeatureTrack track = (FeatureTrack) loader.load(new ResourceLocator(path), genome).get(0);
+            trackList.add(track);
+        }
+
+        if (cmd.equals("multiinter")) {
+            arguments.put(argumentList.get(argnum++), trackList);
+        } else {
+            for (FeatureTrack ft : trackList) {
+                arguments.put(argumentList.get(argnum++), ft);
+            }
+        }
+
+        List<String> fullCmd = Arrays.asList(tool.getAttribute("path"), cmd);
+        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(fullCmd, arguments,
+                reader.getParsingAttributes(tool, command), pluginPath);
         Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         List<Feature> featureList = new ArrayList(10);
 
         while (features.hasNext()) {
             featureList.add(features.next());
         }
-        assertEquals("Unexpected number of features in result of " + operation, expectedNumFeatures, featureList.size());
+        assertEquals("Unexpected number of features in result of " + cmd, expectedNumFeatures, featureList.size());
         return featureList;
     }
 
     @Test
     public void testOperationsBED3() throws Exception {
-        Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(6);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 4);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 2);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 6);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 9);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 3);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.MULTIINTER, 3);
+        Map<String, Integer> expectedNumFeatures = new HashMap(6);
+        expectedNumFeatures.put("intersect", 4);
+//        expectedNumFeatures.put("subtract", 2);
+//        expectedNumFeatures.put("closest", 6);
+//        expectedNumFeatures.put("window", 9);
+//        expectedNumFeatures.put("coverage", 3);
+//        expectedNumFeatures.put("multiinter", 3);
 
-        for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
+        for (Map.Entry<String, Integer> entry : expectedNumFeatures.entrySet()) {
             tstOperationBED3(entry.getKey(), entry.getValue());
         }
     }
 
     @Test
     public void testOperationsBED6() throws Exception {
-        Map<CombinedFeatureSource.Operation, Integer> expectedNumFeatures = new HashMap(6);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.INTERSECT, 5);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.SUBTRACT, 18);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.CLOSEST, 19);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.WINDOW, 12);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.COVERAGE, 14);
-        expectedNumFeatures.put(CombinedFeatureSource.Operation.MULTIINTER, 3);
+        Map<String, Integer> expectedNumFeatures = new HashMap(6);
+        expectedNumFeatures.put("intersect", 5);
+        expectedNumFeatures.put("subtract", 18);
+        expectedNumFeatures.put("closest", 19);
+        expectedNumFeatures.put("window", 12);
+        expectedNumFeatures.put("coverage", 14);
+        expectedNumFeatures.put("multiinter", 3);
 
-        for (Map.Entry<CombinedFeatureSource.Operation, Integer> entry : expectedNumFeatures.entrySet()) {
+        for (Map.Entry<String, Integer> entry : expectedNumFeatures.entrySet()) {
             tstOperationBED6(entry.getKey(), entry.getValue());
         }
     }
@@ -174,17 +201,17 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testIntersectBED() throws Exception {
-        List<Feature> actFeatures = tstOperationBED3(CombinedFeatureSource.Operation.INTERSECT, 4);
+        List<Feature> actFeatures = tstOperationBED3("intersect", 4);
         String expectedPath = TestUtils.DATA_DIR + "bed/isect_res.bed";
+        TestUtils.createIndex(expectedPath);
         FeatureSource expFeatureSource = new TribbleFeatureSource(expectedPath, genome);
         Iterator<Feature> expFeatures = expFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         TestUtils.assertFeatureListsEqual(expFeatures, actFeatures.iterator());
-
     }
 
     @Test
     public void testClosestBED() throws Exception {
-        List<Feature> actFeatures = tstOperationBED3(CombinedFeatureSource.Operation.CLOSEST, 6);
+        List<Feature> actFeatures = tstOperationBED3("closest", 6);
         String expectedPath = TestUtils.DATA_DIR + "bed/closest_res.bed";
         BufferedReader reader = new BufferedReader(new FileReader(expectedPath));
         int ind = 0;
@@ -214,15 +241,10 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testMultiinterBED() throws Exception {
-        String[] bedfiles = new String[]{"test.bed", "test2.bed", "isect_res.bed"};
-        List<FeatureSource> sources = new ArrayList<FeatureSource>(bedfiles.length);
-        for (String bedfile : bedfiles) {
-            sources.add(new TribbleFeatureSource(TestUtils.DATA_DIR + "bed/" + bedfile, genome));
-        }
+        String beddir = TestUtils.DATA_DIR + "bed/";
+        String[] bedfiles = new String[]{beddir + "test.bed", beddir + "test2.bed", beddir + "isect_res.bed"};
 
-        CombinedFeatureSource combinedFeatureSource = new CombinedFeatureSource(sources.toArray(new FeatureSource[0]),
-                CombinedFeatureSource.Operation.MULTIINTER);
-        Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
+        Iterator<Feature> features = tstOperationBED(bedfiles, "multiinter", 3).iterator();
         int ind = 0;
         int[] expStarts = new int[]{100, 200, 300};
         int[] expEnds = new int[]{101, 201, 301};
@@ -232,9 +254,6 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
             assertEquals(expEnds[ind], feat.getEnd());
             ind++;
         }
-
-        assertEquals(3, ind);
-
     }
 
     /**
@@ -244,7 +263,7 @@ public class CombinedFeatureSourceTest extends AbstractHeadlessTest {
      */
     @Test
     public void testWindow() throws Exception {
-        List<Feature> features = tstOperationBED3(CombinedFeatureSource.Operation.WINDOW, 9);
+        List<Feature> features = tstOperationBED3("window", 9);
 
         Set<Integer> startsSet = new HashSet<Integer>(Arrays.asList(100, 150, 175));
         Set<Integer> endsSet = new HashSet<Integer>(Arrays.asList(101, 201, 375));

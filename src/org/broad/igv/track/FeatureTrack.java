@@ -195,6 +195,10 @@ public class FeatureTrack extends AbstractTrack {
         this.squishedRowHeight = squishedRowHeight;
     }
 
+    public int getFeatureWindowSize() {
+        return source.getFeatureWindowSize();
+    }
+
     public void setRendererClass(Class rc) {
         try {
             renderer = (FeatureRenderer) rc.newInstance();
@@ -1000,5 +1004,6 @@ public class FeatureTrack extends AbstractTrack {
 
         return packedFeaturesList.get(0);
     }
+
 }
 
