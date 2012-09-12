@@ -15,7 +15,6 @@
 
 package org.broad.igv.cbio;
 
-import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
@@ -109,7 +108,6 @@ public class FilterGeneNetworkUI extends JDialog {
     public void setVisible(boolean visible) {
         if (visible && network == null) {
             loadcBioData(this.geneList.getLoci());
-
         } else {
             if (network.vertexSet().size() < MAX_GENES_JUSTSHOW) {
                 showNetwork();
@@ -165,20 +163,7 @@ public class FilterGeneNetworkUI extends JDialog {
             }
         };
 
-        // If we're on the dispatch thread spawn a worker, otherwise just execute.
-        if (SwingUtilities.isEventDispatchThread()) {
-            SwingWorker worker = new SwingWorker() {
-                @Override
-                protected Object doInBackground() throws Exception {
-                    runnable.run();
-                    return null;
-                }
-            };
-
-            worker.execute();
-        } else {
-            runnable.run();
-        }
+        LongRunningTask.submit(runnable);
     }
 
 
@@ -265,7 +250,7 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     private void applySoftFilters() {
-        network.clearAllFilters();
+        network.reset();
 
         //TODO This is only AND, should also include OR
         for (AttributeFilter filter : this.filterRows) {
@@ -280,7 +265,7 @@ public class FilterGeneNetworkUI extends JDialog {
             network.pruneGraph();
         }
 
-        totNumGenes.setText("Total Genes: " + network.geneVertexSetFiltered().size());
+        totNumGenes.setText("Total Genes: " + network.geneVertexSet().size());
 
         this.listModel.markDirty();
     }
@@ -318,27 +303,6 @@ public class FilterGeneNetworkUI extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
-        //If any rows are selected, we only keep those
-        //We lookup by name, because table could get sorted
-        int[] keepRows = getModelIndices();
-        if (keepRows.length > 0) {
-            final Set<Node> keepNodes = new HashSet<Node>(keepRows.length);
-            GraphListModel model = (GraphListModel) geneTable.getModel();
-            List<Node> vertices = model.getGeneVertices();
-            for (Integer loc : keepRows) {
-                keepNodes.add(vertices.get(loc));
-            }
-
-            Predicate<Node> selectedPredicated = new Predicate<Node>() {
-
-                @Override
-                public boolean evaluate(Node object) {
-                    return keepNodes.contains(object);
-                }
-            };
-            network.filterGenes(selectedPredicated);
-        }
-
         setVisible(false);
         showNetwork();
     }
@@ -891,7 +855,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
         private List<Node> getGeneVertices() {
             if (geneVertices == null) {
-                Set<Node> nodes = network.geneVertexSetFiltered();
+                Set<Node> nodes = network.geneVertexSet();
                 geneVertices = Arrays.asList(nodes.toArray(new Node[0]));
             }
             return geneVertices;
@@ -925,7 +889,7 @@ public class FilterGeneNetworkUI extends JDialog {
                 case 0:
                     return nm;
                 case 1:
-                    return network.edgesOfFiltered(n).size();
+                    return network.edgesOf(n).size();
                 default:
                     String key = columnNumToKeyMap.get(columnIndex);
                     if (key == null) {
