@@ -284,6 +284,7 @@ public class DensityCalculation {
 
 
             double expectedCount = 0;
+            // ARGH THIS IS WRONG
             for (int n = 0; n < trueNumBins; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
@@ -292,7 +293,8 @@ public class DensityCalculation {
                 else {
                     // this is the sum of the diagonal for this particular chromosome.
                     // the value in each bin is multiplied by the length of the diagonal to get expected count
-                    expectedCount += (nGrids - n) * v;
+                    if (nGrids > n)
+                        expectedCount += (nGrids - n) * v;
                 }
             }
 
