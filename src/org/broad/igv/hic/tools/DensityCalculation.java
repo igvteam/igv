@@ -385,7 +385,6 @@ public class DensityCalculation {
             Integer chrIdx = is.readInt();
             double normFactor = is.readDouble();
             normalizationFactors.put(chrIdx, normFactor);
-            System.out.println(chrIdx + " " +normFactor);
         }
 
         // Densities
