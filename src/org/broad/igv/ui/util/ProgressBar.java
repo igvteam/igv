@@ -134,7 +134,9 @@ public class ProgressBar extends JPanel
         progressDialog.getContentPane().add(bar);
         progressDialog.pack();
         monitor.addPropertyChangeListener(bar);
+        progressDialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
         progressDialog.setVisible(true);
+        progressDialog.toFront();
 
         return bar;
     }
