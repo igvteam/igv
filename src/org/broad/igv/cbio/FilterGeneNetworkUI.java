@@ -234,7 +234,11 @@ public class FilterGeneNetworkUI extends JDialog {
         int numRows = filterRows.size();
         filterRows.get(numRows - 1).setIsLast(true);
         filterRows.get(0).setShowDel(numRows >= 2);
+
         validate();
+
+        adjustWindowHeight(-row.getPanel().getHeight());
+
         applySoftFilters();
     }
 
@@ -279,6 +283,31 @@ public class FilterGeneNetworkUI extends JDialog {
         filterRows.get(0).setShowDel(numRows >= 2);
 
         validate();
+
+        adjustWindowHeight(row.getPanel().getHeight());
+    }
+
+    /**
+     * When adding/removing rows, we change the height of some components
+     * This method may have no effect
+     *
+     * @param heightDelta Number of pixels to increase (negative values allowed)
+     *                    the tab pane and dialog itself
+     */
+    private void adjustWindowHeight(int heightDelta) {
+
+        int newWinHeight = getHeight() + heightDelta;
+        if (filterRows.size() >= 4 && (newWinHeight < Toolkit.getDefaultToolkit().getScreenSize().getHeight() - 100)) {
+            Dimension newSize = tabbedPane.getPreferredSize();
+            newSize.setSize(newSize.getWidth(), newSize.getHeight() + heightDelta);
+            tabbedPane.setPreferredSize(newSize);
+
+            newSize = getSize();
+            newSize.setSize(newSize.getWidth(), newWinHeight);
+            setSize(newSize);
+
+            validate();
+        }
 
     }
 
@@ -491,12 +520,12 @@ public class FilterGeneNetworkUI extends JDialog {
         geneTable = new JTable();
         buttonBar = new JPanel();
         totNumGenes = new JLabel();
+        refFilter = new JButton();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
-        refFilter = new JButton();
         cancelButton = new JButton();
-        helpButton = new JButton();
         saveButton = new JButton();
+        helpButton = new JButton();
         thresholdsPane = new JPanel();
         contentPanel = new JPanel();
         label2 = new JLabel();
@@ -528,8 +557,8 @@ public class FilterGeneNetworkUI extends JDialog {
 
         //======== tabbedPane ========
         {
-            tabbedPane.setPreferredSize(new Dimension(550, 346));
-            tabbedPane.setMinimumSize(new Dimension(550, 346));
+            tabbedPane.setPreferredSize(new Dimension(571, 400));
+            tabbedPane.setMinimumSize(new Dimension(571, 346));
             tabbedPane.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
@@ -637,7 +666,6 @@ public class FilterGeneNetworkUI extends JDialog {
             {
                 filterPane.setBorder(new EmptyBorder(12, 12, 12, 12));
                 filterPane.setMinimumSize(new Dimension(443, 300));
-                filterPane.setPreferredSize(new Dimension(443, 300));
                 filterPane.setLayout(new GridBagLayout());
                 ((GridBagLayout) filterPane.getLayout()).columnWidths = new int[]{0, 0};
                 ((GridBagLayout) filterPane.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0};
@@ -694,6 +722,9 @@ public class FilterGeneNetworkUI extends JDialog {
                 //======== buttonBar ========
                 {
                     buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                    buttonBar.setMaximumSize(new Dimension(2147483647, 137));
+                    buttonBar.setPreferredSize(new Dimension(421, 100));
+                    buttonBar.setMinimumSize(new Dimension(421, 60));
                     buttonBar.setLayout(new GridBagLayout());
                     ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 80};
                     ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
@@ -704,12 +735,25 @@ public class FilterGeneNetworkUI extends JDialog {
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
+                    //---- refFilter ----
+                    refFilter.setText("Refresh Filter");
+                    refFilter.setVisible(false);
+                    refFilter.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            refFilterActionPerformed(e);
+                        }
+                    });
+                    buttonBar.add(refFilter, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
                     //---- keepIsolated ----
                     keepIsolated.setText("Keep Isolated Genes");
                     keepIsolated.setVisible(false);
-                    buttonBar.add(keepIsolated, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
+                    buttonBar.add(keepIsolated, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
+                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- okButton ----
                     okButton.setText("View Network");
@@ -720,22 +764,9 @@ public class FilterGeneNetworkUI extends JDialog {
                             okButtonActionPerformed(e);
                         }
                     });
-                    buttonBar.add(okButton, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0,
+                    buttonBar.add(okButton, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 0, 5), 0, 0));
-
-                    //---- refFilter ----
-                    refFilter.setText("Refresh Filter");
-                    refFilter.setVisible(false);
-                    refFilter.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            refFilterActionPerformed(e);
-                        }
-                    });
-                    buttonBar.add(refFilter, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 5), 0, 0));
 
                     //---- cancelButton ----
                     cancelButton.setText("Cancel");
@@ -745,16 +776,9 @@ public class FilterGeneNetworkUI extends JDialog {
                             cancelButtonActionPerformed(e);
                         }
                     });
-                    buttonBar.add(cancelButton, new GridBagConstraints(3, 4, 1, 1, 0.0, 0.0,
+                    buttonBar.add(cancelButton, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 0, 0), 0, 0));
-
-                    //---- helpButton ----
-                    helpButton.setText("Help");
-                    helpButton.setVisible(false);
-                    buttonBar.add(helpButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 5, 0), 0, 0));
 
                     //---- saveButton ----
                     saveButton.setText("Save Table");
@@ -764,12 +788,19 @@ public class FilterGeneNetworkUI extends JDialog {
                             saveButtonActionPerformed(e);
                         }
                     });
-                    buttonBar.add(saveButton, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
+                    buttonBar.add(saveButton, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
+
+                    //---- helpButton ----
+                    helpButton.setText("Help");
+                    helpButton.setVisible(false);
+                    buttonBar.add(helpButton, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 0, 5), 0, 0));
                 }
                 filterPane.add(buttonBar, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
                         new Insets(0, 0, 0, 0), 0, 0));
             }
             tabbedPane.addTab("Filter", filterPane);
@@ -991,12 +1022,12 @@ public class FilterGeneNetworkUI extends JDialog {
     private JTable geneTable;
     private JPanel buttonBar;
     private JLabel totNumGenes;
+    private JButton refFilter;
     private JCheckBox keepIsolated;
     private JButton okButton;
-    private JButton refFilter;
     private JButton cancelButton;
-    private JButton helpButton;
     private JButton saveButton;
+    private JButton helpButton;
     private JPanel thresholdsPane;
     private JPanel contentPanel;
     private JLabel label2;

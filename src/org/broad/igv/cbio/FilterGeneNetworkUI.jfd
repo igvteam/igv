@@ -43,14 +43,14 @@
         <void method="setProperty"> 
          <string>preferredSize</string> 
          <object class="java.awt.Dimension"> 
-          <int>550</int> 
-          <int>346</int> 
+          <int>571</int> 
+          <int>400</int> 
          </object> 
         </void> 
         <void method="setProperty"> 
          <string>minimumSize</string> 
          <object class="java.awt.Dimension"> 
-          <int>550</int> 
+          <int>571</int> 
           <int>346</int> 
          </object> 
         </void> 
@@ -379,13 +379,6 @@
             <int>300</int> 
            </object> 
           </void> 
-          <void method="setProperty"> 
-           <string>preferredSize</string> 
-           <object class="java.awt.Dimension"> 
-            <int>443</int> 
-            <int>300</int> 
-           </object> 
-          </void> 
           <void property="name"> 
            <string>filterPane</string> 
           </void> 
@@ -542,7 +535,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$rowSpecs</string> 
-              <string>0, 0, 0, 0, 0</string> 
+              <string>0, 0</string> 
              </void> 
              <void method="setProperty"> 
               <string>$hGap</string> 
@@ -560,6 +553,27 @@
               <int>0</int> 
               <int>0</int> 
               <int>0</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>maximumSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>2147483647</int> 
+              <int>137</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>preferredSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>421</int> 
+              <int>100</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>minimumSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>421</int> 
+              <int>60</int> 
              </object> 
             </void> 
             <void property="name"> 
@@ -581,64 +595,6 @@
               <void method="setProperty"> 
                <string>gridwidth</string> 
                <int>2</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JCheckBox</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Keep Isolated Genes</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>visible</string> 
-               <boolean>false</boolean> 
-              </void> 
-              <void property="name"> 
-               <string>keepIsolated</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-              <void method="setProperty"> 
-               <string>gridy</string> 
-               <int>3</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>gridwidth</string> 
-               <int>2</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JButton</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>View Network</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>toolTipText</string> 
-               <string>Display the network in a web browser</string> 
-              </void> 
-              <void property="name"> 
-               <string>okButton</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>okButtonActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-              <void method="setProperty"> 
-               <string>gridy</string> 
-               <int>4</int> 
               </void> 
              </object> 
             </void> 
@@ -669,11 +625,61 @@
               <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
               <void method="setProperty"> 
                <string>gridx</string> 
-               <int>1</int> 
+               <int>2</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Keep Isolated Genes</string> 
               </void> 
               <void method="setProperty"> 
+               <string>visible</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>keepIsolated</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>3</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JButton</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>View Network</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Display the network in a web browser</string> 
+              </void> 
+              <void property="name"> 
+               <string>okButton</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>okButtonActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
                <string>gridy</string> 
-               <int>2</int> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 
@@ -704,34 +710,7 @@
               </void> 
               <void method="setProperty"> 
                <string>gridy</string> 
-               <int>4</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JButton</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Help</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>visible</string> 
-               <boolean>false</boolean> 
-              </void> 
-              <void property="name"> 
-               <string>helpButton</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-              <void method="setProperty"> 
-               <string>gridx</string> 
-               <int>3</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>gridy</string> 
-               <int>2</int> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 
@@ -762,7 +741,34 @@
               </void> 
               <void method="setProperty"> 
                <string>gridy</string> 
-               <int>4</int> 
+               <int>1</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JButton</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Help</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>visible</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>helpButton</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>2</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>gridy</string> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 
@@ -772,6 +778,10 @@
             <void method="setProperty"> 
              <string>gridy</string> 
              <int>3</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>vAlign</string> 
+             <int>1</int> 
             </void> 
            </object> 
           </void> 
