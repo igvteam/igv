@@ -195,7 +195,7 @@ public abstract class DataTrack extends AbstractTrack {
         try {
             renderer = (DataRenderer) rc.newInstance();
         } catch (Exception ex) {
-            log.error("Error instatiating renderer ", ex);
+            log.error("Error instantiating renderer ", ex);
         }
     }
 
