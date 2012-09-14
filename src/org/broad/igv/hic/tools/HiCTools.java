@@ -54,6 +54,7 @@ public class HiCTools {
         System.out.println("       hictools eigenvector <hicFile> <chr> <binsize>");
         System.out.println("       hictools pre <options> <infile> <outfile> <genomeID>");
         System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
+        System.out.println("           : -f <restriction site file> calculate fragment map");
         System.out.println("           : -m <int> only write cells with count above threshold m [0]");
         System.out.println("           : -t <int> use t threads [1]");
         System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");

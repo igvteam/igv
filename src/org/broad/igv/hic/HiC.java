@@ -103,7 +103,10 @@ public class HiC {
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
         final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
-
+        if (newZD == null) {
+            JOptionPane.showMessageDialog(mainWindow, "Sorry, this zoom is not available", "Zoom unavailable", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {
 
