@@ -84,6 +84,9 @@ public class Preprocessor {
             if (fragmentFileName != null) {
                 fragmentCalculation = new FragmentCalculation(fragmentFileName, chromosomes);
             }
+            else {
+                System.out.println("WARNING: Not including fragment map");
+            }
 
             System.out.println("Start preprocess");
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
