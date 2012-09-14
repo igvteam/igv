@@ -238,7 +238,8 @@ public class SequenceTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
-            return "Sequence info not found. Try enabling byte-range requests in preferences";
+            return "Sequence info not found. Make sure the server in question supports byte-range requests, and that "
+                    + "there are no firewalls which remove this information";
         } else {
             return null;
         }
