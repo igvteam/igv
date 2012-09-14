@@ -278,8 +278,8 @@ public class AminoAcidManager {
      * Load codon tables from the specified path. If any exceptions occur
      * while loading, no changes are made to this instance;
      * <p/>
-     * The currentCodonTable is set to be the first codonTable in
-     * the JSONArray
+     * The currentCodonTable is set to be the codonTable with id = defaultid if present
+     * If not, the first one in the array is set as default
      *
      * @param codonTablesPath
      * @return
@@ -293,19 +293,27 @@ public class AminoAcidManager {
         }
 
         JSONObject allData = readFromStream(is);
+        int defaultId = -1;
+        try {
+            defaultId = allData.getInt("defaultid");
+        } catch (JSONException e) {
+            //pass;
+        }
         JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
         if (codonArray.length() == 0) {
             throw new JSONException("JSON File has empty array for Genetic-code-table");
         }
-        CodonTable firstCodonTable = null;
+        CodonTable defaultCodonTable = null;
         for (int ca = 0; ca < codonArray.length(); ca++) {
             CodonTable curTable = CodonTable.createFromJSON(codonArray.getJSONObject(ca));
             newCodonTables.put(curTable.getId(), curTable);
-            if (firstCodonTable == null) firstCodonTable = curTable;
+            if (defaultCodonTable == null || curTable.getId() == defaultId) {
+                defaultCodonTable = curTable;
+            }
         }
 
         allCodonTables = newCodonTables;
-        currentCodonTable = firstCodonTable;
+        currentCodonTable = defaultCodonTable;
     }
 
     private JSONObject readFromStream(InputStream is) throws JSONException {
