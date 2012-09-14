@@ -24,6 +24,7 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.collections.MultiMap;
+import org.broad.igv.variant.VariantRenderer;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -72,6 +73,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     private AlternativeSpliceGraph<Integer> exonGraph = new AlternativeSpliceGraph<Integer>();
     private Set<String> drawnNames = new HashSet<String>(100);
 
+    protected boolean isGenotypeRenderer = false;
+
+
     /**
      * Note:  assumption is that featureList is sorted by start position.
      *
@@ -87,7 +91,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
-        double end = origin + trackRectangle.width * locScale;
+        double end = origin + trackRectangle.getWidth() * locScale;
 
         final Track.DisplayMode displayMode = track.getDisplayMode();
         blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
@@ -104,10 +108,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             fontGraphics.setFont(font);
 
             // Track coordinates
-            int trackRectangleX = trackRectangle.x;
-            int trackRectangleMaxX = trackRectangleX + trackRectangle.width;
-            int trackRectangleY = trackRectangle.y;
-            int trackRectangleMaxY = trackRectangleY + trackRectangle.height;
+            double trackRectangleX = trackRectangle.getX();
+            double trackRectangleMaxX = trackRectangle.getMaxX();
+            double trackRectangleY = trackRectangle.getY();
+            double trackRectangleMaxY = trackRectangle.getMaxY();
 
             int lastNamePixelEnd = -9999;
             int lastPixelEnd = -1;
@@ -119,19 +123,27 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
             for (IGVFeature feature : featureList) {
 
-
                 if (feature.getEnd() < origin) continue;
                 if (feature.getStart() > end) break;
 
-                // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
+                // Get the pStart and pEnd of the entire feature
+                // At extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-                double virtualPixelStart = Math.round((feature.getStart() - origin) / locScale);
-                double virtualPixelEnd = Math.round((feature.getEnd() - origin) / locScale);
+                double virtualPixelStart = (feature.getStart() - origin) / locScale;
+                double virtualPixelEnd = (feature.getEnd() - origin) / locScale;
 
-                int pixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
-                int pixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
+                int pixelEnd = (int) Math.round(Math.min(trackRectangleMaxX, virtualPixelEnd));
+                int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
+
+                if (isGenotypeRenderer) {
+                    if ((pixelEnd - pixelStart) < 3) {
+                        double dx = 3.0 - (pixelEnd - pixelStart);
+                        pixelStart -= dx / 2.0;
+                        pixelEnd += dx / 2.0;
+                    }
+                }
 
                 // Draw a maximum of "maxOcclusions" features on top of each other.
                 if (pixelEnd <= lastPixelEnd) {
@@ -145,6 +157,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     lastPixelEnd = pixelEnd;
                 }
 
+                if (isGenotypeRenderer) {
+                    renderGenotypeFeature(context, feature, trackRectangle, pixelStart, pixelEnd);
+                    continue;
+                }
 
                 Color color = getFeatureColor(feature, track);
                 Graphics2D g2D = context.getGraphic2DForColor(color);
@@ -170,12 +186,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 if ((pixelEnd - pixelStart < 3) && hasExons) {
                     drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
                 } else {
-
-
                     if (hasExons) {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
                                 alternateExonColor, track.getColor(), track.getAltColor());
-                    }else{
+                    } else {
                         Graphics2D arrowGraphics = hasExons
                                 ? g2D
                                 : context.getGraphic2DForColor(Color.WHITE);
@@ -203,7 +217,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
                         // track name without drawing over the features
-                        int verticalSpaceRequiredForText = textBaselineY - trackRectangleY;
+                        int verticalSpaceRequiredForText = textBaselineY - (int) trackRectangleY;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
                             lastNamePixelEnd = drawFeatureName(feature, track.getDisplayMode(), nameStart, nameEnd,
@@ -230,6 +244,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
             }
         }
+    }
+
+    protected void renderGenotypeFeature(RenderContext context, IGVFeature feature, Rectangle trackRectangle, int pixelStart, int pixelEnd) {
+        Color color = feature.getName().equals("HET") ? VariantRenderer.colorHet : VariantRenderer.colorHomVar;
+        Graphics2D g2D = context.getGraphic2DForColor(color);
+        g2D.fillRect(pixelStart, trackRectangle.y, (pixelEnd - pixelStart), trackRectangle.height);
     }
 
     /**
