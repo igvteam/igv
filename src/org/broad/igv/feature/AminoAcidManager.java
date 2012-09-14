@@ -362,6 +362,14 @@ public class AminoAcidManager {
         }
     }
 
+    public Collection<CodonTable> getAllCodonTables() {
+        return Collections.unmodifiableCollection(allCodonTables.values());
+    }
+
+    public int getCodonTableId() {
+        return currentCodonTable.getId();
+    }
+
     /**
      * Store information about current codon translation table.
      * Intended to be loaded from external resource, and then never modified.
