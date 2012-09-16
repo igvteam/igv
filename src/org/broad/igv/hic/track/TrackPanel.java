@@ -33,7 +33,7 @@ public class TrackPanel extends JPanel {
 
     HiC hic;
     Genome genome;
-    Track eigenvectorTrack;
+    HiCTrack eigenvectorTrack;
     Collection<Pair<Rectangle, Track>> trackRectangles;
 
     public TrackPanel(HiC hiC) {
@@ -81,7 +81,7 @@ public class TrackPanel extends JPanel {
         });
     }
 
-    public void setEigenvectorTrack(Track eigenvectorTrack) {
+    public void setEigenvectorTrack(HiCTrack eigenvectorTrack) {
         this.eigenvectorTrack = eigenvectorTrack;
     }
 
@@ -154,8 +154,7 @@ public class TrackPanel extends JPanel {
         if (eigenvectorTrack != null) {
             int h = rect.y + rect.height - y;
             Rectangle trackRectangle = new Rectangle(rect.x, y, rect.width, h);
-            RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, trackRectangle, genome);
-            eigenvectorTrack.render(context, trackRectangle);
+            eigenvectorTrack.render((Graphics2D) graphics, hic.xContext, trackRectangle);
             trackRectangles.add(new Pair(trackRectangle, eigenvectorTrack));
 
         }

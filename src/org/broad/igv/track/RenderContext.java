@@ -10,9 +10,8 @@ import java.awt.*;
  * @date 4/13/12
  */
 public interface RenderContext {
-    Graphics2D getGraphic2DForColor(Color color);
 
-    Color getBackgroundColor();
+    Graphics2D getGraphic2DForColor(Color color);
 
     String getChr();
 

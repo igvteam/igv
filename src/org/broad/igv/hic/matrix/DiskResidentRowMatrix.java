@@ -10,10 +10,13 @@ import org.broad.tribble.util.SeekableStreamFactory;
 import java.io.*;
 
 /**
- * Class for testing/development
+ * Matrix backed by file layed out in row order.  This was used in early versions but has been deprecated in favor
+ * of DiskResidentBlockMatrix.
+ *
  * <p/>
  * Assumptions -- matrix is square
  *
+ * @deprecated -- use DiskResidentBlockMatrix
  * @author jrobinso
  *         Date: 7/13/12
  *         Time: 1:48 PM

@@ -18,26 +18,69 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.Globals;
+
 import java.io.*;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: May 30, 2010
- * Time: 10:42:19 PM
- * To change this template use File | Settings | File Templates.
+ * Mostly one-off static methods to transform or maniuplate feature file formats.
  */
-public class UCSCUtils {
+public class FileTransformUtils {
 
     static Set<String> types = new HashSet(Arrays.asList("SINE", "LINE", "LTR", "DNA", "Simple_repeat",
             "Low_complexity", "Satellite", "RNA", "Other", "Unknown", "Uncategorized"));
 
     public static void main(String[] args) throws IOException {
-        String ifile = "/Users/jrobinso/IGV/mm9/mm9_repmsk.txt";
-        String output = "/Users/jrobinso/IGV/mm9//repeat_masker";
-        String prefix = "mm9_repmask_";
-        splitRepeatMasker(ifile, output, prefix);
+        String ifile = "/Users/jrobinso/projects/IGV/humanv3_hg18Pos.csv";
+        String output = "/Users/jrobinso/projects/IGV/humanv3Pos_hg18.bed";
+        probeToBed(ifile, output, true);
+    }
+
+    /**
+     * Utility to convert a file with the following format to "bed"
+     * ILMN_2087817	chrY:9529429:9529478:+					        // "1" based?
+     * ILMN_2204360	chrY:9598604:9598615:-	chrY:9590985:9591022:-
+     *
+     * @param iFile
+     * @param oFile
+     * @param includeMultiMappings if false probes with multiple location mappings are filtered out
+     */
+    public static void probeToBed(String iFile, String oFile, boolean includeMultiMappings) throws IOException {
+
+        BufferedReader br = null;
+        PrintWriter pw = null;
+
+        try {
+            br = ParsingUtils.openBufferedReader(iFile);
+            pw = new PrintWriter(new FileWriter(oFile));
+
+            String nextLine;
+            br.readLine();  // eat header
+            while ((nextLine = br.readLine()) != null) {
+
+                String[] tokens = Globals.commaPattern.split(nextLine);
+                String probe = tokens[0];
+
+                if(tokens.length < 1 || (tokens.length > 2 && !includeMultiMappings)) continue;
+
+                for (int i = 1; i < tokens.length; i++) {
+
+                    String loc = tokens[i];
+                    String[] locParts = Globals.colonPattern.split(loc);
+                    String chr = locParts[0];
+                    int start = Integer.parseInt(locParts[1]) - 1;
+                    int end = Integer.parseInt(locParts[2]);
+                    String strand = locParts[3];
+                    pw.println(chr + "\t" + start + "\t" + end + "\t" + probe + "\t1000\t" + strand);
+                }
+            }
+        } finally {
+            if(br != null) br.close();
+            if(pw != null) pw.close();
+        }
+
+
     }
 
     public static void splitRepeatMasker(String iFile, String outputDirectory, String prefix) throws IOException {
@@ -66,8 +109,7 @@ public class UCSCUtils {
             }
 
 
-        }
-        finally {
+        } finally {
             if (br != null) {
                 br.close();
             }

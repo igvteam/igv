@@ -2,6 +2,7 @@ package org.broad.igv.hic.track;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.data.WiggleDataset;
+import org.broad.igv.hic.Context;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.AbstractTrack;
@@ -14,7 +15,7 @@ import java.awt.*;
  * @author Jim Robinson
  * @date 4/13/12
  */
-public class EigenvectorTrack extends AbstractTrack {
+public class EigenvectorTrack extends HiCTrack {
 
 
     double step;
@@ -25,8 +26,7 @@ public class EigenvectorTrack extends AbstractTrack {
     int currentZoom = -1;
 
     public EigenvectorTrack(String id, String name, HiC hic) {
-        super(id, name);
-        this.hic = hic;
+          this.hic = hic;
     }
 
     private void setData(double step, double[] data) {
@@ -53,10 +53,10 @@ public class EigenvectorTrack extends AbstractTrack {
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
      * bounds of the rectangle.
      *
-     * @param context the render context
+     * @param g2d     the graphics context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(Graphics2D g2d, Context context, Rectangle rect) {
 
         int zoom = hic.zd.getZoom();
         if (zoom != currentZoom) {
@@ -71,7 +71,6 @@ public class EigenvectorTrack extends AbstractTrack {
         if (data == null || data.length == 0) return;
 
         int h = rect.height / 2;
-        Graphics2D g2d = context.getGraphics();
         g2d.setColor(Color.blue.darker());
 
         int lastXPixel = -1;
@@ -81,7 +80,8 @@ public class EigenvectorTrack extends AbstractTrack {
             if (Double.isNaN(data[i])) continue;
 
             int genomicPosition = (int) (step * i);
-            int xPixel = context.bpToScreenPixel(genomicPosition);
+
+            int xPixel = context.getScreenPosition (genomicPosition);
 
             if (xPixel > lastXPixel && lastXPixel >= 0) {
 

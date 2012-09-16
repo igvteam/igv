@@ -11,6 +11,9 @@ import org.broad.tribble.util.SeekableStreamFactory;
 import java.io.*;
 
 /**
+ * Matrix class backed by a file layed out in "block" format.
+ *
+ * File format:
  * Field	Type	Description
  * Magic number	Integer	Value should be 6515048, which when read as a zero delimited string is “hic”.
  * Version	Integer	The version number, currently =  1

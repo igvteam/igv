@@ -2,7 +2,6 @@ package org.broad.igv.hic;
 
 //import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 /**
  * @author jrobinso
@@ -14,7 +13,6 @@ public class Context {
     private int zoom = 4;
     private int origin = 0;
     private double scale;
-    ReferenceFrame referenceFrame;
 
     public Context(Chromosome chromosome) {
         this.chromosome = chromosome;

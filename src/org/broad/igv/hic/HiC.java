@@ -5,8 +5,6 @@ import org.broad.igv.hic.data.*;
 
 import javax.swing.*;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * This is the "model" class for the HiC viewer.
@@ -150,8 +148,8 @@ public class HiC {
 
         double scale = Math.min(newBinSize, scaleMax);
 
-        xContext.setZoom(newZoom, scale);
-        yContext.setZoom(newZoom, scale);
+        xContext.setZoom(newZoom, (int) scale);
+        yContext.setZoom(newZoom, (int) scale);
 
         center((int) centerLocationX, (int) centerLocationY);
         mainWindow.updateZoom(newZoom);
@@ -210,8 +208,8 @@ public class HiC {
 
     private void updateState(MatrixZoomData newZD, double scale, double xBP, double yBP) {
         zd = newZD;
-        xContext.setZoom(zd.getZoom(), scale);
-        yContext.setZoom(zd.getZoom(), scale);
+        xContext.setZoom(zd.getZoom(), (int) scale);
+        yContext.setZoom(zd.getZoom(), (int) scale);
         xContext.setOrigin((int) xBP);
         yContext.setOrigin((int) yBP);
         mainWindow.updateZoom(zd.getZoom());

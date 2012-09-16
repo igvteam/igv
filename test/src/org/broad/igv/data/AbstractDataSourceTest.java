@@ -115,7 +115,7 @@ public class AbstractDataSourceTest extends AbstractHeadlessTest {
     }
 
 
-    class TestDataSource extends AbstractDataSource {
+    public class TestDataSource extends AbstractDataSource {
 
 
         private int nPts;
