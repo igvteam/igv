@@ -93,6 +93,9 @@ public class CollUtils {
      * Search through an to find an object of matching value.
      * Will match either the text name of the enum, or the human readable name
      * Some our enums have a String value, intended to be human readable
+     * <p/>
+     * Comparisons with the enum name are case sensitive, comparisons
+     * with the value (human readable name) are case insensitive
      *
      * @param collectionClass
      * @param value
@@ -110,7 +113,7 @@ public class CollUtils {
         }
 
         for (T valued : enumConstants) {
-            if (value.equals(valued.name()) || value.equals(valued.getValue())) {
+            if (value.equals(valued.name()) || value.equalsIgnoreCase(valued.getValue())) {
                 return valued;
             }
         }

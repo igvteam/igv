@@ -13,6 +13,8 @@ package org.broad.igv.cbio;
 
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.functors.NotPredicate;
+import org.apache.commons.collections.functors.OrPredicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -24,6 +26,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.*;
+import org.broad.igv.util.collections.CollUtils;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.w3c.dom.*;
@@ -38,6 +41,11 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * Fetch a gene network from cBio portal. WORK IN PROGRESS.
+ * <p/>
+ * We implement soft filtering, where filter methods remove
+ * any node or edge for which predicate returns false. All
+ * original data can be restored with {@link #reset}, which resets
+ * to the last time loadNetwork was called
  * User: jacob
  * Date: 2012/01/31
  */
@@ -73,10 +81,10 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     private static final String common_parms = "format=gml&gzip=on";
     private static final String GENE_LIST = "gene_list";
 
-    private Map<String, Node> nodeTable;
-
     private List<Node> schema = new ArrayList<Node>();
     private NamedNodeMap graphAttr;
+
+
     private Document origDocument;
 
 
@@ -88,16 +96,42 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      */
     private static Map<String, float[]> bounds = new HashMap<String, float[]>(8);
 
-    private Set<Node> rejectedNodes = new HashSet<Node>();
-    private Set<Node> rejectedEdges = new HashSet<Node>();
-    private boolean filtersFinalized;
+    /**
+     * We keep the original graph so we can reset filters
+     */
+    private DirectedMultigraph<Node, Node> origGraph;
+
+    /**
+     * We only filter certain node types (e.g. "Protein", others we just leave alone)
+     */
+    private static final Set<String> geneTypes = new HashSet<String>(5);
+
+    static final Predicate<Node> isGene;
+    static final Predicate<Node> isNotGene;
+
+    static final String PERCENT_MUTATED = "PERCENT_MUTATED";
+    static final String PERCENT_CNA_AMPLIFIED = "PERCENT_CNA_AMPLIFIED";
+    static final String PERCENT_CNA_HOMOZYGOUSLY_DELETED = "PERCENT_CNA_HOMOZYGOUSLY_DELETED";
+    static final String PERCENT_MRNA_WAY_UP = "PERCENT_MRNA_WAY_UP";
+    static final String PERCENT_MRNA_WAY_DOWN = "PERCENT_MRNA_WAY_DOWN";
 
     static {
-        attributeMap.put("PERCENT_MUTATED", RegionScoreType.MUTATION_COUNT);
-        attributeMap.put("PERCENT_CNA_AMPLIFIED", RegionScoreType.AMPLIFICATION);
-        attributeMap.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", RegionScoreType.DELETION);
-        attributeMap.put("PERCENT_MRNA_WAY_UP", RegionScoreType.EXPRESSION);
-        attributeMap.put("PERCENT_MRNA_WAY_DOWN", RegionScoreType.EXPRESSION);
+        attributeMap.put(PERCENT_MUTATED, RegionScoreType.MUTATION_COUNT);
+        attributeMap.put(PERCENT_CNA_AMPLIFIED, RegionScoreType.AMPLIFICATION);
+        attributeMap.put(PERCENT_CNA_HOMOZYGOUSLY_DELETED, RegionScoreType.DELETION);
+        attributeMap.put(PERCENT_MRNA_WAY_UP, RegionScoreType.EXPRESSION);
+        attributeMap.put(PERCENT_MRNA_WAY_DOWN, RegionScoreType.EXPRESSION);
+
+        geneTypes.add("Protein");
+        isGene = new Predicate<Node>() {
+            @Override
+            public boolean evaluate(Node object) {
+                String type = getNodeKeyData(object, "TYPE");
+                return geneTypes.contains(type);
+            }
+        };
+
+        isNotGene = new NotPredicate(isGene);
     }
 
     /**
@@ -114,21 +148,21 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         float max_val = 2 << 10;
 
         float mut = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_MUTATION_THRESHOLD));
-        bounds.put("PERCENT_MUTATED", new float[]{mut, max_val});
+        bounds.put(PERCENT_MUTATED, new float[]{mut, max_val});
 
         //See GISTIC supplement, page 20
         float amp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_AMPLIFICATION_THRESHOLD));
-        bounds.put("PERCENT_CNA_AMPLIFIED", new float[]{amp, max_val});
+        bounds.put(PERCENT_CNA_AMPLIFIED, new float[]{amp, max_val});
 
         float del = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_DELETION_THRESHOLD));
-        bounds.put("PERCENT_CNA_HOMOZYGOUSLY_DELETED", new float[]{del, max_val});
+        bounds.put(PERCENT_CNA_HOMOZYGOUSLY_DELETED, new float[]{del, max_val});
 
         //See GISTIC supplement, page 5, just gives greater than or less than 0
         float expUp = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_UP_THRESHOLD));
-        bounds.put("PERCENT_MRNA_WAY_UP", new float[]{expUp, max_val});
+        bounds.put(PERCENT_MRNA_WAY_UP, new float[]{expUp, max_val});
 
         float expDown = Float.parseFloat(PreferenceManager.getInstance().get(PreferenceManager.CBIO_EXPRESSION_DOWN_THRESHOLD));
-        bounds.put("PERCENT_MRNA_WAY_DOWN", new float[]{-max_val, -expDown});
+        bounds.put(PERCENT_MRNA_WAY_DOWN, new float[]{-max_val, -expDown});
 
 
     }
@@ -147,29 +181,17 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return sourcePath;
     }
 
-//    protected KeyFactory edgeKeyFactory;
-//    protected KeyFactory vertexKeyFactory;
-//    protected List<KeyFactory> factoryList;
-
-    public GeneNetwork() {
+    GeneNetwork() {
         this(Node.class);
     }
 
-    public GeneNetwork(EdgeFactory edgeFactory) {
+    GeneNetwork(EdgeFactory edgeFactory) {
         super(edgeFactory);
     }
 
-    public GeneNetwork(Class clazz) {
+    private GeneNetwork(Class clazz) {
         super(clazz);
-//
-//        edgeKeyFactory = new KeyFactory("edge");
-//        vertexKeyFactory = new KeyFactory("node");
-//        factoryList = Arrays.asList(edgeKeyFactory, vertexKeyFactory);
     }
-
-//    public List<KeyFactory> getFactoryList() {
-//        return this.factoryList;
-//    }
 
     /**
      * Applies {@code predicate} to every element in {@code object}, and adds
@@ -179,32 +201,41 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      *
      * @param predicate
      * @param objects
-     * @param rejectSet
      * @return
-     * @throws IllegalStateException If the filters have been finalized.
      */
-    private int filter(Predicate predicate, Iterable<Node> objects, Set rejectSet) {
-        if (filtersFinalized) {
-            throw new IllegalStateException("Cannot filter after filtering has been finalized");
-        }
-        int filtered = 0;
+    private Set<Node> filter(Predicate<Node> predicate, Collection<Node> objects) {
+        Set<Node> rejectedSet = new HashSet<Node>(objects.size());
         for (Node v : objects) {
             String in_query = getNodeAttrValue(v, KEY, "IN_QUERY");
             if (Boolean.parseBoolean(in_query)) {
                 continue;
             }
             if (!predicate.evaluate(v)) {
-                filtered += rejectSet.add(v) ? 1 : 0;
+                rejectedSet.add(v);
             }
         }
-        return filtered;
+        return rejectedSet;
     }
 
-    public int filterNodes(Predicate predicate) {
-        return this.filter(predicate, this.vertexSet(), rejectedNodes);
+    private int filterNodes(Predicate<Node> predicate) {
+        Set<Node> rejectedSet = this.filter(predicate, this.vertexSet());
+        this.removeAllVertices(rejectedSet);
+        return rejectedSet.size();
     }
 
-    public int filterNodesRange(final String key, final float min, final float max) {
+    /**
+     * Applies this predicate only to the genes. Any nodes
+     * which are NOT genes are automatically kept.
+     *
+     * @param predicate
+     * @return
+     */
+    public int filterGenes(Predicate<Node> predicate) {
+        Predicate<Node> genePredicate = new OrPredicate(predicate, isNotGene);
+        return this.filterNodes(genePredicate);
+    }
+
+    public int filterGenesRange(final String key, final float min, final float max) {
         Predicate<Node> pred = new Predicate<Node>() {
             @Override
             public boolean evaluate(Node object) {
@@ -217,94 +248,45 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             }
         };
 
-        return this.filterNodes(pred);
+        return this.filterGenes(pred);
     }
 
-    public int filterEdges(Predicate predicate) {
-        return this.filter(predicate, this.edgeSet(), rejectedEdges);
+    public int filterEdges(Predicate<Node> predicate) {
+        Set<Node> rejectedSet = this.filter(predicate, this.edgeSet());
+        this.removeAllEdges(rejectedSet);
+        return rejectedSet.size();
     }
 
     /**
-     * Returns a set of nodes which have not been rejected by the filter
+     * Returns a set of gene nodes which have not been rejected by the filter
      *
      * @return
      */
-    public Set<Node> vertexSetFiltered() {
-        Set<Node> filteredSet = new HashSet<Node>(this.vertexSet());
-        filteredSet.removeAll(rejectedNodes);
+    public Set<Node> geneVertexSet() {
+        Set<Node> filteredSet = new HashSet<Node>(vertexSet());
+        CollUtils.filter(filteredSet, isGene);
         return filteredSet;
     }
 
     /**
-     * Return the set of edges connected to this node, whose neighbors
-     * are not filtered out. If this node is filtered out, will
-     * return the empty set.
-     *
-     * @param n
-     * @return
+     * Reset the graph to the Nodes which were originally
+     * contained in the {@link #loadNetwork(String)} call.
+     * Since we do shallow copying, if the nodes themselves have been
+     * altered, those alterations will be preserved.
      */
-    public Set<Node> edgesOfFiltered(Node n) {
-        if (rejectedNodes.contains(n)) {
-            return new HashSet<Node>(0);
-        }
-        Set<Node> filteredEdges = new HashSet<Node>(this.edgesOf(n).size());
-        for (Node edge : this.outgoingEdgesOf(n)) {
-            if (!rejectedNodes.contains(this.getEdgeTarget(edge)) && !rejectedEdges.contains(edge)) {
-                filteredEdges.add(edge);
-            }
+    public void reset() {
+        if (this.origGraph == null) {
+            throw new IllegalStateException("Have no original graph to which to reset");
         }
 
-        for (Node edge : this.incomingEdgesOf(n)) {
-            if (!rejectedNodes.contains(this.getEdgeSource(edge)) && !rejectedEdges.contains(edge)) {
-                filteredEdges.add(edge);
-            }
-        }
-        return filteredEdges;
-    }
+        this.removeAllVertices(new HashSet<Node>(this.vertexSet()));
+        this.removeAllEdges(new HashSet<Node>(this.edgeSet()));
 
-    /**
-     * Actually apply filters irrevocably, removing edges
-     * and nodes from the graph
-     *
-     * @return True iff anything was removed due to filtering.
-     *         Filters only get finalized if this call has an effect. So if
-     *         this returns true, it means at least 1 node or edge has been removed,
-     *         and the filters are finalized. If it returns false, nothing was removed
-     *         and the graph is not finalized.
-     */
-    boolean finalizeFilters() {
-        if (filtersFinalized) {
-            throw new IllegalStateException("Cannot finalize filters twice");
-        }
-        boolean rejected = this.removeAllVertices(rejectedNodes);
-        rejected |= this.removeAllEdges(rejectedEdges);
-        this.clearAllFilters();
-        this.filtersFinalized = rejected;
-        return rejected;
-    }
-
-
-    public void clearNodeFilters() {
-        if (filtersFinalized) {
-            throw new IllegalStateException("Cannot clear filters after they have been finalized");
-        }
-        this.rejectedNodes.clear();
-    }
-
-    public void clearEdgeFilters() {
-        if (filtersFinalized) {
-            throw new IllegalStateException("Cannot clear filters after they have been finalized");
-        }
-        this.rejectedEdges.clear();
-    }
-
-    public void clearAllFilters() {
-        this.clearNodeFilters();
-        this.clearEdgeFilters();
+        copyGraph(this.origGraph);
     }
 
     public boolean pruneGraph() {
-        Predicate min_connections = new Predicate<Node>() {
+        Predicate<Node> min_connections = new Predicate<Node>() {
             public boolean evaluate(Node object) {
                 return edgesOf(object).size() >= 1;
             }
@@ -351,6 +333,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      *                     Note we wrap other exception types in this.
      */
     public int loadNetwork(String path) throws IOException {
+        origGraph = new DirectedMultigraph<Node, Node>(Node.class);
         String error = null;
         int numNodes = -1;
         try {
@@ -382,12 +365,12 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             NodeList nodes = document.getElementsByTagName(NODE_TAG);
             //Generate the graph itself. First add the nodes, then the edges
             int docNodes = nodes.getLength();
-            nodeTable = new HashMap<String, Node>(docNodes);
+            Map<String, Node> nodeTable = new HashMap<String, Node>(docNodes);
             for (int nn = 0; nn < docNodes; nn++) {
                 Node node = nodes.item(nn);
                 String label = node.getAttributes().getNamedItem("id").getTextContent();
                 nodeTable.put(label, node);
-                this.addVertex(node);
+                origGraph.addVertex(node);
             }
 
             NodeList edges = document.getElementsByTagName(EDGE_TAG);
@@ -397,16 +380,36 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 NamedNodeMap attrs = edge.getAttributes();
                 String source = attrs.getNamedItem("source").getTextContent();
                 String target = attrs.getNamedItem("target").getTextContent();
-                this.addEdge(nodeTable.get(source), nodeTable.get(target), edge);
+                origGraph.addEdge(nodeTable.get(source), nodeTable.get(target), edge);
             }
 
+            this.reset();
             numNodes = this.vertexSet().size();
         } catch (ParserConfigurationException e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e);
         } catch (SAXException e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e);
         }
         return numNodes;
+    }
+
+    /**
+     * Shallow-copy the graph from origGraph to this.
+     * Does NOT remove anything from this graph, or alter origGraph
+     *
+     * @param origGraph
+     */
+    private void copyGraph(DirectedMultigraph<Node, Node> origGraph) {
+        for (Node sourceV : origGraph.vertexSet()) {
+            this.addVertex(sourceV);
+            for (Node edge : origGraph.outgoingEdgesOf(sourceV)) {
+                Node targetV = origGraph.getEdgeTarget(edge);
+                if (!this.containsVertex(targetV)) {
+                    this.addVertex(targetV);
+                }
+                this.addEdge(sourceV, targetV, edge);
+            }
+        }
     }
 
     /**
@@ -499,15 +502,12 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     }
 
     /**
-     * Get the GraphML from this document. Filters will be finalized when this is called,
-     * if they aren't already.
+     * Get the GraphML from this document, keeping only Nodes which passed filtering.
      *
      * @return
      */
     public Document createDocument() {
-        if (!filtersFinalized) {
-            this.finalizeFilters();
-        }
+
         try {
             // Create a DOM document
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -542,7 +542,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
             return document;
         } catch (Exception e) {
-            throw new RuntimeException("Error outputting graph");
+            throw new RuntimeException("Error outputting graph", e);
         }
     }
 
@@ -653,6 +653,10 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return outPath;
     }
 
+    public void annotateAll(List<Track> tracks) {
+        this.annotate(tracks, attributeMap.keySet());
+    }
+
     /**
      * Add the data specified by the score-types to our
      * network, using data from the tracks.
@@ -662,7 +666,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      * @param nodeAttributes
      */
     public void annotate(List<Track> tracks, Collection<String> nodeAttributes) {
-
         Set<Node> nodes = this.vertexSet();
         String name;
 
@@ -783,11 +786,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         return results;
 
     }
-
-    public void annotateAll(List<Track> tracks) {
-        this.annotate(tracks, attributeMap.keySet());
-    }
-
 
     public static class ScoreData<K, V> extends HashMap<K, V> {
 

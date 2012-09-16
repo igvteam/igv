@@ -1,0 +1,66 @@
+Phenylalanine	Phe	F
+Phenylalanine	Phe	F
+Leucine	Leu	L
+Leucine	Leu	L
+Serine	Ser	S
+Serine	Ser	S
+Serine	Ser	S
+Serine	Ser	S
+Tyrosine	Tyr	Y
+Tyrosine	Tyr	Y
+Termination (ochre)	Ter	*
+Termination (amber)	Ter	*
+Cysteine	Cys	C
+Cysteine	Cys	C
+Termination (opal or umber)	Ter	*
+Tryptophan	Trp	W
+Leucine	Leu	L
+Leucine	Leu	L
+Leucine	Leu	L
+Leucine	Leu	L
+Proline	Pro	P
+Proline	Pro	P
+Proline	Pro	P
+Proline	Pro	P
+Histidine	His	H
+Histidine	His	H
+Glutamine	Gln	Q
+Glutamine	Gln	Q
+Arginine	Arg	R
+Arginine	Arg	R
+Arginine	Arg	R
+Arginine	Arg	R
+Isoleucine	Ile	I
+Isoleucine	Ile	I
+Isoleucine	Ile	I
+Methionine	Met	M
+Threonine	Thr	T
+Threonine	Thr	T
+Threonine	Thr	T
+Threonine	Thr	T
+Asparagine	Asn	N
+Asparagine	Asn	N
+Lysine	Lys	K
+Lysine	Lys	K
+Serine	Ser	S
+Serine	Ser	S
+Arginine	Arg	R
+Arginine	Arg	R
+Valine	Val	V
+Valine	Val	V
+Valine	Val	V
+Valine	Val	V
+Alanine	Ala	A
+Alanine	Ala	A
+Alanine	Ala	A
+Alanine	Ala	A
+Aspartate	Asp	D
+Aspartate	Asp	D
+Glutamate	Glu	E
+Glutamate	Glu	E
+Glycine	Gly	G
+Glycine	Gly	G
+Glycine	Gly	G
+Glycine	Gly	G
+Aspartate or Asparagine	n/a	B
+Glutamate or Glutamine	n/a	Z

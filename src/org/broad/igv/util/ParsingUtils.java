@@ -323,10 +323,9 @@ public class ParsingUtils {
                             } else if (value.equals("heatmap")) {
                                 trackProperties.setRendererClass(HeatmapRenderer.class);
                             } else if (value.equals("junctions")) {
-                                //dhmay adding check for graphType=junction.  name is also checked
+                                //dhmay adding check for graphType=junctions.  name is also checked
                                 trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                             } else if (value.equals("genotype")) {
-                                //dhmay adding check for graphType=junction.  name is also checked
                                 trackProperties.setRendererClass(GenotypeRenderer.class);
                             }
                         } else if (key.toLowerCase().equals("viewlimits")) {
@@ -363,25 +362,8 @@ public class ParsingUtils {
                         } else if (key.equals("ylineonoff")) {
                             trackProperties.setDrawYLine(value.equals("on"));
                         } else if (key.equals("windowingfunction")) {
-                            if (value.equals("maximum")) {
-                                trackProperties.setWindowingFunction(WindowFunction.max);
-                            } else if (value.equals("minimum")) {
-                                trackProperties.setWindowingFunction(WindowFunction.min);
-
-                            } else if (value.equals("mean")) {
-                                trackProperties.setWindowingFunction(WindowFunction.mean);
-
-                            } else if (value.equals("median")) {
-                                trackProperties.setWindowingFunction(WindowFunction.median);
-
-                            } else if (value.equals("percentile10")) {
-                                trackProperties.setWindowingFunction(WindowFunction.percentile10);
-
-                            } else if (value.equals("percentile90")) {
-                                trackProperties.setWindowingFunction(WindowFunction.percentile90);
-                            } else if (value.equals("none")) {
-                                trackProperties.setWindowingFunction(WindowFunction.none);
-                            }
+                            WindowFunction wf = WindowFunction.getWindowFunction(value);
+                            trackProperties.setWindowingFunction(wf);
                         } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow") ||
                                 key.equals("visibilitywindow")) {
                             try {

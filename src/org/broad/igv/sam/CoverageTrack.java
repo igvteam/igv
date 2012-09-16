@@ -26,7 +26,6 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -211,20 +210,6 @@ public class CoverageTrack extends AbstractTrack {
 
             g.setFont(font);
         }
-    }
-
-    public void setWindowFunction(WindowFunction type) {
-    }
-
-    public WindowFunction getWindowFunction() {
-        return null;
-    }
-
-    public void setRendererClass(Class rc) {
-    }
-
-    public Renderer getRenderer() {
-        return null;
     }
 
     public boolean isLogNormalized() {

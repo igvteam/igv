@@ -84,6 +84,9 @@ public class Preprocessor {
             if (fragmentFileName != null) {
                 fragmentCalculation = new FragmentCalculation(fragmentFileName, chromosomes);
             }
+            else {
+                System.out.println("WARNING: Not including fragment map");
+            }
 
             System.out.println("Start preprocess");
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
@@ -207,6 +210,13 @@ public class Preprocessor {
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 if (pair.getChr1() == pair.getChr2()) {
+                    // Optionally filter on chromosome
+                    if (includedChromosomes != null) {
+                        String c1Name = chromosomes.get(pair.getChr1()).getName();
+                        if (!(includedChromosomes.contains(c1Name))) {
+                            continue;
+                        }
+                    }
                     int index = pair.getChr1();
                     for (int z = 0; z < Dataset.getNumberZooms(); z++) {
                         if (calcs[z] != null)
@@ -292,16 +302,17 @@ public class Preprocessor {
     }
 
     private static void incrementCount(MatrixPP matrix, int chr1, int pos1, int chr2, int pos2) {
-         // I don't understand why we did this.  And chr1, chr2 are redundant
-        if (chr2 > chr1) {
-            //transpose
-            int tc2 = chr2;
-            int tp2 = pos2;
-            chr2 = chr1;
-            pos2 = pos1;
-            chr1 = tc2;
-            pos1 = tp2;
-        }
+        // I don't understand why we did this.  And chr1, chr2 are redundant
+        // this produces incorrect results for fragment so I'm removing it.
+//        if (chr2 > chr1) {
+//            //transpose
+//            int tc2 = chr2;
+//            int tp2 = pos2;
+//            chr2 = chr1;
+//            pos2 = pos1;
+//            chr1 = tc2;
+//            pos1 = tp2;
+//        }
         matrix.incrementCount(pos1, pos2);
     }
 

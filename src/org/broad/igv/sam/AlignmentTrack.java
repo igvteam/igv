@@ -27,7 +27,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.Session;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
@@ -304,7 +303,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     @Override
     public void preload(RenderContext context) {
-         dataManager.preload(context, renderOptions, true);
+        dataManager.preload(context, renderOptions, true);
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -703,23 +702,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
-    }
-
-    public void setWindowFunction(WindowFunction type) {
-        // ignored
-    }
-
-    public WindowFunction getWindowFunction() {
-        return null;
-    }
-
-    public void setRendererClass(Class rc) {
-        // ignored
-    }
-
-    // SamTracks use a custom renderer, not derived from Renderer
-    public Renderer getRenderer() {
-        return null;
     }
 
     public boolean isLogNormalized() {

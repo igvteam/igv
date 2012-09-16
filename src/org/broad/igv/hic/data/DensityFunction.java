@@ -36,6 +36,7 @@ public class DensityFunction {
     public double getDensity(int chrIdx, int distance) {
        Map<Integer, Double> normFactors = densityCalculation.getNormalizationFactors();
        double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
+       normFactor = 1; // change this in the future but right now these are really messed up.
        double density[] = densityCalculation.getDensityAvg();
         if (distance >= density.length) {
 

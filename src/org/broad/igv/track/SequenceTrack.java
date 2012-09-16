@@ -17,6 +17,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -191,7 +192,36 @@ public class SequenceTrack extends AbstractTrack {
         menu.add(m1);
         menu.add(m2);
 
+        final JMenu transTableMenu = new JMenu("Translation Table");
+        for (AminoAcidManager.CodonTable codonTable : AminoAcidManager.getInstance().getAllCodonTables()) {
+            JMenuItem item = getCodonTableMenuItem(codonTable);
+            transTableMenu.add(item);
+        }
+        //menu.add(transTableMenu);
+
         return menu;
+    }
+
+    private JCheckBoxMenuItem getCodonTableMenuItem(AminoAcidManager.CodonTable codonTable) {
+
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+        String fullName = codonTable.getDisplayName();
+        String shortName = fullName;
+        if (fullName.length() > 40) {
+            shortName = fullName.substring(0, 37) + "...";
+            item.setToolTipText(fullName);
+        }
+        item.setText(shortName);
+        final int curId = codonTable.getId();
+        item.setSelected(curId == AminoAcidManager.getInstance().getCodonTableId());
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AminoAcidManager.getInstance().setCodonTableById(curId);
+                repaint();
+            }
+        });
+        return item;
     }
 
 
@@ -208,7 +238,8 @@ public class SequenceTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         if (sequenceVisible && !this.sequenceRenderer.hasSequence()) {
-            return "Sequence info not found. Try enabling byte-range requests in preferences";
+            return "Sequence info not found. Make sure the server in question supports byte-range requests, and that "
+                    + "there are no firewalls which remove this information";
         } else {
             return null;
         }

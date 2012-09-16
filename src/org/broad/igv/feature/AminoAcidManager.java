@@ -15,22 +15,121 @@
  */
 package org.broad.igv.feature;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.util.ParsingUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author jrobinso
  */
 public class AminoAcidManager {
 
-    static String filename = "codonTable.txt";
+    private static final Logger log = Logger.getLogger(AminoAcidManager.class);
 
-    static Map<String, AminoAcid> codonTable;
+    /**
+     * File which contains listing of amino acid names.
+     * Format: Full Name \t 3 letter abbreviation \t Single letter abbrev.
+     */
+    private static final String AANameFilePath = "resources/AANamesTable.txt";
+
+    /**
+     * Table containing mapping from string forms (full, TLA, single-letter-abbrev)
+     * to amino acid object. No codon information stored here
+     */
+    private static final Map<String, AminoAcid> AANameMap = new HashMap<String, AminoAcid>(20);
+
+
+    private static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
+    /**
+     * File which describes how codons (e.g. ATG) map to amino acids.
+     * We allow for the user loading their own, so this is not final.
+     */
+    private static String codonTablesPath = DEFAULT_CODON_TABLE_PATH;
+
+    private LinkedHashMap<Integer, CodonTable> allCodonTables;
+    private CodonTable currentCodonTable;
+
+    private static AminoAcidManager instance;
+
+    private AminoAcidManager() {
+        initAANameMap();
+    }
+
+    public static AminoAcidManager getInstance() {
+        if (instance == null) {
+            try {
+                setCodonTablesPath(codonTablesPath);
+            } catch (IOException e) {
+                handleExceptionLoading(e);
+            } catch (JSONException e) {
+                handleExceptionLoading(e);
+            }
+
+        }
+        return instance;
+    }
+
+    /**
+     * Reset the codon table to the default file,
+     * and the current codon table to the default contained
+     * in that file
+     *
+     * @return Instance of AminoAcidManager, for chaining
+     */
+    public static AminoAcidManager resetToDefaultCodonTables() {
+        codonTablesPath = DEFAULT_CODON_TABLE_PATH;
+        return getInstance();
+    }
+
+    private static void handleExceptionLoading(Exception e) {
+        log.error(e);
+        if (instance == null) {
+            throw new IllegalStateException("No codon table present, and error loading " + codonTablesPath, e);
+        }
+    }
+
+    public static AminoAcidManager setCodonTablesPath(String path) throws IOException, JSONException {
+        AminoAcidManager newInstance = new AminoAcidManager();
+
+        newInstance.loadCodonTables(path);
+        codonTablesPath = path;
+        instance = newInstance;
+        return instance;
+    }
+
+    /**
+     * Each codon translation table is identified by an integer id
+     * These are specified in the file
+     *
+     * @param id "id" field in file
+     * @return Whether setting the table was successful
+     */
+    public boolean setCodonTableById(int id) {
+        if (allCodonTables.containsKey(id)) {
+            currentCodonTable = allCodonTables.get(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @param codon 3-letter nucleotide sequence
+     * @return The amino acid represented by this codon, as
+     *         decoded from the current codon table
+     */
+    public AminoAcid getAminoAcid(String codon) {
+        return currentCodonTable.getAminoAcid(codon);
+    }
 
     /**
      * Get the amino acid sequence for an interval.
@@ -44,9 +143,9 @@ public class AminoAcidManager {
      * @param seqBytes
      * @param startPosition
      * @param strand
-     * @return
+     * @return AminoAcidSequence, or null if seqBytes == null
      */
-    public static AminoAcidSequence getAminoAcidSequence(byte[] seqBytes, int startPosition, Strand strand) {
+    public AminoAcidSequence getAminoAcidSequence(byte[] seqBytes, int startPosition, Strand strand) {
         if (seqBytes == null) {
             return null;
         } else {
@@ -54,8 +153,7 @@ public class AminoAcidManager {
             List<AminoAcid> acids = getAminoAcids(nucSequence, strand);
 
             // Set the start position of this amino acid.
-            int aminoStart = startPosition;
-            return new AminoAcidSequence(strand, aminoStart, acids);
+            return new AminoAcidSequence(strand, startPosition, acids);
         }
     }
 
@@ -66,43 +164,22 @@ public class AminoAcidManager {
      * @param direction
      * @return
      */
-    public static List<AminoAcid> getAminoAcids(String sequence, Strand direction) {
+    public List<AminoAcid> getAminoAcids(String sequence, Strand direction) {
 
-        if (codonTable == null) {
-            initTable();
-        }
-
-        // Sequence must be divisible by 3. It is the responsibilty of the 
+        // Sequence must be divisible by 3. It is the responsibility of the
         // calling program to send a sequence properly aligned.  
         int readLength = sequence.length() / 3;
-        List<AminoAcid> acids = new ArrayList(readLength);
+        List<AminoAcid> acids = new ArrayList<AminoAcid>(readLength);
 
         for (int i = 0; i <= sequence.length() - 3; i += 3) {
             String codon = sequence.substring(i, i + 3).toUpperCase();
             if (direction == Strand.NEGATIVE) {
                 codon = getNucleotideComplement(codon);
             }
-            AminoAcid aa = getAminoAcid(codon);
+            AminoAcid aa = currentCodonTable.getAminoAcid(codon);
             acids.add(aa);
-
         }
         return acids;
-    }
-
-    public static AminoAcid getAminoAcid(String codon) {
-        AminoAcid aa = AminoAcid.NULL_AMINO_ACID;
-
-        if (codonTable == null) {
-            initTable();
-        }
-
-        if (codonTable != null && codon != null) {
-            aa = codonTable.get(codon);
-            if (aa == null) {
-                aa = AminoAcid.NULL_AMINO_ACID;
-            }
-        }
-        return aa;
     }
 
     /**
@@ -117,20 +194,14 @@ public class AminoAcidManager {
      * @return
      */
     public static AminoAcid getAminoAcidByName(String name) {
-        if (codonTable == null) {
-            initTable();
+        initAANameMap();
+
+        AminoAcid aa = AANameMap.get(name);
+        if (aa == null) {
+            aa = AminoAcid.NULL_AMINO_ACID;
         }
 
-        boolean found;
-        for (AminoAcid aa : codonTable.values()) {
-            found = aa.equalsByName(name);
-            if (found) {
-                return aa;
-            }
-
-        }
-
-        return AminoAcid.NULL_AMINO_ACID;
+        return aa;
     }
 
     public static String getNucleotideComplement(String sequence) {
@@ -163,14 +234,13 @@ public class AminoAcidManager {
         return new String(complement);
     }
 
-    public static Set<String> getMappingSNPs(String codon, AminoAcid mutAA) {
+    public Set<String> getMappingSNPs(String codon, AminoAcid mutAA) {
         Set<String> mapSNPs = new HashSet<String>();
         Set<String> SNPs = getAllSNPs(codon);
         for (String modCodon : SNPs) {
-            //todo override equals?
             //We use short name because all 3 stop codon have different long names,
             //and we don't care about the difference here.
-            if (codonTable.get(modCodon).equalsByName(mutAA.getShortName())) {
+            if (currentCodonTable.getAminoAcid(modCodon).equalsByName(mutAA.getShortName())) {
                 mapSNPs.add(modCodon);
             }
         }
@@ -204,35 +274,201 @@ public class AminoAcidManager {
         return SNPs;
     }
 
-    static synchronized void initTable() {
+    /**
+     * Load codon tables from the specified path. If any exceptions occur
+     * while loading, no changes are made to this instance;
+     * <p/>
+     * The currentCodonTable is set to be the codonTable with id = defaultid if present
+     * If not, the first one in the array is set as default
+     *
+     * @param codonTablesPath
+     * @return
+     */
+    private synchronized void loadCodonTables(String codonTablesPath) throws IOException, JSONException {
+        LinkedHashMap<Integer, CodonTable> newCodonTables = new LinkedHashMap<Integer, CodonTable>(20);
 
-        if (codonTable == null) {
+        InputStream is = AminoAcidManager.class.getResourceAsStream(codonTablesPath);
+        if (is == null) {
+            is = ParsingUtils.openInputStream(codonTablesPath);
+        }
 
-
-            try {
-
-                InputStream is = AminoAcidManager.class.getResourceAsStream("/resources/" + filename);
-                if (is == null) {
-                    return;
-                }
-                codonTable = new HashMap();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                String nextLine = null;
-                while ((nextLine = reader.readLine()) != null) {
-                    String[] tokens = nextLine.split("\t");
-                    if (tokens.length == 4) {
-                        String codon = tokens[0].trim().toUpperCase();
-                        String fullName = tokens[1].trim();
-                        String shortName = tokens[2].trim();
-                        char symbol = tokens[3].trim().charAt(0);
-                        codonTable.put(codon, new AminoAcid(fullName, shortName, symbol));
-                    }
-
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(AminoAcidManager.class.getName()).log(Level.SEVERE, null, ex);
+        JSONObject allData = readFromStream(is);
+        int defaultId = -1;
+        try {
+            defaultId = allData.getInt("defaultid");
+        } catch (JSONException e) {
+            //pass;
+        }
+        JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
+        if (codonArray.length() == 0) {
+            throw new JSONException("JSON File has empty array for Genetic-code-table");
+        }
+        CodonTable defaultCodonTable = null;
+        for (int ca = 0; ca < codonArray.length(); ca++) {
+            CodonTable curTable = CodonTable.createFromJSON(codonArray.getJSONObject(ca));
+            newCodonTables.put(curTable.getId(), curTable);
+            if (defaultCodonTable == null || curTable.getId() == defaultId) {
+                defaultCodonTable = curTable;
             }
         }
+
+        allCodonTables = newCodonTables;
+        currentCodonTable = defaultCodonTable;
     }
+
+    private JSONObject readFromStream(InputStream is) throws JSONException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        JSONTokener tokener = new JSONTokener(reader);
+        return new JSONObject(tokener);
+    }
+
+    /**
+     * Initialize table of amino acid names, for easy lookup of
+     * AminoAcid by symbols. This method is idempotent, only called once
+     * to read name file.
+     */
+    private synchronized static void initAANameMap() {
+        if (!AANameMap.isEmpty()) {
+            return;
+        }
+        try {
+            InputStream is = AminoAcidManager.class.getResourceAsStream(AANameFilePath);
+            if (is == null) {
+                return;
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#")) continue;
+                String[] tokens = nextLine.split("\t");
+                if (tokens.length == 3) {
+                    String fullName = tokens[0].trim();
+                    String shortName = tokens[1].trim();
+                    String symbol = tokens[2].trim();
+                    assert symbol.length() == 1;
+                    AminoAcid aa = new AminoAcid(fullName, shortName, symbol.charAt(0));
+                    for (String sym : new String[]{fullName, shortName, symbol}) {
+                        if (!AANameMap.containsKey(sym)) {
+                            AANameMap.put(sym, aa);
+                        }
+                    }
+                }
+
+            }
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public Collection<CodonTable> getAllCodonTables() {
+        return Collections.unmodifiableCollection(allCodonTables.values());
+    }
+
+    public int getCodonTableId() {
+        return currentCodonTable.getId();
+    }
+
+    /**
+     * Store information about current codon translation table.
+     * Intended to be loaded from external resource, and then never modified.
+     * To that end, collections contained here are set to be unmodifiable
+     */
+    public static class CodonTable {
+
+        private final int id;
+        private final List<String> names;
+
+        private final Set<AminoAcid> starts;
+        private final Map<String, AminoAcid> codonMap;
+
+        /**
+         * Get the amino acid represented by this codon
+         *
+         * @param codon
+         * @return
+         */
+        public AminoAcid getAminoAcid(String codon) {
+            if (codon.length() != 3) {
+                throw new IllegalArgumentException("Codon must be length 3: " + codon);
+            }
+
+            AminoAcid aa = codonMap.get(codon);
+            if (aa == null) {
+                return AminoAcid.NULL_AMINO_ACID;
+            }
+            return aa;
+        }
+
+        private CodonTable(int id, List<String> names, Set<AminoAcid> starts, Map<String, AminoAcid> codonMap) {
+            this.id = id;
+            this.names = Collections.unmodifiableList(names);
+            this.starts = Collections.unmodifiableSet(starts);
+            this.codonMap = Collections.unmodifiableMap(codonMap);
+        }
+
+        private static CodonTable createFromJSON(JSONObject jsonObject) throws JSONException {
+            int id = jsonObject.getInt("id");
+
+            JSONArray jsonnames = jsonObject.getJSONArray("name");
+
+            List<String> names = new ArrayList<String>(jsonnames.length());
+
+            for (int nn = 0; nn < jsonnames.length(); nn++) {
+                names.add(jsonnames.getString(nn));
+            }
+
+            //Data is written as several long strings which line up
+            String aas = jsonObject.getString("ncbieaa");
+            String startString = jsonObject.getString("sncbieaa");
+
+            String base1 = jsonObject.getString("Base1");
+            String base2 = jsonObject.getString("Base2");
+            String base3 = jsonObject.getString("Base3");
+
+            checkLengths(aas, startString, base1, base2, base3);
+
+            Map<String, AminoAcid> codonMap = new HashMap<String, AminoAcid>(aas.length());
+            Set<AminoAcid> starts = new HashSet<AminoAcid>(aas.length());
+
+            for (int cc = 0; cc < aas.length(); cc++) {
+                String codon = base1.substring(cc, cc + 1) + base2.substring(cc, cc + 1) + base3.substring(cc, cc + 1);
+                AminoAcid aa = AANameMap.get(aas.substring(cc, cc + 1));
+
+                codonMap.put(codon, aa);
+
+                if (startString.charAt(cc) == 'M') {
+                    starts.add(aa);
+                }
+            }
+
+            return new CodonTable(id, names, starts, codonMap);
+
+        }
+
+        private static void checkLengths(String... values) throws JSONException {
+            int length = values[0].length();
+            for (int v = 1; v < values.length; v++) {
+                if (values[v].length() != length) {
+                    String msg = "Amino acid and codon strings must all be the same length.";
+                    msg += "Expected length " + length + ", found length " + values[v].length();
+                    throw new JSONException(msg);
+                }
+            }
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getDisplayName() {
+            return names.get(0);
+        }
+
+        public Set<AminoAcid> getStarts() {
+            return starts;
+        }
+    }
+
 }

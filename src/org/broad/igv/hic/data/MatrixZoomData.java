@@ -32,7 +32,8 @@ public class MatrixZoomData {
     private Chromosome chr1;  // Redundant, but convenient
     private Chromosome chr2;  // Redundant, but convenient
 
-    private int zoom;
+    private int zoom;        // doesn't seem to be used
+    private int fileBinSize;     // needed for fragment maps
     private int binSize;         // bin size in bp
     private int blockBinCount;   // block size in bins
     private int blockColumnCount;     // number of block columns
@@ -82,7 +83,7 @@ public class MatrixZoomData {
             dis.readInt();              // sum but we're not using this anymore
         }
 
-        int fileBinSize = dis.readInt();
+        fileBinSize = dis.readInt();
 
         this.blockBinCount = dis.readInt();
         this.blockColumnCount = dis.readInt();
@@ -455,12 +456,14 @@ public class MatrixZoomData {
         if (les == null)
             System.out.println("# " + chr1.getName() + " - " + chr2.getName());
 
+
+
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
                 for (ContactRecord rec : b.getContactRecords()) {
                     if (les == null)
-                        System.out.println(rec.getX() * binSize + "\t" + rec.getY() * binSize + "\t" + rec.getCounts());
+                        System.out.println(rec.getX() * fileBinSize + "\t" + rec.getY() * fileBinSize + "\t" + rec.getCounts());
                     else {
                         les.writeInt(rec.getX());
                         les.writeInt(rec.getY());
@@ -481,9 +484,7 @@ public class MatrixZoomData {
     public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
 
         if (isOE) {
-            System.err.println("here1");
             SparseRealMatrix oe = computeOE(df);
-            System.err.println("here2");
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
             assert (rows == cols);

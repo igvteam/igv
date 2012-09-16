@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -30,13 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author jrobinso
  */
 public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        AminoAcidManager.resetToDefaultCodonTables();
+    }
 
     public AminoAcidManagerTest() {
     }
@@ -71,7 +70,6 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         List<AminoAcid> aaList = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("i=" + i, expectedSeq.charAt(i), aaList.get(i).getSymbol());
-
         }
 
     }
@@ -166,7 +164,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ATGCGACCC";
         char[] aminoSeq = {'M', 'R', 'P'};
 
-        List<AminoAcid> acids = AminoAcidManager.getAminoAcids(seq, Strand.POSITIVE);
+        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(seq, Strand.POSITIVE);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -179,7 +177,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "CGACGCCAT";
         char[] aminoSeq = {'S', 'A', 'M'};
 
-        List<AminoAcid> acids = AminoAcidManager.getAminoAcids(seq, Strand.NEGATIVE);
+        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(seq, Strand.NEGATIVE);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -215,5 +213,40 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
             String act = AminoAcidManager.getAminoAcidByName(name).getFullName();
             assertEquals(exp, act);
         }
+    }
+
+    //Just check that we have the ids we expect
+    @Test
+    public void testCodonTablesExist() throws Exception {
+        int[] expIds = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24};
+        for (int id : expIds) {
+            assertTrue(AminoAcidManager.getInstance().setCodonTableById(id));
+        }
+    }
+
+    //Sample a few codon tables, test different translations
+    @Test
+    public void testVariousCodonTables() throws Exception {
+
+        int[] codonTableIds = {2, 2, 3, 6, 16, 22, 23, 24};
+        String[] testCodons = {"AGA", "TGA", "CTG", "TAA", "TAG", "TCA", "TTA", "AGA"};
+        char[] expAAs = {'*', 'W', 'T', 'Q', 'L', '*', '*', 'S'};
+
+        for (int ii = 0; ii < expAAs.length; ii++) {
+            AminoAcidManager aam = AminoAcidManager.getInstance();
+            boolean loaded = aam.setCodonTableById(codonTableIds[ii]);
+
+            assertTrue("Failed to load codon table with id " + codonTableIds[ii], loaded);
+
+            AminoAcid actualAA = aam.getAminoAcid(testCodons[ii]);
+            assertNotSame("Got null amino acid for " + testCodons[ii], AminoAcid.NULL_AMINO_ACID, actualAA);
+            assertEquals(String.valueOf(expAAs[ii]), String.valueOf(actualAA.getSymbol()));
+
+            //We want to only store one copy of each amino acid. Check that this is the case
+            assertTrue(AminoAcidManager.getAminoAcidByName(actualAA.getShortName()) == actualAA);
+
+
+        }
+
     }
 }

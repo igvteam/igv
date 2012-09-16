@@ -72,7 +72,6 @@ public class DensityCalculation {
             numberOfBins = (int) totalLen;
         else
             numberOfBins = (int) (totalLen / gridSize) + 1;
-
         actualDistances = new double[numberOfBins];
         rowSums = new double[numberOfBins];
         coverageNorms = new double[numberOfBins];
@@ -144,6 +143,7 @@ public class DensityCalculation {
         }
         else
             actualDistances[bin]++;
+
     }
 
     /**
@@ -222,13 +222,15 @@ public class DensityCalculation {
         possibleDistances = new double[numberOfBins];
 
         for (Chromosome chr : chromosomes) {
+            Integer count = chromosomeCounts.get(chr.getIndex());
+            // didn't see anything at all from a chromosome, then don't include it in possDists.
+            if (count == null) continue;
             if (chr == null) continue;
             int nChrBins;
             if (gridSize == 1)
                 nChrBins = fragmentCalculation.getNumberFragments(chr);
             else
                 nChrBins = chr.getLength();
-
             nChrBins = nChrBins / gridSize;
 
             for (int i = 0; i < nChrBins; i++) {
@@ -274,11 +276,15 @@ public class DensityCalculation {
             if (chr == null || !chromosomeCounts.containsKey(chr.getIndex())) {
                 continue;
             }
+            int nGrids;
+            if (gridSize == 1)
+                nGrids = fragmentCalculation.getNumberFragments(chr);
+            else
+                nGrids = chr.getLength() / gridSize + 1;
 
 
-            int len = chr.getLength();
-            int nGrids = len / gridSize + 1;
             double expectedCount = 0;
+            // ARGH THIS IS WRONG
             for (int n = 0; n < trueNumBins; n++) {
                 final double v = densityAvg[n];
                 if (Double.isNaN(v)) {
@@ -287,13 +293,13 @@ public class DensityCalculation {
                 else {
                     // this is the sum of the diagonal for this particular chromosome.
                     // the value in each bin is multiplied by the length of the diagonal to get expected count
-                    expectedCount += (nGrids - n) * v;
+                    if (nGrids > n)
+                        expectedCount += (nGrids - n) * v;
                 }
             }
 
             double observedCount = (double) chromosomeCounts.get(chr.getIndex());
             double f = expectedCount / observedCount;
-
             normalizationFactors.put(chr.getIndex(), f);
         }
     }
@@ -388,6 +394,7 @@ public class DensityCalculation {
         densityAvg = new double[nDensities];
         for (int i = 0; i < nDensities; i++) {
             densityAvg[i] = is.readDouble();
+
         }
 
         if (isNewVersion) {
@@ -396,6 +403,7 @@ public class DensityCalculation {
             coverageNorms = new double[nNorms];
             for (int i=0; i < nNorms; i++) {
                 coverageNorms[i] = is.readDouble();
+
             }
         }
 
