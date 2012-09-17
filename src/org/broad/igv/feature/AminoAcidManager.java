@@ -16,6 +16,7 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.*;
 import org.broad.igv.util.ParsingUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -290,37 +291,57 @@ public class AminoAcidManager {
      */
     private synchronized void loadCodonTables(String codonTablesPath) throws IOException, JSONException {
         LinkedHashMap<Integer, CodonTable> newCodonTables = new LinkedHashMap<Integer, CodonTable>(20);
+        CodonTable defaultCodonTable = null;
 
         InputStream is = AminoAcidManager.class.getResourceAsStream(codonTablesPath);
         if (is == null) {
             is = ParsingUtils.openInputStream(codonTablesPath);
         }
 
-        JSONObject allData = readFromStream(is);
-        int defaultId = -1;
-        try {
-            defaultId = allData.getInt("defaultid");
-        } catch (JSONException e) {
-            //pass;
-        }
-        JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
-        if (codonArray.length() == 0) {
-            throw new JSONException("JSON File has empty array for Genetic-code-table");
-        }
-        CodonTable defaultCodonTable = null;
-        for (int ca = 0; ca < codonArray.length(); ca++) {
-            CodonTable curTable = CodonTable.createFromJSON(codonArray.getJSONObject(ca));
-            newCodonTables.put(curTable.getId(), curTable);
-            if (defaultCodonTable == null || curTable.getId() == defaultId) {
-                defaultCodonTable = curTable;
+        if (codonTablesPath.endsWith(".json")) {
+            JSONObject allData = readJSONFromStream(is);
+            int defaultId = -1;
+            try {
+                defaultId = allData.getInt("defaultid");
+            } catch (JSONException e) {
+                //pass;
             }
+            JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
+            if (codonArray.length() == 0) {
+                throw new JSONException("JSON File has empty array for Genetic-code-table");
+            }
+            for (int ca = 0; ca < codonArray.length(); ca++) {
+                CodonTable curTable = CodonTable.createFromJSON(codonArray.getJSONObject(ca));
+                newCodonTables.put(curTable.getId(), curTable);
+                if (defaultCodonTable == null || curTable.getId() == defaultId) {
+                    defaultCodonTable = curTable;
+                }
+            }
+        } else if (codonTablesPath.endsWith(".asn1") || codonTablesPath.endsWith(".val")) {
+            ASN1InputStream ASNis = new ASN1InputStream(is);
+            ASN1Primitive obj = ASNis.readObject();
+            ASN1Set set = (ASN1Set) obj;
+            //Array of different genetic code tables
+            ASN1Encodable[] codonArray = set.toArray();
+            if (codonArray.length == 0) {
+                throw new RuntimeException("ASN1 File has empty array for Genetic-code-table");
+            }
+            for (int ca = 0; ca < codonArray.length; ca++) {
+                CodonTable curTable = CodonTable.createFromASN1(codonArray[ca]);
+                newCodonTables.put(curTable.getId(), curTable);
+                if (defaultCodonTable == null) {
+                    defaultCodonTable = curTable;
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Unknown file type, must be .json or .asn1");
         }
 
         allCodonTables = newCodonTables;
         currentCodonTable = defaultCodonTable;
     }
 
-    private JSONObject readFromStream(InputStream is) throws JSONException {
+    private JSONObject readJSONFromStream(InputStream is) throws JSONException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         JSONTokener tokener = new JSONTokener(reader);
         return new JSONObject(tokener);
@@ -416,9 +437,7 @@ public class AminoAcidManager {
             int id = jsonObject.getInt("id");
 
             JSONArray jsonnames = jsonObject.getJSONArray("name");
-
             List<String> names = new ArrayList<String>(jsonnames.length());
-
             for (int nn = 0; nn < jsonnames.length(); nn++) {
                 names.add(jsonnames.getString(nn));
             }
@@ -427,11 +446,52 @@ public class AminoAcidManager {
             String aas = jsonObject.getString("ncbieaa");
             String startString = jsonObject.getString("sncbieaa");
 
+            return build(id, names, aas, startString);
+        }
+
+        private static CodonTable createFromASN1(ASN1Encodable asn1Encodable) throws IOException {
+            byte[] data = asn1Encodable.toASN1Primitive().getEncoded();
+            ASN1InputStream iASNis = new ASN1InputStream(data);
+            ASN1Primitive prim = iASNis.readObject();
+            ASN1Set iset = (ASN1Set) prim;
+
+            //Set of fields of each table
+            ASN1TaggedObject[] taggedObjects = getTaggedObjects(iset.toArray());
+            int index = 0;
+            int tagNo = taggedObjects[index].getTagNo();
+            List<String> names = new ArrayList<String>(2);
+            while (tagNo == 0) {
+                names.add(getAsString(taggedObjects[index].getObject()));
+                tagNo = taggedObjects[++index].getTagNo();
+            }
+
+            int id = ((DERInteger) taggedObjects[index++].getObject()).getValue().intValue();
+            String aas = getAsString(taggedObjects[index++].getObject());
+            String startString = getAsString(taggedObjects[index++].getObject());
+
+            return build(id, names, aas, startString);
+        }
+
+        private static String getAsString(ASN1Object object) {
+            return ((ASN1String) object).getString();
+        }
+
+        private static ASN1TaggedObject[] getTaggedObjects(ASN1Encodable[] encodables) {
+            ASN1TaggedObject[] taggedObjects = new ASN1TaggedObject[encodables.length];
+            for (int ii = 0; ii < encodables.length; ii++) {
+                taggedObjects[ii] = (ASN1TaggedObject) encodables[ii];
+            }
+            return taggedObjects;
+        }
+
+        private static CodonTable build(int id, List<String> names, String aas, String startString) {
+
             String base1 = BASE_SEQUENCES[0];
             String base2 = BASE_SEQUENCES[1];
             String base3 = BASE_SEQUENCES[2];
 
-            checkLengths(aas, startString, base1, base2, base3);
+            checkLengths(base1, base2, base3, aas, startString);
+
 
             Map<String, AminoAcid> codonMap = new HashMap<String, AminoAcid>(aas.length());
             Set<AminoAcid> starts = new HashSet<AminoAcid>(aas.length());
@@ -448,17 +508,16 @@ public class AminoAcidManager {
             }
 
             return new CodonTable(id, names, starts, codonMap);
-
         }
 
-        private static void checkLengths(String... values) throws JSONException {
+        private static void checkLengths(String... values) {
             int length = values[0].length();
             assert length == 64;
             for (int v = 1; v < values.length; v++) {
                 if (values[v].length() != length) {
                     String msg = "Amino acid and codon strings must all be the same length.";
                     msg += "Expected length " + length + ", found length " + values[v].length();
-                    throw new JSONException(msg);
+                    throw new InputMismatchException(msg);
                 }
             }
         }
@@ -473,6 +532,24 @@ public class AminoAcidManager {
 
         public Set<AminoAcid> getStarts() {
             return starts;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object instanceof CodonTable) {
+                CodonTable other = (CodonTable) object;
+                return this.id == other.id &&
+                        this.names.equals(other.names) &&
+                        this.starts.equals(other.starts) &&
+                        this.codonMap.equals(other.codonMap);
+
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.id + this.names.hashCode() + this.starts.hashCode() + this.codonMap.hashCode();
         }
     }
 

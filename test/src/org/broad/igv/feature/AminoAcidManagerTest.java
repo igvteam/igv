@@ -16,6 +16,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -247,19 +248,66 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         }
     }
 
-//    public static void main(String[] args) throws Exception{
-//        //Test loading asn.1 using bouncycastle
+    //Test loading asn.1
+    //bouncycastle library from http://www.bouncycastle.org/
     //binary asn.1 data from ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.val
-    //bouncycastle from http://www.bouncycastle.org/
+    @Test
+    public void testLoadASN1() throws Exception {
+        AminoAcidManager.CodonTable[] initTables = AminoAcidManager.getInstance().getAllCodonTables().toArray(
+                new AminoAcidManager.CodonTable[0]);
+        String filePath = TestUtils.DATA_DIR + "/gc.val";
+        AminoAcidManager.setCodonTablesPath(filePath);
+        AminoAcidManager.CodonTable[] asn1Tables = AminoAcidManager.getInstance().getAllCodonTables().toArray(
+                new AminoAcidManager.CodonTable[0]);
+
+        assertEquals(initTables.length, asn1Tables.length);
+        for (int tab = 0; tab < initTables.length; tab++) {
+            assertEquals(initTables[tab], asn1Tables[tab]);
+        }
+    }
+//
+//    public static void main(String[] args) throws Exception{
+//
 //        String filePath = TestUtils.DATA_DIR + "/gc.val";
 //        InputStream is = new FileInputStream(filePath);
 //        ASN1InputStream ASNis = new ASN1InputStream(is);
 //        ASN1Primitive obj = ASNis.readObject();
-//        BERSet set = (BERSet) obj;
+//        ASN1Set set = (ASN1Set) obj;
+//        //Array of different genetic code tables
 //        ASN1Encodable[] objs = set.toArray();
 //        for(ASN1Encodable aobj: objs){
 //            byte[] data = aobj.toASN1Primitive().getEncoded();
-//            System.out.println(new String(data));
+//            ASN1InputStream iASNis = new ASN1InputStream(data);
+//            ASN1Primitive prim = iASNis.readObject();
+//            ASN1Set iset = (ASN1Set) prim;
+//
+//            //Set of fields of each table
+//            ASN1TaggedObject[] taggedObjects = getTaggedObjects(iset.toArray());
+//            int index = 0;
+//            int tagNo = taggedObjects[index].getTagNo();
+//            List<String> names = new ArrayList<String>(2);
+//            while(tagNo == 0){
+//                names.add(getAsString(taggedObjects[index].getObject()));
+//                tagNo = taggedObjects[++index].getTagNo();
+//            }
+//
+//            int id = ((DERInteger) taggedObjects[index++].getObject()).getValue().intValue();
+//            String aas = getAsString(taggedObjects[index++].getObject());
+//            String starts = getAsString(taggedObjects[index++].getObject());
+//
 //        }
 //    }
+//
+//    private static String getAsString(ASN1Object object){
+//        return ((ASN1String) object).getString();
+//    }
+//
+//    private static ASN1TaggedObject[] getTaggedObjects(ASN1Encodable[] encodables){
+//        ASN1TaggedObject[] taggedObjects = new ASN1TaggedObject[encodables.length];
+//        for(int ii = 0; ii < encodables.length; ii++){
+//            taggedObjects[ii] = (ASN1TaggedObject) encodables[ii];
+//        }
+//        return taggedObjects;
+//    }
+//
 }
