@@ -244,9 +244,22 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
             //We want to only store one copy of each amino acid. Check that this is the case
             assertTrue(AminoAcidManager.getAminoAcidByName(actualAA.getShortName()) == actualAA);
-
-
         }
-
     }
+
+//    public static void main(String[] args) throws Exception{
+//        //Test loading asn.1 using bouncycastle
+    //binary asn.1 data from ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.val
+    //bouncycastle from http://www.bouncycastle.org/
+//        String filePath = TestUtils.DATA_DIR + "/gc.val";
+//        InputStream is = new FileInputStream(filePath);
+//        ASN1InputStream ASNis = new ASN1InputStream(is);
+//        ASN1Primitive obj = ASNis.readObject();
+//        BERSet set = (BERSet) obj;
+//        ASN1Encodable[] objs = set.toArray();
+//        for(ASN1Encodable aobj: objs){
+//            byte[] data = aobj.toASN1Primitive().getEncoded();
+//            System.out.println(new String(data));
+//        }
+//    }
 }

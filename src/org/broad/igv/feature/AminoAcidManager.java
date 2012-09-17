@@ -47,6 +47,10 @@ public class AminoAcidManager {
      */
     private static final Map<String, AminoAcid> AANameMap = new HashMap<String, AminoAcid>(20);
 
+    private static final String[] BASE_SEQUENCES = {"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
+            "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
+            "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"};
+
 
     private static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
     /**
@@ -423,9 +427,9 @@ public class AminoAcidManager {
             String aas = jsonObject.getString("ncbieaa");
             String startString = jsonObject.getString("sncbieaa");
 
-            String base1 = jsonObject.getString("Base1");
-            String base2 = jsonObject.getString("Base2");
-            String base3 = jsonObject.getString("Base3");
+            String base1 = BASE_SEQUENCES[0];
+            String base2 = BASE_SEQUENCES[1];
+            String base3 = BASE_SEQUENCES[2];
 
             checkLengths(aas, startString, base1, base2, base3);
 
@@ -449,6 +453,7 @@ public class AminoAcidManager {
 
         private static void checkLengths(String... values) throws JSONException {
             int length = values[0].length();
+            assert length == 64;
             for (int v = 1; v < values.length; v++) {
                 if (values[v].length() != length) {
                     String msg = "Amino acid and codon strings must all be the same length.";

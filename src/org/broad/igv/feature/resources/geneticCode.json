@@ -14,154 +14,103 @@
             "name":["Vertebrate Mitochondrial", "SGC1"],
             "id":2,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
-            "sncbieaa":"--------------------------------MMMM---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"--------------------------------MMMM---------------M------------"
         },
         {
             "name":["Yeast Mitochondrial", "SGC2"],
             "id":3,
             "ncbieaa":"FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"----------------------------------MM----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"----------------------------------MM----------------------------"
         },
         {
             "name":["Mold Mitochondrial; Protozoan Mitochondrial; Coelenterate Mitochondrial; Mycoplasma; Spiroplasma", "SGC3"],
             "id":4,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"--MM---------------M------------MMMM---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"--MM---------------M------------MMMM---------------M------------"
         },
         {
             "name":["Invertebrate Mitochondrial", "SGC4"],
             "id":5,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
-            "sncbieaa":"---M----------------------------MMMM---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"---M----------------------------MMMM---------------M------------"
         },
         {
             "name":["Ciliate Nuclear; Dasycladacean Nuclear; Hexamita Nuclear", "SGC5"],
             "id":6,
             "ncbieaa":"FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Echinoderm Mitochondrial; Flatworm Mitochondrial", "SGC8"],
             "id":9,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M---------------M------------"
         },
         {
             "name":["Euplotid Nuclear", "SGC9"],
             "id":10,
             "ncbieaa":"FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Bacterial and Plant Plastid"],
             "id":11,
             "ncbieaa":"FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"---M---------------M------------MMMM---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"---M---------------M------------MMMM---------------M------------"
         },
         {
             "name":["Alternative Yeast Nuclear"],
             "id":12,
             "ncbieaa":"FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-------------------M---------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-------------------M---------------M----------------------------"
         },
         {
             "name":["Ascidian Mitochondrial"],
             "id":13,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
-            "sncbieaa":"---M------------------------------MM---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"---M------------------------------MM---------------M------------"
         },
         {
             "name":["Alternative Flatworm Mitochondrial"],
             "id":14,
             "ncbieaa":"FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Blepharisma Macronuclear"],
             "id":15,
             "ncbieaa":"FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Chlorophycean Mitochondrial"],
             "id":16,
             "ncbieaa":"FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Trematode Mitochondrial"],
             "id":21,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M---------------M------------"
         },
         {
             "name":["Scenedesmus obliquus Mitochondrial"],
             "id":22,
             "ncbieaa":"FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"-----------------------------------M----------------------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"-----------------------------------M----------------------------"
         },
         {
             "name":["Thraustochytrium Mitochondrial"],
             "id":23,
             "ncbieaa":"FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-            "sncbieaa":"--------------------------------M--M---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"--------------------------------M--M---------------M------------"
         },
         {
             "name":["Pterobranchia mitochondrial code"],
             "id":24,
             "ncbieaa":"FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSSKVVVVAAAADDEEGGGG",
-            "sncbieaa":"---M---------------M---------------M---------------M------------",
-            "Base1":"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",
-            "Base2":"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",
-            "Base3":"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"
+            "sncbieaa":"---M---------------M---------------M---------------M------------"
         }
     ]
 }
