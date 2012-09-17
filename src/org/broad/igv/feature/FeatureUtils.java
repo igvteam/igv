@@ -110,7 +110,7 @@ public class FeatureUtils {
      * @param end
      * @return
      */
-    public static List combineSortedFeatureListsNoDups(List self, List other, int start, int end) {
+    public static <T extends Feature> List<T> combineSortedFeatureListsNoDups(List<T> self, List<T> other, int start, int end) {
         if (self == null && other == null) {
             return null;
         } else if (self == null) {
@@ -127,38 +127,35 @@ public class FeatureUtils {
      * will have some features on the left or right that the current
      * interval does not have. Both are sorted by start position.
      * So we first add at the beginning, and then the end,
-     * only those alignments which don't overlap the original interval.
-     * <p/>
-     * NOTE: WE DO NOT USE GENERICS PROPERLY SO WE CAN REUSE THIS METHOD.
-     * BE CAREFUL.
+     * only those features which don't overlap the original interval.
      *
      * @param selfIter  iterator of features belonging to this interval
      * @param otherIter iterator of features belonging to some other interval
-     * @param start the beginning of the interval from which selfIter was derived
-     * @param end   the end of the interval from which selfIter was derived
+     * @param start     the beginning of the interval from which selfIter was derived
+     * @param end       the end of the interval from which selfIter was derived
      * @return Combined sorted list.
      * @throws ClassCastException If the elements of an iterator cannot be cast
      *                            to a Feature.
      */
-    public static List combineSortedFeatureListsNoDups(Iterator selfIter, Iterator otherIter, int start, int end) {
-        List<Feature> allFeatures = new ArrayList<Feature>();
-        Feature otherFeat = null;
+    public static <T extends Feature> List<T> combineSortedFeatureListsNoDups(Iterator<T> selfIter, Iterator<T> otherIter, int start, int end) {
+        List<T> allFeatures = new ArrayList<T>();
+        T otherFeat = null;
 
         while (otherIter.hasNext()) {
-            otherFeat = (Feature) otherIter.next();
+            otherFeat = otherIter.next();
             if (otherFeat.getEnd() > start) break;
             allFeatures.add(otherFeat);
         }
 
         while (selfIter.hasNext()) {
-            allFeatures.add((Feature) selfIter.next());
+            allFeatures.add(selfIter.next());
         }
 
         while (otherIter.hasNext()) {
             if (otherFeat.getStart() >= end) {
                 allFeatures.add(otherFeat);
             }
-            otherFeat = (Feature) otherIter.next();
+            otherFeat = otherIter.next();
         }
 
         if (otherFeat != null && otherFeat.getStart() >= end) {

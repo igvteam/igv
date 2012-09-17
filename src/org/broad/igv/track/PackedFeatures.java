@@ -258,8 +258,6 @@ public class PackedFeatures<T extends Feature> implements Interval {
     public boolean merge(Interval i) {
         boolean canMerge = this.canMerge(i);
         if (!canMerge) return false;
-        //It would be good to check the generic type parameters, but that is
-        //not possible
         List<T> originalFeatures = features;
         try {
             PackedFeatures<T> other = (PackedFeatures<T>) i;
@@ -275,9 +273,7 @@ public class PackedFeatures<T extends Feature> implements Interval {
         start = Math.min(start, i.getStart());
         end = Math.max(end, i.getEnd());
 
-
         return true;
-
     }
 
     @Override
@@ -287,8 +283,13 @@ public class PackedFeatures<T extends Feature> implements Interval {
         Collection<T> newFeatures = filteredCopy(features, overlapPredicate);
         boolean anyLost = newFeatures.size() != features.size();
 
-        features.clear();
-        rows = packFeatures(newFeatures.iterator());
+        if (anyLost) {
+            features.clear();
+            rows = packFeatures(newFeatures.iterator());
+
+            this.start = start;
+            this.end = end;
+        }
 
         return anyLost;
     }
