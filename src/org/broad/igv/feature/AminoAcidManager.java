@@ -15,6 +15,7 @@
  */
 package org.broad.igv.feature;
 
+import com.google.common.base.Objects;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.*;
 import org.broad.igv.util.ParsingUtils;
@@ -539,17 +540,16 @@ public class AminoAcidManager {
             if (object instanceof CodonTable) {
                 CodonTable other = (CodonTable) object;
                 return this.id == other.id &&
-                        this.names.equals(other.names) &&
-                        this.starts.equals(other.starts) &&
-                        this.codonMap.equals(other.codonMap);
-
+                        Objects.equal(this.names, other.names) &&
+                        Objects.equal(this.starts, other.starts) &&
+                        Objects.equal(this.codonMap, other.codonMap);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return this.id + this.names.hashCode() + this.starts.hashCode() + this.codonMap.hashCode();
+            return Objects.hashCode(this.id, this.names, this.starts, this.codonMap);
         }
     }
 
