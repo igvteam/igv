@@ -46,6 +46,7 @@ public class AbstractHeadedTest {
         igv = startGUI();
 
         TestUtils.setAllNames(igv, true);
+        IGV.getMainFrame().requestFocus();
     }
 
     @AfterClass
@@ -56,12 +57,12 @@ public class AbstractHeadedTest {
     }
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         igv.resetSession(null);
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
 
     }
 
@@ -89,7 +90,7 @@ public class AbstractHeadedTest {
         Globals.setHeadless(false);
         IGV igv;
         //If IGV is already open, we get the instance.
-        if(IGV.hasInstance()){
+        if (IGV.hasInstance()) {
             igv = IGV.getInstance();
             IGV.getMainFrame().setVisible(true);
             System.out.println("Using old IGV");
@@ -103,7 +104,7 @@ public class AbstractHeadedTest {
         }
         if (genomeFile != null) {
             igv.loadGenome(genomeFile, null);
-            genome= igv.getGenomeManager().getCurrentGenome();
+            genome = igv.getGenomeManager().getCurrentGenome();
         }
         return igv;
     }
@@ -113,7 +114,7 @@ public class AbstractHeadedTest {
      * This closes the IGV window.
      */
     public static void stopGUI() {
-        if(!IGV.hasInstance()){
+        if (!IGV.hasInstance()) {
             return;
         }
 
