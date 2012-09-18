@@ -673,8 +673,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         final int start = block.getStart();
         final int end = start + read.length;
         final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
-        final int referenceLength = reference.length;
-
 
         if (read != null && read.length > 0 && reference != null) {
 
@@ -708,7 +706,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // Is this base a mismatch?  Note '=' means indicates a match by definition
                 // If we do not have a valid reference we assume a match.
-                boolean misMatch;
+                boolean misMatch = false;
                 if (isSoftClipped) {
                     // Goby will return '=' characters when the soft-clip happens to match the reference.
                     // It could actually be useful to see which part of the soft clipped bases match, to help detect
@@ -716,15 +714,17 @@ public class AlignmentRenderer implements FeatureRenderer {
                     final byte readbase = read[idx];
                     misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
                 } else {
-                    final byte refbase = idx < referenceLength ? reference[idx] : 0;
-                    final byte readbase = read[idx];
-                    misMatch = readbase != '=' &&
-                            reference != null &&
-                            idx < referenceLength &&
-                            refbase != 0 &&
-                            !AlignmentUtils.compareBases(refbase, readbase);
+                    if (reference != null) {
+                        final int referenceLength = reference.length;
+                        final byte refbase = idx < referenceLength ? reference[idx] : 0;
+                        final byte readbase = read[idx];
+                        misMatch = readbase != '=' &&
+                                reference != null &&
+                                idx < referenceLength &&
+                                refbase != 0 &&
+                                !AlignmentUtils.compareBases(refbase, readbase);
+                    }
                 }
-
 
                 if (showAllBases || (!bisulfiteMode && misMatch) ||
                         (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
