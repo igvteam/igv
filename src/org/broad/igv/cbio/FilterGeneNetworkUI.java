@@ -34,6 +34,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -195,7 +196,55 @@ public class FilterGeneNetworkUI extends JDialog {
 
         listModel = new GraphListModel();
         geneTable.setModel(listModel);
+        initRenderers();
+
         applySoftFilters();
+    }
+
+    private void initRenderers() {
+        //Bold seed genes and format numbers nicely
+        TableCellRenderer stringRenderer = new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel comp = new JLabel();
+                if (value == null) return comp;
+
+                boolean isSeedGene = seedGeneList.getLoci().contains(value);
+                comp.setText(String.valueOf(value));
+                if (isSeedGene) {
+                    comp.setFont(comp.getFont().deriveFont(comp.getFont().getStyle() | Font.BOLD));
+                }
+                return comp;
+            }
+        };
+
+        TableCellRenderer doubleRenderer = new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+                JLabel comp = new JLabel();
+                if (value == null) return comp;
+
+                String sVal;
+                Double dPerc = (Double) value;
+                if (dPerc == 0.0d) {
+                    sVal = "0.0";
+                } else {
+                    //If small, show in exponential format
+                    //Otherwise just show 1 decimal place
+                    String fmt = "%2.1f";
+                    if (dPerc < 0.1d) {
+                        fmt = "%2.1e";
+                    }
+                    sVal = String.format(fmt, dPerc);
+                }
+                comp.setText(sVal);
+                return comp;
+            }
+        };
+
+        geneTable.setDefaultRenderer(String.class, stringRenderer);
+        geneTable.setDefaultRenderer(Double.class, doubleRenderer);
     }
 
     /**
@@ -1107,6 +1156,19 @@ public class FilterGeneNetworkUI extends JDialog {
         }
 
         @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            switch (columnIndex) {
+                case 0:
+                    return String.class;
+                case 1:
+                    //Technically this isn't true, but we want to render it as a string
+                    return String.class;
+                default:
+                    return Double.class;
+            }
+        }
+
+        @Override
         public int getColumnCount() {
             return columnNames.size();
         }
@@ -1137,17 +1199,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
                     //Change from fraction to percent
                     double dPerc = Double.parseDouble(val) * 100;
-
-                    if (dPerc == 0.0d) return "0.0";
-                    //If above 1, just show integer. If small, show in exponential format
-                    String fmt = "%2.1f";
-                    if (dPerc < 0.1d) {
-                        fmt = "%2.1e";
-                    }
-
-                    String sVal = String.format(fmt, dPerc);
-                    return sVal;
-
+                    return dPerc;
             }
         }
 
