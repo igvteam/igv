@@ -11,7 +11,7 @@
 
 package org.broad.igv.util.collections;
 
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,7 +41,7 @@ public class CollUtils {
         Iterator<? extends T> iter = objects.iterator();
         while (iter.hasNext()) {
             T next = iter.next();
-            if (!predicate.evaluate(next)) {
+            if (!predicate.apply(next)) {
                 iter.remove();
             }
         }
@@ -62,7 +62,7 @@ public class CollUtils {
         Iterator<? extends T> iter = objects.iterator();
         while (iter.hasNext()) {
             T next = iter.next();
-            if (predicate.evaluate(next)) {
+            if (predicate.apply(next)) {
                 coll.add(next);
             }
         }

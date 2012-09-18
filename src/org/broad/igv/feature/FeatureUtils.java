@@ -16,7 +16,7 @@
  */
 package org.broad.igv.feature;
 
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -30,7 +30,7 @@ public class FeatureUtils {
     public static Predicate<Feature> getOverlapPredicate(final String chr, final int start, final int end) {
         Predicate<Feature> overlapPredicate = new Predicate<Feature>() {
             @Override
-            public boolean evaluate(Feature object) {
+            public boolean apply(Feature object) {
                 return chr.equals(object.getChr()) && object.getStart() <= end && object.getEnd() >= start;
             }
         };

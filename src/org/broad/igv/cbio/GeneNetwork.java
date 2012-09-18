@@ -12,9 +12,8 @@
 package org.broad.igv.cbio;
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.NotPredicate;
-import org.apache.commons.collections.functors.OrPredicate;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -126,18 +125,18 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         geneTypes.add("Protein");
         isGene = new Predicate<Node>() {
             @Override
-            public boolean evaluate(Node object) {
+            public boolean apply(Node object) {
                 String type = getNodeKeyData(object, "TYPE");
                 return geneTypes.contains(type);
             }
         };
 
-        isNotGene = new NotPredicate(isGene);
+        isNotGene = Predicates.not(isGene);
 
         inQuery = new Predicate<Node>() {
 
             @Override
-            public boolean evaluate(Node object) {
+            public boolean apply(Node object) {
                 String in_query = getNodeAttrValue(object, KEY, "IN_QUERY");
                 return Boolean.parseBoolean(in_query);
             }
@@ -214,7 +213,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     private Set<Node> filter(Predicate<Node> predicate, Collection<Node> objects) {
         Set<Node> rejectedSet = new HashSet<Node>(objects.size());
         for (Node v : objects) {
-            if (!predicate.evaluate(v)) {
+            if (!predicate.apply(v)) {
                 rejectedSet.add(v);
             }
         }
@@ -238,15 +237,15 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      * @return
      */
     public int filterGenes(Predicate<Node> predicate) {
-        Predicate<Node> genePredicate = new OrPredicate(predicate, isNotGene);
-        Predicate<Node> finalPredicate = new OrPredicate<Node>(genePredicate, inQuery);
+        Predicate<Node> genePredicate = Predicates.or(predicate, isNotGene);
+        Predicate<Node> finalPredicate = Predicates.or(genePredicate, inQuery);
         return this.filterNodes(finalPredicate);
     }
 
     public int filterGenesRange(final String key, final float min, final float max) {
         Predicate<Node> pred = new Predicate<Node>() {
             @Override
-            public boolean evaluate(Node object) {
+            public boolean apply(Node object) {
                 String sval = getNodeKeyData(object, key);
                 if (sval != null) {
                     float fval = Float.parseFloat(sval);
@@ -295,7 +294,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
     public boolean pruneGraph() {
         Predicate<Node> min_connections = new Predicate<Node>() {
-            public boolean evaluate(Node object) {
+            public boolean apply(Node object) {
                 return edgesOf(object).size() >= 1;
             }
         };

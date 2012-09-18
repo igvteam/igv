@@ -11,7 +11,7 @@
 
 package org.broad.igv.track;
 
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;

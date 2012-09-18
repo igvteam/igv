@@ -12,7 +12,7 @@
 package org.broad.igv.cbio;
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
@@ -112,7 +112,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     public void testFilter() throws Exception {
         Predicate tPred = new Predicate() {
 
-            public boolean evaluate(Object object) {
+            public boolean apply(Object object) {
                 Node node = (Node) object;
                 NamedNodeMap map = node.getAttributes();
                 if (map == null) {
@@ -255,7 +255,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         final String badname = "NA";
 
         Predicate<Node> has_evidence = new Predicate<Node>() {
-            public boolean evaluate(Node object) {
+            public boolean apply(Node object) {
                 String label = GeneNetwork.getNodeKeyData(object, "EXPERIMENTAL_TYPE");
                 return label != null && !label.equals(badname);
             }
@@ -266,7 +266,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
 
         for (Node e : geneNetwork.edgeSet()) {
-            assertTrue(has_evidence.evaluate(e));
+            assertTrue(has_evidence.apply(e));
         }
     }
 

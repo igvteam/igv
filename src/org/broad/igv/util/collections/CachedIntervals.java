@@ -11,7 +11,7 @@
 
 package org.broad.igv.util.collections;
 
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
@@ -65,7 +65,7 @@ public class CachedIntervals<T extends Interval> {
     public List<T> getContains(final String chr, final int start, final int end, final int zoom) {
         Predicate<Interval> pred = new Predicate<Interval>() {
             @Override
-            public boolean evaluate(Interval interval) {
+            public boolean apply(Interval interval) {
                 return interval.contains(chr, start, end, zoom);
             }
         };
@@ -84,7 +84,7 @@ public class CachedIntervals<T extends Interval> {
     public List<T> getOverlaps(final String chr, final int start, final int end, final int zoom) {
         Predicate<Interval> pred = new Predicate<Interval>() {
             @Override
-            public boolean evaluate(Interval interval) {
+            public boolean apply(Interval interval) {
                 return interval.overlaps(chr, start, end, zoom);
             }
         };
