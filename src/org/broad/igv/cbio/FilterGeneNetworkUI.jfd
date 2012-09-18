@@ -573,7 +573,7 @@
              <string>minimumSize</string> 
              <object class="java.awt.Dimension"> 
               <int>421</int> 
-              <int>60</int> 
+              <int>80</int> 
              </object> 
             </void> 
             <void property="name"> 
@@ -592,9 +592,32 @@
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JToggleButton</string> 
               <void method="setProperty"> 
-               <string>gridwidth</string> 
-               <int>2</int> 
+               <string>text</string> 
+               <string>Seed Genes Only</string> 
+              </void> 
+              <void property="name"> 
+               <string>showSeedOnly</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showSeedOnlyActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+              <void method="setProperty"> 
+               <string>gridx</string> 
+               <int>1</int> 
               </void> 
              </object> 
             </void> 

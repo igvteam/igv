@@ -108,6 +108,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
 
     static final Predicate<Node> isGene;
     static final Predicate<Node> isNotGene;
+    static final Predicate<Node> inQuery;
 
     static final String PERCENT_MUTATED = "PERCENT_MUTATED";
     static final String PERCENT_CNA_AMPLIFIED = "PERCENT_CNA_AMPLIFIED";
@@ -132,6 +133,15 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
         };
 
         isNotGene = new NotPredicate(isGene);
+
+        inQuery = new Predicate<Node>() {
+
+            @Override
+            public boolean evaluate(Node object) {
+                String in_query = getNodeAttrValue(object, KEY, "IN_QUERY");
+                return Boolean.parseBoolean(in_query);
+            }
+        };
     }
 
     /**
@@ -196,8 +206,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     /**
      * Applies {@code predicate} to every element in {@code object}, and adds
      * any which return false to {@code rejectSet}. Intended for soft filtering.
-     * There is an override here, where we never filter out a Node which
-     * is marked as being part of the query
      *
      * @param predicate
      * @param objects
@@ -206,10 +214,6 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     private Set<Node> filter(Predicate<Node> predicate, Collection<Node> objects) {
         Set<Node> rejectedSet = new HashSet<Node>(objects.size());
         for (Node v : objects) {
-            String in_query = getNodeAttrValue(v, KEY, "IN_QUERY");
-            if (Boolean.parseBoolean(in_query)) {
-                continue;
-            }
             if (!predicate.evaluate(v)) {
                 rejectedSet.add(v);
             }
@@ -226,13 +230,17 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
     /**
      * Applies this predicate only to the genes. Any nodes
      * which are NOT genes are automatically kept.
+     * <p/>
+     * There is an override here, where we never filter out a Node which
+     * is marked as being part of the query
      *
      * @param predicate
      * @return
      */
     public int filterGenes(Predicate<Node> predicate) {
         Predicate<Node> genePredicate = new OrPredicate(predicate, isNotGene);
-        return this.filterNodes(genePredicate);
+        Predicate<Node> finalPredicate = new OrPredicate<Node>(genePredicate, inQuery);
+        return this.filterNodes(finalPredicate);
     }
 
     public int filterGenesRange(final String key, final float min, final float max) {

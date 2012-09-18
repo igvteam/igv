@@ -367,17 +367,23 @@ public class FilterGeneNetworkUI extends JDialog {
     private void applySoftFilters() {
         network.reset();
 
-        //TODO This is only AND, should also include OR
-        for (AttributeFilter filter : this.filterRows) {
-            String filt_el = (String) filter.getAttrName().getSelectedItem();
-            if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
-                float min = Float.parseFloat(filter.minVal.getText());
-                float max = Float.parseFloat(filter.maxVal.getText());
-                network.filterGenesRange(filt_el, min / 100, max / 100);
+        if (showSeedOnly.isSelected()) {
+            //Redundant, as filterGenes already preserves query genes
+            //But we want to be explicit
+            network.filterGenes(GeneNetwork.inQuery);
+        } else {
+            //TODO This is only AND, should also include OR
+            for (AttributeFilter filter : this.filterRows) {
+                String filt_el = (String) filter.getAttrName().getSelectedItem();
+                if (GeneNetwork.attributeMap.containsKey(filt_el) || GeneNetwork.PERCENT_ALTERED.equals(filt_el)) {
+                    float min = Float.parseFloat(filter.minVal.getText());
+                    float max = Float.parseFloat(filter.maxVal.getText());
+                    network.filterGenesRange(filt_el, min / 100, max / 100);
+                }
             }
-        }
-        if (!keepIsolated.isSelected()) {
-            network.pruneGraph();
+            if (!keepIsolated.isSelected()) {
+                network.pruneGraph();
+            }
         }
 
         totNumGenes.setText("Total Genes: " + network.geneVertexSet().size());
@@ -546,6 +552,10 @@ public class FilterGeneNetworkUI extends JDialog {
         retrieveNetworkButton.setEnabled(updated);
     }
 
+    private void showSeedOnlyActionPerformed(ActionEvent e) {
+        refreshFilters();
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -569,6 +579,7 @@ public class FilterGeneNetworkUI extends JDialog {
         geneTable = new JTable();
         buttonBar = new JPanel();
         totNumGenes = new JLabel();
+        showSeedOnly = new JToggleButton();
         refFilter = new JButton();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
@@ -773,14 +784,26 @@ public class FilterGeneNetworkUI extends JDialog {
                     buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                     buttonBar.setMaximumSize(new Dimension(2147483647, 137));
                     buttonBar.setPreferredSize(new Dimension(421, 100));
-                    buttonBar.setMinimumSize(new Dimension(421, 60));
+                    buttonBar.setMinimumSize(new Dimension(421, 80));
                     buttonBar.setLayout(new GridBagLayout());
                     ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 80};
                     ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
 
                     //---- totNumGenes ----
                     totNumGenes.setText("Total Genes: #");
-                    buttonBar.add(totNumGenes, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
+                    buttonBar.add(totNumGenes, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 5, 5), 0, 0));
+
+                    //---- showSeedOnly ----
+                    showSeedOnly.setText("Seed Genes Only");
+                    showSeedOnly.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            showSeedOnlyActionPerformed(e);
+                        }
+                    });
+                    buttonBar.add(showSeedOnly, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                             GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                             new Insets(0, 0, 5, 5), 0, 0));
 
@@ -1071,6 +1094,7 @@ public class FilterGeneNetworkUI extends JDialog {
     private JTable geneTable;
     private JPanel buttonBar;
     private JLabel totNumGenes;
+    private JToggleButton showSeedOnly;
     private JButton refFilter;
     private JCheckBox keepIsolated;
     private JButton okButton;
