@@ -31,7 +31,10 @@ import org.w3c.dom.Node;
 
 import javax.imageio.metadata.IIOMetadataNode;
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
@@ -138,32 +141,6 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         }
         assertEquals(network.geneVertexSet().size(), keptNodes.size());
         assertTrue("Filtering not performed", keptNodes.size() < initSize);
-    }
-
-    /**
-     * Load some data from cbio.
-     * Checks that we are looking at the right urls
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testDownloadCBIO() throws Exception {
-        String[] gene_list = new String[]{"egfr", "brca1", "jun"};
-        GeneNetwork anno = GeneNetwork.getFromCBIO(Arrays.asList(gene_list));
-        assertNotNull(anno);
-    }
-
-    /**
-     * Load some data from cbio.
-     * Checks that we are looking at the right urls
-     *
-     * @throws Exception
-     */
-    @Test(expected = IOException.class)
-    public void testDownloadCBIOFail() throws Exception {
-        String[] gene_list = new String[]{"egfr", "brca1", "jun"};
-        GeneNetwork.BASE_URL += "MAKEITFAIL";
-        GeneNetwork anno = GeneNetwork.getFromCBIO(Arrays.asList(gene_list));
     }
 
     @Test
@@ -340,24 +317,6 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
             assertEquals(outLines[count], line);
             count++;
         }
-    }
-
-    @Test
-    public void testCaching() throws Exception {
-        String[] geneArray = new String[]{"sox1", "brca1", "DIRAS3"};
-        List<String> geneList = Arrays.asList(geneArray);
-        GeneNetwork anno = GeneNetwork.getFromCBIO(geneList);
-
-        assertTrue(HttpUtils.isRemoteURL(anno.getSourcePath()));
-
-        //Check that cached file exists
-        String url = GeneNetwork.getURLForGeneList(geneList);
-        File cachedFile = GeneNetwork.getCachedFile(url);
-        assertTrue(cachedFile.exists());
-
-        //This one should be loaded from local file
-        GeneNetwork anno2 = GeneNetwork.getFromCBIO(geneList);
-        assertFalse(HttpUtils.isRemoteURL(anno2.getSourcePath()));
     }
 
     public static class SimpleVertexFactory implements VertexFactory<Node> {
