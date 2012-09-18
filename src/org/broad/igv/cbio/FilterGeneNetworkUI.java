@@ -841,7 +841,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     delInput.setPreferredSize(new Dimension(45, 28));
                     delInput.setMaximumSize(new Dimension(50, 2147483647));
                     contentPanel.add(delInput);
-                    delInput.setBounds(new Rectangle(new Point(240, 162), delInput.getPreferredSize()));
+                    delInput.setBounds(new Rectangle(new Point(430, 91), delInput.getPreferredSize()));
 
                     //---- label4 ----
                     label4.setText("Up:");
@@ -853,11 +853,11 @@ public class FilterGeneNetworkUI extends JDialog {
                     label4.setBounds(130, 168, label4.getPreferredSize().width, 18);
 
                     //---- expUpInput ----
-                    expUpInput.setText("0.1");
+                    expUpInput.setText("1.0");
                     expUpInput.setMinimumSize(new Dimension(34, 28));
                     expUpInput.setPreferredSize(new Dimension(45, 28));
                     contentPanel.add(expUpInput);
-                    expUpInput.setBounds(new Rectangle(new Point(430, 91), expUpInput.getPreferredSize()));
+                    expUpInput.setBounds(new Rectangle(new Point(240, 162), expUpInput.getPreferredSize()));
 
                     //---- label7 ----
                     label7.setText("Down:");
@@ -869,7 +869,7 @@ public class FilterGeneNetworkUI extends JDialog {
                     label7.setBounds(300, 168, label7.getPreferredSize().width, 18);
 
                     //---- expDownInput ----
-                    expDownInput.setText("0.1");
+                    expDownInput.setText("1.0");
                     expDownInput.setPreferredSize(new Dimension(45, 28));
                     expDownInput.setMinimumSize(new Dimension(34, 28));
                     expDownInput.setMaximumSize(new Dimension(50, 2147483647));
