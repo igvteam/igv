@@ -1,8 +1,17 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.hic.track;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.BindGreen;
 import org.broad.igv.Globals;
-import sun.tools.tree.BinaryShiftExpression;
 
 /**
  * @author jrobinso
@@ -16,7 +25,6 @@ public class HiCVariableGridAxis implements HiCGridAxis {
     int igvZoom;
 
     /**
-     *
      * @param bins ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
      */
     public HiCVariableGridAxis(Bin[] bins) {
@@ -30,7 +38,7 @@ public class HiCVariableGridAxis implements HiCGridAxis {
 
         // Compute an approximate igv zoom level
 
-        igvZoom =  (int) (Math.log((chrLength / 700) / averageBinSize) / Globals.log2);
+        igvZoom = (int) (Math.log((chrLength / 700) / averageBinSize) / Globals.log2);
 
 
     }
@@ -69,9 +77,9 @@ public class HiCVariableGridAxis implements HiCGridAxis {
      */
     @Override
     public int getBinNumberForGenomicPosition(int start, int startBin, int endBin) {
-        for(int b = startBin; b <= endBin; b++) {
+        for (int b = startBin; b <= endBin; b++) {
             Bin bin = bins[b];
-            if(start >= bin.start && start < (bin.start + bin.width)) {
+            if (start >= bin.start && start < (bin.start + bin.width)) {
                 return b;
             }
         }
