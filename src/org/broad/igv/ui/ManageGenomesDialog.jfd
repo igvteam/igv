@@ -1,35 +1,30 @@
-JFDML JFormDesigner: "5.1.0.1.63" Java: "1.6.0_33" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.1.63" Java: "1.6.0_35" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
-			"modal": true
+			"$sizePolicy": 0
+			"defaultCloseOperation": 2
+			"modalityType": enum java.awt.Dialog$ModalityType DOCUMENT_MODAL
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
-				"preferredSize": new java.awt.Dimension( 250, 500 )
+				"preferredSize": new java.awt.Dimension( 270, 400 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 					"axis": 1
 				} ) {
 					name: "contentPanel"
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Genomes"
-						"horizontalAlignment": 2
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "genomeEntry"
-						"toolTipText": "Filter genome list"
-						"maximumSize": new java.awt.Dimension( 2147483647, 28 )
-						addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeEntryKeyReleased", true ) )
-					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
 						add( new FormComponent( "javax.swing.JList" ) {
 							name: "genomeList"
-							addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "genomeListMouseClicked", true ) )
+							"maximumSize": new java.awt.Dimension( 39, 5000 )
+							"dropMode": enum javax.swing.DropMode INSERT
+							"dragEnabled": true
+							"selectionMode": 1
+							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeListKeyReleased", true ) )
 						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
@@ -43,6 +38,7 @@ new FormModel {
 				} ) {
 					name: "buttonBar"
 					"border": new javax.swing.border.EmptyBorder( 12, 0, 0, 0 )
+					"preferredSize": new java.awt.Dimension( 196, 51 )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
 						"text": "OK"

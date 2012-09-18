@@ -14,40 +14,42 @@ package org.broad.igv.util.collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Class for case-insensitive collections. Needless to say,
  * the keys must be Strings.
  */
-public class CI{
+public class CI {
 
-    private CI(){};
+    private CI() {
+    }
 
-    private static String convertKey(Object key){
-        if(key == null){
+    ;
+
+    private static String convertKey(Object key) {
+        if (key == null) {
             return null;
         }
         return ((String) key).toLowerCase();
     }
 
-    public static class CIHashSet extends HashSet<String>{
-        public CIHashSet(){
+    public static class CIHashSet extends HashSet<String> {
+        public CIHashSet() {
             super();
         }
 
         @Override
-        public boolean add(String key){
+        public boolean add(String key) {
             return super.add(convertKey(key));
         }
 
         @Override
-        public boolean remove(Object key){
+        public boolean remove(Object key) {
             return super.remove(convertKey(key));
         }
 
         @Override
-        public boolean contains(Object key){
+        public boolean contains(Object key) {
             return super.contains(convertKey(key));
         }
     }
@@ -61,28 +63,28 @@ public class CI{
      */
     public static class CIHashMap<V> extends HashMap<String, V> {
 
-        public CIHashMap(){
+        public CIHashMap() {
             super();
         }
 
 
         @Override
-        public V put(String key, V value){
+        public V put(String key, V value) {
             return super.put(convertKey(key), value);
         }
 
         @Override
-        public V remove(Object key){
+        public V remove(Object key) {
             return super.remove(convertKey(key));
         }
 
         @Override
-        public V get(Object key){
+        public V get(Object key) {
             return super.get(convertKey(key));
         }
 
         @Override
-        public boolean containsKey(Object key){
+        public boolean containsKey(Object key) {
             return super.containsKey(convertKey(key));
         }
 
@@ -90,28 +92,32 @@ public class CI{
 
     public static class CILinkedHashMap<V> extends LinkedHashMap<String, V> {
 
-        public CILinkedHashMap(){
+        public CILinkedHashMap() {
             super();
+        }
+
+        public CILinkedHashMap(int size) {
+            super(size);
         }
 
 
         @Override
-        public V put(String key, V value){
+        public V put(String key, V value) {
             return super.put(convertKey(key), value);
         }
 
         @Override
-        public V remove(Object key){
+        public V remove(Object key) {
             return super.remove(convertKey(key));
         }
 
         @Override
-        public V get(Object key){
+        public V get(Object key) {
             return super.get(convertKey(key));
         }
 
         @Override
-        public boolean containsKey(Object key){
+        public boolean containsKey(Object key) {
             return super.containsKey(convertKey(key));
         }
 

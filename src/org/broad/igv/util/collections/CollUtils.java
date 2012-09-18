@@ -16,7 +16,6 @@ import com.google.common.base.Predicate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Utility methods which are useful for collections.
@@ -67,26 +66,6 @@ public class CollUtils {
             }
         }
         return coll;
-    }
-
-
-    /**
-     * Move the element of the list from its current location
-     * to the specified index. If {@code list} does not contain
-     * {@code listItem}, has no effect.
-     *
-     * @param list
-     * @param index
-     * @param listItem
-     * @param <T>
-     * @return True for success
-     */
-    public static <T> boolean moveInList(List<T> list, int index, T listItem) {
-        boolean moved = list.remove(listItem);
-        if (moved) {
-            list.add(index, listItem);
-        }
-        return moved;
     }
 
     /**
