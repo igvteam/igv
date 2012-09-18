@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.1.63" Java: "1.6.0_33" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_35" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -27,8 +27,11 @@ new FormModel {
 					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JList" ) {
+						add( new FormComponent( "org.broad.igv.ui.JList7" ) {
 							name: "genomeList"
+							auxiliary() {
+								"JavaCodeGenerator.typeParameters": "GenomeListItem"
+							}
 							addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "genomeListMouseClicked", true ) )
 						} )
 					} )

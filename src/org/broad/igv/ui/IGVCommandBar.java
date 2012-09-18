@@ -434,11 +434,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         Set<String> displayNames = new HashSet<String>();
         Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
-        for (Object object : listItems) {
-            if (object instanceof GenomeListItem) {
-                GenomeListItem genomeListItem = (GenomeListItem) object;
-                displayNames.add(genomeListItem.getDisplayableName());
-            }
+        for (GenomeListItem genomeListItem : listItems) {
+            displayNames.add(genomeListItem.getDisplayableName());
         }
         return displayNames;
     }
@@ -452,11 +449,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         Set<String> ids = new HashSet<String>();
         Collection<GenomeListItem> listItems = GenomeManager.getInstance().getGenomes();
-        for (Object object : listItems) {
-            if (object instanceof GenomeListItem) {
-                GenomeListItem genomeListItem = (GenomeListItem) object;
-                ids.add(genomeListItem.getId());
-            }
+        for (GenomeListItem genomeListItem : listItems) {
+            ids.add(genomeListItem.getId());
         }
         return ids;
     }
@@ -509,10 +503,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
      *
      * @return
      */
-    private DefaultComboBoxModel<GenomeListItem> getModelForGenomeListComboBox() {
+    private DefaultComboBoxModel getModelForGenomeListComboBox() {
         GenomeListItem[] genomes = GenomeManager.getInstance().getGenomes().toArray(new GenomeListItem[0]);
         firstGenome = genomes[0];
-        return new DefaultComboBoxModel<GenomeListItem>(genomes);
+        return new DefaultComboBoxModel(genomes);
     }
 
     /**
