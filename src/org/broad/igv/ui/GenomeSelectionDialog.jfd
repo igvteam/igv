@@ -6,6 +6,7 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
 			"modal": true
+			"title": "Genomes to add to list"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
@@ -14,16 +15,44 @@ new FormModel {
 					"axis": 1
 				} ) {
 					name: "contentPanel"
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Genomes"
-						"horizontalAlignment": 2
+					add( new FormComponent( "javax.swing.JTextArea" ) {
+						name: "textArea1"
+						"text": "Selected genomes will be added to the genome dropdown list."
+						"lineWrap": true
+						"wrapStyleWord": true
+						"background": new com.jformdesigner.model.SwingColor( "Button.background" )
+						"rows": 2
+						"maximumSize": new java.awt.Dimension( 2147483647, 60 )
+						"requestFocusEnabled": false
 					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "genomeEntry"
-						"toolTipText": "Filter genome list"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+						"$columnSpecs": "0:1.0, 0:1.0"
+						"$rowSpecs": "0:1.0"
+						"$alignTop": true
+						"$alignLeft": true
+					} ) {
+						name: "filterPanel"
 						"maximumSize": new java.awt.Dimension( 2147483647, 28 )
-						addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeEntryKeyReleased", true ) )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label1"
+							"text": "Filter:"
+							"labelFor": new FormReference( "genomeFilter" )
+							"requestFocusEnabled": false
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"hAlign": 2
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "genomeFilter"
+							"toolTipText": "Filter genome list"
+							"preferredSize": new java.awt.Dimension( 220, 28 )
+							"minimumSize": new java.awt.Dimension( 180, 28 )
+							"alignmentX": 0.0f
+							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "genomeEntryKeyReleased", true ) )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"weightx": 1.0
+							"hAlign": 5
+							"gridx": 1
+						} )
 					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane1"
