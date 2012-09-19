@@ -44,7 +44,9 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
         boolean succeeded = false;
         try {
             String testPath = DBManager.createConnectionURL("mysql", UCSC_HOST, "hg18", null);
-            DBManager.getConnection(new ResourceLocator(testPath));
+            ResourceLocator locator = new ResourceLocator(testPath);
+            locator.setUsername("genome");
+            DBManager.getConnection(locator);
             succeeded = true;
         } catch (Exception e) {
             e.printStackTrace();
