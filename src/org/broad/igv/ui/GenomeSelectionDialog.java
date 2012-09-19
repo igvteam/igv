@@ -38,7 +38,7 @@ import java.util.List;
 public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private boolean isCanceled = true;
-    private List<GenomeListItem> selectedItems = null;
+    private List<GenomeListItem> selectedValuesList = null;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
@@ -104,8 +104,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         rebuildGenomeList(genomeEntry.getText());
     }
 
-    public List<GenomeListItem> getSelectedItems() {
-        return selectedItems;
+    public List<GenomeListItem> getSelectedValuesList() {
+        return selectedValuesList;
     }
 
     public boolean isCanceled() {
@@ -182,8 +182,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -194,8 +194,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -206,8 +206,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -218,14 +218,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
-        selectedItems = null;
+        selectedValuesList = null;
         setVisible(false);
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
-        selectedItems = genomeList.getSelectedValuesList();
+        selectedValuesList = genomeList.getSelectedValuesList();
         setVisible(false);
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
