@@ -58,9 +58,8 @@ public class MessageUtils {
     }
 
     public static void setStatusBarMessage(final String message) {
-        if (Globals.isHeadless()) {
-            log.info("Status bar: " + message);
-        } else if (IGV.hasInstance()) {
+        log.info("Status bar: " + message);
+        if (IGV.hasInstance()) {
             IGV.getInstance().setStatusBarMessage(message);
         }
     }

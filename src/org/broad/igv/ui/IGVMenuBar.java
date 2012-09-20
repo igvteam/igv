@@ -284,6 +284,25 @@ public class IGVMenuBar extends JMenuBar {
         return MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
     }
 
+    private void notifyGenomesAddedRemoved(List<GenomeListItem> selectedValues, boolean added) {
+        if (selectedValues == null || selectedValues.size() == 0) return;
+        int size = selectedValues.size();
+        String msg = "";
+        if (size == 1) {
+            msg += selectedValues.get(0) + " genome";
+        } else {
+            msg += size + " genomes";
+        }
+        if (added) {
+            msg += " added to";
+        } else {
+            msg += " removed from";
+        }
+        msg += " list";
+
+        MessageUtils.setStatusBarMessage(msg);
+    }
+
 
     private JMenu createGenomesMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>();
@@ -309,15 +328,16 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Load Genome from Server...", null) {
+        menuAction = new MenuAction("Add Genome From Server to List", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame());
                 dialog.setVisible(true);
-                List<GenomeListItem> selectedValues = dialog.getSelectedItems();
+                List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
                 if (selectedValues != null) {
                     GenomeManager.getInstance().addGenomeItems(selectedValues);
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                    notifyGenomesAddedRemoved(selectedValues, true);
                 }
             }
         };
@@ -325,19 +345,23 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Manage Genome List", null) {
+        menuAction = new MenuAction("Remove/Reorder Genome List", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
+                RemoveReorderGenomesDialog dialog2 = new RemoveReorderGenomesDialog(IGV.getMainFrame());
                 dialog2.setVisible(true);
                 boolean cancelled = dialog2.isCancelled();
+                List<GenomeListItem> removedValuesList = dialog2.getRemovedValuesList();
                 if (!cancelled) {
                     GenomeManager.getInstance().buildGenomeItemList();
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                    if (removedValuesList != null && !removedValuesList.isEmpty()) {
+                        notifyGenomesAddedRemoved(removedValuesList, false);
+                    }
                 }
             }
         };
-        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
+        menuAction.setToolTipText("Remove or reorder genomes which appear in the dropdown list");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 

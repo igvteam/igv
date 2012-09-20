@@ -38,7 +38,7 @@ import java.util.List;
 public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private boolean isCanceled = true;
-    private List<GenomeListItem> selectedItems = null;
+    private List<GenomeListItem> selectedValuesList = null;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
@@ -62,7 +62,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     private void rebuildGenomeList() {
-        String filterText = genomeEntry.getText().trim().toLowerCase();
+        String filterText = genomeFilter.getText().trim().toLowerCase();
         rebuildGenomeList(filterText);
     }
 
@@ -101,11 +101,11 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     }
 
     private void genomeEntryKeyReleased(KeyEvent e) {
-        rebuildGenomeList(genomeEntry.getText());
+        rebuildGenomeList(genomeFilter.getText());
     }
 
-    public List<GenomeListItem> getSelectedItems() {
-        return selectedItems;
+    public List<GenomeListItem> getSelectedValuesList() {
+        return selectedValuesList;
     }
 
     public boolean isCanceled() {
@@ -123,8 +123,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private void initComponents() {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
+        textArea1 = new JTextArea();
+        filterPanel = new JPanel();
         label1 = new JLabel();
-        genomeEntry = new JTextField();
+        genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
         buttonBar = new JPanel();
@@ -133,6 +135,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
         //======== this ========
         setModal(true);
+        setTitle("Genomes to add to list");
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -146,21 +149,49 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
             {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-                //---- label1 ----
-                label1.setText("Genomes");
-                label1.setHorizontalAlignment(SwingConstants.LEFT);
-                contentPanel.add(label1);
+                //---- textArea1 ----
+                textArea1.setText("Selected genomes will be added to the genome dropdown list.");
+                textArea1.setLineWrap(true);
+                textArea1.setWrapStyleWord(true);
+                textArea1.setBackground(UIManager.getColor("Button.background"));
+                textArea1.setRows(2);
+                textArea1.setMaximumSize(new Dimension(2147483647, 60));
+                textArea1.setRequestFocusEnabled(false);
+                contentPanel.add(textArea1);
 
-                //---- genomeEntry ----
-                genomeEntry.setToolTipText("Filter genome list");
-                genomeEntry.setMaximumSize(new Dimension(2147483647, 28));
-                genomeEntry.addKeyListener(new KeyAdapter() {
-                    @Override
-                    public void keyReleased(KeyEvent e) {
-                        genomeEntryKeyReleased(e);
-                    }
-                });
-                contentPanel.add(genomeEntry);
+                //======== filterPanel ========
+                {
+                    filterPanel.setMaximumSize(new Dimension(2147483647, 28));
+                    filterPanel.setLayout(new GridBagLayout());
+                    ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
+                    ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
+                    ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
+                    ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
+
+                    //---- label1 ----
+                    label1.setText("Filter:");
+                    label1.setLabelFor(genomeFilter);
+                    label1.setRequestFocusEnabled(false);
+                    filterPanel.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
+                            new Insets(0, 0, 0, 0), 0, 0));
+
+                    //---- genomeFilter ----
+                    genomeFilter.setToolTipText("Filter genome list");
+                    genomeFilter.setPreferredSize(new Dimension(220, 28));
+                    genomeFilter.setMinimumSize(new Dimension(180, 28));
+                    genomeFilter.setAlignmentX(0.0F);
+                    genomeFilter.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent e) {
+                            genomeEntryKeyReleased(e);
+                        }
+                    });
+                    filterPanel.add(genomeFilter, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+                }
+                contentPanel.add(filterPanel);
 
                 //======== scrollPane1 ========
                 {
@@ -182,8 +213,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -194,8 +225,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -206,8 +237,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -218,14 +249,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         isCanceled = true;
-        selectedItems = null;
+        selectedValuesList = null;
         setVisible(false);
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         isCanceled = false;
-        selectedItems = genomeList.getSelectedValuesList();
+        selectedValuesList = genomeList.getSelectedValuesList();
         setVisible(false);
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
@@ -234,8 +265,10 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
+    private JTextArea textArea1;
+    private JPanel filterPanel;
     private JLabel label1;
-    private JTextField genomeEntry;
+    private JTextField genomeFilter;
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
     private JPanel buttonBar;
