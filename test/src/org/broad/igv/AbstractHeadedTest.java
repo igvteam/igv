@@ -46,7 +46,6 @@ public class AbstractHeadedTest {
         igv = startGUI();
 
         TestUtils.setAllNames(igv, true);
-        IGV.getMainFrame().requestFocus();
     }
 
     @AfterClass
@@ -59,6 +58,7 @@ public class AbstractHeadedTest {
     @Before
     public void setUp() throws Exception {
         igv.resetSession(null);
+        IGV.getMainFrame().requestFocus();
     }
 
     @After

@@ -492,7 +492,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
-    void refreshGenomeListComboBox() {
+    public void refreshGenomeListComboBox() {
         Object item = genomeComboBox.getSelectedItem();
         genomeComboBox.setModel(getModelForGenomeListComboBox());
         genomeComboBox.setSelectedItem(item);

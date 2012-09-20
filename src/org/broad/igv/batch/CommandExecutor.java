@@ -274,25 +274,41 @@ public class CommandExecutor {
         String result = "OK";
         String genomeID = param1;
 
+        //Genome in combo box
         if (igv.getSelectableGenomeIDs().contains(genomeID)) {
             igv.selectGenomeFromList(genomeID);
+            return result;
         } else {
-            String genomePath = genomeID;
-            if (!ParsingUtils.pathExists(genomePath)) {
-                String workingDirectory = System.getProperty("user.dir", "");
-                genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
+            //Not in currently loaded set, check server/cached
+            boolean found = false;
+            try {
+                found = GenomeManager.getInstance().getFromArchive(genomeID);
+            } catch (IOException e) {
+                MessageUtils.showMessage("Error checking genome server/cache for " + genomeID);
             }
-            if (ParsingUtils.pathExists(genomePath)) {
-                try {
-                    igv.loadGenome(genomePath, null);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error loading genome: " + genomeID);
-                }
-            } else {
-                result = "ERROR: Could not locate genome: " + genomeID;
-                MessageUtils.showMessage(result);
+            if (found) {
+                igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
+                igv.selectGenomeFromList(genomeID);
+                return result;
             }
         }
+
+        String genomePath = genomeID;
+        if (!ParsingUtils.pathExists(genomePath)) {
+            String workingDirectory = System.getProperty("user.dir", "");
+            genomePath = FileUtils.getAbsolutePath(genomeID, workingDirectory);
+        }
+        if (ParsingUtils.pathExists(genomePath)) {
+            try {
+                igv.loadGenome(genomePath, null);
+            } catch (IOException e) {
+                throw new RuntimeException("Error loading genome: " + genomeID);
+            }
+        } else {
+            result = "ERROR: Could not locate genome: " + genomeID;
+            MessageUtils.showMessage(result);
+        }
+
 
         return result;
     }
