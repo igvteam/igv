@@ -12,33 +12,32 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
-import org.broad.igv.util.TestUtils;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
-import org.fest.swing.fixture.JPanelFixture;
 import org.fest.swing.fixture.JTextComponentFixture;
-import org.junit.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Test the Command bar UI.
- *
+ * <p/>
  * User: jacob
  * Date: 2012/05/14
  */
-public class CommandBarTest extends AbstractHeadedTest{
+public class CommandBarTest extends AbstractHeadedTest {
 
     private static FrameFixture frame;
 
     /**
      * Because loading IGV takes so long, we only load it once per class.
      * We reset the session in between tests
+     *
      * @throws Exception
      */
     @BeforeClass
-    public static void setUpClass() throws Exception{
+    public static void setUpClass() throws Exception {
         AbstractHeadedTest.setUpClass();
         frame = new FrameFixture(IGV.getMainFrame());
 
@@ -53,15 +52,19 @@ public class CommandBarTest extends AbstractHeadedTest{
      * Basic test showing usage of FEST and checking combo box
      */
     @Test
-    public void testChromoBoxContents() throws Exception{
+    public void testChromoBoxContents() throws Exception {
         String[] chromos = frame.comboBox("chromosomeComboBox").contents();
         assertEquals(26, chromos.length);
     }
 
     @Test
-    public void testChromoNav() throws Exception{
+    public void testChromoNav() throws Exception {
         JTextComponentFixture searchFixture = frame.textBox("searchTextField");
         String enterText = "chr1";
+
+        //Make sure search box has focus
+        searchFixture.focus();
+        searchFixture.requireFocused();
         searchFixture.enterText(enterText);
         frame.button("goButton").click();
 

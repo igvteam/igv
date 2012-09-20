@@ -20,6 +20,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.fest.swing.fixture.FrameFixture;
+import org.fest.swing.fixture.JButtonFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.fest.swing.fixture.JPanelFixture;
 import org.junit.Test;
@@ -87,7 +88,9 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
         FrameFixture frameFixture = new FrameFixture(IGV.getMainFrame());
         //Make sure frame has focus, or else homeButton won't work
-        frameFixture.click();
+        JButtonFixture homeButton = frameFixture.button("homeButton");
+        homeButton.focus();
+        homeButton.requireFocused();
         frameFixture.button("homeButton").click();
 
         IGV.getInstance().waitForNotify(500);
