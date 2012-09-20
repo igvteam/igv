@@ -98,8 +98,9 @@ public class DiskResidentBlockMatrix implements BasicMatrix {
             int rowDim = blockRowIdx < nFullBlocks ? blockSize : remSize;
             int colDim = blockColIdx < nFullBlocks ? blockSize : remSize;
 
-            long startFilePosition =
-                    arrayStartPosition + (blockRowIdx * pointsPerBlockRow + blockColIdx * blockSize * rowDim) * 4;
+            int l1 = blockRowIdx * pointsPerBlockRow;
+            int l2 = blockColIdx * blockSize * rowDim;
+            long startFilePosition = arrayStartPosition + (l1 + l2) * 4l;
 
 
              int nDataPoints = rowDim * colDim;

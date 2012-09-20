@@ -145,17 +145,7 @@ public class AlignmentInterval extends Locus implements Interval {
                 row.updateScore(option, location, this, tag);
             }
 
-            Collections.sort(alignmentRows, new Comparator<Row>() {
-
-                public int compare(AlignmentInterval.Row arg0, AlignmentInterval.Row arg1) {
-                    if (arg0.getScore() > arg1.getScore()) {
-                        return 1;
-                    } else if (arg0.getScore() < arg1.getScore()) {
-                        return -1;
-                    }
-                    return 0;
-                }
-            });
+            Collections.sort(alignmentRows);
         }
     }
 
@@ -363,7 +353,7 @@ public class AlignmentInterval extends Locus implements Interval {
         return -1;
     }
 
-    public static class Row {
+    public static class Row implements Comparable<Row> {
         int nextIdx;
         private double score = 0;
         List<Alignment> alignments;
@@ -518,6 +508,11 @@ public class AlignmentInterval extends Locus implements Interval {
 
         public int getLastEnd() {
             return lastEnd;
+        }
+
+        @Override
+        public int compareTo(Row o) {
+            return (int) Math.signum(getScore() - o.getScore());
         }
 
 //        @Override

@@ -24,7 +24,10 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,6 +45,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     CommandExecutor exec = new CommandExecutor();
     private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 180000);
 
     @Before
     public void setUp() throws Exception {
@@ -203,12 +209,24 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
-    public void testLoadGenomesSuccess() throws Exception {
+    public void testLoadGenomesById() throws Exception {
         String[] genomeIds = new String[]{"hg19", "mm10", "rn5", "canFam2", "bosTau7", "sacCer3", "WS220"};
         for (String genomeId : genomeIds) {
             String result = exec.execute("genome " + genomeId);
             assertEquals("OK", result);
             assertEquals(genomeId, GenomeManager.getInstance().getCurrentGenome().getId());
+        }
+    }
+
+    @Test
+    public void testLoadGenomeFile() throws Exception {
+        String[] genomePaths = new String[]{TestUtils.DATA_DIR + "genomes/hg18.unittest.genome"};
+        String[] genomeIds = new String[]{"hg18"};
+        int ind = 0;
+        for (String genomePath : genomePaths) {
+            String result = exec.execute("genome " + genomePath);
+            assertEquals("OK", result);
+            assertEquals(genomeIds[ind++], GenomeManager.getInstance().getCurrentGenome().getId());
         }
     }
 
