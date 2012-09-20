@@ -247,7 +247,7 @@ public class Preprocessor {
         boolean isWholeGenome = (c1 == 0 && c2 == 0);
 
         MatrixPP matrix = null;
-
+        // NOTE: always true that c1 <= c2
         if (isWholeGenome) {
             int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
             int binSize = genomeLength / 500;
@@ -272,9 +272,15 @@ public class Preprocessor {
                 if (isWholeGenome) {
                     pos1 = getGenomicPosition(chr1, pos1);
                     pos2 = getGenomicPosition(chr2, pos2);
-                    incrementCount(matrix, c1, pos1, c2, pos2);
-                } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
-                    incrementCount(matrix, chr1, pos1, chr2, pos2);
+                    incrementCount(matrix, pos1, pos2);
+                }
+                else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
+                    // we know c1 <= c2 and that's how the matrix is formed.
+                    // pos1 goes with chr1 and pos2 goes with chr2
+                    if (c1 == chr1)
+                        incrementCount(matrix, pos1, pos2);
+                    else // c1 == chr2
+                        incrementCount(matrix, pos2, pos1);
                 }
 
             }
@@ -299,18 +305,7 @@ public class Preprocessor {
 
     }
 
-    private static void incrementCount(MatrixPP matrix, int chr1, int pos1, int chr2, int pos2) {
-        // I don't understand why we did this.  And chr1, chr2 are redundant
-        // this produces incorrect results for fragment so I'm removing it.
-//        if (chr2 > chr1) {
-//            //transpose
-//            int tc2 = chr2;
-//            int tp2 = pos2;
-//            chr2 = chr1;
-//            pos2 = pos1;
-//            chr1 = tc2;
-//            pos1 = tp2;
-//        }
+    private static void incrementCount(MatrixPP matrix, int pos1,  int pos2) {
         matrix.incrementCount(pos1, pos2);
     }
 
@@ -772,7 +767,10 @@ public class Preprocessor {
 
                 xBin = fragmentCalculation.getBin(chr1, pos1);
                 yBin = fragmentCalculation.getBin(chr2, pos2);
-                //System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
+//                if (chr1.getIndex() == 21 && xBin > 9000)
+//                    System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
+//                if (chr2.getIndex() == 21 && yBin > 9000)
+//                    System.out.println(chr1 + " " + pos1 + " " + xBin + " " + chr2 + " " + pos2 + " " + yBin);
             }
             else {
                 xBin = pos1 / getBinSize();
