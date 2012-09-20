@@ -122,6 +122,20 @@ Options:
                TCGA data center or related sights are supported at this time.
 
 
+  Conversion of ".gct" and "mage-tab" files results in the creation of an ".igv" file, which is sorted by genome
+  position using the "sort" command.  For this case the following optional parameters can be specified.
+
+  -t, --tmpDir tmpdir  Specify a temporary working directory.  For large input files
+               this directory will be used to store intermediate results of
+               the sort. The default is the users temp directory.
+
+  -m, --maxRecords number  The maximum number of records to keep in memory during the
+               sort.  The default value is 500000.  Increase this number
+               if you receive "too many open files" errors.   Decrease it
+               if you experience "out of memory" errors.
+
+
+
 Example:
 
       igvtoolsh toTDF -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
