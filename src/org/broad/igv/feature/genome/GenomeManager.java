@@ -575,6 +575,24 @@ public class GenomeManager {
     }
 
     /**
+     * Check the server or cache for the given GenomeId,
+     * and load it into the current set.
+     *
+     * @param genomeID
+     * @return True if found, false if not.
+     * @throws IOException
+     */
+    public boolean getFromArchive(String genomeID) throws IOException {
+        for (GenomeListItem item : getGenomeArchiveList()) {
+            if (item.getId().equals(genomeID)) {
+                GenomeManager.getInstance().addGenomeItems(Arrays.asList(item));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Gets a list of all the server genome archive files that
      * IGV knows about.
      *
@@ -1200,4 +1218,5 @@ public class GenomeManager {
             return false;
         }
     }
+
 }
