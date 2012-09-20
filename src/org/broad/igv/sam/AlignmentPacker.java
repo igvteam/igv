@@ -28,24 +28,19 @@ import java.util.*;
  */
 public class AlignmentPacker {
 
-    private static Logger log = Logger.getLogger(AlignmentPacker.class);
+    private static final Logger log = Logger.getLogger(AlignmentPacker.class);
 
     /**
      * Minimum gap between the end of one alignment and start of another.
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
-    private Comparator lengthComparator;
+    private final Comparator<Alignment> lengthComparator = new Comparator<Alignment>() {
+        public int compare(Alignment row1, Alignment row2) {
+            return (row2.getEnd() - row2.getStart()) -
+                    (row1.getEnd() - row2.getStart());
 
-    public AlignmentPacker() {
-        lengthComparator = new Comparator<Alignment>() {
-            public int compare(Alignment row1, Alignment row2) {
-                return (row2.getEnd() - row2.getStart()) -
-                        (row1.getEnd() - row2.getStart());
-
-            }
-        };
-    }
-
+        }
+    };
 
     /**
      * Allocates each alignment to the rows such that there is no overlap.
@@ -70,13 +65,13 @@ public class AlignmentPacker {
         String tag = renderOptions.getGroupByTag();
 
         if (groupBy == null) {
-            List<Row> alignmentRows = new ArrayList(10000);
-            pack(iter, end, pairAlignments, lengthComparator, alignmentRows);
+            List<Row> alignmentRows = new ArrayList<Row>(10000);
+            pack(iter, end, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         } else {
             // Separate alignments into groups.
-            List<Alignment> nullGroup = new ArrayList();
-            HashMap<String, List<Alignment>> groupedAlignments = new HashMap();
+            List<Alignment> nullGroup = new ArrayList<Alignment>();
+            HashMap<String, List<Alignment>> groupedAlignments = new HashMap<String, List<Alignment>>();
             while (iter.hasNext()) {
                 Alignment alignment = iter.next();
                 String groupKey = getGroupValue(alignment, groupBy, tag);
@@ -84,7 +79,7 @@ public class AlignmentPacker {
                 else {
                     List<Alignment> group = groupedAlignments.get(groupKey);
                     if (group == null) {
-                        group = new ArrayList(1000);
+                        group = new ArrayList<Alignment>(1000);
                         groupedAlignments.put(groupKey, group);
                     }
                     group.add(alignment);
@@ -92,16 +87,16 @@ public class AlignmentPacker {
             }
 
             // Now alphabetize (sort) and pack the groups
-            List<String> keys = new ArrayList(groupedAlignments.keySet());
+            List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
             Collections.sort(keys);
             for (String key : keys) {
-                List<Row> alignmentRows = new ArrayList(10000);
+                List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+                pack(group.iterator(), end, pairAlignments, alignmentRows);
                 packedAlignments.put(key, alignmentRows);
             }
-            List<Row> alignmentRows = new ArrayList(10000);
-            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+            List<Row> alignmentRows = new ArrayList<Row>(10000);
+            pack(nullGroup.iterator(), end, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
         }
 
@@ -129,7 +124,7 @@ public class AlignmentPacker {
         return null;
     }
 
-    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator,
+    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments,
                       List<Row> alignmentRows) {
 
         if (!iter.hasNext()) {
@@ -138,7 +133,7 @@ public class AlignmentPacker {
 
         Map<String, PairedAlignment> pairs = null;
         if (pairAlignments) {
-            pairs = new HashMap(1000);
+            pairs = new HashMap<String, PairedAlignment>(1000);
         }
 
 
@@ -155,7 +150,7 @@ public class AlignmentPacker {
         int bucketCount = end - start + 1;
 
         // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
-        // is probably a neeedless complication,  any collection type would do.
+        // is probably a needless complication,  any collection type would do.
         PriorityQueue firstBucket = new PriorityQueue(5, lengthComparator);
         firstBucket.add(firstAlignment);
 
@@ -171,8 +166,7 @@ public class AlignmentPacker {
 
         int totalCount = 1;
 
-        //  Allocate alignments to buckets based on position
-
+        //Allocate alignments to buckets based on position
         while (iter.hasNext()) {
 
             Alignment al = iter.next();
@@ -200,7 +194,7 @@ public class AlignmentPacker {
                 }
 
 
-                // We can get negative buckets if softclipping is on as the alignments are only approximately
+                // We can get negative buckets if soft-clipping is on as the alignments are only approximately
                 // sorted.  Throw all alignments < start in the first bucket.
                 int bucketNumber = Math.max(0, alignment.getStart() - start);
                 if (bucketNumber < bucketCount) {
@@ -303,7 +297,7 @@ public class AlignmentPacker {
 
         int lastBucketNumber = -1;
 
-        PriorityQueue<Alignment>[] bucketArray;
+        final PriorityQueue[] bucketArray;
 
         DenseBucketCollection(int bucketCount) {
             bucketArray = new PriorityQueue[bucketCount];
@@ -358,14 +352,14 @@ public class AlignmentPacker {
 
 
     /**
-     * "Sparse" implementation of an alignment BucketCollection.  Assumption is there are small cluseters of alignments
+     * "Sparse" implementation of an alignment BucketCollection.  Assumption is there are small clusters of alignments
      * along the genome, with mostly "white space".
      */
     static class SparseBucketCollection implements BucketCollection {
 
         boolean finished = false;
         List<Integer> keys;
-        HashMap<Integer, PriorityQueue<Alignment>> buckets;
+        final HashMap<Integer, PriorityQueue<Alignment>> buckets;
 
         SparseBucketCollection() {
             buckets = new HashMap(1000);
