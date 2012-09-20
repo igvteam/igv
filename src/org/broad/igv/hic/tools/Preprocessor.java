@@ -12,7 +12,7 @@ import java.util.*;
 
 /**
  * @author jrobinso
- * @date Aug 16, 2010
+ * @since Aug 16, 2010
  */
 public class Preprocessor {
     int nThreads = 0;
@@ -236,17 +236,17 @@ public class Preprocessor {
      * Compute matrix for the given chromosome combination.  This results in full pass through the input files
      * for each chromosome combination.  This is done to save memory, at the expense of longer running times.
      *
-     * @param inputFileList
-     * @param c1
-     * @param c2
-     * @return
+     * @param inputFileList List of files to read
+     * @param c1            Chromosome 1 -- always <= c2
+     * @param c2            Chromosome 2
+     * @return              Matrix with counts in each bin
      * @throws IOException
      */
     public MatrixPP computeMatrix(List<String> inputFileList, int c1, int c2) throws IOException {
 
         boolean isWholeGenome = (c1 == 0 && c2 == 0);
 
-        MatrixPP matrix = null;
+        MatrixPP matrix;
         // NOTE: always true that c1 <= c2
         if (isWholeGenome) {
             int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
@@ -333,10 +333,10 @@ public class Preprocessor {
 
                     // Write as little endian
                     buffer = new BufferedByteWriter();
-                    for (int i = 0; i < blockIndex.length; i++) {
-                        buffer.putInt(blockIndex[i].id);
-                        buffer.putLong(blockIndex[i].position);
-                        buffer.putInt(blockIndex[i].size);
+                    for (IndexEntry aBlockIndex : blockIndex) {
+                        buffer.putInt(aBlockIndex.id);
+                        buffer.putLong(aBlockIndex.position);
+                        buffer.putInt(aBlockIndex.size);
                     }
                     raf.write(buffer.getBytes());
                 }
@@ -364,14 +364,14 @@ public class Preprocessor {
 
     private void outputDensities(DensityCalculation[] calcs, BufferedByteWriter buffer) throws IOException {
         int numCalcs = 0;
-        for (int i=0; i < calcs.length; i++)
-            if (calcs[i] != null)
+        for (DensityCalculation calc : calcs)
+            if (calc != null)
                 numCalcs++;
 
         buffer.putInt(numCalcs);
-        for (int i = 0; i < calcs.length; i++) {
-            if (calcs[i] != null)
-                calcs[i].outputBinary(buffer, isNewVersion);
+        for (DensityCalculation calc : calcs) {
+            if (calc != null)
+                calc.outputBinary(buffer, isNewVersion);
         }
     }
 
@@ -443,7 +443,7 @@ public class Preprocessor {
         int i = 0;
         for (Map.Entry<Integer, Block> entry : blocks.entrySet()) {
 
-            int blockNumber = entry.getKey().intValue();
+            int blockNumber = entry.getKey();
             Block block = entry.getValue();
 
             long position = fos.getWrittenCount();
@@ -460,7 +460,7 @@ public class Preprocessor {
     /**
      * Note -- compressed
      *
-     * @param block
+     * @param block Block to write
      * @throws IOException
      */
     private void writeContactRecords(Block block) throws IOException {
@@ -571,7 +571,7 @@ public class Preprocessor {
 
     /**
      * @author jrobinso
-     * @date Aug 12, 2010
+     * @since Aug 12, 2010
      */
     class MatrixPP {
 
@@ -584,8 +584,8 @@ public class Preprocessor {
          * Constructor for creating a matrix and initializing zoomed data at predefined resolution scales.  This
          * constructor is used when parsing alignment files.
          *
-         * @param chr1
-         * @param chr2
+         * @param chr1   Chromosome 1
+         * @param chr2   Chromosome 2
          */
         MatrixPP(int chr1, int chr2) {
             this.chr1 = chr1;
@@ -620,9 +620,9 @@ public class Preprocessor {
          * Constructor for creating a matrix with a single zoom level at a specified bin size.  This is provided
          * primarily for constructing a whole-genome view.
          *
-         * @param chr1
-         * @param chr2
-         * @param binSize
+         * @param chr1   Chromosome 1
+         * @param chr2   Chromosome 2
+         * @param binSize   Bin size
          */
         MatrixPP(int chr1, int chr2, int binSize) {
             this.chr1 = chr1;
@@ -645,9 +645,9 @@ public class Preprocessor {
 
         void incrementCount(int pos1, int pos2) {
 
-            for (int i = 0; i < zoomData.length; i++) {
-                if (zoomData[i] != null)   // fragment level could be null
-                    zoomData[i].incrementCount(pos1, pos2);
+            for (MatrixZoomDataPP aZoomData : zoomData) {
+                if (aZoomData != null)   // fragment level could be null
+                    aZoomData.incrementCount(pos1, pos2);
             }
 
         }
@@ -676,7 +676,7 @@ public class Preprocessor {
 
     /**
      * @author jrobinso
-     * @date Aug 10, 2010
+     * @since Aug 10, 2010
      */
     class MatrixZoomDataPP {
 
@@ -731,7 +731,7 @@ public class Preprocessor {
          * Representation of MatrixZoomData used for preprocessing
          *
          * @param chr1             index of first chromosome  (x-axis)
-         * @param chr2
+         * @param chr2             index of second chromosome
          * @param binSize          size of each grid bin in bp
          * @param blockColumnCount number of block columns
          * @param zoom             integer zoom (resolution) level index.  TODO Is this needed?
