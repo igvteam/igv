@@ -416,20 +416,25 @@ public class AlignmentDataManager {
     }
 
     /**
-     * TODO -- hacked to get by for now,
+     * Find the first loaded interval for the specified chromosome and genomic {@code positon},
+     * return the grouped alignments
      *
-     * @return the alignmentRows
+     * @param position
+     * @param referenceFrame
+     * @return alignmentRows, grouped and ordered by key
      */
-    public Map<String, List<AlignmentInterval.Row>> getGroupedAlignments(ReferenceFrame referenceFrame) {
+    public Map<String, List<AlignmentInterval.Row>> getGroupedAlignmentsContaining(double position, ReferenceFrame referenceFrame) {
+        String chr = referenceFrame.getChrName();
+        int start = (int) position;
+        int end = start + 1;
         Collection<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(referenceFrame.getChrName());
         if (loadedIntervals == null) return null;
 
-        Map<String, List<AlignmentInterval.Row>> groupAlignments = new HashMap<String, List<AlignmentInterval.Row>>(loadedIntervals.size());
         for (AlignmentInterval loadedInterval : loadedIntervals) {
-            if (loadedInterval.getGroupedAlignments() != null)
-                groupAlignments.putAll(loadedInterval.getGroupedAlignments());
+            if (loadedInterval.getGroupedAlignments() != null && loadedInterval.contains(chr, start, end))
+                return loadedInterval.getGroupedAlignments();
         }
-        return groupAlignments;
+        return null;
     }
 
     public int getNLevels() {

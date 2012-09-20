@@ -106,7 +106,6 @@ public class AlignmentPacker {
 
     private String getGroupValue(Alignment al, AlignmentTrack.GroupOption groupBy, String tag) {
         switch (groupBy) {
-
             case STRAND:
                 return String.valueOf(al.isNegativeStrand());
             case SAMPLE:
@@ -120,6 +119,21 @@ public class AlignmentPacker {
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
+            case PAIR_INVERTED:
+                //[R,F][1,2][R,F][1,2]
+                //R#R# or F#F# implies inversion
+                String invString = al.getPairOrientation();
+                if (invString == null) return null;
+                if (invString.length() < 4) return "Unknown";
+                if (invString.charAt(0) == invString.charAt(2)) {
+                    return "Inverted";
+                } else {
+                    return "Normal";
+                }
+            case MATE_CHROMOSOME:
+                ReadMate mate = al.getMate();
+                if (mate == null) return null;
+                return mate.getChr();
         }
         return null;
     }

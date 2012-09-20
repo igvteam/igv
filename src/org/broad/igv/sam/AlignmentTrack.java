@@ -98,7 +98,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, INVERTED_MATE, MATE_CHROMOSOME, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_INVERTED, MATE_CHROMOSOME, NONE
     }
 
     public enum BisulfiteContext {
@@ -720,7 +720,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         if (alignmentsRect == null) {
             return null;   // <= not loaded yet
         }
-        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroupedAlignments(frame);
+        Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroupedAlignmentsContaining(position, frame);
 
         if (groups == null || groups.isEmpty()) {
             return null;
@@ -1329,6 +1329,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
+            //mappings.put("inversion", GroupOption.PAIR_INVERTED);
+            //mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
                 JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
