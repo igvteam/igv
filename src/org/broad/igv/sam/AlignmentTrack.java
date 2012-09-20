@@ -45,6 +45,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.CollUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,35 +72,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int DS_MARGIN_2 = 5;
 
     public enum ShadeBasesOption {
-
-        NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE;
+        NONE, QUALITY, FLOW_SIGNAL_DEVIATION_READ, FLOW_SIGNAL_DEVIATION_REFERENCE
     }
 
     public enum ExperimentType {
-
-        RNA, BISULFITE, OTHER;
-
-        static ExperimentType strToValue(String str) {
-            try {
-                return valueOf(str);
-            } catch (Exception e) {
-                return ExperimentType.OTHER;
-            }
-        }
+        RNA, BISULFITE, OTHER
     }
 
     public enum ColorOption {
-
         INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ,
-        TAG, NONE, UNEXPECTED_PAIR;
-
-        static ColorOption strToValue(String str) {
-            try {
-                return valueOf(str);
-            } catch (Exception e) {
-                return ColorOption.NONE;
-            }
-        }
+        TAG, NONE, UNEXPECTED_PAIR
     }
 
     public enum SortOption {
@@ -116,29 +98,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum GroupOption {
-
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE;
-
-        static GroupOption strToValue(String str) {
-            try {
-                return valueOf(str);
-            } catch (Exception e) {
-                return GroupOption.NONE;
-            }
-        }
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, INVERTED_MATE, MATE_CHROMOSOME, NONE
     }
 
     public enum BisulfiteContext {
-
-        CG, CHH, CHG, HCG, GCH, WCG;
-
-        static BisulfiteContext strToValue(String str) {
-            try {
-                return valueOf(str);
-            } catch (Exception e) {
-                return BisulfiteContext.CG;
-            }
-        }
+        CG, CHH, CHG, HCG, GCH, WCG
     }
 
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();
@@ -992,7 +956,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
-            colorOption = ColorOption.strToValue(prefs.get(PreferenceManager.SAM_COLOR_BY));
+            colorOption = CollUtils.valueOf(ColorOption.class, prefs.get(PreferenceManager.SAM_COLOR_BY), ColorOption.NONE);
             groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
@@ -1090,51 +1054,31 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     shadeBasesOption = ShadeBasesOption.QUALITY;
                 }
             }
-            value = attributes.get("shadeBasesOption");
-            if (value != null) {
-                try {
-                    shadeBasesOption = ShadeBasesOption.valueOf(value);
-                } catch (Exception e) {
-                    log.error("Error converting shadeBasesOption", e);
-                    shadeBasesOption = ShadeBasesOption.QUALITY;
-                }
+            shadeBasesOption = getFromMap(attributes, "shadeBasesOption", ShadeBasesOption.class, ShadeBasesOption.QUALITY);
+            colorOption = getFromMap(attributes, "colorOption", ColorOption.class, ColorOption.NONE);
+            groupByOption = getFromMap(attributes, "groupByOption", GroupOption.class, GroupOption.NONE);
+            bisulfiteContext = getFromMap(attributes, "bisulfiteContextRenderOption", BisulfiteContext.class, BisulfiteContext.CG);
+
+
+            groupByTag = getFromMap(attributes, "groupByTag", groupByTag);
+            sortByTag = getFromMap(attributes, "sortByTag", sortByTag);
+            colorByTag = getFromMap(attributes, "colorByTag", colorByTag);
+        }
+
+        private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
+            String value = attributes.get(key);
+            if (value == null) {
+                return defaultValue;
             }
-            value = attributes.get("shadeCenters");
-            if (value != null) {
-                shadeCenters = Boolean.parseBoolean(value);
+            return CollUtils.<T>valueOf(clazz, value, defaultValue);
+        }
+
+        private String getFromMap(Map<String, String> attributes, String key, String defaultValue) {
+            String value = attributes.get(key);
+            if (value == null) {
+                return defaultValue;
             }
-            value = attributes.get("flagUnmappedPairs");
-            if (value != null) {
-                flagUnmappedPairs = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("showAllBases");
-            if (value != null) {
-                showAllBases = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("colorOption");
-            if (value != null) {
-                colorOption = ColorOption.strToValue(value);
-            }
-            value = attributes.get("groupByOption");
-            if (value != null) {
-                groupByOption = GroupOption.strToValue(value);
-            }
-            value = attributes.get("bisulfiteContextRenderOption");
-            if (value != null) {
-                bisulfiteContext = BisulfiteContext.strToValue(value);
-            }
-            value = attributes.get("groupByTag");
-            if (value != null) {
-                groupByTag = value;
-            }
-            value = attributes.get("sortByTag");
-            if (value != null) {
-                sortByTag = value;
-            }
-            value = attributes.get("colorByTag");
-            if (value != null) {
-                colorByTag = value;
-            }
+            return value;
         }
 
         public boolean isPairedArcView() {

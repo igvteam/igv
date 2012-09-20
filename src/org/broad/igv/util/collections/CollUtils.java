@@ -69,6 +69,20 @@ public class CollUtils {
     }
 
     /**
+     * @param enumType
+     * @param name
+     * @return The Enum type with this exact {@code name}, or {@code defaultValue} if not found
+     * @see #findValueOf(Class, String)
+     */
+    public static <T extends Enum<T>> T valueOf(Class<T> enumType, String name, T defaultValue) {
+        try {
+            return Enum.<T>valueOf(enumType, name);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    /**
      * Search through an to find an object of matching value.
      * Will match either the text name of the enum, or the human readable name
      * Some our enums have a String value, intended to be human readable
