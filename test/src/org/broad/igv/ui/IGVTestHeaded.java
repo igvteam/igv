@@ -86,6 +86,8 @@ public class IGVTestHeaded extends AbstractHeadedTest {
 
 
         FrameFixture frameFixture = new FrameFixture(IGV.getMainFrame());
+        //Make sure frame has focus, or else homeButton won't work
+        frameFixture.click();
         frameFixture.button("homeButton").click();
 
         IGV.getInstance().waitForNotify(500);
