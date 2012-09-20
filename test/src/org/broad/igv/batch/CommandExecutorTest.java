@@ -24,7 +24,10 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,6 +45,9 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     CommandExecutor exec = new CommandExecutor();
     private final String snapshotDir = TestUtils.TMP_OUTPUT_DIR;
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 180000);
 
     @Before
     public void setUp() throws Exception {
