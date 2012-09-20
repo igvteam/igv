@@ -2,6 +2,8 @@ package org.broad.igv.hic;
 
 //import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.track.HiCFixedGridAxis;
+import org.broad.igv.hic.track.HiCGridAxis;
 
 /**
  * @author jrobinso
@@ -11,16 +13,29 @@ public class Context {
 
     private Chromosome chromosome;
     private int zoom = 4;
-    private int origin = 0;
+    private int genomicOrigin = 0;
     private double scale;
+
+    private int binOrigin = 0;
 
     public Context(Chromosome chromosome) {
         this.chromosome = chromosome;
     }
 
+    public int getBinCount(int binSize) {
+        return (getChrLength() - getGenomicOrigin()) / binSize + 1;
+    }
 
-    public void setOrigin(int x) {
-        origin = Math.max(0, x);
+    public int getBinOrigin() {
+        return binOrigin;
+    }
+
+    public void setBinOrigin(int binOrigin) {
+        this.binOrigin = binOrigin;
+    }
+
+    public void setGenomicOrigin(int x) {
+        genomicOrigin = Math.max(0, x);
 
     }
 
@@ -28,13 +43,21 @@ public class Context {
         return zoom;
     }
 
+    public void setZoom(int zoom) {
+        this.zoom = zoom;
+    }
+
     public void setZoom(int zoom, double scale) {
         this.scale = scale;
         this.zoom = zoom;
     }
 
-    public int getOrigin() {
-        return origin;
+    public int getBinNumber() {
+        return (int) (genomicOrigin / scale);
+    }
+
+    public int getGenomicOrigin() {
+        return genomicOrigin;
     }
 
     public int getChrLength() {
@@ -52,11 +75,11 @@ public class Context {
      * @return
      */
     public int getScreenPosition(double chromosomePosition) {
-        return (int) ((chromosomePosition - origin) / scale);
+        return (int) ((chromosomePosition - genomicOrigin) / scale);
     }
 
     public double getChromosomePosition(int screenPosition) {
-        return origin + screenPosition * scale;
+        return genomicOrigin + screenPosition * scale;
     }
 
     public Chromosome getChromosome() {

@@ -3,14 +3,12 @@ package org.broad.igv.hic.tools;
 //import org.broad.igv.hic.MainWindow;
 
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * @author jrobinso
@@ -492,8 +490,8 @@ public class Preprocessor {
         buffer.putInt(nRecords);
         for (ContactRecord rec : records) {
             if (rec.getCounts() >= countThreshold) {
-                buffer.putInt(rec.getX());
-                buffer.putInt(rec.getY());
+                buffer.putInt(rec.getBinX());
+                buffer.putInt(rec.getBinY());
                 buffer.putInt(rec.getCounts());
             }
         }

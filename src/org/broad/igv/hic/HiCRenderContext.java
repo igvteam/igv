@@ -47,7 +47,7 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public double getOrigin() {
-        return context.getOrigin();
+        return context.getGenomicOrigin();
     }
 
     public double getEndLocation() {

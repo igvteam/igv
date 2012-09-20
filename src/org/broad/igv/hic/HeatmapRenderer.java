@@ -1,12 +1,10 @@
 package org.broad.igv.hic;
 
-import org.apache.commons.math.linear.RealMatrix;
 import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.matrix.BasicMatrix;
-import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.renderer.ColorScale;
 
 import java.awt.*;
@@ -58,7 +56,15 @@ public class HeatmapRenderer {
 
         boolean isWholeGenome = zd.getChr1() == 0 && zd.getChr2() == 0;
         boolean sameChr = (chr1 == chr2);
-        double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 : 1000000.0);
+        //double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 : 1000000.0);
+        int zoomMultiplier = zd.getZoomMultiplier();
+        double mb;
+        if(isWholeGenome) {
+            mb = (double) zoomMultiplier * 5;
+        } else {
+            mb = (double) (zoomMultiplier) / 200;
+        }
+        double colorScaleFactor = mb*mb;
 
         if (sameChr) {
             // Data is transposable, transpose if neccessary.  Convention is to use lower diagonal
@@ -95,7 +101,7 @@ public class HeatmapRenderer {
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
             for (Block b : blocks) {
-                renderBlock(originX, originY, chr1, chr2, binSizeMB, b, colorScale, df, g);
+                renderBlock(originX, originY, chr1, chr2, colorScaleFactor, b, colorScale, df, g);
             }
         }
     }
@@ -114,11 +120,12 @@ public class HeatmapRenderer {
     }
 
 
-    private void renderBlock(int originX, int originY, int chr1, int chr2, double binSizeMB, Block b,
+    private void renderBlock(int originX, int originY, int chr1, int chr2,
+                             double colorScaleFactor,
+                             Block b,
                              ColorScale colorScale, DensityFunction df, Graphics2D g) {
 
         MainWindow.DisplayOption displayOption = hic.getDisplayOption();
-        double binSizeMB2 = binSizeMB * binSizeMB;
         boolean sameChr = (chr1 == chr2);
 
         ContactRecord[] recs = b.getContactRecords();
@@ -130,11 +137,11 @@ public class HeatmapRenderer {
                 double score;
                 // This is weirdly not the same as computeOE.
                 if (displayOption == MainWindow.DisplayOption.OE && df != null) {
-                    int x = rec.getX();// * binSize;
-                    int y = rec.getY();// * binSize;
+                    int x = rec.getBinX();// * binSize;
+                    int y = rec.getBinY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1, dist);
-                    double observed = df.getNormalizedCount(rec.getCounts(), chr1, (int)(x * binSizeMB), chr2, (int)(y * binSizeMB));
+                    double observed = rec.getCounts();
                     // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     score = normCounts;
@@ -145,21 +152,21 @@ public class HeatmapRenderer {
               //      score = rec.getCounts() / expected;
                     score = Math.log10(score);
                 } else {
-                    score = rec.getCounts() / binSizeMB2;
+                    score = rec.getCounts() / colorScaleFactor;
                 }
 
                 color = colorScale.getColor((float) score);
-                int px = (rec.getX() - originX);
-                int py = (rec.getY() - originY);
+                int px = (rec.getBinX() - originX);
+                int py = (rec.getBinY() - originY);
                 g.setColor(color);
                 // TODO -- need to check right bounds before drawing
                 if (px > -1 && py > -1) {
                     g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 }
 
-                if (sameChr && (rec.getX() != rec.getY())) {
-                    px = (rec.getY() - originX);
-                    py = (rec.getX() - originY);
+                if (sameChr && (rec.getBinX() != rec.getBinY())) {
+                    px = (rec.getBinY() - originX);
+                    py = (rec.getBinX() - originY);
                     if (px > -1 && py > -1) {
                         g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                     }

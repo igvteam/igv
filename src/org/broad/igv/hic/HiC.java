@@ -4,6 +4,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Map;
 
 /**
@@ -90,11 +91,11 @@ public class HiC {
      * heatmap panel.
      *
      * @param newZoom
-     * @param centerLocationX center X location in base pairs
-     * @param centerLocationY center Y location in base pairs
+     * @param genomePositionX center X in base pairs
+     * @param genomePositionY center Y in base pairs
      * @param updateSlider
      */
-    public void setZoom(int newZoom, final int centerLocationX, final int centerLocationY, boolean updateSlider) {
+    public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY, boolean updateSlider) {
 
         if (newZoom < 0 || newZoom > dataset.getNumberZooms()) return;
 
@@ -110,7 +111,7 @@ public class HiC {
 
             if (newZoom > 3) {
                 int ans = JOptionPane.showConfirmDialog(mainWindow, "Pearson's calculation at " +
-                        "this zoom will take a while.\nAre you sure you want to proceed?",
+                        "this resolution will take a while.\nAre you sure you want to proceed?",
                         "Confirm calculation", JOptionPane.YES_NO_OPTION);
                 if (ans == JOptionPane.NO_OPTION) {
                     mainWindow.updateZoom(zd.getZoom());
@@ -119,42 +120,43 @@ public class HiC {
             }
 
             final DensityFunction df = getDensityFunction(newZoom);
-
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
                     //mainWindow.updateEigenvectorTrack();
                     mainWindow.refresh();
-                    updateState2(newZD, centerLocationX, centerLocationY);
+                    updateState2(newZD, genomePositionX, genomePositionY);
                 }
             };
             mainWindow.executeLongRunningTask(callable);
         } else {
             //newZD.printDescription();
-            updateState2(newZD, centerLocationX, centerLocationY);
+            updateState2(newZD, genomePositionX, genomePositionY);
         }
 
     }
 
 
-    private void updateState2(MatrixZoomData newZD, double centerLocationX, double centerLocationY) {
+    private void updateState2(MatrixZoomData newZD,  double genomePositionX, final double genomePositionY) {
 
         zd = newZD;
         int newZoom = zd.getZoom();
         //showEigenvector();
 
-        int newBinSize = zd.getBinSize();
+        //int newBinSize = zd.getBinSize();
 
-        double xScaleMax = (double) xContext.getChrLength() / mainWindow.getHeatmapPanel().getWidth();
-        double yScaleMax = (double) yContext.getChrLength() / mainWindow.getWidth();
-        double scaleMax = Math.max(xScaleMax, yScaleMax);
+       // double xScaleMax = (double) xContext.getChrLength() / mainWindow.getHeatmapPanel().getWidth();
+       // double yScaleMax = (double) yContext.getChrLength() / mainWindow.getWidth();
+       // double scaleMax = Math.max(xScaleMax, yScaleMax);
 
-        double scale = Math.min(newBinSize, scaleMax);
+      //  double scale = Math.min(newBinSize, scaleMax);
 
-        xContext.setZoom(newZoom, (int) scale);
-        yContext.setZoom(newZoom, (int) scale);
+        xContext.setZoom(newZoom);
+        yContext.setZoom(newZoom);
 
-        center((int) centerLocationX, (int) centerLocationY);
+        Point binPosition = zd.getBinPosition(genomePositionX, genomePositionY);
+
+        center(binPosition.x, binPosition.y);
         mainWindow.updateZoom(newZoom);
 
         mainWindow.refresh();
@@ -213,38 +215,40 @@ public class HiC {
         zd = newZD;
         xContext.setZoom(zd.getZoom(), (int) scale);
         yContext.setZoom(zd.getZoom(), (int) scale);
-        xContext.setOrigin((int) xBP);
-        yContext.setOrigin((int) yBP);
+        xContext.setGenomicOrigin((int) xBP);
+        yContext.setGenomicOrigin((int) yBP);
         mainWindow.updateZoom(zd.getZoom());
         mainWindow.refresh();
     }
 
-    public void center(int centerLocationX, int centerLocationY) {
-        double w = (mainWindow.getHeatmapPanel().getWidth() * xContext.getScale());
-        int newX = (int) (centerLocationX - w / 2);
-        double h = (mainWindow.getHeatmapPanel().getHeight() * yContext.getScale());
-        int newY = (int) (centerLocationY - h / 2);
+    public void center(int binX, int binY) {
+        double w = mainWindow.getHeatmapPanel().getWidth();
+        int newX = (int) (binX - w / 2);
+        double h = mainWindow.getHeatmapPanel().getHeight();
+        int newY = (int) (binY - h / 2);
         moveTo(newX, newY);
     }
 
 
     public void moveBy(int dx, int dy) {
-        final int newX = xContext.getOrigin() + dx;
-        final int newY = yContext.getOrigin() + dy;
+        final int newX = xContext.getBinOrigin() + dx;
+        final int newY = yContext.getBinOrigin() + dy;
         moveTo(newX, newY);
     }
 
-    private void moveTo(int newX, int newY) {
-        final double bpWidthX = xContext.getScale() * mainWindow.getHeatmapPanel().getWidth();
-        int maxX = (int) (xContext.getChrLength() - bpWidthX);
-        final double bpWidthY = yContext.getScale() * mainWindow.getHeatmapPanel().getHeight();
-        int maxY = (int) (yContext.getChrLength() - bpWidthY);
+    private void moveTo(int newBinX, int newBinY) {
 
-        int x = Math.max(0, Math.min(maxX, newX));
-        int y = Math.max(0, Math.min(maxY, newY));
+        final int bpWidthX = mainWindow.getHeatmapPanel().getWidth();
 
-        xContext.setOrigin(x);
-        yContext.setOrigin(y);
+        int maxX = zd.getMaxBinX() - bpWidthX;
+        final int bpWidthY = mainWindow.getHeatmapPanel().getHeight();
+        int maxY = zd.getMaxBinY() - bpWidthY;
+
+        int x = Math.max(0, Math.min(maxX, newBinX));
+        int y = Math.max(0, Math.min(maxY, newBinY));
+
+        xContext.setBinOrigin(x);
+        yContext.setBinOrigin(y);
 
 //        String locus1 = "chr" + (xContext.getChromosome().getName()) + ":" + x + "-" + (int) (x + bpWidthX);
 //        String locus2 = "chr" + (yContext.getChromosome().getName()) + ":" + x + "-" + (int) (y + bpWidthY);
@@ -299,7 +303,7 @@ public class HiC {
                     str += "Are you sure you want to proceed?";
                     int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
                     if (ans == JOptionPane.NO_OPTION) {
-                       // mainWindow.setViewEigenvector(false);
+                        // mainWindow.setViewEigenvector(false);
                         return null;
                     }
                 }

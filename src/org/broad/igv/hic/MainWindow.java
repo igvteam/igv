@@ -143,7 +143,6 @@ public class MainWindow extends JFrame {
     }
 
 
-
     /**
      * Chromosome "0" is whole genome
      *
@@ -203,8 +202,7 @@ public class MainWindow extends JFrame {
                     displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{DisplayOption.OBSERVED}));
                     zoomToDensityMap = null;
                 }
-            }
-            else {
+            } else {
                 zoomToDensityMap = hic.dataset.getZoomToDensity();
                 displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
                         DisplayOption.OBSERVED,
@@ -383,12 +381,12 @@ public class MainWindow extends JFrame {
                 break;
             case PEARSON:
                 BasicMatrix bm = hic.zd.getPearsons();
-                if(bm != null) {
+                if (bm != null) {
                     float lv = bm.getLowerValue();
                     float uv = bm.getUpperValue();
 
-                   // colorRangeSlider.setLowerValue(lv);
-                   // colorRangeSlider.setUpperValue(uv);
+                    // colorRangeSlider.setLowerValue(lv);
+                    // colorRangeSlider.setUpperValue(uv);
                 }
 
         }
@@ -578,12 +576,11 @@ public class MainWindow extends JFrame {
 
         try {
             String url = System.getProperty("loadMenu");
-            if(url == null) url = DEFAULT_LOAD_MENU;
+            if (url == null) url = DEFAULT_LOAD_MENU;
             is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);
-        }
-        catch (Exception error) {
+        } catch (Exception error) {
             System.err.println("Can't find mainwindow.properties.");
             return;
         }
@@ -598,8 +595,7 @@ public class MainWindow extends JFrame {
             }
             if (values.length == 1) {
                 fileMenu.addSeparator();
-            }
-            else {
+            } else {
                 final int maxValue = Integer.parseInt(values[2]);
                 JMenuItem item = new JMenuItem(values[0]);
                 item.addActionListener(new ActionListener() {
@@ -608,8 +604,8 @@ public class MainWindow extends JFrame {
                             heatmapPanel.setObservedRange(0, maxValue);
                             colorRangeSlider.setMaximum(maxValue);
                             colorRangeSlider.setMinimum(0);
-                            colorRangeSlider.setMajorTickSpacing((int)(maxValue/10));
-                            colorRangeSlider.setUpperValue((int)(maxValue*3/4));
+                            colorRangeSlider.setMajorTickSpacing((int) (maxValue / 10));
+                            colorRangeSlider.setUpperValue((int) (maxValue * 3 / 4));
                             hic.reset();
                             load(values[1]);
                         } catch (IOException e1) {
@@ -878,9 +874,16 @@ public class MainWindow extends JFrame {
                     }
 
                     if (hic.xContext != null) {
-                        int centerLocationX = (int) hic.xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
-                        int centerLocationY = (int) hic.yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
-                        hic.setZoom(idx, centerLocationX, centerLocationY, false);
+
+                        int centerBinX = hic.xContext.getBinOrigin() + heatmapPanel.getWidth() / 2;
+                        int centerBinY = hic.yContext.getBinOrigin() + heatmapPanel.getHeight() / 2;
+
+                        if (hic.zd == null) {
+                            hic.setZoom(idx, 0, 0, false);
+                        } else {
+                            Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
+                            hic.setZoom(idx, centerGenomePosition.x, centerGenomePosition.y, false);
+                        }
                     }
                     //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
                     //zoomOutButton.setEnabled(newZoom > 0);
@@ -1066,7 +1069,7 @@ public class MainWindow extends JFrame {
                 JFileChooser fc = new JFileChooser();
                 fc.setSelectedFile(new File("image.png"));
                 int actionDialog = fc.showSaveDialog(null);
-                if (actionDialog == JFileChooser.APPROVE_OPTION ) {
+                if (actionDialog == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
                     if (file.exists()) {
                         actionDialog = JOptionPane.showConfirmDialog(null, "Replace existing file?");

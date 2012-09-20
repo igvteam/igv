@@ -16,7 +16,6 @@ public class HiCVariableGridAxis implements HiCGridAxis {
     int igvZoom;
 
     /**
-     *
      * @param bins ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
      */
     public HiCVariableGridAxis(Bin[] bins) {
@@ -30,7 +29,7 @@ public class HiCVariableGridAxis implements HiCGridAxis {
 
         // Compute an approximate igv zoom level
 
-        igvZoom =  (int) (Math.log((chrLength / 700) / averageBinSize) / Globals.log2);
+        igvZoom = (int) (Math.log((chrLength / 700) / averageBinSize) / Globals.log2);
 
 
     }
@@ -48,15 +47,6 @@ public class HiCVariableGridAxis implements HiCGridAxis {
         return b.start + b.width;
     }
 
-    /**
-     * Return the resolution in base-pairs / pixel.  This is a representative value.
-     *
-     * @return
-     */
-    @Override
-    public double getResolution() {
-        return averageBinSize;
-    }
 
     @Override
     public int getIGVZoom() {
@@ -69,13 +59,46 @@ public class HiCVariableGridAxis implements HiCGridAxis {
      */
     @Override
     public int getBinNumberForGenomicPosition(int start, int startBin, int endBin) {
-        for(int b = startBin; b <= endBin; b++) {
+        for (int b = startBin; b <= endBin; b++) {
             Bin bin = bins[b];
-            if(start >= bin.start && start < (bin.start + bin.width)) {
+            if (start >= bin.start && start < (bin.start + bin.width)) {
                 return b;
             }
         }
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int getBinNumberForGenomicPosition(int genomePosition) {
+        // TODO -- do a binary search?
+
+        int binNumber = (int) (genomePosition / averageBinSize);
+
+        if (bins[binNumber].contains(genomePosition)) {
+            return binNumber;
+        }
+
+        if (bins[binNumber].start > genomePosition) {
+            // search backwards
+            while(binNumber-- >= 0) {
+               if(bins[binNumber].contains(genomePosition)) {
+                   return binNumber;
+               }
+            }
+            return 0;
+        } else {
+            while(binNumber++ < bins.length) {
+                if(bins[binNumber].contains(genomePosition)) {
+                    return binNumber;
+                }
+            }
+            return bins.length - 1;
+        }
+    }
+
+    @Override
+    public int getBinCount() {
+        return bins.length;
     }
 
 
@@ -88,6 +111,10 @@ public class HiCVariableGridAxis implements HiCGridAxis {
 
         int start;
         int width;
+
+        public boolean contains(int genomePosition) {
+            return genomePosition >= start && genomePosition < (start + width);
+        }
     }
 
 }

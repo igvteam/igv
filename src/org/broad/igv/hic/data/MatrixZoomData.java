@@ -3,31 +3,32 @@ package org.broad.igv.hic.data;
 import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
-import org.broad.igv.data.WiggleDataset;
-import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
+import org.broad.igv.hic.track.HiCFixedGridAxis;
+import org.broad.igv.hic.track.HiCGridAxis;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.List;
 
 /**
  * @author jrobinso
  * @date Aug 10, 2010
  */
 public class MatrixZoomData {
+
+    HiCGridAxis xGridAxis;
+    HiCGridAxis yGridAxis;
 
     private Chromosome chr1;  // Redundant, but convenient
     private Chromosome chr2;  // Redundant, but convenient
@@ -87,12 +88,14 @@ public class MatrixZoomData {
 
         this.blockBinCount = dis.readInt();
         this.blockColumnCount = dis.readInt();
-        if(fileBinSize > 1) {
+        if (fileBinSize > 1) {
             binSize = fileBinSize;
-        }
-        else {
+        } else {
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
         }
+
+        xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
+        yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
 
 
         int nBlocks = dis.readInt();
@@ -125,8 +128,48 @@ public class MatrixZoomData {
         }
 
 
+    }
+
+
+    public int getXBinCount() {
+        return xGridAxis.getBinCount();
+    }
+
+    public int getYBinCount() {
+        return yGridAxis.getBinCount();
+    }
+
+    public int getZoomMultiplier() {
+        return binSize / 5000;
+    }
+
+
+    public Point getBinPosition(double genomePositionX, double genomePositionY) {
+
+        int bX = xGridAxis.getBinNumberForGenomicPosition((int) genomePositionX);
+        int bY = yGridAxis.getBinNumberForGenomicPosition((int) genomePositionY);
+        return new Point(bX,  bY);
 
     }
+
+    public Point getGenomePosition(int binX, int binY) {
+        int gX = (xGridAxis.getGenomicStart(binX) + xGridAxis.getGenomicEnd(binX)) / 2;
+        int gY = (yGridAxis.getGenomicStart(binY) + yGridAxis.getGenomicEnd(binY)) / 2;
+        return new Point(gX, gY);
+
+    }
+
+
+    public int getMaxBinY() {
+        return yGridAxis.getBinCount();
+    }
+
+
+    public int getMaxBinX() {
+        return xGridAxis.getBinCount();
+    }
+
+
 
 
     public int getBinSize() {
@@ -209,7 +252,7 @@ public class MatrixZoomData {
     }
 
     public double[] getEigenvector() {
-         return eigenvector;
+        return eigenvector;
     }
 
     private void readEigenvector(String fullPath) {
@@ -373,12 +416,11 @@ public class MatrixZoomData {
             Block b = readBlock(blockNumber);
             if (b != null) {
                 for (ContactRecord rec : b.getContactRecords()) {
-                    int x = rec.getX();// * binSize;
-                    int y = rec.getY();// * binSize;
+                    int x = rec.getBinX();// * binSize;
+                    int y = rec.getBinY();// * binSize;
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(chr1.getIndex(), dist);
-                    double observed = df.getNormalizedCount(rec.getCounts(), chr1.getIndex(), x * binSize, chr2.getIndex(), y * binSize);
-                    // double normCounts = (rec.getCounts() / expected);
+                    double observed = rec.getCounts(); //df.getNormalizedCount(rec.getCounts(), chr1.getIndex(), x * binSize, chr2.getIndex(), y * binSize);
                     double normCounts = observed / expected;
                     rm.addToEntry(x, y, normCounts);
                     if (x != y) {
@@ -457,16 +499,15 @@ public class MatrixZoomData {
             System.out.println("# " + chr1.getName() + " - " + chr2.getName());
 
 
-
         for (int blockNumber : blockNumbers) {
             Block b = readBlock(blockNumber);
             if (b != null) {
                 for (ContactRecord rec : b.getContactRecords()) {
                     if (les == null)
-                        System.out.println(rec.getX() * fileBinSize + "\t" + rec.getY() * fileBinSize + "\t" + rec.getCounts());
+                        System.out.println(rec.getBinX() * fileBinSize + "\t" + rec.getBinY() * fileBinSize + "\t" + rec.getCounts());
                     else {
-                        les.writeInt(rec.getX());
-                        les.writeInt(rec.getY());
+                        les.writeInt(rec.getBinX());
+                        les.writeInt(rec.getBinY());
                         les.writeInt(rec.getCounts());
                     }
                 }

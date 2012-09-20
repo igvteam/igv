@@ -167,7 +167,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
             // Find starting point closest to the current origin
             int maxX = frame.getChromosome().getLength();
-            int nTick = (int) (frame.getOrigin() / spacing) - 1;
+            int nTick = (int) (frame.getGenomicOrigin() / spacing) - 1;
             int l = (int) (nTick * spacing);
             int x = frame.getScreenPosition(l);
             //int strEnd = Integer.MIN_VALUE;
