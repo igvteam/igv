@@ -875,8 +875,10 @@ public class MainWindow extends JFrame {
 
                     if (hic.xContext != null) {
 
-                        int centerBinX = hic.xContext.getBinOrigin() + heatmapPanel.getWidth() / 2;
-                        int centerBinY = hic.yContext.getBinOrigin() + heatmapPanel.getHeight() / 2;
+                        //int centerBinX = hic.xContext.getBinOrigin() + heatmapPanel.getWidth() / 2;
+                        //int centerBinY = hic.yContext.getBinOrigin() + heatmapPanel.getHeight() / 2;
+                        int centerBinX = hic.xContext.getBinOrigin() + (int) (heatmapPanel.getWidth() / (2 * hic.xContext.getScaleFactor()));
+                        int centerBinY = hic.yContext.getBinOrigin() + (int) (heatmapPanel.getHeight() / (2 * hic.yContext.getScaleFactor()));
 
                         if (hic.zd == null) {
                             hic.setZoom(idx, 0, 0, false);

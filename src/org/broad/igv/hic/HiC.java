@@ -238,11 +238,11 @@ public class HiC {
 
     private void moveTo(int newBinX, int newBinY) {
 
-        final int bpWidthX = mainWindow.getHeatmapPanel().getWidth();
+        final int w = mainWindow.getHeatmapPanel().getWidth();
+        int maxX = zd.getMaxBinX() - w;
 
-        int maxX = zd.getMaxBinX() - bpWidthX;
-        final int bpWidthY = mainWindow.getHeatmapPanel().getHeight();
-        int maxY = zd.getMaxBinY() - bpWidthY;
+        final int h = mainWindow.getHeatmapPanel().getHeight();
+        int maxY = zd.getMaxBinY() - h;
 
         int x = Math.max(0, Math.min(maxX, newBinX));
         int y = Math.max(0, Math.min(maxY, newBinY));

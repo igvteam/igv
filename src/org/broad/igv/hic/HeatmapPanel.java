@@ -91,6 +91,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int maxBinCount = Math.max(xBinCount, yBinCount);
             double scalefactor = Math.max(1.0, (double) getWidth() / maxBinCount);
 
+            hic.xContext.setScaleFactor(scalefactor);
+            hic.yContext.setScaleFactor(scalefactor);
+
             for (int tileRow = tTop; tileRow <= tBottom; tileRow++) {
                 for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
                     ImageTile tile = getImageTile(tileRow, tileColumn, scalefactor, hic.getDisplayOption());
@@ -378,13 +381,20 @@ public class HeatmapPanel extends JComponent implements Serializable {
                             : Math.min(11, currentZoom + 1);
 
 
-                    int centerBinX = hic.xContext.getBinOrigin() + getWidth()/2;
-                    int centerBinY = hic.yContext.getBinOrigin() + getHeight()/2;
+                    int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
+                    int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
 
                     Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
                     hic.setZoom(newZoom, centerGenomePosition.x, centerGenomePosition.y, true);
 
                 } else {
+
+                    int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() /  hic.xContext.getScaleFactor());
+                    int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
+                    Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
+                    System.out.println("Bin position:  " + centerBinX + "\t" + centerBinY);
+                    System.out.println("Genome position:  " + centerGenomePosition.x + "\t" + centerGenomePosition.y);
+
 
                     //If IGV is running open on loci
                     if (e.isShiftDown()) {

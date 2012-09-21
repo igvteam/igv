@@ -1,6 +1,7 @@
 package org.broad.igv.hic;
 
 //import org.broad.igv.hic.data.Chromosome;
+
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.track.HiCFixedGridAxis;
 import org.broad.igv.hic.track.HiCGridAxis;
@@ -14,7 +15,10 @@ public class Context {
     private Chromosome chromosome;
     private int zoom = 4;
     private int genomicOrigin = 0;
+
     private double scale;
+
+    private double scaleFactor = 1;
 
     private int binOrigin = 0;
 
@@ -86,4 +90,11 @@ public class Context {
         return chromosome;
     }
 
+    public void setScaleFactor(double scale) {
+        this.scaleFactor = scale;
+    }
+
+    public double getScaleFactor() {
+        return this.scaleFactor;
+    }
 }
