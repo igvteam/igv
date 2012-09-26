@@ -196,8 +196,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         updateChromosFromGenome(genome);
                         monitor.fireProgressChange(25);
 
-                        PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
-
                         genomeComboBox.setSelectedItem(genomeListItem);
 
                         monitor.fireProgressChange(25);
@@ -247,7 +245,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
-            GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
+            GenomeListItem genomeListItem = (GenomeListItem) selItem;
             loadGenomeListItem(genomeListItem);
         }
     }
@@ -493,8 +491,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     public void refreshGenomeListComboBox() {
-        Object item = genomeComboBox.getSelectedItem();
         genomeComboBox.setModel(getModelForGenomeListComboBox());
+        String curId = GenomeManager.getInstance().getGenomeId();
+        Object item = GenomeManager.getInstance().getGenomeListItemById(curId);
         genomeComboBox.setSelectedItem(item);
     }
 
