@@ -210,18 +210,39 @@ public class GenomeManager {
 
         }
 
-        String id = fastaPath;
-        String name = (new File(fastaPath)).getName();
-        if (HttpUtils.isRemoteURL(fastaPath)) {
-            name = Utilities.getFileNameFromURL(fastaPath);
+        GenomeListItem item = buildFromPath(fastaPath);
+        if (item == null) {
+            throw new IOException(fastaPath + " does not exist, could not load genome");
         }
 
         FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
-        newGenome = new GenomeImpl(id, name, sequence);
+        newGenome = new GenomeImpl(item.getId(), item.getDisplayableName(), sequence);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
         return newGenome;
+    }
+
+    /**
+     * @param path
+     * @return GenomeListItem representing this path, or null
+     *         if it's a local path which doesn't exist (we don't check for existence of remote file)
+     */
+    public static GenomeListItem buildFromPath(String path) {
+
+        String id = path;
+        String name;
+        if (HttpUtils.isRemoteURL(path)) {
+            name = Utilities.getFileNameFromURL(path);
+        } else {
+            File file = new File(path);
+            if (!file.exists()) {
+                return null;
+            }
+            name = file.getName();
+        }
+
+        return new GenomeListItem(name, path, id);
     }
 
     /**
@@ -652,7 +673,7 @@ public class GenomeManager {
                                 String name = fields[0];
                                 String url = fields[1];
                                 String id = fields[2];
-                                GenomeListItem item = new GenomeListItem(name, url, id, false);
+                                GenomeListItem item = new GenomeListItem(name, url, id);
                                 serverGenomeArchiveList.add(item);
                             } catch (Exception e) {
                                 log.error("Error reading a line from server genome list" + " line was: [" +
@@ -774,6 +795,12 @@ public class GenomeManager {
                     break;
                 }
             }
+
+            //if we didn't find the id, it may be a path
+            if (genomeListItem == null) {
+                genomeListItem = buildFromPath(id);
+            }
+
             if (!genomeMap.containsKey(id) && genomeListItem != null) {
                 genomeMap.put(id, genomeListItem);
             }
@@ -832,7 +859,7 @@ public class GenomeManager {
                         continue;
                     }
 
-                    GenomeListItem item = new GenomeListItem(fields[0], file, fields[2], true);
+                    GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
                     userDefinedGenomeArchiveList.add(item);
                 }
             } finally {
@@ -920,8 +947,7 @@ public class GenomeManager {
                     GenomeListItem item =
                             new GenomeListItem(properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
                                     file.getAbsolutePath(),
-                                    properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY),
-                                    false);
+                                    properties.getProperty(Globals.GENOME_ARCHIVE_ID_KEY));
                     cachedGenomeArchiveList.add(item);
                 } catch (ZipException ex) {
                     log.error("\nZip error unzipping cached genome.", ex);
@@ -1067,7 +1093,7 @@ public class GenomeManager {
 
         if (monitor != null) monitor.fireProgressChange(75);
 
-        GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId, true);
+        GenomeListItem newItem = new GenomeListItem(genomeDisplayName, genomeFile.getAbsolutePath(), genomeId);
         addGenomeItem(newItem);
         return newItem;
 

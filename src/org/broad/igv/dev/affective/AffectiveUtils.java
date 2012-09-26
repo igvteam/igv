@@ -16,7 +16,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.PointsRenderer;
-
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.Track;
@@ -26,7 +25,10 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -43,7 +45,7 @@ public class AffectiveUtils {
     // Start time in "data points" units (8:00 AM)
     public static int START_TIME_HR = 8;
     public static int START_TIME = START_TIME_HR * 60 * 60 * POINTS_PER_SECOND;
-    public static final GenomeListItem GENOME_DESCRIPTOR = new GenomeListItem("Affective", "", "affective", false);
+    public static final GenomeListItem GENOME_DESCRIPTOR = new GenomeListItem("Affective", "", "affective");
     private static AffectiveGenome genome;
 
 

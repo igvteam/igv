@@ -559,7 +559,7 @@ public class IGV {
         final String name = genome.getDisplayName();
         final String id = genome.getId();
 
-        GenomeListItem genomeListItem = new GenomeListItem(name, path, id, true);
+        GenomeListItem genomeListItem = new GenomeListItem(name, path, id);
         getGenomeManager().addGenomeItem(genomeListItem);
 
         IGVCommandBar cmdBar = contentPane.getCommandBar();
