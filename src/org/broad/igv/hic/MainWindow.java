@@ -250,7 +250,7 @@ public class MainWindow extends JFrame {
                     if (hic.matrix == null) {
                         //?? TODO -- this is probably an error
                     } else {
-                        setInitialZoom();
+                        setInitialZoom();  // TODO -- Will probably trigger a repaint
                     }
                 }
                 if (t1 != t2 || chr2.getName().equals("All") || hic.getZoomToDensityMap() == null) {
@@ -883,8 +883,11 @@ public class MainWindow extends JFrame {
                         if (hic.zd == null) {
                             hic.setZoom(idx, 0, 0, false);
                         } else {
-                            Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
-                            hic.setZoom(idx, centerGenomePosition.x, centerGenomePosition.y, false);
+
+
+                            int xGenome = hic.zd.getxGridAxis().getGenomicMid(centerBinX);
+                            int yGenome = hic.zd.getyGridAxis().getGenomicMid(centerBinY);
+                            hic.setZoom(idx, xGenome, yGenome, false);
                         }
                     }
                     //zoomInButton.setEnabled(newZoom < MAX_ZOOM);

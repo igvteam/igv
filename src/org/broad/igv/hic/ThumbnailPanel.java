@@ -77,8 +77,9 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     public void setImage(Image image) {
         this.image = image;
-        xScale = ((double) hic.zd.getMaxBinX()) / getWidth();
-        yScale = ((double) hic.zd.getMaxBinY()) / getWidth();;
+        xScale = ((double) hic.zd.getxGridAxis().getBinCount()) / getWidth();
+        yScale = ((double) hic.zd.getyGridAxis().getBinCount()) / getWidth();
+        ;
     }
 
     public String getName() {
@@ -114,7 +115,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             int originY = hic.yContext.getBinOrigin();
             int y = (int) (originY / yScale);
 
-            int wBins =  wPixels;  // TODO -- scale @ lower resolution
+            int wBins = wPixels;  // TODO -- scale @ lower resolution
             int w = (int) (wBins / xScale);
 
             int yBins = hPixels;

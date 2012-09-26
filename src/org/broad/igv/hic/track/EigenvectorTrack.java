@@ -81,7 +81,7 @@ public class EigenvectorTrack extends HiCTrack {
 
             int genomicPosition = (int) (step * i);
 
-            int xPixel = context.getScreenPosition (genomicPosition);
+            int xPixel = 0; //context.getScreenPosition (genomicPosition);
 
             if (xPixel > lastXPixel && lastXPixel >= 0) {
 

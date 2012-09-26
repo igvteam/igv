@@ -154,9 +154,18 @@ public class HiC {
         xContext.setZoom(newZoom);
         yContext.setZoom(newZoom);
 
-        Point binPosition = zd.getBinPosition(genomePositionX, genomePositionY);
+        int xBinCount = zd.getxGridAxis().getBinCount();
+        int yBinCount = zd.getyGridAxis().getBinCount();
+        int maxBinCount = Math.max(xBinCount, yBinCount);
+        double scalefactor = Math.max(1.0, (double) mainWindow.getHeatmapPanel().getWidth() / maxBinCount);
+        xContext.setScaleFactor(scalefactor);
+        yContext.setScaleFactor(scalefactor);
 
-        center(binPosition.x, binPosition.y);
+        //Point binPosition = zd.getBinPosition(genomePositionX, genomePositionY);
+        int binX = zd.getxGridAxis().getBinNumberForGenomicPosition((int) genomePositionX);
+        int binY = zd.getyGridAxis().getBinNumberForGenomicPosition((int) genomePositionY);
+
+        center(binX, binY);
         mainWindow.updateZoom(newZoom);
 
         mainWindow.refresh();
@@ -215,8 +224,14 @@ public class HiC {
         zd = newZD;
         xContext.setZoom(zd.getZoom(), (int) scale);
         yContext.setZoom(zd.getZoom(), (int) scale);
-        xContext.setGenomicOrigin((int) xBP);
-        yContext.setGenomicOrigin((int) yBP);
+
+        int binX = zd.getxGridAxis().getGenomicStart((int) xBP);
+        int binY = zd.getyGridAxis().getGenomicStart((int) yBP);
+
+        xContext.setBinOrigin(binX);
+        yContext.setBinOrigin(binY);
+
+
         mainWindow.updateZoom(zd.getZoom());
         mainWindow.refresh();
     }
@@ -239,10 +254,10 @@ public class HiC {
     private void moveTo(int newBinX, int newBinY) {
 
         final int w = mainWindow.getHeatmapPanel().getWidth();
-        int maxX = zd.getMaxBinX() - w;
+        int maxX = zd.getxGridAxis().getBinCount()  - w;
 
         final int h = mainWindow.getHeatmapPanel().getHeight();
-        int maxY = zd.getMaxBinY() - h;
+        int maxY = zd.getyGridAxis().getBinCount() - h;
 
         int x = Math.max(0, Math.min(maxX, newBinX));
         int y = Math.max(0, Math.min(maxY, newBinY));

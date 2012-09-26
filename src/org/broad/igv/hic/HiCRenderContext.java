@@ -34,7 +34,7 @@ public class HiCRenderContext implements RenderContext {
         this.graphicCacheByColor = new HashMap();
 
         int chrLength = context.getChrLength();
-        igvZoom = getIGVZoom(context.getScale(), chrLength);
+        igvZoom = 1; //getIGVZoom(context.getScale(), chrLength);
     }
 
     public Color getBackgroundColor() {
@@ -47,15 +47,15 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public double getOrigin() {
-        return context.getGenomicOrigin();
+        return 0; //context.getGenomicOrigin();
     }
 
     public double getEndLocation() {
-        return context.getChromosomePosition(parent.getWidth());
+        return 0; //context.getChromosomePosition(parent.getWidth());
     }
 
     public double getScale() {
-        return context.getScale();
+        return 0; //context.getScale();
     }
 
     public Rectangle getVisibleRect() {
@@ -83,7 +83,7 @@ public class HiCRenderContext implements RenderContext {
     }
 
     public int bpToScreenPixel(double location) {
-        return context.getScreenPosition(location);
+        return 0; // context.getScreenPosition(location);
     }
 
 

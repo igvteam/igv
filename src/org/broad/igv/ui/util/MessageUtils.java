@@ -58,7 +58,7 @@ public class MessageUtils {
     }
 
     public static void setStatusBarMessage(final String message) {
-        log.info("Status bar: " + message);
+        log.debug("Status bar: " + message);
         if (IGV.hasInstance()) {
             IGV.getInstance().setStatusBarMessage(message);
         }

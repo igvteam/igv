@@ -130,47 +130,18 @@ public class MatrixZoomData {
 
     }
 
-
-    public int getXBinCount() {
-        return xGridAxis.getBinCount();
-    }
-
-    public int getYBinCount() {
-        return yGridAxis.getBinCount();
-    }
-
     public int getZoomMultiplier() {
         return binSize / 5000;
     }
 
 
-    public Point getBinPosition(double genomePositionX, double genomePositionY) {
-
-        int bX = xGridAxis.getBinNumberForGenomicPosition((int) genomePositionX);
-        int bY = yGridAxis.getBinNumberForGenomicPosition((int) genomePositionY);
-        return new Point(bX,  bY);
-
+    public HiCGridAxis getxGridAxis() {
+        return xGridAxis;
     }
 
-    public Point getGenomePosition(int binX, int binY) {
-        int gX = (xGridAxis.getGenomicStart(binX) + xGridAxis.getGenomicEnd(binX)) / 2;
-        int gY = (yGridAxis.getGenomicStart(binY) + yGridAxis.getGenomicEnd(binY)) / 2;
-        return new Point(gX, gY);
-
+    public HiCGridAxis getyGridAxis() {
+        return yGridAxis;
     }
-
-
-    public int getMaxBinY() {
-        return yGridAxis.getBinCount();
-    }
-
-
-    public int getMaxBinX() {
-        return xGridAxis.getBinCount();
-    }
-
-
-
 
     public int getBinSize() {
         return binSize;

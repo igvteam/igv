@@ -56,6 +56,11 @@ public class HiCVariableGridAxis implements HiCGridAxis {
         return b.start + b.width;
     }
 
+    @Override
+    public int getGenomicMid(int binNumber) {
+        return bins[binNumber].start + bins[binNumber].width/2;
+    }
+
 
     @Override
     public int getIGVZoom() {

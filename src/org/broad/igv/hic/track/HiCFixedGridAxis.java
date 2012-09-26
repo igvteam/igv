@@ -33,6 +33,11 @@ public class HiCFixedGridAxis implements HiCGridAxis {
         return binNumber * binSize + binSize;
     }
 
+    @Override
+    public int getGenomicMid(int binNumber) {
+        return binNumber * binSize + binSize / 2;
+    }
+
 
     @Override
     public int getIGVZoom() {
@@ -45,11 +50,9 @@ public class HiCFixedGridAxis implements HiCGridAxis {
      */
     @Override
     public int getBinNumberForGenomicPosition(int genomicPosition, int startBin, int endBin) {
-        if (endBin < binCount) {
-            return (int) (genomicPosition / ((double) binSize));
-        } else {
-            return -1;
-        }
+
+        return (int) (genomicPosition / ((double) binSize));
+
     }
 
     @Override

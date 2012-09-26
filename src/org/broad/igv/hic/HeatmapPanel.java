@@ -86,13 +86,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             // Pixels per bin -- used to scale image
 
-            int xBinCount = hic.zd.getXBinCount();
-            int yBinCount = hic.zd.getYBinCount();
-            int maxBinCount = Math.max(xBinCount, yBinCount);
-            double scalefactor = Math.max(1.0, (double) getWidth() / maxBinCount);
 
-            hic.xContext.setScaleFactor(scalefactor);
-            hic.yContext.setScaleFactor(scalefactor);
+            double scalefactor = hic.xContext.getScaleFactor();
 
             for (int tileRow = tTop; tileRow <= tBottom; tileRow++) {
                 for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
@@ -126,14 +121,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     xGenomeCoord += (c.getLength() / 1000);
-                    int x = hic.xContext.getScreenPosition(xGenomeCoord);
+                    int xBin = hic.zd.getxGridAxis().getBinNumberForGenomicPosition(xGenomeCoord);
+                    int x = (int) (xBin * hic.xContext.getScaleFactor());
                     g.drawLine(x, 0, x, getHeight());
                 }
                 int yGenomeCoord = 0;
                 for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     yGenomeCoord += (c.getLength() / 1000);
-                    int y = hic.yContext.getScreenPosition(yGenomeCoord);
+                    int yBin = hic.zd.getyGridAxis().getBinNumberForGenomicPosition(yGenomeCoord);
+                    int y = (int) (yBin * hic.yContext.getScaleFactor());
                     g.drawLine(0, y, getWidth(), y);
                 }
 
@@ -161,8 +158,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
 //
 //        return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
-        int maxBinCountX = zd0.getXBinCount();
-        int maxBinCountY = zd0.getYBinCount();
+        int maxBinCountX = zd0.getxGridAxis().getBinCount();
+        int maxBinCountY = zd0.getyGridAxis().getBinCount();
 
         int wh = Math.max(maxBinCountX, maxBinCountY);
 
@@ -190,8 +187,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
         if (tile == null) {
 
             // Image size can be smaller than tile width when zoomed out, or near the edges.
-            int maxBinCountX = hic.zd.getXBinCount();
-            int maxBinCountY = hic.zd.getYBinCount();
+            int maxBinCountX = hic.zd.getxGridAxis().getBinCount();
+            int maxBinCountY = hic.zd.getyGridAxis().getBinCount();
 
             if (maxBinCountX < 0 || maxBinCountY < 0) return null;
 
@@ -355,8 +352,11 @@ public class HeatmapPanel extends JComponent implements Serializable {
             if (!e.isPopupTrigger()) {
 
                 if (hic.isWholeGenome()) {
-                    double xGenome = hic.xContext.getChromosomePosition(e.getX());
-                    double yGenome = hic.yContext.getChromosomePosition(e.getY());
+                    int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
+                    int binY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
+
+                    int xGenome = hic.zd.getxGridAxis().getGenomicMid(binX);
+                    int yGenome = hic.zd.getyGridAxis().getGenomicMid(binY);
 
                     Chromosome xChrom = null;
                     Chromosome yChrom = null;
@@ -384,16 +384,21 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
 
-                    Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
-                    hic.setZoom(newZoom, centerGenomePosition.x, centerGenomePosition.y, true);
+                    int xGenome = hic.zd.getxGridAxis().getGenomicMid(centerBinX);
+                    int yGenome = hic.zd.getyGridAxis().getGenomicMid(centerBinY);
+
+                    hic.setZoom(newZoom, xGenome, yGenome, true);
 
                 } else {
 
-                    int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() /  hic.xContext.getScaleFactor());
+                    int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
-                    Point centerGenomePosition = hic.zd.getGenomePosition(centerBinX, centerBinY);
+
+                    int xGenome = hic.zd.getxGridAxis().getGenomicMid(centerBinX);
+                    int yGenome = hic.zd.getyGridAxis().getGenomicMid(centerBinY);
+
                     System.out.println("Bin position:  " + centerBinX + "\t" + centerBinY);
-                    System.out.println("Genome position:  " + centerGenomePosition.x + "\t" + centerGenomePosition.y);
+                    System.out.println("Genome position:  " + xGenome + "\t" + yGenome);
 
 
                     //If IGV is running open on loci
@@ -424,8 +429,12 @@ public class HeatmapPanel extends JComponent implements Serializable {
             if (hic.xContext != null && hic.zd != null) {
 
                 if (hic.isWholeGenome()) {
-                    double xGenome = hic.xContext.getChromosomePosition(e.getX());
-                    double yGenome = hic.yContext.getChromosomePosition(e.getY());
+
+                    int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
+                    int binY = hic.xContext.getBinOrigin() + (int) (e.getY() / hic.xContext.getScaleFactor());
+
+                    int xGenome = hic.zd.getxGridAxis().getGenomicStart(binX);
+                    int yGenome = hic.zd.getyGridAxis().getGenomicStart(binY);
 
                     Chromosome xChrom = null;
                     Chromosome yChrom = null;
@@ -461,8 +470,11 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     }
 
                 } else {
-                    int posX = (int) (hic.xContext.getChromosomePosition(e.getX()));
-                    int posY = (int) (hic.yContext.getChromosomePosition(e.getY()));
+                    int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
+                    int binY = hic.xContext.getBinOrigin() + (int) (e.getY() / hic.xContext.getScaleFactor());
+
+                    int xGenome = hic.zd.getxGridAxis().getGenomicStart(binX);
+                    int yGenome = hic.zd.getyGridAxis().getGenomicStart(binY);
 
                     //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
                     //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
@@ -470,11 +482,11 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     txt.append("<html>");
                     txt.append(hic.xContext.getChromosome().getName());
                     txt.append(":");
-                    txt.append(String.valueOf(posX));
+                    txt.append(String.valueOf(xGenome));
                     txt.append("<br>");
                     txt.append(hic.yContext.getChromosome().getName());
                     txt.append(":");
-                    txt.append(String.valueOf(posY));
+                    txt.append(String.valueOf(yGenome));
                     setToolTipText(txt.toString());
                 }
             }
