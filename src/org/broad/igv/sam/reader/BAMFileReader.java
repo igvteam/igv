@@ -47,7 +47,8 @@ public class BAMFileReader implements AlignmentReader {
 
     public BAMFileReader(File bamFile) {
         try {
-            reader = new SAMFileReader(bamFile);
+            File indexFile = findIndexFile(bamFile);
+            reader = new SAMFileReader(bamFile, indexFile);
             reader.setValidationStringency(ValidationStringency.SILENT);
             loadHeader();
         } catch (Exception e) {
@@ -92,7 +93,7 @@ public class BAMFileReader implements AlignmentReader {
     }
 
     public boolean hasIndex() {
-        return reader.hasIndex();
+        return reader.getIndex() != null;
     }
 
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
@@ -135,6 +136,45 @@ public class BAMFileReader implements AlignmentReader {
 
         public void remove() {
 
+        }
+    }
+
+
+    /**
+     * Look for BAM index file according to standard naming convention.
+     *
+     * @param dataFile BAM file name.
+     * @return Index file name, or null if not found.
+     */
+    private static File findIndexFile(final File dataFile) {
+        // If input is foo.bam, look for foo.bai
+        final String bamExtension = ".bam";
+        File indexFile;
+
+        final String bamPath = dataFile.getAbsolutePath();
+        if (bamPath.toLowerCase().endsWith(bamExtension)) {
+            String bai = bamPath.substring(0, bamPath.length() - bamExtension.length()) + ".bai";
+            log.info("Searching for index file: " + bai);
+            indexFile = new File(bai);
+            if (indexFile.exists()) {
+                log.info(bai + " found");
+                return indexFile;
+            }
+            else {
+                log.info(bai + " not found!");
+            }
+        }
+
+        // If foo.bai doesn't exist look for foo.bam.bai
+        String bai = bamPath + ".bai";
+        log.info("Searching for index file: " + (bamPath + ".bai"));
+        indexFile = new File(bai);
+        if (indexFile.exists()) {
+            log.info(bai + " found");
+            return indexFile;
+        } else {
+            log.info(bai + " not found!");
+            return null;
         }
     }
 }
