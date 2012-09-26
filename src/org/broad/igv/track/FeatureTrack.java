@@ -173,12 +173,6 @@ public class FeatureTrack extends AbstractTrack {
         return Math.max(minHeight, super.getHeight());
     }
 
-
-    @Override
-    public void setHeight(int newHeight) {
-        super.setHeight(newHeight);
-    }
-
     public int getExpandedRowHeight() {
         return expandedRowHeight;
     }

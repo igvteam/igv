@@ -24,10 +24,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.*;
-import org.broad.igv.track.FeatureCollectionSource;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.GFFFeatureSource;
-import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.ConfirmDialog;
@@ -1173,7 +1170,7 @@ public class GenomeManager {
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
-                //geneFeatureTrack.setRendererClass(GeneRenderer.class);
+                //geneFeatureTrack.setTrackType(TrackType.GENE);
                 geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {
