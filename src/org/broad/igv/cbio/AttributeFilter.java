@@ -15,22 +15,50 @@
 
 package org.broad.igv.cbio;
 
+import org.broad.igv.util.StringUtils;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author User #2
  */
 public class AttributeFilter {
 
+    private static Map<String, String> machineToHumanMap = new HashMap<String, String>(GeneNetwork.attributeMap.size());
+
+    static {
+
+        machineToHumanMap.put(GeneNetwork.PERCENT_MRNA_WAY_UP, "% mRNA High");
+        machineToHumanMap.put(GeneNetwork.PERCENT_MRNA_WAY_DOWN, "% mRNA Low");
+    }
+
+    public static String keyToLabel(String key) {
+        if (machineToHumanMap.containsKey(key)) {
+            return machineToHumanMap.get(key);
+        }
+        String label = key.replace('_', ' ');
+        label = label.replace("PERCENT", "%");
+        //Looks kinda funny with 'CNA' term
+        label = StringUtils.capWords(label);
+        label = label.replace("Cna", "CNA");
+        return label;
+    }
+
+
     AttributeFilter() {
         initComponents();
+
         attrName.setModel(new DefaultComboBoxModel(GeneNetwork.attributeMap.keySet().toArray()));
-        attrName.addItem(GeneNetwork.PERCENT_ALTERED);
+        attrName.insertItemAt(GeneNetwork.PERCENT_ALTERED, 0);
+        attrName.setSelectedIndex(0);
+
         attrName.setRenderer(new ListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String label = FilterGeneNetworkUI.keyToLabel(" " + value);
+                String label = AttributeFilter.keyToLabel("" + value);
                 JLabel comp = new JLabel(label);
                 return comp;
             }
@@ -137,15 +165,15 @@ public class AttributeFilter {
         return addRow;
     }
 
-    void setShowDel(boolean showDel){
+    void setShowDel(boolean showDel) {
         delRow.setVisible(showDel);
     }
 
-    void setIsLast(boolean isLast){
+    void setIsLast(boolean isLast) {
         addRow.setVisible(isLast);
     }
 
-    JComboBox getAttrName(){
+    JComboBox getAttrName() {
         return attrName;
     }
 

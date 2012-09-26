@@ -763,7 +763,7 @@ public class GeneListManagerUI extends JDialog {
                 buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
                 //---- viewNetworkButton ----
-                viewNetworkButton.setText("cBio Network");
+                viewNetworkButton.setText("Retrieve Network");
                 viewNetworkButton.setVisible(false);
                 viewNetworkButton.addActionListener(new ActionListener() {
                     @Override

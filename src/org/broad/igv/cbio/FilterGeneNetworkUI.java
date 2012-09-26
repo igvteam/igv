@@ -72,14 +72,6 @@ public class FilterGeneNetworkUI extends JDialog {
      */
     private Component lastSelectedTab;
 
-    public static String keyToLabel(String key) {
-        String label = key.replace('_', ' ');
-        label = label.replace("PERCENT", "%");
-        //Looks kinda funny with 'CNA' term
-        //label = StringUtils.capWords(label);
-        return label;
-    }
-
     static {
         String[] firstLabels = {"Gene label", "Interactions"};
         columnNumToKeyMap = new HashMap<Integer, String>(GeneNetwork.attributeMap.size());
@@ -91,7 +83,7 @@ public class FilterGeneNetworkUI extends JDialog {
         for (String key : GeneNetwork.attributeMap.keySet()) {
             columnNumToKeyMap.put(ind, key);
             ind++;
-            columnNames.add(keyToLabel(key));
+            columnNames.add(AttributeFilter.keyToLabel(key));
 
         }
 
@@ -201,49 +193,70 @@ public class FilterGeneNetworkUI extends JDialog {
         applySoftFilters();
     }
 
+    private void modifyForSelection(JComponent component, boolean isSelected) {
+        if (isSelected) {
+            component.setForeground(geneTable.getSelectionForeground());
+            component.setBackground(geneTable.getSelectionBackground());
+            component.setOpaque(isSelected);
+        }
+    }
+
     private void initRenderers() {
         //Bold seed genes and format numbers nicely
         TableCellRenderer stringRenderer = new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel comp = new JLabel();
-                if (value == null) return comp;
-
-                boolean isSeedGene = seedGeneList.getLoci().contains(value);
-                comp.setText(String.valueOf(value));
-                if (isSeedGene) {
-                    comp.setFont(comp.getFont().deriveFont(comp.getFont().getStyle() | Font.BOLD));
+                if (value != null) {
+                    boolean isSeedGene = seedGeneList.getLoci().contains(value);
+                    comp.setText(String.valueOf(value));
+                    if (isSeedGene) {
+                        comp.setFont(comp.getFont().deriveFont(comp.getFont().getStyle() | Font.BOLD));
+                    }
                 }
+                modifyForSelection(comp, isSelected);
                 return comp;
             }
         };
+
+        TableCellRenderer intRenderer = new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel comp = new JLabel("" + value);
+                modifyForSelection(comp, isSelected);
+                return comp;
+            }
+        };
+
 
         TableCellRenderer doubleRenderer = new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
                 JLabel comp = new JLabel();
-                if (value == null) return comp;
-
-                String sVal;
-                Double dPerc = (Double) value;
-                if (dPerc == 0.0d) {
-                    sVal = "0.0";
-                } else {
-                    //If small, show in exponential format
-                    //Otherwise just show 1 decimal place
-                    String fmt = "%2.1f";
-                    if (dPerc < 0.1d) {
-                        fmt = "%2.1e";
+                if (value != null) {
+                    String sVal;
+                    Double dPerc = (Double) value;
+                    if (dPerc == 0.0d) {
+                        sVal = "0.0";
+                    } else {
+                        //If small, show in exponential format
+                        //Otherwise just show 1 decimal place
+                        String fmt = "%2.1f";
+                        if (dPerc < 0.1d) {
+                            fmt = "%2.1e";
+                        }
+                        sVal = String.format(fmt, dPerc);
                     }
-                    sVal = String.format(fmt, dPerc);
+                    comp.setText(sVal);
                 }
-                comp.setText(sVal);
+                modifyForSelection(comp, isSelected);
                 return comp;
             }
         };
 
         geneTable.setDefaultRenderer(String.class, stringRenderer);
+        geneTable.setDefaultRenderer(Integer.class, intRenderer);
         geneTable.setDefaultRenderer(Double.class, doubleRenderer);
     }
 
@@ -1185,8 +1198,7 @@ public class FilterGeneNetworkUI extends JDialog {
                 case 0:
                     return String.class;
                 case 1:
-                    //Technically this isn't true, but we want to render it as a string
-                    return String.class;
+                    return Integer.class;
                 default:
                     return Double.class;
             }
