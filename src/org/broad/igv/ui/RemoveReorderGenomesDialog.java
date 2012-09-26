@@ -18,6 +18,7 @@ package org.broad.igv.ui;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,13 +36,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author User #2
+ * @author Jacob Silterra
  */
 public class RemoveReorderGenomesDialog extends JDialog {
 
     private List<GenomeListItem> allListItems;
     private boolean cancelled = true;
     private List<GenomeListItem> removedValuesList = new ArrayList<GenomeListItem>();
+    private GenomeListItem currentGenomeItem = null;
 
     public RemoveReorderGenomesDialog(Frame owner) {
         super(owner);
@@ -51,12 +53,17 @@ public class RemoveReorderGenomesDialog extends JDialog {
 
         genomeList.setCellRenderer(new ListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList jList, Object o, int i, boolean b, boolean b1) {
-                JLabel comp = new JLabel(o.toString());
-                if (o instanceof GenomeListItem) {
-                    GenomeListItem item = (GenomeListItem) o;
+            public Component getListCellRendererComponent(JList jList, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel comp = new JLabel(value.toString());
+                if (value instanceof GenomeListItem) {
+                    GenomeListItem item = (GenomeListItem) value;
                     comp.setText(item.getDisplayableName());
                     comp.setToolTipText(item.getLocation());
+                    if (isSelected) {
+                        comp.setBackground(genomeList.getSelectionBackground());
+                        comp.setForeground(genomeList.getSelectionForeground());
+                        comp.setOpaque(isSelected);
+                    }
                 }
                 return comp;
             }
@@ -65,6 +72,8 @@ public class RemoveReorderGenomesDialog extends JDialog {
 
     private void initData() {
         allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
+        String genomeId = GenomeManager.getInstance().getGenomeId();
+        currentGenomeItem = GenomeManager.getInstance().getGenomeListItemById(genomeId);
         buildList();
         genomeList.setTransferHandler(new SimpleTransferHandler());
     }
@@ -88,6 +97,10 @@ public class RemoveReorderGenomesDialog extends JDialog {
 
     private void removeSelected() {
         List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
+        if (selectedValuesList.contains(currentGenomeItem)) {
+            MessageUtils.showMessage("Cannot remove currently selected genome " + currentGenomeItem.getDisplayableName());
+            return;
+        }
         removedValuesList.addAll(selectedValuesList);
         allListItems.removeAll(selectedValuesList);
         buildList();
