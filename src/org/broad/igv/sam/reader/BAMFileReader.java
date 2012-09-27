@@ -80,7 +80,7 @@ public class BAMFileReader implements AlignmentReader {
         return seqNames;
     }
 
-    public Set<String>  getPlatforms() {
+    public Set<String> getPlatforms() {
         return AlignmentReaderFactory.getPlatforms(getHeader());
     }
 
@@ -141,40 +141,37 @@ public class BAMFileReader implements AlignmentReader {
 
 
     /**
-     * Look for BAM index file according to standard naming convention.
+     * Look for BAM index file according to standard naming convention.  Slightly modified version of Picard
+     * function of the same name.
      *
      * @param dataFile BAM file name.
      * @return Index file name, or null if not found.
      */
     private static File findIndexFile(final File dataFile) {
-        // If input is foo.bam, look for foo.bai
-        final String bamExtension = ".bam";
-        File indexFile;
 
         final String bamPath = dataFile.getAbsolutePath();
+
+        // foo.bam.bai
+        String bai = bamPath + ".bai";
+        File indexFile1 = new File(bai);
+        if (indexFile1.exists()) {
+            return indexFile1;
+        }
+
+        // alternate (Picard) convention,  foo.bai
+        final String bamExtension = ".bam";
+        File indexFile2 = null;
         if (bamPath.toLowerCase().endsWith(bamExtension)) {
-            String bai = bamPath.substring(0, bamPath.length() - bamExtension.length()) + ".bai";
-            log.info("Searching for index file: " + bai);
-            indexFile = new File(bai);
-            if (indexFile.exists()) {
-                log.info(bai + " found");
-                return indexFile;
-            }
-            else {
-                log.info(bai + " not found!");
+            bai = bamPath.substring(0, bamPath.length() - bamExtension.length()) + ".bai";
+            indexFile2 = new File(bai);
+            if (indexFile2.exists()) {
+                return indexFile2;
             }
         }
 
-        // If foo.bai doesn't exist look for foo.bam.bai
-        String bai = bamPath + ".bai";
-        log.info("Searching for index file: " + (bamPath + ".bai"));
-        indexFile = new File(bai);
-        if (indexFile.exists()) {
-            log.info(bai + " found");
-            return indexFile;
-        } else {
-            log.info(bai + " not found!");
-            return null;
-        }
+        log.info("Index file: " + indexFile1.getAbsolutePath() + " not found");
+        if (indexFile2 != null) log.info("Index file: " + indexFile2.getAbsolutePath() + " not Found");
+
+        return null;
     }
 }

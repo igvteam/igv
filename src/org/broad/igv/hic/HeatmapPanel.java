@@ -265,19 +265,25 @@ public class HeatmapPanel extends JComponent implements Serializable {
         public void mouseReleased(final MouseEvent e) {
 
             if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
-                // TODO -- disabled until we figure out how this should work.  Should resolutions be confined
-                // TODO -- discrete levels?
 
-//                double xBP = hic.xContext.getChromosomePosition(zoomRectangle.x);
-//                double yBP = hic.yContext.getChromosomePosition(zoomRectangle.y);
-//                double wBP = zoomRectangle.width * hic.xContext.getScale();
-//                double hBP = zoomRectangle.height * hic.yContext.getScale();
-//
-//                double newXScale = wBP / getWidth();
-//                double newYScale = hBP / getHeight();
-//                double newScale = Math.max(newXScale, newYScale);
-//
-//                hic.zoomTo(xBP, yBP, newScale);
+                int binX =    hic.xContext.getBinOrigin() + (int) (zoomRectangle.x / hic.xContext.getScaleFactor());
+                int binY =    hic.yContext.getBinOrigin() + (int) (zoomRectangle.y / hic.yContext.getScaleFactor());
+                int wBins = (int) (zoomRectangle.width / hic.xContext.getScaleFactor());
+                int hBins = (int) (zoomRectangle.height / hic.xContext.getScaleFactor());
+
+                int xBP0 = hic.zd.getxGridAxis().getGenomicStart(binX);
+                int xBP1 = hic.zd.getxGridAxis().getGenomicEnd(binX + wBins);
+                double wBP = xBP1 - xBP0;
+
+                int yBP0 = hic.zd.getyGridAxis().getGenomicEnd(binY);
+                int yBP1 = hic.zd.getyGridAxis().getGenomicEnd(binY + hBins);
+                double hBP = yBP1 - yBP0;
+
+                double newXScale = wBP / getWidth();
+                double newYScale = hBP / getHeight();
+                double newScale = Math.max(newXScale, newYScale);
+
+                hic.zoomTo(xBP0, yBP0, xBP1, yBP1, newScale);
 
             }
 
@@ -305,33 +311,31 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int deltaY = e.getY() - lastMousePoint.y;
             switch (dragMode) {
                 case ZOOM:
-                    // TODO -- disabled until we figure out how this should work.  Should resolutions be confined
-                    // TODO -- discrete levels?
-//                    Rectangle lastRectangle = zoomRectangle;
-//
-//                    if (deltaX == 0 || deltaY == 0) {
-//                        return;
-//                    }
-//
-//                    // Constrain aspect ratio of zoom rectangle to that of panel
-//                    double aspectRatio = (double) getWidth() / getHeight();
-//                    if (deltaX * aspectRatio > deltaY) {
-//                        deltaY = (int) (deltaX / aspectRatio);
-//                    } else {
-//                        deltaX = (int) (deltaY * aspectRatio);
-//                    }
-//
-//
-//                    int x = deltaX > 0 ? lastMousePoint.x : lastMousePoint.x + (int) deltaX;
-//                    int y = deltaY > 0 ? lastMousePoint.y : lastMousePoint.y + (int) deltaY;
-//                    zoomRectangle = new Rectangle(x, y, (int) Math.abs(deltaX), (int) Math.abs(deltaY));
-//
-//                    Rectangle damageRect = lastRectangle == null ? zoomRectangle : zoomRectangle.union(lastRectangle);
-//                    damageRect.x--;
-//                    damageRect.y--;
-//                    damageRect.width += 2;
-//                    damageRect.height += 2;
-//                    paintImmediately(damageRect);
+                     Rectangle lastRectangle = zoomRectangle;
+
+                    if (deltaX == 0 || deltaY == 0) {
+                        return;
+                    }
+
+                    // Constrain aspect ratio of zoom rectangle to that of panel
+                    double aspectRatio = (double) getWidth() / getHeight();
+                    if (deltaX * aspectRatio > deltaY) {
+                        deltaY = (int) (deltaX / aspectRatio);
+                    } else {
+                        deltaX = (int) (deltaY * aspectRatio);
+                    }
+
+
+                    int x = deltaX > 0 ? lastMousePoint.x : lastMousePoint.x + (int) deltaX;
+                    int y = deltaY > 0 ? lastMousePoint.y : lastMousePoint.y + (int) deltaY;
+                    zoomRectangle = new Rectangle(x, y, (int) Math.abs(deltaX), (int) Math.abs(deltaY));
+
+                    Rectangle damageRect = lastRectangle == null ? zoomRectangle : zoomRectangle.union(lastRectangle);
+                    damageRect.x--;
+                    damageRect.y--;
+                    damageRect.width += 2;
+                    damageRect.height += 2;
+                    paintImmediately(damageRect);
 
                     break;
                 default:

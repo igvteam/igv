@@ -137,7 +137,7 @@ public class HiC {
     }
 
 
-    private void updateState2(MatrixZoomData newZD,  double genomePositionX, final double genomePositionY) {
+    private void updateState2(MatrixZoomData newZD, double genomePositionX, final double genomePositionY) {
 
         zd = newZD;
         int newZoom = zd.getZoom();
@@ -145,11 +145,11 @@ public class HiC {
 
         //int newBinSize = zd.getBinSize();
 
-       // double xScaleMax = (double) xContext.getChrLength() / mainWindow.getHeatmapPanel().getWidth();
-       // double yScaleMax = (double) yContext.getChrLength() / mainWindow.getWidth();
-       // double scaleMax = Math.max(xScaleMax, yScaleMax);
+        // double xScaleMax = (double) xContext.getChrLength() / mainWindow.getHeatmapPanel().getWidth();
+        // double yScaleMax = (double) yContext.getChrLength() / mainWindow.getWidth();
+        // double scaleMax = Math.max(xScaleMax, yScaleMax);
 
-      //  double scale = Math.min(newBinSize, scaleMax);
+        //  double scale = Math.min(newBinSize, scaleMax);
 
         xContext.setZoom(newZoom);
         yContext.setZoom(newZoom);
@@ -175,16 +175,14 @@ public class HiC {
     /**
      * Zoom to a specific rectangle.  Triggered by the alt-drag action in the heatmap panel.
      *
-     * @param xBP
-     * @param yBP
-     * @param scale
+     *
      */
-    public void zoomTo(final double xBP, final double yBP, final double scale) {
+    public void zoomTo(final int xBP0, final int yBP0, final int xBP1, int yBP1, double genomicScale) {
 
         // Find zoom level closest to prescribed scale
         int newZoom = dataset.getNumberZooms() - 1;
         for (int z = 1; z < dataset.getNumberZooms(); z++) {
-            if (dataset.getZoom(z) < scale) {
+            if (dataset.getZoom(z) < genomicScale) {
                 newZoom = z - 1;
                 break;
             }
@@ -193,6 +191,17 @@ public class HiC {
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
         final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+
+
+        final int binX = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP0);
+        final int binY = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP0);
+        final int binXMax = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP1);
+        final int binYMax = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP1);
+        final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
+        final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
+        final double scaleFactor = Math.max(1, Math.min(xScale, yScale));
+
+
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {
             if (newZoom > 3) {
@@ -208,25 +217,22 @@ public class HiC {
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
-                    mainWindow.refresh();
-                    updateState(newZD, scale, xBP, yBP);
+                    updateState(newZD, binX, binY, scaleFactor);
                 }
             };
             mainWindow.executeLongRunningTask(callable);
         } else {
-            updateState(newZD, scale, xBP, yBP);
+            updateState(newZD, binX, binY, scaleFactor);
 
         }
     }
 
 
-    private void updateState(MatrixZoomData newZD, double scale, double xBP, double yBP) {
+    private void updateState(MatrixZoomData newZD, int binX, int binY, double scaleFactor) {
         zd = newZD;
-        xContext.setZoom(zd.getZoom(), (int) scale);
-        yContext.setZoom(zd.getZoom(), (int) scale);
+        xContext.setZoom(zd.getZoom(), scaleFactor);
+        yContext.setZoom(zd.getZoom(), scaleFactor);
 
-        int binX = zd.getxGridAxis().getGenomicStart((int) xBP);
-        int binY = zd.getyGridAxis().getGenomicStart((int) yBP);
 
         xContext.setBinOrigin(binX);
         yContext.setBinOrigin(binY);
@@ -254,7 +260,7 @@ public class HiC {
     private void moveTo(int newBinX, int newBinY) {
 
         final int w = mainWindow.getHeatmapPanel().getWidth();
-        int maxX = zd.getxGridAxis().getBinCount()  - w;
+        int maxX = zd.getxGridAxis().getBinCount() - w;
 
         final int h = mainWindow.getHeatmapPanel().getHeight();
         int maxY = zd.getyGridAxis().getBinCount() - h;
