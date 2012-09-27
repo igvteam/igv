@@ -427,7 +427,7 @@ public abstract class AbstractTrack implements Track {
     public void setHeight(int height) {
 
         if (height < getHeight()) {
-            if (this.getDisplayMode() == DisplayMode.EXPANDED) { // && getTrackType() != TrackType.GENE
+            if ((this.getDisplayMode() == DisplayMode.EXPANDED) && (getTrackType() != TrackType.GENE)) {
                 this.setDisplayMode(DisplayMode.SQUISHED);
             }
         }
