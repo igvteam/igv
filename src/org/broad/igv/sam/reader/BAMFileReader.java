@@ -154,7 +154,7 @@ public class BAMFileReader implements AlignmentReader {
         // foo.bam.bai
         String bai = bamPath + ".bai";
         File indexFile1 = new File(bai);
-        if (indexFile1.exists()) {
+        if (indexFile1.length() > 0) {
             return indexFile1;
         }
 
@@ -164,7 +164,7 @@ public class BAMFileReader implements AlignmentReader {
         if (bamPath.toLowerCase().endsWith(bamExtension)) {
             bai = bamPath.substring(0, bamPath.length() - bamExtension.length()) + ".bai";
             indexFile2 = new File(bai);
-            if (indexFile2.exists()) {
+            if (indexFile2.length() > 0) {
                 return indexFile2;
             }
         }
@@ -174,4 +174,6 @@ public class BAMFileReader implements AlignmentReader {
 
         return null;
     }
+
+
 }
