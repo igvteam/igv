@@ -104,6 +104,7 @@ libs
 <!-- arg element
 Represents arguments to the command line interface which require user input
 Attributes
+
 name
     Name shown to user
 
@@ -118,13 +119,16 @@ type
     Data from feature tracks is exported to a temporary file, in
     BED format. Each line may have anywhere from 3 to 12 columns,
     not necessarily consistent.
+
 id
     Unique identifier for this argument. Can be used by later
     arguments to refer to this value
+
 output
     optional, default true
     If true this argument is written to the command line
     If false it isn't. This is so we can feed inputs to a different command
+
 encoding_codec
     Fully qualified class name to use for encoding features to strings.
     Only applies to data arguments. Must implement FeatureEncoder interface.

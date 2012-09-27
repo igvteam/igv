@@ -34,21 +34,25 @@ public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
     private int[] numCols = null;
 
     private boolean multiinter;
+
     /**
      * The output of the closest and window
-     * commands are somewhat different
+     * commands are somewhat different from other commands
      */
     private boolean closestOrSim;
 
-    public BEDToolsCodec(List<String> cmd, Map<Argument, Object> argumentMap) {
-        super(cmd, argumentMap);
+    public BEDToolsCodec() {
+        super();
         BEDCodec = new IGVBEDCodec();
-        for (String cmdTok : cmd) {
+    }
+
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        super.setInputs(commands, argumentMap);
+        for (String cmdTok : commands) {
             hasSplit |= cmdTok.contains("-split");
         }
-        multiinter = cmd.contains("multiinter");
-        closestOrSim = cmd.contains("window") || cmd.contains("closest");
-
+        multiinter = commands.contains("multiinter");
+        closestOrSim = commands.contains("window") || commands.contains("closest");
 
         for (Map.Entry<Argument, Object> entry : argumentMap.entrySet()) {
             Argument argument = entry.getKey();

@@ -63,11 +63,10 @@ public class PluginSpecReaderTest {
     public void testReadSpec() throws Exception {
         String path = TestUtils.DATA_DIR + "plugin/cat_plugin.xml";
         PluginSpecReader reader = PluginSpecReader.create(path);
-        assertNull(reader.document);
+        assertNotNull(reader.document);
 
         List<Element> tools = reader.getTools();
         assertEquals(1, tools.size());
-        assertNotNull(reader.document);
 
         List<Element> commands = reader.getCommands(tools.get(0));
         assertEquals(1, commands.size());

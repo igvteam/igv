@@ -24,7 +24,6 @@ import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -43,7 +42,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * Initial command tokens. This will typically include both
      * the executable and command, e.g. {"/usr/bin/bedtools", "intersect"}
      */
-    protected final List<String> cmd;
+    protected final List<String> commands;
     protected final LinkedHashMap<Argument, Object> arguments;
 
     protected boolean strictParsing = true;
@@ -57,8 +56,8 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      */
     protected Map<String, Integer> outputCols = new LinkedHashMap<String, Integer>(2);
 
-    public PluginSource(List<String> cmd, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
-        this.cmd = cmd;
+    public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+        this.commands = commands;
         this.arguments = arguments;
 
         setParsingAttributes(parsingAttrs, specPath);
@@ -78,6 +77,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
 
     /**
+     * Encode features into strings using {@link #getEncodingCodec(Argument)} and write them to the provided stream.
      * Stream will be closed after data written
      *
      * @param features
@@ -116,7 +116,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
     protected final String[] genFullCommand(String chr, int start, int end, int zoom) throws IOException {
 
-        List<String> fullCmd = new ArrayList<String>(cmd);
+        List<String> fullCmd = new ArrayList<String>(commands);
 
         outputCols.clear();
         Map<String, String[]> argValsById = new HashMap<String, String[]>(arguments.size());
@@ -222,7 +222,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * @return
      * @throws java.io.IOException
      */
-    protected Iterator<D> getFeatures(String chr, int start, int end, int zoom) throws IOException {
+    protected final Iterator<D> getFeatures(String chr, int start, int end, int zoom) throws IOException {
 
         String[] fullCmd = genFullCommand(chr, start, end, zoom);
 
@@ -234,8 +234,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
         List<D> featuresList = new ArrayList<D>();
 
-        FeatureDecoder<D> codec = getDecodingCodec(decodingCodec, decodingLibURLs, cmd, arguments);
-        codec.setOutputColumns(outputCols);
+        FeatureDecoder<D> codec = getDecodingCodec();
 
         String line;
         D feat;
@@ -245,6 +244,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                 if (feat != null)
                     featuresList.add(feat);
             } catch (Exception e) {
+                log.error(e);
                 if (strictParsing) {
                     throw new RuntimeException(e);
                 }
@@ -256,7 +256,17 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         return featuresList.iterator();
     }
 
-    protected FeatureEncoder getEncodingCodec(Argument argument) {
+    /**
+     * Get the encoding codec for this argument. Default
+     * is IGVBEDCodec, if there was none specified.
+     * <p/>
+     * Codec will be reflectively instantiated if it was specified
+     * in the {@code argument}
+     *
+     * @param argument
+     * @return
+     */
+    protected final FeatureEncoder getEncodingCodec(Argument argument) {
         String encodingCodec = argument.getEncodingCodec();
 
         if (encodingCodec == null) return new IGVBEDCodec();
@@ -269,56 +279,49 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
                     getClass().getClassLoader()
             );
             Class clazz = loader.loadClass(encodingCodec);
-            Object codec = clazz.newInstance();
+            Constructor constructor = clazz.getConstructor();
+            Object codec = constructor.newInstance();
             return (FeatureEncoder) codec;
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error(e);
             throw new IllegalArgumentException(e);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e);
             throw new RuntimeException(e);
         }
-
     }
 
-    protected FeatureDecoder<D> getDecodingCodec() {
-        FeatureDecoder<D> codec = getDecodingCodec(decodingCodec, decodingLibURLs, cmd, arguments);
-        codec.setOutputColumns(outputCols);
+    protected final FeatureDecoder<D> getDecodingCodec() {
+        FeatureDecoder<D> codec = getDecodingCodec(decodingCodec, decodingLibURLs);
+        codec.setInputs(commands, arguments);
+        codec.setOutputColumns(Collections.unmodifiableMap(outputCols));
         return codec;
     }
 
-    private FeatureDecoder<D> getDecodingCodec(String decodingCodec, URL[] libURLs, List<String> cmd, Map<Argument, Object> argumentMap) {
-        if (decodingCodec == null) return
-                new DecoderWrapper(CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome()));
+    protected final FeatureDecoder<D> getDecodingCodec(String decodingCodec, URL[] libURLs) {
+        if (decodingCodec == null) {
+            AsciiFeatureCodec<D> asciiCodec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
+            if (asciiCodec == null) {
+                throw new IllegalArgumentException("Unable to find codec for format " + format);
+            }
+            return new DecoderWrapper<D>(asciiCodec);
+        }
 
         try {
 
-            ClassLoader loader = URLClassLoader.newInstance(
-                    libURLs,
-                    getClass().getClassLoader()
-            );
+            ClassLoader loader = URLClassLoader.newInstance(libURLs,
+                    getClass().getClassLoader());
 
             Class clazz = loader.loadClass(decodingCodec);
-            Constructor constructor = clazz.getConstructor(List.class, Map.class);
-            return (FeatureDecoder<D>) constructor.newInstance(cmd, argumentMap);
+            Constructor constructor = clazz.getConstructor();
+            FeatureDecoder decoder = (FeatureDecoder<D>) constructor.newInstance();
+            return decoder;
 
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error(e);
             throw new IllegalArgumentException(e);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e);
             throw new RuntimeException(e);
         }
 
@@ -339,7 +342,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
         @Override
         public void setOutputColumns(Map<String, Integer> outputColumns) {
-            //no-op
+        }
+
+        @Override
+        public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
         }
     }
 

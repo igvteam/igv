@@ -96,12 +96,6 @@ public class PluginSpecReader {
     }
 
     public List<Element> getTools() {
-        if (document == null) {
-            if (!parseDocument()) {
-                return null;
-            }
-        }
-
         return getElementsByTag(document.getDocumentElement(), "tool");
     }
 

@@ -35,8 +35,8 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
 
-    public PluginFeatureSource(List<String> cmd, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
-        super(cmd, arguments, parsingAttrs, specPath);
+    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+        super(commands, arguments, parsingAttrs, specPath);
     }
 
     protected String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException {

@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  * <br>
  * @Override public BasicFeature decode(String line){...}
  * <p/>
+ * ... other methods....
  * }
  * }
  * User: jacob
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  */
 public abstract class PluginCodec<E extends Feature, D extends Feature> implements FeatureEncoder<E>, FeatureDecoder<D> {
 
-    protected List<String> cmd;
+    protected List<String> commands;
     protected Map<Argument, Object> argumentMap;
     protected Map<String, Integer> outputColumns;
 
@@ -53,8 +54,9 @@ public abstract class PluginCodec<E extends Feature, D extends Feature> implemen
      */
     protected Pattern columnDelimiter = Pattern.compile("\\t");
 
-    public PluginCodec(List<String> cmd, Map<Argument, Object> argumentMap) {
-        this.cmd = cmd;
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        this.commands = commands;
         this.argumentMap = argumentMap;
     }
 
@@ -74,7 +76,6 @@ public abstract class PluginCodec<E extends Feature, D extends Feature> implemen
     public int getNumCols(String line) {
         return columnDelimiter.split(line).length;
     }
-
 
     @Override
     public String getHeader() {

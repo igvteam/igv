@@ -27,8 +27,13 @@ public class Argument {
 
     private String name;
     private InputType type;
+
+    /**
+     * Text which goes before Argument value on command line
+     */
     private String cmdArg;
     private String defaultValue;
+
     /**
      * Whether the argument gets written to the command line
      * This is true by default (usually it will be). Some only exist
@@ -45,12 +50,14 @@ public class Argument {
 
     /**
      * Full class name of encoding codec to be used
+     * In addition to default classpath, will
+     * also search {@link #libURLs}
      */
     private String encodingCodec;
 
     /**
-     * URLs to search for encoding codec, in addition
-     * to default
+     * URLs to search for encoding codec class, in addition
+     * to current classpath
      */
     private URL[] libURLs;
 

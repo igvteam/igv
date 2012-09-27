@@ -12,6 +12,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
+import org.broad.igv.dev.plugin.Argument;
 import org.broad.igv.dev.plugin.FeatureDecoder;
 import org.broad.igv.dev.plugin.FeatureEncoder;
 import org.broad.igv.feature.*;
@@ -32,7 +33,6 @@ import java.util.regex.Pattern;
  * User: jrobinso
  * Date: Dec 20, 2009
  * Time: 10:15:49 PM
- * To change this template use File | Settings | File Templates.
  */
 public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncoder<Feature>, FeatureDecoder<BasicFeature> {
 
@@ -42,8 +42,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncod
     Genome genome;
 
     public IGVBEDCodec() {
-        super(BasicFeature.class);
-        this.genome = null;
+        this(null);
     }
 
     public IGVBEDCodec(Genome genome) {
@@ -388,7 +387,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncod
 
     @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
-        //no-op, don't care
+    }
+
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
     }
 
 

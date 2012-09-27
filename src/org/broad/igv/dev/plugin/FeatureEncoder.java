@@ -14,8 +14,13 @@ package org.broad.igv.dev.plugin;
 import org.broad.tribble.Feature;
 
 /**
+ * Interface for creating a string from a feature. We also require
+ * certain metadata, such as header and the number of columns for each feature
  * User: jacob
  * Date: 2012-Aug-02
+ *
+ * @see PluginCodec
+ * @see FeatureDecoder
  */
 public interface FeatureEncoder<T extends Feature> {
 
@@ -31,15 +36,15 @@ public interface FeatureEncoder<T extends Feature> {
     /**
      * @param line
      * @return The number of data columns contained in this line.
-     *         Some decoders need this information
+     *         Some decoders need this information.
      */
     int getNumCols(String line);
 
     /**
      * Get header for this encoder. This will
-     * be written before any features
+     * be written before any features.
      *
-     * @return
+     * @return String header, or null for none
      */
     String getHeader();
 }
