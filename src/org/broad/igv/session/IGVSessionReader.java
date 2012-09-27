@@ -1027,29 +1027,7 @@ public class IGVSessionReader implements SessionReader {
             return;
         }
 
-        TrackType trackType = TrackType.OTHER;
-
-        if (TrackType.ALLELE_SPECIFIC_COPY_NUMBER.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.ALLELE_SPECIFIC_COPY_NUMBER;
-        } else if (TrackType.CHIP.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.CHIP;
-        } else if (TrackType.COPY_NUMBER.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.COPY_NUMBER;
-        } else if (TrackType.DNA_METHYLATION.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.DNA_METHYLATION;
-        } else if (TrackType.OTHER.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.OTHER;
-        } else if (TrackType.GENE_EXPRESSION.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.GENE_EXPRESSION;
-        } else if (TrackType.LOH.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.LOH;
-        } else if (TrackType.MUTATION.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.MUTATION;
-        } else if (TrackType.PHASTCON.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.PHASTCON;
-        } else if (TrackType.TILING_ARRAY.name().equalsIgnoreCase(type)) {
-            trackType = TrackType.TILING_ARRAY;
-        }
+        TrackType trackType = CollUtils.valueOf(TrackType.class, type.toUpperCase(), TrackType.OTHER);
 
         // TODO -- refactor to remove instanceof / cast.  Currently only ContinuousColorScale is handled
         ColorScale colorScale = ColorScaleFactory.getScaleFromString(value);
