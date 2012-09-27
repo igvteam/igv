@@ -18,7 +18,7 @@ import java.awt.*;
 public class EigenvectorTrack extends HiCTrack {
 
 
-    double step;
+    double scale;
     double[] data;
     private double dataMax;
     private double median;
@@ -26,11 +26,11 @@ public class EigenvectorTrack extends HiCTrack {
     int currentZoom = -1;
 
     public EigenvectorTrack(String id, String name, HiC hic) {
-          this.hic = hic;
+        this.hic = hic;
     }
 
-    private void setData(double step, double[] data) {
-        this.step = step;
+    private void setData(double scale, double[] data) {
+        this.scale = scale;
         this.data = data;
 
         DoubleArrayList tmp = new DoubleArrayList(data.length);
@@ -53,8 +53,8 @@ public class EigenvectorTrack extends HiCTrack {
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
      * bounds of the rectangle.
      *
-     * @param g2d     the graphics context
-     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
+     * @param g2d  the graphics context
+     * @param rect the track bounds, relative to the enclosing DataPanel bounds.
      */
     public void render(Graphics2D g2d, Context context, Rectangle rect) {
 
@@ -65,7 +65,7 @@ public class EigenvectorTrack extends HiCTrack {
             if (eigen == null) return;
 
             currentZoom = zoom;
-            setData(hic.zd.getBinSize(), eigen);
+            setData(context.getScaleFactor(), eigen);
         }
 
         if (data == null || data.length == 0) return;
@@ -73,29 +73,30 @@ public class EigenvectorTrack extends HiCTrack {
         int h = rect.height / 2;
         g2d.setColor(Color.blue.darker());
 
-        int lastXPixel = -1;
+        for (int bin = context.getBinOrigin(); bin < data.length; bin++) {
 
-        for (int i = 0; i < data.length; i++) {
+            if (Double.isNaN(data[bin])) continue;
 
-            if (Double.isNaN(data[i])) continue;
+            int xPixelLeft = rect.x + (int) ((bin - context.getBinOrigin()) * scale); //context.getScreenPosition (genomicPosition);
+            int xPixelRight = rect.x + (int) ((bin + 1 - context.getBinOrigin()) * scale);
 
-            int genomicPosition = (int) (step * i);
 
-            int xPixel = 0; //context.getScreenPosition (genomicPosition);
-
-            if (xPixel > lastXPixel && lastXPixel >= 0) {
-
-                double x = data[i] - median;
-                double max = dataMax - median;
-
-                int myh = (int) ((x / max) * h);
-                if (x > 0) {
-                    g2d.fillRect(lastXPixel, rect.y + h - myh, (xPixel - lastXPixel), myh);
-                } else {
-                    g2d.fillRect(lastXPixel, rect.y + h, xPixel - lastXPixel, -myh);
-                }
+            if (xPixelRight < rect.x) {
+                continue;
+            } else if (xPixelLeft > rect.x + rect.width) {
+                break;
             }
-            lastXPixel = xPixel;
+
+            double x = data[bin] - median;
+            double max = dataMax - median;
+
+            int myh = (int) ((x / max) * h);
+            if (x > 0) {
+                g2d.fillRect(xPixelLeft, rect.y + h - myh, (xPixelRight - xPixelLeft), myh);
+            } else {
+                g2d.fillRect(xPixelLeft, rect.y + h, (xPixelRight - xPixelLeft), -myh);
+            }
+
         }
 
     }
