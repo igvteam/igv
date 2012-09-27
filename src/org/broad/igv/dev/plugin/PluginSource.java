@@ -230,30 +230,8 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         Process pr = RuntimeUtils.startExternalProcess(fullCmd, null, null);
 
         //Read back in the data which plugin output
-        BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-        List<D> featuresList = new ArrayList<D>();
-
         FeatureDecoder<D> codec = getDecodingCodec();
-
-        String line;
-        D feat;
-        while ((line = in.readLine()) != null) {
-            try {
-                feat = codec.decode(line);
-                if (feat != null)
-                    featuresList.add(feat);
-            } catch (Exception e) {
-                log.error(e);
-                if (strictParsing) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        in.close();
-
-        return featuresList.iterator();
+        return codec.decodeAll(pr.getInputStream(), strictParsing);
     }
 
     /**

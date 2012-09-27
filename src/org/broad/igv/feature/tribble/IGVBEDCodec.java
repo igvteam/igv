@@ -13,6 +13,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
 import org.broad.igv.dev.plugin.Argument;
+import org.broad.igv.dev.plugin.AsciiDecoder;
 import org.broad.igv.dev.plugin.FeatureDecoder;
 import org.broad.igv.dev.plugin.FeatureEncoder;
 import org.broad.igv.feature.*;
@@ -23,6 +24,9 @@ import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -40,6 +44,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncod
     static final Pattern EQ_PATTERN = Pattern.compile("=");
 
     Genome genome;
+    private AsciiDecoder.DecoderWrapper<BasicFeature> decoderWrapper;
 
     public IGVBEDCodec() {
         this(null);
@@ -48,6 +53,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncod
     public IGVBEDCodec(Genome genome) {
         super(BasicFeature.class);
         this.genome = genome;
+        this.decoderWrapper = new AsciiDecoder.DecoderWrapper<BasicFeature>(this);
     }
 
     public void setGffTags(boolean gffTags) {
@@ -386,13 +392,17 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements FeatureEncod
     }
 
     @Override
+    public Iterator<BasicFeature> decodeAll(InputStream is, boolean strictParsing) throws IOException {
+        return this.decoderWrapper.decodeAll(is, strictParsing);
+    }
+
+    @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
     }
 
     @Override
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
     }
-
 
 }
 

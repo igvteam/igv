@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * User: jacob
  * Date: 2012-Aug-01
  */
-public abstract class PluginCodec<E extends Feature, D extends Feature> implements FeatureEncoder<E>, FeatureDecoder<D> {
+public abstract class PluginCodec<E extends Feature, D extends Feature> extends AsciiDecoder<D> implements FeatureEncoder<E> {
 
     protected List<String> commands;
     protected Map<Argument, Object> argumentMap;

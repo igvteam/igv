@@ -13,6 +13,9 @@ package org.broad.igv.dev.plugin;
 
 import org.broad.tribble.Feature;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -25,11 +28,19 @@ import java.util.Map;
  */
 public interface FeatureDecoder<T extends Feature> {
 
+
     /**
-     * @param line
-     * @return null to skip, or else decoded Feature
+     * Decode all features from the specified input stream
+     * Stream is closed afterwards
+     *
+     * @param is
+     * @param strictParsing If true, errors are thrown if we cannot parse a given line.
+     *                      If false, we simply skip that line. Mostly applicable to AsciiDecoders,
+     *                      but could be useful more generally.
+     * @return Iterator of decoded features
+     * @throws IOException
      */
-    T decode(String line);
+    Iterator<T> decodeAll(InputStream is, boolean strictParsing) throws IOException;
 
     /**
      * @param outputColumns Map from temporary output file path to the number of columns

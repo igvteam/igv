@@ -32,42 +32,32 @@ public abstract class AsciiDecoder<T extends Feature> implements FeatureDecoder<
 
     private static Logger log = Logger.getLogger(AsciiDecoder.class);
 
-    /**
-     * Decode all features from the specified input stream
-     * Stream is closed afterwards
-     *
-     * @param is
-     * @param strictParsing If true, errors are thrown if we cannot parse a given line.
-     *                      If false, we simply skip that line
-     * @return
-     * @throws IOException
-     */
     public Iterator<T> decodeAll(InputStream is, boolean strictParsing) throws IOException {
 
         List<T> featuresList = new ArrayList<T>();
         BufferedReader bis = new BufferedReader(new InputStreamReader(is));
         String line;
         T feat;
+
         while ((line = bis.readLine()) != null) {
-
-            feat = decode(line, strictParsing);
-
-            if (feat != null) {
-                featuresList.add(feat);
+            try {
+                feat = decode(line);
+                if (feat != null) {
+                    featuresList.add(feat);
+                }
+            } catch (Exception e) {
+                log.error(e);
+                if (strictParsing) {
+                    throw new RuntimeException(e);
+                }
             }
-
         }
 
         is.close();
         return featuresList.iterator();
     }
 
-    public abstract T decode(String line, boolean strictParsing);
-
-    @Override
-    public T decode(String line) {
-        return decode(line, true);
-    }
+    public abstract T decode(String line);
 
     @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
@@ -86,18 +76,8 @@ public abstract class AsciiDecoder<T extends Feature> implements FeatureDecoder<
         }
 
         @Override
-        public T decode(String line, boolean strictParsing) {
-            T feat = null;
-            try {
-                feat = wrappedCodec.decode(line);
-            } catch (Exception e) {
-                log.error(e);
-                if (strictParsing) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            return feat;
+        public T decode(String line) {
+            return wrappedCodec.decode(line);
         }
 
     }
