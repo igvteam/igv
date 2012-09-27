@@ -304,7 +304,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
             if (asciiCodec == null) {
                 throw new IllegalArgumentException("Unable to find codec for format " + format);
             }
-            return new DecoderWrapper<D>(asciiCodec);
+            return new AsciiDecoder.DecoderWrapper<D>(asciiCodec);
         }
 
         try {
@@ -326,28 +326,5 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         }
 
     }
-
-    private class DecoderWrapper<T extends Feature> implements FeatureDecoder<T> {
-
-        private AsciiFeatureCodec<T> wrappedCodec;
-
-        public DecoderWrapper(AsciiFeatureCodec<T> wrappedCodec) {
-            this.wrappedCodec = wrappedCodec;
-        }
-
-        @Override
-        public T decode(String line) {
-            return wrappedCodec.decode(line);
-        }
-
-        @Override
-        public void setOutputColumns(Map<String, Integer> outputColumns) {
-        }
-
-        @Override
-        public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
-        }
-    }
-
 
 }
