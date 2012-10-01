@@ -80,33 +80,20 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * Encode features into strings using {@link #getEncodingCodec(Argument)} and write them to the provided stream.
      * Stream will be closed after data written
      *
-     * @param features
      * @param outputStream
+     * @param features
+     * @param argument
      * @return
      */
-    protected final int writeFeaturesToStream(Iterator<E> features, OutputStream outputStream, Argument argument) {
+    protected final int writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument) {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
         int allNumCols = -1;
         if (features != null) {
             FeatureEncoder codec = getEncodingCodec(argument);
-            String header = codec.getHeader();
-            if (header != null) {
-                writer.println(header);
-            }
-            while (features.hasNext()) {
-                String line = codec.encode(features.next());
-                if (line == null) continue;
-                writer.println(line);
 
-                //We require consistency of output
-                int tmpNumCols = codec.getNumCols(line);
-                if (allNumCols < 0) {
-                    allNumCols = tmpNumCols;
-                } else {
-                    assert tmpNumCols == allNumCols;
-                }
-            }
+            allNumCols = codec.encodeAll(outputStream, features);
+
         }
         writer.flush();
         writer.close();
@@ -206,7 +193,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         File outFile = File.createTempFile("features", ".tmp", null);
         outFile.deleteOnExit();
 
-        int numCols = writeFeaturesToStream(features.iterator(), new FileOutputStream(outFile), argument);
+        int numCols = writeFeaturesToStream(new FileOutputStream(outFile), features.iterator(), argument);
         String path = outFile.getAbsolutePath();
         outputCols.put(path, numCols);
         return path;
@@ -244,10 +231,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * @param argument
      * @return
      */
-    protected final FeatureEncoder getEncodingCodec(Argument argument) {
+    protected final FeatureEncoder<E> getEncodingCodec(Argument argument) {
         String encodingCodec = argument.getEncodingCodec();
 
-        if (encodingCodec == null) return new IGVBEDCodec();
+        if (encodingCodec == null) return new AsciiEncoder(new IGVBEDCodec());
 
         URL[] libURLs = argument.getLibURLs();
 
@@ -259,7 +246,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
             Class clazz = loader.loadClass(encodingCodec);
             Constructor constructor = clazz.getConstructor();
             Object codec = constructor.newInstance();
-            return (FeatureEncoder) codec;
+            if (!(codec instanceof FeatureEncoder) && codec instanceof LineFeatureEncoder) {
+                return new AsciiEncoder((LineFeatureEncoder<D>) codec);
+            }
+            return (FeatureEncoder<E>) codec;
         } catch (ClassNotFoundException e) {
             log.error(e);
             throw new IllegalArgumentException(e);
@@ -292,8 +282,12 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
             Class clazz = loader.loadClass(decodingCodec);
             Constructor constructor = clazz.getConstructor();
-            FeatureDecoder decoder = (FeatureDecoder<D>) constructor.newInstance();
-            return decoder;
+            Object codec = constructor.newInstance();
+            //User can pass in LineFeatureDecoder, we just wrap it
+            if (!(codec instanceof FeatureDecoder) && codec instanceof LineFeatureDecoder) {
+                return new AsciiDecoder((LineFeatureDecoder<D>) codec);
+            }
+            return (FeatureDecoder<D>) codec;
 
         } catch (ClassNotFoundException e) {
             log.error(e);

@@ -11,9 +11,9 @@
 
 package org.broad.igv.dev.plugin;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
-import org.broad.tribble.Feature;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +24,9 @@ import java.util.Map;
  * User: jacob
  * Date: 2012-Aug-02
  */
-public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
+public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements LineFeatureDecoder<BasicFeature> {
 
-    private IGVBEDCodec BEDCodec;
+    private IGVBEDCodec BEDCodec = new IGVBEDCodec();
     private boolean hasSplit = false;
 
     private int numTracks = 0;
@@ -41,9 +41,8 @@ public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
      */
     private boolean closestOrSim;
 
-    public BEDToolsCodec() {
-        super();
-        BEDCodec = new IGVBEDCodec();
+    public BEDToolsDecoder() {
+        super.lineFeatureDecoder = this;
     }
 
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
@@ -73,11 +72,13 @@ public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
             }
 
         }
-
-
     }
 
     @Override
+    public BasicFeature decode(String line) {
+        return this.decode(Globals.singleTabMultiSpacePattern.split(line));
+    }
+
     public BasicFeature decode(String[] tokens) {
         BasicFeature feat;
 
@@ -107,11 +108,6 @@ public final class BEDToolsCodec extends PluginCodec<Feature, BasicFeature> {
             feat = BEDCodec.decode(tokens);
         }
         return feat;
-    }
-
-    @Override
-    public String encode(Feature feature) {
-        return BEDCodec.encode(feature);
     }
 
     @Override

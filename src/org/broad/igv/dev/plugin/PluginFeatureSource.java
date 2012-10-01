@@ -39,6 +39,7 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
         super(commands, arguments, parsingAttrs, specPath);
     }
 
+    @Override
     protected String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException {
         FeatureTrack fTrack = (FeatureTrack) track;
         List<Feature> features = fTrack.getFeatures(chr, start, end);

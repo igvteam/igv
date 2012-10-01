@@ -13,21 +13,10 @@ package org.broad.igv.dev.plugin;
 
 import org.broad.tribble.Feature;
 
-import java.io.OutputStream;
-import java.util.Iterator;
-
 /**
- * Interface for creating a string from a feature. We also require
- * certain metadata, such as header and the number of columns for each feature
  * User: jacob
- * Date: 2012-Aug-02
- *
- * @see PluginCodec
- * @see FeatureDecoder
+ * Date: 2012-Oct-01
  */
-public interface FeatureEncoder<T extends Feature> {
-
-
-    int encodeAll(OutputStream outputStream, Iterator<T> features);
-
+public interface LineFeatureDecoder<T extends Feature> {
+    T decode(String line);
 }

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * User: jacob
  * Date: 2012-Aug-23
  */
-public class BEDGraphEncoder implements FeatureEncoder {
+public class BEDGraphEncoder implements LineFeatureEncoder {
 
     protected final Pattern splitter = Pattern.compile("\\s+");
     protected String delimiter = "\t";

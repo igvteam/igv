@@ -18,7 +18,7 @@
             <arg name="Track B" cmd_arg="-b" type="feature_track"
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
 
-            <parser format="bed" decoding_codec="org.broad.igv.dev.plugin.BEDToolsCodec"
+            <parser format="bed" decoding_codec="org.broad.igv.dev.plugin.BEDToolsDecoder"
                     strict="true" libs="BEDToolsPluginCodec.jar"/>
         </default>
 
@@ -31,7 +31,7 @@
         <command name="Remove/Subtract" cmd="subtract"/>
 
         <command name="Closest" cmd="closest">
-            <parser strict="false" decoding_codec="org.broad.igv.dev.plugin.BEDToolsCodec"/>
+            <parser strict="false" decoding_codec="org.broad.igv.dev.plugin.BEDToolsDecoder"/>
         </command>
 
         <command name="Window" cmd="window">

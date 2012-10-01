@@ -13,6 +13,8 @@ package org.broad.igv.dev.plugin;
 
 import org.broad.tribble.Feature;
 
+import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -40,46 +42,57 @@ import java.util.regex.Pattern;
  * User: jacob
  * Date: 2012-Aug-01
  */
-public abstract class PluginCodec<E extends Feature, D extends Feature> extends AsciiDecoder<D> implements FeatureEncoder<E> {
+public abstract class PluginCodec<E extends Feature, D extends Feature> implements FeatureEncoder<E>, FeatureDecoder<E> {
 
     protected List<String> commands;
-    protected Map<Argument, Object> argumentMap;
-    protected Map<String, Integer> outputColumns;
 
     /**
-     * Pattern used to split line in {@link #getNumCols(String)},
+     * Pattern used to split line,
      * assuming default implementation. Subclasses may
      * simply assign a new value to columnDelimiter if counting
      * columns can be accomplished via regex
      */
     protected Pattern columnDelimiter = Pattern.compile("\\t");
 
+    protected AsciiEncoder<E> encoder;
+    protected AsciiDecoder<D> decoder;
+
+    public PluginCodec(LineFeatureEncoder<E> lineFeatureEncoder, LineFeatureDecoder<D> lineFeatureDecoder) {
+        this.encoder = new AsciiEncoder<E>(lineFeatureEncoder);
+        this.decoder = new AsciiDecoder<D>(lineFeatureDecoder);
+    }
+
     @Override
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
-        this.commands = commands;
-        this.argumentMap = argumentMap;
+        this.decoder.setInputs(commands, argumentMap);
     }
 
     @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
-        this.outputColumns = outputColumns;
+        this.decoder.setOutputColumns(outputColumns);
     }
 
-    public abstract D decode(String[] tokens);
-
     @Override
+    public int encodeAll(OutputStream outputStream, Iterator<E> features) {
+        return this.encoder.encodeAll(outputStream, features);
+    }
+
     public D decode(String line) {
-        return decode(columnDelimiter.split(line));
+        return decoder.decode(line);
     }
 
-    @Override
-    public int getNumCols(String line) {
-        return columnDelimiter.split(line).length;
-    }
-
-    @Override
-    public String getHeader() {
-        return null;
-    }
-
+//    @Override
+//    public String encode(E feature) {
+//        return this.encoder.encode(feature);
+//    }
+//
+//    @Override
+//    public int getNumCols(String line) {
+//        return this.encoder.getNumCols(line);
+//    }
+//
+//    @Override
+//    public String getHeader() {
+//        return this.encoder.getHeader();
+//    }
 }

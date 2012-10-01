@@ -28,16 +28,25 @@ import java.util.Map;
  * User: jacob
  * Date: 2012-Sep-27
  */
-public abstract class AsciiDecoder<T extends Feature> implements FeatureDecoder<T> {
+public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
 
     private static Logger log = Logger.getLogger(AsciiDecoder.class);
 
-    public Iterator<T> decodeAll(InputStream is, boolean strictParsing) throws IOException {
+    protected LineFeatureDecoder<D> lineFeatureDecoder;
 
-        List<T> featuresList = new ArrayList<T>();
+    public AsciiDecoder() {
+    }
+
+    public AsciiDecoder(LineFeatureDecoder<D> lineFeatureDecoder) {
+        this.lineFeatureDecoder = lineFeatureDecoder;
+    }
+
+    public Iterator<D> decodeAll(InputStream is, boolean strictParsing) throws IOException {
+
+        List<D> featuresList = new ArrayList<D>();
         BufferedReader bis = new BufferedReader(new InputStreamReader(is));
         String line;
-        T feat;
+        D feat;
 
         while ((line = bis.readLine()) != null) {
             try {
@@ -57,7 +66,9 @@ public abstract class AsciiDecoder<T extends Feature> implements FeatureDecoder<
         return featuresList.iterator();
     }
 
-    public abstract T decode(String line);
+    public D decode(String line) {
+        return this.lineFeatureDecoder.decode(line);
+    }
 
     @Override
     public void setOutputColumns(Map<String, Integer> outputColumns) {
@@ -67,12 +78,18 @@ public abstract class AsciiDecoder<T extends Feature> implements FeatureDecoder<
     public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
     }
 
-    public static class DecoderWrapper<T extends Feature> extends AsciiDecoder<T> {
+    /**
+     * Wrap an AsciiFeatureCodec into implementing LineFeatureDecoder
+     *
+     * @param <T>
+     */
+    public static class DecoderWrapper<T extends Feature> extends AsciiDecoder<T> implements LineFeatureDecoder<T> {
 
         private AsciiFeatureCodec<T> wrappedCodec;
 
         public DecoderWrapper(AsciiFeatureCodec<T> wrappedCodec) {
             this.wrappedCodec = wrappedCodec;
+            this.lineFeatureDecoder = this;
         }
 
         @Override

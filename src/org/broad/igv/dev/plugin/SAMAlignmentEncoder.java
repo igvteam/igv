@@ -11,21 +11,44 @@
 
 package org.broad.igv.dev.plugin;
 
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileWriterImpl;
+import net.sf.samtools.SAMTextWriter;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SAMWriter;
 import org.broad.igv.sam.SamAlignment;
+
+import java.io.OutputStream;
+import java.util.Iterator;
 
 /**
  * Encode an Alignment into SAM format
  * User: jacob
  * Date: 2012-Sep-27
  */
-public class AlignmentEncoder implements FeatureEncoder<Alignment> {
+public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
 
-    //private boolean headerWritten = false;
+    private boolean headerSet = false;
 
-    @Override
-    public String encode(Alignment feature) {
+    public int encodeAll(OutputStream stream, Iterator<Alignment> alignments) {
+        SAMFileWriterImpl writer = new SAMTextWriter(stream);
+        while (alignments.hasNext()) {
+            Alignment al = alignments.next();
+            if (al instanceof SamAlignment) {
+                SamAlignment samAl = (SamAlignment) al;
+                if (!headerSet) {
+                    writer.setSortOrder(SAMFileHeader.SortOrder.unsorted, true);
+                    writer.setHeader(samAl.getRecord().getHeader());
+                    headerSet = true;
+                }
+                writer.addAlignment(samAl.getRecord());
+            }
+        }
+        writer.close();
+        return -1;
+    }
+
+    private String encode(Alignment feature) {
         if (feature instanceof SamAlignment) {
             SamAlignment alignment = (SamAlignment) feature;
             String out = "";
@@ -40,13 +63,4 @@ public class AlignmentEncoder implements FeatureEncoder<Alignment> {
         return SAMWriter.getSAMString(feature);
     }
 
-    @Override
-    public int getNumCols(String line) {
-        return line.split("\\t").length;
-    }
-
-    @Override
-    public String getHeader() {
-        return null;
-    }
 }
