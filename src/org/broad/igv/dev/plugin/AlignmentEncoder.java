@@ -29,8 +29,7 @@ public class AlignmentEncoder implements FeatureEncoder<Alignment> {
         if (feature instanceof SamAlignment) {
             SamAlignment alignment = (SamAlignment) feature;
             String out = "";
-            //TODO This is a hack, but in theory should work. However, we may be better off just
-            //not having a header at all
+            //TODO This is a hack, but in theory should work. However, we may be better off just not having a header at all
 //            if(!headerWritten){
 //                out = alignment.getRecord().getHeader().getTextHeader() + "\n";
 //                headerWritten = true;
