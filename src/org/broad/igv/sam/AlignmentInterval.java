@@ -417,9 +417,9 @@ public class AlignmentInterval extends Locus implements Interval {
                         byte ref = interval.getReference(adjustedCenter);
 
                         if (base == 'N' || base == 'n') {
-                            return -2;  // Base is "n"
+                            return 2;  // Base is "n"
                         } else if (base == ref) {
-                            return -1;  // Base is reference
+                            return 3;  // Base is reference
                         } else {
                             //If base is 0, base not covered (splice junction) or is deletion
                             if (base == 0) {
@@ -428,7 +428,7 @@ public class AlignmentInterval extends Locus implements Interval {
                                     return -delCount;
                                 } else {
                                     //Base not covered, NOT a deletion
-                                    return 0;
+                                    return 1;
                                 }
                             } else {
                                 int count = interval.getCount(adjustedCenter, base);
