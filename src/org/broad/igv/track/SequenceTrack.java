@@ -197,7 +197,7 @@ public class SequenceTrack extends AbstractTrack {
             JMenuItem item = getCodonTableMenuItem(codonTable);
             transTableMenu.add(item);
         }
-        //menu.add(transTableMenu);
+        menu.add(transTableMenu);
 
         return menu;
     }
