@@ -258,10 +258,10 @@ public class HiCTools {
      *
      * @param fragmentFile
      * @param bedFile
-     * @param outputFile
+     * @param bedOutputFile
      * @throws IOException
      */
-    public static void bpToFrag(String fragmentFile, String bedFile, String outputFile) throws IOException {
+    public static void bpToFrag(String fragmentFile, String bedFile, String bedOutputFile) throws IOException {
 
         BufferedReader fragmentReader = null;
         Pattern pattern = Pattern.compile("\\s");
@@ -288,16 +288,11 @@ public class HiCTools {
         }
 
         BufferedReader bedReader = null;
-        PrintWriter siteWriter = null;
         PrintWriter bedWriter = null;
         try {
-            String bedOutputFile = bedFile.toLowerCase().endsWith(".bed") ?
-                    bedFile.substring(0, bedFile.length() - 4) + ".sites.bed" :
-                    bedFile + ".sites.bed";
 
             bedReader = new BufferedReader(new FileReader(bedFile));
-            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-            siteWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedOutputFile)));
+            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedOutputFile)));
 
             String nextLine;
             while ((nextLine = bedReader.readLine()) != null) {
@@ -316,11 +311,7 @@ public class HiCTools {
                 int firstSite = FragmentCalculation.binarySearch(sites, start);
                 int lastSite = FragmentCalculation.binarySearch(sites, end);
 
-                for (int s = firstSite; s <= lastSite; s++) {
-                    siteWriter.println(chr + "\t" + s);
-                }
-
-                bedWriter.print(chr + "\t" + firstSite + "\t" + lastSite);
+                bedWriter.print(chr + "\t" + start + "\t" + end + "\t" + firstSite + "\t" + lastSite);
                 for (int i = 3; i < tokens.length; i++) {
                     bedWriter.print("\t" + tokens[i]);
                 }
@@ -330,7 +321,6 @@ public class HiCTools {
             }
         } finally {
             if (bedReader != null) bedReader.close();
-            if (siteWriter != null) siteWriter.close();
             if (bedWriter != null) bedWriter.close();
         }
 
