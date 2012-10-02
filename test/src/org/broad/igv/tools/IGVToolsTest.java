@@ -190,14 +190,12 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     @Test
     public void testTileWigFile() throws IOException {
-
-        String inputFile = TestUtils.LARGE_DATA_DIR + "phastCons_chr1.wig";
-        testTile(inputFile, 0, 0);
+        String inputFile = TestUtils.DATA_DIR + "wig/phastCons_chr1_small.wig";
+        testTile(inputFile, 300, 1300);
     }
 
     @Test
     public void testTileCNFile() throws IOException {
-
         String inputFile = TestUtils.DATA_DIR + "cn/HindForGISTIC.hg16.cn";
         testTile(inputFile, 5000000, 5500000);
     }
@@ -207,7 +205,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     public void testTileGCT() throws IOException {
         String inputFile = TestUtils.DATA_DIR + "gct/OV.transcriptome__agilentg4502.data.txt";
         String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
-        String genome = TestUtils.DATA_DIR + "genomes/hg18.unittest.genome";
         String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
