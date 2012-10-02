@@ -403,8 +403,8 @@ public class IGV {
 
     }
 
-    public void selectGenomeFromList(String genome) {
-        contentPane.getCommandBar().selectGenomeFromList(genome, true);
+    public void selectGenomeFromList(String genomeId) {
+        contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
     }
 
     public Collection<String> getSelectableGenomeIDs() {

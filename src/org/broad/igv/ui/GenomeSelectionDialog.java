@@ -42,9 +42,14 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
-    public GenomeSelectionDialog(java.awt.Frame parent) {
+    /**
+     * @param parent
+     * @param listSelectionMode Selection mode for genome list
+     */
+    public GenomeSelectionDialog(java.awt.Frame parent, int listSelectionMode) {
         super(parent);
         initComponents();
+        genomeList.setSelectionMode(listSelectionMode);
         setLocationRelativeTo(parent);
 
         try {
@@ -197,6 +202,7 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 {
 
                     //---- genomeList ----
+                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     genomeList.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {

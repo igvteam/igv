@@ -331,13 +331,14 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new MenuAction("Load Genome From Server", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame());
+                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), ListSelectionModel.SINGLE_SELECTION);
                 dialog.setVisible(true);
                 List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
-                if (selectedValues != null) {
+                if (selectedValues != null && selectedValues.size() >= 1) {
                     GenomeManager.getInstance().addGenomeItems(selectedValues);
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-                    notifyGenomesAddedRemoved(selectedValues, true);
+                    //notifyGenomesAddedRemoved(selectedValues, true);
+                    igv.selectGenomeFromList(selectedValues.get(0).getId());
                 }
             }
         };

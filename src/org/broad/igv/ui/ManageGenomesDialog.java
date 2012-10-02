@@ -89,7 +89,7 @@ public class ManageGenomesDialog extends JDialog {
         setVisible(false);
     }
 
-    private void okButtonActionPerformed(ActionEvent e) {
+    private void saveButtonActionPerformed(ActionEvent e) {
         cancelled = false;
         PreferenceManager.getInstance().saveGenomeIdDisplayList(allListItems);
         setVisible(false);
@@ -118,6 +118,16 @@ public class ManageGenomesDialog extends JDialog {
 
     private void removeButtonActionPerformed(ActionEvent e) {
         removeSelected();
+    }
+
+    private void addButtonActionPerformed(ActionEvent e) {
+        GenomeSelectionDialog dialog = new GenomeSelectionDialog(null, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        dialog.setVisible(true);
+        List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+        if (selectedValues != null) {
+            allListItems.addAll(selectedValues);
+            buildList();
+        }
     }
 
     private void initComponents() {
@@ -169,7 +179,6 @@ public class ManageGenomesDialog extends JDialog {
                     genomeList.setMaximumSize(new Dimension(39, 5000));
                     genomeList.setDropMode(DropMode.INSERT);
                     genomeList.setDragEnabled(true);
-                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     genomeList.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyReleased(KeyEvent e) {
@@ -195,7 +204,12 @@ public class ManageGenomesDialog extends JDialog {
 
                     //---- addButton ----
                     addButton.setText("Add From Server");
-                    addButton.setVisible(false);
+                    addButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            addButtonActionPerformed(e);
+                        }
+                    });
                     addRemBar.add(addButton);
 
                     //---- removeButton ----
@@ -225,7 +239,7 @@ public class ManageGenomesDialog extends JDialog {
                     okButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            okButtonActionPerformed(e);
+                            saveButtonActionPerformed(e);
                         }
                     });
                     buttonBar.add(okButton);
