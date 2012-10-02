@@ -23,7 +23,6 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
-import org.broad.igv.hic.HiCGlobals;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
@@ -31,10 +30,8 @@ import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
-import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;
 import java.util.*;
@@ -80,13 +77,18 @@ public class HiCTools {
             System.exit(1);
         }
 
-        if (!(args[0].equals("sort") || args[0].equals("pairsToBin") || args[0].equals("binToPairs")
-                || args[0].equals("printmatrix") || args[0].equals("eigenvector") || args[0].equals("pre"))) {
-            usage();
-            System.exit(1);
-        }
-
-        if (args[0].equals("sort")) {
+        if (args[0].equalsIgnoreCase("fragmentToBed")) {
+            if (args.length != 2) {
+                System.out.println("Usage: hictools fragmentToBed <fragmentFile>");
+                System.exit(1);
+            }
+            fragmentToBed(args[1]);
+        } else if (args[0].equalsIgnoreCase("bpToFrag")) {
+            if(args.length != 4) {
+                System.out.println("Usage: hictools bpToFrag <fragmentFile> <inputBedFile> <outputFile>");
+            }
+            bpToFrag(args[1], args[2], args[3]);
+        } else if (args[0].equals("sort")) {
             if (args.length != 3) {
                 usage();
                 System.exit(1);
@@ -149,8 +151,7 @@ public class HiCTools {
                 System.exit(-1);
             }
             calculateEigenvector(file, chr, binSize);
-        }
-        else if (args[0].equals("pre")) {
+        } else if (args[0].equals("pre")) {
             String genomeId = "";
             try {
                 genomeId = args[3];
@@ -183,7 +184,11 @@ public class HiCTools {
             preprocessor.setNewVersion(parser.getNewVersionOption());
             preprocessor.setFragmentOption(parser.getFragmentOption());
             preprocessor.preprocess(files);
+        } else {
+            usage();
+            System.exit(1);
         }
+
     }
 
     /**
@@ -242,6 +247,138 @@ public class HiCTools {
             return chromosomes;
         } finally {
             if (is != null) is.close();
+        }
+
+    }
+
+
+    /**
+     * Find fragments that overlap the input bed file.  Its assumed the bed file is sorted by start position, otherwise
+     * an exception is thrown.  If a fragment overlaps 2 or more bed featuers it is only outputted once.
+     *
+     * @param fragmentFile
+     * @param bedFile
+     * @param outputFile
+     * @throws IOException
+     */
+    public static void bpToFrag(String fragmentFile, String bedFile, String outputFile) throws IOException {
+
+        BufferedReader fragmentReader = null;
+        Pattern pattern = Pattern.compile("\\s");
+        Map<String, int[]> fragmentMap = new HashMap<String, int[]>();  // Map of chr -> site positions
+        try {
+            fragmentReader = new BufferedReader(new FileReader(fragmentFile));
+
+            String nextLine;
+            while ((nextLine = fragmentReader.readLine()) != null) {
+                String[] tokens = pattern.split(nextLine);
+
+                // A hack, could use IGV's genome alias definitions
+                String chr = getChrAlias(tokens[0]);
+
+                int[] sites = new int[tokens.length];
+                sites[0] = 0;  // Convenient convention
+                for (int i = 1; i < tokens.length; i++) {
+                    sites[i] = Integer.parseInt(tokens[i]) - 1;
+                }
+                fragmentMap.put(chr, sites);
+            }
+        } finally {
+            fragmentReader.close();
+        }
+
+        BufferedReader bedReader = null;
+        PrintWriter siteWriter = null;
+        PrintWriter bedWriter = null;
+        try {
+            String bedOutputFile = bedFile.toLowerCase().endsWith(".bed") ?
+                    bedFile.substring(0, bedFile.length() - 4) + ".sites.bed" :
+                    bedFile + ".sites.bed";
+
+            bedReader = new BufferedReader(new FileReader(bedFile));
+            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            siteWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedOutputFile)));
+
+            String nextLine;
+            while ((nextLine = bedReader.readLine()) != null) {
+                if (nextLine.startsWith("track") || nextLine.startsWith("browser") || nextLine.startsWith("#"))
+                    continue;
+
+                String[] tokens = pattern.split(nextLine);
+                String chr = tokens[0];
+                int start = Integer.parseInt(tokens[1]);
+                int end = Integer.parseInt(tokens[2]);
+
+
+                int[] sites = fragmentMap.get(chr);
+                if (sites == null) continue;
+
+                int firstSite = FragmentCalculation.binarySearch(sites, start);
+                int lastSite = FragmentCalculation.binarySearch(sites, end);
+
+                for (int s = firstSite; s <= lastSite; s++) {
+                    siteWriter.println(chr + "\t" + s);
+                }
+
+                bedWriter.print(chr + "\t" + firstSite + "\t" + lastSite);
+                for (int i = 3; i < tokens.length; i++) {
+                    bedWriter.print("\t" + tokens[i]);
+                }
+                bedWriter.println();
+
+
+            }
+        } finally {
+            if (bedReader != null) bedReader.close();
+            if (siteWriter != null) siteWriter.close();
+            if (bedWriter != null) bedWriter.close();
+        }
+
+
+    }
+
+    private static String getChrAlias(String token) {
+        if(token.equals("MT")) {
+            return "chrM";
+        }
+        else if(!token.startsWith("chr")) {
+            return "chr" + token;
+        }
+        else {
+            return token;
+        }
+    }
+
+    /**
+     * Convert a fragment site file to a "bed" file
+     *
+     * @param filename
+     * @throws IOException
+     */
+    public static void fragmentToBed(String filename) throws IOException {
+        BufferedReader reader = null;
+        PrintWriter writer = null;
+        try {
+            File inputFile = new File(filename);
+            reader = new BufferedReader(new FileReader(inputFile));
+
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename + ".bed")));
+
+            Pattern pattern = Pattern.compile("\\s");
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                String[] tokens = pattern.split(nextLine);
+                String chr = tokens[0];
+                int beg = Integer.parseInt(tokens[1]) - 1;  // 1 vs 0 based coords
+                for (int i = 2; i < tokens.length; i++) {
+                    int end = Integer.parseInt(tokens[i]) - 1;
+                    writer.println(chr + "\t" + beg + "\t" + end);
+                    beg = end;
+                }
+
+            }
+        } finally {
+            reader.close();
         }
 
     }
@@ -320,14 +457,12 @@ public class HiCTools {
                 } finally {
                     if (is != null) is.close();
                 }
-            }
-            else {
+            } else {
                 System.err.println("Densities file doesn't exist");
                 System.exit(-1);
             }
 
-        }
-        else {
+        } else {
             zoomToDensityMap = dataset.getZoomToDensity();
         }
         Chromosome[] tmp = dataset.getChromosomes();
@@ -387,14 +522,12 @@ public class HiCTools {
                     } finally {
                         if (is != null) is.close();
                     }
-                }
-                else {
+                } else {
                     System.err.println("Densities file doesn't exist, cannot calculate O/E or Pearson's");
                     System.exit(-1);
                 }
             }
-        }
-        else {
+        } else {
             zoomToDensityMap = dataset.getZoomToDensity();
         }
         if (ofile != null) {
@@ -446,20 +579,16 @@ public class HiCTools {
             }
             try {
                 zd.dumpOE(df, type.equals("oe"), les);
-            }
-            finally {
+            } finally {
                 if (les != null)
                     les.close();
                 if (bos != null)
                     bos.close();
             }
-        }
-
-        else {
+        } else {
             try {
                 zd.dump(les);
-            }
-            finally {
+            } finally {
                 if (les != null)
                     les.close();
                 if (bos != null)

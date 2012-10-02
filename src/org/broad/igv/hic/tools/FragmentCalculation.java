@@ -82,7 +82,7 @@ public class FragmentCalculation {
      * @param position The position to search for within that array
      * @return          The fragment location such that position >= sites[retVal-1] and position <  sites[retVal]
      */
-    private int binarySearch(int[] sites, int position) {
+    public static int binarySearch(int[] sites, int position) {
         int lo = 0;
         int hi = sites.length - 1;
         while (lo <= hi) {
