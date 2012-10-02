@@ -13,29 +13,22 @@ package org.broad.igv.tools;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
-import org.broad.igv.data.WiggleDataset;
-import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.FastaIndex;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
-import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.tools.sort.SorterTest;
-import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
@@ -202,14 +195,18 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
 
     @Test
-    public void testTileGCT() throws IOException {
+    public void testTileGCT_01() throws IOException {
         String inputFile = TestUtils.DATA_DIR + "gct/OV.transcriptome__agilentg4502.data.txt";
         String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
         String[] args = {"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
+    }
 
-        inputFile = TestUtils.DATA_DIR + "gct/GBM.methylation__sampled.data.txt";
-        args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
+    @Test
+    public void testTileGCT_02() throws IOException {
+        String inputFile = TestUtils.DATA_DIR + "gct/GBM.methylation__sampled.data.txt";
+        String outFilePath = TestUtils.DATA_DIR + "out/testTileGCT.wig";
+        String[] args = new String[]{"tile", "-z", "1", "--fileType", "mage-tab", inputFile, outFilePath, hg18id};
         igvTools.run(args);
 
     }
@@ -251,149 +248,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         (new File(file2)).delete();
     }
 
-    @Test
-    public void testCountTDF() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        tstCountStrandOpts(inputFile, "testtdf", "tdf", null, -1, -1);
-    }
-
-    @Test
-    public void testCountWIG() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "bed/Unigene.sample.sorted.bed";
-        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
-        tstCountStrandOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
-
-        tstCountStrandMapOpts(inputFile, "testwig", "wig", null, -1, -1);
-        tstCountStrandMapOpts(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
-    }
-
-    @Test
-    public void testCountSAM() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "sam/test_2.sam";
-        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
-    }
-
-    @Test
-    public void testCountBAM() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
-        tstCountStrandOpts(inputFile, "testwig", "wig", null, -1, -1);
-        tstCountStrandMapOpts(inputFile, "testwig", "wig", null, -1, -1);
-    }
-
-    public void tstCountStrandOpts(String inputFile, String outputBase, String outputExt,
-                                   String chr, int start, int end) throws Exception {
-
-        String[] opts = new String[]{"--bases", "--strands=read", "--strands=first", "--strands=read --bases"};
-        tstCountOptsGen(inputFile, outputBase, outputExt, chr, start, end, "", opts);
-
-    }
-
-    public void tstCountStrandMapOpts(String inputFile, String outputBase, String outputExt,
-                                      String chr, int start, int end) throws Exception {
-
-        String refOpt = "--minMapQuality 1";
-        String[] opts = new String[]{"--strands=read " + refOpt, "--bases " + refOpt};
-        tstCountOptsGen(inputFile, outputBase, outputExt, chr, start, end, refOpt, opts);
-    }
-
-    /**
-     * Compare the output of count with the various options against the output of {@code refOpt}. That is,
-     * we assume the row total for each will be equal.
-     *
-     * @param inputFile
-     * @param outputBase
-     * @param outputExt
-     * @param chr
-     * @param start
-     * @param end
-     * @param opts
-     */
-    public void tstCountOptsGen(String inputFile, String outputBase, String outputExt,
-                                String chr, int start, int end, String refOpt, String[] opts) throws Exception {
-
-        boolean query = chr != null && start >= 0 && end >= start + 1;
-        String outputFile = TestUtils.TMP_OUTPUT_DIR + outputBase + "_";
-
-        Map<String, float[]> rowTotals = new HashMap<String, float[]>(opts.length + 1);
-        String[] allOpts = new String[opts.length + 1];
-        allOpts[0] = refOpt;
-        System.arraycopy(opts, 0, allOpts, 1, opts.length);
-
-        for (int ind = 0; ind < allOpts.length; ind++) {
-            String opt = allOpts[ind];
-            int winsize = 5;
-            if (query) {
-                opt += " --windowSize " + winsize + " --query " + chr + ":" + start + "-" + end;
-            }
-
-            //In case me modify the option for querying as above
-            if (ind == 0) refOpt = opt;
-
-            String fullout = outputFile + ind + "." + outputExt;
-            String input = "count " + opt + " " + inputFile + " " + fullout + " " + hg18id;
-            String[] args = input.split("\\s+");
-            igvTools.run(args);
-
-            if (outputExt.equals("tdf")) {
-                TDFReader reader = TDFReader.getReader(fullout);
-                assertTrue(reader.getDatasetNames().size() > 0);
-                if (query) {
-                    for (String name : reader.getDatasetNames()) {
-                        TDFDataset ds = reader.getDataset(name);
-                        List<TDFTile> tiles = ds.getTiles();
-                        for (TDFTile tile : tiles) {
-                            assertTrue(tile.getTileStart() >= start);
-                            assertTrue(tile.getTileStart() < end);
-                        }
-                    }
-                }
-            } else {
-                File outFile = new File(fullout);
-                assertTrue(outFile.exists());
-                assertTrue(outFile.canRead());
-
-                ResourceLocator locator = new ResourceLocator(fullout);
-                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(hg18id, true))).parse();
-
-                //We miss a few alignments with this option sometimes,
-                //so it doesn't total up the same
-                if (!opt.contains("strands=first")) {
-                    float[] linetotals = getLineTotals(fullout);
-                    rowTotals.put(opt, linetotals);
-                }
-
-                if (query) {
-                    assertEquals(1, ds.getChromosomes().length);
-                    assertEquals(chr, ds.getChromosomes()[0]);
-
-                    int[] starts = ds.getStartLocations(chr);
-                    for (Integer act_start : starts) {
-                        assertTrue(act_start + " is outside range", act_start >= start - winsize && act_start < end + winsize);
-                    }
-                }
-            }
-        }
-
-        //Compare row totals
-        //They should all add up the same
-        float[] refTotals = rowTotals.get(refOpt);
-        for (String opt : rowTotals.keySet()) {
-            if (opt.equals(refOpt)) {
-                continue;
-            }
-            float[] testTotals = rowTotals.get(opt);
-            assertEquals(refTotals.length, testTotals.length);
-            for (int rw = 0; rw < refTotals.length; rw++) {
-                float diff = refTotals[rw] - testTotals[rw];
-                String msg = "Difference between " + refTotals[rw] + " and " + testTotals[rw] + " too high. ";
-                msg += "Row " + rw + ". Test option " + opt;
-                //This can get pretty high, we only use 2 digits of precision
-                //Also test this in CoverageCounterTest
-                assertTrue(msg, Math.abs(diff) <= 0.1);
-            }
-        }
-    }
-
     /**
      * Calculates the sum of each row, excluding the first column.
      * Skips non-numeric rows
@@ -432,57 +286,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
 
     }
 
-    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
-        return generateRepLargebamsList(listPath, bamFiName, reps, false);
-    }
-
-    /*
-    Generate a bam.list file, with rep entries, all having the same content bamPath.
-     If makeAbsolute is true and bamPath not absolute, the listPath parent directory is prepended.
-     The file is saved to listPath
-     */
-    public static String[] generateRepLargebamsList(String listPath, String bamPath, int reps, boolean makeAbsolute) throws IOException {
-
-        File listFile = new File(listPath);
-        listFile.delete();
-        listFile.deleteOnExit();
-        File f = new File(bamPath);
-        String eachPath = null;
-        if (makeAbsolute && !f.isAbsolute()) {
-            eachPath = FileUtils.getAbsolutePath(bamPath, listPath);
-        } else {
-            eachPath = f.getPath();
-        }
-        //We generate the file on each test, because largedata dir can change
-        List<String> largebams = new ArrayList<String>(reps);
-        for (int ii = 0; ii < reps; ii++) {
-            largebams.add(eachPath);
-        }
-        FileWriter writer = new FileWriter(listFile);
-        for (String s : largebams) {
-            writer.write(s + "\n");
-        }
-        writer.close();
-
-        return largebams.toArray(new String[0]);
-    }
-
-    /**
-     * Test counting from a BAM.list file. Note that if the paths
-     * in the bam.list are relative, they are interpreted as relative to
-     * the location of the bam.list file, rather than the working directory.
-     * <p/>
-     * If paths are entered on the command line (option to be deprecated shortly)
-     * via comma separated list, they are interpreted relative to the current working directory.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
-        tstCountBamList(listPath);
-    }
-
     /**
      * Test iterating through a merged bam file(actually a list with the same file duplicated).  Each record
      * should appear twice (since the list contains the same file twice), and in coordinate sort order.
@@ -490,7 +293,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
      * @throws Exception
      */
     @Test
-    public void testMergedBam() throws Exception {
+    public void testIterateMergedBam() throws Exception {
         String listPath = TestUtils.DATA_DIR + "bam/test.unindexed.bam.list";
         AlignmentReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(listPath), false);
 
@@ -518,23 +321,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
             }
             lastStart = start;
 
-        }
-    }
-
-    private void tstCountBamList(String listArg) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "out/file_";
-
-        String[] opts = new String[]{"--strands=read", "--strands=first", ""};
-
-        for (int ind = 0; ind < opts.length; ind++) {
-            String opt = opts[ind];
-            String fullout = outputFile + ind + ".tdf";
-            String input = "count " + opt + " " + listArg + " " + fullout + " " + hg18id;
-            String[] args = input.split("\\s+");
-            igvTools.run(args);
-
-            TDFReader reader = TDFReader.getReader(fullout);
-            assertTrue(reader.getDatasetNames().size() > 0);
         }
     }
 
@@ -577,182 +363,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testCountDups() throws Exception {
-        String inputFiname = "test_5duplicates";
-        String ext = ".sam";
-        String inputFile = TestUtils.DATA_DIR + "sam/" + inputFiname + ext;
-        String outputFileND = TestUtils.TMP_OUTPUT_DIR + inputFiname + "_nodups" + ".tdf";
-        String outputFileWithDup = TestUtils.TMP_OUTPUT_DIR + inputFiname + "_withdups" + ".tdf";
-
-        String queryChr = "1";
-
-        int pos = 9718611;
-        String queryStr = queryChr + ":" + (pos - 100) + "-" + (pos + 100) + " ";
-        String cmd_nodups = "count --windowSize 1 -z 7 --query " + queryStr + inputFile + " " + outputFileND + " " + hg18id;
-        igvTools.run(cmd_nodups.split("\\s+"));
-
-        String cmd_withdups = "count --includeDuplicates -z 7 --windowSize 1 --query " + queryStr + inputFile + " " + outputFileWithDup + " " + hg18id;
-        igvTools.run(cmd_withdups.split("\\s+"));
-
-        assertTrue((new File(outputFileND).exists()));
-        assertTrue((new File(outputFileWithDup).exists()));
-
-        Genome genome = TestUtils.loadGenome();
-
-        //Have to read back in using aliased chromosome names
-        String readChr = genome.getChromosomeAlias(queryChr);
-
-        int noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
-        int dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
-
-        assertEquals(noDupCount + 4, dupCount);
-
-        //No dups at this location
-        pos += 80;
-        noDupCount = (int) getCount(outputFileND, readChr, 23, pos, genome);
-        dupCount = (int) getCount(outputFileWithDup, readChr, 23, pos, genome);
-        assertEquals(noDupCount, dupCount);
-
-    }
-
-    private float getCount(String filename, String chr, int zoom, int pos, Genome genome) {
-        TDFReader reader = TDFReader.getReader(filename);
-        TDFDataset ds = reader.getDataset(chr, zoom, WindowFunction.mean);
-        TDFDataSource dataSource = new TDFDataSource(reader, 0, "test", genome);
-        List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, pos - 1, pos + 1, zoom);
-        return scores.get(0).getScore();
-    }
-
-    @Test
-    public void testCountAliasedForward() throws Exception {
-        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome";
-        tstCountAliased(TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam",
-                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam",
-                genfile);
-    }
-
-    @Test
-    public void testCountAliasedReversed() throws Exception {
-        String genfile = TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased_reversed.genome";
-        tstCountAliased(TestUtils.DATA_DIR + "sam/NA12878.muc1.test.sam",
-                TestUtils.DATA_DIR + "sam/NA12878.muc1.test_modchr.sam",
-                genfile);
-    }
-
-    /**
-     * Test count when using a custom alias file.
-     * Should supply a file using normal chromosome names, and aliases
-     * which are defined in the genome file.
-     */
-    public void tstCountAliased(String normfile, String aliasedfile, String genfile) throws Exception {
-
-        String outfile = TestUtils.DATA_DIR + "out/tmpcount1.wig";
-        File outFi = new File(outfile);
-        outFi.delete();
-        outFi.deleteOnExit();
-
-        //Count aliased file
-        String command = "count " + normfile + " " + outfile + " " + genfile;
-        igvTools.run(command.split("\\s+"));
-
-        //Count non-aliased file
-        String outfile2 = TestUtils.DATA_DIR + "out/tmpcount2.wig";
-        File outFi2 = new File(outfile2);
-        outFi2.delete();
-        //Count aliased file
-        command = "count " + aliasedfile + " " + outfile2 + " " + genfile;
-
-        igvTools = new IgvTools();
-        igvTools.run(command.split("\\s+"));
-
-        BufferedReader reader1 = new BufferedReader(new FileReader(outfile));
-        BufferedReader reader2 = new BufferedReader(new FileReader(outfile2));
-        String line1, line2;
-        line1 = reader1.readLine();
-        line2 = reader2.readLine();
-        while ((line1 = reader1.readLine()) != null) {
-            line2 = reader2.readLine();
-            //Header lines don't need to match
-            if (line1.startsWith("#") || line1.startsWith("variableStep")
-                    || line1.startsWith("fixedStep")) {
-                continue;
-            }
-            assertEquals(line1, line2);
-        }
-
-        reader1.close();
-        reader2.close();
-
-
-    }
-
-    @Test
-    public void testCountIndexedFasta() throws Exception {
-        String fasta_file = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
-        String infile = TestUtils.DATA_DIR + "bed/ecoli_out.test.bed";
-        String outfile = TestUtils.DATA_DIR + "out/findextest.wig";
-        String end_command = infile + " " + outfile + " " + fasta_file;
-        String count_command = "count " + end_command;
-        igvTools.run(count_command.split("\\s"));
-        File outFi = new File(outfile);
-        assertTrue(outFi.exists());
-        outFi.delete();
-
-        igvTools = new IgvTools();
-        String index_command = "index " + end_command;
-        igvTools.run(index_command.split("\\s"));
-        String indexFile = infile + ".idx";
-        File idxFi = new File(indexFile);
-        assertTrue(idxFi.exists());
-        idxFi.deleteOnExit();
-
-        Genome genome = IgvTools.loadGenome(fasta_file, true);
-        FeatureCodec codec = CodecFactory.getCodec(infile, genome);
-        AbstractFeatureReader<Feature> reader = AbstractFeatureReader.getFeatureReader(infile, codec, true);
-        String chr = "NC_000913_bb";
-        Iterator<Feature> features = reader.query(chr, 5085, 5091);
-        int count = 0;
-        while (features.hasNext() && count < 100) {
-            assertEquals(chr, features.next().getChr());
-            count++;
-        }
-        assertEquals(3, count);
-
-    }
-
-    @Test
-    public void testCountAllWF() throws Exception {
-        String[] exclude = {"none", "density", "stddev", "count"};
-        List<WindowFunction> wfList = new ArrayList<WindowFunction>();
-        wfList.addAll(Arrays.asList(WindowFunction.values()));
-        for (String s : exclude) {
-            wfList.remove(WindowFunction.valueOf(s));
-        }
-        String inputFile = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
-        tstCountWindowFunctions(inputFile, "All", wfList);
-    }
-
-    private void tstCountWindowFunctions(String inputFile, String chr, Iterable<WindowFunction> windowFunctions) throws Exception {
-        String outputFile = TestUtils.DATA_DIR + "out/testCountWindowFunctions.tdf";
-
-
-        String wfs = "";
-        for (WindowFunction wf : windowFunctions) {
-            wfs += wf.name() + ",";
-        }
-        wfs = wfs.substring(0, wfs.lastIndexOf(","));
-        String[] cmd = {"count", "--windowFunctions", wfs, inputFile, outputFile, hg18id};
-        igvTools.run(cmd);
-
-        TDFReader reader = new TDFReader(new ResourceLocator(outputFile));
-        for (WindowFunction wf : windowFunctions) {
-            TDFDataset ds = reader.getDataset(chr, 0, wf);
-            assertNotNull(ds);
-        }
-    }
-
-    @Test
-    //tile -z 1 --fileType mage-tab
     public void testTileMageTab() throws Exception {
         String mageTabFile = TestUtils.DATA_DIR + "mage-tab/test.data.txt";
         String outputFile = TestUtils.DATA_DIR + "mage-tab/test.data.tdf";
@@ -762,6 +372,42 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         igvTools.run(command.split("\\s+"));
 
 
+    }
+
+
+    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
+        return generateRepLargebamsList(listPath, bamFiName, reps, false);
+    }
+
+    /*
+    Generate a bam.list file, with rep entries, all having the same content bamPath.
+     If makeAbsolute is true and bamPath not absolute, the listPath parent directory is prepended.
+     The file is saved to listPath
+     */
+    public static String[] generateRepLargebamsList(String listPath, String bamPath, int reps, boolean makeAbsolute) throws IOException {
+
+        File listFile = new File(listPath);
+        listFile.delete();
+        listFile.deleteOnExit();
+        File f = new File(bamPath);
+        String eachPath = null;
+        if (makeAbsolute && !f.isAbsolute()) {
+            eachPath = FileUtils.getAbsolutePath(bamPath, listPath);
+        } else {
+            eachPath = f.getPath();
+        }
+        //We generate the file on each test, because largedata dir can change
+        List<String> largebams = new ArrayList<String>(reps);
+        for (int ii = 0; ii < reps; ii++) {
+            largebams.add(eachPath);
+        }
+        FileWriter writer = new FileWriter(listFile);
+        for (String s : largebams) {
+            writer.write(s + "\n");
+        }
+        writer.close();
+
+        return largebams.toArray(new String[0]);
     }
 
 }
