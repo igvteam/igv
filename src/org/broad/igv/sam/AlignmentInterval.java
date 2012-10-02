@@ -374,87 +374,97 @@ public class AlignmentInterval extends Locus implements Interval {
 
         }
 
+        public void updateScore(AlignmentTrack.SortOption option, Locus locus, AlignmentInterval interval, String tag) {
+            double mean = 0;
+            //double sd = 0;
+            int number = 0;
+            for (int center = locus.getStart(); center < locus.getEnd(); center++) {
+                double value = calculateScore(option, center, interval, tag);
+
+                mean = number * (mean / (number + 1)) + (value / (number + 1));
+
+                number++;
+            }
+            setScore(mean);
+        }
+
         public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
+            setScore(calculateScore(option, center, interval, tag));
+        }
+
+
+        public double calculateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
 
             int adjustedCenter = (int) center;
             Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
             if (centerAlignment == null) {
-                setScore(Double.MAX_VALUE);
+                return Integer.MAX_VALUE;
             } else {
                 switch (option) {
                     case START:
-                        setScore(centerAlignment.getStart());
-                        break;
+                        return centerAlignment.getStart();
                     case STRAND:
-                        setScore(centerAlignment.isNegativeStrand() ? -1 : 1);
-                        break;
+                        return centerAlignment.isNegativeStrand() ? -1 : 1;
                     case FIRST_OF_PAIR_STRAND:
                         Strand strand = centerAlignment.getFirstOfPairStrand();
                         int score = 2;
                         if (strand != Strand.NONE) {
                             score = strand == Strand.NEGATIVE ? 1 : -1;
                         }
-                        setScore(score);
-                        break;
+                        return score;
                     case NUCELOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
 
                         if (base == 'N' || base == 'n') {
-                            setScore(Integer.MAX_VALUE - 2);  // Base is "n"
+                            return 2;  // Base is "n"
                         } else if (base == ref) {
-                            setScore(Integer.MAX_VALUE - 1);  // Base is reference
+                            return 3;  // Base is reference
                         } else {
                             //If base is 0, base not covered (splice junction) or is deletion
                             if (base == 0) {
                                 int delCount = interval.getDelCount(adjustedCenter);
                                 if (delCount > 0) {
-                                    setScore(-delCount);
+                                    return -delCount;
                                 } else {
                                     //Base not covered, NOT a deletion
-                                    setScore(Integer.MAX_VALUE);
+                                    return 1;
                                 }
                             } else {
                                 int count = interval.getCount(adjustedCenter, base);
                                 byte phred = centerAlignment.getPhred(adjustedCenter);
-                                setScore(-(count + (phred / 100.0f)));
+                                return -(count + (phred / 100.0f));
                             }
                         }
-                        break;
                     case QUALITY:
-                        setScore(-centerAlignment.getMappingQuality());
-                        break;
+                        return -centerAlignment.getMappingQuality();
                     case SAMPLE:
                         String sample = centerAlignment.getSample();
                         score = sample == null ? 0 : sample.hashCode();
-                        setScore(score);
-                        break;
+                        return score;
                     case READ_GROUP:
                         String readGroup = centerAlignment.getReadGroup();
                         score = readGroup == null ? 0 : readGroup.hashCode();
-                        setScore(score);
-                        break;
+                        return score;
                     case INSERT_SIZE:
-                        setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
-                        break;
+                        return -Math.abs(centerAlignment.getInferredInsertSize());
                     case MATE_CHR:
                         ReadMate mate = centerAlignment.getMate();
                         if (mate == null) {
-                            setScore(Integer.MAX_VALUE);
+                            return Integer.MAX_VALUE;
                         } else {
                             if (mate.getChr().equals(centerAlignment.getChr())) {
-                                setScore(Integer.MAX_VALUE - 1);
+                                return Integer.MAX_VALUE - 1;
                             } else {
-                                setScore(mate.getChr().hashCode());
+                                return mate.getChr().hashCode();
                             }
                         }
-                        break;
                     case TAG:
                         Object tagValue = centerAlignment.getAttribute(tag);
                         score = tagValue == null ? 0 : tagValue.hashCode();
-                        setScore(score);
-                        break;
-
+                        return score;
+                    default:
+                        return Integer.MAX_VALUE;
                 }
             }
         }
