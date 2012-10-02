@@ -84,7 +84,7 @@ public class HiCTools {
             }
             fragmentToBed(args[1]);
         } else if (args[0].equalsIgnoreCase("bpToFrag")) {
-            if(args.length != 4) {
+            if (args.length != 4) {
                 System.out.println("Usage: hictools bpToFrag <fragmentFile> <inputBedFile> <outputFile>");
             }
             bpToFrag(args[1], args[2], args[3]);
@@ -252,17 +252,7 @@ public class HiCTools {
     }
 
 
-    /**
-     * Find fragments that overlap the input bed file.  Its assumed the bed file is sorted by start position, otherwise
-     * an exception is thrown.  If a fragment overlaps 2 or more bed featuers it is only outputted once.
-     *
-     * @param fragmentFile
-     * @param bedFile
-     * @param bedOutputFile
-     * @throws IOException
-     */
-    public static void bpToFrag(String fragmentFile, String bedFile, String bedOutputFile) throws IOException {
-
+    public static void bpToFrag(String fragmentFile, String inputFile, String outputDir) throws IOException {
         BufferedReader fragmentReader = null;
         Pattern pattern = Pattern.compile("\\s");
         Map<String, int[]> fragmentMap = new HashMap<String, int[]>();  // Map of chr -> site positions
@@ -287,12 +277,53 @@ public class HiCTools {
             fragmentReader.close();
         }
 
+        // inputFile contains a list of files or URLs.
+        BufferedReader reader = null;
+        try {
+            File dir = new File(outputDir);
+            if (!dir.exists() || !dir.isDirectory()) {
+                 System.out.println("Output directory does not exist, or is not directory");
+                System.exit(1);
+            }
+            reader = new BufferedReader(new FileReader(inputFile));
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                String path = nextLine.trim();
+                int lastSlashIdx = path.lastIndexOf("/");
+                if (lastSlashIdx < 0) lastSlashIdx = path.lastIndexOf("\\");  // Windows convention
+                String fn = lastSlashIdx < 0 ? path : path.substring(lastSlashIdx);
+
+                File outputFile = new File(dir, fn + ".sites");
+                annotateWithSites(fragmentMap, path, outputFile);
+
+            }
+        } finally {
+            if (reader != null) reader.close();
+        }
+    }
+
+
+    /**
+     * Find fragments that overlap the input bed file.  Its assumed the bed file is sorted by start position, otherwise
+     * an exception is thrown.  If a fragment overlaps 2 or more bed featuers it is only outputted once.
+     *
+     * @param fragmentMap
+     * @param bedFile
+     * @param outputFile
+     * @throws IOException
+     */
+
+    private static void annotateWithSites(Map<String, int[]> fragmentMap, String bedFile, File outputFile) throws IOException {
+
+
+        Pattern pattern = Pattern.compile("\\s");
+
         BufferedReader bedReader = null;
         PrintWriter bedWriter = null;
         try {
 
-            bedReader = new BufferedReader(new FileReader(bedFile));
-            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedOutputFile)));
+            bedReader = ParsingUtils.openBufferedReader(bedFile);
+            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
 
             String nextLine;
             while ((nextLine = bedReader.readLine()) != null) {
@@ -328,13 +359,11 @@ public class HiCTools {
     }
 
     private static String getChrAlias(String token) {
-        if(token.equals("MT")) {
+        if (token.equals("MT")) {
             return "chrM";
-        }
-        else if(!token.startsWith("chr")) {
+        } else if (!token.startsWith("chr")) {
             return "chr" + token;
-        }
-        else {
+        } else {
             return token;
         }
     }
