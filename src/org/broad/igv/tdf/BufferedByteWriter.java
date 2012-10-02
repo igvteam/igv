@@ -96,6 +96,12 @@ public class BufferedByteWriter {
         putInt(v);
     }
 
+    public void putDouble(Double f) throws IOException {
+        long v = Double.doubleToLongBits(f);
+        putLong(v);
+    }
+
+
     /**
      * Writes a <code>long</code> to the underlying output stream as eight
      * bytes, little endian. In no exception is thrown, the counter
@@ -115,6 +121,7 @@ public class BufferedByteWriter {
         buffer.write((byte) (v >>> 48));
         buffer.write((byte) (v >>> 56));
     }
+
 
     public void putNullTerminatedString(String s) throws IOException {
         buffer.write(s.getBytes());

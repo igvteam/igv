@@ -18,6 +18,7 @@ import java.awt.*;
 public class EigenvectorTrack extends HiCTrack {
 
 
+    public static final Color COLOR = Color.blue.darker();
     double scale;
     double[] data;
     private double dataMax;
@@ -71,7 +72,7 @@ public class EigenvectorTrack extends HiCTrack {
         if (data == null || data.length == 0) return;
 
         int h = rect.height / 2;
-        g2d.setColor(Color.blue.darker());
+        g2d.setColor(COLOR);
 
         for (int bin = context.getBinOrigin(); bin < data.length; bin++) {
 

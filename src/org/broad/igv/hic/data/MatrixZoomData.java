@@ -9,6 +9,7 @@ import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.hic.track.HiCFixedGridAxis;
 import org.broad.igv.hic.track.HiCGridAxis;
+import org.broad.igv.hic.track.HiCVariableGridAxis;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
@@ -90,12 +91,25 @@ public class MatrixZoomData {
         this.blockColumnCount = dis.readInt();
         if (fileBinSize > 1) {
             binSize = fileBinSize;
+            xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
+            yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
         } else {
+            // TODO -- read bins from file, fake it for now.  The
+            int nBins = blockBinCount * blockColumnCount;
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
+            HiCVariableGridAxis.Bin[] bins = new HiCVariableGridAxis.Bin[nBins];
+            for(int i=0; i<nBins; i++) {
+                int gStart = (int) (binSize * i);
+                int gEnd = (int) (binSize * (i + 1));
+                bins[i] = new HiCVariableGridAxis.Bin(gStart, (gEnd - gStart));
+
+            }
+
+            xGridAxis = new HiCVariableGridAxis(bins);
+            yGridAxis = new HiCVariableGridAxis(bins);
+
         }
 
-        xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
-        yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
 
 
         int nBlocks = dis.readInt();

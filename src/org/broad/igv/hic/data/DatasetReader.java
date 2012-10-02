@@ -78,7 +78,7 @@ public class DatasetReader {
             }
             System.out.println("genome = " + genome);
 
-            readMasterIndex(masterIndexPos, version);
+             readMasterIndex(masterIndexPos, version);
 
 
         } catch (IOException e) {

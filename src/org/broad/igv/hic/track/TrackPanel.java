@@ -142,7 +142,7 @@ public class TrackPanel extends JPanel {
                 if (hic.xContext != null) {
                     RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, trackRectangle, genome);
                     track.render(context, trackRectangle);
-                    renderName(track, trackRectangle, graphics);
+                    renderName(track.getName(), track.getColor(), trackRectangle, graphics);
                     y += h;
 
                     trackRectangles.add(new Pair(trackRectangle, track));
@@ -155,17 +155,21 @@ public class TrackPanel extends JPanel {
             int h = rect.y + rect.height - y;
             Rectangle trackRectangle = new Rectangle(rect.x, y, rect.width, h);
             eigenvectorTrack.render((Graphics2D) graphics, hic.xContext, trackRectangle);
+
+            renderName("Eigenvector", EigenvectorTrack.COLOR, trackRectangle, graphics);
+
             trackRectangles.add(new Pair(trackRectangle, eigenvectorTrack));
+
 
         }
 
     }
 
-    private void renderName(Track track, Rectangle rect, Graphics graphics) {
+    private void renderName(String name, Color color, Rectangle rect, Graphics graphics) {
         Font font = FontManager.getFont(8);
         graphics.setFont(font);
-        graphics.setColor(track.getColor());
-        GraphicUtils.drawRightJustifiedText(track.getName(), rect.x + rect.width - 10, rect.y + 15, graphics);
+        graphics.setColor(color);
+        GraphicUtils.drawRightJustifiedText(name, rect.x + rect.width - 10, rect.y + 15, graphics);
     }
 
 
