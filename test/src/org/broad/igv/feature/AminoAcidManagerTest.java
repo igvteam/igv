@@ -221,7 +221,8 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void testCodonTablesExist() throws Exception {
         int[] expIds = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24};
         for (int id : expIds) {
-            assertTrue(AminoAcidManager.getInstance().setCodonTableById(id));
+            AminoAcidManager.CodonTableKey key = new AminoAcidManager.CodonTableKey(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
+            assertTrue(AminoAcidManager.getInstance().setCodonTable(key));
         }
     }
 
@@ -235,9 +236,12 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
 
         for (int ii = 0; ii < expAAs.length; ii++) {
             AminoAcidManager aam = AminoAcidManager.getInstance();
-            boolean loaded = aam.setCodonTableById(codonTableIds[ii]);
+            int id = codonTableIds[ii];
+            AminoAcidManager.CodonTableKey key = new AminoAcidManager.CodonTableKey(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
 
-            assertTrue("Failed to load codon table with id " + codonTableIds[ii], loaded);
+            boolean loaded = aam.setCodonTable(key);
+
+            assertTrue("Failed to load codon table with id " + id, loaded);
 
             AminoAcid actualAA = aam.getAminoAcid(testCodons[ii]);
             assertNotSame("Got null amino acid for " + testCodons[ii], AminoAcid.NULL_AMINO_ACID, actualAA);
@@ -255,14 +259,22 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void testLoadASN1() throws Exception {
         AminoAcidManager.CodonTable[] initTables = AminoAcidManager.getInstance().getAllCodonTables().toArray(
                 new AminoAcidManager.CodonTable[0]);
+
         String filePath = TestUtils.DATA_DIR + "/gc.val";
-        AminoAcidManager.setCodonTablesPath(filePath);
+
+        AminoAcidManager.getInstance().clear();
+        AminoAcidManager.getInstance().loadCodonTables(filePath);
         AminoAcidManager.CodonTable[] asn1Tables = AminoAcidManager.getInstance().getAllCodonTables().toArray(
                 new AminoAcidManager.CodonTable[0]);
 
         assertEquals(initTables.length, asn1Tables.length);
         for (int tab = 0; tab < initTables.length; tab++) {
-            assertEquals(initTables[tab], asn1Tables[tab]);
+            //Underlying data should be the same, but since source paths are different these
+            //should not be equal
+            assertNotSame(initTables[tab], asn1Tables[tab]);
+
+            assertEquals(initTables[tab].getStarts(), asn1Tables[tab].getStarts());
+            assertEquals(initTables[tab].getCodonMap(), asn1Tables[tab].getCodonMap());
         }
     }
 //

@@ -54,14 +54,9 @@ public class AminoAcidManager {
             "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"};
 
 
-    private static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
-    /**
-     * File which describes how codons (e.g. ATG) map to amino acids.
-     * We allow for the user loading their own, so this is not final.
-     */
-    private static String codonTablesPath = DEFAULT_CODON_TABLE_PATH;
+    static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
 
-    private LinkedHashMap<Integer, CodonTable> allCodonTables;
+    private LinkedHashMap<CodonTableKey, CodonTable> allCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
     private CodonTable currentCodonTable;
 
     private static AminoAcidManager instance;
@@ -73,13 +68,14 @@ public class AminoAcidManager {
     public static AminoAcidManager getInstance() {
         if (instance == null) {
             try {
-                setCodonTablesPath(codonTablesPath);
+                AminoAcidManager newInstance = new AminoAcidManager();
+                newInstance.loadCodonTables(DEFAULT_CODON_TABLE_PATH);
+                instance = newInstance;
             } catch (IOException e) {
                 handleExceptionLoading(e);
             } catch (JSONException e) {
                 handleExceptionLoading(e);
             }
-
         }
         return instance;
     }
@@ -92,36 +88,34 @@ public class AminoAcidManager {
      * @return Instance of AminoAcidManager, for chaining
      */
     public static AminoAcidManager resetToDefaultCodonTables() {
-        codonTablesPath = DEFAULT_CODON_TABLE_PATH;
+        instance = null;
         return getInstance();
     }
 
     private static void handleExceptionLoading(Exception e) {
         log.error(e);
         if (instance == null) {
-            throw new IllegalStateException("No codon table present, and error loading " + codonTablesPath, e);
+            throw new IllegalStateException("No codon table present, and error loading " + DEFAULT_CODON_TABLE_PATH, e);
         }
     }
 
-    public static AminoAcidManager setCodonTablesPath(String path) throws IOException, JSONException {
-        AminoAcidManager newInstance = new AminoAcidManager();
-
-        newInstance.loadCodonTables(path);
-        codonTablesPath = path;
-        instance = newInstance;
-        return instance;
+    //For testing
+    synchronized void clear() {
+        allCodonTables.clear();
+        currentCodonTable = null;
     }
 
     /**
      * Each codon translation table is identified by an integer id
-     * These are specified in the file
+     * These are specified in the file. We specify a table
+     * by filename/id combination
      *
-     * @param id "id" field in file
+     * @param key
      * @return Whether setting the table was successful
      */
-    public boolean setCodonTableById(int id) {
-        if (allCodonTables.containsKey(id)) {
-            currentCodonTable = allCodonTables.get(id);
+    public boolean setCodonTable(CodonTableKey key) {
+        if (allCodonTables.containsKey(key)) {
+            currentCodonTable = allCodonTables.get(key);
             return true;
         } else {
             return false;
@@ -282,7 +276,9 @@ public class AminoAcidManager {
 
     /**
      * Load codon tables from the specified path. If any exceptions occur
-     * while loading, no changes are made to this instance;
+     * while loading, no changes are made to this instance.
+     * <p/>
+     * Note that the new codon tables are ADDED to the existing tables
      * <p/>
      * The currentCodonTable is set to be the codonTable with id = defaultid if present
      * If not, the first one in the array is set as default
@@ -290,8 +286,8 @@ public class AminoAcidManager {
      * @param codonTablesPath
      * @return
      */
-    private synchronized void loadCodonTables(String codonTablesPath) throws IOException, JSONException {
-        LinkedHashMap<Integer, CodonTable> newCodonTables = new LinkedHashMap<Integer, CodonTable>(20);
+    synchronized void loadCodonTables(String codonTablesPath) throws IOException, JSONException {
+        LinkedHashMap<CodonTableKey, CodonTable> newCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
         CodonTable defaultCodonTable = null;
 
         InputStream is = AminoAcidManager.class.getResourceAsStream(codonTablesPath);
@@ -312,8 +308,8 @@ public class AminoAcidManager {
                 throw new JSONException("JSON File has empty array for Genetic-code-table");
             }
             for (int ca = 0; ca < codonArray.length(); ca++) {
-                CodonTable curTable = CodonTable.createFromJSON(codonArray.getJSONObject(ca));
-                newCodonTables.put(curTable.getId(), curTable);
+                CodonTable curTable = CodonTable.createFromJSON(codonTablesPath, codonArray.getJSONObject(ca));
+                newCodonTables.put(curTable.getKey(), curTable);
                 if (defaultCodonTable == null || curTable.getId() == defaultId) {
                     defaultCodonTable = curTable;
                 }
@@ -328,8 +324,8 @@ public class AminoAcidManager {
                 throw new RuntimeException("ASN1 File has empty array for Genetic-code-table");
             }
             for (int ca = 0; ca < codonArray.length; ca++) {
-                CodonTable curTable = CodonTable.createFromASN1(codonArray[ca]);
-                newCodonTables.put(curTable.getId(), curTable);
+                CodonTable curTable = CodonTable.createFromASN1(codonTablesPath, codonArray[ca]);
+                newCodonTables.put(curTable.getKey(), curTable);
                 if (defaultCodonTable == null) {
                     defaultCodonTable = curTable;
                 }
@@ -338,7 +334,7 @@ public class AminoAcidManager {
             throw new IllegalArgumentException("Unknown file type, must be .json or .asn1");
         }
 
-        allCodonTables = newCodonTables;
+        allCodonTables.putAll(newCodonTables);
         currentCodonTable = defaultCodonTable;
     }
 
@@ -392,8 +388,34 @@ public class AminoAcidManager {
         return Collections.unmodifiableCollection(allCodonTables.values());
     }
 
-    public int getCodonTableId() {
-        return currentCodonTable.getId();
+    public CodonTableKey getCodonTableKey() {
+        return currentCodonTable.getKey();
+    }
+
+    public static class CodonTableKey {
+
+        private final String sourcePath;
+        private final int id;
+
+        CodonTableKey(String sourcePath, int id) {
+            this.sourcePath = sourcePath;
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object instanceof CodonTableKey) {
+                CodonTableKey other = (CodonTableKey) object;
+                return this.id == other.id &&
+                        Objects.equal(this.sourcePath, other.sourcePath);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.sourcePath, this.id);
+        }
     }
 
     /**
@@ -403,7 +425,7 @@ public class AminoAcidManager {
      */
     public static class CodonTable {
 
-        private final int id;
+        private final CodonTableKey key;
         private final List<String> names;
 
         private final Set<AminoAcid> starts;
@@ -427,14 +449,14 @@ public class AminoAcidManager {
             return aa;
         }
 
-        private CodonTable(int id, List<String> names, Set<AminoAcid> starts, Map<String, AminoAcid> codonMap) {
-            this.id = id;
+        private CodonTable(String path, int id, List<String> names, Set<AminoAcid> starts, Map<String, AminoAcid> codonMap) {
+            this.key = new CodonTableKey(path, id);
             this.names = Collections.unmodifiableList(names);
             this.starts = Collections.unmodifiableSet(starts);
             this.codonMap = Collections.unmodifiableMap(codonMap);
         }
 
-        private static CodonTable createFromJSON(JSONObject jsonObject) throws JSONException {
+        private static CodonTable createFromJSON(String sourcePath, JSONObject jsonObject) throws JSONException {
             int id = jsonObject.getInt("id");
 
             JSONArray jsonnames = jsonObject.getJSONArray("name");
@@ -447,10 +469,10 @@ public class AminoAcidManager {
             String aas = jsonObject.getString("ncbieaa");
             String startString = jsonObject.getString("sncbieaa");
 
-            return build(id, names, aas, startString);
+            return build(sourcePath, id, names, aas, startString);
         }
 
-        private static CodonTable createFromASN1(ASN1Encodable asn1Encodable) throws IOException {
+        private static CodonTable createFromASN1(String sourcePath, ASN1Encodable asn1Encodable) throws IOException {
             byte[] data = asn1Encodable.toASN1Primitive().getEncoded();
             ASN1InputStream iASNis = new ASN1InputStream(data);
             ASN1Primitive prim = iASNis.readObject();
@@ -470,7 +492,7 @@ public class AminoAcidManager {
             String aas = getAsString(taggedObjects[index++].getObject());
             String startString = getAsString(taggedObjects[index++].getObject());
 
-            return build(id, names, aas, startString);
+            return build(sourcePath, id, names, aas, startString);
         }
 
         private static String getAsString(ASN1Object object) {
@@ -485,7 +507,7 @@ public class AminoAcidManager {
             return taggedObjects;
         }
 
-        private static CodonTable build(int id, List<String> names, String aas, String startString) {
+        private static CodonTable build(String sourcePath, int id, List<String> names, String aas, String startString) {
 
             String base1 = BASE_SEQUENCES[0];
             String base2 = BASE_SEQUENCES[1];
@@ -508,7 +530,7 @@ public class AminoAcidManager {
                 }
             }
 
-            return new CodonTable(id, names, starts, codonMap);
+            return new CodonTable(sourcePath, id, names, starts, codonMap);
         }
 
         private static void checkLengths(String... values) {
@@ -524,7 +546,7 @@ public class AminoAcidManager {
         }
 
         public int getId() {
-            return id;
+            return key.id;
         }
 
         public String getDisplayName() {
@@ -535,11 +557,15 @@ public class AminoAcidManager {
             return starts;
         }
 
+        Map<String, AminoAcid> getCodonMap() {
+            return codonMap;
+        }
+
         @Override
         public boolean equals(Object object) {
             if (object instanceof CodonTable) {
                 CodonTable other = (CodonTable) object;
-                return this.id == other.id &&
+                return Objects.equal(this.key, other.key) &&
                         Objects.equal(this.names, other.names) &&
                         Objects.equal(this.starts, other.starts) &&
                         Objects.equal(this.codonMap, other.codonMap);
@@ -549,7 +575,11 @@ public class AminoAcidManager {
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(this.id, this.names, this.starts, this.codonMap);
+            return Objects.hashCode(this.key.id, this.key.sourcePath, this.names, this.starts, this.codonMap);
+        }
+
+        public CodonTableKey getKey() {
+            return key;
         }
     }
 
