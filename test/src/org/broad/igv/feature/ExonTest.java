@@ -80,6 +80,11 @@ public class ExonTest extends AbstractHeadlessTest {
         seq = testExon.getAminoAcidSequence(genome);
         assertEquals('M', seq.getSequence().get(0).getSymbol());
 
+        AminoAcidSequence seq2 = testExon.getAminoAcidSequence(genome);
+
+        //Shouldn't refetch
+        assertEquals(seq, seq2);
+
 
     }
 

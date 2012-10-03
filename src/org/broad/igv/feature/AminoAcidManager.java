@@ -200,7 +200,7 @@ public class AminoAcidManager {
         } else {
             String nucSequence = new String(seqBytes);
             List<AminoAcid> acids = getAminoAcids(strand, nucSequence);
-            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable);
+            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable.getKey());
         }
     }
 
@@ -217,7 +217,7 @@ public class AminoAcidManager {
             return null;
         } else {
             List<AminoAcid> acids = getAminoAcids(strand, nucleotides);
-            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable);
+            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable.getKey());
         }
     }
 

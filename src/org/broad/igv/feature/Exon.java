@@ -12,6 +12,7 @@
 package org.broad.igv.feature;
 
 
+import com.google.common.base.Objects;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -167,7 +168,7 @@ public class Exon extends AbstractFeature implements IExon {
     public AminoAcidSequence getAminoAcidSequence(Genome genome) {
         if (aminoAcidSequence == null ||
                 //If the stored sequence was computed with a different codon table, we reset
-                !aminoAcidSequence.getCodonTable().getKey().equals(AminoAcidManager.getInstance().getCodonTable().getKey())) {
+                !(Objects.equal(aminoAcidSequence.getCodonTableKey(), AminoAcidManager.getInstance().getCodonTable().getKey()))) {
             computeAminoAcidSequence(genome);
         }
         return aminoAcidSequence;

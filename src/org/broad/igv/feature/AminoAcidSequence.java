@@ -34,13 +34,13 @@ public class AminoAcidSequence {
      * If the sequence was computed from a nucleotide sequence,
      * we store how the calculation was performed
      */
-    private final AminoAcidManager.CodonTable codonTable;
+    private final AminoAcidManager.CodonTableKey codonTableKey;
 
-    public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence, AminoAcidManager.CodonTable codonTable) {
+    public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence, AminoAcidManager.CodonTableKey codonTableKey) {
         this.strand = strand;
         this.startPosition = startPosition;
         this.sequence = sequence;
-        this.codonTable = codonTable;
+        this.codonTableKey = codonTableKey;
 
         // Look for a non null sequence.  Sequences are null if the sequence
         // directory is undefined or unreachable.  
@@ -70,7 +70,7 @@ public class AminoAcidSequence {
         return nonNullSequence;
     }
 
-    public AminoAcidManager.CodonTable getCodonTable() {
-        return codonTable;
+    public AminoAcidManager.CodonTableKey getCodonTableKey() {
+        return codonTableKey;
     }
 }
