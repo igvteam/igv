@@ -16,8 +16,11 @@
 package org.broad.igv.feature;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,13 +59,24 @@ public class AminoAcidManager {
 
     static final String DEFAULT_CODON_TABLE_PATH = "resources/geneticCode.json";
 
+    static final String DEFAULT_TRANS_TABLE_PATH = "resources/defaultTranslationTables.json";
+
+    private static final String DEFAULT_CHROMO_KEY = "default";
+
     private LinkedHashMap<CodonTableKey, CodonTable> allCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
     private CodonTable currentCodonTable;
+
+    private static Table<String, String, CodonTableKey> genomeChromoTable = TreeBasedTable.create();
 
     private static AminoAcidManager instance;
 
     private AminoAcidManager() {
         initAANameMap();
+        try {
+            loadDefaultTranslationTables();
+        } catch (JSONException e) {
+            log.error(e);
+        }
     }
 
     public static AminoAcidManager getInstance() {
@@ -99,7 +113,10 @@ public class AminoAcidManager {
         }
     }
 
-    //For testing
+    /**
+     * Removes all codon tables.
+     * Mainly for testing
+     */
     synchronized void clear() {
         allCodonTables.clear();
         currentCodonTable = null;
@@ -110,9 +127,15 @@ public class AminoAcidManager {
      * These are specified in the file. We specify a table
      * by filename/id combination
      *
-     * @param key
+     * @param codonTablePath
+     * @param id
      * @return Whether setting the table was successful
      */
+    public boolean setCodonTable(String codonTablePath, int id) {
+        CodonTableKey key = new CodonTableKey(codonTablePath, id);
+        return setCodonTable(key);
+    }
+
     public boolean setCodonTable(CodonTableKey key) {
         if (allCodonTables.containsKey(key)) {
             currentCodonTable = allCodonTables.get(key);
@@ -323,8 +346,8 @@ public class AminoAcidManager {
             if (codonArray.length == 0) {
                 throw new RuntimeException("ASN1 File has empty array for Genetic-code-table");
             }
-            for (int ca = 0; ca < codonArray.length; ca++) {
-                CodonTable curTable = CodonTable.createFromASN1(codonTablesPath, codonArray[ca]);
+            for (ASN1Encodable aCodonArray : codonArray) {
+                CodonTable curTable = CodonTable.createFromASN1(codonTablesPath, aCodonArray);
                 newCodonTables.put(curTable.getKey(), curTable);
                 if (defaultCodonTable == null) {
                     defaultCodonTable = curTable;
@@ -338,7 +361,7 @@ public class AminoAcidManager {
         currentCodonTable = defaultCodonTable;
     }
 
-    private JSONObject readJSONFromStream(InputStream is) throws JSONException {
+    private static JSONObject readJSONFromStream(InputStream is) throws JSONException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         JSONTokener tokener = new JSONTokener(reader);
         return new JSONObject(tokener);
@@ -392,12 +415,68 @@ public class AminoAcidManager {
         return currentCodonTable.getKey();
     }
 
+    private static void loadDefaultTranslationTables() throws JSONException {
+        InputStream is = AminoAcidManager.class.getResourceAsStream(DEFAULT_TRANS_TABLE_PATH);
+        JSONObject allData = readJSONFromStream(is);
+        JSONArray organisms = allData.getJSONArray("organisms");
+
+        for (int ind = 0; ind < organisms.length(); ind++) {
+            JSONObject obj = organisms.getJSONObject(ind);
+
+            //Process each translation table setting
+            String genomeId = obj.getString("genomeId");
+
+            String codonTablePath = DEFAULT_CODON_TABLE_PATH;
+            try {
+                Object tmpPath = obj.get("codonTablePath");
+                if (tmpPath != null && tmpPath != JSONObject.NULL && tmpPath instanceof String) {
+                    codonTablePath = (String) tmpPath;
+                }
+            } catch (JSONException e) {
+                log.error("No codon table path found in " + DEFAULT_TRANS_TABLE_PATH + ". Using default: " + codonTablePath);
+            }
+
+            JSONObject chromosomes = obj.getJSONObject("chromosomes");
+            Iterator<String> iterator = chromosomes.keys();
+            while (iterator.hasNext()) {
+                String chromoName = iterator.next();
+                int id = chromosomes.getInt(chromoName);
+                CodonTableKey key = new CodonTableKey(codonTablePath, id);
+                genomeChromoTable.put(genomeId, chromoName, key);
+            }
+
+        }
+
+    }
+
+    /**
+     * Load the default codon table for the given genome and chromosome.
+     * We check the given name, alias, and finally use the default for the specified
+     * genome.
+     *
+     * @param genome
+     * @param chrName
+     */
+    public void loadDefaultCodonTable(Genome genome, String chrName) {
+        Map<String, CodonTableKey> chrMap = genomeChromoTable.row(genome.getId());
+        String[] tryChromos = new String[]{
+                chrName, genome.getChromosomeAlias(chrName), DEFAULT_CHROMO_KEY
+        };
+        for (String tryChromo : tryChromos) {
+            if (chrMap.containsKey(tryChromo)) {
+                setCodonTable(chrMap.get(tryChromo));
+                return;
+            }
+        }
+
+    }
+
     public static class CodonTableKey {
 
         private final String sourcePath;
         private final int id;
 
-        CodonTableKey(String sourcePath, int id) {
+        private CodonTableKey(String sourcePath, int id) {
             this.sourcePath = sourcePath;
             this.id = id;
         }
@@ -415,6 +494,10 @@ public class AminoAcidManager {
         @Override
         public int hashCode() {
             return Objects.hashCode(this.sourcePath, this.id);
+        }
+
+        public int getId() {
+            return id;
         }
     }
 

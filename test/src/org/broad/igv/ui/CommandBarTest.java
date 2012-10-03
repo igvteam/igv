@@ -12,9 +12,12 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.feature.AminoAcidManager;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.fest.swing.fixture.JTextComponentFixture;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -59,17 +62,41 @@ public class CommandBarTest extends AbstractHeadedTest {
 
     @Test
     public void testChromoNav() throws Exception {
+        tstChromoNav("chr1");
+        tstChromoNav("chr20");
+    }
+
+    private void tstChromoNav(String chromoText) throws Exception {
         JTextComponentFixture searchFixture = frame.textBox("searchTextField");
-        String enterText = "chr1";
+        searchFixture.deleteText();
+        String enterText = chromoText;
 
         //Make sure search box has focus
         searchFixture.focus();
         searchFixture.requireFocused();
+        assertEquals("", searchFixture.text());
+
         searchFixture.enterText(enterText);
         frame.button("goButton").click();
 
         JComboBoxFixture comboBox = frame.comboBox("chromosomeComboBox");
         comboBox.requireSelection(enterText);
+    }
+
+    @Test
+    public void testChromoNav_CodonTable() throws Exception {
+        //Our defaults are set for this genome
+        Assume.assumeTrue("hg18".equals(GenomeManager.getInstance().getGenomeId()));
+
+        tstChromoNav("chr1");
+
+        assertEquals(1, AminoAcidManager.getInstance().getCodonTableKey().getId());
+
+        tstChromoNav("chrM");
+
+        assertEquals(2, AminoAcidManager.getInstance().getCodonTableKey().getId());
+
+
     }
 
 }

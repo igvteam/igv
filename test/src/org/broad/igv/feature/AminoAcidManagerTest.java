@@ -221,8 +221,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void testCodonTablesExist() throws Exception {
         int[] expIds = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24};
         for (int id : expIds) {
-            AminoAcidManager.CodonTableKey key = new AminoAcidManager.CodonTableKey(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
-            assertTrue(AminoAcidManager.getInstance().setCodonTable(key));
+            assertTrue(AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id));
         }
     }
 
@@ -237,9 +236,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         for (int ii = 0; ii < expAAs.length; ii++) {
             AminoAcidManager aam = AminoAcidManager.getInstance();
             int id = codonTableIds[ii];
-            AminoAcidManager.CodonTableKey key = new AminoAcidManager.CodonTableKey(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
-
-            boolean loaded = aam.setCodonTable(key);
+            boolean loaded = aam.setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, id);
 
             assertTrue("Failed to load codon table with id " + id, loaded);
 

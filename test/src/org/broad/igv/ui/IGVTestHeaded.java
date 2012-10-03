@@ -91,17 +91,15 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         JButtonFixture homeButton = frameFixture.button("homeButton");
         homeButton.focus();
         homeButton.requireFocused();
-        frameFixture.button("homeButton").click();
+        homeButton.click();
 
-        IGV.getInstance().waitForNotify(500);
+        igv.waitForNotify(500);
 
         Assert.assertEquals(Globals.CHR_ALL, frame.getChrName());
 
         //In all genome view these should be the same
         assertEquals(frame.getChromosomeLength(), frame.getCurrentRange().getEnd());
         Assert.assertEquals(0.0, frame.getOrigin());
-
-
     }
 
     /**
