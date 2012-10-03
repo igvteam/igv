@@ -154,43 +154,18 @@ public class AminoAcidManager {
         return currentCodonTable.getAminoAcid(codon);
     }
 
-    /**
-     * Get the amino acid sequence for an interval.
-     * Assumptions and conventions
-     * <p/>
-     * The start and end positions are on the positive strand
-     * irrespective of the read direction.
-     * <p/>
-     * Reading will begin from the startPosition if strand == POSITIVE, endPosition if NEGATIVE
-     *
-     * @param seqBytes
-     * @param startPosition
-     * @param strand
-     * @return AminoAcidSequence, or null if seqBytes == null
-     */
-    public AminoAcidSequence getAminoAcidSequence(byte[] seqBytes, int startPosition, Strand strand) {
-        if (seqBytes == null) {
-            return null;
-        } else {
-            String nucSequence = new String(seqBytes);
-            List<AminoAcid> acids = getAminoAcids(nucSequence, strand);
-
-            // Set the start position of this amino acid.
-            return new AminoAcidSequence(strand, startPosition, acids);
-        }
-    }
 
     /**
-     * Return an amino acid sequence for the input sequence.
+     * Return a list of amino acids for the input sequence of nucleotides
      *
-     * @param sequence
      * @param direction
+     * @param sequence
      * @return
      */
-    public List<AminoAcid> getAminoAcids(String sequence, Strand direction) {
+    List<AminoAcid> getAminoAcids(Strand direction, String sequence) {
 
         // Sequence must be divisible by 3. It is the responsibility of the
-        // calling program to send a sequence properly aligned.  
+        // calling program to send a sequence properly aligned.
         int readLength = sequence.length() / 3;
         List<AminoAcid> acids = new ArrayList<AminoAcid>(readLength);
 
@@ -203,6 +178,47 @@ public class AminoAcidManager {
             acids.add(aa);
         }
         return acids;
+    }
+
+    /**
+     * Get the amino acid sequence for an interval.
+     * Assumptions and conventions
+     * <p/>
+     * The start and end positions are on the positive strand
+     * irrespective of the read direction.
+     * <p/>
+     * Reading will begin from the startPosition if strand == POSITIVE, endPosition if NEGATIVE
+     *
+     * @param strand
+     * @param startPosition
+     * @param seqBytes
+     * @return AminoAcidSequence, or null if seqBytes == null
+     */
+    public synchronized AminoAcidSequence getAminoAcidSequence(Strand strand, int startPosition, byte[] seqBytes) {
+        if (seqBytes == null) {
+            return null;
+        } else {
+            String nucSequence = new String(seqBytes);
+            List<AminoAcid> acids = getAminoAcids(strand, nucSequence);
+            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable);
+        }
+    }
+
+    /**
+     * Return a list of amino acids for the input nucleotides
+     *
+     * @param strand
+     * @param startPosition
+     * @param nucleotides
+     * @return
+     */
+    public synchronized AminoAcidSequence getAminoAcidSequence(Strand strand, int startPosition, String nucleotides) {
+        if (nucleotides == null) {
+            return null;
+        } else {
+            List<AminoAcid> acids = getAminoAcids(strand, nucleotides);
+            return new AminoAcidSequence(strand, startPosition, acids, currentCodonTable);
+        }
     }
 
     /**
@@ -411,8 +427,8 @@ public class AminoAcidManager {
         return Collections.unmodifiableCollection(allCodonTables.values());
     }
 
-    public CodonTableKey getCodonTableKey() {
-        return currentCodonTable.getKey();
+    public CodonTable getCodonTable() {
+        return currentCodonTable;
     }
 
     private static void loadDefaultTranslationTables() throws JSONException {

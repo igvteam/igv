@@ -38,9 +38,6 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         AminoAcidManager.resetToDefaultCodonTables();
     }
 
-    public AminoAcidManagerTest() {
-    }
-
     /**
      * Test getting the amino acids for the first exon on gene EGFR
      */
@@ -165,7 +162,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "ATGCGACCC";
         char[] aminoSeq = {'M', 'R', 'P'};
 
-        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(seq, Strand.POSITIVE);
+        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.POSITIVE, seq);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
@@ -178,7 +175,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String seq = "CGACGCCAT";
         char[] aminoSeq = {'S', 'A', 'M'};
 
-        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(seq, Strand.NEGATIVE);
+        List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(Strand.NEGATIVE, seq);
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());

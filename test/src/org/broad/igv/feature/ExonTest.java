@@ -36,17 +36,17 @@ public class ExonTest extends AbstractHeadlessTest {
      * exonNum is interpreted as counting backwards
      * if negative. So -1 is the last one.
      *
-     * @param gene
+     * @param geneId
      * @param exonNum
      * @param positive
      * @throws Exception
      */
-    public void tstGetAminoAcidNumber(String gene, int exonNum, boolean positive) throws Exception {
+    public void tstGetAminoAcidNumber(String geneId, int exonNum, boolean positive) throws Exception {
 
         int[] genomicOffsets = new int[]{0, 1, 2, 3, 4, 5};
         int[] expAANumbers = new int[]{1, 1, 1, 2, 2, 2};
 
-        BasicFeature egfr = (BasicFeature) FeatureDB.getFeature(gene);
+        BasicFeature egfr = (BasicFeature) FeatureDB.getFeature(geneId);
         if (exonNum < 0) {
             exonNum = egfr.getExonCount() + exonNum;
         }
@@ -61,6 +61,25 @@ public class ExonTest extends AbstractHeadlessTest {
             ind++;
 
         }
+
+    }
+
+    @Test
+    public void testChangeCodonTable() throws Exception {
+
+        String geneId = "LANCL2";
+        int exonNum = 2;
+
+        BasicFeature lancl = (BasicFeature) FeatureDB.getFeature(geneId);
+        Exon testExon = lancl.getExons().get(exonNum);
+        AminoAcidSequence seq = testExon.getAminoAcidSequence(genome);
+        assertEquals('I', seq.getSequence().get(0).getSymbol());
+
+        AminoAcidManager.getInstance().setCodonTable(AminoAcidManager.DEFAULT_CODON_TABLE_PATH, 2);
+
+        seq = testExon.getAminoAcidSequence(genome);
+        assertEquals('M', seq.getSequence().get(0).getSymbol());
+
 
     }
 

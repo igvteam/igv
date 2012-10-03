@@ -213,7 +213,7 @@ public class SequenceTrack extends AbstractTrack {
         }
         item.setText(shortName);
         final AminoAcidManager.CodonTableKey curKey = codonTable.getKey();
-        item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTableKey()));
+        item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

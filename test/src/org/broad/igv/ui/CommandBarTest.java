@@ -90,11 +90,11 @@ public class CommandBarTest extends AbstractHeadedTest {
 
         tstChromoNav("chr1");
 
-        assertEquals(1, AminoAcidManager.getInstance().getCodonTableKey().getId());
+        assertEquals(1, AminoAcidManager.getInstance().getCodonTable().getId());
 
         tstChromoNav("chrM");
 
-        assertEquals(2, AminoAcidManager.getInstance().getCodonTableKey().getId());
+        assertEquals(2, AminoAcidManager.getInstance().getCodonTable().getId());
 
 
     }
