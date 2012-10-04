@@ -15,10 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * A convenience class providing default implementation for many IGVFeature
@@ -261,6 +258,10 @@ public class BasicFeature extends AbstractFeature {
         for (int gp : genomePositions) {
             codonInfo.setNextGenomePosition(gp);
         }
+        if (!codonInfo.isGenomePositionsSet()) {
+            //Protein position invalid, could not find genomic sequence
+            return null;
+        }
         codonInfo.calcSequence(genome);
         AminoAcid aa = AminoAcidManager.getInstance().getAminoAcid(codonInfo.getSequence());
         if (aa != null) {
@@ -275,13 +276,14 @@ public class BasicFeature extends AbstractFeature {
      * Convert a series of feature positions into genomic positions.
      *
      * @param featurePositions Must be 0-based.
-     * @return Positions relative to genome. Will contain zeros for
+     * @return Positions relative to genome (0-based). Will contain "-1"s for
      *         positions not found. Sorted ascending for positive strand,
      *         descending for negative strand.
      */
     int[] featureToGenomePosition(int[] featurePositions) {
         List<Exon> exons = getExons();
         int[] genomePositions = new int[featurePositions.length];
+        Arrays.fill(genomePositions, -1);
 
         if (exons != null) {
 
@@ -325,10 +327,8 @@ public class BasicFeature extends AbstractFeature {
                     }
                 }
                 //No more positions of interest on this exon
-                //move up counters to end of exon
-                interval = current_exon_end - featurePositions[posIndex];
+                //move up counter to end of exon
                 all_exon_counter = current_exon_end;
-                genomePosition += interval * incr;
             }
         }
 

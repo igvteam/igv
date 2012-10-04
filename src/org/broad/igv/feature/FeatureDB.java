@@ -257,10 +257,10 @@ public class FeatureDB {
 
     /**
      * Search for a feature with the given name, which has the specified aminoAcid
-     * at the specified proteinPosition (1-indexed).
+     * at the specified (1-indexed) proteinPosition .
      *
      * @param name
-     * @param proteinPosition
+     * @param proteinPosition 1-indexed position along the feature in which the amino acid is found, in protein coordinates
      * @param refAA           String symbolizing the desired amino acid
      * @param mutAA           String symbolizing the mutated amino acid
      * @param currentGenome
@@ -339,7 +339,7 @@ public class FeatureDB {
                     BasicFeature bf = (BasicFeature) f;
 
                     int genomePosition = bf.featureToGenomePosition(new int[]{startPosition - 1})[0];
-                    if (genomePosition <= 0) {
+                    if (genomePosition < 0) {
                         continue;
                     }
                     final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
