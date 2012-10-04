@@ -396,6 +396,15 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         return DenseAlignmentCounts.merge(this, (DenseAlignmentCounts) other, bisulfiteContext);
     }
 
+    /**
+     * Merge first and second into a third DenseAlignmentCounts
+     * Input arguments unchanged
+     *
+     * @param first
+     * @param second
+     * @param bisulfiteContext
+     * @return
+     */
     private static DenseAlignmentCounts merge(DenseAlignmentCounts first, DenseAlignmentCounts second, AlignmentTrack.BisulfiteContext bisulfiteContext) {
         if (second.getStart() < first.getStart()) {
             DenseAlignmentCounts tmp = first;
@@ -403,13 +412,20 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             second = tmp;
         }
 
+        //It is now guaranteed that first.getStart() < second.getStart()
+        //However, the relationship between first.getEnd() and second.getEnd() is unknown
+
         int firstLength = first.getEnd() - first.getStart();
-        int lengthIncrease = second.getEnd() - first.getEnd();
+
+        int newStart = first.getStart();
+        int newEnd = Math.max(first.getEnd(), second.getEnd());
+
+        int lengthIncrease = (newEnd - newStart) - (firstLength);
 
         int[][] firstSrcArrs = getCountArrs(first);
         int[][] secondSrcArrs = getCountArrs(second);
 
-        DenseAlignmentCounts result = new DenseAlignmentCounts(first.getStart(), second.getEnd(), bisulfiteContext);
+        DenseAlignmentCounts result = new DenseAlignmentCounts(newStart, newEnd, bisulfiteContext);
         int[][] destArrs = getCountArrs(result);
         int number = firstSrcArrs.length;
         int secondOffset = first.getEnd() - second.getStart();
@@ -418,6 +434,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             destArr = destArrs[arnum];
             System.arraycopy(firstSrcArrs[arnum], 0, destArr, 0, firstLength);
             System.arraycopy(secondSrcArrs[arnum], secondOffset, destArr, firstLength, lengthIncrease);
+
         }
         result.maxCount = Math.max(first.getMaxCount(), second.getMaxCount());
         return result;
