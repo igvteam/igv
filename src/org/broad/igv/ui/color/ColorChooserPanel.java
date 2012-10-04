@@ -1,17 +1,29 @@
 /*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+/*
  * Created by JFormDesigner on Sat Mar 17 09:23:03 EDT 2012
  */
 
 package org.broad.igv.ui.color;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.Serializable;
-import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
-
-import com.jidesoft.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * @author Jim Robinson
@@ -54,7 +66,7 @@ public class ColorChooserPanel extends JPanel implements Serializable {
     }
 
     private void colorPanelMouseClicked(MouseEvent e) {
-         changeColorAction();
+        changeColorAction();
     }
 
     private void changeColorAction() {
@@ -77,6 +89,10 @@ public class ColorChooserPanel extends JPanel implements Serializable {
 
         colorPanel = new JPanel();
         changeButton = new JButton();
+        //Workaround of Metal LAF bug, see http://bugs.openjdk.java.net/show_bug.cgi?id=100280
+        if (UIManager.getLookAndFeel().getName().toLowerCase().contains("metal")) {
+            changeButton = new JMenuItem();
+        }
 
         //======== this ========
         setLayout(new GridBagLayout());
@@ -124,6 +140,6 @@ public class ColorChooserPanel extends JPanel implements Serializable {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel colorPanel;
-    private JButton changeButton;
+    private AbstractButton changeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

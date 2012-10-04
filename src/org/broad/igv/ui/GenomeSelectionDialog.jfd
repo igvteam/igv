@@ -58,6 +58,7 @@ new FormModel {
 						name: "scrollPane1"
 						add( new FormComponent( "org.broad.igv.ui.JList7" ) {
 							name: "genomeList"
+							"selectionMode": 0
 							auxiliary() {
 								"JavaCodeGenerator.typeParameters": "GenomeListItem"
 							}

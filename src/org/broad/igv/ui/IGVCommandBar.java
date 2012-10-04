@@ -24,10 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.Cytoband;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -309,6 +306,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         chromosomeComboBox.setSelectedItem(chrName);
                     }
                 }
+                AminoAcidManager.getInstance().loadDefaultCodonTable(GenomeManager.getInstance().getCurrentGenome(),
+                        chrName);
             }
         });
 

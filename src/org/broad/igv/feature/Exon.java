@@ -12,6 +12,7 @@
 package org.broad.igv.feature;
 
 
+import com.google.common.base.Objects;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
@@ -41,7 +42,14 @@ public class Exon extends AbstractFeature implements IExon {
      */
     private int codingStart;
     private int codingEnd;
+
     private AminoAcidSequence aminoAcidSequence;
+
+    //Raw bytes representing nucleotides
+    //Stored separately from the aminoAcidSequence because the latter changes
+    //when we change translation tables
+    private byte[] seqBytes;
+
     private boolean utr = false;
 
     // The position of the first base of this exon relative to the start of the mRNA.  This will correspond
@@ -158,7 +166,9 @@ public class Exon extends AbstractFeature implements IExon {
     }
 
     public AminoAcidSequence getAminoAcidSequence(Genome genome) {
-        if (aminoAcidSequence == null) {
+        if (aminoAcidSequence == null ||
+                //If the stored sequence was computed with a different codon table, we reset
+                !(Objects.equal(aminoAcidSequence.getCodonTableKey(), AminoAcidManager.getInstance().getCodonTable().getKey()))) {
             computeAminoAcidSequence(genome);
         }
         return aminoAcidSequence;
@@ -175,9 +185,11 @@ public class Exon extends AbstractFeature implements IExon {
             int readStart = (codingStart > start) ? codingStart : start + readingFrame;
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
-                byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
+                if (seqBytes == null) {
+                    seqBytes = genome.getSequence(chr, readStart, readEnd);
+                }
                 if (seqBytes != null) {
-                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(seqBytes, readStart, getStrand());
+                    aminoAcidSequence = AminoAcidManager.getInstance().getAminoAcidSequence(getStrand(), readStart, seqBytes);
                 }
             }
         }
@@ -186,6 +198,7 @@ public class Exon extends AbstractFeature implements IExon {
 
     public LocusScore copy() {
         Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
+        copy.seqBytes = this.seqBytes;
         copy.aminoAcidSequence = this.aminoAcidSequence;
         copy.codingEnd = this.codingEnd;
         copy.codingStart = this.codingStart;

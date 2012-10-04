@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -31,15 +24,23 @@ import java.util.List;
  */
 public class AminoAcidSequence {
 
-    private Strand strand;
-    private int startPosition;
-    private List<AminoAcid> sequence;
-    boolean nonNullSequence;
+    private final Strand strand;
+    private final int startPosition;
+    private final List<AminoAcid> sequence;
 
-    public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence) {
+    private boolean nonNullSequence;
+
+    /**
+     * If the sequence was computed from a nucleotide sequence,
+     * we store how the calculation was performed
+     */
+    private final AminoAcidManager.CodonTableKey codonTableKey;
+
+    public AminoAcidSequence(Strand strand, int startPosition, List<AminoAcid> sequence, AminoAcidManager.CodonTableKey codonTableKey) {
         this.strand = strand;
         this.startPosition = startPosition;
         this.sequence = sequence;
+        this.codonTableKey = codonTableKey;
 
         // Look for a non null sequence.  Sequences are null if the sequence
         // directory is undefined or unreachable.  
@@ -47,6 +48,7 @@ public class AminoAcidSequence {
         for (AminoAcid aa : sequence) {
             if (aa != null) {
                 nonNullSequence = true;
+                break;
             }
         }
 
@@ -66,5 +68,9 @@ public class AminoAcidSequence {
 
     public boolean hasNonNullSequence() {
         return nonNullSequence;
+    }
+
+    public AminoAcidManager.CodonTableKey getCodonTableKey() {
+        return codonTableKey;
     }
 }

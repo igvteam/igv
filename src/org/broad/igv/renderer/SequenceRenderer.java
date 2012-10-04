@@ -458,10 +458,8 @@ public class SequenceRenderer {
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
 
                 String nucSequence = new String(seq, indexOfFirstCodonStart, seq.length - indexOfFirstCodonStart);
-                java.util.List<AminoAcid> acids = AminoAcidManager.getInstance().getAminoAcids(nucSequence, strand);
-
-                // Set the start position of this amino acid.
-                AminoAcidSequence aaSequence = new AminoAcidSequence(strand, start + indexOfFirstCodonStart, acids);
+                AminoAcidSequence aaSequence = AminoAcidManager.getInstance().
+                        getAminoAcidSequence(strand, start + indexOfFirstCodonStart, nucSequence);
 
                 if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
                     //This rectangle holds a single AA glyph. x and width will be updated in the for loop

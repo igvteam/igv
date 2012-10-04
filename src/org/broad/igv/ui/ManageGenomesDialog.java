@@ -38,14 +38,14 @@ import java.util.List;
 /**
  * @author Jacob Silterra
  */
-public class RemoveReorderGenomesDialog extends JDialog {
+public class ManageGenomesDialog extends JDialog {
 
     private List<GenomeListItem> allListItems;
     private boolean cancelled = true;
     private List<GenomeListItem> removedValuesList = new ArrayList<GenomeListItem>();
     private GenomeListItem currentGenomeItem = null;
 
-    public RemoveReorderGenomesDialog(Frame owner) {
+    public ManageGenomesDialog(Frame owner) {
         super(owner);
         initComponents();
 
@@ -89,7 +89,7 @@ public class RemoveReorderGenomesDialog extends JDialog {
         setVisible(false);
     }
 
-    private void okButtonActionPerformed(ActionEvent e) {
+    private void saveButtonActionPerformed(ActionEvent e) {
         cancelled = false;
         PreferenceManager.getInstance().saveGenomeIdDisplayList(allListItems);
         setVisible(false);
@@ -120,6 +120,16 @@ public class RemoveReorderGenomesDialog extends JDialog {
         removeSelected();
     }
 
+    private void addButtonActionPerformed(ActionEvent e) {
+        GenomeSelectionDialog dialog = new GenomeSelectionDialog(null, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        dialog.setVisible(true);
+        List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+        if (selectedValues != null) {
+            allListItems.addAll(selectedValues);
+            buildList();
+        }
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -128,15 +138,18 @@ public class RemoveReorderGenomesDialog extends JDialog {
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
         genomeList = new JList7<GenomeListItem>();
+        panel1 = new JPanel();
+        addRemBar = new JPanel();
+        addButton = new JButton();
+        removeButton = new JButton();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
-        removeButton = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
-        setTitle("Remove/Reorder Genomes");
+        setTitle("Manage Genome List");
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -166,7 +179,6 @@ public class RemoveReorderGenomesDialog extends JDialog {
                     genomeList.setMaximumSize(new Dimension(39, 5000));
                     genomeList.setDropMode(DropMode.INSERT);
                     genomeList.setDragEnabled(true);
-                    genomeList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
                     genomeList.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyReleased(KeyEvent e) {
@@ -179,59 +191,75 @@ public class RemoveReorderGenomesDialog extends JDialog {
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
-            //======== buttonBar ========
+            //======== panel1 ========
             {
-                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                buttonBar.setPreferredSize(new Dimension(196, 51));
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 0, 0, 0};
-                ((GridBagLayout) buttonBar.getLayout()).rowHeights = new int[]{0, 0};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0, 1.0E-4};
-                ((GridBagLayout) buttonBar.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
+                panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
 
-                //---- okButton ----
-                okButton.setText("OK");
-                okButton.setMaximumSize(new Dimension(93, 29));
-                okButton.setMinimumSize(new Dimension(93, 29));
-                okButton.setPreferredSize(new Dimension(93, 29));
-                okButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        okButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(okButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 10), 0, 0));
+                //======== addRemBar ========
+                {
+                    addRemBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                    addRemBar.setPreferredSize(new Dimension(196, 51));
+                    addRemBar.setMinimumSize(new Dimension(201, 51));
+                    addRemBar.setLayout(new FlowLayout(FlowLayout.TRAILING, 1, 5));
 
-                //---- cancelButton ----
-                cancelButton.setText("Cancel");
-                cancelButton.setMinimumSize(new Dimension(70, 29));
-                cancelButton.setPreferredSize(new Dimension(70, 29));
-                cancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        cancelButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(cancelButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 10), 0, 0));
+                    //---- addButton ----
+                    addButton.setText("Add From Server");
+                    addButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            addButtonActionPerformed(e);
+                        }
+                    });
+                    addRemBar.add(addButton);
 
-                //---- removeButton ----
-                removeButton.setText("Remove");
-                removeButton.setToolTipText("Remove selected genomes from list");
-                removeButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        removeButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(removeButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    //---- removeButton ----
+                    removeButton.setText("Remove");
+                    removeButton.setToolTipText("Remove selected genomes from list");
+                    removeButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            removeButtonActionPerformed(e);
+                        }
+                    });
+                    addRemBar.add(removeButton);
+                }
+                panel1.add(addRemBar);
+
+                //======== buttonBar ========
+                {
+                    buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                    buttonBar.setPreferredSize(new Dimension(196, 51));
+                    buttonBar.setLayout(new FlowLayout(FlowLayout.TRAILING));
+
+                    //---- okButton ----
+                    okButton.setText("Save");
+                    okButton.setMaximumSize(new Dimension(93, 29));
+                    okButton.setMinimumSize(new Dimension(93, 29));
+                    okButton.setPreferredSize(new Dimension(93, 29));
+                    okButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            saveButtonActionPerformed(e);
+                        }
+                    });
+                    buttonBar.add(okButton);
+
+                    //---- cancelButton ----
+                    cancelButton.setText("Cancel");
+                    cancelButton.setMinimumSize(new Dimension(93, 29));
+                    cancelButton.setPreferredSize(new Dimension(93, 29));
+                    cancelButton.setMaximumSize(new Dimension(93, 29));
+                    cancelButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            cancelButtonActionPerformed(e);
+                        }
+                    });
+                    buttonBar.add(cancelButton);
+                }
+                panel1.add(buttonBar);
             }
-            dialogPane.add(buttonBar, BorderLayout.SOUTH);
+            dialogPane.add(panel1, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
@@ -246,10 +274,13 @@ public class RemoveReorderGenomesDialog extends JDialog {
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
     private JList7<GenomeListItem> genomeList;
+    private JPanel panel1;
+    private JPanel addRemBar;
+    private JButton addButton;
+    private JButton removeButton;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
-    private JButton removeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public boolean isCancelled() {

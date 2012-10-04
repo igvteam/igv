@@ -82,12 +82,13 @@ public class MultiMap<K, V> {
         return map.containsKey(key);
     }
 
+    private static final int MAX_CHARS_PER_LINE = 50;
+
     public void printHtml(StringBuffer buffer, int max) {
 
         if (map == null || map.isEmpty()) return;
 
         int count = 0;
-
         buffer.append("<br>");
         for (Map.Entry<K, Object> entry : map.entrySet()) {
             Object value = entry.getValue();
@@ -102,7 +103,9 @@ public class MultiMap<K, V> {
             } else {
                 buffer.append(entry.getKey());
                 buffer.append("=");
-                buffer.append(value.toString());
+                String ts = lineWrapString(value.toString(), MAX_CHARS_PER_LINE);
+
+                buffer.append(ts);
                 buffer.append("<br/>");
                 count++;
             }
@@ -112,6 +115,19 @@ public class MultiMap<K, V> {
             }
 
         }
+    }
+
+    private String lineWrapString(String input, int maxCharsPerLine) {
+        int lines = input.length() / maxCharsPerLine + 1;
+        if (lines == 1) return input;
+
+        String result = input.substring(0, maxCharsPerLine);
+        for (int lineNum = 1; lineNum < lines; lineNum++) {
+            int start = lineNum * maxCharsPerLine;
+            int end = Math.min(start + maxCharsPerLine, input.length());
+            result += "<br/>" + input.substring(start, end);
+        }
+        return result;
     }
 
     public List<V> values() {

@@ -1107,13 +1107,17 @@ public class GenomeManager {
     public void addGenomeItems(Collection<GenomeListItem> genomeListItems) {
         for (GenomeListItem genomeListItem : genomeListItems) {
             genomeItemMap.put(genomeListItem.getId(), genomeListItem);
+            userDefinedGenomeArchiveList.add(genomeListItem);
         }
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
+        updateImportedGenomePropertyFile();
     }
 
     public void addGenomeItem(GenomeListItem genomeListItem) {
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
         PreferenceManager.getInstance().saveGenomeIdDisplayList(genomeItemMap.values());
+        userDefinedGenomeArchiveList.add(genomeListItem);
+        updateImportedGenomePropertyFile();
     }
 
     /**

@@ -197,7 +197,7 @@ public class SequenceTrack extends AbstractTrack {
             JMenuItem item = getCodonTableMenuItem(codonTable);
             transTableMenu.add(item);
         }
-        //menu.add(transTableMenu);
+        menu.add(transTableMenu);
 
         return menu;
     }
@@ -212,12 +212,12 @@ public class SequenceTrack extends AbstractTrack {
             item.setToolTipText(fullName);
         }
         item.setText(shortName);
-        final int curId = codonTable.getId();
-        item.setSelected(curId == AminoAcidManager.getInstance().getCodonTableId());
+        final AminoAcidManager.CodonTableKey curKey = codonTable.getKey();
+        item.setSelected(curKey.equals(AminoAcidManager.getInstance().getCodonTable().getKey()));
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AminoAcidManager.getInstance().setCodonTableById(curId);
+                AminoAcidManager.getInstance().setCodonTable(curKey);
                 repaint();
             }
         });
