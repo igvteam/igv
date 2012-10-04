@@ -40,10 +40,20 @@ public class MessageUtils {
         Object value;
     }
 
+    /**
+     * Log the exception and show {@code message} to the user
+     *
+     * @param e
+     * @param message
+     */
+    public static void showErrorMessage(Exception e, String message) {
+        log.error(e);
+        showMessage(Level.ERROR, message);
+    }
+
     public static void showMessage(String message) {
         showMessage(Level.INFO, message);
     }
-
 
     public static synchronized void showMessage(Level level, String message) {
 

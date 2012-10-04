@@ -17,16 +17,13 @@
 
 package org.broad.igv.ui;
 
-import org.apache.log4j.Level;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,11 +49,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
         genomeList.setSelectionMode(listSelectionMode);
         setLocationRelativeTo(parent);
 
-        try {
-            initData(GenomeManager.getInstance().getGenomeArchiveList());
-        } catch (IOException e) {
-            MessageUtils.showMessage(Level.ERROR, UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-        }
+        initData(GenomeManager.getInstance().getGenomeArchiveList());
+
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {

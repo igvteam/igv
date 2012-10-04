@@ -26,7 +26,6 @@ import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -579,16 +578,15 @@ public class GenomeManager {
      * @return
      * @throws IOException
      */
-    public List<GenomeListItem> getGenomeArchiveList() throws IOException {
-        List<GenomeListItem> genomeArchiveList = null;
-        try {
-            genomeArchiveList = getServerGenomeArchiveList(this.excludedArchivesUrls);
-        } catch (IOException e) {
-            log.error(UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST + e.getMessage());
-        }
+    public List<GenomeListItem> getGenomeArchiveList() {
+        List<GenomeListItem> genomeArchiveList = getServerGenomeArchiveList(this.excludedArchivesUrls);
 
         if (genomeArchiveList == null) {
-            genomeArchiveList = getCachedGenomeArchiveList();
+            try {
+                genomeArchiveList = getCachedGenomeArchiveList();
+            } catch (IOException e) {
+                MessageUtils.showErrorMessage(e, "Cannot access cached genome list");
+            }
         }
         return genomeArchiveList;
     }
@@ -620,8 +618,7 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public List<GenomeListItem> getServerGenomeArchiveList(Set excludedArchivesUrls)
-            throws IOException {
+    public List<GenomeListItem> getServerGenomeArchiveList(Set excludedArchivesUrls) {
 
         if (serverGenomeListUnreachable) {
             return null;
@@ -666,16 +663,11 @@ public class GenomeManager {
                                 }
                             }
 
-                            try {
-                                String name = fields[0];
-                                String url = fields[1];
-                                String id = fields[2];
-                                GenomeListItem item = new GenomeListItem(name, url, id);
-                                serverGenomeArchiveList.add(item);
-                            } catch (Exception e) {
-                                log.error("Error reading a line from server genome list" + " line was: [" +
-                                        genomeRecord + "]", e);
-                            }
+                            String name = fields[0];
+                            String url = fields[1];
+                            String id = fields[2];
+                            GenomeListItem item = new GenomeListItem(name, url, id);
+                            serverGenomeArchiveList.add(item);
 
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
@@ -691,10 +683,18 @@ public class GenomeManager {
                         PreferenceManager.SHOW_GENOME_SERVER_WARNING);
             } finally {
                 if (dataReader != null) {
-                    dataReader.close();
+                    try {
+                        dataReader.close();
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
                 }
                 if (inputStream != null) {
-                    inputStream.close();
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
                 }
             }
         }
@@ -734,12 +734,11 @@ public class GenomeManager {
         if (affectiveMode) {
             tmpArchiveGenomeItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
         } else {
+            tmpArchiveGenomeItemList = getGenomeArchiveList();
             try {
-                tmpArchiveGenomeItemList = getGenomeArchiveList();
                 tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
-
             } catch (IOException e) {
-                MessageUtils.showMessage(UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+                MessageUtils.showErrorMessage(e, "Cannot access user defined genome archive list");
             }
         }
 
