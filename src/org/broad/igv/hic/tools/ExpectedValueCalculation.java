@@ -9,24 +9,23 @@ import java.util.*;
 
 /**
  * Computes an "expected" density vector.  Essentially there are 3 steps to using this class
- *
+ * <p/>
  * (1) instantiate it with a collection of Chromosomes (representing a genome) and a grid size
  * (2) loop through the pair data,  calling addDistance for each pair, to accumulate all counts
  * (3) when data loop is complete, call computeDensity to do the calculation
- * - with new version, this will also compute coverage normalization
- *
+ * <p/>
+ * <p/>
  * Methods are provided to save the result of the calculation to a binary file, and restore it.  See the
  * DensityUtil class for example usage.
  *
  * @author Jim Robinson
  * @since 11/27/11
  */
-public class DensityCalculation {
+public class ExpectedValueCalculation {
 
     private int gridSize;
+
     private int numberOfBins;
-    private long totalReads;
-    private boolean isNewVersion;
     /**
      * Genome wide count of binned reads at a given distance
      */
@@ -36,21 +35,13 @@ public class DensityCalculation {
      */
     private double[] possibleDistances = null;
     /**
-     * Sum of counts in a row, used for coverage normalization
-     */
-    private double[] rowSums = null;
-    /**
-     * Coverage normalizations for each row (= column)
-     */
-    private double[] coverageNorms = null;
-    /**
      * Expected count at a given binned distance from diagonal
      */
     private double[] densityAvg = null;
     /**
      * Chromosome in this genome, needed for normalizations
      */
-    private List<Chromosome> chromosomes = null;
+    private Map<Integer, Chromosome> chromosomes = null;
 
     /**
      * Map of chromosome index -> total count for that chromosome
@@ -68,55 +59,54 @@ public class DensityCalculation {
      */
     private FragmentCalculation fragmentCalculation;
 
+    // A little redundant, for clarity
+    boolean isFrag = false;
+
     /**
      * Instantiate a DensityCalculation.  This constructor is used to compute the "expected" density from pair data.
      *
-     * @param chromosomes List of chromosomes, mainly used for size
-     * @param gridSize    Grid size, used for binning appropriately
+     * @param chromosomeList List of chromosomes, mainly used for size
+     * @param gridSize       Grid size, used for binning appropriately
      */
-    DensityCalculation(List<Chromosome> chromosomes, int gridSize, FragmentCalculation fragmentCalculation, boolean isNewVersion) {
+    ExpectedValueCalculation(List<Chromosome> chromosomeList, int gridSize, FragmentCalculation fragmentCalculation) {
 
         this.gridSize = gridSize;
 
-        this.chromosomes = chromosomes;
-        long totalLen = 0;
-        for (Chromosome chromosome : chromosomes) {
-            if (chromosome != null) {
-                if (gridSize == 1)
-                    totalLen += fragmentCalculation.getNumberFragments(chromosome);
-                else
-                    totalLen += chromosome.getLength();
+        if (fragmentCalculation != null) {
+            this.isFrag = true;
+            this.fragmentCalculation = fragmentCalculation;
+        }
+
+        long maxLen = 0;
+        this.chromosomes = new LinkedHashMap<Integer, Chromosome>();
+
+        for (Chromosome chr : chromosomeList) {
+            if (chr != null) {
+                chromosomes.put(chr.getIndex(), chr);
+                maxLen = isFrag ?
+                        Math.max(maxLen, fragmentCalculation.getNumberFragments(chr.getName())) :
+                        Math.max(maxLen, chr.getLength());
             }
         }
 
-        if (gridSize == 1)
-            numberOfBins = (int) totalLen;
-        else
-            numberOfBins = (int) (totalLen / gridSize) + 1;
+        numberOfBins = (int) (maxLen / gridSize) + 1;
 
         actualDistances = new double[numberOfBins];
-        rowSums = new double[numberOfBins];
-        coverageNorms = new double[numberOfBins];
-        Arrays.fill(coverageNorms, 1);
         Arrays.fill(actualDistances, 0);
-        Arrays.fill(rowSums, 0);
         chromosomeCounts = new HashMap<Integer, Integer>();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
-        totalReads = 0;
-        this.isNewVersion = isNewVersion;
-        this.fragmentCalculation = fragmentCalculation;
+
     }
+
 
     /**
      * Read a previously calculated density calculation from an input stream.
      *
-     * @param les          Stream to read from
-     * @param isNewVersion New version stores the coverage normalization as well
+     * @param les Stream to read from
      */
-    public DensityCalculation(LittleEndianInputStream les, boolean isNewVersion) {
+    public ExpectedValueCalculation(LittleEndianInputStream les) {
         try {
-            read(les, isNewVersion);
-            this.isNewVersion = isNewVersion;
+            read(les);
         } catch (IOException e) {
             System.err.println("Error reading density file");
             e.printStackTrace();
@@ -129,110 +119,39 @@ public class DensityCalculation {
      * @param chromosomes1 Array of chromosomes to set
      */
     public void setChromosomes(Chromosome[] chromosomes1) {
-        chromosomes = Arrays.asList(chromosomes1);
+
+        this.chromosomes = new LinkedHashMap<Integer, Chromosome>();
+        for (Chromosome chr : chromosomes1) {
+            if (chr != null) {
+                chromosomes.put(chr.getIndex(), chr);
+            }
+        }
     }
 
     /**
      * Add an observed distance.  This is called for each pair in the data set
      *
-     * @param chr  Chromosome where observed, so can increment count
-     * @param pos1 Position1 observed
-     * @param pos2 Position2 observed
+     * @param chrIdx index of chromosome where observed, so can increment count
+     * @param pos1   Position1 observed in units for this calc (bp or fragments)
+     * @param pos2   Position2 observed in units for this calc (bp or fragments)
      */
-    public void addDistance(Integer chr, int pos1, int pos2) {
+    public void addDistance(Integer chrIdx, int pos1, int pos2) {
         int dist;
+        Chromosome chr = chromosomes.get(chrIdx);
+        if (chr == null) return;
+
         Integer count = chromosomeCounts.get(chr);
         if (count == null) {
-            chromosomeCounts.put(chr, 1);
+            chromosomeCounts.put(chrIdx, 1);
         } else {
-            chromosomeCounts.put(chr, count + 1);
+            chromosomeCounts.put(chrIdx, count + 1);
         }
-        if (gridSize == 1) {
-            int bin1 = fragmentCalculation.getBin(chr, pos1);
-            int bin2 = fragmentCalculation.getBin(chr, pos2);
-            dist = Math.abs(bin1 - bin2);
-        } else {
-            dist = Math.abs(pos1 - pos2);
-        }
+        dist = Math.abs(pos1 - pos2);
+
         int bin = dist / gridSize;
 
-        if (isNewVersion) {
+        actualDistances[bin]++;
 
-            int bin1 = getGenomicRowBin(chr, pos1);
-            int bin2 = getGenomicRowBin(chr, pos2);
-
-            actualDistances[bin] += 1 / (coverageNorms[bin1] * coverageNorms[bin2]);
-        } else
-            actualDistances[bin]++;
-
-    }
-
-
-    public double[] getCoverageNorms() {
-        return coverageNorms;
-    }
-
-    /**
-     * Returns normalized version of count, based on place in genome-wide matrix
-     *
-     * @param count Sum to normalize
-     * @param chr1  First chromosome
-     * @param pos1  First position
-     * @param chr2  Second chromosome
-     * @param pos2  Second position
-     * @return If old version and we don't have normalization, return count.  Else look at genome-wide bin
-     *         and divide by the normalizations for the row and column.
-     */
-    public double getNormalizedCount(int count, int chr1, int pos1, int chr2, int pos2) {
-        if (coverageNorms == null) {
-            return count;
-        }
-        int bin1 = getGenomicRowBin(chr1, pos1);
-        int bin2 = getGenomicRowBin(chr2, pos2);
-        return (double) count / (coverageNorms[bin1] * coverageNorms[bin2]);
-    }
-
-    /**
-     * Add to rowSums array, so that we can do coverage normalization later
-     *
-     * @param pair Pair to add
-     */
-    public void addToRow(AlignmentPair pair) {
-
-        int bin1 = getGenomicRowBin(pair.getChr1(), pair.getPos1());
-        int bin2 = getGenomicRowBin(pair.getChr2(), pair.getPos2());
-
-        rowSums[bin1]++;
-        // don't double count on the diagonal
-        if (bin1 != bin2)
-            rowSums[bin2]++;
-
-        totalReads++;
-    }
-
-    /**
-     * Find row bin in big genomic matrix
-     *
-     * @param chr Chromosome
-     * @param pos Position
-     * @return Row bin in genomic matrix
-     */
-    public int getGenomicRowBin(int chr, int pos) {
-        long rowsBefore = 0;
-
-        for (int i = 1; i < chr; i++) {
-            rowsBefore += chromosomes.get(i).getLength();
-        }
-
-        rowsBefore += pos;
-        return (int) (rowsBefore / gridSize);
-    }
-
-    public void computeCoverageNormalization() {
-        double rowMean = totalReads / rowSums.length;
-        for (int i = 0; i < rowSums.length; i++) {
-            coverageNorms[i] = rowSums[i] / rowMean;
-        }
     }
 
     /**
@@ -250,17 +169,15 @@ public class DensityCalculation {
 
         possibleDistances = new double[numberOfBins];
 
-        for (Chromosome chr : chromosomes) {
+        for (Chromosome chr : chromosomes.values()) {
 
             // didn't see anything at all from a chromosome, then don't include it in possDists.
             if (chr == null || chromosomeCounts.containsKey(chr.getIndex()) == false) continue;
 
-            int nChrBins;
-            if (gridSize == 1) {
-                nChrBins = fragmentCalculation.getNumberFragments(chr);
-            } else {
-                nChrBins = chr.getLength() / gridSize;
-            }
+            // use correct units (bp or fragments)
+            int len = isFrag ? fragmentCalculation.getNumberFragments(chr.getName()) : chr.getLength();
+            int nChrBins = len / gridSize;
+
             maxNumBins = Math.max(maxNumBins, nChrBins);
 
             for (int i = 0; i < nChrBins; i++) {
@@ -279,8 +196,9 @@ public class DensityCalculation {
                 while (tmp < 400) {
                     window++;
                     tmp = 0;
-                    for (int j = i - window; j <= i + window; j++)
+                    for (int j = i - window; j <= i + window; j++) {
                         tmp += actualDistances[j];
+                    }
                 }
                 tmp = 0;
                 for (int j = i - window; j <= i + window; j++) {
@@ -295,14 +213,14 @@ public class DensityCalculation {
         }
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
-        for (Chromosome chr : chromosomes) {
+        for (Chromosome chr : chromosomes.values()) {
 
             if (chr == null || !chromosomeCounts.containsKey(chr.getIndex())) {
                 continue;
             }
             int nGrids;
             if (gridSize == 1) {
-                nGrids = fragmentCalculation.getNumberFragments(chr);
+                nGrids = fragmentCalculation.getNumberFragments(chr.getName());
             } else {
                 nGrids = chr.getLength() / gridSize + 1;
             }
@@ -322,7 +240,7 @@ public class DensityCalculation {
                 }
             }
 
-            double observedCount =  chromosomeCounts.get(chr.getIndex());
+            double observedCount = chromosomeCounts.get(chr.getIndex());
             double f = expectedCount / observedCount;
             normalizationFactors.put(chr.getIndex(), f);
         }
@@ -349,29 +267,27 @@ public class DensityCalculation {
     /**
      * Output the density calculation to a binary file buffer.
      *
-     *
-     *
      * @param buffer Stream to output to
      * @throws IOException If error while writing
      */
-    public void outputBinary(BufferedByteWriter buffer, boolean isNewVersion) throws IOException {
+    public void outputBinary(BufferedByteWriter buffer) throws IOException {
 
         buffer.putInt(gridSize);
 
         int nonNullChrCount = 0;
-        for (Chromosome chr : chromosomes) {
+        for (Chromosome chr : chromosomes.values()) {
             if (chr != null) nonNullChrCount++;
         }
         buffer.putInt(nonNullChrCount);
 
         // Chromosome indices
-        for (Chromosome chr : chromosomes) {
+        for (Chromosome chr : chromosomes.values()) {
             if (chr == null) continue;
             buffer.putInt(chr.getIndex());
         }
 
         // Normalization factors
-        for (Chromosome chr : chromosomes) {
+        for (Chromosome chr : chromosomes.values()) {
             if (chr == null) continue;
             Integer idx = chr.getIndex();
             Double normFactor = normalizationFactors.get(idx);
@@ -384,13 +300,7 @@ public class DensityCalculation {
         for (double aDensityAvg : densityAvg) {
             buffer.putDouble(aDensityAvg);
         }
-        // Coverage normalizations
-        if (isNewVersion) {
-            buffer.putInt(coverageNorms.length);
-            for (double aRowNorm : coverageNorms) {
-                buffer.putDouble(aRowNorm);
-            }
-        }
+
     }
 
     /**
@@ -399,7 +309,7 @@ public class DensityCalculation {
      * @param is Stream to read
      * @throws IOException If error while reading stream
      */
-    public void read(LittleEndianInputStream is, boolean isNewVersion) throws IOException {
+    public void read(LittleEndianInputStream is) throws IOException {
         gridSize = is.readInt();
         int nChromosomes = is.readInt();
 
@@ -424,17 +334,6 @@ public class DensityCalculation {
             densityAvg[i] = is.readDouble();
 
         }
-
-        if (isNewVersion) {
-            // Norms
-            int nNorms = is.readInt();
-            coverageNorms = new double[nNorms];
-            for (int i = 0; i < nNorms; i++) {
-                coverageNorms[i] = is.readDouble();
-
-            }
-        }
-
     }
 
 }

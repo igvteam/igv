@@ -66,7 +66,8 @@ public class AsciiToBinConverter {
             File f = new File(outputFile);
             FileWriter fw = new FileWriter (f);
             pw = new PrintWriter (fw);
-            BinPairIterator iter = new BinPairIterator(inputPath);
+            Map<String, Integer> chromosomeIndexMap = null;  // TODO
+            BinPairIterator iter = new BinPairIterator(inputPath, chromosomeIndexMap);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
                 pw.println("R1\t" + pair.getChr1() + "\t" + pair.getPos1() + "\tS1\tR2\t" +pair.getChr2() + "\t" + pair.getPos2() +"\t" + "S2");

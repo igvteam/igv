@@ -181,7 +181,6 @@ public class HiCTools {
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
-            preprocessor.setNewVersion(parser.getNewVersionOption());
             preprocessor.setFragmentOption(parser.getFragmentOption());
             preprocessor.preprocess(files);
         } else {
@@ -471,7 +470,7 @@ public class HiCTools {
                 InputStream is = null;
                 try {
                     is = ParsingUtils.openInputStream(densityFile);
-                    zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
+                    zoomToDensityMap = DatasetReader.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
 
                 } finally {
                     if (is != null) is.close();
@@ -536,7 +535,7 @@ public class HiCTools {
                     InputStream is = null;
                     try {
                         is = ParsingUtils.openInputStream(densityFile);
-                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
+                        zoomToDensityMap = DatasetReader.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
 
                     } finally {
                         if (is != null) is.close();
@@ -643,11 +642,6 @@ public class HiCTools {
 
         boolean getDiagonalsOption() {
             Object opt = getOptionValue(diagonalsOption);
-            return opt == null ? false : ((Boolean) opt).booleanValue();
-        }
-
-        boolean getNewVersionOption() {
-            Object opt = getOptionValue(newVersionOption);
             return opt == null ? false : ((Boolean) opt).booleanValue();
         }
 

@@ -21,17 +21,15 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.DiskResidentBlockMatrix;
-import org.broad.igv.hic.tools.DensityUtil;
+import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.hic.track.EigenvectorTrack;
 import org.broad.igv.hic.track.HiCTrackManager;
 import org.broad.igv.hic.track.TrackPanel;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.util.LittleEndianInputStream;
 import slider.RangeSlider;
 
 import javax.imageio.ImageIO;
@@ -47,7 +45,6 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,6 +172,11 @@ public class MainWindow extends JFrame {
             if (reader.getVersion() == -1)
                 return;
             hic.dataset = reader.read();
+            if (hic.dataset.getVersion() <= 1) {
+                JOptionPane.showMessageDialog(this, "This version of \"hic\" format is no longer supported");
+                return;
+            }
+
             setChromosomes(hic.dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
@@ -182,33 +184,13 @@ public class MainWindow extends JFrame {
 
             // Load the expected density function, if it exists.
             Map<Integer, DensityFunction> zoomToDensityMap = null;
-            String densityFile = file + ".densities";
-            if (hic.dataset.getVersion() <= 1) {
-                if (FileUtils.resourceExists(densityFile)) {
-                    InputStream is = null;
-                    try {
-                        is = ParsingUtils.openInputStream(densityFile);
 
-                        zoomToDensityMap = DensityUtil.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)), false);
-                        displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
-                                DisplayOption.OBSERVED,
-                                DisplayOption.OE,
-                                DisplayOption.PEARSON}));
+            zoomToDensityMap = hic.dataset.getZoomToDensity();
+            displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
+                    DisplayOption.OBSERVED,
+                    DisplayOption.OE,
+                    DisplayOption.PEARSON}));
 
-                    } finally {
-                        if (is != null) is.close();
-                    }
-                } else {
-                    displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{DisplayOption.OBSERVED}));
-                    zoomToDensityMap = null;
-                }
-            } else {
-                zoomToDensityMap = hic.dataset.getZoomToDensity();
-                displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
-                        DisplayOption.OBSERVED,
-                        DisplayOption.OE,
-                        DisplayOption.PEARSON}));
-            }
             displayOptionComboBox.setSelectedIndex(0);
             setTitle(file);
             hic.xContext = null;
@@ -848,11 +830,14 @@ public class MainWindow extends JFrame {
         resolutionSlider.setPaintLabels(true);
         resolutionSlider.setMinorTickSpacing(1);
 
+
+
+        // TODO -- the available resolutions should be read from the dataset (hic) file
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
-        for (int i = 0; i < Dataset.getNumberZooms(); i++) {
+        for (int i = 0; i < Preprocessor.bpResLabels[i].length(); i++) {
             if ((i + 1) % 2 == 0) {
-                final JLabel tickLabel = new JLabel(Dataset.getZoomLabel(i));
+                final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
             }

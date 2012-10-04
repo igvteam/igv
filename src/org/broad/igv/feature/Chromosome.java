@@ -18,6 +18,7 @@ import java.util.List;
  * @date 1/21/12
  */
 public interface Chromosome  {
+
     int getLength();
 
     String getName();
@@ -27,4 +28,6 @@ public interface Chromosome  {
     int getIndex();
 
     void setIndex(int ii);
+
+
 }

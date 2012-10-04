@@ -3,7 +3,7 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
-import org.broad.igv.hic.tools.DensityUtil;
+import org.broad.igv.hic.tools.ExpectedValueCalculation;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -145,7 +145,7 @@ public class DatasetReader {
         }
 
         if (version >= 2) {
-            dataset.setZoomToDensity(DensityUtil.readDensities(dis, version >= 3));
+            dataset.setZoomToDensity(readDensities(dis));
         }
 
         return masterIndex;
@@ -209,6 +209,30 @@ public class DatasetReader {
 
         Arrays.sort(records);
         return new Block(blockNumber, records);
+
+    }
+
+
+
+    /**
+     * Return a map of zoom level -> DensityFunction
+     *
+     * @param les
+     * @return
+     * @throws IOException
+     */
+    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
+
+        int nZooms = les.readInt();
+        Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
+        // TODO -- Its assumed densities are in number order and indices match resolutions.  This is fragile,
+        // encode resolutions in the next round
+        for (int i = 0; i < nZooms; i++) {
+            ExpectedValueCalculation calc = new ExpectedValueCalculation(les);
+            densityMap.put(i, new DensityFunction(calc));
+        }
+
+        return densityMap;
 
     }
 

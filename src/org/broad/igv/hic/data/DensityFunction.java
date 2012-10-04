@@ -1,7 +1,8 @@
 package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.hic.tools.DensityCalculation;
+import org.broad.igv.hic.tools.ExpectedValueCalculation;
+
 import java.util.Map;
 
 /**
@@ -13,14 +14,14 @@ import java.util.Map;
  */
 public class DensityFunction {
 
-    private DensityCalculation densityCalculation;
+    private ExpectedValueCalculation densityCalculation;
 
     /**
      * Constructor sets the density calculation.
      *
      * @param calculation Density calculation, containing distance expectation and coverage normalization
      */
-    public DensityFunction(DensityCalculation calculation) {
+    public DensityFunction(ExpectedValueCalculation calculation) {
         this.densityCalculation = calculation;
     }
 
@@ -47,16 +48,5 @@ public class DensityFunction {
         }
     }
 
-    /**
-     * Returns normalized observed count
-     * @param count Original count
-     * @param chr1  Chromosome 1
-     * @param pos1  Position 1
-     * @param chr2  Chromosome 2
-     * @param pos2  Position 2
-     * @return Normalized count by coverage
-     */
-    public double getNormalizedCount(int count, int chr1, int pos1, int chr2, int pos2) {
-        return densityCalculation.getNormalizedCount(count, chr1, pos1, chr2, pos2);
-    }
+
 }
