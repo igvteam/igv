@@ -44,7 +44,7 @@ public class AlignmentIOTest extends AbstractHeadlessTest {
             inputAlignmentList.add(al);
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        FeatureEncoder<Alignment> alignmentEncoder = new SamAlignmentEncoder2();
+        FeatureEncoder<Alignment> alignmentEncoder = new SamAlignmentEncoder();
         alignmentEncoder.encodeAll(bos, reader.iterator());
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());

@@ -26,7 +26,7 @@ import java.util.Iterator;
  * User: jacob
  * Date: 2012-Sep-27
  */
-public class SamAlignmentEncoder2 implements FeatureEncoder<Alignment> {
+public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
 
     private boolean headerSet = false;
 
