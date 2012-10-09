@@ -496,7 +496,7 @@ public class TrackMenuUtils {
                         mid = dlg.getBase();
                         mid = Math.max(min, Math.min(mid, max));
 
-                        DataRange axisDefinition = new DataRange(dlg.getMin(), dlg.getBase(), dlg.getMax(),
+                        DataRange axisDefinition = new DataRange(dlg.getMin(), mid, dlg.getMax(),
                                 drawBaseline, dlg.isLog());
 
                         for (Track track : selectedTracks) {
