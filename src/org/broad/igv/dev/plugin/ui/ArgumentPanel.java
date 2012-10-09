@@ -13,7 +13,9 @@
  * Created by JFormDesigner on Mon Aug 06 15:31:39 EDT 2012
  */
 
-package org.broad.igv.dev.plugin;
+package org.broad.igv.dev.plugin.ui;
+
+import org.broad.igv.dev.plugin.Argument;
 
 import javax.swing.*;
 import java.awt.*;

@@ -13,8 +13,11 @@
  * Created by JFormDesigner on Fri Aug 03 11:28:02 EDT 2012
  */
 
-package org.broad.igv.dev.plugin;
+package org.broad.igv.dev.plugin.ui;
 
+import org.broad.igv.dev.plugin.Argument;
+import org.broad.igv.dev.plugin.PluginFeatureSource;
+import org.broad.igv.dev.plugin.PluginSpecReader;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
 import org.w3c.dom.Element;

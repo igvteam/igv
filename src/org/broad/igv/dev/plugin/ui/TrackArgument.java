@@ -10,67 +10,61 @@
  */
 
 /*
- * Created by JFormDesigner on Wed Aug 08 14:55:42 EDT 2012
+ * Created by JFormDesigner on Mon Aug 06 15:33:57 EDT 2012
  */
 
-package org.broad.igv.dev.plugin;
+package org.broad.igv.dev.plugin.ui;
 
-import com.jidesoft.swing.CheckBoxList;
+import org.broad.igv.dev.plugin.Argument;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.TrackWrapper;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.*;
 
 /**
  * @author User #2
  */
-public class MultiTrackArgument extends ArgumentPanel {
-
-    public MultiTrackArgument(Argument argument) {
+public class TrackArgument extends ArgumentPanel {
+    public TrackArgument(Argument argument) {
         initComponents();
         super.initCommon(argument);
 
         if (argument != null) {
-            trackCheckBoxList.setListData(
-                    TrackWrapper.wrapTracks(IGV.getInstance().getFeatureTracks()).toArray()
-            );
+            trackComboBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
+            trackComboBox.setRenderer(new TrackComboBoxRenderer());
         }
-    }
-
-    @Override
-    public List<FeatureTrack> getValue() {
-        Object[] rawRet = trackCheckBoxList.getCheckBoxListSelectedValues();
-        List<FeatureTrack> trackList = new ArrayList<FeatureTrack>(rawRet.length);
-        for (Object obj : rawRet) {
-            FeatureTrack track = ((TrackWrapper) obj).getTrack();
-            trackList.add(track);
-        }
-        return trackList;
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        scrollPane1 = new JScrollPane();
-        trackCheckBoxList = new CheckBoxList();
+        trackComboBox = new JComboBox();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-        //======== scrollPane1 ========
-        {
-            scrollPane1.setViewportView(trackCheckBoxList);
-        }
-        add(scrollPane1);
+        add(trackComboBox);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    @Override
+    public FeatureTrack getValue() {
+        return (FeatureTrack) trackComboBox.getSelectedItem();
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JScrollPane scrollPane1;
-    private CheckBoxList trackCheckBoxList;
+    private JComboBox trackComboBox;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+    public static class TrackComboBoxRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Track track = (Track) value;
+            String toShow = track.getName();
+            return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
+        }
+    }
 }

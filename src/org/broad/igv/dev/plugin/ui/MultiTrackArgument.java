@@ -10,53 +10,68 @@
  */
 
 /*
- * Created by JFormDesigner on Mon Aug 06 15:14:26 EDT 2012
+ * Created by JFormDesigner on Wed Aug 08 14:55:42 EDT 2012
  */
 
-package org.broad.igv.dev.plugin;
+package org.broad.igv.dev.plugin.ui;
+
+import com.jidesoft.swing.CheckBoxList;
+import org.broad.igv.dev.plugin.Argument;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.TrackWrapper;
 
 import javax.swing.*;
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author User #2
  */
-public class TextArgument extends ArgumentPanel {
+public class MultiTrackArgument extends ArgumentPanel {
 
-    public TextArgument() {
-        this(null);
-    }
-
-    public TextArgument(Argument argument) {
+    public MultiTrackArgument(Argument argument) {
         initComponents();
         super.initCommon(argument);
 
         if (argument != null) {
-            argValue.setText(argument.getDefaultValue());
+            trackCheckBoxList.setListData(
+                    TrackWrapper.wrapTracks(IGV.getInstance().getFeatureTracks()).toArray()
+            );
         }
     }
 
     @Override
-    public String getValue() {
-        return argValue.getText();
+    public List<FeatureTrack> getValue() {
+        Object[] rawRet = trackCheckBoxList.getCheckBoxListSelectedValues();
+        List<FeatureTrack> trackList = new ArrayList<FeatureTrack>(rawRet.length);
+        for (Object obj : rawRet) {
+            FeatureTrack track = ((TrackWrapper) obj).getTrack();
+            trackList.add(track);
+        }
+        return trackList;
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        argValue = new JTextField();
+        scrollPane1 = new JScrollPane();
+        trackCheckBoxList = new CheckBoxList();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        //---- argValue ----
-        argValue.setMaximumSize(new Dimension(5000, 28));
-        add(argValue);
+        //======== scrollPane1 ========
+        {
+            scrollPane1.setViewportView(trackCheckBoxList);
+        }
+        add(scrollPane1);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JTextField argValue;
+    private JScrollPane scrollPane1;
+    private CheckBoxList trackCheckBoxList;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

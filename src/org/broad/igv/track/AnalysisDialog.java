@@ -16,7 +16,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.dev.plugin.TrackArgument;
+import org.broad.igv.dev.plugin.ui.TrackArgument;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 

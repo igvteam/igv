@@ -10,14 +10,12 @@
  */
 
 /*
- * Created by JFormDesigner on Mon Aug 06 15:33:57 EDT 2012
+ * Created by JFormDesigner on Mon Aug 06 15:14:26 EDT 2012
  */
 
-package org.broad.igv.dev.plugin;
+package org.broad.igv.dev.plugin.ui;
 
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.dev.plugin.Argument;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,45 +23,42 @@ import java.awt.*;
 /**
  * @author User #2
  */
-public class TrackArgument extends ArgumentPanel {
-    public TrackArgument(Argument argument) {
+public class TextArgument extends ArgumentPanel {
+
+    public TextArgument() {
+        this(null);
+    }
+
+    public TextArgument(Argument argument) {
         initComponents();
         super.initCommon(argument);
 
         if (argument != null) {
-            trackComboBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
-            trackComboBox.setRenderer(new TrackComboBoxRenderer());
+            argValue.setText(argument.getDefaultValue());
         }
+    }
+
+    @Override
+    public String getValue() {
+        return argValue.getText();
     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        trackComboBox = new JComboBox();
+        argValue = new JTextField();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        add(trackComboBox);
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
-    }
 
-    @Override
-    public FeatureTrack getValue() {
-        return (FeatureTrack) trackComboBox.getSelectedItem();
+        //---- argValue ----
+        argValue.setMaximumSize(new Dimension(5000, 28));
+        add(argValue);
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JComboBox trackComboBox;
+    private JTextField argValue;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-    public static class TrackComboBoxRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Track track = (Track) value;
-            String toShow = track.getName();
-            return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
-        }
-    }
 }
