@@ -470,12 +470,15 @@ public class TrackMenuUtils {
                     float mid = 0;
                     float min = Float.MAX_VALUE;
                     float max = Float.MIN_VALUE;
-                    boolean drawBaseline = false;
+                    boolean drawBaseline = true;
+                    boolean isLog = true;
                     for (Track t : selectedTracks) {
                         DataRange dr = t.getDataRange();
                         min = Math.min(min, dr.getMinimum());
                         max = Math.max(max, dr.getMaximum());
                         mid += dr.getBaseline();
+                        drawBaseline &= dr.isDrawBaseline();
+                        isLog &= dr.isLog();
                     }
                     mid /= selectedTracks.size();
                     if (mid < min) {
@@ -484,7 +487,7 @@ public class TrackMenuUtils {
                         min = max;
                     }
 
-                    DataRange prevAxisDefinition = new DataRange(min, mid, max, drawBaseline);
+                    DataRange prevAxisDefinition = new DataRange(min, mid, max, drawBaseline, isLog);
                     DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -493,13 +496,11 @@ public class TrackMenuUtils {
                         mid = dlg.getBase();
                         mid = Math.max(min, Math.min(mid, max));
 
-                        DataRange axisDefinition = new DataRange(dlg.getMin(), dlg.getBase(), dlg.getMax());
+                        DataRange axisDefinition = new DataRange(dlg.getMin(), dlg.getBase(), dlg.getMax(),
+                                drawBaseline, dlg.isLog());
 
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
-                            if (track instanceof DataTrack) {
-                                ((DataTrack) track).setAutoscale(false);
-                            }
                         }
                         IGV.getInstance().repaint();
                     }
@@ -788,7 +789,7 @@ public class TrackMenuUtils {
 
 
         int origValue = featureTracks.iterator().next().getVisibilityWindow();
-        double origValueKB =  (origValue / 1000.0);
+        double origValueKB = (origValue / 1000.0);
         double value = getNumericValue("Visibility window (kb)", origValueKB);
         if (value == Integer.MIN_VALUE) {
             return;
