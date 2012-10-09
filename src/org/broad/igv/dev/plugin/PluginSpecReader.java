@@ -22,9 +22,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -39,6 +37,13 @@ public class PluginSpecReader {
 
     protected String specPath;
     protected Document document;
+
+    public static final String CUSTOM_PLUGIN_FILENAME = "custom_plugins.txt";
+
+    /**
+     * List of plugins tha IGV knows about
+     */
+    private static List<PluginSpecReader> pluginList;
 
     private PluginSpecReader(String path) {
         this.specPath = path;
@@ -147,6 +152,12 @@ public class PluginSpecReader {
         return Utilities.getAttributes(parserEls.get(0));
     }
 
+    public static List<PluginSpecReader> getPlugins() {
+        if (pluginList == null) {
+            pluginList = generatePluginList();
+        }
+        return pluginList;
+    }
 
     /**
      * Return a list of plugin specification files present on the users computer.
@@ -154,7 +165,7 @@ public class PluginSpecReader {
      *
      * @return
      */
-    public static List<PluginSpecReader> getPlugins() {
+    private static List<PluginSpecReader> generatePluginList() {
         List<PluginSpecReader> readers = new ArrayList<PluginSpecReader>();
         //Guard against loading plugin multiple times. May want to reconsider this,
         //and override equals of PluginSpecReader
@@ -174,20 +185,57 @@ public class PluginSpecReader {
                     }
                 });
 
-                if (possPlugins == null) continue;
+                if (possPlugins == null) {
+                    possPlugins = new File[0];
+                }
 
-                for (File possPlugin : possPlugins) {
-                    PluginSpecReader reader = PluginSpecReader.create(possPlugin.getAbsolutePath());
+                List<String> possPluginsList = new ArrayList<String>(possPlugins.length);
+
+                for (File fi : possPlugins) {
+                    possPluginsList.add(fi.getAbsolutePath());
+                }
+
+                //When a user adds a plugin, we store the path here
+                File customFile = new File(checkDir, CUSTOM_PLUGIN_FILENAME);
+                if (customFile.canRead()) {
+                    BufferedReader br = new BufferedReader(new FileReader(customFile));
+                    String customPluginPath = "";
+                    while ((customPluginPath = br.readLine()) != null) {
+                        possPluginsList.add(customPluginPath);
+                    }
+                }
+
+                for (String possPlugin : possPluginsList) {
+                    PluginSpecReader reader = PluginSpecReader.create(possPlugin);
                     if (reader != null && !pluginIds.contains(reader.getId())) {
                         readers.add(reader);
                         pluginIds.add(reader.getId());
                     }
                 }
+
+
             }
+
         } catch (Exception e) {
+            log.error(e);
             //Guess this user won't be able to use plugins
         }
         return readers;
     }
 
+    /**
+     * @param absolutePath Full path (can be URL) to plugin
+     */
+    public static void addCustomPlugin(String absolutePath) throws IOException {
+        File outFile = new File(DirectoryManager.getIgvDirectory(), CUSTOM_PLUGIN_FILENAME);
+
+        outFile.createNewFile();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
+        writer.write(absolutePath);
+        writer.write("\n");
+        writer.flush();
+        writer.close();
+
+        pluginList = generatePluginList();
+    }
 }

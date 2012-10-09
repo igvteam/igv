@@ -29,7 +29,6 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.track.AnalysisDialog;
-import org.broad.igv.track.CombinedFeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -74,6 +73,8 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu viewMenu;
     IGV igv;
 
+    private JMenu toolsMenu;
+
     public void showAboutDialog() {
         (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
     }
@@ -108,9 +109,12 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
+
         if (Globals.toolsMenuEnabled) {
-            menus.add(createToolsMenu());
+            refreshToolsMenu();
+            menus.add(toolsMenu);
         }
+
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
@@ -123,8 +127,36 @@ public class IGVMenuBar extends JMenuBar {
         return menus;
     }
 
-    private JMenu createToolsMenu() {
+    /**
+     * Generate the "tools" menu.
+     * This is imperative, it is written to field {@code toolsMenu}.
+     * Reason being, when we add (TODO remove)
+     * a new tool, we need to refresh just this menu
+     */
+    private void refreshToolsMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>(10);
+
+        //-------------------------------------//
+        //"Add tool" option, for loading plugin from someplace else
+        JMenuItem addTool = new JMenuItem("Add tool");
+        addTool.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File pluginFi = FileDialogUtils.chooseFile("Select plugin .xml spec");
+                if (pluginFi == null) return;
+
+                try {
+                    PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
+                    refreshToolsMenu();
+                } catch (IOException e1) {
+                    MessageUtils.showErrorMessage(e1, "Error loading custom plugin");
+                }
+            }
+        });
+        menuItems.add(addTool);
+        menuItems.add(new JSeparator());
+
+        //-------------------------------------//
 
         JMenuItem exportData = new JMenuItem("Export Features");
         exportData.addActionListener(new ActionListener() {
@@ -148,7 +180,8 @@ public class IGVMenuBar extends JMenuBar {
         });
 
         //menuItems.add(analysisDialog);
-        analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+        //analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+
 
         //-------------------------------------//
 
@@ -176,7 +209,14 @@ public class IGVMenuBar extends JMenuBar {
 
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
-        return MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+        if (toolsMenu == null) {
+            toolsMenu = MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+        } else {
+            toolsMenu.removeAll();
+            for (JComponent item : menuItems) {
+                toolsMenu.add(item);
+            }
+        }
 
     }
 
