@@ -220,7 +220,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
-    final public static String DEFAULT_GENOME_URL = "http://www.broadinstitute.org/igv/projects/genomes/genomes.txt";
+    final public static String DEFAULT_GENOME_URL = "http://igvdata.broadinstitute.org/genomes/genomes.txt";
     final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
 
@@ -999,13 +999,13 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
         defaultValues.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, "0");
         defaultValues.put(SAM_JUNCTION_MIN_COVERAGE, "1");
+        defaultValues.put(SAM_SHOW_JUNCTION_FLANKINGREGIONS, "true");
         defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
         defaultValues.put(SAM_COUNT_DELETED_BASES_COVERED, "false");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 
         defaultValues.put(SHOW_GENOME_SERVER_WARNING, "true");
-        defaultValues.put(SHOW_SIZE_WARNING, "true");
 
         defaultValues.put(SEARCH_ZOOM, "true");
 
