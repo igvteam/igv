@@ -60,6 +60,9 @@ public class AminoAcidManager {
 
     static final String DEFAULT_TRANS_TABLE_PATH = "resources/defaultTranslationTables.json";
 
+    //ID of the "standard" translation table
+    public static final int STANDARD_TABLE_ID = 1;
+
     private static final String DEFAULT_CHROMO_KEY = "default";
 
     private LinkedHashMap<CodonTableKey, CodonTable> allCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);

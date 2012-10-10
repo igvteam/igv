@@ -33,6 +33,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 
 
 /**
@@ -80,15 +81,29 @@ public class SequenceTrack extends AbstractTrack {
             int rx = trackRectangle.x + trackRectangle.width - 20;
             arrowRect = new Rectangle(rx, trackRectangle.y + 2, 15, 10);
             drawArrow(graphics);
+
+            //Show icon when translation non-standard
+            if (AminoAcidManager.getInstance().getCodonTable().getId() != AminoAcidManager.STANDARD_TABLE_ID) {
+                Image img = getImageIcon();
+                if (img == null) {
+                    log.error("Could not load translation image icon");
+                } else {
+                    int transx = rx - img.getWidth(null) - 5;
+                    graphics.drawImage(img, transx, trackRectangle.y, null);
+                }
+            }
+
         }
     }
 
+    private Image getImageIcon() {
+        String path = "resources/thick_helix.png";
+        URL url = getClass().getResource(path);
+        return new ImageIcon(url).getImage();
+    }
+
     private void drawArrow(Graphics2D graphics) {
-        if (strand == Strand.POSITIVE) {
-            GraphicUtils.drawHorizontalArrow(graphics, arrowRect, true);
-        } else {
-            GraphicUtils.drawHorizontalArrow(graphics, arrowRect, false);
-        }
+        GraphicUtils.drawHorizontalArrow(graphics, arrowRect, strand == Strand.POSITIVE);
     }
 
     /**
@@ -127,8 +142,6 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public boolean handleDataClick(TrackClickEvent e) {
-
-        MouseEvent evt = e.getMouseEvent();
         setShouldShowTranslation(!shouldShowTranslation);
         Object source = e.getMouseEvent().getSource();
         if (source instanceof JComponent) {
@@ -234,6 +247,14 @@ public class SequenceTrack extends AbstractTrack {
 
     public Renderer getRenderer() {
         return null;
+    }
+
+    @Override
+    public String getNameValueString(int y) {
+        String nvs = "<html>" + super.getNameValueString(y);
+        nvs += "<br>Translation Table: ";
+        nvs += AminoAcidManager.getInstance().getCodonTable().getDisplayName();
+        return nvs;
     }
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
