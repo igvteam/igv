@@ -20,7 +20,6 @@ import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -465,27 +464,26 @@ public class AminoAcidManager {
 
     }
 
-    /**
-     * Load the default codon table for the given genome and chromosome.
-     * We check the given name, alias, and finally use the default for the specified
-     * genome.
-     *
-     * @param genome
-     * @param chrName
-     */
-    public void loadDefaultCodonTable(Genome genome, String chrName) {
-        Map<String, CodonTableKey> chrMap = genomeChromoTable.row(genome.getId());
-        String[] tryChromos = new String[]{
-                chrName, genome.getChromosomeAlias(chrName), DEFAULT_CHROMO_KEY
-        };
-        for (String tryChromo : tryChromos) {
-            if (chrMap.containsKey(tryChromo)) {
-                setCodonTable(chrMap.get(tryChromo));
-                return;
-            }
-        }
-
-    }
+//    /**
+//     * Load the default codon table for the given genome and chromosome.
+//     * We check the given name, alias, and finally use the default for the specified
+//     * genome.
+//     *
+//     * @param genome
+//     * @param chrName
+//     */
+//    public void loadDefaultCodonTable(Genome genome, String chrName) {
+//        Map<String, CodonTableKey> chrMap = genomeChromoTable.row(genome.getId());
+//        String[] tryChromos = new String[]{
+//                chrName, genome.getChromosomeAlias(chrName), DEFAULT_CHROMO_KEY
+//        };
+//        for (String tryChromo : tryChromos) {
+//            if (chrMap.containsKey(tryChromo)) {
+//                setCodonTable(chrMap.get(tryChromo));
+//                return;
+//            }
+//        }
+//    }
 
     public static class CodonTableKey {
 
