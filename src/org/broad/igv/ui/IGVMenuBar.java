@@ -580,7 +580,7 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new GeneListManagerUI(IGV.getMainFrame())).setVisible(true);
+                        (GeneListManagerUI.getInstance(IGV.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText("Open gene list manager");
