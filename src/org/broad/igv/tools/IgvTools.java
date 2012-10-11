@@ -760,18 +760,29 @@ public class IgvTools {
             throw new PreprocessingException(msg);
         }
 
+        String[] fastaTypes = new String[]{"fa", "fna", "fasta"};
+        boolean isFasta = false;
         //We have different naming conventions for different index files
         if (typeString.endsWith("sam") && !outputFileName.endsWith(".sai")) {
             outputFileName += ".sai";
         } else if (typeString.endsWith("bam") && !outputFileName.endsWith(".bai")) {
             outputFileName += ".bai";
-        } else if (typeString.endsWith("fa") && !outputFileName.endsWith(".fai")) {
-            outputFileName += ".fai";
-        } else if (typeString.endsWith("fasta") && !outputFileName.endsWith(".fai")) {
-            outputFileName += ".fai";
-        } else if (!typeString.endsWith("sam") && !typeString.endsWith("bam") && !outputFileName.endsWith(".idx")) {
-            outputFileName += ".idx";
+        } else {
+
+            for (String ft : fastaTypes) {
+                if (typeString.endsWith(ft) && !outputFileName.endsWith(".fai")) {
+                    outputFileName += ".fai";
+                    isFasta = true;
+                    break;
+                }
+            }
+
+
+            if (!isFasta && !outputFileName.endsWith(".idx")) {
+                outputFileName += ".idx";
+            }
         }
+
 
         File outputFile = new File(outputFileName);
 
@@ -781,16 +792,16 @@ public class IgvTools {
                 AlignmentIndexer indexer = AlignmentIndexer.getInstance(inputFile, null, null);
                 indexer.createSamIndex(outputFile);
                 return outputFileName;
-            } else if (typeString.equals(".fa") || typeString.equals(".fasta")) {
+            } else if (isFasta) {
                 FastaUtils.createIndexFile(inputFile.getAbsolutePath(), outputFileName);
                 return outputFileName;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             // Delete output file as it is probably corrupt
             if (outputFile.exists()) {
                 outputFile.delete();
             }
+            throw new RuntimeException(e);
         }
 
 

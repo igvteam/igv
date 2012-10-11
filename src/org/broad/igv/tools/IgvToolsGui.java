@@ -10,6 +10,7 @@
  */
 package org.broad.igv.tools;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class IgvToolsGui extends JDialog {
+
+    private static Logger log = Logger.getLogger(IgvToolsGui.class);
 
     static JFileChooser fileDialog;
 
@@ -496,6 +499,7 @@ public class IgvToolsGui extends JDialog {
                     runButton.setEnabled(false);
                     igvTools.doIndex(ifile, null, indexType, binSize);
                 } catch (Exception e) {
+                    log.error(e);
                     showMessage("Error: " + e.getMessage());
                 }
 
