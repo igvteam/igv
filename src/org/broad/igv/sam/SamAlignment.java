@@ -204,12 +204,14 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             }
 
             final char[] tmp = new char[4];
-
             int isize = record.getInferredInsertSize();
-            if(isize == 0) {
-                //isize not recorded.  Need to estimate
-                int estMateLen = record.getAlignmentEnd() - record.getAlignmentStart();
-                isize = record.getMateAlignmentStart() + estMateLen - record.getAlignmentStart();
+            if (isize == 0) {
+                //isize not recorded.  Need to estimate.  This calculation was validated against an Illumina
+                // -> <- library bam.
+                int estReadLen = record.getAlignmentEnd() - record.getAlignmentStart() + 1;
+                int estMateEnd = record.getAlignmentStart() < record.getMateAlignmentStart() ?
+                        record.getMateAlignmentStart() + estReadLen : record.getMateAlignmentStart() - estReadLen;
+                isize = estMateEnd - record.getAlignmentStart();
             }
 
             if (isize > 0) {

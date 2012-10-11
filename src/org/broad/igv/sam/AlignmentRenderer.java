@@ -921,24 +921,25 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
-                if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
-                    boolean sameChr = isPairedAlignment ||
-                            alignment.getMate().getChr().equals(alignment.getChr());
+                if ((alignment.isPaired() && alignment.getMate().isMapped()) || isPairedAlignment) {
+                    boolean sameChr = isPairedAlignment || alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
+                        if (readDistance != 0) {
 
-                        int minThreshold = renderOptions.getMinInsertSize();
-                        int maxThreshold = renderOptions.getMaxInsertSize();
-                        PEStats peStats = getPEStats(alignment, renderOptions);
-                        if (renderOptions.isComputeIsizes() && peStats != null) {
-                            minThreshold = peStats.getMinThreshold();
-                            maxThreshold = peStats.getMaxThreshold();
-                        }
+                            int minThreshold = renderOptions.getMinInsertSize();
+                            int maxThreshold = renderOptions.getMaxInsertSize();
+                            PEStats peStats = getPEStats(alignment, renderOptions);
+                            if (renderOptions.isComputeIsizes() && peStats != null) {
+                                minThreshold = peStats.getMinThreshold();
+                                maxThreshold = peStats.getMaxThreshold();
+                            }
 
-                        if (readDistance < minThreshold) {
-                            c = smallISizeColor;
-                        } else if (readDistance > maxThreshold) {
-                            c = largeISizeColor;
+                            if (readDistance < minThreshold) {
+                                c = smallISizeColor;
+                            } else if (readDistance > maxThreshold) {
+                                c = largeISizeColor;
+                            }
                         }
                         //return renderOptions.insertSizeColorScale.getColor(readDistance);
                     } else {
