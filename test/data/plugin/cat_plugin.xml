@@ -19,6 +19,6 @@
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
             <parser format="bed" strict="true"/>
         </default>
-        <command name="cat" cmd=""/>
+        <command name="Concatenate" cmd=""/>
     </tool>
 </igv_plugin>
