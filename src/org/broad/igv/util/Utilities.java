@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.CRC32;
 
@@ -93,6 +95,20 @@ public class Utilities {
         Document xmlDocument = documentBuilder.parse(inStream);
 
         return xmlDocument;
+    }
+
+    public static Map<String, String> getAttributes(Node node) {
+        HashMap<String, String> attributes = new HashMap();
+
+        NamedNodeMap tNodeMap = node.getAttributes();
+        for (int i = 0; i < tNodeMap.getLength(); i++) {
+            Node nd = tNodeMap.item(i);
+            String value = nd.getNodeValue();
+            if (value != null && value.length() > 0) {
+                attributes.put(nd.getNodeName(), value);
+            }
+        }
+        return attributes;
     }
 
     public static String getString(Document document) {

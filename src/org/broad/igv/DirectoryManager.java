@@ -346,7 +346,8 @@ public class DirectoryManager {
     private static void deleteDirectory(File oldDirectory) throws IOException {
         if (Globals.IS_LINUX || Globals.IS_MAC) {
             //System.out.println("Deleting: " + oldDirectory);
-            String result = RuntimeUtils.executeShellCommand("rm -rf " + oldDirectory.getAbsolutePath(), null, null);
+            String[] cmd = new String[]{"rm", "-rf", oldDirectory.getAbsolutePath()};
+            String result = RuntimeUtils.executeShellCommand(cmd, null, null);
             if (result != null && result.trim().length() > 0) {
                 log.info("Response from 'rm -rf': " + result);
             }

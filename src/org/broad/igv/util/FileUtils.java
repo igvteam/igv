@@ -16,12 +16,11 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -531,11 +530,12 @@ public class FileUtils {
      * Checks the system path for the provided executable.
      * If {@code executable} is a path (contains a path separator)
      * then it is returned unaltered
+     *
      * @param executable
      * @return
      */
     public static String findExecutableOnPath(String executable) {
-        if(executable.contains(File.separator)) return executable;
+        if (executable.contains(File.separator)) return executable;
 
         String systemPath = System.getenv("PATH");
         if (systemPath == null) systemPath = System.getenv("path");
@@ -551,5 +551,29 @@ public class FileUtils {
             }
         }
         return fullPath;
+    }
+
+    /**
+     * Convert a list of ":" separated paths, relative to rootPath,
+     * into file URLs
+     *
+     * @param libs
+     * @param rootPath
+     * @return
+     */
+    public static URL[] getURLsFromString(String libs, String rootPath) {
+        String[] sLibs = libs.split(":");
+        List<URL> libURLList = new ArrayList<URL>(sLibs.length);
+        String pluginDir = (new File(rootPath)).getParent();
+        for (String s : sLibs) {
+            File fi = new File(pluginDir, s);
+            try {
+                libURLList.add(new URL("file:" + fi.getAbsolutePath()));
+            } catch (MalformedURLException e) {
+                log.error("Error adding to libs: " + fi.getAbsolutePath());
+                log.error(e);
+            }
+        }
+        return libURLList.toArray(new URL[0]);
     }
 }

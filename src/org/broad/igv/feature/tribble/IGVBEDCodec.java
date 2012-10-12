@@ -12,6 +12,8 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
+import org.broad.igv.dev.plugin.LineFeatureDecoder;
+import org.broad.igv.dev.plugin.LineFeatureEncoder;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -29,9 +31,8 @@ import java.util.regex.Pattern;
  * User: jrobinso
  * Date: Dec 20, 2009
  * Time: 10:15:49 PM
- * To change this template use File | Settings | File Templates.
  */
-public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
+public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureEncoder<Feature>, LineFeatureDecoder<BasicFeature> {
 
     static final Pattern BR_PATTERN = Pattern.compile("<br>");
     static final Pattern EQ_PATTERN = Pattern.compile("=");
@@ -39,8 +40,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
     Genome genome;
 
     public IGVBEDCodec() {
-        super(BasicFeature.class);
-        this.genome = null;
+        this(null);
     }
 
     public IGVBEDCodec(Genome genome) {
@@ -206,6 +206,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         return decode(tokens);
     }
 
+
     /**
      * This function returns true iff the File potentialInput can be parsed by this
      * codec.
@@ -277,7 +278,6 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
 
         BasicFeature basicFeature = null;
 
-        //TODO Bad practice right here
         if (!(feature instanceof BasicFeature)) {
             return buffer.toString();
         } else {
@@ -373,6 +373,15 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
         return buffer.toString();
     }
 
+    @Override
+    public int getNumCols(String line) {
+        return line.split("\t").length;
+    }
+
+    @Override
+    public String getHeader() {
+        return null;
+    }
 
 }
 
