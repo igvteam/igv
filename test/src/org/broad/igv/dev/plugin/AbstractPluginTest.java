@@ -14,12 +14,14 @@ package org.broad.igv.dev.plugin;
 import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.w3c.dom.Element;
 
 /**
  * User: jacob
  * Date: 2012-Aug-20
  */
+@Ignore
 public class AbstractPluginTest extends AbstractHeadlessTest {
 
     static boolean haveTool;
