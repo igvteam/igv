@@ -9,18 +9,25 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package org.broad.igv.dev.plugin;
 
-package org.broad.igv.track;
+import org.broad.tribble.Feature;
+
+import java.io.OutputStream;
+import java.util.Iterator;
 
 /**
- * @author jrobinso
+ * Interface for creating a string from a feature. We also require
+ * certain metadata, such as header and the number of columns for each feature
+ * User: jacob
+ * Date: 2012-Aug-02
+ *
+ * @see PluginCodec
+ * @see FeatureDecoder
  */
-public enum TrackType {
-    OTHER, COPY_NUMBER, GENE_EXPRESSION, CHIP, DNA_METHYLATION, TILING_ARRAY, PHASTCON,
-    ALLELE_SPECIFIC_COPY_NUMBER, LOH, MUTATION, RNAI, POOLED_RNAI, CHIP_CHIP, CNV,
-    ALLELE_FREQUENCY, COVERAGE, REPMASK, EXPR, AFFECTIVE, GENE, PLUGIN
+public interface FeatureEncoder<T extends Feature> {
+
+
+    int encodeAll(OutputStream outputStream, Iterator<T> features);
+
 }

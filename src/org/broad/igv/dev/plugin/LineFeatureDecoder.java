@@ -9,18 +9,14 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package org.broad.igv.dev.plugin;
 
-package org.broad.igv.track;
+import org.broad.tribble.Feature;
 
 /**
- * @author jrobinso
+ * User: jacob
+ * Date: 2012-Oct-01
  */
-public enum TrackType {
-    OTHER, COPY_NUMBER, GENE_EXPRESSION, CHIP, DNA_METHYLATION, TILING_ARRAY, PHASTCON,
-    ALLELE_SPECIFIC_COPY_NUMBER, LOH, MUTATION, RNAI, POOLED_RNAI, CHIP_CHIP, CNV,
-    ALLELE_FREQUENCY, COVERAGE, REPMASK, EXPR, AFFECTIVE, GENE, PLUGIN
+public interface LineFeatureDecoder<T extends Feature> {
+    T decode(String line);
 }
