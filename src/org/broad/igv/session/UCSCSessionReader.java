@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
@@ -8,13 +19,15 @@ import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broadinstitute.sting.utils.exceptions.StingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class to parse a UCSC session file
@@ -51,7 +64,7 @@ public class UCSCSessionReader implements SessionReader {
         final HashMap<String, List<Track>> loadedTracks = new HashMap();
         List<ResourceLocator> aSync = new ArrayList();
 
-       while ((nextLine = reader.readLine()) != null) {
+        while ((nextLine = reader.readLine()) != null) {
             ResourceLocator locator = null;
             try {
 
@@ -140,7 +153,10 @@ public class UCSCSessionReader implements SessionReader {
             //TrackPanel panel = IGV.getInstance().getPanelFor(new ResourceLocator(path));
             // If loading from UCSC use a single panel
             TrackPanel panel = igv.getTrackPanel(IGV.DATA_PANEL_NAME);
-            panel.addTracks(loadedTracks.get(loc.getPath()));
+            String path = loc.getPath();
+            if (loadedTracks.containsKey(path)) {
+                panel.addTracks(loadedTracks.get(path));
+            }
         }
     }
 

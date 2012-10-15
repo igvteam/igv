@@ -70,6 +70,24 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         Assert.assertEquals(1461, igv.getAllTracks().size());
     }
 
+    /**
+     * Test loading a UCSC session, with some files that don't exist and some that do
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadUCSCSessionBadFiles() throws Exception {
+        String sessionPath = TestUtils.DATA_DIR + "sessions/nonexistent_files.session";
+        IGV igv = IGV.getInstance();
+
+        TestUtils.loadSession(igv, sessionPath);
+
+        Assert.assertEquals(2, igv.getVisibleTrackCount());
+        for (Track track : igv.getAllTracks()) {
+            assertTrue(track.getName().contains("Test Bed"));
+        }
+    }
+
     @Test
     public void testHome() throws Exception {
         IGV igv = IGV.getInstance();
