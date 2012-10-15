@@ -70,8 +70,24 @@ public class GeneListManagerUI extends JDialog {
 
     GeneListManager manager;
 
+    private static GeneListManagerUI instance;
 
-    public GeneListManagerUI(Frame owner) {
+    /**
+     * Get or create new GeneListManagerUI.
+     * If old instance retrieved, the owner IS NOT changed
+     *
+     * @param owner
+     * @return
+     */
+    public static GeneListManagerUI getInstance(Frame owner) {
+        if (instance == null) {
+            instance = new GeneListManagerUI(owner);
+        }
+        return instance;
+    }
+
+
+    private GeneListManagerUI(Frame owner) {
         super(owner);
         manager = GeneListManager.getInstance();
         initComponents();

@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
+import org.broad.igv.dev.plugin.PluginSpecReader;
+import org.broad.igv.dev.plugin.ui.RunPlugin;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -27,7 +29,6 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.track.AnalysisDialog;
-import org.broad.igv.track.CombinedFeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -39,6 +40,7 @@ import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.tribble.Feature;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -70,6 +72,8 @@ public class IGVMenuBar extends JMenuBar {
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     IGV igv;
+
+    private JMenu toolsMenu;
 
     public void showAboutDialog() {
         (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
@@ -105,9 +109,12 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
+
         if (Globals.toolsMenuEnabled) {
-            menus.add(createToolsMenu());
+            refreshToolsMenu();
+            menus.add(toolsMenu);
         }
+
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
@@ -120,8 +127,36 @@ public class IGVMenuBar extends JMenuBar {
         return menus;
     }
 
-    private JMenu createToolsMenu() {
+    /**
+     * Generate the "tools" menu.
+     * This is imperative, it is written to field {@code toolsMenu}.
+     * Reason being, when we add (TODO remove)
+     * a new tool, we need to refresh just this menu
+     */
+    private void refreshToolsMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>(10);
+
+        //-------------------------------------//
+        //"Add tool" option, for loading plugin from someplace else
+        JMenuItem addTool = new JMenuItem("Add tool");
+        addTool.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File pluginFi = FileDialogUtils.chooseFile("Select plugin .xml spec");
+                if (pluginFi == null) return;
+
+                try {
+                    PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
+                    refreshToolsMenu();
+                } catch (IOException e1) {
+                    MessageUtils.showErrorMessage(e1, "Error loading custom plugin");
+                }
+            }
+        });
+        menuItems.add(addTool);
+        menuItems.add(new JSeparator());
+
+        //-------------------------------------//
 
         JMenuItem exportData = new JMenuItem("Export Features");
         exportData.addActionListener(new ActionListener() {
@@ -144,11 +179,44 @@ public class IGVMenuBar extends JMenuBar {
             }
         });
 
-        menuItems.add(analysisDialog);
-        analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+        //menuItems.add(analysisDialog);
+        //analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
+
+
+        //-------------------------------------//
+
+        for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
+            for (final Element tool : pluginSpecReader.getTools()) {
+                String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
+                JMenu toolMenu = new JMenu(toolName);
+                for (final Element command : pluginSpecReader.getCommands(tool)) {
+                    final String cmdName = command.getAttribute("name");
+                    JMenuItem cmdItem = new JMenuItem(cmdName);
+                    toolMenu.add(cmdItem);
+
+                    cmdItem.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
+                        }
+                    });
+                }
+                menuItems.add(toolMenu);
+            }
+        }
+
+        //-------------------------------------//
+
 
         MenuAction toolsMenuAction = new MenuAction("Tools", null);
-        return MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+        if (toolsMenu == null) {
+            toolsMenu = MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
+        } else {
+            toolsMenu.removeAll();
+            for (JComponent item : menuItems) {
+                toolsMenu.add(item);
+            }
+        }
 
     }
 
@@ -580,7 +648,7 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new GeneListManagerUI(IGV.getMainFrame())).setVisible(true);
+                        (GeneListManagerUI.getInstance(IGV.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText("Open gene list manager");

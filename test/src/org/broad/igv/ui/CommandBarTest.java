@@ -85,16 +85,14 @@ public class CommandBarTest extends AbstractHeadedTest {
 
     @Test
     public void testChromoNav_CodonTable() throws Exception {
-        //Our defaults are set for this genome
+        //Make sure that translation table DOES NOT change when we change chromosomes
         Assume.assumeTrue("hg18".equals(GenomeManager.getInstance().getGenomeId()));
 
         tstChromoNav("chr1");
-
         assertEquals(1, AminoAcidManager.getInstance().getCodonTable().getId());
 
         tstChromoNav("chrM");
-
-        assertEquals(2, AminoAcidManager.getInstance().getCodonTable().getId());
+        assertEquals(1, AminoAcidManager.getInstance().getCodonTable().getId());
 
 
     }

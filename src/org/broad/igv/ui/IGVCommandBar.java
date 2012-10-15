@@ -306,8 +306,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         chromosomeComboBox.setSelectedItem(chrName);
                     }
                 }
-                AminoAcidManager.getInstance().loadDefaultCodonTable(GenomeManager.getInstance().getCurrentGenome(),
-                        chrName);
+
+                //Uncomment this line to change translation table automatically
+                //AminoAcidManager.getInstance().loadDefaultCodonTable(GenomeManager.getInstance().getCurrentGenome(), chrName);
             }
         });
 
