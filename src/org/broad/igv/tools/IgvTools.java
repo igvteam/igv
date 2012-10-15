@@ -959,6 +959,7 @@ public class IgvTools {
                 typeString.endsWith("wig") ||
                 // ifile.toLowerCase().endsWith("cpg.txt") ||
                 typeString.endsWith("ewig") ||
+                typeString.endsWith("map") ||
                 typeString.endsWith("cn") ||
                 typeString.endsWith("snp") ||
                 typeString.endsWith("xcn") ||
@@ -966,6 +967,7 @@ public class IgvTools {
                 typeString.endsWith("tab") ||
                 typeString.endsWith("mage-tab") ||
                 typeString.endsWith("bedgraph") ||
+                typeString.endsWith("ewig.list") ||
                 Preprocessor.isAlignmentFile(typeString) ||
                 affective)) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);

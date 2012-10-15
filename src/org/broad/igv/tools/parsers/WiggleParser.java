@@ -19,6 +19,7 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.iontorrent.utils.StringTools;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
@@ -27,8 +28,12 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -191,6 +196,44 @@ public class WiggleParser {
         lastPosition = 0;
         unsortedChromosomes = new HashSet();
 
+        if (resourceLocator.getPath().endsWith("ewig.map")) {
+            startBase = 0;
+            span = 1;
+            type = Type.variableStep;
+            String parent = new File(resourceLocator.getPath()).getParent();
+            Map<String, String> fileMap = parseEwigList(resourceLocator.getPath());
+            for (Map.Entry<String, String> entry : fileMap.entrySet()) {
+                chr = entry.getKey();
+                File f = new File(parent, entry.getValue());
+                parseFile(f.getAbsolutePath());
+            }
+
+
+        } else {
+            parseFile(resourceLocator.getPath());
+        }
+        parsingComplete();
+
+    }
+
+    private Map<String, String> parseEwigList(String path) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            String nextLine;
+            LinkedHashMap<String, String> fileMap = new LinkedHashMap();
+            while ((nextLine = reader.readLine()) != null) {
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
+                fileMap.put(tokens[0], tokens[1]);
+            }
+            return fileMap;
+
+        } finally {
+            if (reader != null) reader.close();
+        }
+    }
+
+    private void parseFile(String path) throws IOException {
         AsciiLineReader reader = null;
 
         // The DataConsumer interface takes an array of data per position, however wig
@@ -200,7 +243,7 @@ public class WiggleParser {
 
         try {
 
-            reader = ParsingUtils.openAsciiReader(resourceLocator);
+            reader = ParsingUtils.openAsciiReader(new ResourceLocator(path));
 
             int position = -1;
             while ((nextLine = reader.readLine()) != null) {
@@ -360,14 +403,8 @@ public class WiggleParser {
                     } catch (NumberFormatException e) {
                         System.out.println("Cannot parse: " + nextLine);
                     }
-
-
                 }
-
             }
-
-            parsingComplete();
-
 
         } finally {
             if (reader != null) {
