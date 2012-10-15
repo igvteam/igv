@@ -181,9 +181,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Estimate visibility window.
         // TODO -- set beta based on available memory
         int cnt = Math.max(1, allSamples.size());
-        int beta = 10000000;
-        double p = Math.pow(cnt, 1.5);
-        int visWindow = (int) Math.min(500000, (beta / p) * 1000);
+        int beta = 1000000;
+        double p = Math.pow(cnt, 2);
+        int visWindow = (int) Math.max(10000, Math.min(500000, (beta / p) * 1000));
         setVisibilityWindow(visWindow);
 
         // If sample->bam list file is supplied enable vcfToBamMode.

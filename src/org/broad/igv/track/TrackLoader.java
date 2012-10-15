@@ -156,6 +156,8 @@ public class TrackLoader {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
+            } else if (typeString.endsWith(".vcf.list")) {
+                loadVCFListFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // VCF files must be indexed.
                 throw new IndexNotFoundException(path);
@@ -199,8 +201,6 @@ public class TrackLoader {
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".list")) {
-                loadListFile(locator, newTracks, genome);
             } else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
@@ -237,6 +237,9 @@ public class TrackLoader {
                 loadGWASFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
+            } else if (typeString.endsWith(".list")) {
+                // This should be deprecated
+                loadListFile(locator, newTracks, genome);
             } else if (path.contains("Participant") && path.endsWith(".csv")) {
                 loadAffectiveAnnotationTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
@@ -346,6 +349,32 @@ public class TrackLoader {
 
     }
 
+
+    private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        TribbleListFeatureSource src = new TribbleListFeatureSource(locator.getPath(), genome);
+
+        VCFHeader header = (VCFHeader) src.getHeader();
+
+        // Test if the input VCF file contains methylation rate data:
+
+        // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
+        // rendering of methylation rate.
+        // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
+        // filter for the position. GB is needed to avoid displaying positions for which limited coverage
+        // prevents reliable estimation of methylation rate.
+        boolean enableMethylationRateSupport = (header.getFormatHeaderLine("MR") != null &&
+                header.getFormatHeaderLine("GB") != null);
+
+        List<String> allSamples = new ArrayList(header.getGenotypeSamples());
+
+        VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
+
+        // VCF tracks handle their own margin
+        t.setMargin(0);
+        newTracks.add(t);
+
+    }
 
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
@@ -1136,11 +1165,6 @@ public class TrackLoader {
 
         // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
         if (!isIndexable(path, genome)) {
-            return false;
-        }
-
-        // genome space files are never indexed (at least not yet)
-        if (path.contains("genomespace.org")) {
             return false;
         }
 
