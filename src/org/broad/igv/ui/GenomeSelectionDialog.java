@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Dialog box for selecting genomes. User can choose from a list,
- * which is filtered according
+ * which is filtered according to text box input
  */
 public class GenomeSelectionDialog extends javax.swing.JDialog {
 

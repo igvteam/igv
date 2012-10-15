@@ -61,7 +61,7 @@ public class GenomeManager {
 
     private Genome currentGenome;
 
-    private List<GenomeListItem> userDefinedGenomeArchiveList;
+    private LinkedHashSet<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> serverGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
     private Set<String> excludedArchivesUrls = new HashSet();
@@ -73,8 +73,6 @@ public class GenomeManager {
         if (args.length >= 1 && args[0].equals("genList")) {
             if (args.length != 4)
                 throw new IllegalArgumentException("Incorrect number of inputs, expected genList [dir] [rootPath] [outFile]");
-
-
         }
     }
 
@@ -592,21 +590,18 @@ public class GenomeManager {
     }
 
     /**
-     * Check the server or cache for the given GenomeId,
-     * and load it into the current set.
+     * Check the server or cache for the given {@code genomeID}, load it into the current set.
      *
-     * @param genomeID
-     * @return True if found, false if not.
+     * @param genomeId
+     * @return True if found, false if not
      * @throws IOException
      */
-    public boolean getFromArchive(String genomeID) throws IOException {
-        for (GenomeListItem item : getGenomeArchiveList()) {
-            if (item.getId().equals(genomeID)) {
-                GenomeManager.getInstance().addGenomeItems(Arrays.asList(item));
-                return true;
-            }
+    public boolean loadFromArchive(String genomeId) throws IOException {
+        GenomeListItem matchingItem = findGenomeListItemById(genomeId);
+        if (matchingItem != null) {
+            GenomeManager.getInstance().addGenomeItems(Arrays.asList(matchingItem));
         }
-        return false;
+        return matchingItem != null;
     }
 
     /**
@@ -704,13 +699,46 @@ public class GenomeManager {
 
     /**
      * Searches through currently loaded GenomeListItems and returns
-     * that with a matching ID. null if not found
+     * that with a matching ID. null if not found. To search through
+     * all server and user defined genomes, use #findGenomeListItemByItem
      *
      * @param genomeId
      * @return
      */
-    public GenomeListItem getGenomeListItemById(String genomeId) {
+    public GenomeListItem getLoadedGenomeListItemById(String genomeId) {
         return genomeItemMap.get(genomeId);
+    }
+
+    /**
+     * Searches through currently loaded GenomeListItems and returns
+     * that with a matching ID. If not found, searches server and
+     * user defined lists
+     *
+     * @param genomeId
+     * @return
+     */
+    public GenomeListItem findGenomeListItemById(String genomeId) throws IOException {
+        GenomeListItem matchingItem = genomeItemMap.get(genomeId);
+        if (matchingItem == null) {
+            // If genome archive was not found, check things not
+            //currently loaded
+            matchingItem = searchGenomeList(genomeId, getGenomeArchiveList());
+            if (matchingItem != null) return matchingItem;
+
+            matchingItem = searchGenomeList(genomeId, getUserDefinedGenomeArchiveList());
+            if (matchingItem != null) return matchingItem;
+
+        }
+        return matchingItem;
+    }
+
+    private GenomeListItem searchGenomeList(String genomeId, Iterable<GenomeListItem> genomeList) {
+        for (GenomeListItem item : genomeList) {
+            if (item.getId().equals(genomeId)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public Collection<GenomeListItem> getGenomes() {
@@ -727,8 +755,8 @@ public class GenomeManager {
         // Build a single available genome list from both client, server
         // and cached information. This allows us to process
         // everything the same way.
-        List<GenomeListItem> tmpuserDefinedGenomeList = null;
-        List<GenomeListItem> tmpArchiveGenomeItemList = null;
+        Collection<GenomeListItem> tmpuserDefinedGenomeList = null;
+        Collection<GenomeListItem> tmpArchiveGenomeItemList = null;
 
         boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (affectiveMode) {
@@ -752,12 +780,11 @@ public class GenomeManager {
      *
      * @param userDefinedGenomeItemList
      * @param archiveGenomeItemList     Either server or cached genomes
-     * @return A List of GenomeListItems
      */
-    private void combineGenomeLists(List<GenomeListItem> userDefinedGenomeItemList,
-                                    List<GenomeListItem> archiveGenomeItemList) {
+    private void combineGenomeLists(Collection<GenomeListItem> userDefinedGenomeItemList,
+                                    Collection<GenomeListItem> archiveGenomeItemList) {
 
-        //We use a LinkedHashSet to prevent loading duplicates
+        //We use a LinkedHashMap to prevent loading duplicates
         genomeItemMap = new LinkedHashMap<String, GenomeListItem>();
 
         String[] genomeIdArray = PreferenceManager.getInstance().getGenomeIdDisplayList();
@@ -774,23 +801,17 @@ public class GenomeManager {
     }
 
     /**
-     * Adds the GenomeListItems to the map by their ids,
-     * in order of keepGenomeIds,
-     * iff the id is in genomeIds and NOT in genomeMap
+     * Adds the {@code genomeListItems} to the map by their ids,
+     * in order of {@code keepGenomeIds},
+     * iff the id is in {@code keepGenomeIds} and NOT in genomeMap
      *
      * @param genomeListItems
-     * @param genomeIdArray
+     * @param keepGenomeIds
      * @param genomeMap
      */
-    private void addAllInSet(List<GenomeListItem> genomeListItems, String[] genomeIdArray, Map<String, GenomeListItem> genomeMap) {
-        for (String id : genomeIdArray) {
-            GenomeListItem genomeListItem = null;
-            for (GenomeListItem curListItem : genomeListItems) {
-                if (curListItem.getId().equals(id)) {
-                    genomeListItem = curListItem;
-                    break;
-                }
-            }
+    private void addAllInSet(Iterable<GenomeListItem> genomeListItems, String[] keepGenomeIds, Map<String, GenomeListItem> genomeMap) {
+        for (String id : keepGenomeIds) {
+            GenomeListItem genomeListItem = searchGenomeList(id, genomeListItems);
 
             //if we didn't find the id, it may be a path
             if (genomeListItem == null) {
@@ -813,15 +834,14 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public List<GenomeListItem> getUserDefinedGenomeArchiveList()
-            throws IOException {
+    public Collection<GenomeListItem> getUserDefinedGenomeArchiveList() throws IOException {
 
 
         if (userDefinedGenomeArchiveList == null) {
 
             boolean updateClientGenomeListFile = false;
 
-            userDefinedGenomeArchiveList = new LinkedList<GenomeListItem>();
+            userDefinedGenomeArchiveList = new LinkedHashSet<GenomeListItem>();
 
             File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
@@ -858,6 +878,10 @@ public class GenomeManager {
                     GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
                     userDefinedGenomeArchiveList.add(item);
                 }
+            } catch (FileNotFoundException e) {
+                //We swallow this because the user may not have the file,
+                //which doesn't really matter
+                log.info(e);
             } finally {
                 if (reader != null) reader.close();
             }
@@ -1236,14 +1260,6 @@ public class GenomeManager {
 
     public void excludedUrl(String location) {
         excludedArchivesUrls.add(location);
-    }
-
-    public boolean hasUserDefinedGenomes() {
-        try {
-            return getUserDefinedGenomeArchiveList().isEmpty();
-        } catch (IOException e) {
-            return false;
-        }
     }
 
 }

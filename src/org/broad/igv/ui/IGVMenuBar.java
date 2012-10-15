@@ -378,7 +378,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Load genome
         menuAction =
-                new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
+                new MenuAction("Load Genome from File", null, KeyEvent.VK_I) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
@@ -441,6 +441,7 @@ public class IGVMenuBar extends JMenuBar {
                     GenomeManager.getInstance().buildGenomeItemList();
                     igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
                     if (removedValuesList != null && !removedValuesList.isEmpty()) {
+                        GenomeManager.getInstance().updateImportedGenomePropertyFile();
                         notifyGenomesAddedRemoved(removedValuesList, false);
                     }
                 }

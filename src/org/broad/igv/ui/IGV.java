@@ -404,7 +404,7 @@ public class IGV {
     }
 
     public void selectGenomeFromList(String genomeId) {
-        contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
+        contentPane.getCommandBar().selectGenome(genomeId);
     }
 
     public Collection<String> getSelectableGenomeIDs() {
@@ -447,7 +447,7 @@ public class IGV {
 
             if (genomeListItem != null) {
                 contentPane.getCommandBar().refreshGenomeListComboBox();
-                contentPane.getCommandBar().selectGenomeFromList(genomeListItem.getId(), false);
+                contentPane.getCommandBar().selectGenome(genomeListItem.getId());
             }
             if (monitor != null) {
                 monitor.fireProgressChange(100);
@@ -564,7 +564,7 @@ public class IGV {
 
         IGVCommandBar cmdBar = contentPane.getCommandBar();
         cmdBar.refreshGenomeListComboBox();
-        cmdBar.selectGenomeFromList(genomeListItem.getId(), false);
+        cmdBar.selectGenome(genomeListItem.getId());
         cmdBar.updateChromosFromGenome(genome);
     }
 
@@ -2196,10 +2196,10 @@ public class IGV {
 
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
             if (igvArgs.getGenomeId() != null) {
-                contentPane.getCommandBar().selectGenomeFromList(igvArgs.getGenomeId(), false);
+                contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
             } else if (igvArgs.getSessionFile() == null) {
                 String genomeId = preferenceManager.getDefaultGenome();
-                contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
+                contentPane.getCommandBar().selectGenome(genomeId);
             }
 
             //If there is an argument assume it is a session file or url
@@ -2232,7 +2232,7 @@ public class IGV {
                     }
                     if (!success) {
                         String genomeId = preferenceManager.getDefaultGenome();
-                        contentPane.getCommandBar().selectGenomeFromList(genomeId, true);
+                        contentPane.getCommandBar().selectGenome(genomeId);
 
                     }
                 } else if (igvArgs.getDataFileString() != null) {
