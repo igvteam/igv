@@ -84,7 +84,8 @@ public class WiggleParser {
         String[] trackNames = {resourceLocator.getTrackName()};
 
         // TODO -- total hack to get Manuel's file parsed quickly.  Revisit (obviously);
-        if (resourceLocator.getPath().endsWith(".ewig") || resourceLocator.getPath().endsWith(".ewig.gz")) {
+        if (resourceLocator.getPath().endsWith(".ewig") || resourceLocator.getPath().endsWith(".ewig.gz")
+                || resourceLocator.getPath().endsWith("ewig.map")) {
             trackNames = new String[5];
             trackNames[4] = resourceLocator.getTrackName();
             trackNames[0] = "A";
