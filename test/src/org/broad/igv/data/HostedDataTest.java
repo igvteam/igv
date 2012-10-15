@@ -33,7 +33,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.print.attribute.standard.DateTimeAtCompleted;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -71,7 +70,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
         NamedNodeMap attrs = topNode.getAttributes();
 
-        if(attrs != null){
+        if (attrs != null) {
             String path = Utilities.getNullSafe(attrs, pKey);
             String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
 
@@ -98,7 +97,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
         DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH-mm-ss");
         Date date = new Date();
 
-        String outPath = TestUtils.DATA_DIR + "failed_loaded_files_" + dateFormat.format(date) +".txt";
+        String outPath = TestUtils.DATA_DIR + "failed_loaded_files_" + dateFormat.format(date) + ".txt";
         errorWriter = new PrintStream(outPath);
 
         List<GenomeListItem> serverSideGenomeList = getServerGenomes();
@@ -109,6 +108,9 @@ public class HostedDataTest extends AbstractHeadlessTest {
         Set<ResourceLocator> fileLocators = new LinkedHashSet<ResourceLocator>(100);
 
         for (GenomeListItem genomeItem : serverSideGenomeList) {
+            if (!genomeItem.getId().equals(("hg19"))) {
+                continue;
+            }
 
             String genomeURL = LoadFromServerAction.getGenomeDataURL(genomeItem.getId());
 
@@ -130,7 +132,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
             for (String nodeURL : nodeURLs) {
 
-                errorWriter.println(nodeURL);
+                errorWriter.println("NodeURL: " + nodeURL);
                 fileLocators.clear();
                 try {
                     InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(nodeURL));
@@ -184,7 +186,11 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
     private void recordError(ResourceLocator locator, Exception e, Map<ResourceLocator, Exception> failures) {
         failures.put(locator, e);
-        errorWriter.println(formatLocator(locator) + "\terror: " + e.getStackTrace()[0]);
+        errorWriter.println(formatLocator(locator) + "\terror: " + e.getMessage());
+        errorWriter.println("StackTrace: ");
+        for (StackTraceElement el : e.getStackTrace()) {
+            errorWriter.println(el);
+        }
         errorWriter.flush();
     }
 
