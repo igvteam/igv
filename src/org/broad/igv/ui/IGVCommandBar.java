@@ -468,7 +468,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             try {
                 found = GenomeManager.getInstance().loadFromArchive(genomeId);
             } catch (IOException e) {
-                MessageUtils.showErrorMessage(e, "Error checking server/cache for genomeId " + genomeId);
+                MessageUtils.showErrorMessage("Error checking server/cache for genomeId " + genomeId, e);
             }
             if (found) {
                 refreshGenomeListComboBox();

@@ -149,7 +149,7 @@ public class IGVMenuBar extends JMenuBar {
                     PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
                     refreshToolsMenu();
                 } catch (IOException e1) {
-                    MessageUtils.showErrorMessage(e1, "Error loading custom plugin");
+                    MessageUtils.showErrorMessage("Error loading custom plugin", e1);
                 }
             }
         });
@@ -561,7 +561,7 @@ public class IGVMenuBar extends JMenuBar {
                         PreferenceManager.getInstance().put(PreferenceManager.NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
                     } catch (NumberFormatException ex) {
-                        MessageUtils.showMessage("Error: value must be a positive integer < 1000.");
+                        MessageUtils.showErrorMessage("Error: value must be a positive integer < 1000.", ex);
                     }
                 }
             }

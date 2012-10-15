@@ -459,9 +459,7 @@ public class GenomeManager {
                 HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), cachedFile);
             }
         } catch (Exception e) {
-            log.error("Error refreshing genome cache. ", e);
-            MessageUtils.showMessage(("An error was encountered refreshing the genome cache: " + e.getMessage() +
-                    "<br> If this problem persists please contact igv-team@broadinstitute.org"));
+            MessageUtils.showErrorMessage("An error was encountered refreshing the genome cache: " + e.getMessage(), e);
         }
 
     }
@@ -583,7 +581,7 @@ public class GenomeManager {
             try {
                 genomeArchiveList = getCachedGenomeArchiveList();
             } catch (IOException e) {
-                MessageUtils.showErrorMessage(e, "Cannot access cached genome list");
+                MessageUtils.showErrorMessage("Cannot access cached genome list", e);
             }
         }
         return genomeArchiveList;
@@ -766,7 +764,7 @@ public class GenomeManager {
             try {
                 tmpuserDefinedGenomeList = getUserDefinedGenomeArchiveList();
             } catch (IOException e) {
-                MessageUtils.showErrorMessage(e, "Cannot access user defined genome archive list");
+                MessageUtils.showErrorMessage("Cannot access user defined genome archive list", e);
             }
         }
 
@@ -1047,8 +1045,7 @@ public class GenomeManager {
                     log.error("Error restoring genome-list file from backup");
                 }
             }
-            log.error("Error updating genome property file", e);
-            MessageUtils.showMessage("Error updating user-defined genome list " + e.getMessage());
+            MessageUtils.showErrorMessage("Error updating user-defined genome list " + e.getMessage(), e);
 
         } finally {
             if (writer != null) writer.close();
