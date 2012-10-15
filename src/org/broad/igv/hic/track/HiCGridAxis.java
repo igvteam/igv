@@ -15,8 +15,6 @@ public interface HiCGridAxis {
 
     int getIGVZoom();
 
-    int getBinNumberForGenomicPosition(int genomePosition, int startBin, int endBin);
-
     int getBinNumberForGenomicPosition(int genomePosition);
 
     int getBinCount();

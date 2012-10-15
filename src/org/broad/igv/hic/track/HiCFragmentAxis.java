@@ -13,21 +13,29 @@ package org.broad.igv.hic.track;
 
 import org.broad.igv.Globals;
 
+import java.io.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 /**
  * @author jrobinso
  *         Date: 9/14/12
  *         Time: 8:49 AM
  */
-public class HiCVariableGridAxis implements HiCGridAxis {
+public class HiCFragmentAxis implements HiCGridAxis {
 
     Bin[] bins;
     double averageBinSize;
     int igvZoom;
 
+    int[] sites;
+
+
     /**
      * @param bins ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
      */
-    public HiCVariableGridAxis(Bin[] bins) {
+    public HiCFragmentAxis(Bin[] bins) {
 
         this.bins = bins;
 
@@ -42,6 +50,7 @@ public class HiCVariableGridAxis implements HiCGridAxis {
 
 
     }
+
 
     @Override
     public int getGenomicStart(int binNumber) {
@@ -58,7 +67,7 @@ public class HiCVariableGridAxis implements HiCGridAxis {
 
     @Override
     public int getGenomicMid(int binNumber) {
-        return bins[binNumber].start + bins[binNumber].width/2;
+        return bins[binNumber].start + bins[binNumber].width / 2;
     }
 
 
@@ -67,53 +76,33 @@ public class HiCVariableGridAxis implements HiCGridAxis {
         return igvZoom;
     }
 
+
     /**
-     * Return the bin number containing the genomic position.  The bin is restrained by startBin and endBin.  If
-     * no bins in this range contain the position return -1  (this should not happen).
-     */
-    @Override
-    public int getBinNumberForGenomicPosition(int start, int startBin, int endBin) {
-        for (int b = startBin; b <= endBin; b++) {
-            Bin bin = bins[b];
-            if (start >= bin.start && start < (bin.start + bin.width)) {
-                return b;
-            }
+     * Return fragment (bin) that this position lies on.  Fragment 0 means position < sites[0].
+     * Fragment 1 means position >= sites[0] and < sites[1].
+     *
+     * @param position The genome position to search for within that array
+     * @return The fragment location such that position >= sites[retVal-1] and position <  sites[retVal]
+     */    @Override
+    public int getBinNumberForGenomicPosition(int position) {
+        int lo = 0;
+        int hi = sites.length - 1;
+        while (lo <= hi) {
+            // Base case - found range
+            int mid = lo + (hi - lo) / 2;
+
+            if (position > sites[mid]) lo = mid + 1;
+            else if (position < sites[mid]) hi = mid - 1;
+            else return mid + 1;
         }
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int getBinNumberForGenomicPosition(int genomePosition) {
-        // TODO -- do a binary search?
-
-        int binNumber = (int) (genomePosition / averageBinSize);
-
-        if (bins[binNumber].contains(genomePosition)) {
-            return binNumber;
-        }
-
-        if (bins[binNumber].start > genomePosition) {
-            // search backwards
-            while(binNumber-- >= 0) {
-               if(bins[binNumber].contains(genomePosition)) {
-                   return binNumber;
-               }
-            }
-            return 0;
-        } else {
-            while(binNumber++ < bins.length) {
-                if(bins[binNumber].contains(genomePosition)) {
-                    return binNumber;
-                }
-            }
-            return bins.length - 1;
-        }
+        return lo;
     }
 
     @Override
     public int getBinCount() {
         return bins.length;
     }
+
 
 
     public static class Bin {

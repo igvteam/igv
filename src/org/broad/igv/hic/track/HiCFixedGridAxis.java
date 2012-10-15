@@ -38,21 +38,9 @@ public class HiCFixedGridAxis implements HiCGridAxis {
         return binNumber * binSize + binSize / 2;
     }
 
-
     @Override
     public int getIGVZoom() {
         return igvZoom;
-    }
-
-    /**
-     * Return the bin number containing the genomic position.  The bin is restrained by startBin and endBin.  If
-     * no bins in this range contain the position return -1  (this should not happen).
-     */
-    @Override
-    public int getBinNumberForGenomicPosition(int genomicPosition, int startBin, int endBin) {
-
-        return (int) (genomicPosition / ((double) binSize));
-
     }
 
     @Override

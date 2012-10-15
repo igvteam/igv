@@ -8,8 +8,8 @@ import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.hic.track.HiCFixedGridAxis;
+import org.broad.igv.hic.track.HiCFragmentAxis;
 import org.broad.igv.hic.track.HiCGridAxis;
-import org.broad.igv.hic.track.HiCVariableGridAxis;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
@@ -17,7 +17,6 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -97,16 +96,16 @@ public class MatrixZoomData {
             // TODO -- read bins from file, fake it for now.  The
             int nBins = blockBinCount * blockColumnCount;
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
-            HiCVariableGridAxis.Bin[] bins = new HiCVariableGridAxis.Bin[nBins];
+            HiCFragmentAxis.Bin[] bins = new HiCFragmentAxis.Bin[nBins];
             for(int i=0; i<nBins; i++) {
                 int gStart = (int) (binSize * i);
                 int gEnd = (int) (binSize * (i + 1));
-                bins[i] = new HiCVariableGridAxis.Bin(gStart, (gEnd - gStart));
+                bins[i] = new HiCFragmentAxis.Bin(gStart, (gEnd - gStart));
 
             }
 
-            xGridAxis = new HiCVariableGridAxis(bins);
-            yGridAxis = new HiCVariableGridAxis(bins);
+            xGridAxis = new HiCFragmentAxis(bins);
+            yGridAxis = new HiCFragmentAxis(bins);
 
         }
 
@@ -493,7 +492,7 @@ public class MatrixZoomData {
                     else {
                         les.writeInt(rec.getBinX());
                         les.writeInt(rec.getBinY());
-                        les.writeInt(rec.getCounts());
+                        les.writeFloat(rec.getCounts());
                     }
                 }
             }

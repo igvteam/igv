@@ -38,8 +38,8 @@ public class HiCDataAdapter {
 
         for (LocusScore locusScore : scores) {
 
-            int bs = gridAxis.getBinNumberForGenomicPosition(locusScore.getStart(), startBin, endBin);
-            int be = gridAxis.getBinNumberForGenomicPosition(locusScore.getEnd(), startBin, endBin);
+            int bs = gridAxis.getBinNumberForGenomicPosition(locusScore.getStart());
+            int be = gridAxis.getBinNumberForGenomicPosition(locusScore.getEnd());
 
             if(bs > endBin) {
                 break;

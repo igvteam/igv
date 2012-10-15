@@ -19,19 +19,19 @@ public class ContactRecord implements Comparable<ContactRecord> {
     private int binY;
 
     /**
-     * Total number of counts
+     * Total number of counts, or cumulative score
      */
-    private int counts;
+    private float counts;
 
-    public ContactRecord(int block, int binX, int binY, int counts) {
+    public ContactRecord(int block, int binX, int binY, float counts) {
         this.blockNumber = block;
         this.binX = binX;
         this.binY = binY;
         this.counts = counts;
     }
 
-    public void incrementCount() {
-        counts++;
+    public void incrementCount(float score) {
+        counts += score;
     }
 
     public int getBlockNumber() {
@@ -46,7 +46,7 @@ public class ContactRecord implements Comparable<ContactRecord> {
         return binY;
     }
 
-    public int getCounts() {
+    public float getCounts() {
         return counts;
     }
 

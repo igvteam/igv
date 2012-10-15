@@ -23,11 +23,13 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
@@ -53,9 +55,7 @@ public class HiCTools {
         System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
         System.out.println("           : -f <restriction site file> calculate fragment map");
         System.out.println("           : -m <int> only write cells with count above threshold m [0]");
-        System.out.println("           : -t <int> use t threads [1]");
         System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
-        System.out.println("           : -n use new version (coverage normalization)");
         System.out.println("           : -h print help");
     }
 
@@ -181,7 +181,7 @@ public class HiCTools {
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
-            preprocessor.setFragmentOption(parser.getFragmentOption());
+            preprocessor.setFragmentFile(parser.getFragmentOption());
             preprocessor.preprocess(files);
         } else {
             usage();
@@ -281,7 +281,7 @@ public class HiCTools {
         try {
             File dir = new File(outputDir);
             if (!dir.exists() || !dir.isDirectory()) {
-                 System.out.println("Output directory does not exist, or is not directory");
+                System.out.println("Output directory does not exist, or is not directory");
                 System.exit(1);
             }
             reader = new BufferedReader(new FileReader(inputFile));
@@ -308,38 +308,37 @@ public class HiCTools {
      *
      * @param fragmentMap
      * @param bedFile
-     * @param outputFile
+     * @param outputBedFile
      * @throws IOException
      */
 
-    private static void annotateWithSites(Map<String, int[]> fragmentMap, String bedFile, File outputFile) throws IOException {
+    private static void annotateWithSites(Map<String, int[]> fragmentMap, String bedFile, File outputBedFile) throws IOException {
 
-
-        Pattern pattern = Pattern.compile("\\s");
 
         BufferedReader bedReader = null;
         PrintWriter bedWriter = null;
         try {
 
             bedReader = ParsingUtils.openBufferedReader(bedFile);
-            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+            bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputBedFile)));
 
             String nextLine;
             while ((nextLine = bedReader.readLine()) != null) {
                 if (nextLine.startsWith("track") || nextLine.startsWith("browser") || nextLine.startsWith("#"))
                     continue;
 
-                String[] tokens = pattern.split(nextLine);
+                BedLikeFeature feature = new BedLikeFeature(nextLine);
+
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
                 String chr = tokens[0];
                 int start = Integer.parseInt(tokens[1]);
                 int end = Integer.parseInt(tokens[2]);
 
-
-                int[] sites = fragmentMap.get(chr);
+                int[] sites = fragmentMap.get(feature.getChr());
                 if (sites == null) continue;
 
-                int firstSite = FragmentCalculation.binarySearch(sites, start);
-                int lastSite = FragmentCalculation.binarySearch(sites, end);
+                int firstSite = FragmentCalculation.binarySearch(sites, feature.getStart());
+                int lastSite = FragmentCalculation.binarySearch(sites, feature.getEnd());
 
                 bedWriter.print(chr + "\t" + start + "\t" + end + "\t" + firstSite + "\t" + lastSite);
                 for (int i = 3; i < tokens.length; i++) {
@@ -618,7 +617,6 @@ public class HiCTools {
 
     static class CommandLineParser extends CmdLineParser {
         private Option diagonalsOption = null;
-        private Option newVersionOption = null;
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
         private Option threadedOption = null;
@@ -627,7 +625,6 @@ public class HiCTools {
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
-            newVersionOption = addBooleanOption('n', "use new version");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
             threadedOption = addIntegerOption('t', "threads");
@@ -678,4 +675,52 @@ public class HiCTools {
     }
 
 
+    static class BedLikeFeature implements LocusScore {
+
+        String chr;
+        int start;
+        int end;
+        String name;
+        String line;
+
+        BedLikeFeature(String line) {
+            this.line = line;
+            String[] tokens = Globals.whitespacePattern.split(line);
+            this.chr = tokens[0];
+            this.start = Integer.parseInt(tokens[1]);
+            this.end = Integer.parseInt(tokens[2]);
+            if(tokens.length > 3) {
+                this.name = name;
+            }
+
+        }
+
+        @Override
+        public String getValueString(double position, WindowFunction windowFunction) {
+            return line;
+        }
+
+        public String getChr() {
+            return chr;
+        }
+        public int getStart() {
+            return start;
+        }
+
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public void setEnd(int end) {
+            this.end = end;
+        }
+
+        public float getScore() {
+            return 0;
+        }
+    }
 }

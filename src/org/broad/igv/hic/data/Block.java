@@ -28,14 +28,15 @@ public class Block {
         this.records = records;
     }
 
-    public void incrementCount(int col, int row) {
+    public void incrementCount(int col, int row, float score) {
         Point p = new Point(col, row);
         ContactRecord rec = contactRecordMap.get(p);
         if (rec == null) {
             rec = new ContactRecord(number, col, row, (short) 1);
             contactRecordMap.put(p, rec);
+
         } else {
-            rec.incrementCount();
+            rec.incrementCount(score);
         }
     }
 

@@ -184,7 +184,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
             int genomePosition = (int) (nTick * spacing);
 
             //int x = frame.getScreenPosition(genomeTickNumber);
-            int binNUmber = axis.getBinNumberForGenomicPosition(genomePosition, binOrigin, binOrigin + binRange);
+            int binNUmber = axis.getBinNumberForGenomicPosition(genomePosition);
 
             int x = (int) ((binNUmber - binOrigin) * context.getScaleFactor());
 
@@ -192,7 +192,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
                 genomePosition = (int) (nTick * spacing);
 
                 // x = frame.getScreenPosition(genomeTickNumber);
-                binNUmber = axis.getBinNumberForGenomicPosition(genomePosition, binOrigin, binOrigin + binRange);
+                binNUmber = axis.getBinNumberForGenomicPosition(genomePosition);
 
                 x = (int) ((binNUmber - binOrigin) * context.getScaleFactor());
 

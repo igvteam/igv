@@ -67,6 +67,7 @@ public class ExpectedValueCalculation {
      *
      * @param chromosomeList List of chromosomes, mainly used for size
      * @param gridSize       Grid size, used for binning appropriately
+     * @param fragmentCalculation  Optional.  If included its expected that this is a "fragment" calc, units are fragments not base-pairs
      */
     ExpectedValueCalculation(List<Chromosome> chromosomeList, int gridSize, FragmentCalculation fragmentCalculation) {
 
@@ -140,7 +141,7 @@ public class ExpectedValueCalculation {
         Chromosome chr = chromosomes.get(chrIdx);
         if (chr == null) return;
 
-        Integer count = chromosomeCounts.get(chr);
+        Integer count = chromosomeCounts.get(chrIdx);
         if (count == null) {
             chromosomeCounts.put(chrIdx, 1);
         } else {
@@ -196,12 +197,19 @@ public class ExpectedValueCalculation {
                 while (tmp < 400) {
                     window++;
                     tmp = 0;
-                    for (int j = i - window; j <= i + window; j++) {
+                    int i0 = Math.max(0, i-window);
+                    int i1 = Math.min(actualDistances.length-1, i+window);
+                    for (int j = i0; j <= i1; j++) {
                         tmp += actualDistances[j];
+                    }
+                    if(i0 == 0 && i1 == actualDistances.length-1) {
+                        break; // window spans entire data array (pathological case)
                     }
                 }
                 tmp = 0;
-                for (int j = i - window; j <= i + window; j++) {
+                int i0 = Math.max(0, i-window);
+                int i1 = Math.min(actualDistances.length-1, i+window);
+                for (int j =i0; j<= i1; j++) {
                     tmp += actualDistances[j];
                     poss += possibleDistances[j];
                 }
@@ -264,44 +272,7 @@ public class ExpectedValueCalculation {
         return densityAvg;
     }
 
-    /**
-     * Output the density calculation to a binary file buffer.
-     *
-     * @param buffer Stream to output to
-     * @throws IOException If error while writing
-     */
-    public void outputBinary(BufferedByteWriter buffer) throws IOException {
 
-        buffer.putInt(gridSize);
-
-        int nonNullChrCount = 0;
-        for (Chromosome chr : chromosomes.values()) {
-            if (chr != null) nonNullChrCount++;
-        }
-        buffer.putInt(nonNullChrCount);
-
-        // Chromosome indices
-        for (Chromosome chr : chromosomes.values()) {
-            if (chr == null) continue;
-            buffer.putInt(chr.getIndex());
-        }
-
-        // Normalization factors
-        for (Chromosome chr : chromosomes.values()) {
-            if (chr == null) continue;
-            Integer idx = chr.getIndex();
-            Double normFactor = normalizationFactors.get(idx);
-            buffer.putInt(idx);
-            buffer.putDouble(normFactor == null ? 0 : normFactor);
-        }
-
-        // Expected value (densityAvg)
-        buffer.putInt(densityAvg.length);
-        for (double aDensityAvg : densityAvg) {
-            buffer.putDouble(aDensityAvg);
-        }
-
-    }
 
     /**
      * Read the contents of a previously saved calculation.
