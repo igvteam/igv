@@ -187,4 +187,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         }
     }
 
+    public Collection<String> getChrNames() {
+        return chrNameMap.keySet();
+    }
 }
