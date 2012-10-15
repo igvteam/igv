@@ -11,34 +11,24 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.AbstractHeadedTest;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tools.IgvTools;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
-import org.broad.tribble.TribbleException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
 
 
 /**
  * @author Jim Robinson
  * @date 10/3/11
  */
-public class TrackLoaderTestHeaded extends AbstractHeadedTest{
+public class TrackLoaderTestHeaded extends AbstractHeadedTest {
 
     TrackLoader trackLoader;
 

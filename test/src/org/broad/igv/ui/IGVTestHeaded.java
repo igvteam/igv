@@ -12,7 +12,6 @@
 package org.broad.igv.ui;
 
 import junit.framework.Assert;
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;

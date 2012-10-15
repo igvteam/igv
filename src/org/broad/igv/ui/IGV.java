@@ -143,6 +143,11 @@ public class IGV {
         return theInstance;
     }
 
+    //For testing
+    static void destroyInstance() {
+        theInstance = null;
+    }
+
     public static boolean hasInstance() {
         return theInstance != null;
     }
