@@ -12,15 +12,18 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test of class main. In general will use this to see that IGV
@@ -29,21 +32,22 @@ import static org.junit.Assert.assertTrue;
  * User: jacob
  * Date: 2012/05/04
  */
-public class MainTest{
+public class MainTest {
 
     @Rule
     public TestRule testTimeout = new Timeout((int) 1e5);
 
     @BeforeClass
-    public static void setUpClass() throws Exception{
+    public static void setUpClass() throws Exception {
         AbstractHeadedTest.assumeNotHeadless();
         TestUtils.setUpTestEnvironment();
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception{
+    public static void tearDownClass() throws Exception {
         AbstractHeadedTest.tearDownClass();
     }
+
     /**
      * Test that loading IGV with a startup file and
      * locus loads that file and locus
@@ -60,12 +64,8 @@ public class MainTest{
 
         String[] args = new String[]{filePath, locus, "-g", genome};
 
-        Main.main(args);
-
-        IGV igv = IGV.getInstance();
-
-        //Need to wait for IGV to load file, genome,  and move to locus
-        assertTrue(igv.waitForNotify(60000));
+        //Need to wait for IGV to load file, genome, and move to locus
+        IGV igv = startMain(args, 60000);
 
         assertEquals(genome, igv.getGenomeManager().getGenomeId());
         boolean trackFound = false;
@@ -77,6 +77,33 @@ public class MainTest{
 
         String actLocus = FrameManager.getDefaultFrame().getFormattedLocusString();
         assertEquals(actLocus, locus);
+    }
+
+    /**
+     * Test loading a genome not in the display list
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadGenome() throws Exception {
+
+        String genomeId = "mm7";
+        String[] genomes = PreferenceManager.getInstance().getGenomeIdDisplayList();
+        for (String gen : genomes) {
+            assertNotSame("Bad test setup, test genome in display list", gen, genomeId);
+        }
+
+        String[] args = new String[]{"-g", genomeId};
+        IGV igv = startMain(args, 10000);
+
+        assertEquals(igv.getGenomeManager().getGenomeId(), genomeId);
+    }
+
+    private IGV startMain(String[] args, long timeout) {
+        Main.main(args);
+        IGV igv = IGV.getInstance();
+        assertTrue(igv.waitForNotify(timeout));
+        return igv;
     }
 
 
