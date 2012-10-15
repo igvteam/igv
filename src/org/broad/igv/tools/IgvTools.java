@@ -559,6 +559,7 @@ public class IgvTools {
         try {
             Preprocessor p = new Preprocessor(outputFile, genome, windowFunctions, nLines, null);
             if (inputFileOrDir.isDirectory() || inputFileOrDir.getName().endsWith(".list")) {
+                p.setSizeEstimate(0);
                 List<File> files = getFilesFromDirOrList(inputFileOrDir);
                 for (File f : files) {
                     p.preprocess(f, maxZoomValue, typeString);
@@ -1023,7 +1024,7 @@ public class IgvTools {
      * @param file a file or directory.
      * @return
      */
-    private int estimateLineCount(File file) {
+    private int estimateLineCount(File file) throws IOException {
 
         int nLines = 0;
         if (file.isDirectory() || file.getName().endsWith(".list")) {
@@ -1032,6 +1033,25 @@ public class IgvTools {
                 if (!f.isDirectory()) {
                     nLines += ParsingUtils.estimateLineCount(f.getAbsolutePath());
                 }
+            }
+        } else if (file.getName().endsWith(".map")) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(file));
+                String nextLine;
+
+                while ((nextLine = reader.readLine()) != null) {
+                    String[] tokens = Globals.whitespacePattern.split(nextLine);
+                    File f = new File(file.getParent(), tokens[1]);
+                    nLines += ParsingUtils.estimateLineCount(f.getAbsolutePath());
+                }
+                return nLines;
+
+            } catch (Exception e) {
+                System.err.println("Error estimating line count: " + e.getMessage());
+                nLines = 0;
+            } finally {
+                if (reader != null) reader.close();
             }
         } else {
             nLines = ParsingUtils.estimateLineCount(file.getAbsolutePath());
