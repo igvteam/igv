@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -23,7 +16,6 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.batik.util.gui.xmleditor.XMLDocument;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -35,13 +27,14 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
-import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.event.ActionEvent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -119,7 +112,7 @@ public class LoadFromServerAction extends MenuAction {
         return nodeURLs;
     }
 
-    public List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
+    private List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
 
         if ((xmlUrls == null) || xmlUrls.isEmpty()) {
             log.error("No datasets are available from this server for the current genome (");
@@ -160,7 +153,7 @@ public class LoadFromServerAction extends MenuAction {
     }
 
 
-    private Document createMasterDocument(Collection<String> xmlUrls) throws ParserConfigurationException {
+    public static Document createMasterDocument(Collection<String> xmlUrls) throws ParserConfigurationException {
 
         StringBuffer buffer = new StringBuffer();
 
@@ -205,7 +198,7 @@ public class LoadFromServerAction extends MenuAction {
 
     }
 
-    private Document readXMLDocument(String url, StringBuffer errors) {
+    private static Document readXMLDocument(String url, StringBuffer errors) {
         InputStream is = null;
         Document xmlDocument = null;
         try {
@@ -238,7 +231,7 @@ public class LoadFromServerAction extends MenuAction {
         return xmlDocument;
     }
 
-    private Document resolveIncludes(Document document, StringBuffer errors) {
+    private static Document resolveIncludes(Document document, StringBuffer errors) {
 
         NodeList includeNodes = document.getElementsByTagName("Include");
         if (includeNodes.getLength() == 0) {
@@ -247,8 +240,8 @@ public class LoadFromServerAction extends MenuAction {
 
         int size = includeNodes.getLength();
         // Copy the nodes as we'll be modifying the tree.  This is neccessary!
-        Node [] tmp = new Node[size];
-        for(int i=0; i<size; i++) {
+        Node[] tmp = new Node[size];
+        for (int i = 0; i < size; i++) {
             tmp[i] = includeNodes.item(i);
         }
 
@@ -264,7 +257,7 @@ public class LoadFromServerAction extends MenuAction {
                     Node parent = item.getParentNode();
 
                     //log.info("Loading node " + path.getValue());
-                    Document doc = this.readXMLDocument(path.getValue(), errors);
+                    Document doc = readXMLDocument(path.getValue(), errors);
                     if (doc != null) {
                         Element global = doc.getDocumentElement();
                         Node expandedNode = parent.getOwnerDocument().importNode(global, true);
