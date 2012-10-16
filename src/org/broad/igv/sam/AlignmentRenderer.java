@@ -78,7 +78,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     private final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     private Map<String, Color> frOrientationColors;
-    private Map<String, Color> ffOrientationColors;
+    private Map<String, Color> f1f2OrientationColors;
+    private Map<String, Color> f2f1OrientationColors;
     private Map<String, Color> rfOrientationColors;
 
     PreferenceManager prefs;
@@ -175,21 +176,38 @@ public class AlignmentRenderer implements FeatureRenderer {
         rfOrientationColors.put("F R ", RL_COLOR);
         rfOrientationColors.put("FR", RL_COLOR);
 
-
-        // ff orienation  (e.g. SOLID libraries)
-        ffOrientationColors = new HashMap();
+        // f1f2 orienation  (e.g. SOLID libraries, second read appears first on + strand (leftmost))
+        f2f1OrientationColors = new HashMap();
         //LR
-        ffOrientationColors.put("F1F2", LR_COLOR);
-        ffOrientationColors.put("R2R1", LR_COLOR);
-        //LL -- switched with RR color per Bob's instructions
-        ffOrientationColors.put("F1R2", RR_COLOR);
-        ffOrientationColors.put("R2F1", RR_COLOR);
+        f2f1OrientationColors.put("F2F1", LR_COLOR);
+        f2f1OrientationColors.put("R1R2", LR_COLOR);
+
+        //LL
+        f2f1OrientationColors.put("F2R1", LL_COLOR);
+        f2f1OrientationColors.put("R1F2", LL_COLOR);
+
         //RR
-        ffOrientationColors.put("R1F2", LL_COLOR);
-        ffOrientationColors.put("F2R1", LL_COLOR);
+        f2f1OrientationColors.put("R2F1", RR_COLOR);
+        f2f1OrientationColors.put("F1R2", RR_COLOR);
+
         //RL
-        ffOrientationColors.put("R1R2", RL_COLOR);
-        ffOrientationColors.put("F2F1", RL_COLOR);
+        f2f1OrientationColors.put("R2R1", RL_COLOR);
+        f2f1OrientationColors.put("F1F2", RL_COLOR);
+
+        // f1f2 orienation  (e.g. SOLID libraries, actually is this one even possible?)
+        f1f2OrientationColors = new HashMap();
+        //LR
+        f1f2OrientationColors.put("F1F2", LR_COLOR);
+        f1f2OrientationColors.put("R2R1", LR_COLOR);
+        //LL
+        f1f2OrientationColors.put("F1R2", LL_COLOR);
+        f1f2OrientationColors.put("R2F1", LL_COLOR);
+        //RR
+        f1f2OrientationColors.put("R1F2", RR_COLOR);
+        f1f2OrientationColors.put("F2R1", RR_COLOR);
+        //RL
+        f1f2OrientationColors.put("R1R2", RL_COLOR);
+        f1f2OrientationColors.put("F2F1", RL_COLOR);
     }
 
     /**
@@ -1099,7 +1117,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (alignment.isPaired()) {
+        if (alignment.isPaired()) { // && !alignment.isProperPair()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
@@ -1114,15 +1132,18 @@ public class AlignmentRenderer implements FeatureRenderer {
                     case RF:
                         c = rfOrientationColors.get(pairOrientation);
                         break;
-                    case FF:
-                        c = ffOrientationColors.get(pairOrientation);
+                    case F1F2:
+                        c = f1f2OrientationColors.get(pairOrientation);
+                        break;
+                    case F2F1:
+                        c = f2f1OrientationColors.get(pairOrientation);
                         break;
                 }
 
             } else {
-                // No peStats for this library
+                // No peStats for this library, just guess
                 if (alignment.getAttribute("CS") != null) {
-                    c = ffOrientationColors.get(pairOrientation);
+                    c = f2f1OrientationColors.get(pairOrientation);
                 } else {
                     c = frOrientationColors.get(pairOrientation);
                 }

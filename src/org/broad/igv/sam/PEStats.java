@@ -22,7 +22,7 @@ public class PEStats {
 
     private static Logger log = Logger.getLogger(PEStats.class);
 
-    public enum Orientation {FR, RF, FF}
+    public enum Orientation {FR, RF, F1F2, F2F1}
 
     ;
 
@@ -35,8 +35,10 @@ public class PEStats {
 
     // Orientation counts
     int frCount = 0;
-    int ffCount = 0;
     int rfCount = 0;
+
+    int f1f2Count = 0;
+    int f2f1Count = 0;
 
     Orientation orientation = null;
 
@@ -67,7 +69,11 @@ public class PEStats {
         if (po != null && po.length() == 4) {
             if (po.charAt(0) == 'F') {
                 if (po.charAt(2) == 'F') {
-                    ffCount++;
+                    if (po.charAt(1) == '1') {
+                        f1f2Count++;
+                    } else {
+                        f2f1Count++;
+                    }
                 } else if (po.charAt(2) == 'R') {
                     frCount++;
 
@@ -76,13 +82,17 @@ public class PEStats {
                 if (po.charAt(2) == 'F') {
                     rfCount++;
                 } else if (po.charAt(2) == 'R') {
-                    ffCount++;
+                    if (po.charAt(1) == '1') {
+                        f2f1Count++;
+                    } else {
+                        f1f2Count++;
+                    }
                 }
             }
         }
 
         // Force recomputation of orientation
-        synchronized (this){
+        synchronized (this) {
             orientation = null;
         }
     }
@@ -111,8 +121,13 @@ public class PEStats {
 
     public synchronized Orientation getOrientation() {
         if (orientation == null) {
+            int ffCount = f1f2Count + f2f1Count;
             if (ffCount > frCount && ffCount > rfCount) {
-                orientation = Orientation.FF;
+                if (f1f2Count > f2f1Count) {
+                    orientation = Orientation.F1F2;
+                } else {
+                    orientation = Orientation.F2F1;
+                }
             } else if (rfCount > frCount && rfCount > ffCount) {
                 orientation = Orientation.RF;
             } else {
