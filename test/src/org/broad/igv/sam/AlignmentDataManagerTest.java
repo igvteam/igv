@@ -15,11 +15,9 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.ReadGroupFilter;
-import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.RenderContextImpl;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
@@ -39,9 +37,6 @@ import static junit.framework.Assert.assertTrue;
  * Date: 2012-Jul-12
  */
 public class AlignmentDataManagerTest extends AbstractHeadlessTest {
-
-
-//
 
     @Test
     public void testPreloadPanning() throws Exception {
@@ -100,10 +95,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         assertTrue(haveInterval);
     }
 
-    private static AlignmentDataManager getManager171() throws IOException {
+    public static AlignmentDataManager getManager171() throws IOException {
 
         String infilepath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        Genome genome = IgvTools.loadGenome("hg18", true);
         ResourceLocator locator = new ResourceLocator(infilepath);
         AlignmentDataManager manager = new AlignmentDataManager(locator, genome);
         return manager;
@@ -125,7 +119,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         AlignmentDataManager manager = getManager171();
 
         int shift = 0;
-
 
         ReferenceFrame frame = new ReferenceFrame("test");
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
@@ -200,13 +193,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             Assert.assertEquals(sequence, rec.getChr());
         }
         reader.close();
-
-        Genome genome = IgvTools.loadGenome("hg18", true);
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
-        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-
-        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
+        AlignmentInterval interval = loadInterval(manager, sequence, start, end);
         List<Alignment> result = new ArrayList();
 
         Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
@@ -259,8 +248,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
-
-        Genome genome = IgvTools.loadGenome("hg18", true);
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
         //Edge location
@@ -300,8 +287,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         String path = TestUtils.DATA_DIR + "aligned/pileup.sorted.aligned";
 
         ResourceLocator loc = new ResourceLocator(path);
-
-        Genome genome = IgvTools.loadGenome("hg18", true);
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
         //Edge location
@@ -334,11 +319,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     }
 
     public List<Alignment> tstSize(AlignmentDataManager manager, String sequence, int start, int end, int maxDepth, int expSize) {
-
-        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-        AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions();
-
-        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
+        AlignmentInterval interval = loadInterval(manager, sequence, start, end);
 
         List<Alignment> result = new ArrayList();
 
@@ -363,18 +344,14 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.454.bam";
 
         ResourceLocator loc = new ResourceLocator(path);
-        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
 
         String sequence = "MT";
         int start = 1000;
         int end = 3000;
 
-        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
-
-        Genome genome = IgvTools.loadGenome("hg18", true);
         AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
 
-        AlignmentInterval interval = manager.loadInterval(sequence, start, end, renderOptions);
+        AlignmentInterval interval = loadInterval(manager, sequence, start, end);
 
         Iterator<Alignment> iter = interval.getAlignmentIterator();
 
@@ -387,8 +364,16 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         }
 
         Assert.assertTrue(count > 0);
-        System.out.println(count + " alignments loaded");
+        //System.out.println(count + " alignments loaded");
 
+    }
+
+    /**
+     * Load alignment interval. Here for other tests, so we don't need to expose
+     * {@link AlignmentDataManager#loadInterval(String, int, int, AlignmentTrack.RenderOptions)}
+     */
+    public static AlignmentInterval loadInterval(AlignmentDataManager manager, String chr, int start, int end) {
+        return manager.loadInterval(chr, start, end, new AlignmentTrack.RenderOptions());
     }
 
 
