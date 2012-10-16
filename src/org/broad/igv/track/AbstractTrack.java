@@ -65,9 +65,12 @@ public abstract class AbstractTrack implements Track {
     private String name;
     private String url;
     private boolean itemRGB = true;
+
     private boolean useScore;
-    private float viewLimitMin;
-    private float viewLimitMax;
+    private float viewLimitMin = Float.NaN;     // From UCSC track line
+    private float viewLimitMax = Float.NaN;  // From UCSC track line
+
+
     protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
@@ -148,6 +151,9 @@ public abstract class AbstractTrack implements Track {
         this.url = url;
     }
 
+    public void setUseScore(boolean useScore) {
+        this.useScore = useScore;
+    }
 
     public String getId() {
         return id;

@@ -441,8 +441,15 @@ public class TrackLoader {
             Iterable<Feature> iter = bfs.iterator();
             Object header = bfs.getHeader();
             TrackProperties trackProperties = getTrackProperties(header);
-
             List<FeatureTrack> tracks = AbstractFeatureParser.loadTracks(iter, locator, genome, trackProperties);
+
+            if (locator.getPath().contains(".narrowPeak") || locator.getPath().contains(".broadPeak")) {
+                for (FeatureTrack t : tracks) {
+                    t.setUseScore(true);
+                }
+            }
+
+
             newTracks.addAll(tracks);
         } else if (MutationParser.isMutationAnnotationFile(locator)) {
             this.loadMutFile(locator, newTracks, genome);
