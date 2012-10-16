@@ -168,9 +168,7 @@ public class CachedIntervals<T extends Interval> {
             } else {
                 intervals.add(addingInterval);
             }
-
         }
-
 
         int effectiveCacheSize = keepLocuses.size() + cacheSize;
         if (intervals.size() > effectiveCacheSize) {
@@ -190,18 +188,42 @@ public class CachedIntervals<T extends Interval> {
         List<Locus> locusList = keepLocuses.get(interval.getChr());
         if (locusList == null || locusList.size() == 0) return;
 
-        int s = interval.getStart();
-        int e = interval.getEnd();
+        int locusStart = Integer.MAX_VALUE;
+        int locusEnd = Integer.MIN_VALUE;
         boolean trim = false;
+        /**
+         The {@code interval} might overlap more than one keepLocus.
+         We identify the minimum start and max end of all locuses which overlap
+         the {@code interval}, and trim to that. This is overly conservative
+         in terms of keeping data.
+         Example:
+         keepLocuses:   ---------------                  ---------------------------
+         interval:                  xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+         We would keep the entire interval in this case
+         TODO Split interval in two, store only side portions
+
+         Example:
+         keepLocuses:   ---------------                  ---------------------------
+         interval: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+         The interval would get trimmed to:
+
+         keepLocuses:   ---------------                  ---------------------------
+         interval:      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+         */
         for (Locus locus : locusList) {
             if (locus.overlaps(interval.getChr(), interval.getStart(), interval.getEnd())) {
-                s = Math.max(locus.getStart(), interval.getStart());
-                e = Math.min(locus.getEnd(), interval.getEnd());
+                locusStart = Math.min(locus.getStart(), locusStart);
+                locusEnd = Math.max(locus.getEnd(), locusEnd);
                 trim = true;
             }
         }
         if (trim) {
-            interval.trimTo(interval.getChr(), s, e, interval.getZoom());
+            interval.trimTo(interval.getChr(), locusStart, locusEnd, interval.getZoom());
         }
     }
 
