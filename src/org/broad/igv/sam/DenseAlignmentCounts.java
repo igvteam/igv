@@ -414,13 +414,17 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
         //It is now guaranteed that first.getStart() < second.getStart()
         //However, the relationship between first.getEnd() and second.getEnd() is unknown
-
         int firstLength = first.getEnd() - first.getStart();
 
         int newStart = first.getStart();
         int newEnd = Math.max(first.getEnd(), second.getEnd());
 
         int lengthIncrease = (newEnd - newStart) - (firstLength);
+
+        //No need for copying if second is a subset of the first
+        if (lengthIncrease <= 0) {
+            return first;
+        }
 
         int[][] firstSrcArrs = getCountArrs(first);
         int[][] secondSrcArrs = getCountArrs(second);
@@ -434,7 +438,6 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             destArr = destArrs[arnum];
             System.arraycopy(firstSrcArrs[arnum], 0, destArr, 0, firstLength);
             System.arraycopy(secondSrcArrs[arnum], secondOffset, destArr, firstLength, lengthIncrease);
-
         }
         result.maxCount = Math.max(first.getMaxCount(), second.getMaxCount());
         return result;
