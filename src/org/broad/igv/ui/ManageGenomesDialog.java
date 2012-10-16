@@ -73,7 +73,7 @@ public class ManageGenomesDialog extends JDialog {
     private void initData() {
         allListItems = new ArrayList<GenomeListItem>(GenomeManager.getInstance().getGenomes());
         String genomeId = GenomeManager.getInstance().getGenomeId();
-        currentGenomeItem = GenomeManager.getInstance().getGenomeListItemById(genomeId);
+        currentGenomeItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         buildList();
         genomeList.setTransferHandler(new SimpleTransferHandler());
     }

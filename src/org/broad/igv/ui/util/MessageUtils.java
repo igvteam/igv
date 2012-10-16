@@ -46,8 +46,8 @@ public class MessageUtils {
      * @param e
      * @param message
      */
-    public static void showErrorMessage(Exception e, String message) {
-        log.error(e);
+    public static void showErrorMessage(String message, Exception e) {
+        log.error(message, e);
         showMessage(Level.ERROR, message);
     }
 

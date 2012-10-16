@@ -24,7 +24,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -35,10 +38,8 @@ import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
-import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
@@ -455,19 +456,26 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     /**
      * Selects the first genome from the list which matches this genomeId.
-     * If {@code fallbackToFirst}, we select the first item if a matching
-     * item not found.
+     * If not found, checks genomes from the server/user-defined list
      *
      * @param genomeId
      */
-    public void selectGenomeFromList(String genomeId, boolean fallbackToFirst) {
-        // Now select this item in the comboBox
-        GenomeListItem matchingItem = GenomeManager.getInstance().getGenomeListItemById(genomeId);
-        if (matchingItem == null && fallbackToFirst) {
-            // If genome archive was not found use first item
-            // we have in the list
-            matchingItem = firstGenome;
+    public void selectGenome(String genomeId) {
+        if (!getSelectableGenomeIDs().contains(genomeId)) {
+            // If genome archive was not found, check things not loaded
+            //TODO Should we be doing this here?
+            boolean found = false;
+            try {
+                found = GenomeManager.getInstance().loadFromArchive(genomeId);
+            } catch (IOException e) {
+                MessageUtils.showErrorMessage("Error checking server/cache for genomeId " + genomeId, e);
+            }
+            if (found) {
+                refreshGenomeListComboBox();
+            }
         }
+        // Now select this item in the comboBox
+        GenomeListItem matchingItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         if (matchingItem != null) {
             genomeComboBox.setSelectedItem(matchingItem);
         }
@@ -493,7 +501,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public void refreshGenomeListComboBox() {
         genomeComboBox.setModel(getModelForGenomeListComboBox());
         String curId = GenomeManager.getInstance().getGenomeId();
-        Object item = GenomeManager.getInstance().getGenomeListItemById(curId);
+        Object item = GenomeManager.getInstance().getLoadedGenomeListItemById(curId);
         genomeComboBox.setSelectedItem(item);
     }
 

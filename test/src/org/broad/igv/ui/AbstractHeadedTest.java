@@ -9,11 +9,10 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv;
+package org.broad.igv.ui;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.Main;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
@@ -120,6 +119,7 @@ public class AbstractHeadedTest {
 
         IGV.getMainFrame().setVisible(false);
         IGV.getMainFrame().dispose();
+        IGV.destroyInstance();
     }
 
     public static void assumeNotHeadless() {

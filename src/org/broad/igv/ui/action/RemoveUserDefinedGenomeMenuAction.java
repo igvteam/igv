@@ -26,10 +26,7 @@ import org.broad.igv.ui.UserDefinedGenomeCheckList;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author eflakes
@@ -58,7 +55,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
 
         try {
 
-            List<GenomeListItem> genomeItemList =
+            Collection<GenomeListItem> genomeItemList =
                     GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
 
             if (genomeItemList.isEmpty()) {

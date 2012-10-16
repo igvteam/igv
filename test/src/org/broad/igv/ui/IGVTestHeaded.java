@@ -12,7 +12,6 @@
 package org.broad.igv.ui;
 
 import junit.framework.Assert;
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
@@ -68,6 +67,24 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         assertTrue(rangeDiff < 3);
 
         Assert.assertEquals(1461, igv.getAllTracks().size());
+    }
+
+    /**
+     * Test loading a UCSC session, with some files that don't exist and some that do
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadUCSCSessionBadFiles() throws Exception {
+        String sessionPath = TestUtils.DATA_DIR + "sessions/nonexistent_files.session";
+        IGV igv = IGV.getInstance();
+
+        TestUtils.loadSession(igv, sessionPath);
+
+        Assert.assertEquals(2, igv.getVisibleTrackCount());
+        for (Track track : igv.getAllTracks()) {
+            assertTrue(track.getName().contains("Test Bed"));
+        }
     }
 
     @Test

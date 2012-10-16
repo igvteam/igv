@@ -275,23 +275,11 @@ public class CommandExecutor {
         String genomeID = param1;
 
         //Genome in combo box
-        if (igv.getSelectableGenomeIDs().contains(genomeID)) {
-            igv.selectGenomeFromList(genomeID);
+        igv.selectGenomeFromList(genomeID);
+        if (GenomeManager.getInstance().getCurrentGenome().getId().equals(genomeID)) {
             return result;
-        } else {
-            //Not in currently loaded set, check server/cached
-            boolean found = false;
-            try {
-                found = GenomeManager.getInstance().getFromArchive(genomeID);
-            } catch (IOException e) {
-                MessageUtils.showMessage("Error checking genome server/cache for " + genomeID);
-            }
-            if (found) {
-                igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-                igv.selectGenomeFromList(genomeID);
-                return result;
-            }
         }
+
 
         String genomePath = genomeID;
         if (!ParsingUtils.pathExists(genomePath)) {

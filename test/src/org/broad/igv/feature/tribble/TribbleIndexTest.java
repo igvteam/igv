@@ -11,19 +11,19 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.broad.igv.AbstractHeadedTest;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -32,10 +32,7 @@ import static org.junit.Assert.assertEquals;
  * @author jrobinso
  * @date Aug 9, 2010
  */
-public class TribbleIndexTest {
-
-    IgvTools igvTools = new IgvTools();
-
+public class TribbleIndexTest extends AbstractHeadlessTest {
 
     /**
      * chr2	1	200000000	LONG_FEATURE

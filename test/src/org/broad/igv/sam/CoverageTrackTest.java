@@ -11,10 +11,10 @@
 
 package org.broad.igv.sam;
 
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
@@ -34,13 +34,13 @@ import static junit.framework.Assert.assertEquals;
 public class CoverageTrackTest extends AbstractHeadedTest {
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         Globals.setBatch(true);
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
         super.tearDown();
         Globals.setBatch(true);
     }

@@ -11,7 +11,6 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.fest.swing.fixture.FrameFixture;

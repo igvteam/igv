@@ -11,13 +11,13 @@
 
 package org.broad.igv.batch;
 
-import org.broad.igv.AbstractHeadedTest;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
