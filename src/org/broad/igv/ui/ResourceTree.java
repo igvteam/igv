@@ -124,12 +124,6 @@ public class ResourceTree {
 
                                 } else {
 
-                                    TreeModel model = dialogTree.getModel();
-
-                                    LinkedHashSet<DefaultMutableTreeNode> allCheckedLeafNodes =
-                                            resourceTree.findSelectedLeafNodes(model,
-                                                    (TreeNode) model.getRoot(), null);
-
                                     LinkedHashSet<ResourceLocator> selectedLocators =
                                             resourceTree.getSelectedResourceLocators();
                                     for (ResourceLocator locator : selectedLocators) {
@@ -163,6 +157,14 @@ public class ResourceTree {
         }
     }
 
+    private void initTree(DefaultMutableTreeNode rootNode) {
+        tree = new JTree(rootNode);
+        tree.setExpandsSelectedPaths(true);
+        tree.setCellRenderer(new NodeRenderer());
+        tree.setCellEditor(new ResourceEditor(tree));
+        tree.setEditable(true);
+    }
+
     private JTree createTreeFromDOM(Document document) {
 
         Element rootElement =
@@ -178,15 +180,10 @@ public class ResourceTree {
                     " is not the root of the xml document!");
         }
 
-        String rootLabel = getAttribute((Element) rootElement, "name");
+        String rootLabel = getAttribute(rootElement, "name");
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootLabel);
 
-        // Create Tree
-        tree = new JTree(rootNode);
-        tree.setExpandsSelectedPaths(true);
-        tree.setCellRenderer(new NodeRenderer());
-        tree.setCellEditor(new ResourceEditor(tree));
-        tree.setEditable(true);
+        initTree(rootNode);
 
         Set<ResourceLocator> loadedResources = IGV.hasInstance() ?
                 IGV.getInstance().getDataResourceLocators() : Collections.<ResourceLocator>emptySet();
@@ -205,64 +202,64 @@ public class ResourceTree {
 
     /**
      * Build a tree of all resources, placed under {@code treeNode}, starting
-     * from {@code xmlNode}. All {@link ResourceLocator}s are stored in {@code loadedResources}
+     * from {@code xmlNode}.
      *
-     * @param treeNode        Can be null iff resourceTree is null, in which case nothing is added.
+     * @param treeNode
      * @param xmlNode
-     * @param loadedResources
-     * @param resourceTree    ResourceTree instance. If not null, relevant member fields are updated (enabled, set to leaves, etc.)
+     * @param alreadyLoaded Resources which have already been loaded. These will be checked
+     * @param resourceTree  ResourceTree instance. Can be null if not intending UI interaction
      */
-    public static void buildLocatorTree(DefaultMutableTreeNode treeNode, Node xmlNode,
-                                        Set<ResourceLocator> loadedResources, ResourceTree resourceTree) {
+    public static void buildLocatorTree(DefaultMutableTreeNode treeNode, Element xmlNode,
+                                        Set<ResourceLocator> alreadyLoaded, ResourceTree resourceTree) {
 
-        String name = getAttribute((Element) xmlNode, NAME.getText());
+        String name = getAttribute(xmlNode, NAME.getText());
 
         ResourceLocator locator = new ResourceLocator(
-                getAttribute((Element) xmlNode, SERVER_URL.getText()),
-                getAttribute((Element) xmlNode, PATH.getText()));
+                getAttribute(xmlNode, SERVER_URL.getText()),
+                getAttribute(xmlNode, PATH.getText()));
 
-        String resourceType = getAttribute((Element) xmlNode, RESOURCE_TYPE.getText());
+        String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
         if (resourceType != null) {
             locator.setType(resourceType);
         }
 
-        String infoLink = getAttribute((Element) xmlNode, HYPERLINK.getText());
+        String infoLink = getAttribute(xmlNode, HYPERLINK.getText());
         if (infoLink == null) {
-            infoLink = getAttribute((Element) xmlNode, INFOLINK.getText());
+            infoLink = getAttribute(xmlNode, INFOLINK.getText());
         }
         locator.setInfolink(infoLink);
 
-        String sampleId = getAttribute((Element) xmlNode, SAMPLE_ID.getText());
+        String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
         if (sampleId == null) {
             // legacy option
-            sampleId = getAttribute((Element) xmlNode, ID.getText());
+            sampleId = getAttribute(xmlNode, ID.getText());
         }
         locator.setSampleId(sampleId);
-        locator.setUrl(getAttribute((Element) xmlNode, URL.getText()));
-        locator.setDescription(getAttribute((Element) xmlNode, DESCRIPTION.getText()));
+        locator.setUrl(getAttribute(xmlNode, URL.getText()));
+        locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
         locator.setName(name);
 
         // Special element for alignment tracks
-        String coverage = getAttribute((Element) xmlNode, "coverage");
+        String coverage = getAttribute(xmlNode, "coverage");
         if (coverage != null) {
             locator.setCoverage(coverage);
         }
-        locator.setTrackLine(getAttribute((Element) xmlNode, TRACK_LINE.getText()));
+        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
 
         if (coverage != null) {
             locator.setCoverage(coverage);
         }
-        locator.setTrackLine(getAttribute((Element) xmlNode, TRACK_LINE.getText()));
+        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
 
         if (coverage != null) {
             locator.setCoverage(coverage);
         }
-        locator.setTrackLine(getAttribute((Element) xmlNode, TRACK_LINE.getText()));
+        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
 
         if (coverage != null) {
             locator.setCoverage(coverage);
         }
-        String colorString = getAttribute((Element) xmlNode, "color");
+        String colorString = getAttribute(xmlNode, "color");
         if (colorString != null) {
             try {
                 Color c = ColorUtilities.stringToColor(colorString);
@@ -288,22 +285,18 @@ public class ResourceTree {
             // element (could be a comment for example).
             if (xmlChildNode instanceof Element) {
                 String categoryLabel = getAttribute((Element) xmlChildNode, NAME.getText());
-                DefaultMutableTreeNode treeChildNode = null;
-                if (treeNode != null) {
-                    treeChildNode = new DefaultMutableTreeNode(categoryLabel);
-                    treeNode.add(treeChildNode);
-                }
-                buildLocatorTree(treeChildNode, xmlChildNode, loadedResources, resourceTree);
+                DefaultMutableTreeNode treeChildNode = new DefaultMutableTreeNode(categoryLabel);
+                treeNode.add(treeChildNode);
+                buildLocatorTree(treeChildNode, (Element) xmlChildNode, alreadyLoaded, resourceTree);
             }
         }
 
+        CheckableResource resource = new CheckableResource(name, false, locator);
+        treeNode.setUserObject(resource);
+
+
         if (resourceTree != null) {
-            if (treeNode == null) {
-                throw new IllegalArgumentException("treeNode must not be null when resourceTree is not null");
-            }
-            CheckableResource resource = new CheckableResource(name, false, locator);
             resource.setEnabled(resourceTree.tree.isEnabled());
-            treeNode.setUserObject(resource);
 
             // If it's a leaf set the checkbox to represent the resource
             if (treeNode.isLeaf()) {
@@ -312,7 +305,7 @@ public class ResourceTree {
                 treeNode.setAllowsChildren(false);
 
                 // If data already loaded disable the check box
-                if (loadedResources.contains(locator)) {
+                if (alreadyLoaded.contains(locator)) {
                     resource.setEnabled(false);
                     resource.setSelected(true);
                     resourceTree.checkParentNode(treeNode, true);
@@ -946,9 +939,6 @@ public class ResourceTree {
         }
     }
 
-    /**
-     * Checked Resource
-     */
     public static class CheckableResource implements SelectableResource {
 
         final static protected Color partialSelectionColor =

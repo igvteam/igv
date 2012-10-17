@@ -30,6 +30,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.w3c.dom.Document;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DateFormat;
@@ -71,7 +72,9 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
         Map<ResourceLocator, Exception> failedFiles = new LinkedHashMap<ResourceLocator, Exception>(10);
         LinkedHashSet<String> nodeURLs;
-        Set<ResourceLocator> fileLocators = new LinkedHashSet<ResourceLocator>(100);
+        List<ResourceTree.CheckableResource> checkableResourceList;
+        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("HostedDataTest");
+
         int counter = 0;
         //Large BAM files have have index files ~10 Mb, don't want to use
         //too much space on disk at once
@@ -103,12 +106,26 @@ public class HostedDataTest extends AbstractHeadlessTest {
             for (String nodeURL : nodeURLs) {
 
                 errorWriter.println("NodeURL: " + nodeURL);
-                fileLocators.clear();
+
                 try {
                     Document xmlDocument = LoadFromServerAction.createMasterDocument(Arrays.asList(nodeURL));
-                    ResourceTree.buildLocatorTree(null, xmlDocument, fileLocators, null);
+                    ResourceTree.getInstance().buildLocatorTree(treeNode, xmlDocument.getDocumentElement(),
+                            Collections.<ResourceLocator>emptySet(), null);
 
-                    for (ResourceLocator locator : fileLocators) {
+                    Enumeration enumeration = treeNode.depthFirstEnumeration();
+
+                    while (enumeration.hasMoreElements()) {
+                        Object nextEl = enumeration.nextElement();
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) nextEl;
+                        Object userObject = node.getUserObject();
+                        ResourceTree.CheckableResource checkableResource;
+                        if (userObject instanceof ResourceTree.CheckableResource) {
+                            checkableResource = (ResourceTree.CheckableResource) userObject;
+                        } else {
+                            continue;
+                        }
+
+                        ResourceLocator locator = checkableResource.getResourceLocator();
                         FeatureDB.clearFeatures();
 
                         try {
@@ -118,7 +135,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
 //                            }else{
 //                                continue;
 //                            }
-//                            System.out.println("Loading " + locator);
+//                            errorWriter.println("Loading " + locator);
                             loader.load(locator, curGenome);
                         } catch (Exception e) {
                             recordError(locator, e, failedFiles);
