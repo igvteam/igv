@@ -280,7 +280,8 @@ public class ResourceLocator {
         URL("url"),
         RESOURCE_TYPE("resourceType"),
         TRACK_LINE("trackLine"),
-        COVERAGE("coverage");
+        COVERAGE("coverage"),
+        COLOR("color");
 
         private String name;
 

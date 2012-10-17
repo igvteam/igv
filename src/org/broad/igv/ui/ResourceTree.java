@@ -237,29 +237,12 @@ public class ResourceTree {
         locator.setSampleId(sampleId);
         locator.setUrl(getAttribute(xmlNode, URL.getText()));
         locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
+        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
         locator.setName(name);
-
         // Special element for alignment tracks
-        String coverage = getAttribute(xmlNode, "coverage");
-        if (coverage != null) {
-            locator.setCoverage(coverage);
-        }
-        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
+        locator.setCoverage(getAttribute(xmlNode, COVERAGE.getText()));
 
-        if (coverage != null) {
-            locator.setCoverage(coverage);
-        }
-        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
-
-        if (coverage != null) {
-            locator.setCoverage(coverage);
-        }
-        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
-
-        if (coverage != null) {
-            locator.setCoverage(coverage);
-        }
-        String colorString = getAttribute(xmlNode, "color");
+        String colorString = getAttribute(xmlNode, COLOR.getText());
         if (colorString != null) {
             try {
                 Color c = ColorUtilities.stringToColor(colorString);
