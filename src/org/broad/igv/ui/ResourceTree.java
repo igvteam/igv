@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.ui;
@@ -23,9 +16,6 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.LinkCheckBox;
 import org.broad.igv.util.ResourceLocator;
-
-import static org.broad.igv.util.ResourceLocator.AttributeType.*;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +32,11 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
 
+import static org.broad.igv.util.ResourceLocator.AttributeType.*;
+
 /**
+ * Parses XML file of IGV resources, and displays them in tree format.
+ *
  * @author eflakes
  */
 public class ResourceTree {
@@ -68,7 +62,9 @@ public class ResourceTree {
     }
 
     public static ResourceTree getInstance() {
-        theInstance = new ResourceTree();
+        if (theInstance == null) {
+            theInstance = new ResourceTree();
+        }
         return theInstance;
     }
 
@@ -93,7 +89,7 @@ public class ResourceTree {
     /**
      * Shows a tree of selectable resources.
      *
-     * @param document    The document that represents an XML resouece tree.
+     * @param document    The document that represents an XML resource tree.
      * @param dialogTitle
      * @return the resources selected by user.
      */
@@ -139,24 +135,6 @@ public class ResourceTree {
                                     for (ResourceLocator locator : selectedLocators) {
                                         locators.add(locator);
                                     }
-
-                                    // Now save a list of the open checked nodes
-                                    /*
-                                    StringBuffer buffer = new StringBuffer();
-                                    Iterator iterator = allCheckedLeafNodes.iterator();
-                                    while (iterator.hasNext()) {
-
-                                        DefaultMutableTreeNode node =
-                                                (DefaultMutableTreeNode) iterator.next();
-
-                                        String path = getPath(node);
-                                        if (path != null) {
-                                            buffer.append(path);
-                                            buffer.append("\t");
-                                        }
-                                    }
-                                    */
-                                    //PreferenceManager.getInstance().put(PreferenceManager.CHECKED_RESOURCES_KEY, buffer.toString());
                                 }
                             }
                         }
@@ -178,13 +156,11 @@ public class ResourceTree {
             dialog.setLocationRelativeTo(parent);
             dialog.setVisible(true);
 
-            return  optionPane.isCanceled() ? null :  locators;
+            return optionPane.isCanceled() ? null : locators;
         } catch (Exception e) {
             log.error(FAILED_TO_CREATE_RESOURCE_TREE_DIALOG, e);
             return null;
         }
-
-
     }
 
     private JTree createTreeFromDOM(Document document) {
@@ -216,19 +192,8 @@ public class ResourceTree {
                 IGV.getInstance().getDataResourceLocators() : Collections.<ResourceLocator>emptySet();
         loadedResources.addAll(AttributeManager.getInstance().getLoadedResources());
 
-        // Build and attach descentants of the root node to the tree
-        processNode(rootNode, rootElement, loadedResources);
-
-        // Get the previously checked leaf nodes.  The nodes are stored as
-
-        //String paths = PreferenceManager.getInstance().get(PreferenceManager.CHECKED_RESOURCES_KEY);
-       /* if (paths != null) {
-            String[] selectedPaths = paths.split("\t");
-            for (String path : selectedPaths) {
-                selectedLeafNodePaths.add(path);
-            }
-        }
-        */
+        // Build and attach descendants of the root node to the tree
+        buildLocatorTree(rootNode, rootElement, loadedResources, this);
 
         // Force proper checks on startup
         recheckTree();
@@ -238,8 +203,17 @@ public class ResourceTree {
         return tree;
     }
 
-    private void processNode(DefaultMutableTreeNode treeNode, Node xmlNode,
-                             Set<ResourceLocator> loadedResources) {
+    /**
+     * Build a tree of all resources, placed under {@code treeNode}, starting
+     * from {@code xmlNode}. All {@link ResourceLocator}s are stored in {@code loadedResources}
+     *
+     * @param treeNode        Can be null iff resourceTree is null, in which case nothing is added.
+     * @param xmlNode
+     * @param loadedResources
+     * @param resourceTree    ResourceTree instance. If not null, relevant member fields are updated (enabled, set to leaves, etc.)
+     */
+    public static void buildLocatorTree(DefaultMutableTreeNode treeNode, Node xmlNode,
+                                        Set<ResourceLocator> loadedResources, ResourceTree resourceTree) {
 
         String name = getAttribute((Element) xmlNode, NAME.getText());
 
@@ -253,13 +227,13 @@ public class ResourceTree {
         }
 
         String infoLink = getAttribute((Element) xmlNode, HYPERLINK.getText());
-        if(infoLink == null) {
+        if (infoLink == null) {
             infoLink = getAttribute((Element) xmlNode, INFOLINK.getText());
         }
         locator.setInfolink(infoLink);
 
         String sampleId = getAttribute((Element) xmlNode, SAMPLE_ID.getText());
-        if(sampleId == null) {
+        if (sampleId == null) {
             // legacy option
             sampleId = getAttribute((Element) xmlNode, ID.getText());
         }
@@ -298,12 +272,8 @@ public class ResourceTree {
             }
         }
 
-        CheckableResource resource = new CheckableResource(name, false, locator);
-        resource.setEnabled(tree.isEnabled());
-        treeNode.setUserObject(resource);
-
         NodeList nodeList = xmlNode.getChildNodes();
-        Node xmlChildNode = null;
+        Node xmlChildNode;
 
         // If we have children treat it as a category not a leaf
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -314,44 +284,56 @@ public class ResourceTree {
                 continue;
             }
 
-            // Need to check class of child node, its not neccessarily an
+            // Need to check class of child node, its not necessarily an
             // element (could be a comment for example).
             if (xmlChildNode instanceof Element) {
                 String categoryLabel = getAttribute((Element) xmlChildNode, NAME.getText());
-                DefaultMutableTreeNode treeChildNode = new DefaultMutableTreeNode(categoryLabel);
-                treeNode.add(treeChildNode);
-                processNode(treeChildNode, (Element) xmlChildNode, loadedResources);
+                DefaultMutableTreeNode treeChildNode = null;
+                if (treeNode != null) {
+                    treeChildNode = new DefaultMutableTreeNode(categoryLabel);
+                    treeNode.add(treeChildNode);
+                }
+                buildLocatorTree(treeChildNode, xmlChildNode, loadedResources, resourceTree);
             }
         }
 
-        // If it's a leaf set the checkbox to represent the resource
-        if (treeNode.isLeaf()) {
-
-            expandPath(new TreePath(treeNode.getPath()));
-            treeNode.setAllowsChildren(false);
-
-            // If data already loaded disable the check box
-            if (loadedResources.contains(locator)) {
-                resource.setEnabled(false);
-                resource.setSelected(true);
-                checkParentNode(treeNode, true);
+        if (resourceTree != null) {
+            if (treeNode == null) {
+                throw new IllegalArgumentException("treeNode must not be null when resourceTree is not null");
             }
-            leafResources.add(resource);
-        } else {
+            CheckableResource resource = new CheckableResource(name, false, locator);
+            resource.setEnabled(resourceTree.tree.isEnabled());
+            treeNode.setUserObject(resource);
 
-            treeNode.setAllowsChildren(true);
+            // If it's a leaf set the checkbox to represent the resource
+            if (treeNode.isLeaf()) {
 
-            boolean hasSelectedChildren = hasSelectedChildren(treeNode);
-            resource.setSelected(hasSelectedChildren);
+                resourceTree.expandPath(new TreePath(treeNode.getPath()));
+                treeNode.setAllowsChildren(false);
 
-            if (true || hasSelectedChildren) {
-                ResourceEditor.checkOrUncheckParentNodesRecursively(treeNode, true);
+                // If data already loaded disable the check box
+                if (loadedResources.contains(locator)) {
+                    resource.setEnabled(false);
+                    resource.setSelected(true);
+                    resourceTree.checkParentNode(treeNode, true);
+                }
+                resourceTree.leafResources.add(resource);
+            } else {
+
+                treeNode.setAllowsChildren(true);
+
+                boolean hasSelectedChildren = resourceTree.hasSelectedChildren(treeNode);
+                resource.setSelected(hasSelectedChildren);
+
+                if (true || hasSelectedChildren) {
+                    ResourceEditor.checkOrUncheckParentNodesRecursively(treeNode, true);
+                }
             }
-        }
 
-        // Store the paths to all the leaf nodes for easy access              
-        if (treeNode.isLeaf()) {
-            leafNodeMap.put(getPath(treeNode), treeNode);
+            // Store the paths to all the leaf nodes for easy access
+            if (treeNode.isLeaf()) {
+                resourceTree.leafNodeMap.put(resourceTree.getPath(treeNode), treeNode);
+            }
         }
     }
 
@@ -390,7 +372,7 @@ public class ResourceTree {
         return resourceLocators;
     }
 
-    private String getAttribute(Element element, String key) {
+    private static String getAttribute(Element element, String key) {
 
         String value = element.getAttribute(key);
         if (value != null) {
@@ -1105,7 +1087,7 @@ public class ResourceTree {
 
         // Traverse children
         TreeNode node = (TreeNode) parentPath.getLastPathComponent();
-        for (Enumeration e = node.children(); e.hasMoreElements();) {
+        for (Enumeration e = node.children(); e.hasMoreElements(); ) {
             TreeNode n = (TreeNode) e.nextElement();
             TreePath childPath = parentPath.pathByAddingChild(n);
             expandAllDescendants(childPath, isExpanding,
@@ -1140,7 +1122,7 @@ public class ResourceTree {
 
         // Traverse children
         TreeNode node = (TreeNode) parentPath.getLastPathComponent();
-        for (Enumeration e = node.children(); e.hasMoreElements();) {
+        for (Enumeration e = node.children(); e.hasMoreElements(); ) {
 
             DefaultMutableTreeNode childNode =
                     (DefaultMutableTreeNode) e.nextElement();
@@ -1245,7 +1227,7 @@ public class ResourceTree {
 
         // Traverse children
         TreeNode node = (TreeNode) parentPath.getLastPathComponent();
-        for (Enumeration e = node.children(); e.hasMoreElements();) {
+        for (Enumeration e = node.children(); e.hasMoreElements(); ) {
             TreeNode n = (TreeNode) e.nextElement();
             TreePath childPath = parentPath.pathByAddingChild(n);
             checkAllSelectedLeafNodes(childPath,

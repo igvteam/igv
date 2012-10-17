@@ -19,19 +19,16 @@ import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.action.LoadFromServerAction;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.Utilities;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -54,40 +51,6 @@ public class HostedDataTest extends AbstractHeadlessTest {
     public TestRule testTimeout = new Timeout((int) 600e4);
 
     private PrintStream errorWriter = System.out;
-
-
-    /**
-     * Given a node, returns the "path" attribute from that
-     * node and its children (recursively).  Does not add nodes
-     * with no serverURL
-     *
-     * @param topNode
-     */
-    private void getPathsFromNode(Node topNode, Set<ResourceLocator> paths) {
-        String pKey = "path";
-        String serverURLkey = "serverURL";
-        String nameKey = "name";
-
-        NamedNodeMap attrs = topNode.getAttributes();
-
-        if (attrs != null) {
-            String path = Utilities.getNullSafe(attrs, pKey);
-            String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
-
-            ResourceLocator locator = new ResourceLocator(serverURL, path);
-
-            if (serverURL != null || path != null) {
-                locator.setName(Utilities.getNullSafe(attrs, nameKey));
-                paths.add(locator);
-            }
-        }
-
-        NodeList nodes = topNode.getChildNodes();
-        for (int nn = 0; nn < nodes.getLength(); nn++) {
-            Node node = nodes.item(nn);
-            getPathsFromNode(node, paths);
-        }
-    }
 
     /**
      * Test loading all the data hosted for each genome
@@ -143,7 +106,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
                 fileLocators.clear();
                 try {
                     Document xmlDocument = LoadFromServerAction.createMasterDocument(Arrays.asList(nodeURL));
-                    getPathsFromNode(xmlDocument, fileLocators);
+                    ResourceTree.buildLocatorTree(null, xmlDocument, fileLocators, null);
 
                     for (ResourceLocator locator : fileLocators) {
                         FeatureDB.clearFeatures();
