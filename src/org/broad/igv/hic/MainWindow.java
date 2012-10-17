@@ -167,7 +167,7 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
-            DatasetReader reader = new DatasetReader(file);
+            DatasetReaderV1 reader = new DatasetReaderV1(file);
             // file not actually read, usually canceled the read of password-protected file
             if (reader.getVersion() == -1)
                 return;

@@ -47,6 +47,7 @@ public class Preprocessor {
     private String fragmentFileName = null;
     private FragmentCalculation fragmentCalculation = null;
     private Set<String> includedChromosomes;
+    private String genomeId;
 
     /**
      * The position of the field containing the masterIndex position
@@ -55,8 +56,8 @@ public class Preprocessor {
 
     private Map<String, ExpectedValueCalculation> expectedValueCalculations;
 
-    public Preprocessor(File outputFile, List<Chromosome> chromosomes) {
-
+    public Preprocessor(File outputFile, String genomeId, List<Chromosome> chromosomes) {
+        this.genomeId = genomeId;
         this.outputFile = outputFile;
         this.matrixPositions = new LinkedHashMap<String, IndexEntry>();
         this.blockIndexPositions = new LinkedHashMap<String, Long>();
@@ -131,6 +132,10 @@ public class Preprocessor {
             masterIndexPositionPosition = fos.getWrittenCount();
             fos.writeLong(0l);
 
+
+            // Genome ID
+            fos.writeString(genomeId);
+
             // Sequence dictionary
             int nChrs = chromosomes.size();
             fos.writeInt(nChrs);
@@ -155,17 +160,11 @@ public class Preprocessor {
 
             // fragment sites
             if (nFragRes > 0) {
-                fos.writeInt(chromosomes.size());
                 for (Chromosome chromosome : chromosomes) {
-
-                    if (chromosome.getName().equals(Globals.CHR_ALL)) continue;
-
-                    fos.writeString(chromosome.getName());
-
                     int[] sites = fragmentCalculation.getSites(chromosome.getName());
                     int nSites = sites == null ? 0 : sites.length;
                     fos.writeInt(nSites);
-                    for (int i = 0; i < sites.length; i++) {
+                    for (int i = 0; i < nSites; i++) {
                         fos.writeInt(sites[i]);
                     }
                 }
@@ -205,7 +204,6 @@ public class Preprocessor {
                     if (matrix != null) {
                         writeMatrix(matrix);
                     }
-                    System.gc();
                 }
             } // End of double loop through chromosomes
 
@@ -371,14 +369,18 @@ public class Preprocessor {
 
             ev.computeDensity();
 
+            System.out.println(key + "  Norm factors");
+
             // Map of chromosome index -> normalization factor
             Map<Integer, Double> normalizationFactors = ev.getNormalizationFactors();
             buffer.putInt(normalizationFactors.size());
             for (Map.Entry<Integer, Double> normFactor : normalizationFactors.entrySet()) {
                 buffer.putInt(normFactor.getKey());
                 buffer.putDouble(normFactor.getValue());
+                System.out.println(normFactor.getKey() + "  " + normFactor.getValue());
             }
 
+            // The density values
             double[] expectedValues = ev.getDensityAvg();
             buffer.putNullTerminatedString(key);
             buffer.putInt(expectedValues.length);

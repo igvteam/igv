@@ -175,7 +175,7 @@ public class HiCTools {
                 files.add(f);
             }
 
-            Preprocessor preprocessor = new Preprocessor(new File(args[2]), chromosomes);
+            Preprocessor preprocessor = new Preprocessor(new File(args[2]), genomeId, chromosomes);
 
             preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
@@ -458,7 +458,7 @@ public class HiCTools {
             System.exit(-1);
 
         }
-        Dataset dataset = (new DatasetReader(file)).read();
+        Dataset dataset = (new DatasetReaderV1(file)).read();
 
         // Load the expected density function, if it exists.
         Map<Integer, DensityFunction> zoomToDensityMap = null;
@@ -469,7 +469,7 @@ public class HiCTools {
                 InputStream is = null;
                 try {
                     is = ParsingUtils.openInputStream(densityFile);
-                    zoomToDensityMap = DatasetReader.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                    zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
 
                 } finally {
                     if (is != null) is.close();
@@ -526,7 +526,7 @@ public class HiCTools {
         Map<Integer, DensityFunction> zoomToDensityMap = null;
         LittleEndianOutputStream les = null;
         BufferedOutputStream bos = null;
-        Dataset dataset = (new DatasetReader(file)).read();
+        Dataset dataset = (new DatasetReaderV1(file)).read();
         if (dataset.getVersion() <= 1) {
             if (type.equals("oe") || type.equals("pearson")) {
                 String densityFile = file + ".densities";
@@ -534,7 +534,7 @@ public class HiCTools {
                     InputStream is = null;
                     try {
                         is = ParsingUtils.openInputStream(densityFile);
-                        zoomToDensityMap = DatasetReader.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+                        zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
 
                     } finally {
                         if (is != null) is.close();

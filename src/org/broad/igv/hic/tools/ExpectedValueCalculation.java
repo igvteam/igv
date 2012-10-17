@@ -243,7 +243,7 @@ public class ExpectedValueCalculation {
                 } else {
                     // this is the sum of the diagonal for this particular chromosome.
                     // the value in each bin is multiplied by the length of the diagonal to get expected count
-                    if (nGrids > n)
+                    //if (nGrids > n)
                         expectedCount += (nGrids - n) * v;
                 }
             }
