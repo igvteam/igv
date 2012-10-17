@@ -15,10 +15,10 @@ import org.broad.tribble.Feature;
 
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
- * Interface for creating a string from a feature. We also require
- * certain metadata, such as header and the number of columns for each feature
+ * Interface for creating a string from a feature.
  * User: jacob
  * Date: 2012-Aug-02
  *
@@ -28,6 +28,14 @@ import java.util.Iterator;
 public interface FeatureEncoder<T extends Feature> {
 
 
-    int encodeAll(OutputStream outputStream, Iterator<T> features);
+    /**
+     * Write all of the {@code features} to {@code outputStream}
+     *
+     * @param outputStream
+     * @param features
+     * @return A map containing any attributes deemed necessary. This map will be provided
+     *         to the {@link FeatureDecoder}. It may be null
+     */
+    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features);
 
 }

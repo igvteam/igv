@@ -71,7 +71,7 @@ public class AsciiDecoder<D extends Feature> implements FeatureDecoder<D> {
     }
 
     @Override
-    public void setOutputColumns(Map<String, Integer> outputColumns) {
+    public void setAttributes(List<Map<String, Object>> attributes) {
     }
 
     @Override

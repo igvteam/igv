@@ -37,7 +37,7 @@ public class AlignmentDecoder implements FeatureDecoder<Alignment> {
     }
 
     @Override
-    public void setOutputColumns(Map<String, Integer> outputColumns) {
+    public void setAttributes(List<Map<String, Object>> attributes) {
         //pass
     }
 

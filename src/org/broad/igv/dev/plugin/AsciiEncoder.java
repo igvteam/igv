@@ -16,7 +16,9 @@ import org.broad.tribble.Feature;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * User: jacob
@@ -31,11 +33,11 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
     }
 
     @Override
-    public int encodeAll(OutputStream outputStream, Iterator<E> features) {
+    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<E> features) {
         LineFeatureEncoder<E> encoder = lineFeatureEncoder;
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
+        Map<String, Object> attributes = new HashMap<String, Object>(1);
 
-        int allNumCols = -1;
         if (features != null) {
             String header = encoder.getHeader();
             if (header != null) {
@@ -48,17 +50,13 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
                 if (line == null) continue;
                 writer.println(line);
 
-                //We require consistency of output
+                //We do not require consistency of output
                 int tmpNumCols = encoder.getNumCols(line);
-                if (allNumCols < 0) {
-                    allNumCols = tmpNumCols;
-                } else {
-                    assert tmpNumCols == allNumCols;
-                }
+                attributes.put("columns", tmpNumCols);
             }
         }
         writer.flush();
         writer.close();
-        return allNumCols;
+        return attributes;
     }
 }

@@ -111,12 +111,14 @@ public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements
     }
 
     @Override
-    public void setOutputColumns(Map<String, Integer> outputColumns) {
-        super.setOutputColumns(outputColumns);
-        numCols = new int[outputColumns.size()];
+    public void setAttributes(List<Map<String, Object>> attributes) {
+        super.setAttributes(attributes);
+
+        numCols = new int[attributes.size()];
         int ind = 0;
-        for (Integer numCol : outputColumns.values()) {
-            numCols[ind++] = numCol;
+        for (Map<String, Object> attributeMap : attributes) {
+            int curOutCols = (Integer) attributeMap.get("columns");
+            numCols[ind++] = curOutCols;
         }
     }
 }

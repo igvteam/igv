@@ -43,11 +43,10 @@ public interface FeatureDecoder<T extends Feature> {
     Iterator<T> decodeAll(InputStream is, boolean strictParsing) throws IOException;
 
     /**
-     * @param outputColumns Map from temporary output file path to the number of columns
-     *                      contained within that file. The implementation is not required to do anything
-     *                      with this information, it is provided in case it is necessary.
+     * @param attributes List of maps containing attributes which were provided by
+     *                   {@link FeatureEncoder#encodeAll(java.io.OutputStream, java.util.Iterator)}
      */
-    void setOutputColumns(Map<String, Integer> outputColumns);
+    void setAttributes(List<Map<String, Object>> attributes);
 
     /**
      * It may be the case that the output is processed differently, depending on the input.

@@ -68,12 +68,12 @@ public abstract class PluginCodec<E extends Feature, D extends Feature> implemen
     }
 
     @Override
-    public void setOutputColumns(Map<String, Integer> outputColumns) {
-        this.decoder.setOutputColumns(outputColumns);
+    public void setAttributes(List<Map<String, Object>> attributes) {
+        this.decoder.setAttributes(attributes);
     }
 
     @Override
-    public int encodeAll(OutputStream outputStream, Iterator<E> features) {
+    public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<E> features) {
         return this.encoder.encodeAll(outputStream, features);
     }
 

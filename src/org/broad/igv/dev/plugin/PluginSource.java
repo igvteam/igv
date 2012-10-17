@@ -54,7 +54,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * For decoding, we may need to know how many columns
      * were written out in the first place
      */
-    protected Map<String, Integer> outputCols = new LinkedHashMap<String, Integer>(2);
+    protected List<Map<String, Object>> attributes = new ArrayList<Map<String, Object>>(2);
 
     public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
         this.commands = commands;
@@ -85,27 +85,27 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * @param argument
      * @return
      */
-    protected final int writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument) {
+    protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument) {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
-        int allNumCols = -1;
+        Map<String, Object> attributes = null;
         if (features != null) {
             FeatureEncoder codec = getEncodingCodec(argument);
 
-            allNumCols = codec.encodeAll(outputStream, features);
+            attributes = codec.encodeAll(outputStream, features);
 
         }
         writer.flush();
         writer.close();
 
-        return allNumCols;
+        return attributes;
     }
 
     protected final String[] genFullCommand(String chr, int start, int end, int zoom) throws IOException {
 
         List<String> fullCmd = new ArrayList<String>(commands);
 
-        outputCols.clear();
+        attributes.clear();
         Map<String, String[]> argValsById = new HashMap<String, String[]>(arguments.size());
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
@@ -193,9 +193,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
         File outFile = File.createTempFile("features", ".tmp", null);
         outFile.deleteOnExit();
 
-        int numCols = writeFeaturesToStream(new FileOutputStream(outFile), features.iterator(), argument);
+        Map<String, Object> attributes = writeFeaturesToStream(new FileOutputStream(outFile), features.iterator(), argument);
         String path = outFile.getAbsolutePath();
-        outputCols.put(path, numCols);
+        this.attributes.add(attributes);
         return path;
     }
 
@@ -262,7 +262,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
     protected final FeatureDecoder<D> getDecodingCodec() {
         FeatureDecoder<D> codec = getDecodingCodec(decodingCodec, decodingLibURLs);
         codec.setInputs(commands, arguments);
-        codec.setOutputColumns(Collections.unmodifiableMap(outputCols));
+        codec.setAttributes(Collections.unmodifiableList(attributes));
         return codec;
     }
 

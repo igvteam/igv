@@ -20,6 +20,7 @@ import org.broad.igv.sam.SamAlignment;
 
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Encode an Alignment into SAM format
@@ -30,7 +31,7 @@ public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
 
     private boolean headerSet = false;
 
-    public int encodeAll(OutputStream stream, Iterator<Alignment> alignments) {
+    public Map<String, Object> encodeAll(OutputStream stream, Iterator<Alignment> alignments) {
         SAMFileWriterImpl writer = new SAMTextWriter(stream);
         while (alignments.hasNext()) {
             Alignment al = alignments.next();
@@ -45,7 +46,7 @@ public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
             }
         }
         writer.close();
-        return -1;
+        return null;
     }
 
     private String encode(Alignment feature) {
