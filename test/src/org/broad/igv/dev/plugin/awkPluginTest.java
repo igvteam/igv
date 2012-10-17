@@ -74,7 +74,7 @@ public class awkPluginTest extends AbstractPluginTest {
             argnum++;
         }
 
-        List<String> fullCmd = Arrays.asList(tool.getAttribute("path"));
+        List<String> fullCmd = Arrays.asList(toolPath);
         PluginFeatureSource source = new PluginFeatureSource(fullCmd, arguments, parsingAttrs, pluginPath);
         List<Feature> feats = new ArrayList<Feature>();
         Iterator<Feature> featIter = source.getFeatures("chr2", 0, Integer.MAX_VALUE);

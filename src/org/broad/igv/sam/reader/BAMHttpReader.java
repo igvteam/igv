@@ -11,7 +11,10 @@
 
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.*;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableStream;
@@ -23,13 +26,15 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.igv.util.stream.SeekablePicardStream;
 import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -158,7 +163,7 @@ public class BAMHttpReader implements AlignmentReader {
     /**
      * Delete temporary files which are older than timeLimit.
      *
-     * @param timeLimit Minimum age to delete. If null, default is 1 day
+     * @param timeLimit Minimum age (in milliseconds) to delete. If null, default is 1 day
      * @throws IOException
      */
     public static void cleanTempDir(Long timeLimit) {

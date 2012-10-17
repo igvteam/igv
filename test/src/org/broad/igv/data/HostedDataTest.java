@@ -17,24 +17,21 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.reader.BAMHttpReader;
 import org.broad.igv.track.TrackLoader;
+import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.action.LoadFromServerAction;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.Utilities;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -52,39 +49,9 @@ import static org.junit.Assert.*;
 public class HostedDataTest extends AbstractHeadlessTest {
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 600e4);
+    public TestRule testTimeout = new Timeout((int) 1200e4);
 
     private PrintStream errorWriter = System.out;
-
-
-    /**
-     * Given a node, returns the "path" attribute from that
-     * node and its children (recursively).
-     *
-     * @param topNode
-     */
-    private void getPathsFromNode(Node topNode, Set<ResourceLocator> paths) {
-        String pKey = "path";
-        String serverURLkey = "serverURL";
-        String nameKey = "name";
-
-        NamedNodeMap attrs = topNode.getAttributes();
-
-        if (attrs != null) {
-            String path = Utilities.getNullSafe(attrs, pKey);
-            String serverURL = Utilities.getNullSafe(attrs, serverURLkey);
-
-            ResourceLocator locator = new ResourceLocator(serverURL, path);
-            locator.setName(Utilities.getNullSafe(attrs, nameKey));
-            paths.add(locator);
-        }
-
-        NodeList nodes = topNode.getChildNodes();
-        for (int nn = 0; nn < nodes.getLength(); nn++) {
-            Node node = nodes.item(nn);
-            getPathsFromNode(node, paths);
-        }
-    }
 
     /**
      * Test loading all the data hosted for each genome
@@ -105,12 +72,18 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
         Map<ResourceLocator, Exception> failedFiles = new LinkedHashMap<ResourceLocator, Exception>(10);
         LinkedHashSet<String> nodeURLs;
-        Set<ResourceLocator> fileLocators = new LinkedHashSet<ResourceLocator>(100);
+        List<ResourceTree.CheckableResource> checkableResourceList;
+        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("HostedDataTest");
+
+        int counter = 0;
+        //Large BAM files have have index files ~10 Mb, don't want to use
+        //too much space on disk at once
+        int clearInterval = 50;
 
         for (GenomeListItem genomeItem : serverSideGenomeList) {
-            if (!genomeItem.getId().equals(("hg19"))) {
-                continue;
-            }
+            //Do this within the loop, both to make sure we get a fresh genome
+            //and not use too much disk space
+            GenomeManager.getInstance().clearGenomeCache();
 
             String genomeURL = LoadFromServerAction.getGenomeDataURL(genomeItem.getId());
 
@@ -122,7 +95,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
             try {
                 nodeURLs = LoadFromServerAction.getNodeURLs(genomeURL);
                 if (nodeURLs == null) {
-                    System.out.println("Warning: No Data found for " + genomeURL);
+                    errorWriter.println("Warning: No Data found for " + genomeURL);
                     continue;
                 }
             } catch (Exception e) {
@@ -133,13 +106,26 @@ public class HostedDataTest extends AbstractHeadlessTest {
             for (String nodeURL : nodeURLs) {
 
                 errorWriter.println("NodeURL: " + nodeURL);
-                fileLocators.clear();
-                try {
-                    InputStream is = ParsingUtils.openInputStreamGZ(new ResourceLocator(nodeURL));
-                    Document xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-                    getPathsFromNode(xmlDocument, fileLocators);
 
-                    for (ResourceLocator locator : fileLocators) {
+                try {
+                    Document xmlDocument = LoadFromServerAction.createMasterDocument(Arrays.asList(nodeURL));
+                    ResourceTree.getInstance().buildLocatorTree(treeNode, xmlDocument.getDocumentElement(),
+                            Collections.<ResourceLocator>emptySet(), null);
+
+                    Enumeration enumeration = treeNode.depthFirstEnumeration();
+
+                    while (enumeration.hasMoreElements()) {
+                        Object nextEl = enumeration.nextElement();
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) nextEl;
+                        Object userObject = node.getUserObject();
+                        ResourceTree.CheckableResource checkableResource;
+                        if (userObject instanceof ResourceTree.CheckableResource) {
+                            checkableResource = (ResourceTree.CheckableResource) userObject;
+                        } else {
+                            continue;
+                        }
+
+                        ResourceLocator locator = checkableResource.getResourceLocator();
                         FeatureDB.clearFeatures();
 
                         try {
@@ -149,10 +135,15 @@ public class HostedDataTest extends AbstractHeadlessTest {
 //                            }else{
 //                                continue;
 //                            }
-//                            System.out.println("Loading " + locator);
+//                            errorWriter.println("Loading " + locator);
                             loader.load(locator, curGenome);
                         } catch (Exception e) {
                             recordError(locator, e, failedFiles);
+                        }
+
+                        counter = (counter + 1) % clearInterval;
+                        if (counter == 0) {
+                            BAMHttpReader.cleanTempDir(1l);
                         }
                     }
 
@@ -222,8 +213,8 @@ public class HostedDataTest extends AbstractHeadlessTest {
                 failedGenomes.put(genome, e);
             }
         }
-        System.out.println("Attempted to load " + count + " genomes");
-        System.out.println(failedGenomes.size() + " of them failed");
+        errorWriter.println("Attempted to load " + count + " genomes");
+        errorWriter.println(failedGenomes.size() + " of them failed");
         for (Map.Entry<GenomeListItem, Exception> entry : failedGenomes.entrySet()) {
             GenomeListItem item = entry.getKey();
             System.out.println(String.format("Exception loading (%s\t%s\t%s): %s", item.getDisplayableName(),

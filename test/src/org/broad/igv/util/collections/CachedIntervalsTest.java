@@ -97,8 +97,8 @@ public class CachedIntervalsTest extends AbstractHeadlessTest {
                 postTrimEnd = alQueryEnd;
                 break;
             case SPAN:
-                alQueryStart = (int) frameList.get(0).getOrigin() - 200;
-                alQueryEnd = (int) frameList.get(1).getEnd() + 200;
+                alQueryStart = (int) frameList.get(0).getOrigin() - 100;
+                alQueryEnd = (int) frameList.get(1).getEnd() + 100;
                 postTrimStart = (int) frameList.get(0).getOrigin();
                 postTrimEnd = (int) frameList.get(1).getEnd();
                 break;
