@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 public class HostedDataTest extends AbstractHeadlessTest {
 
     @Rule
-    public TestRule testTimeout = new Timeout((int) 600e4);
+    public TestRule testTimeout = new Timeout((int) 1200e4);
 
     private PrintStream errorWriter = System.out;
 
