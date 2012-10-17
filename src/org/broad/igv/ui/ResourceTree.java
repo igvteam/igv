@@ -216,39 +216,42 @@ public class ResourceTree {
 
         ResourceLocator locator = new ResourceLocator(
                 getAttribute(xmlNode, SERVER_URL.getText()),
-                getAttribute(xmlNode, PATH.getText()));
-
-        String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
-        if (resourceType != null) {
-            locator.setType(resourceType);
-        }
-
-        String infoLink = getAttribute(xmlNode, HYPERLINK.getText());
-        if (infoLink == null) {
-            infoLink = getAttribute(xmlNode, INFOLINK.getText());
-        }
-        locator.setInfolink(infoLink);
-
-        String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
-        if (sampleId == null) {
-            // legacy option
-            sampleId = getAttribute(xmlNode, ID.getText());
-        }
-        locator.setSampleId(sampleId);
-        locator.setUrl(getAttribute(xmlNode, URL.getText()));
-        locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
-        locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
+                getAttribute(xmlNode, PATH.getText())
+        );
         locator.setName(name);
-        // Special element for alignment tracks
-        locator.setCoverage(getAttribute(xmlNode, COVERAGE.getText()));
 
-        String colorString = getAttribute(xmlNode, COLOR.getText());
-        if (colorString != null) {
-            try {
-                Color c = ColorUtilities.stringToColor(colorString);
-                locator.setColor(c);
-            } catch (Exception e) {
-                log.error("Error setting color: ", e);
+        if (xmlNode.getTagName().equalsIgnoreCase("Resource")) {
+
+            String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
+            locator.setType(resourceType);
+
+            String infoLink = getAttribute(xmlNode, HYPERLINK.getText());
+            if (infoLink == null) {
+                infoLink = getAttribute(xmlNode, INFOLINK.getText());
+            }
+            locator.setInfolink(infoLink);
+
+            String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
+            if (sampleId == null) {
+                // legacy option
+                sampleId = getAttribute(xmlNode, ID.getText());
+            }
+            locator.setSampleId(sampleId);
+            locator.setUrl(getAttribute(xmlNode, URL.getText()));
+            locator.setDescription(getAttribute(xmlNode, DESCRIPTION.getText()));
+            locator.setTrackLine(getAttribute(xmlNode, TRACK_LINE.getText()));
+            locator.setName(name);
+            // Special element for alignment tracks
+            locator.setCoverage(getAttribute(xmlNode, COVERAGE.getText()));
+
+            String colorString = getAttribute(xmlNode, COLOR.getText());
+            if (colorString != null) {
+                try {
+                    Color c = ColorUtilities.stringToColor(colorString);
+                    locator.setColor(c);
+                } catch (Exception e) {
+                    log.error("Error setting color: ", e);
+                }
             }
         }
 
@@ -276,7 +279,6 @@ public class ResourceTree {
 
         CheckableResource resource = new CheckableResource(name, false, locator);
         treeNode.setUserObject(resource);
-
 
         if (resourceTree != null) {
             resource.setEnabled(resourceTree.tree.isEnabled());
