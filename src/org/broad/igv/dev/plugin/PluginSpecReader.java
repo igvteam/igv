@@ -63,12 +63,12 @@ public class PluginSpecReader {
         return reader;
     }
 
-    public static boolean checkToolPathValid(String execPath) {
+    public static boolean isToolPathValid(String execPath) {
         execPath = FileUtils.findExecutableOnPath(execPath);
         File execFile = new File(execPath);
         boolean pathValid = execFile.isFile();
         if (pathValid && !execFile.canExecute()) {
-            log.debug(execPath + " exists but is not executable. ");
+            log.error(execPath + " exists but is not executable. ");
             pathValid = false;
         }
 

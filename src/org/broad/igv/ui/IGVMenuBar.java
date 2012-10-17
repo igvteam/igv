@@ -28,7 +28,6 @@ import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
-import org.broad.igv.track.AnalysisDialog;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -171,13 +170,13 @@ public class IGVMenuBar extends JMenuBar {
         });
         menuItems.add(exportData);
 
-        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
-        analysisDialog.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
-            }
-        });
+//        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
+//        analysisDialog.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
+//            }
+//        });
 
         //menuItems.add(analysisDialog);
         //analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
@@ -201,6 +200,8 @@ public class IGVMenuBar extends JMenuBar {
                         }
                     });
                 }
+                //Disable tool if we can't find the executable
+                toolMenu.setEnabled(PluginSpecReader.isToolPathValid(tool.getAttribute("path")));
                 menuItems.add(toolMenu);
             }
         }
