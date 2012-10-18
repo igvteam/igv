@@ -11,30 +11,23 @@
 
 package org.broad.igv.dev.plugin;
 
-import org.broad.tribble.Feature;
-
-import java.io.OutputStream;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Interface for creating a string from a feature.
+ * Interface common for writing Features out and in
  * User: jacob
- * Date: 2012-Aug-02
- *
- * @see PluginCodec
- * @see FeatureDecoder
+ * Date: 2012-Oct-18
  */
-public interface FeatureEncoder<T extends Feature> extends FeatureIO {
-
+interface FeatureIO {
 
     /**
-     * Write all of the {@code features} to {@code outputStream}
+     * It may be the case that the output is processed differently, depending on the input.
+     * We allow for that by providing the commands and arguments here. Implementations are not
+     * required to do anything with the input
      *
-     * @param outputStream
-     * @param features
-     * @return A map containing any attributes deemed necessary. This map will be provided
-     *         to the {@link FeatureDecoder}. It may be null
+     * @param commands    Command portions of the input, e.g. {"find", "."}
+     * @param argumentMap Arguments with their values. e.g. "-name", "myFile"
      */
-    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features);
+    void setInputs(List<String> commands, Map<Argument, Object> argumentMap);
 }

@@ -26,7 +26,7 @@ import java.util.Map;
  * @see PluginCodec
  * @see FeatureEncoder
  */
-public interface FeatureDecoder<T extends Feature> {
+public interface FeatureDecoder<T extends Feature> extends FeatureIO {
 
 
     /**
@@ -48,12 +48,4 @@ public interface FeatureDecoder<T extends Feature> {
      */
     void setAttributes(List<Map<String, Object>> attributes);
 
-    /**
-     * It may be the case that the output is processed differently, depending on the input.
-     * We allow for that by
-     *
-     * @param commands    Command portions of the input, e.g. {"find", "."}
-     * @param argumentMap Arguments with their values. e.g. "-name", "myFile"
-     */
-    void setInputs(List<String> commands, Map<Argument, Object> argumentMap);
 }

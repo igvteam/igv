@@ -18,6 +18,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,11 +53,16 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
 
                 //We do not require consistency of output
                 int tmpNumCols = encoder.getNumCols(line);
-                attributes.put("columns", tmpNumCols);
+                attributes.put("numCols", tmpNumCols);
             }
         }
         writer.flush();
         writer.close();
         return attributes;
+    }
+
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        lineFeatureEncoder.setInputs(commands, argumentMap);
     }
 }

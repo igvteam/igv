@@ -20,6 +20,7 @@ import org.broad.igv.sam.SamAlignment;
 
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,4 +65,8 @@ public class SamAlignmentEncoder implements FeatureEncoder<Alignment> {
         return SAMWriter.getSAMString(feature);
     }
 
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        //pass
+    }
 }

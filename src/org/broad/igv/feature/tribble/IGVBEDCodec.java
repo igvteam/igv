@@ -12,6 +12,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
+import org.broad.igv.dev.plugin.Argument;
 import org.broad.igv.dev.plugin.LineFeatureDecoder;
 import org.broad.igv.dev.plugin.LineFeatureEncoder;
 import org.broad.igv.feature.*;
@@ -23,6 +24,7 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 
@@ -383,6 +385,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         return null;
     }
 
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        //pass
+    }
 }
 
 

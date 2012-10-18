@@ -15,6 +15,8 @@ import org.apache.commons.lang.StringUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.tribble.Feature;
 
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -57,5 +59,14 @@ public class BEDGraphEncoder implements LineFeatureEncoder {
     @Override
     public String getHeader() {
         return "track type=bedGraph";
+    }
+
+    /**
+     *
+     *
+     */
+    @Override
+    public void setInputs(List<String> commands, Map<Argument, Object> argumentMap) {
+        //pass
     }
 }

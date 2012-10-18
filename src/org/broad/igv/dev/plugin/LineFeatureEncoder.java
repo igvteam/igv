@@ -17,7 +17,7 @@ import org.broad.tribble.Feature;
  * User: jacob
  * Date: 2012-Oct-01
  */
-public interface LineFeatureEncoder<T extends Feature> {
+public interface LineFeatureEncoder<T extends Feature> extends FeatureIO {
 
     /**
      * Create a single data line (excluding newline character)

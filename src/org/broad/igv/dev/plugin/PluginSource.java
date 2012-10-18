@@ -34,7 +34,7 @@ import java.util.*;
  * User: jacob
  * Date: 2012/05/01
  */
-public abstract class PluginSource<E extends Feature, D extends Feature> {
+abstract class PluginSource<E extends Feature, D extends Feature> {
 
     private static Logger log = Logger.getLogger(PluginSource.class);
 
@@ -222,6 +222,18 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
     }
 
     /**
+     * Create ncoding codec, and apply inputs
+     *
+     * @param argument
+     * @return
+     */
+    protected final FeatureEncoder<E> getEncodingCodec(Argument argument) {
+        FeatureEncoder<E> codec = instantiateEncodingCodec(argument);
+        codec.setInputs(Collections.unmodifiableList(commands), Collections.unmodifiableMap(arguments));
+        return codec;
+    }
+
+    /**
      * Get the encoding codec for this argument. Default
      * is IGVBEDCodec, if there was none specified.
      * <p/>
@@ -231,7 +243,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
      * @param argument
      * @return
      */
-    protected final FeatureEncoder<E> getEncodingCodec(Argument argument) {
+    private final FeatureEncoder<E> instantiateEncodingCodec(Argument argument) {
         String encodingCodec = argument.getEncodingCodec();
 
         if (encodingCodec == null) return new AsciiEncoder(new IGVBEDCodec());
@@ -240,33 +252,49 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
 
         try {
             ClassLoader loader = URLClassLoader.newInstance(
-                    libURLs,
-                    getClass().getClassLoader()
+                    libURLs, getClass().getClassLoader()
             );
             Class clazz = loader.loadClass(encodingCodec);
             Constructor constructor = clazz.getConstructor();
-            Object codec = constructor.newInstance();
-            if (!(codec instanceof FeatureEncoder) && codec instanceof LineFeatureEncoder) {
-                return new AsciiEncoder((LineFeatureEncoder<D>) codec);
+            Object ocodec = constructor.newInstance();
+            FeatureEncoder<E> codec;
+            if (!(ocodec instanceof FeatureEncoder) && ocodec instanceof LineFeatureEncoder) {
+                codec = new AsciiEncoder((LineFeatureEncoder<D>) ocodec);
+            } else {
+                codec = (FeatureEncoder<E>) ocodec;
             }
-            return (FeatureEncoder<E>) codec;
+            return codec;
+
         } catch (ClassNotFoundException e) {
-            log.error(e);
+            log.error("Could not find class " + encodingCodec, e);
             throw new IllegalArgumentException(e);
         } catch (Exception e) {
-            log.error(e);
+            log.error("Exception getting encoding codec", e);
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Create decoding codec and set inputs and attributes
+     *
+     * @return
+     */
     protected final FeatureDecoder<D> getDecodingCodec() {
-        FeatureDecoder<D> codec = getDecodingCodec(decodingCodec, decodingLibURLs);
-        codec.setInputs(commands, arguments);
+        FeatureDecoder<D> codec = instantiateDecodingCodec(decodingCodec, decodingLibURLs);
+        codec.setInputs(Collections.unmodifiableList(commands), Collections.unmodifiableMap(arguments));
         codec.setAttributes(Collections.unmodifiableList(attributes));
         return codec;
     }
 
-    protected final FeatureDecoder<D> getDecodingCodec(String decodingCodec, URL[] libURLs) {
+    /**
+     * Instantiate decodingCodec, using {@code libURLs} as classpath. Will throw exceptions
+     * if class cannot be instantiated
+     *
+     * @param decodingCodec
+     * @param libURLs
+     * @return
+     */
+    protected final FeatureDecoder<D> instantiateDecodingCodec(String decodingCodec, URL[] libURLs) {
         if (decodingCodec == null) {
             AsciiFeatureCodec<D> asciiCodec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
             if (asciiCodec == null) {
@@ -290,10 +318,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature> {
             return (FeatureDecoder<D>) codec;
 
         } catch (ClassNotFoundException e) {
-            log.error(e);
+            log.error("Could not find class " + decodingCodec, e);
             throw new IllegalArgumentException(e);
         } catch (Exception e) {
-            log.error(e);
+            log.error("Exception getting decoding codec", e);
             throw new RuntimeException(e);
         }
 
