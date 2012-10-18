@@ -13,6 +13,7 @@ package org.broad.igv.dev.plugin;
 
 import org.broad.tribble.Feature;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,5 +37,5 @@ public interface FeatureEncoder<T extends Feature> extends FeatureIO {
      * @return A map containing any attributes deemed necessary. This map will be provided
      *         to the {@link FeatureDecoder}. It may be null
      */
-    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features);
+    Map<String, Object> encodeAll(OutputStream outputStream, Iterator<T> features) throws IOException;
 }

@@ -85,7 +85,8 @@ abstract class PluginSource<E extends Feature, D extends Feature> {
      * @param argument
      * @return
      */
-    protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument) {
+    protected final Map<String, Object> writeFeaturesToStream(OutputStream outputStream, Iterator<E> features, Argument argument)
+            throws IOException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
 
         Map<String, Object> attributes = null;
