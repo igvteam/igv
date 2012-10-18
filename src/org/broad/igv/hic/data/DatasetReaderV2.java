@@ -61,6 +61,7 @@ public class DatasetReaderV2 implements DatasetReader {
             // Genome id (currently not used)
             String genomeId = dis.readString();
 
+
             // Read chromosome dictionary
             int nchrs = dis.readInt();
             Chromosome[] chromosomes = new Chromosome[nchrs];
@@ -97,15 +98,11 @@ public class DatasetReaderV2 implements DatasetReader {
             // Read attribute dictionary.  Can contain arbitrary # of attributes as key-value pairs, including version
 
             int nAttributes = dis.readInt();
-            String genome = null;
             for (int i = 0; i < nAttributes; i++) {
                 String key = dis.readString();
                 String value = dis.readString();
             }
-            if (genome == null) {
-                genome = inferGenome(chromosomes);
-            }
-            System.out.println("genome = " + genome);
+
 
             readMasterIndex(masterIndexPos, version);
 
@@ -180,7 +177,14 @@ public class DatasetReaderV2 implements DatasetReader {
             String key = dis.readString();
             int nValues = dis.readInt();
             for(int j=0; j<nValues; j++) {
-                float value = dis.readFloat();
+                double value = dis.readDouble();
+            }
+
+            int nNormalizationFactors = dis.readInt();
+            for(int j=0; j<nNormalizationFactors; j++) {
+                int chrIdx = dis.readInt();
+                double normFactor = dis.readDouble();
+                System.out.println(normFactor);
             }
         }
 
@@ -203,13 +207,15 @@ public class DatasetReaderV2 implements DatasetReader {
 
         int c1 = dis.readInt();
         int c2 = dis.readInt();
-        int nZooms = dis.readInt();
-        // dataset.setNumberZooms(nZooms);
         Chromosome chr1 = dataset.getChromosomes()[c1];
         Chromosome chr2 = dataset.getChromosomes()[c2];
 
-        MatrixZoomData[] zd = new MatrixZoomData[nZooms];
-        for (int i = 0; i < nZooms; i++) {
+        // # of resolution levels (bp and frags)
+        int nResolutions = dis.readInt();
+        // dataset.setNumberZooms(nZooms);
+
+        MatrixZoomData[] zd = new MatrixZoomData[nResolutions];
+        for (int i = 0; i < nResolutions; i++) {
             zd[i] = new MatrixZoomData(chr1, chr2, this, dis);
         }
 

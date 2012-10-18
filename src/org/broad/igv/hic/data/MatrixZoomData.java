@@ -78,10 +78,20 @@ public class MatrixZoomData {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
-        this.zoom = dis.readInt();
 
-        if (reader.getVersion() >= 1) {
-            dis.readInt();              // sum but we're not using this anymore
+        // THIS INSTANCEOF SWITCH IS TRULY AWFUL -- but temporary until all old files are converted
+        if (reader instanceof DatasetReaderV1) {
+            this.zoom = dis.readInt();
+            if (reader.getVersion() >= 1) {
+                dis.readInt();              // sum but we're not using this anymore
+            }
+        } else {
+            String unit = dis.readString();
+            this.zoom = dis.readInt();
+            float sumCounts = dis.readFloat();
+            float avgCounts = dis.readFloat();
+            float stdDev = dis.readFloat();
+            float percent95 = dis.readFloat();
         }
 
         fileBinSize = dis.readInt();
@@ -97,7 +107,7 @@ public class MatrixZoomData {
             int nBins = blockBinCount * blockColumnCount;
             binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
             HiCFragmentAxis.Bin[] bins = new HiCFragmentAxis.Bin[nBins];
-            for(int i=0; i<nBins; i++) {
+            for (int i = 0; i < nBins; i++) {
                 int gStart = (int) (binSize * i);
                 int gEnd = (int) (binSize * (i + 1));
                 bins[i] = new HiCFragmentAxis.Bin(gStart, (gEnd - gStart));
@@ -108,7 +118,6 @@ public class MatrixZoomData {
             yGridAxis = new HiCFragmentAxis(bins);
 
         }
-
 
 
         int nBlocks = dis.readInt();

@@ -369,7 +369,15 @@ public class Preprocessor {
 
             ev.computeDensity();
 
-            System.out.println(key + "  Norm factors");
+            // Key (identifier) <unit>_<resolution>
+            buffer.putNullTerminatedString(key);
+
+            // The density values
+            double[] expectedValues = ev.getDensityAvg();
+            buffer.putInt(expectedValues.length);
+            for (int i = 0; i < expectedValues.length; i++) {
+                buffer.putDouble(expectedValues[i]);
+            }
 
             // Map of chromosome index -> normalization factor
             Map<Integer, Double> normalizationFactors = ev.getNormalizationFactors();
@@ -380,13 +388,6 @@ public class Preprocessor {
                 System.out.println(normFactor.getKey() + "  " + normFactor.getValue());
             }
 
-            // The density values
-            double[] expectedValues = ev.getDensityAvg();
-            buffer.putNullTerminatedString(key);
-            buffer.putInt(expectedValues.length);
-            for (int i = 0; i < expectedValues.length; i++) {
-                buffer.putDouble(expectedValues[i]);
-            }
         }
 
         byte[] bytes = buffer.getBytes();

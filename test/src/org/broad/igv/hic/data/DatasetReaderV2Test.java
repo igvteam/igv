@@ -1,5 +1,7 @@
 package org.broad.igv.hic.data;
 
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.ChromosomeImpl;
 import org.junit.Test;
 
 /**
@@ -15,6 +17,17 @@ public class DatasetReaderV2Test {
         DatasetReaderV2 reader = new DatasetReaderV2(path);
 
         Dataset ds = reader.read();
+
+        Chromosome chr1 = new ChromosomeImpl(14, "14", 0);
+        Chromosome chr2 = chr1;
+
+        Matrix matrix = ds.getMatrix(chr1, chr2);
+
+        MatrixZoomData mzd = matrix.getObservedMatrix(0);
+
+        Block b = mzd.getBlock(0) ;
+
+        b.getContactRecords();
 
     }
 }
