@@ -71,14 +71,16 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
 
         Map<ResourceLocator, Exception> failedFiles = new LinkedHashMap<ResourceLocator, Exception>(10);
+        Set<ResourceLocator> loadedResources = new HashSet<ResourceLocator>(1000);
         LinkedHashSet<String> nodeURLs;
-        List<ResourceTree.CheckableResource> checkableResourceList;
-        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("HostedDataTest");
 
         int counter = 0;
         //Large BAM files have have index files ~10 Mb, don't want to use
         //too much space on disk at once
         int clearInterval = 50;
+
+        DefaultMutableTreeNode maxNode = null;
+        int maxChildCount = -1;
 
         for (GenomeListItem genomeItem : serverSideGenomeList) {
             //Do this within the loop, both to make sure we get a fresh genome
@@ -109,7 +111,8 @@ public class HostedDataTest extends AbstractHeadlessTest {
 
                 try {
                     Document xmlDocument = LoadFromServerAction.createMasterDocument(Arrays.asList(nodeURL));
-                    ResourceTree.getInstance().buildLocatorTree(treeNode, xmlDocument.getDocumentElement(),
+                    DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("HostedDataTest");
+                    ResourceTree.buildLocatorTree(treeNode, xmlDocument.getDocumentElement(),
                             Collections.<ResourceLocator>emptySet(), null);
 
                     Enumeration enumeration = treeNode.depthFirstEnumeration();
@@ -117,15 +120,33 @@ public class HostedDataTest extends AbstractHeadlessTest {
                     while (enumeration.hasMoreElements()) {
                         Object nextEl = enumeration.nextElement();
                         DefaultMutableTreeNode node = (DefaultMutableTreeNode) nextEl;
+
                         Object userObject = node.getUserObject();
+                        //Get resource locator from tree
+                        //don't load resources we've already tried (same file can be listed multiple times)
                         ResourceTree.CheckableResource checkableResource;
+                        ResourceLocator locator;
                         if (userObject instanceof ResourceTree.CheckableResource) {
                             checkableResource = (ResourceTree.CheckableResource) userObject;
+                            locator = checkableResource.getResourceLocator();
+                            if (locator.getPath() == null || loadedResources.contains(locator)) {
+                                continue;
+                            } else {
+                                loadedResources.add(locator);
+                            }
                         } else {
                             continue;
                         }
 
-                        ResourceLocator locator = checkableResource.getResourceLocator();
+//                        int childCount = node.getChildCount();
+//                        if(childCount > 0){
+//                            System.out.println(node.getUserObject()  + " Children: " + childCount);
+//                            if(childCount > maxChildCount){
+//                                maxChildCount = childCount;
+//                                maxNode = node;
+//                            }
+//                        }
+
                         FeatureDB.clearFeatures();
 
                         try {
@@ -153,6 +174,8 @@ public class HostedDataTest extends AbstractHeadlessTest {
             }
 
         }
+
+        //System.out.println("Max Node: " + maxNode + ". Children: " + maxChildCount);
 
         for (Map.Entry<ResourceLocator, Exception> entry : failedFiles.entrySet()) {
             ResourceLocator item = entry.getKey();
