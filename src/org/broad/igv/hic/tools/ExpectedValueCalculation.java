@@ -4,7 +4,9 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.tribble.util.LittleEndianInputStream;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -148,10 +150,10 @@ public class ExpectedValueCalculation {
             chromosomeCounts.put(chrIdx, count + 1);
         }
         dist = Math.abs(pos1 - pos2);
+       // This is a bug!  The distance was already binned before this call.
+       // int bin = dist / gridSize;
 
-        int bin = dist / gridSize;
-
-        actualDistances[bin]++;
+        actualDistances[dist]++;
 
     }
 
@@ -187,107 +189,68 @@ public class ExpectedValueCalculation {
 
         }
 
-
         densityAvg = new double[maxNumBins];
-        // Smoothing.  Shouldn't need it until things get sparse near the end, so start out by setting true values
-        double numSum = actualDistances[0];
-        double denSum = possibleDistances[0];
-        int i=0;
-        while (numSum >= 400) {
-            densityAvg[i] = numSum/denSum;
-            i++;
-            numSum = actualDistances[i];
-            denSum = possibleDistances[i];
-        }
-        int bound1 = i;
-        int bound2 = i;
-        // Once counts fall too low, find first window
-        while (numSum < 400) {
-            bound1 = i-1;
-            bound2 = i+1;
-            // bounds contain whole array, break.
-            if (bound1 < 0 && bound2 >= maxNumBins) break;
-            // expand window back, can't go forward anymore
-            if (bound2 >= maxNumBins) {
-                numSum += actualDistances[bound1];
-                denSum += possibleDistances[bound1];
-            }
-            // expand window forward, can't go back anymore
-            else if (bound1 < 0) {
-                numSum += actualDistances[bound2];
-                denSum += possibleDistances[bound2];
-            }
-            // below is the normal case, expand window on each side
-            else {
-                numSum += actualDistances[bound1]+actualDistances[bound2];
-                denSum += possibleDistances[bound1]+possibleDistances[bound2];
-            }
-        }
-        densityAvg[i] = numSum/denSum;
-        if (bound1 < 0) bound1 = 0;
-        if (bound2 >= maxNumBins) bound2 = maxNumBins - 1;
-        if (bound2+2 < maxNumBins) {
-            numSum += actualDistances[bound2+1] + actualDistances[bound2+2];
-            denSum += possibleDistances[bound2+1] + possibleDistances[bound2+2];
-            bound2 += 2;
-        }
-        else if (bound2+1 < maxNumBins) {
-            numSum += actualDistances[bound2+1];
-            denSum += possibleDistances[bound2+1];
-            bound2 += 1;
-        }
-        // Windows will always contain at least 400 counts from now on
-        for (i=i+1; i<maxNumBins; i++) {
-             if (bound2-bound1 > 0) {
-                while (numSum-actualDistances[bound1]-actualDistances[bound2]>=400) {
-                    numSum=numSum-actualDistances[bound1]-actualDistances[bound2];
-                    denSum=denSum-possibleDistances[bound1]-possibleDistances[bound2];
-                    bound1=bound1+1;
-                    bound2=bound2-1;
+        // Smoothing.  Keep pointers to window size.  When read counts drops below 400 (= 5% shot noise), smooth
+
+        double numSum=actualDistances[0];
+        double denSum=possibleDistances[0];
+        int bound1=0;
+        int bound2=0;
+        for (int ii=0; ii<maxNumBins; ii++) {
+            if (numSum < 400) {
+                while (numSum < 400 && bound2 < maxNumBins) {
+                    // increase window size until window is big enough.  This code will only execute once;
+                    // after this, the window will always contain at least 400 reads.
+                    bound2++;
+                    numSum += actualDistances[bound2];
+                    denSum += possibleDistances[bound2];
                 }
-             }
-            densityAvg[i] = numSum/denSum;
-            if (bound2+2 < maxNumBins) {
+            }
+            else if (numSum >= 400 && bound2-bound1 > 0) {
+                while (numSum - actualDistances[bound1] - actualDistances[bound2] >= 400) {
+                    numSum = numSum - actualDistances[bound1] - actualDistances[bound2];
+                    denSum = denSum - possibleDistances[bound1] - possibleDistances[bound2];
+                    bound1++;
+                    bound2--;
+                }
+            }
+            densityAvg[ii] = numSum/denSum;
+            // Default case - bump the window size up by 2 to keep it centered for the next iteration
+            if (bound2 + 2 < maxNumBins) {
                 numSum += actualDistances[bound2+1] + actualDistances[bound2+2];
                 denSum += possibleDistances[bound2+1] + possibleDistances[bound2+2];
                 bound2 += 2;
             }
-            else if (bound2+1 < maxNumBins) {
+            else if (bound2 + 1 < maxNumBins) {
                 numSum += actualDistances[bound2+1];
                 denSum += possibleDistances[bound2+1];
-                bound2 += 1;
+                bound2++;
             }
-        }
-
-        for (int kk=0; kk<maxNumBins; kk++){
-            System.out.println(densityAvg[kk]);
+            // Otherwise, bound2 is at limit already
         }
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
+
         for (Chromosome chr : chromosomes.values()) {
 
             if (chr == null || !chromosomeCounts.containsKey(chr.getIndex())) {
                 continue;
             }
-            int nGrids;
-            if (gridSize == 1) {
-                nGrids = fragmentCalculation.getNumberFragments(chr.getName());
-            } else {
-                nGrids = chr.getLength() / gridSize + 1;
-            }
+            int len = isFrag ? fragmentCalculation.getNumberFragments(chr.getName()) : chr.getLength();
+            int nChrBins = len / gridSize;
 
 
             double expectedCount = 0;
-            // ARGH THIS IS WRONG
-            for (int n = 0; n < maxNumBins; n++) {
-                final double v = densityAvg[n];
-                if (Double.isNaN(v)) {
-                    System.err.println("Density was NaN, this shouldn't happen");
-                } else {
+            for (int n = 0; n < nChrBins; n++) {
+                if (n < maxNumBins) {
+                    final double v = densityAvg[n];
                     // this is the sum of the diagonal for this particular chromosome.
                     // the value in each bin is multiplied by the length of the diagonal to get expected count
-                    //if (nGrids > n)
-                        expectedCount += (nGrids - n) * v;
+                    // the total at the end should be the sum of the expected matrix for this chromosome
+                    // i.e., for each chromosome, we calculate sum (genome-wide actual)/(genome-wide possible) == v
+                    // then multiply it by the chromosome-wide possible == nChrBins - n.
+                    expectedCount +=  (nChrBins - n) * v;
+
                 }
             }
 
