@@ -189,35 +189,78 @@ public class ExpectedValueCalculation {
 
 
         densityAvg = new double[maxNumBins];
-        for (int i = 0; i < maxNumBins; i++) {
-            if (actualDistances[i] < 400) {
-                double tmp = actualDistances[i];
-                double poss = 0;
-                int window = 0;
-                while (tmp < 400) {
-                    window++;
-                    tmp = 0;
-                    int i0 = Math.max(0, i-window);
-                    int i1 = Math.min(actualDistances.length-1, i+window);
-                    for (int j = i0; j <= i1; j++) {
-                        tmp += actualDistances[j];
-                    }
-                    if(i0 == 0 && i1 == actualDistances.length-1) {
-                        break; // window spans entire data array (pathological case)
-                    }
-                }
-                tmp = 0;
-                int i0 = Math.max(0, i-window);
-                int i1 = Math.min(actualDistances.length-1, i+window);
-                for (int j =i0; j<= i1; j++) {
-                    tmp += actualDistances[j];
-                    poss += possibleDistances[j];
-                }
-                densityAvg[i] = tmp / poss;
-            } else {
-                densityAvg[i] = actualDistances[i] / possibleDistances[i];
+        // Smoothing.  Shouldn't need it until things get sparse near the end, so start out by setting true values
+        double numSum = actualDistances[0];
+        double denSum = possibleDistances[0];
+        int i=0;
+        while (numSum >= 400) {
+            densityAvg[i] = numSum/denSum;
+            i++;
+            numSum = actualDistances[i];
+            denSum = possibleDistances[i];
+        }
+        int bound1 = i;
+        int bound2 = i;
+        // Once counts fall too low, find first window
+        while (numSum < 400) {
+            bound1 = i-1;
+            bound2 = i+1;
+            // bounds contain whole array, break.
+            if (bound1 < 0 && bound2 >= maxNumBins) break;
+            // expand window back, can't go forward anymore
+            if (bound2 >= maxNumBins) {
+                numSum += actualDistances[bound1];
+                denSum += possibleDistances[bound1];
             }
+            // expand window forward, can't go back anymore
+            else if (bound1 < 0) {
+                numSum += actualDistances[bound2];
+                denSum += possibleDistances[bound2];
+            }
+            // below is the normal case, expand window on each side
+            else {
+                numSum += actualDistances[bound1]+actualDistances[bound2];
+                denSum += possibleDistances[bound1]+possibleDistances[bound2];
+            }
+        }
+        densityAvg[i] = numSum/denSum;
+        if (bound1 < 0) bound1 = 0;
+        if (bound2 >= maxNumBins) bound2 = maxNumBins - 1;
+        if (bound2+2 < maxNumBins) {
+            numSum += actualDistances[bound2+1] + actualDistances[bound2+2];
+            denSum += possibleDistances[bound2+1] + possibleDistances[bound2+2];
+            bound2 += 2;
+        }
+        else if (bound2+1 < maxNumBins) {
+            numSum += actualDistances[bound2+1];
+            denSum += possibleDistances[bound2+1];
+            bound2 += 1;
+        }
+        // Windows will always contain at least 400 counts from now on
+        for (i=i+1; i<maxNumBins; i++) {
+             if (bound2-bound1 > 0) {
+                while (numSum-actualDistances[bound1]-actualDistances[bound2]>=400) {
+                    numSum=numSum-actualDistances[bound1]-actualDistances[bound2];
+                    denSum=denSum-possibleDistances[bound1]-possibleDistances[bound2];
+                    bound1=bound1+1;
+                    bound2=bound2-1;
+                }
+             }
+            densityAvg[i] = numSum/denSum;
+            if (bound2+2 < maxNumBins) {
+                numSum += actualDistances[bound2+1] + actualDistances[bound2+2];
+                denSum += possibleDistances[bound2+1] + possibleDistances[bound2+2];
+                bound2 += 2;
+            }
+            else if (bound2+1 < maxNumBins) {
+                numSum += actualDistances[bound2+1];
+                denSum += possibleDistances[bound2+1];
+                bound2 += 1;
+            }
+        }
 
+        for (int kk=0; kk<maxNumBins; kk++){
+            System.out.println(densityAvg[kk]);
         }
 
         // Compute fudge factors for each chromosome so the total "expected" count for that chromosome == the observed
