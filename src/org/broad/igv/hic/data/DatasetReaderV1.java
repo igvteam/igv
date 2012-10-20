@@ -3,7 +3,6 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
-import org.broad.igv.hic.tools.ExpectedValueCalculation;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -13,6 +12,7 @@ import org.broad.tribble.util.SeekableStream;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -80,7 +80,7 @@ public class DatasetReaderV1 implements DatasetReader {
             }
             System.out.println("genome = " + genome);
 
-             readMasterIndex(masterIndexPos, version);
+             readFooter(masterIndexPos, version);
 
 
         } catch (IOException e) {
@@ -128,7 +128,7 @@ public class DatasetReaderV1 implements DatasetReader {
         return version;
     }
 
-    private Map<String, Preprocessor.IndexEntry> readMasterIndex(long position, int version) throws IOException {
+    private Map<String, Preprocessor.IndexEntry> readFooter(long position, int version) throws IOException {
         stream.seek(position);
         byte[] buffer = new byte[4];
         stream.readFully(buffer);
@@ -230,11 +230,42 @@ public class DatasetReaderV1 implements DatasetReader {
 
         int nZooms = les.readInt();
         Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
+
         // TODO -- Its assumed densities are in number order and indices match resolutions.  This is fragile,
         // encode resolutions in the next round
         for (int i = 0; i < nZooms; i++) {
-            ExpectedValueCalculation calc = new ExpectedValueCalculation(les);
-            densityMap.put(i, new DensityFunction(calc));
+
+            int gridSize = les.readInt();
+
+            // By convention a gridSize == 1 => fragment  units
+            String unit = (gridSize == 1 ? "FRAG" : "BP");
+
+            int nChromosomes = les.readInt();
+
+            // Chromosome indexes
+            Integer[] chrIndexes = new Integer[nChromosomes];
+            for (int j = 0; j < nChromosomes; j++) {
+                chrIndexes[j] = les.readInt();
+            }
+
+            // Normalization factors
+            Map<Integer, Double>normalizationFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
+            for (int j = 0; j < nChromosomes; j++) {
+                Integer chrIdx = les.readInt();
+                double normFactor = les.readDouble();
+                normalizationFactors.put(chrIdx, normFactor);
+            }
+
+            // Densities
+            int nDensities = les.readInt();
+            double [] densityAvg = new double[nDensities];
+            for (int j = 0; j < nDensities; j++) {
+                densityAvg[j] = les.readDouble();
+
+            }
+
+            Map<Integer, Double> normFactors = null;  // These were really messed up for V1 datasets
+            densityMap.put(i, new DensityFunction(unit, gridSize, densityAvg, normFactors));
         }
 
         return densityMap;

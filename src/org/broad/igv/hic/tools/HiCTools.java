@@ -461,7 +461,7 @@ public class HiCTools {
         Dataset dataset = (new DatasetReaderV1(file)).read();
 
         // Load the expected density function, if it exists.
-        Map<Integer, DensityFunction> zoomToDensityMap = null;
+        //Map<Integer, DensityFunction> zoomToDensityMap = null;
 
         if (dataset.getVersion() <= 1) {
             String densityFile = file + ".densities";
@@ -470,7 +470,7 @@ public class HiCTools {
                 try {
                     is = ParsingUtils.openInputStream(densityFile);
                     zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
-
+                    dataset.setZoomToDensity();
                 } finally {
                     if (is != null) is.close();
                 }
@@ -479,9 +479,8 @@ public class HiCTools {
                 System.exit(-1);
             }
 
-        } else {
-            zoomToDensityMap = dataset.getZoomToDensity();
         }
+
         Chromosome[] tmp = dataset.getChromosomes();
 
         Map<String, Chromosome> chromosomeMap = new HashMap<String, Chromosome>();
@@ -509,7 +508,7 @@ public class HiCTools {
 
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr), chromosomeMap.get(chr));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
-        final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
+        final DensityFunction df = dataset.getDensityFunction(zd.getZoom()); // zoomToDensityMap.get(zd.getZoom());
         double[] eigenvector = zd.computeEigenvector(df, 0);
         for (double ev : eigenvector)
             System.out.print(ev + " ");

@@ -102,18 +102,8 @@ public class ExpectedValueCalculation {
     }
 
 
-    /**
-     * Read a previously calculated density calculation from an input stream.
-     *
-     * @param les Stream to read from
-     */
-    public ExpectedValueCalculation(LittleEndianInputStream les) {
-        try {
-            read(les);
-        } catch (IOException e) {
-            System.err.println("Error reading density file");
-            e.printStackTrace();
-        }
+    public int getGridSize() {
+        return gridSize;
     }
 
     /**
@@ -276,41 +266,6 @@ public class ExpectedValueCalculation {
      */
     public double[] getDensityAvg() {
         return densityAvg;
-    }
-
-
-
-    /**
-     * Read the contents of a previously saved calculation.
-     *
-     * @param is Stream to read
-     * @throws IOException If error while reading stream
-     */
-    public void read(LittleEndianInputStream is) throws IOException {
-        gridSize = is.readInt();
-        int nChromosomes = is.readInt();
-
-        // Chromosome indexes
-        Integer[] chrIndexes = new Integer[nChromosomes];
-        for (int i = 0; i < nChromosomes; i++) {
-            chrIndexes[i] = is.readInt();
-        }
-
-        // Normalization factors
-        normalizationFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
-        for (int i = 0; i < nChromosomes; i++) {
-            Integer chrIdx = is.readInt();
-            double normFactor = is.readDouble();
-            normalizationFactors.put(chrIdx, normFactor);
-        }
-
-        // Densities
-        int nDensities = is.readInt();
-        densityAvg = new double[nDensities];
-        for (int i = 0; i < nDensities; i++) {
-            densityAvg[i] = is.readDouble();
-
-        }
     }
 
 }

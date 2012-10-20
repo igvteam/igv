@@ -3,6 +3,7 @@ package org.broad.igv.hic.data;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.tools.ExpectedValueCalculation;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -14,32 +15,35 @@ import java.util.Map;
  */
 public class DensityFunction {
 
-    private ExpectedValueCalculation densityCalculation;
+    int binSize;
 
-    /**
-     * Constructor sets the density calculation.
-     *
-     * @param calculation Density calculation, containing distance expectation and coverage normalization
-     */
-    public DensityFunction(ExpectedValueCalculation calculation) {
-        this.densityCalculation = calculation;
-    }
+    String unit;
 
-    public void setChromosomes(Chromosome[] chromosomes) {
-        densityCalculation.setChromosomes(chromosomes);
+    public Map<Integer, Double> normFactors;
+
+    double[] density;
+
+    public DensityFunction(String unit, int binSize, double[] density, Map<Integer, Double> normFactors) {
+        this.unit = unit;
+        this.binSize = binSize;
+        this.normFactors = normFactors;
+        this.density = density;
     }
 
     /**
      * Gets the expected value, distance and coverage normalized
-     * @param chrIdx Chromosome index
-     * @param distance Distance from diagonal
-     * @return  Expected value, distance and coverage normalized
+     *
+     * @param chrIdx   Chromosome index
+     * @param distance Distance from diagonal in bins
+     * @return Expected value, distance and coverage normalized
      */
     public double getDensity(int chrIdx, int distance) {
-       Map<Integer, Double> normFactors = densityCalculation.getNormalizationFactors();
-       double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
-       normFactor = 1; // change this in the future but right now these are really messed up.
-       double density[] = densityCalculation.getDensityAvg();
+
+        double normFactor = 1.0;
+        if (normFactors != null && normFactors.containsKey(chrIdx)) {
+            normFactor = normFactors.get(chrIdx);
+        }
+
         if (distance >= density.length) {
 
             return density[density.length - 1] / normFactor;

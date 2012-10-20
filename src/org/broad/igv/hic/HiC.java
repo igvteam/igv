@@ -19,7 +19,6 @@ public class HiC {
     MainWindow.DisplayOption displayOption;
     Dataset dataset;
     private Chromosome[] chromosomes;
-    Map<Integer, DensityFunction> zoomToDensityMap = null;
 
     public Context xContext;
     Context yContext;
@@ -57,13 +56,8 @@ public class HiC {
     }
 
 
-    public void setZoomToDensityMap(Map<Integer, DensityFunction> zoomToDensityMap) {
-        this.zoomToDensityMap = zoomToDensityMap;
-    }
-
-
     public Map<Integer, DensityFunction> getZoomToDensityMap() {
-        return zoomToDensityMap;
+        return dataset.getZoomToDensity();
     }
 
     /**
@@ -72,7 +66,10 @@ public class HiC {
      * @return
      */
     public DensityFunction getDensityFunction() {
-        return zd == null || zoomToDensityMap == null ? null : zoomToDensityMap.get(zd.getZoom());
+
+        if (zd == null) return null;
+
+        return getDensityFunction(zd.getZoom());
     }
 
     /**
@@ -82,7 +79,8 @@ public class HiC {
      * @return density function, or null if expected densities are not available
      */
     public DensityFunction getDensityFunction(int zoom) {
-        return zoomToDensityMap == null ? null : zoomToDensityMap.get(zoom);
+
+        return dataset.getZoomToDensity().get(zoom);
     }
 
 
@@ -174,8 +172,6 @@ public class HiC {
 
     /**
      * Zoom to a specific rectangle.  Triggered by the alt-drag action in the heatmap panel.
-     *
-     *
      */
     public void zoomTo(final int xBP0, final int yBP0, final int xBP1, int yBP1, double genomicScale) {
 
@@ -200,7 +196,6 @@ public class HiC {
         final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
         final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
         final double scaleFactor = Math.max(1, Math.min(xScale, yScale));
-
 
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {

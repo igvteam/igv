@@ -22,6 +22,12 @@ public class Dataset {
 
     private DatasetReader reader;
     private Map<Integer, DensityFunction> df;
+    private String genomeId;
+
+    private int[] bpBinSizes;
+    private int[] fragBinSizes;
+
+
 
     public Dataset(DatasetReader reader) {
         this.reader = reader;
@@ -62,16 +68,17 @@ public class Dataset {
         return Preprocessor.bpBinSizes[index];
     }
 
+
+    public DensityFunction getDensityFunction(int zoom) {
+        return df == null ? null : df.get(zoom);
+    }
+
     public Map<Integer, DensityFunction> getZoomToDensity() {
         return df;
     }
 
     public void setZoomToDensity(Map<Integer, DensityFunction> df) {
         this.df = df;
-        for (Map.Entry<Integer, DensityFunction> entry : df.entrySet())
-        {
-            entry.getValue().setChromosomes(chromosomes);
-        }
     }
 
     public Chromosome[] getChromosomes() {
@@ -85,4 +92,17 @@ public class Dataset {
     public int getVersion() {
         return reader.getVersion();
     }
+
+    public void setGenomeId(String genomeId) {
+        this.genomeId = genomeId;
+    }
+
+    public void setBpBinSizes(int[] bpBinSizes) {
+        this.bpBinSizes = bpBinSizes;
+    }
+
+    public void setFragBinSizes(int[] fragBinSizes) {
+        this.fragBinSizes = fragBinSizes;
+    }
+
 }

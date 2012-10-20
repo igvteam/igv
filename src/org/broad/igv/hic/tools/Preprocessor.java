@@ -369,8 +369,11 @@ public class Preprocessor {
 
             ev.computeDensity();
 
-            // Key (identifier) <unit>_<resolution>
-            buffer.putNullTerminatedString(key);
+            int binSize = ev.getGridSize();
+            String unit = ev.isFrag ? "FRAG" : "BP";
+
+            buffer.putNullTerminatedString(unit);
+            buffer.putInt(binSize);
 
             // The density values
             double[] expectedValues = ev.getDensityAvg();

@@ -60,6 +60,7 @@ public class DatasetReaderV2 implements DatasetReader {
 
             // Genome id (currently not used)
             String genomeId = dis.readString();
+            dataset.setGenomeId(genomeId);
 
 
             // Read chromosome dictionary
@@ -73,14 +74,18 @@ public class DatasetReaderV2 implements DatasetReader {
             dataset.setChromosomes(chromosomes);
 
             int nBpResolutions = dis.readInt();
+            int [] bpBinSizes = new int[nBpResolutions];
             for(int i=0; i<nBpResolutions; i++) {
-                int binSize = dis.readInt();
+                bpBinSizes[i] = dis.readInt();
             }
+            dataset.setBpBinSizes(bpBinSizes);
 
             int nFragResolutions = dis.readInt();
+            int [] fragBinSizes = new int[nFragResolutions];
             for(int i=0; i<nFragResolutions; i++) {
-                int binSize = dis.readInt();
+                fragBinSizes[i] = dis.readInt();
             }
+            dataset.setFragBinSizes(fragBinSizes);
 
             if(nFragResolutions > 0) {
                 nchrs = dis.readInt();   // Not really neccessary
@@ -116,37 +121,6 @@ public class DatasetReaderV2 implements DatasetReader {
 
     }
 
-    /**
-     * Infer a genome id by examining chromsome sizes.  This method provided for older hic files that do not have
-     * a genome id recorded.
-     *
-     * @param chromosomes
-     * @return
-     */
-    private String inferGenome(Chromosome[] chromosomes) {
-        // Initial implementation -- base on chr 1 size
-        int len = -1;
-        for (Chromosome chr : chromosomes) {
-            if (chr.getName().equals("1") || chr.getName().equals("chr1")) {
-                len = chr.getLength();
-            } else if (chr.getName().equals("23011544")) {
-                return "dmel";
-            }
-        }
-
-        switch (len) {
-            case 249250621:
-                return "hg19";   //or b37
-            case 247249719:
-                return "hg18";
-            case 197195432:
-                return "mm9";
-            default:
-                return null;
-        }
-
-    }
-
     @Override
     public int getVersion() {
         return version;
@@ -174,7 +148,8 @@ public class DatasetReaderV2 implements DatasetReader {
         // Expected values
         int nExpectedValues = dis.readInt();
         for(int i=0; i<nExpectedValues; i++) {
-            String key = dis.readString();
+            int binSize = dis.readInt();
+            String unit = dis.readString();
             int nValues = dis.readInt();
             for(int j=0; j<nValues; j++) {
                 double value = dis.readDouble();
@@ -258,26 +233,5 @@ public class DatasetReaderV2 implements DatasetReader {
 
 
 
-    /**
-     * Return a map of zoom level -> DensityFunction
-     *
-     * @param les
-     * @return
-     * @throws IOException
-     */
-    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
-
-        int nZooms = les.readInt();
-        Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
-        // TODO -- Its assumed densities are in number order and indices match resolutions.  This is fragile,
-        // encode resolutions in the next round
-        for (int i = 0; i < nZooms; i++) {
-            ExpectedValueCalculation calc = new ExpectedValueCalculation(les);
-            densityMap.put(i, new DensityFunction(calc));
-        }
-
-        return densityMap;
-
-    }
 
 }

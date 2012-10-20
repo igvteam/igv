@@ -181,11 +181,6 @@ public class MainWindow extends JFrame {
             chrBox1.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(hic.getChromosomes()));
 
-
-            // Load the expected density function, if it exists.
-            Map<Integer, DensityFunction> zoomToDensityMap = null;
-
-            zoomToDensityMap = hic.dataset.getZoomToDensity();
             displayOptionComboBox.setModel(new DefaultComboBoxModel(new DisplayOption[]{
                     DisplayOption.OBSERVED,
                     DisplayOption.OE,
@@ -195,7 +190,6 @@ public class MainWindow extends JFrame {
             setTitle(file);
             hic.xContext = null;
             hic.yContext = null;
-            hic.setZoomToDensityMap(zoomToDensityMap);
             refreshChromosomes();
         } else {
             // error -- unknown file type
