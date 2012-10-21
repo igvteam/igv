@@ -56,10 +56,6 @@ public class HiC {
     }
 
 
-    public Map<Integer, DensityFunction> getZoomToDensityMap() {
-        return dataset.getZoomToDensity();
-    }
-
     /**
      * Return the expected density function for the current zoom level
      *
@@ -80,7 +76,7 @@ public class HiC {
      */
     public DensityFunction getDensityFunction(int zoom) {
 
-        return dataset.getZoomToDensity().get(zoom);
+        return dataset.getDensityFunction(zoom);
     }
 
 

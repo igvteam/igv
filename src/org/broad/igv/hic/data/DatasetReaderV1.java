@@ -226,10 +226,10 @@ public class DatasetReaderV1 implements DatasetReader {
      * @return
      * @throws IOException
      */
-    public static Map<Integer, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
+    public static Map<String, DensityFunction> readDensities(LittleEndianInputStream les) throws IOException {
 
         int nZooms = les.readInt();
-        Map<Integer, DensityFunction> densityMap = new HashMap<Integer, DensityFunction>();
+        Map<String, DensityFunction> densityMap = new HashMap<String, DensityFunction>();
 
         // TODO -- Its assumed densities are in number order and indices match resolutions.  This is fragile,
         // encode resolutions in the next round
@@ -265,7 +265,8 @@ public class DatasetReaderV1 implements DatasetReader {
             }
 
             Map<Integer, Double> normFactors = null;  // These were really messed up for V1 datasets
-            densityMap.put(i, new DensityFunction(unit, gridSize, densityAvg, normFactors));
+            String key = unit + "_" + gridSize;
+            densityMap.put(key, new DensityFunction(unit, gridSize, densityAvg, normFactors));
         }
 
         return densityMap;

@@ -229,7 +229,7 @@ public class MainWindow extends JFrame {
                         setInitialZoom();  // TODO -- Will probably trigger a repaint
                     }
                 }
-                if (t1 != t2 || chr2.getName().equals("All") || hic.getZoomToDensityMap() == null) {
+                if (t1 != t2 || chr2.getName().equals("All")) { // || hic.getZoomToDensityMap() == null) {
                     viewEigenvector.setEnabled(false);
                     displayOptionComboBox.setSelectedIndex(0);
                     displayOptionComboBox.setEnabled(false);

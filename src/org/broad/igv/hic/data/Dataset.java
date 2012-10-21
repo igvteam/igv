@@ -16,17 +16,16 @@ public class Dataset {
     private boolean caching = true;
 
     //Chromosome lookup table
-    public  Chromosome [] chromosomes;
+    public Chromosome[] chromosomes;
 
     Map<String, Matrix> matrices = new HashMap<String, Matrix>(25 * 25);
 
     private DatasetReader reader;
-    private Map<Integer, DensityFunction> df;
+    private Map<String, DensityFunction> df;
     private String genomeId;
 
     private int[] bpBinSizes;
     private int[] fragBinSizes;
-
 
 
     public Dataset(DatasetReader reader) {
@@ -46,7 +45,7 @@ public class Dataset {
             try {
                 m = reader.readMatrix(key);
 
-                if(caching) matrices.put(key, m);
+                if (caching) matrices.put(key, m);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -60,24 +59,37 @@ public class Dataset {
         return Preprocessor.bpBinSizes.length;
     }
 
-//    public static int getNumberZoomBinsToWrite(){
-//        return zoomLabels.length;
-//    }
 
     public int getZoom(int index) {
         return Preprocessor.bpBinSizes[index];
     }
 
 
+    /**
+     * Function needed for legacy datasets.
+     *
+     * @param zoom
+     * @return
+     */
     public DensityFunction getDensityFunction(int zoom) {
-        return df == null ? null : df.get(zoom);
+
+        if (df == null) return null;
+
+        int binSize = Preprocessor.bpBinSizes[zoom];
+        String unit = binSize == 1 ? "FRAG" : "BP";
+
+        return getExpectedValues(unit, binSize);
     }
 
-    public Map<Integer, DensityFunction> getZoomToDensity() {
-        return df;
+    public DensityFunction getExpectedValues(String unit, int binSize) {
+
+        String key = unit + "_" + binSize;
+
+        return df.get(key);
     }
 
-    public void setZoomToDensity(Map<Integer, DensityFunction> df) {
+
+    public void setZoomToDensity(Map<String, DensityFunction> df) {
         this.df = df;
     }
 

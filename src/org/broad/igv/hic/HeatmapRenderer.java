@@ -133,7 +133,7 @@ public class HeatmapRenderer {
             for (int i = 0; i < recs.length; i++) {
                 ContactRecord rec = recs[i];
 
-                Color color = null;
+                Color color;
                 double score;
                 // This is weirdly not the same as computeOE.
                 if (displayOption == MainWindow.DisplayOption.OE && df != null) {

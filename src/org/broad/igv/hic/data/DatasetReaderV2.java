@@ -13,6 +13,7 @@ import org.broad.tribble.util.SeekableStream;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -31,8 +32,7 @@ public class DatasetReaderV2 implements DatasetReader {
     public DatasetReaderV2(String path) throws IOException {
         this.path = path;
         this.stream = IGVSeekableStreamFactory.getStreamFor(path);
-        if (this.stream != null)
-        {
+        if (this.stream != null) {
             masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
             dataset = new Dataset(this);
             version = 0;
@@ -74,25 +74,25 @@ public class DatasetReaderV2 implements DatasetReader {
             dataset.setChromosomes(chromosomes);
 
             int nBpResolutions = dis.readInt();
-            int [] bpBinSizes = new int[nBpResolutions];
-            for(int i=0; i<nBpResolutions; i++) {
+            int[] bpBinSizes = new int[nBpResolutions];
+            for (int i = 0; i < nBpResolutions; i++) {
                 bpBinSizes[i] = dis.readInt();
             }
             dataset.setBpBinSizes(bpBinSizes);
 
             int nFragResolutions = dis.readInt();
-            int [] fragBinSizes = new int[nFragResolutions];
-            for(int i=0; i<nFragResolutions; i++) {
+            int[] fragBinSizes = new int[nFragResolutions];
+            for (int i = 0; i < nFragResolutions; i++) {
                 fragBinSizes[i] = dis.readInt();
             }
             dataset.setFragBinSizes(fragBinSizes);
 
-            if(nFragResolutions > 0) {
+            if (nFragResolutions > 0) {
                 nchrs = dis.readInt();   // Not really neccessary
-                for(int i=0; i<nchrs; i++) {
+                for (int i = 0; i < nchrs; i++) {
                     String chr = dis.readString();
                     int nSites = dis.readInt();
-                    for(int s=0; s<nSites; s++) {
+                    for (int s = 0; s < nSites; s++) {
                         int site = dis.readInt();
                     }
                 }
@@ -146,22 +146,35 @@ public class DatasetReaderV2 implements DatasetReader {
         }
 
         // Expected values
+        Map<String, DensityFunction> expectedValuesMap = new HashMap<String, DensityFunction>();
+
         int nExpectedValues = dis.readInt();
-        for(int i=0; i<nExpectedValues; i++) {
-            int binSize = dis.readInt();
+        for (int i = 0; i < nExpectedValues; i++) {
+
             String unit = dis.readString();
+            int binSize = dis.readInt();
+            String key = unit + "_" + binSize;
+
             int nValues = dis.readInt();
-            for(int j=0; j<nValues; j++) {
-                double value = dis.readDouble();
+            double[] values = new double[nValues];
+            for (int j = 0; j < nValues; j++) {
+                values[j] = dis.readDouble();
             }
 
             int nNormalizationFactors = dis.readInt();
-            for(int j=0; j<nNormalizationFactors; j++) {
-                int chrIdx = dis.readInt();
-                double normFactor = dis.readDouble();
-                System.out.println(normFactor);
+            Map<Integer, Double> normFactors = new LinkedHashMap<Integer, Double>();
+            for (int j = 0; j < nNormalizationFactors; j++) {
+                Integer chrIdx = dis.readInt();
+                Double normFactor = dis.readDouble();
+                normFactors.put(chrIdx, normFactor);
             }
+
+            DensityFunction df = new DensityFunction(unit, binSize, values, normFactors);
+            expectedValuesMap.put(key, df);
+
         }
+
+        dataset.setZoomToDensity(expectedValuesMap);
 
         return masterIndex;
 
@@ -230,8 +243,6 @@ public class DatasetReaderV2 implements DatasetReader {
         return new Block(blockNumber, records);
 
     }
-
-
 
 
 }

@@ -464,20 +464,22 @@ public class HiCTools {
         //Map<Integer, DensityFunction> zoomToDensityMap = null;
 
         if (dataset.getVersion() <= 1) {
-            String densityFile = file + ".densities";
-            if (FileUtils.resourceExists(densityFile)) {
-                InputStream is = null;
-                try {
-                    is = ParsingUtils.openInputStream(densityFile);
-                    zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
-                    dataset.setZoomToDensity();
-                } finally {
-                    if (is != null) is.close();
-                }
-            } else {
-                System.err.println("Densities file doesn't exist");
-                System.exit(-1);
-            }
+
+            throw new RuntimeException("Unsupported dataset version");
+//            String densityFile = file + ".densities";
+//            if (FileUtils.resourceExists(densityFile)) {
+//                InputStream is = null;
+//                try {
+//                    is = ParsingUtils.openInputStream(densityFile);
+//                    zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
+//                    dataset.setZoomToDensity();
+//                } finally {
+//                    if (is != null) is.close();
+//                }
+//            } else {
+//                System.err.println("Densities file doesn't exist");
+//                System.exit(-1);
+//            }
 
         }
 
@@ -522,30 +524,11 @@ public class HiCTools {
             System.exit(-1);
         }
         // Load the expected density function, if it exists.
-        Map<Integer, DensityFunction> zoomToDensityMap = null;
+
         LittleEndianOutputStream les = null;
         BufferedOutputStream bos = null;
         Dataset dataset = (new DatasetReaderV1(file)).read();
-        if (dataset.getVersion() <= 1) {
-            if (type.equals("oe") || type.equals("pearson")) {
-                String densityFile = file + ".densities";
-                if (FileUtils.resourceExists(densityFile)) {
-                    InputStream is = null;
-                    try {
-                        is = ParsingUtils.openInputStream(densityFile);
-                        zoomToDensityMap = DatasetReaderV1.readDensities(new LittleEndianInputStream(new BufferedInputStream(is)));
 
-                    } finally {
-                        if (is != null) is.close();
-                    }
-                } else {
-                    System.err.println("Densities file doesn't exist, cannot calculate O/E or Pearson's");
-                    System.exit(-1);
-                }
-            }
-        } else {
-            zoomToDensityMap = dataset.getZoomToDensity();
-        }
         if (ofile != null) {
             bos = new BufferedOutputStream(new FileOutputStream(ofile));
             les = new LittleEndianOutputStream(bos);
@@ -588,7 +571,7 @@ public class HiCTools {
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
         if (type.equals("oe") || type.equals("pearson")) {
-            final DensityFunction df = zoomToDensityMap.get(zd.getZoom());
+            final DensityFunction df = dataset.getDensityFunction(zd.getZoom());
             if (df == null) {
                 System.err.println("Densities not calculated to this resolution.");
                 System.exit(-1);
