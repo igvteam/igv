@@ -374,14 +374,15 @@ public class IGV {
      */
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
         if (Globals.isBatch()) {
+            Runnable r = new Runnable() {
+                public void run() {
+                    contentPane.revalidateDataPanels();
+                    rootPane.paintImmediately(rootPane.getBounds());
+                }
+            };
             if (SwingUtilities.isEventDispatchThread()) {
-                rootPane.paintImmediately(rootPane.getBounds());
+                r.run();
             } else {
-                Runnable r = new Runnable() {
-                    public void run() {
-                        rootPane.paintImmediately(rootPane.getBounds());
-                    }
-                };
                 try {
                     SwingUtilities.invokeAndWait(r);
                 } catch (InterruptedException e) {
@@ -393,6 +394,7 @@ public class IGV {
                 }
             }
         } else {
+            contentPane.revalidateDataPanels();
             rootPane.repaint();
         }
 
