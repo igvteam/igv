@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -43,12 +44,13 @@ public class CachedIntervalsTest extends AbstractHeadlessTest {
         ReferenceFrame frame0 = new ReferenceFrame("leftFrame");
         frame0.setChromosomeName(chr);
         frame0.setOrigin(151666680);
-        frame0.setBounds(0, 10);
+        frame0.setBounds(0, 5);
+        System.out.println(frame0.getEnd());
 
         ReferenceFrame frame1 = new ReferenceFrame("rightFrame");
         frame1.setChromosomeName(chr);
-        frame1.setOrigin(155537238);
-        frame1.setBounds(0, 10);
+        frame1.setOrigin(153537238);
+        frame1.setBounds(0, 5);
 
         return Arrays.asList(frame0, frame1);
     }
