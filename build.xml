@@ -187,6 +187,9 @@
     <!--Can override this on command line to see test output-->
     <property name="show.test.out" value="no"/>
 
+    <!--For testing jenkins mostly. When set to true, there is a test in ReadmeParserTest which will fail-->
+    <property name="make.fail" value="false"/>
+
     <!--Hosted data test explicitly excluded, never run automated, can run manual-->
     <fileset dir="${testtmp.dir}" id="allfileset">
         <include name="**/*.class"/>
@@ -229,9 +232,12 @@
 
         <junit haltonfailure="no" showoutput="${show.test.out}" printsummary="on" failureproperty="tests.failed"
                maxmemory="2000m">
+
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <jvmarg value="-Dfile.encoding=${java.encoding}"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
+            <sysproperty key="make.fail" value="${make.fail}"/>
+
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}" if="filesetpattern">
