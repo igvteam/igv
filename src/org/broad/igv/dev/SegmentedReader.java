@@ -14,9 +14,7 @@ package org.broad.igv.dev;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
-import org.broad.igv.dev.db.SQLLineParser;
 import org.broad.igv.dev.db.WholeTableDBReader;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
@@ -34,12 +32,11 @@ import java.sql.SQLException;
  * @author Jim Robinson
  * @date 10/14/11
  */
-public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataSet> {
+public class SegmentedReader {
 
-    private static Logger log = Logger.getLogger(SegmentedReader_test.class);
+    private static Logger log = Logger.getLogger(SegmentedReader.class);
     private Genome genome;
     private SegmentedAsciiDataSet dataset;
-    private IParser parser;
     private String[] headings;
 
     private boolean birdsuite = false;
@@ -55,13 +52,47 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
         SEG, BIRDSUITE, NEXUS
     }
 
-    public SegmentedReader_test(ResourceLocator locator) {
+    private class SegmentedDBReader extends WholeTableDBReader<SegmentedAsciiDataSet> {
+
+        private SegmentedDBReader(String table) {
+            super(SegmentedReader.this.locator, table);
+        }
+
+        @Override
+        protected SegmentedAsciiDataSet processResultSet(ResultSet rs) throws SQLException {
+
+            IParser<ResultSet, Integer> parser = IParserFactory.getIndexParser(rs);
+            readHeader(rs);
+
+            while (rs.next()) {
+                parseLine(parser, rs);
+            }
+
+            dataset.sortLists();
+            return dataset;
+        }
+
+        private int readHeader(ResultSet rs) throws SQLException {
+            dataset = new SegmentedAsciiDataSet(genome);
+            sampleColumn = rs.findColumn("Sample");
+            chrColumn = rs.findColumn("chr");
+            startColumn = rs.findColumn("start");
+            endColumn = rs.findColumn("end");
+            dataColumn = rs.findColumn("value");
+            //descColumn = rs.findColumn("description");
+            return 0;
+        }
+
+    }
+
+    public SegmentedReader(ResourceLocator locator) {
         this(locator, null);
     }
 
-    public SegmentedReader_test(ResourceLocator locator, Genome genome) {
-        //TODO Don't hardcode table name, this might note even be right for our target case
-        super(locator, "CNV");
+    public SegmentedReader(ResourceLocator locator, Genome genome) {
+        //TODO Don't hardcode table name, this might not even be right for our target case
+        //super(locator, "CNV");
+        this.locator = locator;
         this.genome = genome;
 
         if (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls")) {
@@ -70,11 +101,12 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
     }
 
     /**
+     * Load segmented data from a file could be remote)
      * Return a map of trackId -> segment datasource
      *
      * @return
      */
-    public SegmentedAsciiDataSet loadSegments(ResourceLocator locator, Genome genome) {
+    public SegmentedAsciiDataSet loadFromFile() {
 
         dataset = new SegmentedAsciiDataSet(genome);
 
@@ -85,6 +117,9 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
         AsciiLineReader reader = null;
         String nextLine = null;
         int lineNumber = 0;
+
+        IParser<String[], Integer> parser = IParserFactory.getIndexParser(new String[0]);
+
         try {
             reader = ParsingUtils.openAsciiReader(locator);
             lineNumber = readHeader(reader);
@@ -92,12 +127,10 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
                 lineNumber++;
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                parseLine(tokens);
+                parseLine(parser, tokens);
             }
 
-        } catch (DataLoadException pe) {
-            throw pe;
-        } catch (Exception e) {
+        } catch (IOException e) {
             if (nextLine != null && lineNumber != 0) {
                 throw new ParserException(e.getMessage(), e, lineNumber, nextLine);
             } else {
@@ -113,19 +146,11 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
         return dataset;
     }
 
-    @Override
-    protected SegmentedAsciiDataSet processResultSet(ResultSet rs) throws SQLException {
 
-        this.readHeader(rs);
-
-        while (rs.next()) {
-            parseLine(rs);
-        }
-
-        dataset.sortLists();
-        return dataset;
+    public SegmentedAsciiDataSet loadFromDB(String table) {
+        SegmentedDBReader reader = new SegmentedDBReader(table);
+        return reader.load();
     }
-
 
     /**
      * Note:  This is an exact copy of the method in ExpressionFileParser.  Refactor to merge these
@@ -157,7 +182,7 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
         }
     }
 
-    protected int readHeader(AsciiLineReader reader) throws IOException {
+    private int readHeader(AsciiLineReader reader) throws IOException {
         // Parse comments, if any
         String nextLine = reader.readLine();
         int lineNumber = 0;
@@ -191,26 +216,7 @@ public class SegmentedReader_test extends WholeTableDBReader<SegmentedAsciiDataS
         return lineNumber;
     }
 
-    protected int readHeader(ResultSet rs) throws SQLException {
-        this.dataset = new SegmentedAsciiDataSet(genome);
-        sampleColumn = rs.findColumn("Sample");
-        chrColumn = rs.findColumn("chr");
-        startColumn = rs.findColumn("start");
-        endColumn = rs.findColumn("end");
-        dataColumn = rs.findColumn("value");
-        //descColumn = rs.findColumn("description");
-        return 0;
-    }
-
-    protected void parseLine(Object rs) throws ParserException {
-
-        if (rs instanceof ResultSet) {
-            parser = new SQLLineParser();
-        } else if (rs instanceof String[]) {
-            parser = new StringArrayParser();
-        } else {
-            throw new IllegalArgumentException("Line must be a ResultSet or String[], not" + rs.getClass());
-        }
+    private <TContainer> void parseLine(IParser<TContainer, Integer> parser, TContainer rs) throws ParserException {
 
         int nTokens = parser.size(rs);
         if (nTokens > 4) {

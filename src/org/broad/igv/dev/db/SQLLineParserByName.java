@@ -24,52 +24,9 @@ import java.sql.SQLException;
  * @see IParser
  * @see org.broad.igv.dev.StringArrayParser
  */
-public class SQLLineParser implements IParser<ResultSet, String> {
+public class SQLLineParserByName implements IParser<ResultSet, String> {
 
-    public final short getShort(ResultSet rs, int index) throws ParserException {
-        try {
-            return getByte(rs, rs.getMetaData().getColumnLabel(index));
-        } catch (SQLException e) {
-            throw new ParserException(e.getMessage(), -1);
-        }
-    }
-
-    public final int getInt(ResultSet rs, int index) throws ParserException {
-        try {
-            return getShort(rs, rs.getMetaData().getColumnLabel(index));
-        } catch (SQLException e) {
-            throw new ParserException(e.getMessage(), -1);
-        }
-    }
-
-    public final double getDouble(ResultSet rs, int index) throws ParserException {
-        try {
-            return getDouble(rs, rs.getMetaData().getColumnLabel(index));
-        } catch (SQLException e) {
-            throw new ParserException(e.getMessage(), -1);
-        }
-    }
-
-    public final float getFloat(ResultSet rs, int index) throws ParserException {
-        try {
-            return getFloat(rs, rs.getMetaData().getColumnLabel(index));
-        } catch (SQLException e) {
-            throw new ParserException(e.getMessage(), -1);
-        }
-    }
-
-    public final String getString(ResultSet rs, int index) throws ParserException, SQLException {
-        return getString(rs, rs.getMetaData().getColumnLabel(index));
-    }
-
-    public final byte getByte(ResultSet rs, int index) throws ParserException {
-        try {
-            return getByte(rs, rs.getMetaData().getColumnLabel(index));
-        } catch (SQLException e) {
-            throw new ParserException(e.getMessage(), -1);
-        }
-    }
-
+    @Override
     public final byte getByte(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getByte(label);
@@ -78,6 +35,7 @@ public class SQLLineParser implements IParser<ResultSet, String> {
         }
     }
 
+    @Override
     public final short getShort(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getShort(label);
@@ -86,6 +44,7 @@ public class SQLLineParser implements IParser<ResultSet, String> {
         }
     }
 
+    @Override
     public final int getInt(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getInt(label);
@@ -94,6 +53,7 @@ public class SQLLineParser implements IParser<ResultSet, String> {
         }
     }
 
+    @Override
     public final double getDouble(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getDouble(label);
@@ -102,6 +62,7 @@ public class SQLLineParser implements IParser<ResultSet, String> {
         }
     }
 
+    @Override
     public final float getFloat(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getFloat(label);
@@ -110,6 +71,7 @@ public class SQLLineParser implements IParser<ResultSet, String> {
         }
     }
 
+    @Override
     public final String getString(ResultSet rs, String label) throws ParserException {
         try {
             return rs.getString(label);

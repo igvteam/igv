@@ -196,13 +196,13 @@ public class DBManager {
             return locator;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error loading stored connection", e);
             return null;
         } finally {
             try {
                 if (profileStream != null) profileStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Error closing profile streame", e);
             }
         }
     }
@@ -278,10 +278,11 @@ public class DBManager {
     }
 
     private static final Set<Integer> blobTypes;
-    static{
+
+    static {
         int[] blobtypes = {Types.BINARY, Types.BLOB, Types.VARBINARY, Types.LONGVARBINARY};
         blobTypes = new HashSet<Integer>(blobtypes.length);
-        for(int bt: blobtypes){
+        for (int bt : blobtypes) {
             blobTypes.add(bt);
         }
     }
