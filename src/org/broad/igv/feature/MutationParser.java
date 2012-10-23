@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.feature;
 
@@ -51,6 +44,12 @@ public class MutationParser {
     private int tumorAllele1Column;
     private int tumorAllele2Column;
 
+    private boolean isMAF;
+    private String[] headers = null;
+
+    private ResourceLocator locator = null;
+    private Genome genome = null;
+
     public static boolean isMutationAnnotationFile(ResourceLocator locator) throws IOException {
         AsciiLineReader reader = null;
         try {
@@ -82,9 +81,11 @@ public class MutationParser {
     }
 
     public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) {
+        this.locator = locator;
+        this.genome = genome;
 
         List<FeatureTrack> tracks = new ArrayList();
-        Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator, genome);
+        Map<String, List<org.broad.tribble.Feature>> features = loadMutations();
         for (String sampleId : features.keySet()) {
             String id = locator.getPath() + "_" + sampleId;
             MutationTrack track = new MutationTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
@@ -93,21 +94,84 @@ public class MutationParser {
             track.setHeight(15);
             track.setName(sampleId);
 
-            // Overrid default minimum height (10 for feature tracks).
+            // Override default minimum height (10 for feature tracks).
             track.setMinimumHeight(0);
             tracks.add(track);
         }
+        //Just to make sure we have no memory
+        this.locator = null;
+        this.genome = null;
         return tracks;
+    }
+
+    private void readHeader(String[] headers) {
+        isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
+        setColumns(isMAF);
+        this.headers = headers;
+    }
+
+    private Mutation decode(String[] tokens) {
+        String chr = genome.getChromosomeAlias(tokens[chrColumn].trim());
+
+        int start;
+        try {
+            start = Integer.parseInt(tokens[startColumn].trim());
+        } catch (NumberFormatException e) {
+            throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", locator.getPath());
+        }
+
+        int end;
+        try {
+            end = Integer.parseInt(tokens[endColumn].trim());
+        } catch (NumberFormatException e) {
+            throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", locator.getPath());
+        }
+
+
+        // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
+        // specified for MUT files, and it appears both conventions have been used.  We can detect
+        // the convention used for single base mutations by testing start == end.
+        if (isMAF || (start == end)) {
+            start--;
+        }
+
+        String sampleId = tokens[sampleColumn].trim();
+        String type = tokens[typeColumn].trim();
+
+        MultiMap<String, String> attributes = new MultiMap();
+        int n = Math.min(headers.length, tokens.length);
+        for (int i = 0; i < n; i++) {
+            String key = headers[i];
+            String value = tokens[i];
+            if (value.length() > 0) {
+                attributes.put(key, value);
+            }
+        }
+
+
+        Mutation mut = new Mutation(sampleId, chr, start, end, type);
+        mut.setAttributes(attributes);
+
+        if (refAlleleColumn > 0) {
+            mut.setRefAllele(tokens[refAlleleColumn].trim());
+        }
+        if (tumorAllele1Column > 0) {
+            mut.setAltAllele1(tokens[tumorAllele1Column].trim());
+        }
+        if (tumorAllele2Column > 0) {
+            mut.setAltAllele2(tokens[tumorAllele2Column].trim());
+        }
+
+        return mut;
     }
 
     /**
      * Return a map of runId -> list of mutation objects.   The "runId" field
      * is the track identifier (name) for mutation files.
      *
-     * @param locator
      * @return
      */
-    private Map<String, List<org.broad.tribble.Feature>> loadMutations(ResourceLocator locator, Genome genome) {
+    private Map<String, List<org.broad.tribble.Feature>> loadMutations() {
         AsciiLineReader reader = null;
         String nextLine = null;
 
@@ -117,76 +181,21 @@ public class MutationParser {
 
             reader = ParsingUtils.openAsciiReader(locator);
 
-            String[] headers = null;
-            int lineNumber = 1;
-            boolean isMAF = false;
             while ((nextLine = reader.readLine()) != null) {
-                lineNumber++;
 
                 if (nextLine.startsWith("#")) continue;
 
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 4) {
 
-                    if (headers == null) {
-                        headers = tokens;
-                        isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
-                        setColumns(headers, isMAF);
+                    if (this.headers == null) {
+                        readHeader(tokens);
                         continue;
                     }
 
+                    Mutation mut = decode(tokens);
 
-                    String chr = genome.getChromosomeAlias(tokens[chrColumn].trim());
-
-                    int start;
-                    try {
-                        start = Integer.parseInt(tokens[startColumn].trim());
-                    } catch (NumberFormatException e) {
-                        throw new DataLoadException("Column " + (startColumn + 1) + " must be a numeric value.", locator.getPath());
-                    }
-
-                    int end;
-                    try {
-                        end = Integer.parseInt(tokens[endColumn].trim());
-                    } catch (NumberFormatException e) {
-                        throw new DataLoadException("Column " + (endColumn + 1) + " must be a numeric value.", locator.getPath());
-                    }
-
-
-                    // MAF files use the 1-based inclusive convention for coordinates.  The convention is not
-                    // specified for MUT files, and it appears both conventions have been used.  We can detect
-                    // the convention used for single base mutations by testing start == end.
-                    if (isMAF || (start == end)) {
-                        start--;
-                    }
-
-                    String sampleId = tokens[sampleColumn].trim();
-                    String type = tokens[typeColumn].trim();
-
-                    MultiMap<String, String> attributes = new MultiMap();
-                    int n = Math.min(headers.length, tokens.length);
-                    for (int i = 0; i < n; i++) {
-                        String key = headers[i];
-                        String value = tokens[i];
-                        if (value.length() > 0) {
-                            attributes.put(key, value);
-                        }
-                    }
-
-
-                    Mutation mut = new Mutation(sampleId, chr, start, end, type);
-                    mut.setAttributes(attributes);
-
-                    if (refAlleleColumn > 0) {
-                        mut.setRefAllele(tokens[refAlleleColumn].trim());
-                    }
-                    if (tumorAllele1Column > 0) {
-                        mut.setAltAllele1(tokens[tumorAllele1Column].trim());
-                    }
-                    if (tumorAllele2Column > 0) {
-                        mut.setAltAllele2(tokens[tumorAllele2Column].trim());
-                    }
-
+                    String sampleId = mut.getSampleId();
                     List<org.broad.tribble.Feature> features = mutationMap.get(sampleId);
                     if (features == null) {
                         features = new ArrayList();
@@ -200,14 +209,14 @@ public class MutationParser {
 
             return mutationMap;
         } catch (IOException e) {
-            log.error("", e);
+            log.error("Error loading mutation file", e);
             throw new DataLoadException("IO Exception: " + e.toString(), locator.getPath());
         } finally {
             reader.close();
         }
     }
 
-    private void setColumns(String[] headings, boolean isMAF) {
+    private void setColumns(boolean isMAF) {
 
         if (isMAF) {
             chrColumn = 4;
