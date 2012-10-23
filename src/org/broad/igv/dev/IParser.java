@@ -14,8 +14,30 @@ package org.broad.igv.dev;
 import org.broad.igv.exceptions.ParserException;
 
 /**
+ * This interface acts as a bridge between different containers of data,
+ * separating retrieving that data from processing. The motivation was integration
+ * with SQL databases.
+ * <p/>
+ * Consider a tab-delimited text file. The standard method of parsing
+ * is to read each line, splitting each line into a {@code String[]},
+ * and reading each string into a float, double, string, or whatever.
+ * {@link StringArrayParser#getString(TContainer, TIndex)}
+ * has TContainer = String[], and TIndex = Integer, and simply
+ * returns the String at location given by the Integer.
+ * <p/>
+ * Consider the same data stored in a SQL database. Each line stores
+ * essentially the information, although we have the advantage that
+ * SQL columns are typed. {@link org.broad.igv.dev.db.SQLLineParser}
+ * reads ResultSet, and uses column names (String) to identify the location.
+ * One could also use Integers to index the columns, if desired. This way
+ * we retain type information on columns; the data is never treated as a String
+ * (unless it is).
+ * <p/>
  * User: jacob
  * Date: 2012-Aug-30
+ *
+ * @see org.broad.igv.dev.db.SQLLineParser
+ * @see org.broad.igv.dev.StringArrayParser
  */
 public interface IParser<TContainer, TIndex> {
 

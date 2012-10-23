@@ -20,6 +20,9 @@ import java.sql.SQLException;
 /**
  * User: jacob
  * Date: 2012-Aug-30
+ *
+ * @see IParser
+ * @see org.broad.igv.dev.StringArrayParser
  */
 public class SQLLineParser implements IParser<ResultSet, String> {
 
