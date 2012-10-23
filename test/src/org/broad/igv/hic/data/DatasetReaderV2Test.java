@@ -16,6 +16,9 @@ import org.broad.igv.feature.ChromosomeImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
 /**
  * @author jrobinso
  *         Date: 10/17/12
@@ -42,6 +45,8 @@ public class DatasetReaderV2Test {
         Block b = mzd.getBlock(0);
 
         b.getContactRecords();
-
+        //TODO
+        assertTrue(true);
     }
+
 }
