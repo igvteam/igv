@@ -96,6 +96,9 @@ public abstract class AbstractTrack implements Track {
     // Scale for heatmaps
     private ContinuousColorScale colorScale;
 
+    //Not applicable to all tracks.
+    protected boolean autoScale;
+
     private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
     private Color altColor = Color.blue.darker();
     private DataRange dataRange;
@@ -510,6 +513,14 @@ public abstract class AbstractTrack implements Track {
         // Do nothing
     }
 
+    public boolean isAutoScale() {
+        return autoScale;
+    }
+
+    public void setAutoScale(boolean autoScale) {
+        this.autoScale = autoScale;
+    }
+
 
     /**
      * Set some properties of this track,  usually from a "track line" specification.
@@ -529,9 +540,10 @@ public abstract class AbstractTrack implements Track {
 
 
         // If view limits are explicitly set turn off autoscale
-        // TODO -- get rid of this ugly instance of and casting business
-        if (!Float.isNaN(viewLimitMin) && !Float.isNaN(viewLimitMax) && (this instanceof DataTrack)) {
-            ((DataTrack) this).setAutoscale(false);
+        if (!Float.isNaN(viewLimitMin) && !Float.isNaN(viewLimitMax)) {
+            this.setAutoScale(false);
+        } else {
+            this.setAutoScale(properties.isAutoScale());
         }
 
         // Color scale properties
