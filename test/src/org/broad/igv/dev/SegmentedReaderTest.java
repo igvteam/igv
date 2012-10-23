@@ -13,12 +13,14 @@ package org.broad.igv.dev;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
+import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import java.io.File;
+
+import static junit.framework.Assert.*;
 
 /**
  * Test of our multi-purpose reader class
@@ -27,8 +29,8 @@ import static junit.framework.Assert.assertEquals;
  */
 public class SegmentedReaderTest extends AbstractHeadlessTest {
 
-    @Test
-    public void testLoadSegFile() throws Exception {
+
+    private SegmentedAsciiDataSet loadSegFile() throws Exception {
         String filePath = TestUtils.DATA_DIR + "seg/canFam2_hg18.seg";
         ResourceLocator locator = new ResourceLocator(filePath);
         SegmentedReader reader = new SegmentedReader(locator);
@@ -36,18 +38,43 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
 
         assertEquals(18, ds.getChromosomes().size());
 
+        return ds;
     }
 
-    @Ignore
+    @Test
+    public void testLoadSegFile() throws Exception {
+        SegmentedAsciiDataSet ds = loadSegFile();
+        assertNotNull(ds);
+        assertFalse(ds.getChromosomes().isEmpty());
+    }
+
     @Test
     public void testLoadSegDB() throws Exception {
-        String filePath = TestUtils.DATA_DIR + "seg/canFam2_hg18.sql";
-        ResourceLocator locator = new ResourceLocator(filePath);
+        SegmentedAsciiDataSet ds = loadSegDB();
+        assertNotNull(ds);
+        assertFalse(ds.getChromosomes().isEmpty());
+    }
+
+    private SegmentedAsciiDataSet loadSegDB() throws Exception {
+        String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
+        String path = "seg/canFam2_hg18.db";
+        String url = DBManager.createConnectionURL("sqlite", host, path, null);
+        ResourceLocator locator = new ResourceLocator(url);
+        String table = "canFam2";
+
         SegmentedReader reader = new SegmentedReader(locator);
-        SegmentedAsciiDataSet ds = reader.loadFromDB("canFam2");
+        SegmentedAsciiDataSet ds = reader.loadFromDB(table);
 
-        assertEquals(18, ds.getChromosomes().size());
+        return ds;
+    }
 
+    @Test
+    public void compareFileDB() throws Exception {
+        SegmentedAsciiDataSet fileDS = loadSegFile();
+        SegmentedAsciiDataSet dbDS = loadSegDB();
+
+        assertEquals(fileDS.getChromosomes(), dbDS.getChromosomes());
+        assertEquals(fileDS.getSampleNames(), dbDS.getSampleNames());
     }
 
 

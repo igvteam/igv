@@ -136,7 +136,7 @@ public class DBManager {
     }
 
 
-    static String createConnectionURL(String subprotocol, String host, String db, String port) {
+    public static String createConnectionURL(String subprotocol, String host, String db, String port) {
         String driver = driverMap.get(subprotocol);
         try {
             Class.forName(driver);
@@ -157,7 +157,7 @@ public class DBManager {
                     url += ":" + iPort;
                 }
             } catch (NumberFormatException e) {
-                log.error("Invalid port: " + port);
+                log.error("Invalid port: " + port, e);
             }
         }
         if (db != null) {

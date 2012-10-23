@@ -74,12 +74,18 @@ public class SegmentedReader {
 
         private int readHeader(ResultSet rs) throws SQLException {
             dataset = new SegmentedAsciiDataSet(genome);
-            sampleColumn = rs.findColumn("Sample");
-            chrColumn = rs.findColumn("chr");
-            startColumn = rs.findColumn("start");
-            endColumn = rs.findColumn("end");
-            dataColumn = rs.findColumn("value");
+            sampleColumn = 1;// rs.findColumn("Sample");
+            chrColumn = 2;// rs.findColumn("chr");
+            startColumn = 3;// rs.findColumn("start");
+            endColumn = 4;// rs.findColumn("end");
+            dataColumn = rs.getMetaData().getColumnCount();// rs.findColumn("value");
             //descColumn = rs.findColumn("description");
+
+            headings = new String[rs.getMetaData().getColumnCount()];
+            for (int cc = 0; cc < rs.getMetaData().getColumnCount(); cc++) {
+                headings[cc] = rs.getMetaData().getColumnLabel(cc + 1);
+            }
+
             return 0;
         }
 
