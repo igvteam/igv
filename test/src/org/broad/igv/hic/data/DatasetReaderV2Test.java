@@ -4,6 +4,9 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
 /**
  * @author jrobinso
  *         Date: 10/17/12
@@ -11,7 +14,11 @@ import org.junit.Test;
  */
 public class DatasetReaderV2Test {
 
+    @Test
     public void testRead() throws Exception {
+
+        assertTrue(true == true);
+
 //        String path = "/Users/jrobinso/projects/hic/New/MiSeq_GM_HINDIII.hic";
 //
 //        DatasetReaderV2 reader = new DatasetReaderV2(path);
