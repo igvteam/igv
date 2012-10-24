@@ -123,8 +123,13 @@ public class AbstractHeadedTest {
     }
 
     public static void assumeNotHeadless() {
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        boolean headless = ge.isHeadless();
+        boolean headless = true;
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            headless = ge.isHeadless();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (headless) {
             System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
         }
