@@ -89,7 +89,7 @@ public class Dataset {
     }
 
 
-    public void setZoomToDensity(Map<String, DensityFunction> df) {
+    public void setDensityFunctionMap(Map<String, DensityFunction> df) {
         this.df = df;
     }
 

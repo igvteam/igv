@@ -167,10 +167,19 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
-            DatasetReaderV1 reader = new DatasetReaderV1(file);
-            // file not actually read, usually canceled the read of password-protected file
-            if (reader.getVersion() == -1)
-                return;
+
+            String magicString = DatasetReaderV2.getMagicString(file);
+
+            DatasetReader reader;
+            if (magicString.equals("HIC")) {
+                reader = new DatasetReaderV2(file);
+            } else {
+                reader = new DatasetReaderV1(file);
+                // file not actually read, usually canceled the read of password-protected file
+                if (reader.getVersion() == -1)
+                    return;
+            }
+
             hic.dataset = reader.read();
             if (hic.dataset.getVersion() <= 1) {
                 JOptionPane.showMessageDialog(this, "This version of \"hic\" format is no longer supported");
@@ -823,7 +832,6 @@ public class MainWindow extends JFrame {
         resolutionSlider.setSnapToTicks(true);
         resolutionSlider.setPaintLabels(true);
         resolutionSlider.setMinorTickSpacing(1);
-
 
 
         // TODO -- the available resolutions should be read from the dataset (hic) file

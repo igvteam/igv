@@ -3,7 +3,6 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
-import org.broad.igv.hic.tools.ExpectedValueCalculation;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -35,7 +34,22 @@ public class DatasetReaderV2 implements DatasetReader {
         if (this.stream != null) {
             masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
             dataset = new Dataset(this);
-            version = 0;
+        }
+    }
+
+    public static String getMagicString(String path) throws IOException {
+
+        SeekableStream stream = null;
+
+        try {
+            stream = IGVSeekableStreamFactory.getStreamFor(path);
+            LittleEndianInputStream dis = new LittleEndianInputStream(new BufferedInputStream(stream));
+
+            String magicString = dis.readString();
+            return magicString;
+        } finally {
+            if (stream != null) stream.close();
+            ;
         }
     }
 
@@ -96,6 +110,7 @@ public class DatasetReaderV2 implements DatasetReader {
                         int site = dis.readInt();
                     }
                 }
+                // TODO -- set sites
             }
 
             int nHemiFragResolutions = dis.readInt();  // Reserved for future use
@@ -174,7 +189,7 @@ public class DatasetReaderV2 implements DatasetReader {
 
         }
 
-        dataset.setZoomToDensity(expectedValuesMap);
+        dataset.setDensityFunctionMap(expectedValuesMap);
 
         return masterIndex;
 
@@ -227,7 +242,7 @@ public class DatasetReaderV2 implements DatasetReader {
             try {
                 int bin1 = dis.readInt();
                 int bin2 = dis.readInt();
-                int counts = dis.readInt();
+                float counts = dis.readFloat();
                 records[i] = new ContactRecord(blockNumber, bin1, bin2, counts);
             } catch (EOFException e) {
                 nRecords = i;
