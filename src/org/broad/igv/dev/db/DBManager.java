@@ -115,7 +115,7 @@ public class DBManager {
                 return connect(locator);
 
             } else {
-                MessageUtils.showMessage("<html>Error connecting to database: <br>" + e.getMessage());
+                MessageUtils.showErrorMessage("<html>Error connecting to database: <br>" + e.getMessage(), e);
                 return null;
             }
 
@@ -136,6 +136,15 @@ public class DBManager {
     }
 
 
+    /**
+     * Creates a connection URL, and loads the driver class necessary for the protocol
+     *
+     * @param subprotocol
+     * @param host
+     * @param db
+     * @param port
+     * @return
+     */
     public static String createConnectionURL(String subprotocol, String host, String db, String port) {
         String driver = driverMap.get(subprotocol);
         try {

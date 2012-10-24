@@ -77,5 +77,17 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
         assertEquals(fileDS.getSampleNames(), dbDS.getSampleNames());
     }
 
+    //Scratch work for testing loading from local mysql db
+    public void testLoadMySQL() throws Exception {
+        String url = DBManager.createConnectionURL("mysql", "calcium", "igv_nobel_dev", null);
+        ResourceLocator locator = new ResourceLocator(url);
+        locator.setUsername("igv_nobel_dev");
+        locator.setPassword("nottherealpassword");
+        String table = "CNV";
+
+        SegmentedReader reader = new SegmentedReader(locator);
+        SegmentedAsciiDataSet ds = reader.loadFromDB(table);
+
+    }
 
 }
