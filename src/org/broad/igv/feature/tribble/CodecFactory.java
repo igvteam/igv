@@ -85,6 +85,9 @@ public class CodecFactory {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
+
+        } else if (fn.endsWith(".mut") || (fn.endsWith(".maf") && MUTCodec.isMutationAnnotationFile(path))) {
+            return new MUTCodec(path, genome);
         } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
