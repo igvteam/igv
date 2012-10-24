@@ -561,7 +561,7 @@ public class TrackMenuUtils {
         } else {
             boolean autoScale = false;
             for (Track t : selectedTracks) {
-                if (t instanceof DataTrack && ((DataTrack) t).isAutoscale()) {
+                if (t instanceof DataTrack && ((DataTrack) t).isAutoScale()) {
                     autoScale = true;
                     break;
                 }
@@ -575,7 +575,7 @@ public class TrackMenuUtils {
                     boolean autoScale = autoscaleItem.isSelected();
                     for (Track t : selectedTracks) {
                         if (t instanceof DataTrack) {
-                            ((DataTrack) t).setAutoscale(autoScale);
+                            ((DataTrack) t).setAutoScale(autoScale);
                         }
                     }
                     IGV.getInstance().repaintDataPanels();
