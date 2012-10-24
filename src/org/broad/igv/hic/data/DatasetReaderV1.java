@@ -148,7 +148,7 @@ public class DatasetReaderV1 implements DatasetReader {
         }
 
         if (version >= 2) {
-            dataset.setZoomToDensity(readDensities(dis));
+            dataset.setDensityFunctionMap(readDensities(dis));
         }
 
         return masterIndex;
