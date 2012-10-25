@@ -516,6 +516,9 @@ public class HttpUtils {
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
             conn.setRequestProperty("Accept", "application/json,text/plain");
         }
+        else {
+            conn.setRequestProperty("Accept", "text/plain");
+        }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);

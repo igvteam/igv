@@ -1,7 +1,10 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Mutation;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -31,6 +34,15 @@ public class MutationTrack extends FeatureTrack {
         super(locator, id, source);
         setSortable(true);
     }
+
+
+    @Override
+    public void overlay(RenderContext context, Rectangle rect) {
+        if (!context.getChr().equals(Globals.CHR_ALL) || IGV.getInstance().getSession().getPreferenceAsBoolean(PreferenceManager.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
+            renderFeatures(context, rect);
+        }
+    }
+
 
     /**
      * Return a string for popup text.

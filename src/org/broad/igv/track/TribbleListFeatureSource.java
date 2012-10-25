@@ -26,7 +26,7 @@ public class TribbleListFeatureSource implements FeatureSource {
 
     Map<String, String> pathMap;
     Map<String, TribbleFeatureSource> featureSourceMap;
-    int windowSize = 10000;
+    int windowSize = 1000;
     Object header;
     Genome genome;
 
@@ -101,14 +101,6 @@ public class TribbleListFeatureSource implements FeatureSource {
 
     @Override
     public int getFeatureWindowSize() {
-        if (windowSize < 0) {
-            // Arbitrarily get the first source
-            if (pathMap != null && pathMap.size() > 0) {
-                String chr = pathMap.keySet().iterator().next();
-                TribbleFeatureSource src = getSource(chr);
-                windowSize = src.getFeatureWindowSize();
-            }
-        }
         return windowSize;
     }
 

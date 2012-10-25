@@ -95,18 +95,18 @@ public class UIConstants {
     public static Color NO_DATA_COLOR = new Color(200, 200, 200, 150);
     static final public String REMOVE_GENOME_LIST_MENU_ITEM = "Remove Imported Genomes...";
     static final public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
-
+    static final public int DEFAULT_DOUBLE_CLICK_INTERVAL = 500;
 
 
     public static int getDoubleClickInterval() {
 
         if (doubleClickInterval < 0) {
-            try {
-                Number obj = (Number) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
+
+            Number obj = (Number) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
+            if (obj != null) {
                 doubleClickInterval = obj.intValue();
-            } catch (Exception e) {
-                log.info("Error retrieving doubleClickInterval", e);
-                doubleClickInterval = 500;
+            } else {
+                doubleClickInterval = DEFAULT_DOUBLE_CLICK_INTERVAL;
             }
 
         }
