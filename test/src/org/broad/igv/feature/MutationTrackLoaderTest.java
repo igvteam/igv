@@ -30,11 +30,11 @@ import static junit.framework.Assert.assertFalse;
  * User: jacob
  * Date: 2012-Oct-23
  */
-public class MutationParserTest extends AbstractHeadlessTest {
+public class MutationTrackLoaderTest extends AbstractHeadlessTest {
     @Test
     public void testLoadMutationTrackGZ() throws Exception {
         String testPath = TestUtils.DATA_DIR + "maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz";
-        MutationParser parser = new MutationParser();
+        MutationTrackLoader parser = new MutationTrackLoader();
         List<FeatureTrack> trackList = parser.loadMutationTracks(new ResourceLocator(testPath), genome);
 
         String testSampleId = "TCGA-02-0024-01B-01W";

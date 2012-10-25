@@ -86,9 +86,12 @@ public class CodecFactory {
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
 
-        } else if (fn.endsWith(".mut") || (fn.endsWith(".maf") && MUTCodec.isMutationAnnotationFile(path))) {
-            return new MUTCodec(path, genome);
-        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        }
+//   Mutation codec disabled until we deal with the multiple sample problem
+//        else if (fn.endsWith(".mut") || (fn.endsWith(".maf") && MUTCodec.isMutationAnnotationFile(path))) {
+//            return new MUTCodec(path, genome);
+//        }
+        else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);

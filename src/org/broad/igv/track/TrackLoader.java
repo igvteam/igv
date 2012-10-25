@@ -221,7 +221,7 @@ public class TrackLoader {
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf") || typeString.endsWith(".maf.annotated")) {
-                if (MutationParser.isMutationAnnotationFile(locator)) {
+                if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome);
                 } else {
                     loadMultipleAlignmentTrack(locator, newTracks, genome);
@@ -450,7 +450,7 @@ public class TrackLoader {
 
 
             newTracks.addAll(tracks);
-        } else if (MutationParser.isMutationAnnotationFile(locator)) {
+        } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
             this.loadMutFile(locator, newTracks, genome);
         } else if (WiggleParser.isWiggle(locator)) {
             loadWigFile(locator, newTracks, genome);
@@ -1031,9 +1031,7 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        TribbleFeatureSource source = new TribbleFeatureSource(locator.getPath(), genome);
-
-        MutationParser parser = new MutationParser();
+        MutationTrackLoader parser = new MutationTrackLoader();
         List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
