@@ -38,10 +38,10 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class MAFTrack extends AbstractTrack {
+public class MultipleAlignmentTrack extends AbstractTrack {
 
     public static final int margin = 5;
-    private static Logger log = Logger.getLogger(MAFTrack.class);
+    private static Logger log = Logger.getLogger(MultipleAlignmentTrack.class);
     private static int EXPANDED_HEIGHT = 14;
     private static int GAPS_HEIGHT = 25;
     //List<Rectangle> featureRects = new ArrayList();
@@ -58,7 +58,7 @@ public class MAFTrack extends AbstractTrack {
     private HashMap<String, String> chrMappings;
 
 
-    public MAFTrack(ResourceLocator locator, Genome genome) throws IOException {
+    public MultipleAlignmentTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;
         this.mgr = new MAFManager(locator, genome);

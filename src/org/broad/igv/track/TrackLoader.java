@@ -46,7 +46,7 @@ import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
-import org.broad.igv.maf.MAFTrack;
+import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.renderer.*;
@@ -224,10 +224,10 @@ public class TrackLoader {
                 if (MutationParser.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome);
                 } else {
-                    loadMAFTrack(locator, newTracks, genome);
+                    loadMultipleAlignmentTrack(locator, newTracks, genome);
                 }
             } else if (typeString.endsWith(".maf.dict")) {
-                loadMAFTrack(locator, newTracks, genome);
+                loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
@@ -455,7 +455,7 @@ public class TrackLoader {
         } else if (WiggleParser.isWiggle(locator)) {
             loadWigFile(locator, newTracks, genome);
         } else if (locator.getPath().toLowerCase().contains(".maf") || locator.getPath().toLowerCase().endsWith(".maf.dict")) {
-            loadMAFTrack(locator, newTracks, genome);
+            loadMultipleAlignmentTrack(locator, newTracks, genome);
         }
     }
 
@@ -880,8 +880,8 @@ public class TrackLoader {
         (new RNAIHairpinParser(locator.getPath())).parse();
     }
 
-    private void loadMAFTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        MAFTrack t = new MAFTrack(locator, genome);
+    private void loadMultipleAlignmentTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        MultipleAlignmentTrack t = new MultipleAlignmentTrack(locator, genome);
         t.setName("Multiple Alignments");
         newTracks.add(t);
     }
@@ -1029,7 +1029,9 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        TribbleFeatureSource source = new TribbleFeatureSource(locator.getPath(), genome);
 
         MutationParser parser = new MutationParser();
         List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator, genome);
