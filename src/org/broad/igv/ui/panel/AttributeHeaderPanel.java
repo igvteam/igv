@@ -106,6 +106,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
             transform = AffineTransform.getQuadrantRotateInstance(-1);
             graphics2.transform(transform);
             graphics2.setFont(font);
+            graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             FontMetrics fm = graphics2.getFontMetrics();
             int fontAscent = fm.getHeight();
 
@@ -115,13 +116,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
                 x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
                 String toDraw = key;
-                int stringOffset = 0;
-                //Workaround for Java 7 bug not applying transformation properly
-                if(System.getProperty("java.version").startsWith("1.7") &&
-                        Globals.IS_MAC ){
-                    toDraw = (new StringBuffer(key)).reverse().toString();
-                    stringOffset = fm.stringWidth(toDraw);
-                }
+                int stringOffset = 2;
                 graphics2.drawString(toDraw, stringOffset, x);
             }
         }
