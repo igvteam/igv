@@ -88,6 +88,8 @@ public class Globals {
 
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
+
+    public static final String JAVA_VERSION_STRING = "java.version";
     public static Map<Character, Color> nucleotideColors;
 
     //Location of bedtools executable

@@ -70,6 +70,7 @@ public class Main {
     private static void initApplication() {
         DirectoryManager.initializeLog();
         log.info("Startup  " + Globals.applicationString());
+        log.info("Java " + System.getProperty(Globals.JAVA_VERSION_STRING));
         log.info("Default User Directory: " + DirectoryManager.getUserDirectory());
         System.setProperty("http.agent", Globals.applicationString());
 
