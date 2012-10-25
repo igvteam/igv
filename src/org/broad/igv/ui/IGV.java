@@ -1420,9 +1420,12 @@ public class IGV {
         menuBar.getViewMenu().add(showPeakMenuItem);
     }
 
-    public boolean isSuppressTooltip() {
+    public boolean isShowToolTipOnClick() {
+        return contentPane != null && contentPane.getCommandBar().getToolTipBehavior() == IGVCommandBar.TOOLTIP_BEHAVIOR.CLICK;
+    }
 
-        return contentPane != null && contentPane.getCommandBar().isSuppressTooltip();
+    public boolean isShowToolTipOnHover() {
+        return contentPane != null && contentPane.getCommandBar().getToolTipBehavior() == IGVCommandBar.TOOLTIP_BEHAVIOR.HOVER;
     }
 
     public void openStatusWindow() {

@@ -1,26 +1,19 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
  *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL), 
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import jargs.gnu.CmdLineParser;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -133,17 +126,15 @@ public class Main {
         // Turn on tooltip in case it was disabled for a temporary keyboard event, e.g. alt-tab
         frame.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowActivated(WindowEvent e) {
-                if (IGV.hasInstance() && !IGV.getInstance().isSuppressTooltip()) {
-                    ToolTipManager.sharedInstance().setEnabled(true);
-                }
+                boolean showToolTipHover = IGV.hasInstance() && IGV.getInstance().isShowToolTipOnHover();
+                ToolTipManager.sharedInstance().setEnabled(showToolTipHover);
             }
 
             @Override
             public void windowGainedFocus(WindowEvent windowEvent) {
-                if (IGV.hasInstance() && !IGV.getInstance().isSuppressTooltip()) {
-                    ToolTipManager.sharedInstance().setEnabled(true);
-                }
+                this.windowActivated(windowEvent);
             }
         });
 
@@ -169,8 +160,6 @@ public class Main {
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
-
-
     }
 
     private static void initializeLookAndFeel() {
@@ -298,36 +287,33 @@ public class Main {
             if (eq > 0) {
                 // we got a key=value
                 String key = arg.substring(0, eq);
-                String val = arg.substring(eq+1);
-                
+                String val = arg.substring(eq + 1);
+
                 if (key.equalsIgnoreCase("server")) {
                     PreferenceManager.getInstance().put(PreferenceManager.IONTORRENT_SERVER, val);
-                    log.info("Got server: "+key+"="+val);
+                    log.info("Got server: " + key + "=" + val);
                     return null;
-                }
-                else if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
-                   
+                } else if (key.equalsIgnoreCase("sessionURL") || key.equalsIgnoreCase("file")) {
+
                     if (val.endsWith(".xml") || val.endsWith(".php") || val.endsWith(".php3")
                             || val.endsWith(".session")) {
-                        log.info("Got session: "+key+"="+val);
+                        log.info("Got session: " + key + "=" + val);
                         sessionFile = val;
 
                     } else {
-                        log.info("Got dataFileString: "+key+"="+val);
+                        log.info("Got dataFileString: " + key + "=" + val);
                         dataFileString = val;
                     }
                     return null;
-                }
-                else if (key.equalsIgnoreCase("locus") || key.equalsIgnoreCase("position")) {
-                    log.info("Got locus: "+key+"="+val);
+                } else if (key.equalsIgnoreCase("locus") || key.equalsIgnoreCase("position")) {
+                    log.info("Got locus: " + key + "=" + val);
                     locusString = val;
                     return null;
-                }
-                else {
-                    log.info("Currently not handled: "+key+"="+val);
+                } else {
+                    log.info("Currently not handled: " + key + "=" + val);
                     return null;
                 }
-                
+
             }
             return arg;
         }

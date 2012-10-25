@@ -307,7 +307,7 @@ public class FeatureTrack extends AbstractTrack {
                     String vs = igvFeature.getValueString(position, null);
                     buf.append(vs);
 
-                    if (IGV.getInstance().isSuppressTooltip()) {
+                    if (IGV.getInstance().isShowToolTipOnClick()) {
                         // URL
                         String url = getFeatureURL(igvFeature);
 
@@ -537,7 +537,7 @@ public class FeatureTrack extends AbstractTrack {
                 selectedFeature = null;
             else selectedFeature = igvFeature;
 
-            if (IGV.getInstance().isSuppressTooltip()) {
+            if (IGV.getInstance().isShowToolTipOnClick()) {
                 openTooltipWindow(te);
             } else {
                 String url = getFeatureURL(igvFeature);

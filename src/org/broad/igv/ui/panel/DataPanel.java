@@ -357,7 +357,9 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     final public String getToolTipText() {
-        if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
+        //TODO Suppress tooltips instead. This is hard to get exactly right
+        //TODO with our different tooltip settings
+        if (currentTool instanceof RegionOfInterestTool) {
             return "";
         }
         return tooltipText;
@@ -607,7 +609,7 @@ public class DataPanel extends JComponent implements Paintable {
          * The shift and alt keys are alternative  zoom options
          * shift zooms in by 8x,  alt zooms out by 2x
          * <p/>
-         * TODO -- the "currenTool" is also a mouselistener, so there are two.  This makes mouse event handling
+         * TODO -- the "currentTool" is also a mouselistener, so there are two.  This makes mouse event handling
          * TODO -- needlessly complicated, which handler has preference, etc.  Move this code to the default
          * TODO -- PanAndZoomTool
          *

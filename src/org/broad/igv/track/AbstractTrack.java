@@ -482,7 +482,7 @@ public abstract class AbstractTrack implements Track {
 
     public boolean handleDataClick(TrackClickEvent te) {
 
-        if (IGV.getInstance().isSuppressTooltip()) {
+        if (IGV.getInstance().isShowToolTipOnClick()) {
             return openTooltipWindow(te);
         }
         return false;

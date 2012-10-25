@@ -23,6 +23,7 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
+import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
@@ -136,6 +137,7 @@ public class PreferenceManager implements PropertyManager {
     final static public String LAST_CHROMOSOME_VIEWED_KEY = "LAST_CHROMOSOME_VIEWED_KEY";
     final static public String HISTORY_DELIMITER = ";";
     final static public String GENOME_ID_DISPLAY_LIST_KEY = "GENOME_LIST";
+    final static public String TOOLTIP_BEHAVIOR_KEY = "TOOLTIP_BEHAVIOR";
 
     final public static String MUTATION_COLOR_TABLE = "MUTATION_COLOR_TABLE";
     final public static String MUTATION_INDEL_COLOR_KEY = "MUTATION_INDEL_COLOR_KEY";
@@ -1083,7 +1085,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(TOOLTIP_INITIAL_DELAY, "50");
         defaultValues.put(TOOLTIP_RESHOW_DELAY, "50");
         defaultValues.put(TOOLTIP_DISMISS_DELAY, "60000");
-
+        defaultValues.put(TOOLTIP_BEHAVIOR_KEY, IGVCommandBar.TOOLTIP_BEHAVIOR.HOVER.name());
     }
 
     /**

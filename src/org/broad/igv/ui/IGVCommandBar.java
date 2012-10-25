@@ -50,6 +50,8 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -76,7 +78,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JPanel locationPanel;
     private JideButton refreshButton;
     private JideToggleButton roiToggleButton;
-    private JideButton supressTooltipButton;
+    private JideButton toolTipBehaviorButton;
     private JTextField searchTextField;
     private JPanel toolPanel;
     private JPanel zoomControl;
@@ -84,8 +86,30 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
-    private boolean suppressTooltip = false;
+
     private JideButton exomeButton;
+
+    public enum TOOLTIP_BEHAVIOR {
+        HOVER("Show Tooltip on Hover"), CLICK("Show Tooltip on Click"), NEVER("Never Show Tooltip");
+
+        private final String label;
+
+        private TOOLTIP_BEHAVIOR(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return this.label;
+        }
+    }
+
+    private TOOLTIP_BEHAVIOR toolTipBehavior = TOOLTIP_BEHAVIOR.valueOf((PreferenceManager.getInstance().get(PreferenceManager.TOOLTIP_BEHAVIOR_KEY,
+            TOOLTIP_BEHAVIOR.HOVER.name()).toUpperCase()));
+
+    public TOOLTIP_BEHAVIOR getToolTipBehavior() {
+        return toolTipBehavior;
+    }
+
 
     /**
      * Special value to pull up dialog with rest of genomes
@@ -108,6 +132,28 @@ public class IGVCommandBar extends javax.swing.JPanel {
         chromosomeComboBox.setSelectedItem(currentChr);
         roiToggleButton.setEnabled(!isWholeGenome);
         zoomControl.setEnabled(!isWholeGenome);
+
+        toolTipBehaviorButton.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                getPopupMenuToolTipBehavior().show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+    }
+
+    private JPopupMenu getPopupMenuToolTipBehavior() {
+        final JPopupMenu popup = new JPopupMenu();
+        for (final TOOLTIP_BEHAVIOR behavior : TOOLTIP_BEHAVIOR.values()) {
+            JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(behavior.getLabel());
+            menuItem.setSelected(toolTipBehavior == behavior);
+            menuItem.addActionListener(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    toolTipBehavior = behavior;
+                    PreferenceManager.getInstance().put(PreferenceManager.TOOLTIP_BEHAVIOR_KEY, behavior.name());
+                }
+            });
+            popup.add(menuItem);
+        }
+        return popup;
     }
 
     /**
@@ -356,11 +402,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         zoomControl.setEnabled(!geneListMode);
 //        homeButton.setEnabled(true);
 //        roiToggleButton.setEnabled(!geneListMode);
-    }
-
-
-    public boolean isSuppressTooltip() {
-        return suppressTooltip;
     }
 
     static class ComboBoxRenderer implements ListCellRenderer {
@@ -708,30 +749,16 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
         final Icon tooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
-        supressTooltipButton = new JideButton(noTooltipIcon);
-        //supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        //supressTooltipButton.setBorder(toolButtonBorder);
-        supressTooltipButton.setAlignmentX(RIGHT_ALIGNMENT);
-        supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
-        supressTooltipButton.setMaximumSize(new java.awt.Dimension(32, 32));
-        supressTooltipButton.setMinimumSize(new java.awt.Dimension(32, 32));
-        supressTooltipButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        supressTooltipButton.addActionListener(new java.awt.event.ActionListener() {
+        toolTipBehaviorButton = new JideButton(noTooltipIcon);
 
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                suppressTooltip = !suppressTooltip;
-                if (suppressTooltip) {
-                    //IGV.getInstance().getContentPane().getStatusBar().setMessage2("Data panel popup text is disabled");
-                    supressTooltipButton.setIcon(tooltipIcon);
-                    supressTooltipButton.setToolTipText(ENABLE_POPUP_TOOLTIP);
-                } else {
-                    //IGV.getInstance().getContentPane().getStatusBar().setMessage2("");
-                    supressTooltipButton.setIcon(noTooltipIcon);
-                    supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
-                }
-            }
-        });
-        toolPanel.add(supressTooltipButton, JideBoxLayout.FIX);
+        //toolTipBehaviorButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        //toolTipBehaviorButton.setBorder(toolButtonBorder);
+        toolTipBehaviorButton.setAlignmentX(RIGHT_ALIGNMENT);
+        toolTipBehaviorButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
+        toolTipBehaviorButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        toolTipBehaviorButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        toolTipBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        toolPanel.add(toolTipBehaviorButton, JideBoxLayout.FIX);
 
         boolean showExomeButton = Boolean.parseBoolean(System.getProperty("showExomeButton", "false"));
         if (showExomeButton) {
