@@ -195,7 +195,7 @@ public class TrackMenuUtils {
             log.debug("enter getDataPopupMenu");
         }
 
-        final String[] labels = {"Heatmap", "Bar Chart", "Scatterplot", "Line Plot"};
+        final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
         final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
                 PointsRenderer.class, LineplotRenderer.class
         };
