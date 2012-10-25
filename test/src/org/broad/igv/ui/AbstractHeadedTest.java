@@ -129,6 +129,9 @@ public class AbstractHeadedTest {
             headless = ge.isHeadless();
         } catch (Exception e) {
             e.printStackTrace();
+        }catch(Error e){
+            //Really not sure why this ever happens, maybe just jenkins issues
+            e.printStackTrace();
         }
         if (headless) {
             System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
