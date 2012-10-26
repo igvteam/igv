@@ -103,6 +103,8 @@ public class RulerPanel extends JPanel {
 
         super.paintComponent(g);
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         render(g);
 
 

@@ -85,6 +85,7 @@ public class ZoomSliderPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         updateTickCount();
         //if (this.isEnabled()) {
         paintHorizontal(g);

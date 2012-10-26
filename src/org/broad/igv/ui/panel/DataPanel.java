@@ -100,6 +100,7 @@ public class DataPanel extends JComponent implements Paintable {
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         RenderContext context = null;
         try {
 

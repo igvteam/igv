@@ -67,6 +67,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Rectangle visibleRect = getVisibleRect();
         removeMousableRegions();
         paintOffscreen((Graphics2D) g, visibleRect);

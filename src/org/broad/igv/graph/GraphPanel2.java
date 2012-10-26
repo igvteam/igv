@@ -45,6 +45,8 @@ public class GraphPanel2 extends JPanel {
 
         Graphics2D g = (Graphics2D) graphics;
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         // Just paint nodes (no edges)
         if (graph != null) {
 

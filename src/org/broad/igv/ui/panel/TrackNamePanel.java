@@ -81,6 +81,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         removeMousableRegions();
         Rectangle visibleRect = getVisibleRect();
         paintImpl(g, visibleRect);

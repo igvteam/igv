@@ -124,6 +124,8 @@ public class TrackPanel extends JPanel {
 
     protected void paintComponent(Graphics graphics) {
 
+        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         trackRectangles.clear();
         java.util.List<Track> tracks = new ArrayList<Track>(HiCTrackManager.getLoadedTracks());
         if ((tracks == null || tracks.isEmpty()) && eigenvectorTrack == null) {

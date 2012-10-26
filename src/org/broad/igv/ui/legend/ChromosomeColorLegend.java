@@ -55,6 +55,7 @@ public class ChromosomeColorLegend extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         paintLegend(g);
     }
 

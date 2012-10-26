@@ -87,6 +87,7 @@ public class CytobandPanel extends JPanel {
 
         super.paintComponent(g);
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
             //Graphics g2 = g.create();

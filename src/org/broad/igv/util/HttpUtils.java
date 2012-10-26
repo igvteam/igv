@@ -534,6 +534,9 @@ public class HttpUtils {
         if (method.equals("PUT")) {
             return conn;
         } else {
+
+           //log.info("Connect: " + url.toExternalForm());
+
             int code = conn.getResponseCode();
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
@@ -546,6 +549,8 @@ public class HttpUtils {
 
                 String newLocation = conn.getHeaderField("Location");
                 log.debug("Redirecting to " + newLocation);
+
+               //log.info("Redirect " + url.toExternalForm() + " -> " + newLocation);
 
                 return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
             }

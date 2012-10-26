@@ -57,6 +57,7 @@ public class RegionOfInterestPanel extends JPanel {
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Draw regions of interest?
         drawRegionsOfInterest((Graphics2D) g, getHeight());

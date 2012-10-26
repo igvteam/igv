@@ -92,6 +92,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     @Override
     protected void paintComponent(Graphics g) {
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (image != null) {
             g.drawImage(image, 0, 0, null);
             renderVisibleWindow((Graphics2D) g);

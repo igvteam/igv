@@ -81,6 +81,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
+        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 

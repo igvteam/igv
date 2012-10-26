@@ -42,6 +42,8 @@ public class ColorScalePanel extends JComponent implements Serializable {
     @Override
     protected void paintComponent(Graphics graphics) {
 
+        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         if (colorScale != null) {
 
             int nSteps = getWidth() - 1;

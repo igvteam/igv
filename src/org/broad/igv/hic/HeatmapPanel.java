@@ -64,6 +64,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
     @Override
     protected void paintComponent(Graphics g) {
 
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         Rectangle clipBounds = g.getClipBounds();
         g.clearRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
