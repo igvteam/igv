@@ -129,8 +129,7 @@ public class Main {
 
             @Override
             public void windowActivated(WindowEvent e) {
-                boolean showToolTipHover = IGV.hasInstance() && IGV.getInstance().isShowToolTipOnHover();
-                ToolTipManager.sharedInstance().setEnabled(showToolTipHover);
+                ToolTipManager.sharedInstance().setEnabled(true);
             }
 
             @Override

@@ -36,6 +36,7 @@ import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.*;
@@ -141,7 +142,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
-        final JPopupMenu popup = new JPopupMenu();
+        final JPopupMenu popup = new IGVPopupMenu();
         for (final TOOLTIP_BEHAVIOR behavior : TOOLTIP_BEHAVIOR.values()) {
             JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(behavior.getLabel());
             menuItem.setSelected(toolTipBehavior == behavior);
