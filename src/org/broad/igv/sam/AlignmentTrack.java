@@ -799,7 +799,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
         }
-        if (IGV.getInstance().isShowToolTipOnClick()) {
+        if (IGV.getInstance().isShowDetailsOnClick()) {
             openTooltipWindow(te);
         }
         return false;

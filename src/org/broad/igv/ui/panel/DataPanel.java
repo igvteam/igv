@@ -383,7 +383,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         //Tooltip here specifically means text that is shown on hover
         //We disable it unless that option is specified
-        if (!IGV.getInstance().isShowToolTipOnHover()) {
+        if (!IGV.getInstance().isShowDetailsOnHover()) {
             setToolTipText(null);
             return;
         }

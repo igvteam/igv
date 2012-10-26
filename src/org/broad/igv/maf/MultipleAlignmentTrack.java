@@ -241,7 +241,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         if (e.isPopupTrigger()) {
             configureTrack();
         } else {
-            if (IGV.getInstance().isShowToolTipOnClick()) {
+            if (IGV.getInstance().isShowDetailsOnClick()) {
                 openTooltipWindow(te);
             }
         }

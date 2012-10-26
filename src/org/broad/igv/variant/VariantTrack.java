@@ -1288,7 +1288,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             IGV.getInstance().doRefresh();
         }
 
-        if (IGV.getInstance().isShowToolTipOnClick()) {
+        if (IGV.getInstance().isShowDetailsOnClick()) {
             openTooltipWindow(te);
         }
 
