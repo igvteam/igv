@@ -520,6 +520,7 @@ public class HttpUtils {
             conn.setRequestProperty("Accept", "text/plain");
         }
 
+        conn.setUseCaches(false);
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
@@ -535,9 +536,7 @@ public class HttpUtils {
             return conn;
         } else {
 
-           //log.info("Connect: " + url.toExternalForm());
-
-            int code = conn.getResponseCode();
+             int code = conn.getResponseCode();
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
@@ -549,8 +548,6 @@ public class HttpUtils {
 
                 String newLocation = conn.getHeaderField("Location");
                 log.debug("Redirecting to " + newLocation);
-
-               //log.info("Redirect " + url.toExternalForm() + " -> " + newLocation);
 
                 return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
             }
