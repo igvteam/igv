@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_35" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_26" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -24,6 +24,7 @@ new FormModel {
 						"rows": 2
 						"maximumSize": new java.awt.Dimension( 2147483647, 60 )
 						"requestFocusEnabled": false
+						"editable": false
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
 						"$columnSpecs": "0:1.0, 0:1.0"

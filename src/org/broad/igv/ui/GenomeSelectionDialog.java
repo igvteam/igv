@@ -156,24 +156,25 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 textArea1.setRows(2);
                 textArea1.setMaximumSize(new Dimension(2147483647, 60));
                 textArea1.setRequestFocusEnabled(false);
+                textArea1.setEditable(false);
                 contentPanel.add(textArea1);
 
                 //======== filterPanel ========
                 {
                     filterPanel.setMaximumSize(new Dimension(2147483647, 28));
                     filterPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-                    ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
-                    ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
-                    ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
+                    ((GridBagLayout)filterPanel.getLayout()).columnWidths = new int[] {0, 0, 0};
+                    ((GridBagLayout)filterPanel.getLayout()).rowHeights = new int[] {0, 0};
+                    ((GridBagLayout)filterPanel.getLayout()).columnWeights = new double[] {1.0, 1.0, 1.0E-4};
+                    ((GridBagLayout)filterPanel.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
                     //---- label1 ----
                     label1.setText("Filter:");
                     label1.setLabelFor(genomeFilter);
                     label1.setRequestFocusEnabled(false);
                     filterPanel.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                     //---- genomeFilter ----
                     genomeFilter.setToolTipText("Filter genome list");
@@ -187,8 +188,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                         }
                     });
                     filterPanel.add(genomeFilter, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 }
                 contentPanel.add(filterPanel);
 
@@ -213,8 +214,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -225,8 +226,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -237,8 +238,8 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }

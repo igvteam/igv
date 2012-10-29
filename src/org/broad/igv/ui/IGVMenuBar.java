@@ -379,7 +379,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Load genome
         menuAction =
-                new MenuAction("Load Genome from File", null, KeyEvent.VK_I) {
+                new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
@@ -388,16 +388,16 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 };
 
-        menuAction.setToolTipText("Load a FASTA or .genome file");
+        menuAction.setToolTipText("Load a FASTA or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Load genome from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_GENOME_FROM_URL, 0, igv);
-        menuAction.setToolTipText("Load a FASTA or .genome file");
+        menuAction.setToolTipText("Load a FASTA or .genome file...");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Load Genome From Server", null) {
+        menuAction = new MenuAction("Load Genome From Server...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), ListSelectionModel.SINGLE_SELECTION);
@@ -417,7 +417,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         menuAction =
-                new MenuAction("Create .genome File", null, KeyEvent.VK_D) {
+                new MenuAction("Create .genome File...", null, KeyEvent.VK_D) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
                         org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
@@ -431,7 +431,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Manage Genome List", null) {
+        menuAction = new MenuAction("Manage Genome List...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 ManageGenomesDialog dialog2 = new ManageGenomesDialog(IGV.getMainFrame());
