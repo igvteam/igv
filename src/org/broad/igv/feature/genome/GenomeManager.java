@@ -438,8 +438,6 @@ public class GenomeManager {
 
         try {
             if (cachedFile.exists()) {
-
-
                 boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
 
                 // Force an update of cached genome if file length does not equal remote content length
@@ -473,8 +471,7 @@ public class GenomeManager {
 
 
         if (!f.exists()) {
-            log.error("Genome file: " + f.getAbsolutePath() + " does not exist.");
-            return null;
+            throw new FileNotFoundException("Genome file: " + f.getAbsolutePath() + " does not exist.");
         }
 
         GenomeDescriptor genomeDescriptor = null;
