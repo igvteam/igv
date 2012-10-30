@@ -1,1 +1,1 @@
-java -Xmx750m -jar `dirname $0`/hic.jar $*
+java -Xmx900m -Djava.net.preferIPv4Stack=true -jar `dirname $0`/hic.jar $*
