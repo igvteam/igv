@@ -48,8 +48,11 @@ public class HiCDBUtils {
             reader = ParsingUtils.openBufferedReader(annotListFile);
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
-                System.out.println("Processing " + nextLine);
-                insertAnnotations(nextLine);
+                if (!nextLine.startsWith("#")) {
+                    System.out.print("Processing " + nextLine);
+                    insertAnnotations(nextLine);
+                    System.out.println("   DONE");
+                }
             }
         } finally {
             if (reader != null) reader.close();
@@ -223,7 +226,7 @@ public class HiCDBUtils {
             lastIdPrepStat = dbConnection.prepareStatement(selectLastSQL);
             lastIdRS = lastIdPrepStat.executeQuery();
             int lastIDProcessed = 0;
-            if(lastIdRS.next()) lastIDProcessed = lastIdRS.getInt(1);
+            if (lastIdRS.next()) lastIDProcessed = lastIdRS.getInt(1);
             System.out.println("Last id processed = " + lastIDProcessed);
 
             annotPrepStat.setInt(1, lastIDProcessed);
