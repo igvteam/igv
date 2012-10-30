@@ -69,15 +69,47 @@ startColIndex
     Default 2147483646 (Integer.MAX_VALUE - 1, ie all)
 
 -->
-<!ELEMENT table (#PCDATA)>
+<!ELEMENT table (column*)>
 <!ATTLIST table
       name CDATA #REQUIRED
       description CDATA #IMPLIED
       binColName CDATA #IMPLIED
       chromoColName CDATA #REQUIRED
-      format CDATA #REQUIRED
       posStartColName CDATA #REQUIRED
       posEndColName CDATA #REQUIRED
+      format CDATA #REQUIRED
       startColIndex CDATA "1"
       endColIndex CDATA "2147483646">
+
+<!--
+If the table consists of a contiguous block of columns
+which correspond to a known file type, a list of columns
+is not necessary. However, we provide for additional
+flexibility here. If a list of columns is provided, they are assumed
+to correspond to the columns in a delimited file.
+
+File-based indices are 0-based, SQL are 1-based.
+
+One of colName OR colIndex must be specified.
+If both are specified, a warning is issued and the
+colName is used.
+
+fileIndex:
+    The (0-based) column number
+colName:
+    Name of the column in the SQL database
+colIndex
+    Index of the column in the SQL database
+
+Possible example for BED file:
+<column fileIndex=0, colName="Chromosome"/>
+<column fileIndex=1, colIndex=4/>
+<column fileIndex=2, colName="end"/>
+-->
+<!ELEMENT column (#PCDATA)>
+<!ATTLIST column
+    fileIndex CDATA #REQUIRED
+    colName CDATA #IMPLIED
+    colIndex CDATA #IMPLIED>
+
 
