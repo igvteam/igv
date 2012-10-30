@@ -36,6 +36,7 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -77,7 +78,17 @@ public class HiCTools {
             System.exit(1);
         }
 
-        if (args[0].equalsIgnoreCase("fragmentToBed")) {
+        if (args[0].equalsIgnoreCase("db")) {
+            String[] tmp = new String[args.length - 1];
+            System.arraycopy(args, 1, tmp, 0, args.length - 1);
+            try {
+                HiCDBUtils.main(tmp);
+            } catch (SQLException e) {
+                System.err.println("Sql exception: " + e.getMessage());
+                e.printStackTrace();
+                System.exit(1);
+            }
+        } else if (args[0].equalsIgnoreCase("fragmentToBed")) {
             if (args.length != 2) {
                 System.out.println("Usage: hictools fragmentToBed <fragmentFile>");
                 System.exit(1);
@@ -312,7 +323,7 @@ public class HiCTools {
      * @throws IOException
      */
 
-    private static void annotateWithSites(Map<String, int[]> fragmentMap, String bedFile, File outputBedFile) throws IOException {
+    static void annotateWithSites(Map<String, int[]> fragmentMap, String bedFile, File outputBedFile) throws IOException {
 
 
         BufferedReader bedReader = null;
@@ -671,7 +682,7 @@ public class HiCTools {
             this.chr = tokens[0];
             this.start = Integer.parseInt(tokens[1]);
             this.end = Integer.parseInt(tokens[2]);
-            if(tokens.length > 3) {
+            if (tokens.length > 3) {
                 this.name = name;
             }
 
@@ -685,6 +696,7 @@ public class HiCTools {
         public String getChr() {
             return chr;
         }
+
         public int getStart() {
             return start;
         }

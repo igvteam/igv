@@ -35,6 +35,9 @@
             <fileset dir="lib">
                 <include name="**/*.jar"/>
             </fileset>
+            <fileset dir="extras">
+                <include name="**/*.jar"/>
+            </fileset>
         </unzip>
     </target>
 
