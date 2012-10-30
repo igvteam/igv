@@ -64,7 +64,7 @@ public class HiCDBUtils {
         Connection dbConnection = null;
 
         String insertAnnotationSql = "INSERT INTO IGV.ANNOTATION " +
-                "(CHR, BEG, END, NAME, TYPE, SUBTYPE, CELL_TYPE, ALT_NAME, SCORE, ANTIBODY, SOURCE, REPLICATE_NUMBER, LINE) " +
+                "(CHR, BEG, END, NAME, TYPE, SUBTYPE, CELL_TYPE, ALT_NAME, SCORE, ANTIBODY, SOURCE, REPLICATE, LINE) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement ps = null;
