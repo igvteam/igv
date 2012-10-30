@@ -506,40 +506,40 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
             blockNumber++;
-            int x = (int) ((aBlock.getStart() - origin) / locScale);
-            int w = (int) Math.ceil(aBlock.getBases().length / locScale);
+            int blockPixelStart = (int) ((aBlock.getStart() - origin) / locScale);
+            int blockPixelWidth = (int) Math.ceil(aBlock.getBases().length / locScale);
 
             // If we're zoomed in and this is a large block clip a pixel off each end.  TODO - why?
-            if (highZoom && w > 10) {
-                x++;
-                w -= 2;
+            if (highZoom && blockPixelWidth > 10) {
+                blockPixelStart++;
+                blockPixelWidth -= 2;
             }
 
             // If block is out of view skip -- this is important in the case of PacBio and other platforms with very long reads
-            if (x + w >= rowRect.x && x <= rowRect.getMaxX()) {
+            if (blockPixelStart + blockPixelWidth >= rowRect.x && blockPixelStart <= rowRect.getMaxX()) {
 
                 Shape blockShape = null;
 
                 // If this is a terminal block draw the "arrow" to indicate strand position.  Otherwise draw a rectangle.
-                if ((aBlock == terminalBlock) && w > 10)
+                if ((aBlock == terminalBlock) && blockPixelWidth > 10)
                     if (h > 10) {
 
-                        int arrowLength = Math.min(5, w / 6);
+                        int arrowLength = Math.min(5, blockPixelWidth / 6);
 
                         // Don't draw off edge of clipping rect
-                        if (x < rowRect.x && (x + w) > (rowRect.x + rowRect.width)) {
-                            x = rowRect.x;
-                            w = rowRect.width;
+                        if (blockPixelStart < rowRect.x && (blockPixelStart + blockPixelWidth) > (rowRect.x + rowRect.width)) {
+                            blockPixelStart = rowRect.x;
+                            blockPixelWidth = rowRect.width;
                             arrowLength = 0;
-                        } else if (x < rowRect.x) {
-                            int delta = rowRect.x - x;
-                            x = rowRect.x;
-                            w -= delta;
+                        } else if (blockPixelStart < rowRect.x) {
+                            int delta = rowRect.x - blockPixelStart;
+                            blockPixelStart = rowRect.x;
+                            blockPixelWidth -= delta;
                             if (alignment.isNegativeStrand()) {
                                 arrowLength = 0;
                             }
-                        } else if ((x + w) > (rowRect.x + rowRect.width)) {
-                            w -= ((x + w) - (rowRect.x + rowRect.width));
+                        } else if ((blockPixelStart + blockPixelWidth) > (rowRect.x + rowRect.width)) {
+                            blockPixelWidth -= ((blockPixelStart + blockPixelWidth) - (rowRect.x + rowRect.width));
                             if (!alignment.isNegativeStrand()) {
                                 arrowLength = 0;
                             }
@@ -549,25 +549,25 @@ public class AlignmentRenderer implements FeatureRenderer {
                         int[] yPoly = {y, y, y + h / 2, y + h, y + h};
 
                         if (alignment.isNegativeStrand()) {
-                            xPoly = new int[]{x + w, x, x - arrowLength, x, x + w};
+                            xPoly = new int[]{blockPixelStart + blockPixelWidth, blockPixelStart, blockPixelStart - arrowLength, blockPixelStart, blockPixelStart + blockPixelWidth};
                         } else {
-                            xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
+                            xPoly = new int[]{blockPixelStart, blockPixelStart + blockPixelWidth, blockPixelStart + blockPixelWidth + arrowLength, blockPixelStart + blockPixelWidth, blockPixelStart};
                         }
                         blockShape = new Polygon(xPoly, yPoly, xPoly.length);
                     } else {
                         // Terminal block, but not enough height for arrow.  Indicate with a line
                         int tH = Math.max(1, h - 1);
                         if (alignment.isNegativeStrand()) {
-                            blockShape = new Rectangle(x, y, w, h);
-                            terminalGrpahics.drawLine(x, y, x, y + tH);
+                            blockShape = new Rectangle(blockPixelStart, y, blockPixelWidth, h);
+                            terminalGrpahics.drawLine(blockPixelStart, y, blockPixelStart, y + tH);
                         } else {
-                            blockShape = new Rectangle(x, y, w, h);
-                            terminalGrpahics.drawLine(x + w + 1, y, x + w + 1, y + tH);
+                            blockShape = new Rectangle(blockPixelStart, y, blockPixelWidth, h);
+                            terminalGrpahics.drawLine(blockPixelStart + blockPixelWidth + 1, y, blockPixelStart + blockPixelWidth + 1, y + tH);
                         }
                     }
                 else {
                     // Not a terminal block, or too small for arrow
-                    blockShape = new Rectangle(x, y, w, h);
+                    blockShape = new Rectangle(blockPixelStart, y, blockPixelWidth, h);
                 }
 
                 g.fill(blockShape);
@@ -603,7 +603,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
 
             // Draw connecting lines between blocks, if in view
-            if (lastBlockEnd > Integer.MIN_VALUE && x > rowRect.x) {
+            if (lastBlockEnd > Integer.MIN_VALUE && blockPixelStart > rowRect.x) {
                 Graphics2D gLine;
                 Stroke stroke;
                 int gapIdx = blockNumber - 1;
@@ -619,12 +619,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 int startX = Math.max(rowRect.x, lastBlockEnd);
-                int endX = Math.min(rowRect.x + rowRect.width, x);
+                int endX = Math.min(rowRect.x + rowRect.width, blockPixelStart);
 
                 gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
                 gLine.setStroke(stroke);
             }
-            lastBlockEnd = x + w;
+            lastBlockEnd = blockPixelStart + blockPixelWidth;
 
             // Next block cannot start before lastBlockEnd.  If its out of view we are done.
             if (lastBlockEnd > rowRect.getMaxX()) {

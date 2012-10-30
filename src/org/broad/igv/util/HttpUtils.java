@@ -520,7 +520,7 @@ public class HttpUtils {
             conn.setRequestProperty("Accept", "text/plain");
         }
 
-        conn.setUseCaches(false);
+        conn.setUseCaches(false);  // <= very important!
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
@@ -617,7 +617,7 @@ public class HttpUtils {
                 if (host.contains("broadinstitute.org")) {
                     byteRangeTestSuccess = testBroadHost(host);
                 } else {
-                    // Generic URL
+                    // Non-broad URL
                     byte[] firstBytes = getFirstBytes(url, 10000);
                     if (firstBytes.length > 1000) {
                         int end = firstBytes.length;
@@ -670,8 +670,11 @@ public class HttpUtils {
         String testURL;
         if (host.endsWith("www.broadinstitute.org")) {
             testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
-        } else {
+        } else if(host.startsWith("igvdata.broadinstitute.org")) {
             testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
+        } else {
+            testURL = "http://igv.broadinstitute.org/genomes/seq/hg19/chr12.txt";
+
         }
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
