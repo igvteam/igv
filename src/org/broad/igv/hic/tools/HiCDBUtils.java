@@ -64,7 +64,7 @@ public class HiCDBUtils {
         Connection dbConnection = null;
 
         String insertAnnotationSql = "INSERT INTO IGV.ANNOTATION " +
-                "(CHR, BEG, END, NAME, TYPE, SUBTYPE, CELL_TYPE, FILE_NAME, SCORE, ANTIBODY, SOURCE, REPLICATE_NUMBER, LINE) " +
+                "(CHR, BEG, END, NAME, TYPE, SUBTYPE, CELL_TYPE, ALT_NAME, SCORE, ANTIBODY, SOURCE, REPLICATE_NUMBER, LINE) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement ps = null;
@@ -133,8 +133,8 @@ public class HiCDBUtils {
 
 
         } finally {
-            ps.close();
-            dbConnection.close();
+            if(ps != null) ps.close();
+            if(dbConnection != null) dbConnection.close();
             if (annotationReader != null) annotationReader.close();
         }
     }
@@ -266,15 +266,15 @@ public class HiCDBUtils {
             dbConnection.commit();
 
         } finally {
-            annotRS.close();
-            lastIdRS.close();
+            if(annotRS != null) annotRS.close();
+            if(lastIdRS != null) lastIdRS.close();
             if (fragRS != null) fragRS.close();
 
-            lastIdPrepStat.close();
-            annotPrepStat.close();
-            updatePrepStat.close();
-            fragPrepStat.close();
-            dbConnection.close();
+            if(lastIdPrepStat != null) lastIdPrepStat.close();
+            if(annotPrepStat != null) annotPrepStat.close();
+            if(updatePrepStat != null) updatePrepStat.close();
+            if(fragPrepStat != null) fragPrepStat.close();
+            if(dbConnection != null) dbConnection.close();
         }
     }
 
