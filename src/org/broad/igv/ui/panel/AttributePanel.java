@@ -137,8 +137,9 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                             }
 
                             if (track.isVisible()) {
+                                int border = trackHeight < 5 ? 0 : 1;
                                 if (regionY + trackHeight >= rect.y) {
-                                    Rectangle trackRectangle = new Rectangle(left, regionY, getWidth(), trackHeight);
+                                    Rectangle trackRectangle = new Rectangle(left, regionY+border, getWidth(), trackHeight-border);
                                     track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
                                     //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 }
