@@ -109,7 +109,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
 
-        if (Globals.toolsMenuEnabled) {
+        if (true || Globals.toolsMenuEnabled) {
             refreshToolsMenu();
             menus.add(toolsMenu);
         }
@@ -135,6 +135,21 @@ public class IGVMenuBar extends JMenuBar {
     private void refreshToolsMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>(10);
 
+        // batch script
+        MenuAction menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, igv);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // igvtools
+        menuItems.add(new JSeparator());
+        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                IgvToolsGui.launch(false, igv.getGenomeManager().getGenomeId());
+            }
+        };
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuItems.add(new JSeparator());
+
         //-------------------------------------//
         //"Add tool" option, for loading plugin from someplace else
         JMenuItem addTool = new JMenuItem("Add tool");
@@ -152,8 +167,8 @@ public class IGVMenuBar extends JMenuBar {
                 }
             }
         });
-        menuItems.add(addTool);
-        menuItems.add(new JSeparator());
+        //menuItems.add(addTool);
+        //menuItems.add(new JSeparator());
 
         //-------------------------------------//
 
@@ -168,7 +183,7 @@ public class IGVMenuBar extends JMenuBar {
                 IGVMenuBar.exportVisibleData(outFile.getAbsolutePath(), IGV.getInstance().getAllTracks());
             }
         });
-        menuItems.add(exportData);
+        //menuItems.add(exportData);
 
 //        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
 //        analysisDialog.addActionListener(new ActionListener() {
@@ -187,22 +202,29 @@ public class IGVMenuBar extends JMenuBar {
         for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
             for (final Element tool : pluginSpecReader.getTools()) {
                 String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
-                JMenu toolMenu = new JMenu(toolName);
-                for (final Element command : pluginSpecReader.getCommands(tool)) {
-                    final String cmdName = command.getAttribute("name");
-                    JMenuItem cmdItem = new JMenuItem(cmdName);
-                    toolMenu.add(cmdItem);
+                boolean toolVisible = Boolean.parseBoolean(tool.getAttribute("visible"));
+                if (toolVisible) {
+                    JMenu toolMenu = new JMenu(toolName);
+                    for (final Element command : pluginSpecReader.getCommands(tool)) {
+                        final String cmdName = command.getAttribute("name");
+                        JMenuItem cmdItem = new JMenuItem(cmdName);
+                        toolMenu.add(cmdItem);
 
-                    cmdItem.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
-                        }
-                    });
+                        cmdItem.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
+                            }
+                        });
+                    }
+                    //Disable tool if we can't find the executable
+                    //We allow a blank path for most general case
+                    String path = tool.getAttribute("path");
+                    if (path.length() > 0) {
+                        toolMenu.setEnabled(PluginSpecReader.isToolPathValid(path));
+                    }
+                    menuItems.add(toolMenu);
                 }
-                //Disable tool if we can't find the executable
-                toolMenu.setEnabled(PluginSpecReader.isToolPathValid(tool.getAttribute("path")));
-                menuItems.add(toolMenu);
             }
         }
 
@@ -284,27 +306,6 @@ public class IGVMenuBar extends JMenuBar {
 
         menuAction.setToolTipText(SAVE_IMAGE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // batch script
-        menuItems.add(new JSeparator());
-
-        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, igv);
-
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // igvtools
-
-        menuItems.add(new JSeparator());
-
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IgvToolsGui.launch(false, igv.getGenomeManager().getGenomeId());
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
 
         // TODO -- change "Exit" to "Close" for BioClipse
         menuItems.add(new JSeparator());      // Exit

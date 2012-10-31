@@ -31,7 +31,8 @@ name
 id
 	A unique ID for this plugin
 plugin_version
-  	Your version string. The version of the plugin itself-->
+  	Your version string. The version of the plugin itself
+ -->
 <!ELEMENT igv_plugin (tool+)>
 <!ATTLIST igv_plugin api_version (alpha) #REQUIRED
     name CDATA #REQUIRED
@@ -51,10 +52,20 @@ path
     is checked for the relevant tool. The developer is reminded
     that the PATH environment variable can vary depending on how
     IGV is launched.
+
+description:
+    Human readable description of the tool
+
+visible
+    Whether the tool should show up in the tools menu.
+    Default is "true", because if "false" there's no way
+    for the user to access it. Intended to be used by developers
 -->
 <!ELEMENT tool (default?, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
-    path CDATA #REQUIRED>
+    path CDATA #REQUIRED
+    description CDATA #IMPLIED
+    visible (true|false) "true">
 
 <!-- default element
 Default properties for each command.
@@ -115,10 +126,9 @@ cmd_arg
     the name of the file
 
 type
-    What type of input the user is expected to provide
-    Data from feature tracks is exported to a temporary file, in
-    BED format. Each line may have anywhere from 3 to 12 columns,
-    not necessarily consistent.
+    What type of input the user is expected to provide,
+    whether text, a track, etc. Data from tracks uses
+    encoding_codec to be written to file
 
 id
     Unique identifier for this argument. Can be used by later
@@ -130,8 +140,10 @@ output
     If false it isn't. This is so we can feed inputs to a different command
 
 encoding_codec
+    Optional; default is BED format
     Fully qualified class name to use for encoding features to strings.
     Only applies to data arguments. Must implement FeatureEncoder interface.
+
 
 TODO Things I'd like to add but which don't exist yet
 format

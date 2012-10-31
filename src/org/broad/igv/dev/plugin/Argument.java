@@ -70,7 +70,8 @@ public class Argument {
         LONGTEXT,
         FEATURE_TRACK,
         DATA_TRACK,
-        MULTI_FEATURE_TRACK
+        MULTI_FEATURE_TRACK,
+        ALIGNMENT_TRACK
     }
 
     Argument(String name, InputType type, String cmdArg, String defaultValue, String encodingCodec,

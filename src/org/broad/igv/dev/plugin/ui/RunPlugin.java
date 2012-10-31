@@ -61,7 +61,9 @@ public class RunPlugin extends JDialog {
 
     private void initArgumentComponents(String toolPath, String cmdName, String cmdVal) {
 
-        this.cmd.add(toolPath);
+        if (toolPath.length() > 0) {
+            this.cmd.add(toolPath);
+        }
         if (cmdVal != null && cmdVal.trim().length() > 0) {
             this.cmd.add(cmdVal);
         }
