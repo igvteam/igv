@@ -199,7 +199,7 @@ public class HiCDBUtils {
     public static void updateFragmentAnnotations() throws SQLException {
 
         String selectLastSQL = "SELECT MAX(ANNOTATION_ID) FROM FRAGMENT_ANNOTATION";
-        String selectAnnotationSql = "SELECT ID, CHR, BEG, END FROM ANNOTATION WHERE ID > ?";
+        String selectAnnotationSql = "SELECT ID, CHR, BEG, END FROM ANNOTATION WHERE ID > ? ORDER BY ID";
         String selectFragSql = "SELECT ID FROM FRAGMENT WHERE CHR = ? and BEG <= ? and END >= ?";
         String updateSQL = "INSERT INTO FRAGMENT_ANNOTATION (FRAGMENT_ID, ANNOTATION_ID) VALUES (?, ?)";
 
@@ -250,8 +250,8 @@ public class HiCDBUtils {
                     updatePrepStat.addBatch();
                     updateCount++;
 
-                    if (updateCount % 10 == 0) {
-                        System.out.println("Updating");
+                    if (updateCount % 100 == 0) {
+                        //System.out.println("Updating");
                         updatePrepStat.executeBatch();
                         updateCount = 0;
                         dbConnection.commit();
