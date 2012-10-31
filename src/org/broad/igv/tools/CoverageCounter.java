@@ -32,11 +32,7 @@ import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.tools.parsers.DataConsumer;
-import org.broad.igv.ui.filefilters.AlignmentFileFilter;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.Pair;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -138,7 +134,7 @@ public class CoverageCounter {
      * The query interval, usually this is null but can be used to restrict the interval of the alignment file that is
      * computed.  The file must be indexed (queryable) if this is not null
      */
-    private Locus interval;
+    private Locus queryInterval;
 
     /**
      * Data buffer to pass data to the "consumer" (preprocessor).
@@ -204,7 +200,7 @@ public class CoverageCounter {
      */
     private void parseOptions(String queryString, int minMapQual, int countFlags) {
         if (queryString != null) {
-            this.interval = new Locus(queryString);
+            this.queryInterval = new Locus(queryString);
         }
         this.minMappingQuality = minMapQual;
         outputSeparate = (countFlags & STRANDS_BY_READ) > 0;
@@ -274,12 +270,12 @@ public class CoverageCounter {
 
         try {
 
-            if (interval == null) {
+            if (queryInterval == null) {
                 reader = AlignmentReaderFactory.getReader(alignmentFile, false);
                 iter = reader.iterator();
             } else {
                 reader = AlignmentReaderFactory.getReader(alignmentFile, true);
-                iter = reader.query(interval.getChr(), interval.getStart() - 1, interval.getEnd(), false);
+                iter = reader.query(queryInterval.getChr(), queryInterval.getStart() - 1, queryInterval.getEnd(), false);
             }
 
             while (iter != null && iter.hasNext()) {
@@ -332,15 +328,23 @@ public class CoverageCounter {
                                 int adjustedStart = block.getStart();
                                 int adjustedEnd = block.getEnd();
 
-                                if (readNegStrand) {
-                                    adjustedStart = Math.max(0, adjustedStart - extFactor);
-                                } else {
-                                    adjustedEnd += extFactor;
+                                if (extFactor > 0) {
+                                    // Standard extension option -- extend read on 3' end
+                                    if (readNegStrand) {
+                                        adjustedStart = Math.max(0, adjustedStart - extFactor);
+                                    } else {
+                                        adjustedEnd += extFactor;
+                                    }
+                                } else if (extFactor < 0) {
+                                    // "Bidirectional" option -- create artificial read centered on 5' end
+                                    int center = readNegStrand ? block.getEnd() : block.getStart();
+                                        adjustedStart = Math.max(0, center + extFactor);  // extFactor is negative
+                                        adjustedEnd = center - extFactor;
                                 }
 
-                                if (interval != null) {
-                                    adjustedStart = Math.max(interval.getStart() - 1, adjustedStart);
-                                    adjustedEnd = Math.min(interval.getEnd(), adjustedEnd);
+                                if (queryInterval != null) {
+                                    adjustedStart = Math.max(queryInterval.getStart() - 1, adjustedStart);
+                                    adjustedEnd = Math.min(queryInterval.getEnd(), adjustedEnd);
                                 }
 
                                 for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
@@ -370,9 +374,9 @@ public class CoverageCounter {
                             adjustedEnd += extFactor;
                         }
 
-                        if (interval != null) {
-                            adjustedStart = Math.max(interval.getStart() - 1, adjustedStart);
-                            adjustedEnd = Math.min(interval.getEnd(), adjustedEnd);
+                        if (queryInterval != null) {
+                            adjustedStart = Math.max(queryInterval.getStart() - 1, adjustedStart);
+                            adjustedEnd = Math.min(queryInterval.getEnd(), adjustedEnd);
                         }
 
 
@@ -597,8 +601,8 @@ public class CoverageCounter {
                 }
             }
 
-            if(outputSeparate){
-                 strandCount = new int[NUM_STRANDS];
+            if (outputSeparate) {
+                strandCount = new int[NUM_STRANDS];
             }
         }
 
@@ -617,7 +621,7 @@ public class CoverageCounter {
                 incrementNucleotide(base, strand);
             }
 
-            if(outputSeparate){
+            if (outputSeparate) {
                 this.strandCount[strand]++;
             }
 
