@@ -183,7 +183,11 @@ Options:
   -e, --extFactor num       The read or feature is extended by the specified distance
                in bp prior to counting. This option is useful for chip-seq
                and rna-seq applications. The value is generally set to the
-               average fragment length of the library.
+               average fragment length of the library minus the average read length.
+
+               NEW -- if num is negative the read is extended in both directions, from the
+               five prime end, by the specified amount.  The read length is ignored.  This option
+               is useful for certain restriction digest experiments.
 
   -f, --windowFunctions  list     A comma delimited list specifying window functions to use
                when reducing the data to precomputed tiles.   Possible
