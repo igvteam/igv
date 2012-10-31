@@ -24,20 +24,21 @@ description
 -->
 <!ELEMENT database (table+)>
 <!ATTLIST database
+      name CDATA #REQUIRED
+      description CDATA #IMPLIED
       version (alpha) #REQUIRED
+      subprotocol (sqlite|mysql) #REQUIRED
       host CDATA #REQUIRED
       path CDATA #REQUIRED
       port CDATA #REQUIRED
-      subprotocol CDATA #REQUIRED
-      username CDATA #REQUIRED
-      name CDATA #REQUIRED
-      description CDATA #IMPLIED>
+      username CDATA #REQUIRED>
 
 
 <!--
 A database can have any number of tables within it.
 For each table, we have to specify the location
-of certain columns.
+of certain columns to perform queries.
+
 name
     Exact name of the table
 description
@@ -56,7 +57,10 @@ format
     of the file formats IGV can read. "format" is file extension
     that the table is similar to (e.g. bed, psl, ucscgene).
     We say "similar" because the startColIndex/endColIndex
-    fields can be used to take a subset of columns
+    fields can be used to take a subset of columns. In addition,
+    child column elements can specify the column name/indices
+    of the database and how they map to the columns of the
+    specified format (if the columns are not in the same order)
 posStartColName
     The name of the column which contains the start positions
     of each feature. Necessary for constructing queries.
@@ -98,18 +102,25 @@ fileIndex:
     The (0-based) column number
 colName:
     Name of the column in the SQL database
-colIndex
+colIndex:
     Index of the column in the SQL database
+name:
+    Human-readable name of column. Not used, just for readability
+description:
+    Human-readable description of data column. Not used, just for readability
+
 
 Possible example for BED file:
 <column fileIndex=0, colName="Chromosome"/>
 <column fileIndex=1, colIndex=4/>
 <column fileIndex=2, colName="end"/>
 -->
-<!ELEMENT column (#PCDATA)>
+<!ELEMENT column EMPTY>
 <!ATTLIST column
     fileIndex CDATA #REQUIRED
-    colName CDATA #IMPLIED
-    colIndex CDATA #IMPLIED>
+    colLabel CDATA #IMPLIED
+    colIndex CDATA #IMPLIED
+    name CDATA #IMPLIED
+    description CDATA #IMPLIED>
 
 

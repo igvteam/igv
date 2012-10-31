@@ -37,7 +37,7 @@ public class SQLCodecSourceTest {
         String table = "unigene";
 
 
-        SQLCodecSource reader = new SQLCodecSource(locator, codec, table, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
+        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
         Iterator<Feature> SQLFeatures = reader.iterator();
 
         String bedFile = host + "/bed/Unigene.sample.bed";

@@ -27,7 +27,7 @@ import org.broad.igv.exceptions.ParserException;
  * <p/>
  * Consider the same data stored in a SQL database. Each line stores
  * essentially the information, although we have the advantage that
- * SQL columns are typed. {@link org.broad.igv.dev.db.SQLLineParserByName}
+ * SQL columns are typed. {@link org.broad.igv.dev.db.SQLLineParserByLabel}
  * reads ResultSet, and uses column names (String) to identify the location.
  * One could also use Integers to index the columns, if desired. This way
  * we retain type information on columns; the data is never treated as a String
@@ -36,7 +36,7 @@ import org.broad.igv.exceptions.ParserException;
  * User: jacob
  * Date: 2012-Aug-30
  *
- * @see org.broad.igv.dev.db.SQLLineParserByName
+ * @see org.broad.igv.dev.db.SQLLineParserByLabel
  * @see org.broad.igv.dev.StringArrayParser
  */
 public interface IParser<TContainer, TIndex> {

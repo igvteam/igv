@@ -14,22 +14,13 @@ package org.broad.igv.dev.db;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -100,14 +91,14 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private static final int MAX_BINS = 20;
 
-    public SQLCodecSource(ResourceLocator locator, AsciiFeatureCodec codec, String table) {
-        super(locator, table);
+    public SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec, ColumnMap columnMap) {
+        super(locator, table, columnMap);
         this.codec = codec;
     }
 
-    public SQLCodecSource(ResourceLocator locator, AsciiFeatureCodec codec, String table,
+    public SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec, ColumnMap columnMap,
                           String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex) {
-        this(locator, codec, table);
+        this(locator, table, codec, columnMap);
         this.chromoColName = chromoColName;
         this.posStartColName = posStartColName;
         this.posEndColName = posEndColName;
@@ -115,63 +106,15 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         this.endColIndex = endColIndex;
     }
 
-    /**
-     * Retrieve a reader from the XML profile located at {@code profilePath}.
-     * TODO If {@code tableName == null}, the user is prompted to choose a table from the list
-     *
-     * @param profilePath
-     * @param tableName
-     * @return
-     */
-    public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
-        ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
-        InputStream profileStream = null;
-        try {
-            profileStream = new FileInputStream(profilePath);
-            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
-            NodeList nodes = document.getElementsByTagName("table");
-            List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(nodes.getLength());
-
-            for (int tnum = 0; tnum < nodes.getLength(); tnum++) {
-                Node n = nodes.item(tnum);
-                NamedNodeMap attr = n.getAttributes();
-                String tabName = attr.getNamedItem("name").getTextContent();
-                if (tableName == null || tableName.equals(tabName)) {
-
-                    String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
-                    String posStartColName = attr.getNamedItem("posStartColName").getTextContent();
-                    String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
-                    String format = attr.getNamedItem("format").getTextContent();
-                    String startColString = Utilities.getNullSafe(attr, "startColIndex");
-                    String endColString = Utilities.getNullSafe(attr, "endColIndex");
-                    String binColName = Utilities.getNullSafe(attr, "binColName");
-                    int startColIndex = startColString != null ? Integer.parseInt(startColString) : 1;
-                    int endColIndex = endColString != null ? Integer.parseInt(endColString) : Integer.MAX_VALUE;
-                    AsciiFeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
-                    SQLCodecSource source = new SQLCodecSource(dbLocator, codec, tabName, chromoColName, posStartColName, posEndColName, startColIndex, endColIndex);
-                    source.binColName = binColName;
-                    sources.add(source);
-                }
-            }
-
-            return sources;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                if (profileStream != null) profileStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
     @Override
     protected Feature processResult(ResultSet rs) throws SQLException {
-        String[] tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
+        String[] tokens;
+        if (columnMap != null) {
+            columnMap.labelsToIndexes(rs.getMetaData());
+            tokens = DBManager.lineToArray(rs, columnMap);
+        } else {
+            tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
+        }
         //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
         return codec.decode(line);

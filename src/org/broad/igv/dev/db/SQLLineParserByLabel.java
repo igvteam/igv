@@ -24,7 +24,7 @@ import java.sql.SQLException;
  * @see IParser
  * @see org.broad.igv.dev.StringArrayParser
  */
-public class SQLLineParserByName implements IParser<ResultSet, String> {
+public class SQLLineParserByLabel implements IParser<ResultSet, String> {
 
     @Override
     public final byte getByte(ResultSet rs, String label) throws ParserException {

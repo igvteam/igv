@@ -259,10 +259,16 @@ public class DBManager {
 
     }
 
-    public static String[] lineToArray(ResultSet rs) throws SQLException {
-        return lineToArray(rs, 1, Integer.MAX_VALUE);
-    }
+    public static String[] lineToArray(ResultSet rs, DBReader.ColumnMap columnMap) throws SQLException {
+        int colCount = columnMap.getMaxFileColNum() - columnMap.getMinFileColNum() + 1;
+        String[] tokens = new String[colCount];
 
+        for (int cc = columnMap.getMinFileColNum(); cc < columnMap.getMaxFileColNum(); cc++) {
+            int sqlCol = columnMap.getDBColumn(cc);
+            tokens[cc] = getStringFromResultSet(rs, sqlCol);
+        }
+        return tokens;
+    }
 
     /**
      * Convert a the current line to an array of strings
@@ -276,24 +282,35 @@ public class DBManager {
     public static String[] lineToArray(ResultSet rs, int startColIndex, int endColIndex) throws SQLException {
         int colCount = Math.min(rs.getMetaData().getColumnCount(), endColIndex) - startColIndex + 1;
         String[] tokens = new String[colCount];
-        String s;
-        int sqlCol;
         for (int cc = 0; cc < colCount; cc++) {
-
-            //SQL indexes from 1
-            //Have to parse blobs specially, otherwise we get the pointer as a string
-            sqlCol = cc + startColIndex;
-            int type = rs.getMetaData().getColumnType(sqlCol);
-
-            if (blobTypes.contains(type)) {
-                Blob b = rs.getBlob(sqlCol);
-                s = new String(b.getBytes(1l, (int) b.length()));
-            } else {
-                s = rs.getString(sqlCol);
-            }
-            tokens[cc] = s;
+            int sqlCol = cc + startColIndex;
+            tokens[cc] = getStringFromResultSet(rs, sqlCol);
         }
         return tokens;
+    }
+
+
+    /**
+     * Get the value at column {@code sqlCol} in the current row as a string.
+     * <p/>
+     * Have to parse blobs specially, otherwise we get the pointer as a string
+     *
+     * @param rs
+     * @param sqlCol 1-indexed column number
+     * @return
+     * @throws SQLException
+     */
+    private static String getStringFromResultSet(ResultSet rs, int sqlCol) throws SQLException {
+        String s;
+        int type = rs.getMetaData().getColumnType(sqlCol);
+
+        if (blobTypes.contains(type)) {
+            Blob b = rs.getBlob(sqlCol);
+            s = new String(b.getBytes(1l, (int) b.length()));
+        } else {
+            s = rs.getString(sqlCol);
+        }
+        return s;
     }
 
     private static final Set<Integer> blobTypes;

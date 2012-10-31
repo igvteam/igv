@@ -78,7 +78,7 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
         int strt = 100000;
         int end = 400000;
 
-        SQLCodecSource reader = new SQLCodecSource(locator, codec, table);
+        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null);
         Iterator<Feature> SQLFeatures = reader.getFeatures("chr1", strt, end);
 
         int count = 0;
@@ -131,7 +131,7 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
     }
 
     public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {
-        SQLCodecSource source = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource source = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
         int start = 1;
         int end = 100000;
         Iterator<Feature> feats = source.getFeatures("chr1", start, end);
@@ -174,10 +174,10 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
     }
 
     public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception {
-        SQLCodecSource binSource = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource binSource = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
         assertNotNull(binSource.binColName);
 
-        SQLCodecSource noBinSource = SQLCodecSource.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource noBinSource = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
         binSource.binColName = null;
 
 

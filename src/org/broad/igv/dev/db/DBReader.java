@@ -16,7 +16,9 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.CloseableTribbleIterator;
 
 import java.sql.*;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Class for reading only portions of a table (queries) repeatedly.
@@ -32,12 +34,16 @@ public abstract class DBReader<T> {
     protected ResourceLocator locator;
     protected String table;
     protected String baseQueryString = "SELECT * FROM ";
+    protected ColumnMap columnMap;
 
-    public DBReader(ResourceLocator locator, String table) {
+    public DBReader(ResourceLocator locator, String table, ColumnMap columnMap) {
         this.locator = locator;
         assert table != null;
         this.table = table;
         baseQueryString += table;
+        this.columnMap = columnMap;
+
+
     }
 
     protected ResultSet loadResultSet(String queryString) {
@@ -70,7 +76,6 @@ public abstract class DBReader<T> {
     protected CloseableTribbleIterator loadIterator(String queryString) {
         return new ResultIterator(loadResultSet(queryString));
     }
-
 
     protected abstract T processResult(ResultSet rs) throws SQLException;
 
@@ -147,6 +152,66 @@ public abstract class DBReader<T> {
         return table;
     }
 
+    protected final int getDBColumn(int fileColNum) {
+        if (this.columnMap != null) {
+            return this.columnMap.getDBColumn(fileColNum);
+        }
+        return fileColNum;
+    }
+
+    static class ColumnMap {
+        private Map<Integer, Integer> columnIndexMap = new HashMap<Integer, Integer>();
+        private Map<Integer, String> columnLabelMap = new HashMap<Integer, String>();
+        int minFileColNum = Integer.MAX_VALUE;
+        int maxFileColNum = -1;
+
+        int put(int fileColNum, int dbColNum) {
+            int oldValue = columnIndexMap.put(fileColNum, dbColNum);
+            if (dbColNum < minFileColNum) minFileColNum = fileColNum;
+            if (dbColNum > maxFileColNum) maxFileColNum = fileColNum;
+            return oldValue;
+        }
+
+        String put(int fileColNum, String dbLabel) {
+            if (dbLabel != null) {
+                return columnLabelMap.put(fileColNum, dbLabel);
+            }
+            return null;
+        }
+
+        public void labelsToIndexes(ResultSetMetaData metaData) throws SQLException {
+            for (Map.Entry<Integer, String> labelEntry : columnLabelMap.entrySet()) {
+                String label = labelEntry.getValue();
+                int index = findColumnByLabel(metaData, label);
+                if (index < 0) {
+                    throw new SQLException("Column " + label + " not found");
+                }
+                put(labelEntry.getKey(), index);
+            }
+        }
+
+        private int findColumnByLabel(ResultSetMetaData metaData, String label) throws SQLException {
+            for (int cc = 1; cc <= metaData.getColumnCount(); cc++) {
+                if (metaData.getColumnLabel(cc).equals(label)) {
+                    return cc;
+                }
+            }
+            return -1;
+        }
+
+        public int getDBColumn(int fileColNum) {
+            return columnIndexMap.get(fileColNum);
+        }
+
+        public int getMaxFileColNum() {
+            return maxFileColNum;
+        }
+
+        public int getMinFileColNum() {
+            return minFileColNum;
+        }
+
+    }
 
 
 }
