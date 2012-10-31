@@ -95,7 +95,13 @@ public class DBManager {
         }
     }
 
+    private static String getSubprotocol(String url) {
+        String[] tokens = url.split(":");
+        return tokens[1];
+    }
+
     private static Connection connect(ResourceLocator locator) {
+        createDriver(getSubprotocol(locator.getPath()));
         try {
             return DriverManager.getConnection(locator.getPath(),
                     locator.getUsername(), locator.getPassword());
@@ -135,6 +141,16 @@ public class DBManager {
         connectionPool.clear();
     }
 
+    public static java.lang.Class<?> createDriver(String subprotocol) {
+        String driver = driverMap.get(subprotocol);
+        try {
+            return Class.forName(driver);
+        } catch (ClassNotFoundException e) {
+            log.error("Unable to create driver for " + subprotocol, e);
+            throw new IllegalArgumentException(e);
+        }
+    }
+
 
     /**
      * Creates a connection URL, and loads the driver class necessary for the protocol
@@ -146,13 +162,7 @@ public class DBManager {
      * @return
      */
     public static String createConnectionURL(String subprotocol, String host, String db, String port) {
-        String driver = driverMap.get(subprotocol);
-        try {
-            Class.forName(driver);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Unable to create driver for protocol " + subprotocol);
-        }
+        createDriver(subprotocol);
 
         //If the host is a local file, don't want the leading "//"
         if (!(new File(host)).exists()) {
