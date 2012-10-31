@@ -79,8 +79,7 @@ function timeoutHandler() {
 //        hostname += (":" + port);
 //    }
     // note: context_path is set in stylesAndScripts.jsp
-  //  var webstart_url = "http://www.broadinstitute.org/igv/projects/current/igv_gs_prod.jnlp";
-     var webstart_url = "igv.jnlp";
+     var webstart_url = "http://www.broadinstitute.org/igv/projects/current/igv.php";
     if (sessionURL) {
         webstart_url += "?sessionURL=" + sessionURL;
         if (genome) {
@@ -174,19 +173,19 @@ function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) 
     merge = mergeFlag;
     name = trackName;
 
-    if(dataURL) {
+    if(dataUrl != null) {
         localURL += "&file=" + dataUrl;
     }
-    if (genomeID) {
+    if (genomeID != null) {
         localURL += "&genome=" + genomeID;
     }
-    if (locusString) {
+    if (locusString != null) {
         localURL += "&locus=" + locusString;
     }
-    if (mergeFlag) {
+    if (mergeFlag != null) {
         localURL += "&merge=" + mergeFlag;
     }
-    if (trackName) {
+    if (trackName != null) {
         localURL += "&name=" + trackName;
     }
 
