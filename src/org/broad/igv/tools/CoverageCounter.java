@@ -116,7 +116,7 @@ public class CoverageCounter {
     /**
      * 5' "post" extension factor.  Essentially, replace actual read length by this amount.
      */
-    private int posExtFactor;
+    private int postExtFactor;
 
     /**
      * Flag to control treatment of duplicates.  If true duplicates are counted.  The default value is false.
@@ -205,8 +205,8 @@ public class CoverageCounter {
         this.preExtFactor = preExtFactor;
     }
 
-    public void setPosExtFactor(int posExtFactor) {
-        this.posExtFactor = posExtFactor;
+    public void setPosExtFactor(int postExtFactor) {
+        this.postExtFactor = postExtFactor;
     }
 
     /**
@@ -272,7 +272,7 @@ public class CoverageCounter {
      */
     public synchronized void parse() throws IOException {
 
-        int maxExtFactor = Math.max(extFactor, Math.max(preExtFactor, posExtFactor));
+        int maxExtFactor = Math.max(extFactor, Math.max(preExtFactor, postExtFactor));
 
         int tolerance = (int) (windowSize * (Math.floor(maxExtFactor / windowSize) + 2));
         consumer.setSortTolerance(tolerance);
@@ -360,12 +360,12 @@ public class CoverageCounter {
                                     }
                                 }
 
-                                // If both posExtFactor and extFactor are specified, posExtFactor takes precedence
-                                if (posExtFactor > 0) {
+                                // If both postExtFactor and extFactor are specified, postExtFactor takes precedence
+                                if (postExtFactor > 0) {
                                     if (readNegStrand) {
-                                        adjustedStart = Math.max(0, blockStart - posExtFactor);
+                                        adjustedStart = Math.max(0, blockStart - postExtFactor);
                                     } else {
-                                        adjustedEnd = blockEnd + posExtFactor;
+                                        adjustedEnd = blockEnd + postExtFactor;
                                     }
 
                                 } else if (extFactor > 0) {

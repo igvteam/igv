@@ -117,7 +117,7 @@ public class IgvTools {
     private static CmdLineParser.Option windowSizeOption = null;
     private static CmdLineParser.Option extFactorOption = null;
     private static CmdLineParser.Option preExtFactorOption = null;
-    private static CmdLineParser.Option posExtFactorOption = null;
+    private static CmdLineParser.Option postExtFactorOption = null;
 
 
     private static CmdLineParser.Option separateBasesOption = null;
@@ -301,7 +301,7 @@ public class IgvTools {
 
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
                     int preFactorValue = (Integer) parser.getOptionValue(preExtFactorOption, 0);
-                    int posFactorValue = (Integer) parser.getOptionValue(posExtFactorOption, 0);
+                    int posFactorValue = (Integer) parser.getOptionValue(postExtFactorOption, 0);
 
                     int countFlags = parseCountFlags(parser);
                     String queryString = (String) parser.getOptionValue(queryStringOpt);
@@ -430,7 +430,7 @@ public class IgvTools {
 
                 extFactorOption = parser.addIntegerOption('e', "extFactor");
                 preExtFactorOption = parser.addIntegerOption("preExtFactor");
-                posExtFactorOption = parser.addIntegerOption("posExtFactor");
+                postExtFactorOption = parser.addIntegerOption("postExtFactor");
                 windowSizeOption = parser.addIntegerOption('w', "windowSize");
 
                 separateBasesOption = parser.addBooleanOption("bases");
@@ -678,7 +678,7 @@ public class IgvTools {
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
                         Collection<WindowFunction> windowFunctions, int windowSizeValue,
-                        int extFactorValue, int preExtFactorValue, int posExtFactorValue,
+                        int extFactorValue, int preExtFactorValue, int postExtFactorValue,
                         String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
@@ -728,7 +728,7 @@ public class IgvTools {
             CoverageCounter counter = new CoverageCounter(ifile, p, windowSizeValue, extFactorValue, wigFile,
                     genome, queryString, minMapQuality, countFlags);
             counter.setPreExtFactor(preExtFactorValue);
-            counter.setPosExtFactor(posExtFactorValue);
+            counter.setPosExtFactor(postExtFactorValue);
 
             String prefix = FilenameUtils.getName(ifile);
             String[] tracknames = counter.getTrackNames(prefix + " ");

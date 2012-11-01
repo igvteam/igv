@@ -186,9 +186,9 @@ Options:
                average fragment length of the library minus the average read length.
 
 
-   --preExtFactor num   The read is extended upstream from the 5' end by the specified distance.
+   --preExtFactor  num   The read is extended upstream from the 5' end by the specified distance.
 
-   --posExtFactor num   Effectively overrides the read length, defines the downstream extent
+   --postExtFactor num   Effectively overrides the read length, defines the downstream extent
                from the 5' end.  Intended for use with preExtFactor.
 
 

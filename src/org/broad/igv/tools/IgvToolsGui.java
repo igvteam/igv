@@ -429,9 +429,9 @@ public class IgvToolsGui extends JDialog {
 
                     runButton.setEnabled(false);
                     int preExtFactor = 0;
-                    int posExtFactor = 0;
+                    int postExtFactor = 0;
                     igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor,
-                            preExtFactor, posExtFactor, null, null, 0, 0);
+                            preExtFactor, postExtFactor, null, null, 0, 0);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

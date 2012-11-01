@@ -552,9 +552,9 @@ public class CoverageGui extends JDialog {
                     }
 
                     int preExtFactor = 0;
-                    int posExtFactor = 0;
+                    int postExtFactor = 0;
                     igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor,
-                            preExtFactor, posExtFactor, null,
+                            preExtFactor, postExtFactor, null,
                             null, minMappingQuality, countFlags);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
