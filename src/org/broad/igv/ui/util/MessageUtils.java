@@ -63,7 +63,13 @@ public class MessageUtils {
             // Always use HTML for message displays, but first remove any embedded <html> tags.
             message = "<html>" + message.replaceAll("<html>", "");
             Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            JOptionPane.showMessageDialog(parent, message);
+            Color background = parent != null ? parent.getBackground() : Color.lightGray;
+            //So users can select text
+            JEditorPane content = new JEditorPane();
+            content.setContentType("text/html");
+            content.setText(message);
+            content.setBackground(background);
+            JOptionPane.showMessageDialog(parent, content);
         }
     }
 

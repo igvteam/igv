@@ -221,7 +221,7 @@ public class IGVMenuBar extends JMenuBar {
                             public void actionPerformed(ActionEvent e) {
                                 String msg = String.format("No executable found at %s", toolName, path);
                                 if (tool_url != null) {
-                                    msg += "\nSee " + tool_url + " to install";
+                                    msg += "<br/>See " + tool_url + " to install";
                                 }
                                 MessageUtils.showMessage(msg);
                             }
