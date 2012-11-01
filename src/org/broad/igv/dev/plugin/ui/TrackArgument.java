@@ -15,13 +15,18 @@
 
 package org.broad.igv.dev.plugin.ui;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.broad.igv.dev.plugin.Argument;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author User #2
@@ -32,7 +37,11 @@ public class TrackArgument extends ArgumentPanel {
         super.initCommon(argument);
 
         if (argument != null) {
-            trackComboBox.setModel(new DefaultComboBoxModel((IGV.getInstance().getFeatureTracks()).toArray()));
+            List<Track> trackList = IGV.getInstance().getAllTracks();
+
+            Class clazz = getTrackClass(argument);
+            Iterable<Track> tracks = Iterables.filter(trackList, clazz);
+            trackComboBox.setModel(new DefaultComboBoxModel(Lists.newArrayList(tracks).toArray()));
             trackComboBox.setRenderer(new TrackComboBoxRenderer());
         }
     }
@@ -67,4 +76,18 @@ public class TrackArgument extends ArgumentPanel {
             return super.getListCellRendererComponent(list, toShow, index, isSelected, cellHasFocus);
         }
     }
+
+    public Class getTrackClass(Argument argument) {
+        switch (argument.getType()) {
+            case FEATURE_TRACK:
+                return FeatureTrack.class;
+            case ALIGNMENT_TRACK:
+                return AlignmentTrack.class;
+            case DATA_TRACK:
+                return DataTrack.class;
+            default:
+                throw new IllegalArgumentException("Argument does not specify a track type; specifies " + argument.getType());
+        }
+    }
+
 }

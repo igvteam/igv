@@ -34,7 +34,9 @@ public class CollUtils {
      * @param objects
      * @param predicate
      * @param <T>
+     * @Deprecated Use com.google.common.collect.Collections2 from Guava
      */
+    @Deprecated
     public static <T> void filter(Collection<? extends T> objects, Predicate<T> predicate) {
         if (objects == null) return;
         Iterator<? extends T> iter = objects.iterator();

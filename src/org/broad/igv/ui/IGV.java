@@ -19,6 +19,8 @@
  */
 package org.broad.igv.ui;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
@@ -1812,20 +1814,15 @@ public class IGV {
      */
     public List<Track> getAllTracks() {
         List<Track> allTracks = new ArrayList<Track>();
-
         for (TrackPanel tp : getTrackPanels()) {
             allTracks.addAll(tp.getTracks());
         }
-
         return allTracks;
     }
 
     public List<FeatureTrack> getFeatureTracks() {
-        List<FeatureTrack> featureTracks = new ArrayList<FeatureTrack>();
-        for (Track t : getAllTracks()) {
-            if (t instanceof FeatureTrack)
-                featureTracks.add((FeatureTrack) t);
-        }
+        Iterable<FeatureTrack> featureTracksIter = Iterables.filter(getAllTracks(), FeatureTrack.class);
+        List<FeatureTrack> featureTracks = Lists.newArrayList(featureTracksIter);
         return featureTracks;
     }
 

@@ -154,7 +154,7 @@ format
 <!ATTLIST arg
     name CDATA #REQUIRED
     cmd_arg CDATA ""
-    type (text|longtext|feature_track|multi_feature_track) #REQUIRED
+    type (text|longtext|feature_track|multi_feature_track|data_track) #REQUIRED
     default CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
