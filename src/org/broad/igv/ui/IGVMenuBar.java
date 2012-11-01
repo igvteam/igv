@@ -185,43 +185,47 @@ public class IGVMenuBar extends JMenuBar {
         });
         //menuItems.add(exportData);
 
-//        JMenuItem analysisDialog = new JMenuItem("BEDTools Analysis");
-//        analysisDialog.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                (new AnalysisDialog(IGV.getMainFrame())).setVisible(true);
-//            }
-//        });
-
-        //menuItems.add(analysisDialog);
-        //analysisDialog.setEnabled(CombinedFeatureSource.checkBEDToolsPathValid());
-
-
         //-------------------------------------//
 
         for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
             for (final Element tool : pluginSpecReader.getTools()) {
-                String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
+                final String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
                 boolean toolVisible = Boolean.parseBoolean(tool.getAttribute("visible"));
+                JMenuItem toolMenu;
                 if (toolVisible) {
-                    JMenu toolMenu = new JMenu(toolName);
-                    for (final Element command : pluginSpecReader.getCommands(tool)) {
-                        final String cmdName = command.getAttribute("name");
-                        JMenuItem cmdItem = new JMenuItem(cmdName);
-                        toolMenu.add(cmdItem);
-
-                        cmdItem.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
-                            }
-                        });
-                    }
                     //Disable tool if we can't find the executable
                     //We allow a blank path for most general case
-                    String path = tool.getAttribute("path");
-                    if (path.length() > 0) {
-                        toolMenu.setEnabled(PluginSpecReader.isToolPathValid(path));
+                    final String path = tool.getAttribute("path");
+                    final String tool_url = tool.getAttribute("tool_url");
+                    boolean isValid = PluginSpecReader.isToolPathValid(path);
+
+                    if (isValid || path.length() == 0) {
+                        toolMenu = new JMenu(toolName);
+                        for (final Element command : pluginSpecReader.getCommands(tool)) {
+                            final String cmdName = command.getAttribute("name");
+                            JMenuItem cmdItem = new JMenuItem(cmdName);
+                            toolMenu.add(cmdItem);
+
+                            cmdItem.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
+                                }
+                            });
+                        }
+
+                    } else {
+                        toolMenu = new JMenuItem(toolName);
+                        toolMenu.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                String msg = String.format("No executable found at %s", toolName, path);
+                                if (tool_url != null) {
+                                    msg += "\nSee " + tool_url + " to install";
+                                }
+                                MessageUtils.showMessage(msg);
+                            }
+                        });
                     }
                     menuItems.add(toolMenu);
                 }
