@@ -65,13 +65,14 @@ public class MainWindow extends JFrame {
     private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
     private HiC hic;
+
     private EigenvectorTrack eigenvectorTrack;
 
     public static Cursor fistCursor;
+
     public static final int BIN_PIXEL_WIDTH = 1;
 
     private static MainWindow theInstance;
-    // private DisplayOption displayOption = DisplayOption.OBSERVED;
 
 
     public static void main(String[] args) throws IOException {
@@ -611,8 +612,6 @@ public class MainWindow extends JFrame {
         JPanel toolbarPanel = new JPanel();
 
 
-        //======== this ========
-
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         mainPanel.setLayout(new BorderLayout());
@@ -621,50 +620,44 @@ public class MainWindow extends JFrame {
         toolbarPanel.setLayout(new GridLayout());
 
 
+        // --- Chromosome panel ---
         JPanel chrSelectionPanel = new JPanel();
         chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
         chrSelectionPanel.setMinimumSize(new Dimension(130, 57));
         chrSelectionPanel.setPreferredSize(new Dimension(130, 57));
         chrSelectionPanel.setLayout(new BorderLayout());
 
-        JPanel panel10 = new JPanel();
-        panel10.setBackground(new Color(204, 204, 204));
-        panel10.setLayout(new BorderLayout());
+        JPanel chrLabelPanel = new JPanel();
+        JLabel chrLabel = new JLabel("Chromosomes");
+        chrLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        chrLabelPanel.setBackground(new Color(204, 204, 204));
+        chrLabelPanel.setLayout(new BorderLayout());
+        chrLabelPanel.add(chrLabel, BorderLayout.CENTER);
+        chrSelectionPanel.add(chrLabelPanel, BorderLayout.PAGE_START);
 
-        JLabel label3 = new JLabel();
-        label3.setText("Chromosomes");
-        label3.setHorizontalAlignment(SwingConstants.CENTER);
-        panel10.add(label3, BorderLayout.CENTER);
-
-        chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
-
-        JPanel panel9 = new JPanel();
-        panel9.setBackground(new Color(238, 238, 238));
-        panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
+        JPanel chrButtonPanel = new JPanel();
+        chrButtonPanel.setBackground(new Color(238, 238, 238));
+        chrButtonPanel.setLayout(new BoxLayout(chrButtonPanel, BoxLayout.X_AXIS));
 
         //---- chrBox1 ----
         chrBox1 = new JComboBox();
-        chrBox1.setModel(new DefaultComboBoxModel(new String[]{
-                "All"
-        }));
+        chrBox1.setModel(new DefaultComboBoxModel(new String[]{"All"}));
         chrBox1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 chrBox1ActionPerformed(e);
             }
         });
-        panel9.add(chrBox1);
+        chrButtonPanel.add(chrBox1);
 
         //---- chrBox2 ----
         chrBox2 = new JComboBox();
-        chrBox2.setModel(new DefaultComboBoxModel(new String[]{
-                "All"
-        }));
+        chrBox2.setModel(new DefaultComboBoxModel(new String[]{"All"}));
         chrBox2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 chrBox2ActionPerformed(e);
             }
         });
-        panel9.add(chrBox2);
+        chrButtonPanel.add(chrBox2);
 
         //---- refreshButton ----
         JideButton refreshButton = new JideButton();
@@ -674,59 +667,48 @@ public class MainWindow extends JFrame {
                 refreshButtonActionPerformed(e);
             }
         });
-        panel9.add(refreshButton);
+        chrButtonPanel.add(refreshButton);
 
-        chrSelectionPanel.add(panel9, BorderLayout.CENTER);
+        chrSelectionPanel.add(chrButtonPanel, BorderLayout.CENTER);
 
         toolbarPanel.add(chrSelectionPanel);
 
         //======== displayOptionPanel ========
         JPanel displayOptionPanel = new JPanel();
-        JPanel panel1 = new JPanel();
-        displayOptionComboBox = new JComboBox();
 
         displayOptionPanel.setBackground(new Color(238, 238, 238));
         displayOptionPanel.setBorder(LineBorder.createGrayLineBorder());
         displayOptionPanel.setLayout(new BorderLayout());
 
-        //======== panel14 ========
+        JPanel displayOptionLabelPanel = new JPanel();
+        displayOptionLabelPanel.setBackground(new Color(204, 204, 204));
+        displayOptionLabelPanel.setLayout(new BorderLayout());
 
-        JPanel panel14 = new JPanel();
-        panel14.setBackground(new Color(204, 204, 204));
-        panel14.setLayout(new BorderLayout());
+        JLabel displayOptionLabel = new JLabel("Show");
+        displayOptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        displayOptionLabelPanel.add(displayOptionLabel, BorderLayout.CENTER);
 
-        //---- label4 ----
-        JLabel label4 = new JLabel();
-        label4.setText("Show");
-        label4.setHorizontalAlignment(SwingConstants.CENTER);
-        panel14.add(label4, BorderLayout.CENTER);
+        displayOptionPanel.add(displayOptionLabelPanel, BorderLayout.PAGE_START);
 
-        displayOptionPanel.add(panel14, BorderLayout.PAGE_START);
-
-        //======== panel1 ========
-
-        panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
-        panel1.setLayout(new GridLayout(1, 0, 20, 0));
-
-        //---- comboBox1 ----
-        displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{
-                DisplayOption.OBSERVED.toString()
-        }));
+        JPanel displayOptionButtonPanel = new JPanel();
+        displayOptionButtonPanel.setBorder(new EmptyBorder(0, 10, 0, 10));
+        displayOptionButtonPanel.setLayout(new GridLayout(1, 0, 20, 0));
+        displayOptionComboBox = new JComboBox();
+        displayOptionComboBox.setModel(new DefaultComboBoxModel(new String[]{DisplayOption.OBSERVED.toString()}));
         displayOptionComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 displayOptionComboBoxActionPerformed(e);
             }
         });
-        panel1.add(displayOptionComboBox);
+        displayOptionButtonPanel.add(displayOptionComboBox);
 
-        displayOptionPanel.add(panel1, BorderLayout.CENTER);
+        displayOptionPanel.add(displayOptionButtonPanel, BorderLayout.CENTER);
 
         toolbarPanel.add(displayOptionPanel);
 
         //======== colorRangePanel ========
 
         JPanel colorRangePanel = new JPanel();
-        JLabel colorRangeLabel = new JLabel();
         colorRangeSlider = new RangeSlider();
         colorRangePanel.setBorder(LineBorder.createGrayLineBorder());
         colorRangePanel.setMinimumSize(new Dimension(96, 70));
@@ -734,14 +716,9 @@ public class MainWindow extends JFrame {
         colorRangePanel.setMaximumSize(new Dimension(32769, 70));
         colorRangePanel.setLayout(new BorderLayout());
 
-        //======== panel11 ========
-
-        JPanel colorLabelPanel = new JPanel();
-        colorLabelPanel.setBackground(new Color(204, 204, 204));
-        colorLabelPanel.setLayout(new BorderLayout());
 
         //---- colorRangeLabel ----
-        colorRangeLabel.setText("Color Range");
+        JLabel colorRangeLabel = new JLabel("Color Range");
         colorRangeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         colorRangeLabel.setToolTipText("Range of color scale in counts per mega-base squared.");
         colorRangeLabel.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -760,6 +737,9 @@ public class MainWindow extends JFrame {
                 rangeDialog.setVisible(true);
             }
         });
+        JPanel colorLabelPanel = new JPanel();
+        colorLabelPanel.setBackground(new Color(204, 204, 204));
+        colorLabelPanel.setLayout(new BorderLayout());
         colorLabelPanel.add(colorRangeLabel, BorderLayout.CENTER);
 
         colorRangePanel.add(colorLabelPanel, BorderLayout.PAGE_START);
@@ -799,30 +779,24 @@ public class MainWindow extends JFrame {
 
         //======== resolutionPanel ========
 
-        JLabel resolutionLabel = new JLabel();
         JPanel resolutionPanel = new JPanel();
-
         resolutionPanel.setBorder(LineBorder.createGrayLineBorder());
         resolutionPanel.setLayout(new BorderLayout());
 
-        //======== panel12 ========
-
-        JPanel panel12 = new JPanel();
-        panel12.setBackground(new Color(204, 204, 204));
-        panel12.setLayout(new BorderLayout());
-
-        //---- resolutionLabel ----
-        resolutionLabel.setText("Resolution");
+        JLabel resolutionLabel = new JLabel("Resolution");
         resolutionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         resolutionLabel.setBackground(new Color(204, 204, 204));
-        panel12.add(resolutionLabel, BorderLayout.CENTER);
 
-        resolutionPanel.add(panel12, BorderLayout.PAGE_START);
+        JPanel resolutionLabelPanel = new JPanel();
+        resolutionLabelPanel.setBackground(new Color(204, 204, 204));
+        resolutionLabelPanel.setLayout(new BorderLayout());
+        resolutionLabelPanel.add(resolutionLabel, BorderLayout.CENTER);
 
-        //======== panel2 ========
+        resolutionPanel.add(resolutionLabelPanel, BorderLayout.PAGE_START);
 
-        JPanel panel2 = new JPanel();
-        panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+        JPanel resolutionButtonPanel = new JPanel();
+        resolutionButtonPanel.setLayout(new BoxLayout(resolutionButtonPanel, BoxLayout.X_AXIS));
 
         //---- resolutionSlider ----
         resolutionSlider = new JSlider();
@@ -837,7 +811,7 @@ public class MainWindow extends JFrame {
         // TODO -- the available resolutions should be read from the dataset (hic) file
         Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
         Font f = FontManager.getFont(8);
-        for (int i = 0; i < Preprocessor.bpResLabels[i].length(); i++) {
+        for (int i = 0; i < Preprocessor.bpResLabels.length; i++) {
             if ((i + 1) % 2 == 0) {
                 final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
                 tickLabel.setFont(f);
@@ -882,9 +856,9 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-        panel2.add(resolutionSlider);
+        resolutionButtonPanel.add(resolutionSlider);
 
-        resolutionPanel.add(panel2, BorderLayout.CENTER);
+        resolutionPanel.add(resolutionButtonPanel, BorderLayout.CENTER);
 
         toolbarPanel.add(resolutionPanel);
 
