@@ -11,13 +11,26 @@
 <!DOCTYPE database SYSTEM "src/org/broad/igv/dev/db/database.dtd">
 <database version="alpha"
           host="test/data"
-          path="sql/unigene.db"
+          path="sql/Unigene.unsorted.colsreordered.db"
           port=""
           subprotocol="sqlite"
           username="biologist"
           name="My Awesome DB"
           description="A human readable description">
-    <table name="unigene" format="bed" description="Describe the table here"
-           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd"/>
+    <table name="unigene" format="bed" description="BED file with reordered columns, we specify by column index"
+           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd">
+        <column fileIndex="0" colIndex="11"/>
+        <column fileIndex="1" colIndex="12"/>
+        <column fileIndex="2" colIndex="1"/>
+        <column fileIndex="3" colIndex="2"/>
+        <column fileIndex="4" colIndex="3"/>
+        <column fileIndex="5" colIndex="4"/>
+        <column fileIndex="6" colIndex="5"/>
+        <column fileIndex="7" colIndex="6"/>
+        <column fileIndex="8" colIndex="7"/>
+        <column fileIndex="9" colIndex="8"/>
+        <column fileIndex="10" colIndex="9"/>
+        <column fileIndex="11" colIndex="10"/>
+    </table>
 </database>
 	

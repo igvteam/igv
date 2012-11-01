@@ -99,7 +99,7 @@ If both are specified, a warning is issued and the
 colName is used.
 
 fileIndex:
-    The (0-based) column number
+    The (0-based) column number.
 colName:
     Name of the column in the SQL database
 colIndex:

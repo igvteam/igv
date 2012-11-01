@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE database SYSTEM "src/org/broad/igv/dev/db/database.dtd">
+<database version="alpha"
+          host="test/data"
+          path="sql/Unigene.unsorted.colsreordered.db"
+          port=""
+          subprotocol="sqlite"
+          username="biologist"
+          name="My Awesome DB"
+          description="A human readable description">
+    <table name="unigene" format="bed" description="BED file with reordered columns, we specify by column label"
+           chromoColName="chrom" posStartColName="chromStart" posEndColName="chromEnd">
+        <column fileIndex="9" colLabel="blockCount"/>
+        <column fileIndex="10" colLabel="blockSizes"/>
+        <column fileIndex="11" colLabel="blockStarts"/>
+        <column fileIndex="0" colLabel="chrom"/>
+        <column fileIndex="1" colLabel="chromStart"/>
+        <column fileIndex="2" colLabel="chromEnd"/>
+        <column fileIndex="3" colLabel="name"/>
+        <column fileIndex="4" colLabel="score"/>
+        <column fileIndex="5" colLabel="strand"/>
+        <column fileIndex="6" colLabel="thickStart"/>
+        <column fileIndex="7" colLabel="thickEnd"/>
+        <column fileIndex="8" colLabel="itemRgb"/>
+    </table>
+</database>
+	

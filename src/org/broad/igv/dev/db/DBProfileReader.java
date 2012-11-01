@@ -46,6 +46,7 @@ public class DBProfileReader {
     public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
         ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
         InputStream profileStream = null;
+        String tabName = tableName;
         try {
             profileStream = new FileInputStream(profilePath);
             Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
@@ -55,7 +56,7 @@ public class DBProfileReader {
             for (int tnum = 0; tnum < tableNodes.getLength(); tnum++) {
                 Node tableNode = tableNodes.item(tnum);
                 NamedNodeMap attr = tableNode.getAttributes();
-                String tabName = attr.getNamedItem("name").getTextContent();
+                tabName = attr.getNamedItem("name").getTextContent();
                 if (tableName == null || tableName.equals(tabName)) {
 
                     String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
@@ -79,6 +80,8 @@ public class DBProfileReader {
                         for (int col = 0; col < columns.getLength(); col++) {
                             Node column = columns.item(col);
                             NamedNodeMap colAttr = column.getAttributes();
+                            //Whitespace gets in as child nodes
+                            if (colAttr == null) continue;
                             int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
 
                             String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
@@ -108,7 +111,7 @@ public class DBProfileReader {
             return sources;
 
         } catch (Exception e) {
-            String msg = "Error reading profile " + profilePath + ", table " + tableName;
+            String msg = "Error reading profile " + profilePath + ", table " + tabName;
             MessageUtils.showErrorMessage(msg, e);
             return null;
         } finally {

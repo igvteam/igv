@@ -165,18 +165,16 @@ public abstract class DBReader<T> {
         int minFileColNum = Integer.MAX_VALUE;
         int maxFileColNum = -1;
 
-        int put(int fileColNum, int dbColNum) {
-            int oldValue = columnIndexMap.put(fileColNum, dbColNum);
+        void put(int fileColNum, int dbColNum) {
+            columnIndexMap.put(fileColNum, dbColNum);
             if (dbColNum < minFileColNum) minFileColNum = fileColNum;
             if (dbColNum > maxFileColNum) maxFileColNum = fileColNum;
-            return oldValue;
         }
 
-        String put(int fileColNum, String dbLabel) {
+        void put(int fileColNum, String dbLabel) {
             if (dbLabel != null) {
-                return columnLabelMap.put(fileColNum, dbLabel);
+                columnLabelMap.put(fileColNum, dbLabel);
             }
-            return null;
         }
 
         public void labelsToIndexes(ResultSetMetaData metaData) throws SQLException {

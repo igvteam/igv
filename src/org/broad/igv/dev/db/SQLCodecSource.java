@@ -108,6 +108,9 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     @Override
     protected Feature processResult(ResultSet rs) throws SQLException {
+
+        //TODO We already know how to parse strings, so just turn everything to strings
+        //TODO See IParser for better, type-safe way of handling different data sources
         String[] tokens;
         if (columnMap != null) {
             columnMap.labelsToIndexes(rs.getMetaData());
@@ -115,7 +118,6 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         } else {
             tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
         }
-        //TODO GET RID OF THIS, IT'S BAD AND I FEEL BAD FOR WRITING IT -JS
         String line = StringUtils.join(tokens, "\t");
         return codec.decode(line);
     }
@@ -131,18 +133,21 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         }
         //Include feature iff = (feature.start >= start AND feature.start < end)
         //OR (feature.start < start AND feature.end >= start);
-        String queryString = String.format("%s WHERE %s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?))",
+        String queryString = String.format("%s WHERE %s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?) )",
                 baseQueryString, chromoColName, posStartColName, posStartColName, posStartColName, posEndColName);
+        String orderClause = "ORDER BY " + posStartColName;
 
         try {
-            queryStatement = DBManager.getConnection(locator).prepareStatement(queryString);
+            queryStatement = DBManager.getConnection(locator).prepareStatement(queryString + " " + orderClause);
 
             if (binColName != null) {
                 String[] qs = new String[MAX_BINS];
                 Arrays.fill(qs, "?");
-                String binnedQueryString = queryString + String.format(" AND %s IN (%s)", binColName, StringUtils.join(qs, ','));
+                String binnedQueryString = queryString + String.format(" AND %s IN (%s) %s", binColName, StringUtils.join(qs, ','), orderClause);
                 binnedQueryStatement = DBManager.getConnection(locator).prepareStatement(binnedQueryString);
             }
+
+
         } catch (SQLException e) {
             log.error(e);
             throw new IOException(e);
@@ -181,7 +186,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
             }
 
         } catch (SQLException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
             throw new IOException(e);
         }
 
@@ -200,6 +205,9 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
             int tstStart = Math.max(start - sweepLength / 2, 0);
             while (tstStart < end) {
                 bins.add(binFromRange(tstStart, tstStart += sweepLength));
+                if (tstStart < 0) {
+                    throw new IllegalArgumentException("Overflow while calculating bins");
+                }
             }
             sweepLength *= 2;
         }
@@ -267,7 +275,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
 
     CloseableTribbleIterator iterator() throws IOException {
-        String queryString = String.format("%s LIMIT %s", baseQueryString, featureWindowSize);
+        String queryString = String.format("%s ORDER BY %s LIMIT %s", baseQueryString, posStartColName, featureWindowSize);
         return loadIterator(queryString);
     }
 

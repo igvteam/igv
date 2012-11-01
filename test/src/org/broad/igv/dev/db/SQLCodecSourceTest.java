@@ -17,30 +17,73 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
+import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class SQLCodecSourceTest {
+
+    private SQLCodecSource getUnigene(String path) {
+        AsciiFeatureCodec codec = new IGVBEDCodec();
+        String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
+
+        String url = DBManager.createConnectionURL("sqlite", host, path, null);
+        ResourceLocator locator = new ResourceLocator(url);
+        String table = "unigene";
+
+        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
+        return reader;
+    }
+
+    public static int checkFeatureIteratorSorted(Iterator<Feature> featureIterator) throws Exception {
+        int lastStart = -1;
+        int count = 0;
+        while (featureIterator.hasNext()) {
+            Feature f0 = featureIterator.next();
+            assertTrue(f0.getStart() >= lastStart);
+            lastStart = f0.getStart();
+            count++;
+        }
+        return count;
+    }
+
+    //Check that querying returns sorted features
+    @Test
+    public void testQueryBEDUnsorted() throws Exception {
+        String path = "sql/Unigene.unsorted.db";
+        SQLCodecSource reader = getUnigene(path);
+        Iterator<Feature> features = reader.getFeatures("chr2", 0, Integer.MAX_VALUE / 4);
+        int count = checkFeatureIteratorSorted(features);
+        assertEquals(71, count);
+    }
+
+    //Check that querying returns sorted features
+    @Test
+    public void testIterateBEDUnsorted() throws Exception {
+        String path = "sql/Unigene.unsorted.db";
+        SQLCodecSource reader = getUnigene(path);
+        CloseableTribbleIterator<Feature> features = reader.iterator();
+        int count = checkFeatureIteratorSorted(features);
+        assertEquals(71, count);
+    }
 
     @Test
     public void testLoadBED() throws Exception {
 
         AsciiFeatureCodec codec = new IGVBEDCodec();
-
-        String host = (new File(TestUtils.DATA_DIR)).getAbsolutePath();
         String path = "sql/unigene.db";
-        String url = DBManager.createConnectionURL("sqlite", host, path, null);
-        ResourceLocator locator = new ResourceLocator(url);
-        String table = "unigene";
 
+        SQLCodecSource reader = getUnigene(path);
+        CloseableTribbleIterator<Feature> SQLFeatures = reader.iterator();
 
-        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
-        Iterator<Feature> SQLFeatures = reader.iterator();
-
-        String bedFile = host + "/bed/Unigene.sample.bed";
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec, false);
         Iterator<Feature> fileFeatures = bfr.iterator();
 
@@ -48,12 +91,40 @@ public class SQLCodecSourceTest {
         while (SQLFeatures.hasNext()) {
             Feature f = SQLFeatures.next();
             Feature fileFeature = fileFeatures.next();
-            Assert.assertEquals(fileFeature.getChr(), f.getChr());
-            Assert.assertEquals(fileFeature.getStart(), f.getStart());
-            Assert.assertEquals(fileFeature.getEnd(), f.getEnd());
+            TestUtils.assertFeaturesEqual(fileFeature, f);
             count++;
         }
 
         Assert.assertEquals(72, count);
+    }
+
+    @Test
+    public void testLoadReorderedColumnsIndex() throws Exception {
+        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.byindex.xml";
+        tstLoadReorderedColumns(profilePath);
+    }
+
+    @Test
+    public void testLoadReorderedColumnsLabel() throws Exception {
+        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.bylabel.xml";
+        tstLoadReorderedColumns(profilePath);
+    }
+
+    public void tstLoadReorderedColumns(String profilePath) throws Exception {
+        List<SQLCodecSource> sourceList = DBProfileReader.getFromProfile(profilePath, null);
+        assertEquals(1, sourceList.size());
+
+        SQLCodecSource source0 = sourceList.get(0);
+        SQLCodecSource source1 = getUnigene("sql/Unigene.unsorted.db");
+
+        CloseableTribbleIterator<Feature> features0 = source0.iterator();
+        CloseableTribbleIterator<Feature> features1 = source1.iterator();
+
+        while (features0.hasNext()) {
+            Feature act_feat = features0.next();
+            Feature exp_feat = features1.next();
+            TestUtils.assertFeaturesEqual(exp_feat, act_feat);
+        }
+
     }
 }
