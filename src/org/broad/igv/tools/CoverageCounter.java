@@ -102,11 +102,21 @@ public class CoverageCounter {
     public static final int NUM_STRANDS = output_strands.length;
 
     /**
-     * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
-     * count of fragment "coverage", as opposed to read coverage.  If used, the value should be set to
+     * Extension factor.  Reads are extended by this amount from the 3' end before counting.   The purpose is to yield
+     * an approximate count of fragment "coverage", as opposed to read coverage.  If used, the value should be set to
      * extFactor = averageFragmentSize - averageReadLength
      */
     private int extFactor;
+
+    /**
+     * 5' "pre" extension factor.  Read is extended by this amount from the 5' end of the read
+     */
+    private int preExtFactor;
+
+    /**
+     * 5' "post" extension factor.  Essentially, replace actual read length by this amount.
+     */
+    private int posExtFactor;
 
     /**
      * Flag to control treatment of duplicates.  If true duplicates are counted.  The default value is false.
@@ -191,6 +201,14 @@ public class CoverageCounter {
         buffer = new float[datacols];
     }
 
+    public void setPreExtFactor(int preExtFactor) {
+        this.preExtFactor = preExtFactor;
+    }
+
+    public void setPosExtFactor(int posExtFactor) {
+        this.posExtFactor = posExtFactor;
+    }
+
     /**
      * Take additional optional command line arguments and parse them
      *
@@ -254,7 +272,9 @@ public class CoverageCounter {
      */
     public synchronized void parse() throws IOException {
 
-        int tolerance = (int) (windowSize * (Math.floor(extFactor / windowSize) + 2));
+        int maxExtFactor = Math.max(extFactor, Math.max(preExtFactor, posExtFactor));
+
+        int tolerance = (int) (windowSize * (Math.floor(maxExtFactor / windowSize) + 2));
         consumer.setSortTolerance(tolerance);
 
         AlignmentReader reader = null;
@@ -325,22 +345,38 @@ public class CoverageCounter {
 
                                 byte[] bases = block.getBases();
                                 int blockStart = block.getStart();
+                                int blockEnd = block.getEnd();
+
+
                                 int adjustedStart = block.getStart();
                                 int adjustedEnd = block.getEnd();
 
-                                if (extFactor > 0) {
+
+                                if (preExtFactor > 0) {
+                                    if (readNegStrand) {
+                                        adjustedEnd = blockEnd + preExtFactor;
+                                    } else {
+                                        adjustedStart = Math.max(0, blockStart - preExtFactor);
+                                    }
+                                }
+
+                                // If both posExtFactor and extFactor are specified, posExtFactor takes precedence
+                                if (posExtFactor > 0) {
+                                    if (readNegStrand) {
+                                        adjustedStart = Math.max(0, blockStart - posExtFactor);
+                                    } else {
+                                        adjustedEnd = blockEnd + posExtFactor;
+                                    }
+
+                                } else if (extFactor > 0) {
                                     // Standard extension option -- extend read on 3' end
                                     if (readNegStrand) {
                                         adjustedStart = Math.max(0, adjustedStart - extFactor);
                                     } else {
                                         adjustedEnd += extFactor;
                                     }
-                                } else if (extFactor < 0) {
-                                    // "Bidirectional" option -- create artificial read centered on 5' end
-                                    int center = readNegStrand ? block.getEnd() : block.getStart();
-                                        adjustedStart = Math.max(0, center + extFactor);  // extFactor is negative
-                                        adjustedEnd = center - extFactor;
                                 }
+
 
                                 if (queryInterval != null) {
                                     adjustedStart = Math.max(queryInterval.getStart() - 1, adjustedStart);

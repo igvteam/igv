@@ -714,32 +714,6 @@ public class Preprocessor implements DataConsumer {
                 ext.equalsIgnoreCase(".bedz") || ext.equalsIgnoreCase(".bed");
     }
 
-    public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
-                      File wigFile, String trackLine, String queryString, int minMapQual, int countFlags) throws IOException {
-        setNZoom(maxZoomValue);
-
-        this.setSkipZeroes(true);
-
-        CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile,
-                genome, queryString, minMapQual, countFlags);
-
-        String prefix = FilenameUtils.getName(iFile);
-        String[] tracknames = aParser.getTrackNames(prefix + " ");
-        setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
-
-        this.sizeEstimate = ((int) (genome.getLength() / windowSizeValue));
-
-        try {
-            aParser.parse();
-        } catch (Exception e) {
-            // Delete the output file as its probably corrupt
-            e.printStackTrace();
-            if (outputFile.exists()) {
-                outputFile.delete();
-            }
-
-        }
-    }
 
     public void preprocess(File iFile, int maxZoomValue, String typeString) throws IOException {
 

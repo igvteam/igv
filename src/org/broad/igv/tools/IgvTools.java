@@ -17,6 +17,7 @@ package org.broad.igv.tools;
 
 
 import jargs.gnu.CmdLineParser;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -36,6 +37,7 @@ import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.converters.WigToBed;
 import org.broad.igv.tools.sort.Sorter;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.ReadmeParser;
 import org.broad.igv.ui.util.MessageUtils;
@@ -114,6 +116,8 @@ public class IgvTools {
     // options for coverage
     private static CmdLineParser.Option windowSizeOption = null;
     private static CmdLineParser.Option extFactorOption = null;
+    private static CmdLineParser.Option preExtFactorOption = null;
+    private static CmdLineParser.Option posExtFactorOption = null;
 
 
     private static CmdLineParser.Option separateBasesOption = null;
@@ -296,6 +300,8 @@ public class IgvTools {
                     }
 
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
+                    int preFactorValue = (Integer) parser.getOptionValue(preExtFactorOption, 0);
+                    int posFactorValue = (Integer) parser.getOptionValue(posExtFactorOption, 0);
 
                     int countFlags = parseCountFlags(parser);
                     String queryString = (String) parser.getOptionValue(queryStringOpt);
@@ -303,6 +309,7 @@ public class IgvTools {
 
                     int windowSizeValue = (Integer) parser.getOptionValue(windowSizeOption, WINDOW_SIZE);
                     doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
+                            preFactorValue, posFactorValue,
                             trackLine, queryString, minMapQuality, countFlags);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
@@ -422,6 +429,8 @@ public class IgvTools {
             if (command.equals(CMD_COUNT) || command.equals(CMD_BAMTOBED)) {
 
                 extFactorOption = parser.addIntegerOption('e', "extFactor");
+                preExtFactorOption = parser.addIntegerOption("preExtFactor");
+                posExtFactorOption = parser.addIntegerOption("posExtFactor");
                 windowSizeOption = parser.addIntegerOption('w', "windowSize");
 
                 separateBasesOption = parser.addBooleanOption("bases");
@@ -668,7 +677,8 @@ public class IgvTools {
      * @throws IOException
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
-                        Collection<WindowFunction> windowFunctions, int windowSizeValue, int extFactorValue,
+                        Collection<WindowFunction> windowFunctions, int windowSizeValue,
+                        int extFactorValue, int preExtFactorValue, int posExtFactorValue,
                         String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
@@ -709,12 +719,37 @@ public class IgvTools {
             tdfFile = new File(tdfFile.getAbsolutePath() + ".tdf");
         }
 
-        Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
-        //p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, coverageOpt, trackLine);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, trackLine,
-                queryString, minMapQuality, countFlags);
+        try {
 
-        p.finish();
+            Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
+
+            p.setSkipZeroes(true);
+
+            CoverageCounter counter = new CoverageCounter(ifile, p, windowSizeValue, extFactorValue, wigFile,
+                    genome, queryString, minMapQuality, countFlags);
+            counter.setPreExtFactor(preExtFactorValue);
+            counter.setPosExtFactor(posExtFactorValue);
+
+            String prefix = FilenameUtils.getName(ifile);
+            String[] tracknames = counter.getTrackNames(prefix + " ");
+            p.setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
+
+            p.setSizeEstimate(((int) (genome.getLength() / windowSizeValue)));
+
+            counter.parse();
+
+            p.finish();
+
+        } catch (Exception e) {
+            // Delete the output file(s) as they are probably corrupt
+            e.printStackTrace();
+            if (tdfFile.exists()) {
+                tdfFile.delete();
+            }
+            if (wigFile.exists()) {
+                wigFile.delete();
+            }
+        }
 
         System.out.flush();
     }
