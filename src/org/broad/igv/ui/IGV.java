@@ -19,6 +19,7 @@
  */
 package org.broad.igv.ui;
 
+import apple.dts.samplecode.osxadapter.OSXAdapter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
@@ -65,6 +66,7 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.NoRouteToHostException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -2188,6 +2190,10 @@ public class IGV {
             progressBar.setIndeterminate(true);
             monitor.fireProgressChange(20);
 
+            if (Globals.IS_MAC) {
+                setAppleDockIcon();
+            }
+
             try {
                 contentPane.getCommandBar().initializeGenomeList(monitor);
             } catch (FileNotFoundException ex) {
@@ -2302,6 +2308,19 @@ public class IGV {
                 IGV.getInstance().notifyAll();
             }
         }
+
+        private void setAppleDockIcon() {
+            try {
+                String path = "resources/IGV_64.png";
+                URL url = IGV.class.getResource(path);
+                Image image = new ImageIcon(url).getImage();
+                OSXAdapter.setDockIconImage(image);
+            } catch (Exception e) {
+                //ain't no thang
+                log.error("Error setting apple dock icon", e);
+            }
+        }
+
     }
 
 
