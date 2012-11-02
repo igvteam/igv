@@ -14,6 +14,7 @@ package org.broad.igv.tools.sort;
 import jargs.gnu.CmdLineParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
+import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.track.GFFFeatureSource;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -34,6 +35,7 @@ public abstract class Sorter {
     private int maxRecords = MAX_RECORDS_IN_RAM;
     private File tmpDir;
     static final String usageString = "igvtools sort <inputFile> [outputFile]";
+    protected Comparator<SortableRecord> comparator = getDefaultComparator();
 
     public static Sorter getSorter(String[] argv) {
 
@@ -140,43 +142,7 @@ public abstract class Sorter {
 
             SortableRecordCodec codec = new SortableRecordCodec();
 
-            Comparator<SortableRecord> comp = new Comparator<SortableRecord>() {
-
-                public int compare(SortableRecord o1, SortableRecord o2) {
-
-
-                    String chr1 = o1.getChromosome().replaceFirst("chr", "");
-                    String chr2 = o2.getChromosome().replaceFirst("chr", "");
-                    int s1 = Integer.MAX_VALUE;
-                    try {
-                        s1 = Integer.parseInt(chr1);
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                    int s2 = Integer.MAX_VALUE;
-                    try {
-                        s2 = Integer.parseInt(chr2);
-                    } catch (Exception e) {
-                        // ignre
-                    }
-
-
-                    int t1 = s1 - s2;
-                    if (t1 == 0) {
-                        chr1 = chr1.replace("M", "Z");
-                        chr2 = chr2.replace("M", "Z");
-                        t1 = chr1.compareTo(chr2);
-                    }
-                    if (t1 == 0) {
-                        return (int) (o1.getStart() - o2.getStart());
-                    } else {
-                        return t1;
-                    }
-                }
-            };
-
-
-            SortingCollection cltn = SortingCollection.newInstance(SortableRecord.class, codec, comp, maxRecords, tmpDir);
+            SortingCollection cltn = SortingCollection.newInstance(SortableRecord.class, codec, comparator, maxRecords, tmpDir);
 
             Parser parser = getParser();
             AsciiLineReader reader = new AsciiLineReader(fis);
@@ -206,6 +172,27 @@ public abstract class Sorter {
             } catch (IOException ex) {
             }
         }
+    }
+
+    void setComparator(Comparator<SortableRecord> comparator) {
+        this.comparator = comparator;
+    }
+
+    public static Comparator<SortableRecord> getDefaultComparator() {
+        Comparator<SortableRecord> comp = new Comparator<SortableRecord>() {
+            private Comparator<String> nameComparator = ChromosomeNameComparator.get();
+
+            public int compare(SortableRecord o1, SortableRecord o2) {
+
+                int nameComp = nameComparator.compare(o1.getChromosome(), o2.getChromosome());
+                if (nameComp == 0) {
+                    return o1.getStart() - o2.getStart();
+                } else {
+                    return nameComp;
+                }
+            }
+        };
+        return comp;
     }
 
     abstract Parser getParser() throws IOException;

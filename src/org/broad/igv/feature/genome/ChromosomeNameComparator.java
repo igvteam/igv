@@ -11,6 +11,9 @@
 
 package org.broad.igv.feature.genome;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 import java.util.Comparator;
 
 /**
@@ -32,6 +35,8 @@ public class ChromosomeNameComparator implements Comparator<String> {
 
     private static ChromosomeNameComparator instance;
 
+    private Table<String, String, Integer> cache = HashBasedTable.create();
+
     private ChromosomeNameComparator() {
     }
 
@@ -46,22 +51,43 @@ public class ChromosomeNameComparator implements Comparator<String> {
         return chr.equalsIgnoreCase("chrM") || chr.equalsIgnoreCase("MT");
     }
 
-
     public int compare(String chr0, String chr1) {
-
-
-        // Special rule -- put the mitochondria at the end
-        // Assuming we won't have 2
-        if (isMito(chr0)) {
-            return +1;
-        } else if (isMito(chr1)) {
-            return -1;
+        if (cache.contains(chr0, chr1)) {
+            return cache.get(chr0, chr1);
         }
+        int comparison = compareNonCache(chr0, chr1);
+
+        //Just to make sure cache size doesn't go crazy.
+        //In general don't expect more than ~50 chromosomes,
+        //which would be 50 choose 2 ~= 1250 mappings
+        if (cache.size() < 10000) {
+            cache.put(chr0, chr1, comparison);
+        }
+        return comparison;
+    }
+
+    public void resetCache() {
+        cache.clear();
+    }
+
+    public int compareNonCache(String chr0, String chr1) {
+
 
         int[] range0 = findDigitRange(chr0);
         int[] range1 = findDigitRange(chr1);
 
         if (range0 == null || range1 == null || range0[0] != range1[0]) {
+            // Special rule -- put the mitochondria at the end
+            boolean mito0 = isMito(chr0);
+            boolean mito1 = isMito(chr1);
+            if (mito0 && !mito1) {
+                return +1;
+            } else if (!mito0 && mito1) {
+                return -1;
+            } else if (mito0 && mito1) {
+                return 0;
+            }
+
             return chr0.compareToIgnoreCase(chr1);
         } else {
             String alpha1 = chr0.substring(0, range0[0]);
@@ -146,4 +172,5 @@ public class ChromosomeNameComparator implements Comparator<String> {
 //        }
 //        return 0;
 //    }
+
 }
