@@ -4,6 +4,7 @@ import org.apache.commons.math.linear.*;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.matrix.RealMatrixWrapper;
 import org.broad.igv.hic.tools.Preprocessor;
@@ -33,11 +34,17 @@ public class MatrixZoomData {
     private Chromosome chr1;  // Redundant, but convenient
     private Chromosome chr2;  // Redundant, but convenient
 
+    HiC.Unit unit;
     private int zoom;        // doesn't seem to be used
-    private int fileBinSize;     // needed for fragment maps
-    private int binSize;         // bin size in bp
+    private int binSize;         // bin size in bp or fragments
     private int blockBinCount;   // block size in bins
     private int blockColumnCount;     // number of block columns
+
+    float sumCounts;
+    float avgCounts;
+    float stdDev;
+    float percent95;
+
 
     // TODO -- isnt this a memory leak?  Should these be stored?
     private LinkedHashMap<Integer, Block> blocks;
@@ -74,48 +81,45 @@ public class MatrixZoomData {
      * @param dis
      * @throws IOException
      */
-    public MatrixZoomData(Chromosome chr1, Chromosome chr2, DatasetReader reader, LittleEndianInputStream dis) throws IOException {
+    public MatrixZoomData(Chromosome chr1, Chromosome chr2, DatasetReader reader, LittleEndianInputStream dis,
+                          Map<String, int[]> fragmentSitesMap) throws IOException {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
 
         // THIS INSTANCEOF SWITCH IS TRULY AWFUL -- but temporary until all old files are converted
         if (reader instanceof DatasetReaderV1) {
-            this.zoom = dis.readInt();
+            zoom = dis.readInt();
             if (reader.getVersion() >= 1) {
                 dis.readInt();              // sum but we're not using this anymore
             }
         } else {
-            String unit = dis.readString();
-            this.zoom = dis.readInt();
-            float sumCounts = dis.readFloat();
-            float avgCounts = dis.readFloat();
-            float stdDev = dis.readFloat();
-            float percent95 = dis.readFloat();
+            unit = HiC.Unit.valueOf(dis.readString());
+            zoom = dis.readInt();
+            sumCounts = dis.readFloat();
+            avgCounts = dis.readFloat();
+            stdDev = dis.readFloat();
+            percent95 = dis.readFloat();
         }
 
-        fileBinSize = dis.readInt();
+        binSize = dis.readInt();
+        blockBinCount = dis.readInt();
+        blockColumnCount = dis.readInt();
 
-        this.blockBinCount = dis.readInt();
-        this.blockColumnCount = dis.readInt();
-        if (fileBinSize > 1) {
-            binSize = fileBinSize;
+        if (reader instanceof DatasetReaderV1) {
+            unit = binSize > 1 ? HiC.Unit.BP : HiC.Unit.FRAG;
+        }
+
+
+        if (unit == HiC.Unit.BP) {
             xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
             yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
         } else {
-            // TODO -- read bins from file, fake it for now.  The
-            int nBins = blockBinCount * blockColumnCount;
-            binSize = (int) ((double) chr1.getLength() / (blockBinCount * blockColumnCount));
-            HiCFragmentAxis.Bin[] bins = new HiCFragmentAxis.Bin[nBins];
-            for (int i = 0; i < nBins; i++) {
-                int gStart = (int) (binSize * i);
-                int gEnd = (int) (binSize * (i + 1));
-                bins[i] = new HiCFragmentAxis.Bin(gStart, (gEnd - gStart));
+            int [] xSites = fragmentSitesMap.get(chr1.getName());
+            xGridAxis = new HiCFragmentAxis(xSites);
 
-            }
-
-            xGridAxis = new HiCFragmentAxis(bins);
-            yGridAxis = new HiCFragmentAxis(bins);
+            int [] ySites = fragmentSitesMap.get(chr2.getName());
+            yGridAxis = new HiCFragmentAxis(ySites);
 
         }
 
@@ -136,14 +140,14 @@ public class MatrixZoomData {
         // If there's a pearson file available initialize it now
         String rootPath = FileUtils.getParent(reader.getPath());
         String folder = rootPath + "/" + chr1.getName();
-        String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + fileBinSize + ".bin";
+        String file = "pearsons" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".bin";
         String fullPath = folder + "/" + file;
         if (FileUtils.resourceExists(fullPath)) {
             pearsons = ScratchPad.readPearsons(fullPath);
         }
 
         // If there's an eigenvector file load it
-        String eigenFile = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + fileBinSize + ".wig";
+        String eigenFile = "eigen" + "_" + chr1.getName() + "_" + chr2.getName() + "_" + binSize + ".wig";
         String fullEigenPath = folder + "/" + eigenFile;
         if (FileUtils.resourceExists(fullEigenPath)) {
             readEigenvector(fullEigenPath);
@@ -497,7 +501,7 @@ public class MatrixZoomData {
             if (b != null) {
                 for (ContactRecord rec : b.getContactRecords()) {
                     if (les == null)
-                        System.out.println(rec.getBinX() * fileBinSize + "\t" + rec.getBinY() * fileBinSize + "\t" + rec.getCounts());
+                        System.out.println(rec.getBinX() * binSize + "\t" + rec.getBinY() * binSize + "\t" + rec.getCounts());
                     else {
                         les.writeInt(rec.getBinX());
                         les.writeInt(rec.getBinY());

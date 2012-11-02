@@ -3,8 +3,14 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.hic.tools.Preprocessor;
+import org.broad.igv.hic.track.HiCFixedGridAxis;
+import org.broad.igv.hic.track.HiCFragmentAxis;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
@@ -14,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author jrobinso
@@ -28,15 +35,18 @@ public class DatasetReaderV1 implements DatasetReader {
     private Dataset dataset = null;
     private int version = -1;
 
+    private Map<String, int[]> fragmentSitesMap;
+
     public DatasetReaderV1(String path) throws IOException {
         this.path = path;
         this.stream = IGVSeekableStreamFactory.getStreamFor(path);
-        if (this.stream != null)
-        {
+        if (this.stream != null) {
             masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
             dataset = new Dataset(this);
             version = 0;
         }
+
+        fragmentSitesMap = readFragmentSites();
     }
 
     @Override
@@ -61,6 +71,12 @@ public class DatasetReaderV1 implements DatasetReader {
             }
             dataset.setChromosomes(chromosomes);
 
+            // V1 datasets did not record bin sizes
+            dataset.setBpBinSizes(Preprocessor.bpBinSizes);
+            dataset.setFragBinSizes(new int[]{1});
+
+            //readand set fragment sites
+
             // Read attribute dictionary.  Can contain arbitrary # of attributes as key-value pairs, including version
             version = 0;  // <= assumption
             int nAttributes = dis.readInt();
@@ -80,7 +96,7 @@ public class DatasetReaderV1 implements DatasetReader {
             }
             System.out.println("genome = " + genome);
 
-             readFooter(masterIndexPos, version);
+            readFooter(masterIndexPos, version);
 
 
         } catch (IOException e) {
@@ -91,6 +107,7 @@ public class DatasetReaderV1 implements DatasetReader {
         return dataset;
 
     }
+
 
     /**
      * Infer a genome id by examining chromsome sizes.  This method provided for older hic files that do not have
@@ -171,13 +188,13 @@ public class DatasetReaderV1 implements DatasetReader {
         int c1 = dis.readInt();
         int c2 = dis.readInt();
         int nZooms = dis.readInt();
-       // dataset.setNumberZooms(nZooms);
+        // dataset.setNumberZooms(nZooms);
         Chromosome chr1 = dataset.getChromosomes()[c1];
         Chromosome chr2 = dataset.getChromosomes()[c2];
 
         MatrixZoomData[] zd = new MatrixZoomData[nZooms];
         for (int i = 0; i < nZooms; i++) {
-            zd[i] = new MatrixZoomData(chr1, chr2, this, dis);
+            zd[i] = new MatrixZoomData(chr1, chr2, this, dis, fragmentSitesMap);
         }
 
         Matrix m = new Matrix(c1, c2, zd);
@@ -217,8 +234,6 @@ public class DatasetReaderV1 implements DatasetReader {
 
     }
 
-
-
     /**
      * Return a map of zoom level -> DensityFunction
      *
@@ -249,7 +264,7 @@ public class DatasetReaderV1 implements DatasetReader {
             }
 
             // Normalization factors
-            Map<Integer, Double>normalizationFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
+            Map<Integer, Double> normalizationFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
             for (int j = 0; j < nChromosomes; j++) {
                 Integer chrIdx = les.readInt();
                 double normFactor = les.readDouble();
@@ -258,7 +273,7 @@ public class DatasetReaderV1 implements DatasetReader {
 
             // Densities
             int nDensities = les.readInt();
-            double [] densityAvg = new double[nDensities];
+            double[] densityAvg = new double[nDensities];
             for (int j = 0; j < nDensities; j++) {
                 densityAvg[j] = les.readDouble();
 
@@ -271,6 +286,38 @@ public class DatasetReaderV1 implements DatasetReader {
 
         return densityMap;
 
+    }
+
+    public static Map<String, int[]> readFragmentSites() throws IOException {
+        Pattern pattern = Pattern.compile("\\s");
+
+        InputStream is = null;
+
+        try {
+            is = DatasetReaderV1.class.getResourceAsStream("hg19_HindIII.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String nextLine;
+            Map<String, int[]> fragmentMap = new LinkedHashMap<String, int[]>();
+
+            while ((nextLine = reader.readLine()) != null) {
+                String[] tokens = pattern.split(nextLine);
+                if (tokens.length > 1) {
+                    String key = tokens[0];
+                    int[] sites = new int[tokens.length - 1];
+                    for (int i = 1; i < tokens.length; i++) {
+                        sites[i - 1] = Integer.parseInt(tokens[i]);
+                    }
+
+                    fragmentMap.put(key, sites);
+                } else {
+                    System.out.println("Skipping line: " + nextLine);
+                }
+            }
+
+            return fragmentMap;
+        } finally {
+            if (is != null) is.close();
+        }
     }
 
 }

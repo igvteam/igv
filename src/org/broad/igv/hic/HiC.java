@@ -15,7 +15,14 @@ import java.util.Map;
  */
 public class HiC {
 
+    public Unit getUnit() {
+        return unit;
+    }
+
+    public enum Unit {BP, FRAG};
+
     MainWindow mainWindow;
+    Unit unit = Unit.BP;
     MainWindow.DisplayOption displayOption;
     Dataset dataset;
     private Chromosome[] chromosomes;
@@ -80,6 +87,10 @@ public class HiC {
     }
 
 
+    public void setUnit(Unit unit) {
+        this.unit = unit;
+    }
+
     /**
      * Change zoom level and recenter.  Triggered by the resolutionSlider, or by a double-click in the
      * heatmap panel.
@@ -87,15 +98,18 @@ public class HiC {
      * @param newZoom
      * @param genomePositionX center X in base pairs
      * @param genomePositionY center Y in base pairs
-     * @param updateSlider
      */
-    public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY, boolean updateSlider) {
+    public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY) {
 
-        if (newZoom < 0 || newZoom > dataset.getNumberZooms()) return;
+       if (newZoom < 0 || newZoom > dataset.getNumberZooms(unit)) return;
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
-        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+
+
+        int zoomDataIdx = unit == HiC.Unit.BP ? newZoom : newZoom + 9;
+
+        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoomDataIdx);
         if (newZD == null) {
             JOptionPane.showMessageDialog(mainWindow, "Sorry, this zoom is not available", "Zoom unavailable", JOptionPane.WARNING_MESSAGE);
             return;
@@ -108,7 +122,7 @@ public class HiC {
                         "this resolution will take a while.\nAre you sure you want to proceed?",
                         "Confirm calculation", JOptionPane.YES_NO_OPTION);
                 if (ans == JOptionPane.NO_OPTION) {
-                    mainWindow.updateZoom(zd.getZoom());
+                    mainWindow.updateZoom(unit, zd.getZoom());
                     return;
                 }
             }
@@ -160,7 +174,7 @@ public class HiC {
         int binY = zd.getyGridAxis().getBinNumberForGenomicPosition((int) genomePositionY);
 
         center(binX, binY);
-        mainWindow.updateZoom(newZoom);
+        mainWindow.updateZoom(unit, newZoom);
 
         mainWindow.refresh();
     }
@@ -172,9 +186,9 @@ public class HiC {
     public void zoomTo(final int xBP0, final int yBP0, final int xBP1, int yBP1, double genomicScale) {
 
         // Find zoom level closest to prescribed scale
-        int newZoom = dataset.getNumberZooms() - 1;
-        for (int z = 1; z < dataset.getNumberZooms(); z++) {
-            if (dataset.getZoom(z) < genomicScale) {
+        int newZoom = dataset.getNumberZooms(unit) - 1;
+        for (int z = 1; z < dataset.getNumberZooms(unit); z++) {
+            if (dataset.getZoom(unit, z) < genomicScale) {
                 newZoom = z - 1;
                 break;
             }
@@ -182,7 +196,11 @@ public class HiC {
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
-        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
+
+
+        int zoomDataIdx = unit == HiC.Unit.BP ? newZoom : newZoom + 9;
+
+        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoomDataIdx);
 
 
         final int binX = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP0);
@@ -229,7 +247,7 @@ public class HiC {
         yContext.setBinOrigin(binY);
 
 
-        mainWindow.updateZoom(zd.getZoom());
+        mainWindow.updateZoom(unit, zd.getZoom());
         mainWindow.refresh();
     }
 

@@ -393,7 +393,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int xGenome = hic.zd.getxGridAxis().getGenomicMid(centerBinX);
                     int yGenome = hic.zd.getyGridAxis().getGenomicMid(centerBinY);
 
-                    hic.setZoom(newZoom, xGenome, yGenome, true);
+                    hic.setZoom(newZoom, xGenome, yGenome);
 
                 } else {
 
