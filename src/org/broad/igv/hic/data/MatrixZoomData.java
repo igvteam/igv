@@ -35,7 +35,7 @@ public class MatrixZoomData {
     private Chromosome chr2;  // Redundant, but convenient
 
     HiC.Unit unit;
-    private int zoom;        // doesn't seem to be used
+    private int zoom;
     private int binSize;         // bin size in bp or fragments
     private int blockBinCount;   // block size in bins
     private int blockColumnCount;     // number of block columns
@@ -59,6 +59,10 @@ public class MatrixZoomData {
 
     public void setPearsons(BasicMatrix bm) {
         this.pearsons = bm;
+    }
+
+    public HiCGridAxis getXGridAxis() {
+        return xGridAxis;
     }
 
     public class ScaleParameters {

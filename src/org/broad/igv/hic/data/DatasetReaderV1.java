@@ -264,11 +264,11 @@ public class DatasetReaderV1 implements DatasetReader {
             }
 
             // Normalization factors
-            Map<Integer, Double> normalizationFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
+            Map<Integer, Double> chrScaleFactors = new LinkedHashMap<Integer, Double>(nChromosomes);
             for (int j = 0; j < nChromosomes; j++) {
                 Integer chrIdx = les.readInt();
                 double normFactor = les.readDouble();
-                normalizationFactors.put(chrIdx, normFactor);
+                chrScaleFactors.put(chrIdx, normFactor);
             }
 
             // Densities

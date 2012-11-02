@@ -34,12 +34,12 @@ public class TrackPanel extends JPanel {
     HiC hic;
     Genome genome;
     HiCTrack eigenvectorTrack;
-    Collection<Pair<Rectangle, Track>> trackRectangles;
+    Collection<Pair<Rectangle, HiCTrack>> trackRectangles;
 
     public TrackPanel(HiC hiC) {
         this.hic = hiC;
         setAutoscrolls(true);
-        trackRectangles = new ArrayList<Pair<Rectangle, Track>>();
+        trackRectangles = new ArrayList<Pair<Rectangle, HiCTrack>>();
         addMouseListener();
     }
 
@@ -64,10 +64,10 @@ public class TrackPanel extends JPanel {
                 if (mouseEvent.isPopupTrigger()) {
                     handlePopupEvent(mouseEvent);
                 }
-             }
+            }
 
             private void handlePopupEvent(MouseEvent mouseEvent) {
-                for (Pair<Rectangle, Track> p : trackRectangles) {
+                for (Pair<Rectangle, HiCTrack> p : trackRectangles) {
                     Rectangle r = p.getFirst();
                     if (r.contains(mouseEvent.getPoint())) {
 //                        Collection<Track> selectedTracks = Arrays.asList(p.getSecond());
@@ -142,8 +142,12 @@ public class TrackPanel extends JPanel {
                 Rectangle trackRectangle = new Rectangle(rect.x, y, rect.width, h);
 
                 if (hic.xContext != null) {
-                    RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, trackRectangle, genome);
-                    track.render(context, trackRectangle);
+                    //  RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, trackRectangle, genome);
+
+                    HiCGridAxis xAxis = hic.zd.getXGridAxis();
+                    HiCDataAdapter da = new HiCDataAdapter(xAxis, (DataTrack) track);
+                    HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
+                    hicTrack.render((Graphics2D) graphics, hic.xContext, trackRectangle);
                     renderName(track.getName(), track.getColor(), trackRectangle, graphics);
                     y += h;
 

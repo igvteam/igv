@@ -105,9 +105,8 @@ public class DatasetReaderV2 implements DatasetReader {
 
             fragmentSitesMap = new HashMap<String, int[]>();
             if (nFragResolutions > 0) {
-                nchrs = dis.readInt();   // Not really neccessary
                 for (int i = 0; i < nchrs; i++) {
-                    String chr = dis.readString();
+                    String chr = chromosomes[i].getName();
                     int nSites = dis.readInt();
                     int [] sites = new int[nSites];
                     for (int s = 0; s < nSites; s++) {

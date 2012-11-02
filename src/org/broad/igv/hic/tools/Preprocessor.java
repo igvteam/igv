@@ -116,99 +116,13 @@ public class Preprocessor {
 
 
             System.out.println("Start preprocess");
+
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
-            // Magic number
-            byte[] magicBytes = "HIC".getBytes();
-            fos.write(magicBytes[0]);
-            fos.write(magicBytes[1]);
-            fos.write(magicBytes[2]);
-            fos.write(0);
+            writeHeader();
 
-            // Version
-            fos.writeInt(4);
+            writeBody(inputFileList);
 
-            // Placeholder for master index position, replaced with actual position after all contents are written
-            masterIndexPositionPosition = fos.getWrittenCount();
-            fos.writeLong(0l);
-
-
-            // Genome ID
-            fos.writeString(genomeId);
-
-            // Sequence dictionary
-            int nChrs = chromosomes.size();
-            fos.writeInt(nChrs);
-            for (Chromosome chromosome : chromosomes) {
-                fos.writeString(chromosome.getName());
-                fos.writeInt(chromosome.getLength());
-            }
-
-            //BP resolution levels
-            int nBpRes = bpBinSizes.length;
-            fos.writeInt(nBpRes);
-            for (int i = 0; i < nBpRes; i++) {
-                fos.writeInt(bpBinSizes[i]);
-            }
-
-            //fragment resolutions
-            int nFragRes = fragmentCalculation == null ? 0 : fragBinSizes.length;
-            fos.writeInt(nFragRes);
-            for (int i = 0; i < nFragRes; i++) {
-                fos.writeInt(fragBinSizes[i]);
-            }
-
-            // fragment sites
-            if (nFragRes > 0) {
-                for (Chromosome chromosome : chromosomes) {
-                    int[] sites = fragmentCalculation.getSites(chromosome.getName());
-                    int nSites = sites == null ? 0 : sites.length;
-                    fos.writeInt(nSites);
-                    for (int i = 0; i < nSites; i++) {
-                        fos.writeInt(sites[i]);
-                    }
-                }
-            }
-
-            //hemi-frag levels (reserved for future use)
-            int nHemiFrags = 0;
-            fos.writeInt(nHemiFrags);
-
-
-            // Attribute dictionary
-            int nAttributes = 0;
-            fos.writeInt(nAttributes);
-            //fos.writeString("theKey");
-            //fos.writeString("theValue");
-            //... repeat for each attribute
-
-            // Compute matrices.  Note that c2 is always >= c1
-            for (int c1 = 0; c1 < nChrs; c1++) {
-                for (int c2 = c1; c2 < nChrs; c2++) {
-
-                    // Index zero is whole genome
-                    if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
-
-                    if (diagonalsOnly && c1 != c2) continue;
-
-                    // Optionally filter on chromosome
-                    if (includedChromosomes != null && c1 != 0) {
-                        String c1Name = chromosomes.get(c1).getName();
-                        String c2Name = chromosomes.get(c2).getName();
-                        if (!(includedChromosomes.contains(c1Name) || includedChromosomes.contains(c2Name))) {
-                            continue;
-                        }
-                    }
-
-                    MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
-                    if (matrix != null) {
-                        writeMatrix(matrix);
-                    }
-                }
-            } // End of double loop through chromosomes
-
-
-            masterIndexPosition = fos.getWrittenCount();
             writeFooter();
 
 
@@ -218,6 +132,72 @@ public class Preprocessor {
         }
 
         updateIndexPositions();
+    }
+
+    private void writeHeader() throws IOException {
+        // Magic number
+        byte[] magicBytes = "HIC".getBytes();
+        fos.write(magicBytes[0]);
+        fos.write(magicBytes[1]);
+        fos.write(magicBytes[2]);
+        fos.write(0);
+
+        // Version
+        fos.writeInt(4);
+
+        // Placeholder for master index position, replaced with actual position after all contents are written
+        masterIndexPositionPosition = fos.getWrittenCount();
+        fos.writeLong(0l);
+
+
+        // Genome ID
+        fos.writeString(genomeId);
+
+        // Sequence dictionary
+        int nChrs = chromosomes.size();
+        fos.writeInt(nChrs);
+        for (Chromosome chromosome : chromosomes) {
+            fos.writeString(chromosome.getName());
+            fos.writeInt(chromosome.getLength());
+        }
+
+        //BP resolution levels
+        int nBpRes = bpBinSizes.length;
+        fos.writeInt(nBpRes);
+        for (int i = 0; i < nBpRes; i++) {
+            fos.writeInt(bpBinSizes[i]);
+        }
+
+        //fragment resolutions
+        int nFragRes = fragmentCalculation == null ? 0 : fragBinSizes.length;
+        fos.writeInt(nFragRes);
+        for (int i = 0; i < nFragRes; i++) {
+            fos.writeInt(fragBinSizes[i]);
+        }
+
+        // fragment sites
+        if (nFragRes > 0) {
+            for (Chromosome chromosome : chromosomes) {
+                int[] sites = fragmentCalculation.getSites(chromosome.getName());
+                int nSites = sites == null ? 0 : sites.length;
+                fos.writeInt(nSites);
+                for (int i = 0; i < nSites; i++) {
+                    fos.writeInt(sites[i]);
+                }
+            }
+        }
+
+        //hemi-frag levels (reserved for future use)
+        int nHemiFrags = 0;
+        fos.writeInt(nHemiFrags);
+
+
+        // Attribute dictionary
+        int nAttributes = 0;
+        fos.writeInt(nAttributes);
+        //fos.writeString("theKey");
+        //fos.writeString("theValue");
+        //... repeat for each attribute
     }
 
     private void processThreads(List<Thread> threads, List<MatrixPP> matrices) throws IOException {
@@ -237,6 +217,37 @@ public class Preprocessor {
         }
     }
 
+
+    private void writeBody(List<String> inputFileList) throws IOException {
+        int nChrs = chromosomes.size();
+        // Compute matrices.  Note that c2 is always >= c1
+        for (int c1 = 0; c1 < nChrs; c1++) {
+            for (int c2 = c1; c2 < nChrs; c2++) {
+
+                // Index zero is whole genome
+                if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
+
+                if (diagonalsOnly && c1 != c2) continue;
+
+                // Optionally filter on chromosome
+                if (includedChromosomes != null && c1 != 0) {
+                    String c1Name = chromosomes.get(c1).getName();
+                    String c2Name = chromosomes.get(c2).getName();
+                    if (!(includedChromosomes.contains(c1Name) || includedChromosomes.contains(c2Name))) {
+                        continue;
+                    }
+                }
+
+                MatrixPP matrix = computeMatrix(inputFileList, c1, c2);
+                if (matrix != null) {
+                    writeMatrix(matrix);
+                }
+            }
+        } // End of double loop through chromosomes
+
+
+        masterIndexPosition = fos.getWrittenCount();
+    }
 
     /**
      * Compute matrix for the given chromosome combination.  This results in full pass through the input files
@@ -353,6 +364,7 @@ public class Preprocessor {
 
     public void writeFooter() throws IOException {
 
+        // Index
         BufferedByteWriter buffer = new BufferedByteWriter();
         buffer.putInt(matrixPositions.size());
         for (Map.Entry<String, IndexEntry> entry : matrixPositions.entrySet()) {
@@ -361,7 +373,7 @@ public class Preprocessor {
             buffer.putInt(entry.getValue().size);
         }
 
-
+        // Vectors  (Expected values,  other).
         buffer.putInt(expectedValueCalculations.size());
         for (Map.Entry<String, ExpectedValueCalculation> entry : expectedValueCalculations.entrySet()) {
             String key = entry.getKey();

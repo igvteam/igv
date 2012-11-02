@@ -3,6 +3,8 @@ package org.broad.igv.hic.track;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.track.DataSourceTrack;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -29,6 +31,7 @@ public class HiCDataAdapterTest {
         TDFReader reader = TDFReader.getReader(dataURL);
         Genome genome = TestUtils.loadGenome();  // This is actually hg18 but close enough
         TDFDataSource dataSource = new TDFDataSource(reader, 0, "", genome);
+        DataTrack track = new DataSourceTrack(null, null, null, dataSource);
 
         String chr = "chr14";
         int start = 51000000;
@@ -36,9 +39,9 @@ public class HiCDataAdapterTest {
         int startBin = start / binSize;
         int endBin = end / binSize;
 
-        HiCDataAdapter adapter = new HiCDataAdapter(axis, dataSource);
+        HiCDataAdapter adapter = new HiCDataAdapter(axis, track);
 
-        SortedMap<Integer, HiCDataAdapter.WeightedSum> data =  adapter.getData(chr, startBin, endBin);
+        HiCDataAdapter.WeightedSum [] data =  adapter.getData(chr, startBin, endBin);
         assertNotNull(data);
 
 
