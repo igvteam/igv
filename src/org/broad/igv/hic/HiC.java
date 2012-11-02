@@ -239,13 +239,12 @@ public class HiC {
 
     private void updateState(MatrixZoomData newZD, int binX, int binY, double scaleFactor) {
         zd = newZD;
+
         xContext.setZoom(zd.getZoom(), scaleFactor);
         yContext.setZoom(zd.getZoom(), scaleFactor);
 
-
         xContext.setBinOrigin(binX);
         yContext.setBinOrigin(binY);
-
 
         mainWindow.updateZoom(unit, zd.getZoom());
         mainWindow.refresh();

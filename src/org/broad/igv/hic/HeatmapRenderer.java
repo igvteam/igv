@@ -1,11 +1,13 @@
 package org.broad.igv.hic;
 
+import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.renderer.ColorScale;
+import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.awt.*;
 import java.util.List;
@@ -56,15 +58,15 @@ public class HeatmapRenderer {
 
         boolean isWholeGenome = zd.getChr1() == 0 && zd.getChr2() == 0;
         boolean sameChr = (chr1 == chr2);
-        //double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 : 1000000.0);
         int zoomMultiplier = zd.getZoomMultiplier();
         double mb;
-        if(isWholeGenome) {
+        if (isWholeGenome) {
             mb = (double) zoomMultiplier * 5;
         } else {
             mb = (double) (zoomMultiplier) / 200;
         }
-        double colorScaleFactor = mb*mb;
+        double colorScaleFactor = mb * mb;
+
 
         if (sameChr) {
             // Data is transposable, transpose if neccessary.  Convention is to use lower diagonal
@@ -83,12 +85,12 @@ public class HeatmapRenderer {
         ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
-            BasicMatrix bm =  zd.getPearsons();
+            BasicMatrix bm = zd.getPearsons();
             if (bm != null) {
                 ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
                 ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
- //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
- //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
+                //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
+                //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
                 renderMatrix(bm, originX, originY, width, height, colorScale, g);
 
             }
@@ -100,10 +102,35 @@ public class HeatmapRenderer {
             }
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
+
+//            float percent95 = zd.getPercent95();
+//            if (percent95 < 0) {
+//                percent95 = computePercent95(blocks);
+//                zd.setPercent95(percent95);
+//                System.out.println("Percent 95 = " + percent95);
+//            }
+
+
             for (Block b : blocks) {
                 renderBlock(originX, originY, chr1, chr2, colorScaleFactor, b, colorScale, df, g);
             }
         }
+    }
+
+    private float computePercent95(List<Block> blocks) {
+
+        DoubleArrayList dal = new DoubleArrayList(10000);
+        for (Block b : blocks) {
+            ContactRecord[] recs = b.getContactRecords();
+            if (recs != null) {
+                for (int i = 0; i < recs.length; i++) {
+                    ContactRecord rec = recs[i];
+                    dal.add(rec.getCounts());
+                }
+            }
+        }
+
+        return (float) StatUtils.percentile(dal.toArray(), 95);
     }
 
 
@@ -145,11 +172,11 @@ public class HeatmapRenderer {
                     // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     score = normCounts;
-              //      int x = rec.getX();// * binSize;
-              //      int y = rec.getY();// * binSize;
-              //      int dist = Math.abs(x - y);
-              //      double expected = df.getDensity(chr1, dist);
-              //      score = rec.getCounts() / expected;
+                    //      int x = rec.getX();// * binSize;
+                    //      int y = rec.getY();// * binSize;
+                    //      int dist = Math.abs(x - y);
+                    //      double expected = df.getDensity(chr1, dist);
+                    //      score = rec.getCounts() / expected;
                     score = Math.log10(score);
                 } else {
                     score = rec.getCounts() / colorScaleFactor;
@@ -201,7 +228,7 @@ public class HeatmapRenderer {
                 if (Float.isNaN(score)) {
                     color = Color.gray;
                 } else {
-                     color = score == 0 ? Color.black : colorScale.getColor((float) score);
+                    color = score == 0 ? Color.black : colorScale.getColor((float) score);
                 }
                 int px = col - originX;
                 int py = row - originY;

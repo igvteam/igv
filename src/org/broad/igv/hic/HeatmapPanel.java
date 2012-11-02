@@ -102,7 +102,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                         g.drawImage(tile.image, pxOffset, pyOffset, null);
 
                         // Uncomment to see image boundaries (for debugging)
-                        g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
+                        //g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
                     }
 
                 }

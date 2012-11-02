@@ -228,7 +228,6 @@ public class HiCRulerPanel extends JPanel implements Serializable {
     public static TickSpacing findSpacing(long maxValue, boolean scaleInKB) {
 
         if (maxValue < 10) {
-            System.out.println("max value = " + maxValue);
             return new TickSpacing(1, "bp", 1);
         }
 

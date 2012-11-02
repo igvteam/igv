@@ -34,7 +34,7 @@ public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
     Color [] colorCache = new Color[colorTableSize];  // Array instead of map for efficiency
 
     private int minCount = 0;
-    private int maxCount = 200;
+    private int maxCount = 100;
     private Color background;
     private float[] backgroundColorComponents;
 
