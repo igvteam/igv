@@ -14,6 +14,7 @@ package org.broad.igv.tools;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
+import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.FastaIndex;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
@@ -220,8 +221,11 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String[] args = {"toTDF", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
         igvTools.run(args);
 
-        args = new String[]{"toTDF", "-z", "2", "--windowFunctions", "max", inputFile, file2, hg18id};
-        (new IgvTools()).run(args);
+        FeatureDB.clearFeatures();
+        Runtime.getRuntime().gc();
+
+        args = new String[]{"toTDF", "-z", "1", "--windowFunctions", "max", inputFile, file2, hg18id};
+        igvTools.run(args);
 
 
         String dsName = "/chr1/raw";

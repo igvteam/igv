@@ -28,6 +28,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.FastaUtils;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
@@ -134,7 +135,6 @@ public class IgvTools {
 
     // Trackline
     private static CmdLineParser.Option colorOption = null;
-
 
     /**
      * The general usage string
@@ -966,6 +966,16 @@ public class IgvTools {
         }
         if (!genomeFile.exists()) {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
+        }
+
+
+        //TODO Prevents loading genome again if loading from path.
+        //May or may not want this, for now we just use it for testing
+        if (Globals.isTesting()) {
+            GenomeDescriptor genomeDescriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
+            if (genome != null && genomeDescriptor.getId().equals(genome.getId())) {
+                return genome;
+            }
         }
 
         genome = genomeManager.loadGenome(genomeFile.getAbsolutePath(), null);
