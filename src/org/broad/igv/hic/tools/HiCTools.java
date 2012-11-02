@@ -24,6 +24,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
@@ -507,8 +508,8 @@ public class HiCTools {
         }
         int zoomIdx = 0;
         boolean found = false;
-        for (; zoomIdx < dataset.getNumberZooms(); zoomIdx++) {
-            if (dataset.getZoom(zoomIdx) == binsize) {
+        for (; zoomIdx < dataset.getNumberZooms(HiC.Unit.BP); zoomIdx++) {
+            if (dataset.getZoom(HiC.Unit.BP, zoomIdx) == binsize) {
                 found = true;
                 break;
             }
@@ -569,8 +570,8 @@ public class HiCTools {
 
         int zoomIdx = 0;
         boolean found = false;
-        for (; zoomIdx < dataset.getNumberZooms(); zoomIdx++) {
-            if (dataset.getZoom(zoomIdx) == binsize) {
+        for (; zoomIdx < dataset.getNumberZooms(HiC.Unit.BP); zoomIdx++) {
+            if (dataset.getZoom(HiC.Unit.BP, zoomIdx) == binsize) {
                 found = true;
                 break;
             }

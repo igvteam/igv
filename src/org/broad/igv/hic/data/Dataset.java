@@ -1,6 +1,7 @@
 package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.tools.Preprocessor;
 
 import java.io.IOException;
@@ -55,15 +56,13 @@ public class Dataset {
 
     }
 
-    public int getNumberZooms() {
-        return Preprocessor.bpBinSizes.length;
+    public int getNumberZooms(HiC.Unit unit) {
+        return  unit == HiC.Unit.BP ?  bpBinSizes.length : fragBinSizes.length;
     }
 
-
-    public int getZoom(int index) {
-        return Preprocessor.bpBinSizes[index];
+    public int getZoom(HiC.Unit unit, int index) {
+        return unit == HiC.Unit.BP ?  bpBinSizes[index] : fragBinSizes[index];
     }
-
 
     /**
      * Function needed for legacy datasets.

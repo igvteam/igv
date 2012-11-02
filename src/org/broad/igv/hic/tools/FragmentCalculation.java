@@ -1,54 +1,56 @@
 package org.broad.igv.hic.tools;
 
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.ChromosomeImpl;
-
 import java.io.*;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Created with IntelliJ IDEA.
- * User: nchernia
+ * @author nchernia
  * Date: 8/26/12
- * Time: 7:37 PM
- * To change this template use File | Settings | File Templates.
  */
 public class FragmentCalculation {
 
     private Map<String, int[]> fragmentMap = null;
 
-    public FragmentCalculation(String filename, List<Chromosome> chromosomes) throws IOException {
+    public static FragmentCalculation readFragments(InputStream is) throws IOException {
+        Pattern pattern = Pattern.compile("\\s");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String nextLine;
+        Map<String, int[]> fragmentMap = new LinkedHashMap<String, int[]>();
+
+        while ((nextLine = reader.readLine()) != null) {
+            String[] tokens = pattern.split(nextLine);
+            if (tokens.length > 1) {
+                String key = tokens[0];
+                int[] sites = new int[tokens.length - 1];
+                for (int i = 1; i < tokens.length; i++) {
+                    sites[i - 1] = Integer.parseInt(tokens[i]);
+                }
+
+                fragmentMap.put(key, sites);
+            } else {
+                System.out.println("Skipping line: " + nextLine);
+            }
+        }
+
+        return new FragmentCalculation(fragmentMap);
+    }
+
+    public static FragmentCalculation readFragments(String filename) throws IOException {
         InputStream is = null;
         try {
             File file = new File(filename);
             is = new FileInputStream(file);
-            Pattern pattern = Pattern.compile("\\s");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String nextLine;
-            fragmentMap = new LinkedHashMap<String, int[]>();
-
-            while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = pattern.split(nextLine);
-                if (tokens.length > 1) {
-                    String key = tokens[0];
-                    int[] sites = new int[tokens.length - 1];
-                    for (int i = 1; i < tokens.length; i++) {
-                        sites[i - 1] = Integer.parseInt(tokens[i]);
-                    }
-
-                    fragmentMap.put(key, sites);
-                } else {
-                    System.out.println("Skipping line: " + nextLine);
-                }
-            }
+            return readFragments(is);
         } finally {
             is.close();
         }
 
+    }
+
+    public FragmentCalculation(Map<String, int[]> fragmentMap) {
+        this.fragmentMap = fragmentMap;
     }
 
     public int [] getSites(String chrName) {

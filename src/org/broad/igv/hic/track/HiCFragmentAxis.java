@@ -25,24 +25,21 @@ import java.util.regex.Pattern;
  */
 public class HiCFragmentAxis implements HiCGridAxis {
 
-    Bin[] bins;
     double averageBinSize;
     int igvZoom;
-
     int[] sites;
 
 
     /**
-     * @param bins ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
+     * @param sites ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
      */
-    public HiCFragmentAxis(Bin[] bins) {
+    public HiCFragmentAxis(int[] sites) {
 
-        this.bins = bins;
+        this.sites = sites;
 
-        Bin lastBin = bins[bins.length - 1];
-        double chrLength = lastBin.start + lastBin.width;
+        double chrLength = sites[sites.length -1];
 
-        averageBinSize = bins.length == 0 ? 0 : (chrLength / bins.length);
+        averageBinSize = sites.length == 0 ? 0 : (chrLength / (sites.length));
 
         // Compute an approximate igv zoom level
 
@@ -55,19 +52,19 @@ public class HiCFragmentAxis implements HiCGridAxis {
     @Override
     public int getGenomicStart(int binNumber) {
 
-        return bins[binNumber].start;
+        return binNumber == 0 ? 0 : sites[binNumber - 1];
 
     }
 
     @Override
     public int getGenomicEnd(int binNumber) {
-        Bin b = bins[binNumber];
-        return b.start + b.width;
+        return sites[binNumber];
     }
 
     @Override
     public int getGenomicMid(int binNumber) {
-        return bins[binNumber].start + bins[binNumber].width / 2;
+        int start = binNumber == 0 ? 0 : sites[binNumber - 1];
+        return (start + sites[binNumber]) / 2;
     }
 
 
@@ -100,24 +97,8 @@ public class HiCFragmentAxis implements HiCGridAxis {
 
     @Override
     public int getBinCount() {
-        return bins.length;
+        return sites.length + 1;
     }
 
-
-
-    public static class Bin {
-
-        public Bin(int start, int width) {
-            this.start = start;
-            this.width = width;
-        }
-
-        int start;
-        int width;
-
-        public boolean contains(int genomePosition) {
-            return genomePosition >= start && genomePosition < (start + width);
-        }
-    }
 
 }

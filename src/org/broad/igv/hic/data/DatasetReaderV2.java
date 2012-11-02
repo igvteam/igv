@@ -27,6 +27,7 @@ public class DatasetReaderV2 implements DatasetReader {
 
     private Dataset dataset = null;
     private int version = -1;
+    private Map<String,int[]> fragmentSitesMap;
 
     public DatasetReaderV2(String path) throws IOException {
         this.path = path;
@@ -101,16 +102,19 @@ public class DatasetReaderV2 implements DatasetReader {
             }
             dataset.setFragBinSizes(fragBinSizes);
 
+
+            fragmentSitesMap = new HashMap<String, int[]>();
             if (nFragResolutions > 0) {
                 nchrs = dis.readInt();   // Not really neccessary
                 for (int i = 0; i < nchrs; i++) {
                     String chr = dis.readString();
                     int nSites = dis.readInt();
+                    int [] sites = new int[nSites];
                     for (int s = 0; s < nSites; s++) {
-                        int site = dis.readInt();
+                        sites[s] = dis.readInt();
                     }
+                    fragmentSitesMap.put(chr, sites);
                 }
-                // TODO -- set sites
             }
 
             int nHemiFragResolutions = dis.readInt();  // Reserved for future use
@@ -219,7 +223,7 @@ public class DatasetReaderV2 implements DatasetReader {
 
         MatrixZoomData[] zd = new MatrixZoomData[nResolutions];
         for (int i = 0; i < nResolutions; i++) {
-            zd[i] = new MatrixZoomData(chr1, chr2, this, dis);
+            zd[i] = new MatrixZoomData(chr1, chr2, this, dis, fragmentSitesMap);
         }
 
         Matrix m = new Matrix(c1, c2, zd);

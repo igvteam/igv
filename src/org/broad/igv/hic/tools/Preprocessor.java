@@ -95,7 +95,7 @@ public class Preprocessor {
 
         try {
             if (fragmentFileName != null) {
-                fragmentCalculation = new FragmentCalculation(fragmentFileName, chromosomes);
+                fragmentCalculation =  FragmentCalculation.readFragments(fragmentFileName);
             } else {
                 System.out.println("WARNING: Not including fragment map");
             }

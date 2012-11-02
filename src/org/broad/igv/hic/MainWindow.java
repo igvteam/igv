@@ -79,7 +79,7 @@ public class MainWindow extends JFrame {
 
         theInstance = getInstance();
         theInstance.setVisible(true);
-        //mainWindow.setSize(950, 700);
+        //theInstance.setSize(950, 700);
         theInstance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -132,14 +132,11 @@ public class MainWindow extends JFrame {
     }
 
 
-    public void updateZoom(int newZoom) {
-        resolutionSlider.setValue(newZoom);
-    }
+    public void updateZoom(HiC.Unit unit, int newZoom) {
 
-    public int getMaximumZoom() {
-        return hic.dataset.getNumberZooms();
+        int idx = unit == HiC.Unit.BP ? newZoom : newZoom + 9;
+        resolutionSlider.setValue(idx);
     }
-
 
     /**
      * Chromosome "0" is whole genome
@@ -279,7 +276,7 @@ public class MainWindow extends JFrame {
         if (hic.xContext.getChromosome().getName().equals("All")) {
             resolutionSlider.setValue(0);
             resolutionSlider.setEnabled(false); //
-            hic.setZoom(0, -1, -1, true);
+            hic.setZoom(0, -1, -1);
         } else {
             resolutionSlider.setEnabled(true);
             int initialZoom = 1;
@@ -297,7 +294,7 @@ public class MainWindow extends JFrame {
 //                }
 //            }
             resolutionSlider.setValue(initialZoom);
-            hic.setZoom(initialZoom, -1, -1, true);
+            hic.setZoom(initialZoom, -1, -1);
         }
     }
 
@@ -818,7 +815,12 @@ public class MainWindow extends JFrame {
                 resolutionLabels.put(i, tickLabel);
             }
         }
+
+        JLabel fragLabel = new JLabel("1f");
+        fragLabel.setFont(f);
+        resolutionLabels.put(9, fragLabel);
         resolutionSlider.setLabelTable(resolutionLabels);
+
         // Setting the zoom should always be done by calling resolutionSlider.setValue() so work isn't done twice.
         resolutionSlider.addChangeListener(new ChangeListener() {
             // Change zoom level while staying centered on current location.
@@ -826,15 +828,24 @@ public class MainWindow extends JFrame {
 
             public void stateChanged(ChangeEvent e) {
                 if (!resolutionSlider.getValueIsAdjusting()) {
-                    int idx = resolutionSlider.getValue();
-                    idx = Math.max(0, Math.min(idx, hic.dataset.getNumberZooms()));
 
-                    if (hic.zd != null && idx == hic.zd.getZoom()) {
+
+                    int idx = resolutionSlider.getValue();
+
+                    // Temporary hack -- "9" means fragment resolution  (1f).
+                    HiC.Unit unit = idx == 9 ? HiC.Unit.FRAG : HiC.Unit.BP;
+
+                    int tmp = idx >= 9 ? idx - 9 : idx;
+                    int zoom = Math.max(0, Math.min(tmp, hic.dataset.getNumberZooms(unit)));
+
+                    if (hic.zd != null && zoom == hic.zd.getZoom() && unit == hic.getUnit()) {
                         // Nothing to do
                         return;
                     }
 
                     if (hic.xContext != null) {
+
+                        hic.setUnit(unit);
 
                         //int centerBinX = hic.xContext.getBinOrigin() + heatmapPanel.getWidth() / 2;
                         //int centerBinY = hic.yContext.getBinOrigin() + heatmapPanel.getHeight() / 2;
@@ -842,13 +853,13 @@ public class MainWindow extends JFrame {
                         int centerBinY = hic.yContext.getBinOrigin() + (int) (heatmapPanel.getHeight() / (2 * hic.yContext.getScaleFactor()));
 
                         if (hic.zd == null) {
-                            hic.setZoom(idx, 0, 0, false);
+                            hic.setZoom(zoom, 0, 0);
                         } else {
 
 
                             int xGenome = hic.zd.getxGridAxis().getGenomicMid(centerBinX);
                             int yGenome = hic.zd.getyGridAxis().getGenomicMid(centerBinY);
-                            hic.setZoom(idx, xGenome, yGenome, false);
+                            hic.setZoom(zoom, xGenome, yGenome);
                         }
                     }
                     //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
@@ -887,16 +898,6 @@ public class MainWindow extends JFrame {
         trackPanel.setPreferredSize(new Dimension(1, 50));
         trackPanel.setMinimumSize(new Dimension(1, 50));
         trackPanel.setBorder(null);
-
-//        trackPanelScrollpane = new JScrollPane();
-//        trackPanelScrollpane.getViewport().add(trackPanel);
-//        trackPanelScrollpane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-//        trackPanelScrollpane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-//        trackPanelScrollpane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-//        trackPanelScrollpane.setBackground(new java.awt.Color(237, 237, 237));
-//        trackPanelScrollpane.setVisible(false);
-//        panel2_5.add(trackPanelScrollpane, BorderLayout.NORTH);
-//
         trackPanel.setVisible(false);
         panel2_5.add(trackPanel, BorderLayout.NORTH);
 
@@ -906,7 +907,7 @@ public class MainWindow extends JFrame {
         //---- rulerPanel1 ----
         rulerPanel1 = new HiCRulerPanel(hic);
         rulerPanel1.setMaximumSize(new Dimension(50, 4000));
-        rulerPanel1.setPreferredSize(new Dimension(50, 500));
+        rulerPanel1.setPreferredSize(new Dimension(50, 700));
         rulerPanel1.setBorder(null);
         rulerPanel1.setMinimumSize(new Dimension(50, 1));
         hiCPanel.add(rulerPanel1, BorderLayout.WEST);
@@ -914,9 +915,9 @@ public class MainWindow extends JFrame {
         //---- heatmapPanel ----
         heatmapPanel = new HeatmapPanel(this, hic);
         heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
-        heatmapPanel.setMaximumSize(new Dimension(500, 500));
-        heatmapPanel.setMinimumSize(new Dimension(500, 500));
-        heatmapPanel.setPreferredSize(new Dimension(500, 500));
+        heatmapPanel.setMaximumSize(new Dimension(700, 700));
+        heatmapPanel.setMinimumSize(new Dimension(700, 700));
+        heatmapPanel.setPreferredSize(new Dimension(700, 700));
         heatmapPanel.setBackground(new Color(238, 238, 238));
         hiCPanel.add(heatmapPanel, BorderLayout.CENTER);
 
