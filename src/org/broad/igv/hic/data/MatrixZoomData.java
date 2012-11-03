@@ -44,6 +44,7 @@ public class MatrixZoomData {
     float avgCounts;
     float stdDev;
     float percent95 = -1;
+    float percent80 = -1;
 
 
     // TODO -- isnt this a memory leak?  Should these be stored?
@@ -67,6 +68,14 @@ public class MatrixZoomData {
 
     public void setPercent95(float percent95) {
         this.percent95 = percent95;
+    }
+
+    public void setPercent80(float percent80) {
+        this.percent80 = percent80;
+    }
+
+    public float getPercent80() {
+        return percent80;
     }
 
     public class ScaleParameters {

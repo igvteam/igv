@@ -7,10 +7,13 @@ import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.matrix.BasicMatrix;
 import org.broad.igv.renderer.ColorScale;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -22,18 +25,17 @@ public class HeatmapRenderer {
     HiC hic;
     MainWindow mainWindow;
 
-    private ObservedColorScale observedColorScale;
+    private ContinuousColorScale observedColorScale;
     private ColorScale oeColorScale;
     private ColorScale pearsonColorScale;
+
+    Map<MatrixZoomData, ContinuousColorScale> observedColorScaleMap = new HashMap<MatrixZoomData, ContinuousColorScale>();
+
 
     public HeatmapRenderer(MainWindow mainWindow, HiC hic) {
         this.mainWindow = mainWindow;
         this.hic = hic;
 
-        int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
-        observedColorScale = new ObservedColorScale();
-        observedColorScale.setMaxCount(initialMaxCount);
-        observedColorScale.setBackground(Color.white);
         oeColorScale = new HiCColorScale();
         pearsonColorScale = new HiCColorScale();
     }
@@ -82,16 +84,13 @@ public class HeatmapRenderer {
         int maxX = x + width;
         int maxY = y + height;
 
-        ColorScale colorScale = getColorScale();
 
         if (displayOption == MainWindow.DisplayOption.PEARSON) {
             BasicMatrix bm = zd.getPearsons();
             if (bm != null) {
-                ((HiCColorScale) colorScale).setMin(bm.getLowerValue());
-                ((HiCColorScale) colorScale).setMax(bm.getUpperValue());
-                //               ((HiCColorScale) colorScale).setMin(-0.00408107447437942f); //(float) zd.getPearsonsMin());
-                //               ((HiCColorScale) colorScale).setMax(0.035381781123578544f); //(float) zd.getPearsonsMax());
-                renderMatrix(bm, originX, originY, width, height, colorScale, g);
+                ((HiCColorScale) pearsonColorScale).setMin(bm.getLowerValue());
+                ((HiCColorScale) pearsonColorScale).setMax(bm.getUpperValue());
+                renderMatrix(bm, originX, originY, width, height, pearsonColorScale, g);
 
             }
         } else {
@@ -103,21 +102,30 @@ public class HeatmapRenderer {
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
 
-//            float percent95 = zd.getPercent95();
-//            if (percent95 < 0) {
-//                percent95 = computePercent95(blocks);
-//                zd.setPercent95(percent95);
-//                System.out.println("Percent 95 = " + percent95);
-//            }
+            ColorScale cs;
+
+            if (displayOption == MainWindow.DisplayOption.OBSERVED) {
+                observedColorScale = observedColorScaleMap.get(zd);
+                if (observedColorScale == null) {
+                    float percent90 = computePercentile(blocks, 90 );
+                    observedColorScale = new ContinuousColorScale(0, percent90, Color.white, Color.red);
+                    observedColorScaleMap.put(zd, observedColorScale);
+                    mainWindow.updateColorSlider(0, (int) (2*percent90), (int) percent90);
+                }
+                cs = observedColorScale;
+            } else {
+                cs = oeColorScale;
+            }
 
 
             for (Block b : blocks) {
-                renderBlock(originX, originY, chr1, chr2, colorScaleFactor, b, colorScale, df, g);
+                renderBlock(originX, originY, chr1, chr2, 1.0f, b, cs, df, g);
             }
         }
     }
 
-    private float computePercent95(List<Block> blocks) {
+
+    private float computePercentile(List<Block> blocks, double p) {
 
         DoubleArrayList dal = new DoubleArrayList(10000);
         for (Block b : blocks) {
@@ -125,25 +133,15 @@ public class HeatmapRenderer {
             if (recs != null) {
                 for (int i = 0; i < recs.length; i++) {
                     ContactRecord rec = recs[i];
-                    dal.add(rec.getCounts());
+                    if (Math.abs(rec.getBinX() - rec.getBinY()) > 1) {
+                        dal.add(rec.getCounts());
+                    }
                 }
             }
         }
 
-        return (float) StatUtils.percentile(dal.toArray(), 95);
-    }
 
-
-    private ColorScale getColorScale() {
-
-        switch (hic.getDisplayOption()) {
-            case OE:
-                return oeColorScale;
-            case PEARSON:
-                return pearsonColorScale;
-            default:
-                return observedColorScale;
-        }
+        return dal.size() == 0 ? 1 : (float) StatUtils.percentile(dal.toArray(), p);
     }
 
 
@@ -172,11 +170,6 @@ public class HeatmapRenderer {
                     // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     score = normCounts;
-                    //      int x = rec.getX();// * binSize;
-                    //      int y = rec.getY();// * binSize;
-                    //      int dist = Math.abs(x - y);
-                    //      double expected = df.getDensity(chr1, dist);
-                    //      score = rec.getCounts() / expected;
                     score = Math.log10(score);
                 } else {
                     score = rec.getCounts() / colorScaleFactor;
@@ -245,7 +238,11 @@ public class HeatmapRenderer {
     }
 
 
-    public void setObservedRange(int min, int max) {
-        observedColorScale.setRange(min, max);
+    public void setObservedRange(float min, float max) {
+        if (observedColorScale == null) {
+            observedColorScale = new ContinuousColorScale(min, max, Color.white, Color.red);
+        }
+        observedColorScale.setNegEnd(min);
+        observedColorScale.setPosEnd(max);
     }
 }

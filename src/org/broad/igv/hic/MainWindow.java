@@ -112,6 +112,13 @@ public class MainWindow extends JFrame {
         return new MainWindow();
     }
 
+    public void updateColorSlider(int min, int max, int value) {
+        colorRangeSlider.setMinimum(min);
+        colorRangeSlider.setMaximum(max);
+        colorRangeSlider.setLowerValue(0);
+        colorRangeSlider.setUpperValue(value);
+    }
+
     public void createCursors() {
         BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
 
@@ -742,17 +749,18 @@ public class MainWindow extends JFrame {
         colorRangePanel.add(colorLabelPanel, BorderLayout.PAGE_START);
 
         //---- colorRangeSlider ----
-        colorRangeSlider.setPaintTicks(true);
-        colorRangeSlider.setPaintLabels(true);
-        colorRangeSlider.setLowerValue(0);
-        colorRangeSlider.setMajorTickSpacing(500);
+        colorRangeSlider.setPaintTicks(false);
+        colorRangeSlider.setPaintLabels(false);
+        //colorRangeSlider.setMajorTickSpacing(500);
+        //colorRangeSlider.setMinorTickSpacing(100);
         colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
         colorRangeSlider.setPreferredSize(new Dimension(200, 52));
         colorRangeSlider.setMinimumSize(new Dimension(36, 52));
+
         colorRangeSlider.setMaximum(2000);
+        colorRangeSlider.setLowerValue(0);
         colorRangeSlider.setUpperValue(500);
-        colorRangeSlider.setMinorTickSpacing(100);
-        colorRangeSlider.addChangeListener(new ChangeListener() {
+         colorRangeSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 colorRangeSliderStateChanged(e);
             }
