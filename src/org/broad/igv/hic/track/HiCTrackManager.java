@@ -14,7 +14,9 @@ package org.broad.igv.hic.track;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.MainWindow;
+import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.track.WindowFunction;
@@ -51,9 +53,9 @@ public class HiCTrackManager {
     // track name => locator
     private static Map<String, ResourceLocator> locatorMap;
 
-    private static java.util.List<Track> loadedTracks = new ArrayList();
+    private static java.util.List<HiCTrack> loadedTracks = new ArrayList();
 
-    public static void loadTrackFromFile(final MainWindow parent) {
+    public static void loadTrackFromFile(final MainWindow parent, final HiC hic) {
         FileDialog dlg = new FileDialog(parent);
         dlg.setMode(FileDialog.LOAD);
         dlg.setVisible(true);
@@ -71,7 +73,12 @@ public class HiCTrackManager {
                     // genome = GenomeManager.getInstance().getCurrentGenome();
                     ResourceLocator locator = new ResourceLocator(path);
                     List<Track> tracks = (new TrackLoader()).load(locator, genome);
-                    loadedTracks.addAll(tracks);
+
+                    for (Track t : tracks) {
+                        HiCDataAdapter da = new HiCDataAdapter(hic, (DataTrack) t);
+                        HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
+                        loadedTracks.add(hicTrack);
+                    }
                     parent.updateTrackPanel();
 
                 }
@@ -80,7 +87,7 @@ public class HiCTrackManager {
         }
     }
 
-    public static void loadHostedTrack(final MainWindow parent) {
+    public static void loadHostedTrack(final MainWindow parent, final HiC hic) {
 
         Genome genome = loadGenome();
 
@@ -93,10 +100,10 @@ public class HiCTrackManager {
 
             // Unload de-selected tracks
             boolean trackRemoved = false;
-            Iterator<Track> trackIterator = loadedTracks.iterator();
+            Iterator<HiCTrack> trackIterator = loadedTracks.iterator();
             final Set<String> loadedTrackNames = new HashSet<String>();
             while (trackIterator.hasNext()) {
-                final Track track = trackIterator.next();
+                final HiCTrack track = trackIterator.next();
                 if (!selectedTracks.contains(track.getName())) {
                     trackIterator.remove();
                     trackRemoved = true;
@@ -121,14 +128,18 @@ public class HiCTrackManager {
                                 List<Track> tracks = (new TrackLoader()).load(locator, genome);
 
                                 // If the track supports a 90% window function use it.
-                                for(Track t : tracks) {
-                                    Collection<WindowFunction> wfs =  t.getAvailableWindowFunctions();
-                                    if(wfs != null && wfs.contains(WindowFunction.percentile90)) {
+                                for (Track t : tracks) {
+                                    Collection<WindowFunction> wfs = t.getAvailableWindowFunctions();
+                                    if (wfs != null && wfs.contains(WindowFunction.percentile90)) {
                                         t.setWindowFunction(WindowFunction.percentile90);
                                     }
                                 }
 
-                                loadedTracks.addAll(tracks);
+                                for (Track t : tracks) {
+                                    HiCDataAdapter da = new HiCDataAdapter(hic, (DataTrack) t);
+                                    HiCTrack hicTrack = new HiCDataTrack(hic, da);
+                                    loadedTracks.add(hicTrack);
+                                }
                             }
                         }
                         parent.updateTrackPanel();
@@ -155,7 +166,7 @@ public class HiCTrackManager {
         return genome;
     }
 
-    public static List<Track> getLoadedTracks() {
+    public static List<HiCTrack> getLoadedTracks() {
         return loadedTracks;
     }
 

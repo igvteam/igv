@@ -594,7 +594,7 @@ public class MainWindow extends JFrame {
                             heatmapPanel.setObservedRange(0, maxValue);
                             colorRangeSlider.setMaximum(maxValue);
                             colorRangeSlider.setMinimum(0);
-                            colorRangeSlider.setMajorTickSpacing((int) (maxValue / 10));
+                            //colorRangeSlider.setMajorTickSpacing((int) (maxValue / 10));
                             colorRangeSlider.setUpperValue((int) (maxValue * 3 / 4));
                             hic.reset();
                             load(values[1]);
@@ -751,7 +751,6 @@ public class MainWindow extends JFrame {
         //---- colorRangeSlider ----
         colorRangeSlider.setPaintTicks(false);
         colorRangeSlider.setPaintLabels(false);
-        //colorRangeSlider.setMajorTickSpacing(500);
         //colorRangeSlider.setMinorTickSpacing(100);
         colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
         colorRangeSlider.setPreferredSize(new Dimension(200, 52));
@@ -759,8 +758,10 @@ public class MainWindow extends JFrame {
 
         colorRangeSlider.setMaximum(2000);
         colorRangeSlider.setLowerValue(0);
+        //colorRangeSlider.setPaintTicks(true);
+        //colorRangeSlider.setMajorTickSpacing(2000);
         colorRangeSlider.setUpperValue(500);
-         colorRangeSlider.addChangeListener(new ChangeListener() {
+        colorRangeSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 colorRangeSliderStateChanged(e);
             }
@@ -1118,7 +1119,7 @@ public class MainWindow extends JFrame {
         loadItem.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                HiCTrackManager.loadHostedTrack(MainWindow.this);
+                HiCTrackManager.loadHostedTrack(MainWindow.this, hic);
             }
 
         });
@@ -1128,7 +1129,7 @@ public class MainWindow extends JFrame {
         loadFromFileItem.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                HiCTrackManager.loadTrackFromFile(MainWindow.this);
+                HiCTrackManager.loadTrackFromFile(MainWindow.this, hic);
             }
 
         });

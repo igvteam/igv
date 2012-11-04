@@ -19,4 +19,8 @@ public abstract class HiCTrack {
     }
 
     public abstract void render(Graphics2D g2d, Context context, Rectangle trackRectangle);
+
+    public abstract String getName();
+
+    public abstract Color getColor();
 }

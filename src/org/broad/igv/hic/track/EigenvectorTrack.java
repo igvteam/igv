@@ -46,8 +46,10 @@ public class EigenvectorTrack extends HiCTrack {
         for (double aData : tmpArray) {
             if (Math.abs(aData) > dataMax) dataMax = Math.abs(aData);
         }
+    }
 
-
+    public Color getColor() {
+        return COLOR;
     }
 
     /**
@@ -100,6 +102,10 @@ public class EigenvectorTrack extends HiCTrack {
 
         }
 
+    }
+
+    public String getName() {
+        return "eigenvector";
     }
 
     public Renderer getRenderer() {

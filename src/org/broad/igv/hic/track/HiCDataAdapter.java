@@ -1,12 +1,12 @@
 package org.broad.igv.hic.track;
 
-import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.hic.HiC;
+import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.track.DataTrack;
 
+import java.awt.*;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * An adapter class to serve as a bridge between an IGV data source and a HiC track.  HiC tracks differ from
@@ -18,57 +18,84 @@ import java.util.TreeMap;
  */
 public class HiCDataAdapter {
 
-    HiCGridAxis gridAxis;
-    DataTrack dataSource;
+    HiC hic;
+    DataTrack igvTrack;
+    LoadedDataInterval loadedDataInterval;
 
-    public HiCDataAdapter(HiCGridAxis gridAxis, DataTrack dataSource) {
-        this.gridAxis = gridAxis;
-        this.dataSource = dataSource;
+    public HiCDataAdapter(HiC hiC, DataTrack igvTrack) {
+        this.hic = hiC;
+        this.igvTrack = igvTrack;
     }
 
     public double getMax() {
-        return dataSource.getDataRange().getMaximum();
+        return igvTrack.getDataRange().getMaximum();
     }
 
     public WeightedSum[] getData(String chr, int startBin, int endBin) {
 
-        WeightedSum[] data = new WeightedSum[endBin - startBin + 1];
+        int resolution = hic.zd.getBinSize();
+        HiC.Unit unit = hic.getUnit();
+        if (loadedDataInterval != null && loadedDataInterval.contains(resolution, unit, chr, startBin, endBin)) {
+            return loadedDataInterval.getData();
+        } else {
 
-        int zoom = gridAxis.getIGVZoom();
-        int gStart = gridAxis.getGenomicStart(startBin);
-        int gEnd = gridAxis.getGenomicEnd(endBin);
+            // Expand starBin and endBin by 50% to facilitate panning
+            int f = (endBin - startBin) / 2;
+            startBin = Math.max(0, startBin - f);
+            endBin = endBin + f ;
+
+            WeightedSum[] data = new WeightedSum[endBin - startBin + 1];
+            HiCGridAxis gridAxis = hic.zd.getxGridAxis();
+            int zoom = gridAxis.getIGVZoom();
+            int gStart = gridAxis.getGenomicStart(startBin);
+            int gEnd = gridAxis.getGenomicEnd(endBin);
 
 
-        List<LocusScore> scores = dataSource.getSummaryScores("chr" + chr, gStart, gEnd, zoom);
+            List<LocusScore> scores = igvTrack.getSummaryScores("chr" + chr, gStart, gEnd, zoom);
 
 
-        for (LocusScore locusScore : scores) {
+            for (LocusScore locusScore : scores) {
 
-            int bs = gridAxis.getBinNumberForGenomicPosition(locusScore.getStart());
-            int be = gridAxis.getBinNumberForGenomicPosition(locusScore.getEnd());
+                int bs = gridAxis.getBinNumberForGenomicPosition(locusScore.getStart());
+                int be = gridAxis.getBinNumberForGenomicPosition(locusScore.getEnd());
 
-            if (bs > endBin) {
-                break;
-            } else if (be < startBin) {
-                continue;
-            }
-
-            for (int b = Math.max(startBin, bs); b <= Math.min(endBin, be); b++) {
-
-                int bStart = gridAxis.getGenomicStart(b);
-                int bEnd = gridAxis.getGenomicEnd(b);
-                WeightedSum dataBin = data[b - startBin];
-                if (dataBin == null) {
-                    dataBin = new WeightedSum(b, bStart, bEnd);
-                    data[b - startBin] = dataBin;
+                if (bs > endBin) {
+                    break;
+                } else if (be < startBin) {
+                    continue;
                 }
-                dataBin.addScore(locusScore);
 
+                for (int b = Math.max(startBin, bs); b <= Math.min(endBin, be); b++) {
+
+                    int bStart = gridAxis.getGenomicStart(b);
+                    int bEnd = gridAxis.getGenomicEnd(b);
+                    WeightedSum dataBin = data[b - startBin];
+                    if (dataBin == null) {
+                        dataBin = new WeightedSum(b, bStart, bEnd);
+                        data[b - startBin] = dataBin;
+                    }
+                    dataBin.addScore(locusScore);
+
+                }
             }
+
+            loadedDataInterval = new LoadedDataInterval(resolution, unit, chr, startBin, endBin, data);
+
+            return data;
         }
 
-        return data;
+    }
 
+    public String getName() {
+        return igvTrack.getName();
+    }
+
+    public Color getColor() {
+        return igvTrack.getColor();
+    }
+
+    public boolean isLogScale() {
+        return igvTrack.getDataRange().isLog();
     }
 
     public static class WeightedSum {
@@ -93,7 +120,7 @@ public class HiCDataAdapter {
 
             double weight = ((double) (Math.min(genomicEnd, ls.getEnd()) - Math.max(genomicStart, ls.getStart()))) /
                     (genomicEnd - genomicStart);
-            weight=1;
+            weight = 1;
             weightedSum += weight * ls.getScore();
             nPts++;
         }
@@ -105,4 +132,31 @@ public class HiCDataAdapter {
     }
 
 
+    class LoadedDataInterval {
+
+        int resolution;
+        HiC.Unit unit;
+        String chr;
+        int startBin;
+        int endBin;
+        WeightedSum[] data;
+
+        LoadedDataInterval(int resolution, HiC.Unit unit, String chr, int startBin, int endBin, WeightedSum[] data) {
+            this.resolution = resolution;
+            this.unit = unit;
+            this.chr = chr;
+            this.startBin = startBin;
+            this.endBin = endBin;
+            this.data = data;
+        }
+
+        boolean contains(int resolution, HiC.Unit unit, String chr, int startBin, int endBin) {
+            return resolution == this.resolution && unit == this.unit && chr.equals(this.chr) &&
+                    startBin <= this.endBin && endBin >= this.startBin;
+        }
+
+        WeightedSum[] getData() {
+            return data;
+        }
+    }
 }

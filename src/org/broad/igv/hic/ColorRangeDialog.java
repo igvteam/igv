@@ -13,7 +13,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
 public class ColorRangeDialog extends JDialog {
 
@@ -78,7 +78,7 @@ public class ColorRangeDialog extends JDialog {
                 panel3.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 25));
 
                 //---- label1 ----
-                label1.setText("Set color scale range in counts / mb^2");
+                label1.setText("Set color slider control range");
                 panel3.add(label1);
             }
             dialogPane.add(panel3, BorderLayout.NORTH);
@@ -150,6 +150,7 @@ public class ColorRangeDialog extends JDialog {
                 //---- okButton ----
                 okButton.setText("OK");
                 okButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         okButtonActionPerformed(e);
                     }
@@ -161,6 +162,7 @@ public class ColorRangeDialog extends JDialog {
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
                 cancelButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         cancelButtonActionPerformed(e);
                     }

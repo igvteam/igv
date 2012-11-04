@@ -97,7 +97,7 @@ public class TrackPanel extends JPanel {
     @Override
     public int getHeight() {
         int h = 0;
-        for (Track t : HiCTrackManager.getLoadedTracks()) {
+        for (HiCTrack t : HiCTrackManager.getLoadedTracks()) {
             h += t.getHeight();
         }
         if (eigenvectorTrack != null) {
@@ -127,7 +127,7 @@ public class TrackPanel extends JPanel {
         ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         trackRectangles.clear();
-        java.util.List<Track> tracks = new ArrayList<Track>(HiCTrackManager.getLoadedTracks());
+        java.util.List<HiCTrack> tracks = new ArrayList<HiCTrack>(HiCTrackManager.getLoadedTracks());
         if ((tracks == null || tracks.isEmpty()) && eigenvectorTrack == null) {
             return;
         }
@@ -136,22 +136,19 @@ public class TrackPanel extends JPanel {
         Rectangle rect = getBounds();
         int y = rect.y;
 
-        for (Track track : tracks) {
-            if (track.getHeight() > 0) {
-                int h = track.getHeight();
+        for (HiCTrack hicTrack : tracks) {
+            if (hicTrack.getHeight() > 0) {
+                int h = hicTrack.getHeight();
                 Rectangle trackRectangle = new Rectangle(rect.x, y, rect.width, h);
 
                 if (hic.xContext != null) {
                     //  RenderContext context = new HiCRenderContext(hic.xContext, this, (Graphics2D) graphics, trackRectangle, genome);
 
-                    HiCGridAxis xAxis = hic.zd.getXGridAxis();
-                    HiCDataAdapter da = new HiCDataAdapter(xAxis, (DataTrack) track);
-                    HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
                     hicTrack.render((Graphics2D) graphics, hic.xContext, trackRectangle);
-                    renderName(track.getName(), track.getColor(), trackRectangle, graphics);
+                    renderName(hicTrack.getName(), hicTrack.getColor(), trackRectangle, graphics);
                     y += h;
 
-                    trackRectangles.add(new Pair(trackRectangle, track));
+                    trackRectangles.add(new Pair(trackRectangle, hicTrack));
                 }
 
 

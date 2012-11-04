@@ -34,21 +34,20 @@ public class HiCLoadDialog extends JDialog {
 
     public static void main(String[] args) {
         Map<String, List<ResourceLocator>> locators = HiCTrackManager.getTrackLocators();
-        List<Track> tracks = HiCTrackManager.getLoadedTracks();
-
+        List<HiCTrack> tracks = HiCTrackManager.getLoadedTracks();
         HiCLoadDialog dlg = new HiCLoadDialog(null, locators, tracks);
         dlg.setVisible(true);
         System.exit(1);
     }
 
-    public HiCLoadDialog(Frame parent, Map<String, List<ResourceLocator>> locators, List<Track> tracks) {
+    public HiCLoadDialog(Frame parent, Map<String, List<ResourceLocator>> locators, List<HiCTrack> tracks) {
         super(parent);
         initComponents(locators, tracks);
         setModal(true);
         this.setSize(750, 800);
     }
 
-    private void initComponents(Map<String, List<ResourceLocator>> locators, List<Track> tracks) {
+    private void initComponents(Map<String, List<ResourceLocator>> locators, List<HiCTrack> tracks) {
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -63,7 +62,7 @@ public class HiCLoadDialog extends JDialog {
         mainPanel.setAlignmentX(LEFT_ALIGNMENT);
 
         Set<String> loadedTrackNames = new HashSet<String>(tracks.size());
-        for (Track t : tracks) {
+        for (HiCTrack t : tracks) {
             loadedTrackNames.add(t.getName());
         }
 

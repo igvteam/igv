@@ -60,15 +60,6 @@ public class HeatmapRenderer {
 
         boolean isWholeGenome = zd.getChr1() == 0 && zd.getChr2() == 0;
         boolean sameChr = (chr1 == chr2);
-        int zoomMultiplier = zd.getZoomMultiplier();
-        double mb;
-        if (isWholeGenome) {
-            mb = (double) zoomMultiplier * 5;
-        } else {
-            mb = (double) (zoomMultiplier) / 200;
-        }
-        double colorScaleFactor = mb * mb;
-
 
         if (sameChr) {
             // Data is transposable, transpose if neccessary.  Convention is to use lower diagonal
@@ -107,10 +98,11 @@ public class HeatmapRenderer {
             if (displayOption == MainWindow.DisplayOption.OBSERVED) {
                 observedColorScale = observedColorScaleMap.get(zd);
                 if (observedColorScale == null) {
-                    float percent90 = computePercentile(blocks, 90 );
-                    observedColorScale = new ContinuousColorScale(0, percent90, Color.white, Color.red);
+                    double percentile = isWholeGenome ? 99 : 90;
+                    float max = Math.max(1, computePercentile(blocks, percentile));
+                    observedColorScale = new ContinuousColorScale(0, max, Color.white, Color.red);
                     observedColorScaleMap.put(zd, observedColorScale);
-                    mainWindow.updateColorSlider(0, (int) (2*percent90), (int) percent90);
+                    mainWindow.updateColorSlider(0, (int) (2 * max), (int) max);
                 }
                 cs = observedColorScale;
             } else {
@@ -127,6 +119,7 @@ public class HeatmapRenderer {
 
     private float computePercentile(List<Block> blocks, double p) {
 
+
         DoubleArrayList dal = new DoubleArrayList(10000);
         for (Block b : blocks) {
             ContactRecord[] recs = b.getContactRecords();
@@ -139,8 +132,6 @@ public class HeatmapRenderer {
                 }
             }
         }
-
-
         return dal.size() == 0 ? 1 : (float) StatUtils.percentile(dal.toArray(), p);
     }
 
