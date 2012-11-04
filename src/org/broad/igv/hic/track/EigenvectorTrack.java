@@ -19,7 +19,6 @@ public class EigenvectorTrack extends HiCTrack {
 
 
     public static final Color COLOR = Color.blue.darker();
-    double scale;
     double[] data;
     private double dataMax;
     private double median;
@@ -31,7 +30,6 @@ public class EigenvectorTrack extends HiCTrack {
     }
 
     private void setData(double scale, double[] data) {
-        this.scale = scale;
         this.data = data;
 
         DoubleArrayList tmp = new DoubleArrayList(data.length);
@@ -80,9 +78,8 @@ public class EigenvectorTrack extends HiCTrack {
 
             if (Double.isNaN(data[bin])) continue;
 
-            int xPixelLeft = rect.x + (int) ((bin - context.getBinOrigin()) * scale); //context.getScreenPosition (genomicPosition);
-            int xPixelRight = rect.x + (int) ((bin + 1 - context.getBinOrigin()) * scale);
-
+            int xPixelLeft = rect.x + (int) ((bin - context.getBinOrigin()) * context.getScaleFactor()); //context.getScreenPosition (genomicPosition);
+            int xPixelRight = rect.x + (int) ((bin + 1 - context.getBinOrigin()) * context.getScaleFactor());
 
             if (xPixelRight < rect.x) {
                 continue;
