@@ -2190,6 +2190,7 @@ public class IGV {
             progressBar.setIndeterminate(true);
             monitor.fireProgressChange(20);
 
+            mainFrame.setIconImage(getIconImage());
             if (Globals.IS_MAC) {
                 setAppleDockIcon();
             }
@@ -2311,14 +2312,19 @@ public class IGV {
 
         private void setAppleDockIcon() {
             try {
-                String path = "resources/IGV_64.png";
-                URL url = IGV.class.getResource(path);
-                Image image = new ImageIcon(url).getImage();
+                Image image = getIconImage();
                 OSXAdapter.setDockIconImage(image);
             } catch (Exception e) {
                 //ain't no thang
                 log.error("Error setting apple dock icon", e);
             }
+        }
+
+        private Image getIconImage() {
+            String path = "resources/IGV_64.png";
+            URL url = IGV.class.getResource(path);
+            Image image = new ImageIcon(url).getImage();
+            return image;
         }
 
     }
