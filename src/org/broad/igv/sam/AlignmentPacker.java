@@ -120,8 +120,8 @@ public class AlignmentPacker {
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
             case PAIR_INVERTED:
-                //[R,F][1,2][R,F][1,2]
-                //R#R# or F#F# implies inversion
+                //todo this is incorrect. Use same logic as in AlignmentRenderer.getOrientationColor
+                //different libraries have different properties
                 String invString = al.getPairOrientation();
                 if (invString == null) return null;
                 if (invString.length() < 4) return "Unknown";

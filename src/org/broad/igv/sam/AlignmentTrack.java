@@ -1330,7 +1330,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
             //mappings.put("inversion", GroupOption.PAIR_INVERTED);
-            //mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
+            mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
                 JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
