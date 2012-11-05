@@ -20,7 +20,6 @@ public class HiCFixedGridAxis implements HiCGridAxis {
 
         // Compute an approximate igv zoom level
         igvZoom = Math.max(0,  (int) (Math.log(binCount / 700) / Globals.log2));
-        System.out.println("igvZoom = " + igvZoom);
 
     }
 

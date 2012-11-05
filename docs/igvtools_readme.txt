@@ -106,7 +106,7 @@ Options:
                reduced.
 
   -f, --windowFunctions  list     A comma delimited list specifying window functions to use
-               when reducing the data to precomputed tiles.   Possible
+               when reducing the data to precomputed tiles.   Allowed
                values are  min, max,  mean, median, p2, p10, p90, and p98.
                The "p" values represent percentile, so p2=2nd percentile,
                etc.

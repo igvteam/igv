@@ -54,6 +54,7 @@ public class HiCTrackManager {
     private static Map<String, ResourceLocator> locatorMap;
 
     private static java.util.List<HiCTrack> loadedTracks = new ArrayList();
+    private static Set<HiCTrack> fileLoadedTracks = new HashSet<HiCTrack>();
 
     public static void loadTrackFromFile(final MainWindow parent, final HiC hic) {
         FileDialog dlg = new FileDialog(parent);
@@ -78,6 +79,7 @@ public class HiCTrackManager {
                         HiCDataAdapter da = new HiCDataAdapter(hic, (DataTrack) t);
                         HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
                         loadedTracks.add(hicTrack);
+                        fileLoadedTracks.add(hicTrack);
                     }
                     parent.updateTrackPanel();
 
@@ -104,7 +106,7 @@ public class HiCTrackManager {
             final Set<String> loadedTrackNames = new HashSet<String>();
             while (trackIterator.hasNext()) {
                 final HiCTrack track = trackIterator.next();
-                if (!selectedTracks.contains(track.getName())) {
+                if (!(selectedTracks.contains(track.getName()) || fileLoadedTracks.contains(track))) {
                     trackIterator.remove();
                     trackRemoved = true;
                 } else {
