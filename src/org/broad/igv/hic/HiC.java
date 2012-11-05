@@ -101,7 +101,7 @@ public class HiC {
      */
     public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY) {
 
-       if (newZoom < 0 || newZoom > dataset.getNumberZooms(unit)) return;
+        if (newZoom < 0 || newZoom > dataset.getNumberZooms(unit)) return;
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
@@ -203,13 +203,30 @@ public class HiC {
         final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoomDataIdx);
 
 
-        final int binX = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP0);
-        final int binY = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP0);
+        int binX0 = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP0);
+        int binY0 = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP0);
         final int binXMax = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP1);
         final int binYMax = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP1);
-        final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
-        final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
-        final double scaleFactor = Math.max(1, Math.min(xScale, yScale));
+
+        // Don't blow up pixels at high resolution -- performance issues
+        final double scaleFactor;
+        final int binX;
+        final int binY;
+        if (zoomDataIdx < 3) {
+            binX = binX0;
+            binY = binY0;
+            final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
+            final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
+            scaleFactor = Math.max(1, Math.min(xScale, yScale));
+        } else {
+            scaleFactor = 1;
+            int dx = mainWindow.getHeatmapPanel().getWidth() - (binXMax - binX0);
+            binX = Math.max(0, binX0 - dx / 2);
+
+            int dy = mainWindow.getHeatmapPanel().getHeight() - (binYMax - binY0);
+            binY = Math.max(0, binY0 - dy / 2);
+
+        }
 
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {
