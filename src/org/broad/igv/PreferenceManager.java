@@ -1047,7 +1047,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
 
-        defaultValues.put(GENOME_SPACE_ENABLE, "false");
+        defaultValues.put(GENOME_SPACE_ENABLE, "true");
         defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dm.genomespace.org/datamanager/v1.0/");
         defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atm.genomespace.org/atm/v1.0/");
         defaultValues.put(GENOME_SPACE_IDENTITY_SERVER, "https://identitydev.genomespace.org:8444/identityServer/basic");
