@@ -41,6 +41,7 @@ public class HiCDataAdapter {
 
             // Expand starBin and endBin by 50% to facilitate panning
             int f = (endBin - startBin) / 2;
+            System.out.println("Loading " + startBin + " " + endBin + "  " + f);
             startBin = Math.max(0, startBin - f);
             endBin = endBin + f ;
 
@@ -151,8 +152,15 @@ public class HiCDataAdapter {
         }
 
         boolean contains(int resolution, HiC.Unit unit, String chr, int startBin, int endBin) {
-            return resolution == this.resolution && unit == this.unit && chr.equals(this.chr) &&
-                    startBin <= this.endBin && endBin >= this.startBin;
+            boolean contains = resolution == this.resolution &&
+                    unit == this.unit &&
+                    chr.equals(this.chr) &&
+                    startBin >= this.startBin &&
+                    endBin <= this.endBin;
+            if(!contains) {
+                System.out.println("Cache miss");
+            }
+            return contains;
         }
 
         WeightedSum[] getData() {
