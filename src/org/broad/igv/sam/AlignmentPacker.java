@@ -61,10 +61,7 @@ public class AlignmentPacker {
             return packedAlignments;
         }
 
-        AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
-        String tag = renderOptions.getGroupByTag();
-
-        if (groupBy == null) {
+        if (renderOptions.groupByOption == null) {
             List<Row> alignmentRows = new ArrayList<Row>(10000);
             pack(iter, end, pairAlignments, alignmentRows);
             packedAlignments.put("", alignmentRows);
@@ -74,7 +71,7 @@ public class AlignmentPacker {
             HashMap<String, List<Alignment>> groupedAlignments = new HashMap<String, List<Alignment>>();
             while (iter.hasNext()) {
                 Alignment alignment = iter.next();
-                String groupKey = getGroupValue(alignment, groupBy, tag);
+                String groupKey = getGroupValue(alignment, renderOptions);
                 if (groupKey == null) nullGroup.add(alignment);
                 else {
                     List<Alignment> group = groupedAlignments.get(groupKey);
@@ -104,7 +101,11 @@ public class AlignmentPacker {
 
     }
 
-    private String getGroupValue(Alignment al, AlignmentTrack.GroupOption groupBy, String tag) {
+    private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
+
+        AlignmentTrack.GroupOption groupBy = renderOptions.groupByOption;
+        String tag = renderOptions.getGroupByTag();
+
         switch (groupBy) {
             case STRAND:
                 return String.valueOf(al.isNegativeStrand());
@@ -120,12 +121,12 @@ public class AlignmentPacker {
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
             case PAIR_INVERTED:
-                //todo this is incorrect. Use same logic as in AlignmentRenderer.getOrientationColor
-                //different libraries have different properties
-                String invString = al.getPairOrientation();
-                if (invString == null) return null;
-                if (invString.length() < 4) return "Unknown";
-                if (invString.charAt(0) == invString.charAt(2)) {
+                PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
+                AlignmentTrack.OrientationType type = AlignmentRenderer.getOrientationType(al, peStats);
+                if (type == null) {
+                    return "Unknown";
+                }
+                if (type == AlignmentTrack.OrientationType.LL || type == AlignmentTrack.OrientationType.RR) {
                     return "Inverted";
                 } else {
                     return "Normal";

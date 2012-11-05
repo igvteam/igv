@@ -18,9 +18,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
+import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
 import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
@@ -75,12 +75,14 @@ public class AlignmentRenderer implements FeatureRenderer {
     private final Color RL_COLOR = new Color(0, 150, 0);
     private final Color RR_COLOR = new Color(20, 50, 200);
     private final Color LL_COLOR = new Color(0, 150, 150);
+
     private final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
-    private Map<String, Color> frOrientationColors;
-    private Map<String, Color> f1f2OrientationColors;
-    private Map<String, Color> f2f1OrientationColors;
-    private Map<String, Color> rfOrientationColors;
+    private static Map<String, AlignmentTrack.OrientationType> frOrientationTypes;
+    private static Map<String, AlignmentTrack.OrientationType> f1f2OrientationTypes;
+    private static Map<String, AlignmentTrack.OrientationType> f2f1OrientationTypes;
+    private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
+    private Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
 
     PreferenceManager prefs;
 
@@ -92,6 +94,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     public static AlignmentRenderer getInstance() {
         if (instance == null) {
+            initializeTagTypes();
             instance = new AlignmentRenderer();
         }
         return instance;
@@ -122,92 +125,101 @@ public class AlignmentRenderer implements FeatureRenderer {
         });
     }
 
+    private static void initializeTagTypes() {
+        // pre-seed from orientation colors
+
+        // fr Orientations (e.g. Illumina paired-end libraries)
+        frOrientationTypes = new HashMap();
+        //LR
+        frOrientationTypes.put("F1R2", AlignmentTrack.OrientationType.LR);
+        frOrientationTypes.put("F2R1", AlignmentTrack.OrientationType.LR);
+        frOrientationTypes.put("F R ", AlignmentTrack.OrientationType.LR);
+        frOrientationTypes.put("FR", AlignmentTrack.OrientationType.LR);
+        //LL
+        frOrientationTypes.put("F1F2", AlignmentTrack.OrientationType.LL);
+        frOrientationTypes.put("F2F1", AlignmentTrack.OrientationType.LL);
+        frOrientationTypes.put("F F ", AlignmentTrack.OrientationType.LL);
+        frOrientationTypes.put("FF", AlignmentTrack.OrientationType.LL);
+        //RR
+        frOrientationTypes.put("R1R2", AlignmentTrack.OrientationType.RR);
+        frOrientationTypes.put("R2R1", AlignmentTrack.OrientationType.RR);
+        frOrientationTypes.put("R R ", AlignmentTrack.OrientationType.RR);
+        frOrientationTypes.put("RR", AlignmentTrack.OrientationType.RR);
+        //RL
+        frOrientationTypes.put("R1F2", AlignmentTrack.OrientationType.RL);
+        frOrientationTypes.put("R2F1", AlignmentTrack.OrientationType.RL);
+        frOrientationTypes.put("R F ", AlignmentTrack.OrientationType.RL);
+        frOrientationTypes.put("RF", AlignmentTrack.OrientationType.RL);
+
+        // rf orienation  (e.g. Illumina mate-pair libraries)
+        rfOrientationTypes = new HashMap();
+        //LR
+        rfOrientationTypes.put("R1F2", AlignmentTrack.OrientationType.LR);
+        rfOrientationTypes.put("R2F1", AlignmentTrack.OrientationType.LR);
+        //rfOrientationTypes.put("R F ", AlignmentTrack.OrientationType.LR);
+        //rfOrientationTypes.put("RF", AlignmentTrack.OrientationType.LR);
+        //LL
+        rfOrientationTypes.put("R1R2", AlignmentTrack.OrientationType.LL);
+        rfOrientationTypes.put("R2R1", AlignmentTrack.OrientationType.LL);
+        rfOrientationTypes.put("R R ", AlignmentTrack.OrientationType.LL);
+        rfOrientationTypes.put("RR ", AlignmentTrack.OrientationType.LL);
+
+        rfOrientationTypes.put("F1F2", AlignmentTrack.OrientationType.RR);
+        rfOrientationTypes.put("F2F1", AlignmentTrack.OrientationType.RR);
+        rfOrientationTypes.put("F F ", AlignmentTrack.OrientationType.RR);
+        rfOrientationTypes.put("FF", AlignmentTrack.OrientationType.RR);
+        //RL
+        rfOrientationTypes.put("F1R2", AlignmentTrack.OrientationType.RL);
+        rfOrientationTypes.put("F2R1", AlignmentTrack.OrientationType.RL);
+        rfOrientationTypes.put("F R ", AlignmentTrack.OrientationType.RL);
+        rfOrientationTypes.put("FR", AlignmentTrack.OrientationType.RL);
+
+        // f1f2 orienation  (e.g. SOLID libraries, AlignmentTrack.OrientationType.second read appears first on + strand (leftmost))
+        f2f1OrientationTypes = new HashMap();
+        //LR
+        f2f1OrientationTypes.put("F2F1", AlignmentTrack.OrientationType.LR);
+        f2f1OrientationTypes.put("R1R2", AlignmentTrack.OrientationType.LR);
+
+        //LL
+        f2f1OrientationTypes.put("F2R1", AlignmentTrack.OrientationType.LL);
+        f2f1OrientationTypes.put("R1F2", AlignmentTrack.OrientationType.LL);
+
+        //RR
+        f2f1OrientationTypes.put("R2F1", AlignmentTrack.OrientationType.RR);
+        f2f1OrientationTypes.put("F1R2", AlignmentTrack.OrientationType.RR);
+
+        //RL
+        f2f1OrientationTypes.put("R2R1", AlignmentTrack.OrientationType.RL);
+        f2f1OrientationTypes.put("F1F2", AlignmentTrack.OrientationType.RL);
+
+        // f1f2 orienation  (e.g. SOLID libraries, AlignmentTrack.OrientationType.actually is this one even possible?)
+        f1f2OrientationTypes = new HashMap();
+        //LR
+        f1f2OrientationTypes.put("F1F2", AlignmentTrack.OrientationType.LR);
+        f1f2OrientationTypes.put("R2R1", AlignmentTrack.OrientationType.LR);
+        //LL
+        f1f2OrientationTypes.put("F1R2", AlignmentTrack.OrientationType.LL);
+        f1f2OrientationTypes.put("R2F1", AlignmentTrack.OrientationType.LL);
+        //RR
+        f1f2OrientationTypes.put("R1F2", AlignmentTrack.OrientationType.RR);
+        f1f2OrientationTypes.put("F2R1", AlignmentTrack.OrientationType.RR);
+        //RL
+        f1f2OrientationTypes.put("R1R2", AlignmentTrack.OrientationType.RL);
+        f1f2OrientationTypes.put("F2F1", AlignmentTrack.OrientationType.RL);
+    }
+
     private void initializeTagColors() {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);
         tagValueColors = new PaletteColorTable(palette);
 
-        // pre-seed from orienation colors
-
-        // fr Orienations (e.g. Illumina paired-end libraries)
-        frOrientationColors = new HashMap();
-        //LR
-        frOrientationColors.put("F1R2", LR_COLOR);
-        frOrientationColors.put("F2R1", LR_COLOR);
-        frOrientationColors.put("F R ", LR_COLOR);
-        frOrientationColors.put("FR", LR_COLOR);
-        //LL
-        frOrientationColors.put("F1F2", LL_COLOR);
-        frOrientationColors.put("F2F1", LL_COLOR);
-        frOrientationColors.put("F F ", LL_COLOR);
-        frOrientationColors.put("FF", LL_COLOR);
-        //RR
-        frOrientationColors.put("R1R2", RR_COLOR);
-        frOrientationColors.put("R2R1", RR_COLOR);
-        frOrientationColors.put("R R ", RR_COLOR);
-        frOrientationColors.put("RR", RR_COLOR);
-        //RL
-        frOrientationColors.put("R1F2", RL_COLOR);
-        frOrientationColors.put("R2F1", RL_COLOR);
-        frOrientationColors.put("R F ", RL_COLOR);
-        frOrientationColors.put("RF", RL_COLOR);
-
-        // rf orienation  (e.g. Illumina mate-pair libraries)
-        rfOrientationColors = new HashMap();
-        //LR
-        rfOrientationColors.put("R1F2", LR_COLOR);
-        rfOrientationColors.put("R2F1", LR_COLOR);
-        //rfOrientationColors.put("R F ", LR_COLOR);
-        //rfOrientationColors.put("RF", LR_COLOR);
-        //LL
-        rfOrientationColors.put("R1R2", LL_COLOR);
-        rfOrientationColors.put("R2R1", LL_COLOR);
-        rfOrientationColors.put("R R ", LL_COLOR);
-        rfOrientationColors.put("RR ", LL_COLOR);
-
-        rfOrientationColors.put("F1F2", RR_COLOR);
-        rfOrientationColors.put("F2F1", RR_COLOR);
-        rfOrientationColors.put("F F ", RR_COLOR);
-        rfOrientationColors.put("FF", RR_COLOR);
-        //RL
-        rfOrientationColors.put("F1R2", RL_COLOR);
-        rfOrientationColors.put("F2R1", RL_COLOR);
-        rfOrientationColors.put("F R ", RL_COLOR);
-        rfOrientationColors.put("FR", RL_COLOR);
-
-        // f1f2 orienation  (e.g. SOLID libraries, second read appears first on + strand (leftmost))
-        f2f1OrientationColors = new HashMap();
-        //LR
-        f2f1OrientationColors.put("F2F1", LR_COLOR);
-        f2f1OrientationColors.put("R1R2", LR_COLOR);
-
-        //LL
-        f2f1OrientationColors.put("F2R1", LL_COLOR);
-        f2f1OrientationColors.put("R1F2", LL_COLOR);
-
-        //RR
-        f2f1OrientationColors.put("R2F1", RR_COLOR);
-        f2f1OrientationColors.put("F1R2", RR_COLOR);
-
-        //RL
-        f2f1OrientationColors.put("R2R1", RL_COLOR);
-        f2f1OrientationColors.put("F1F2", RL_COLOR);
-
-        // f1f2 orienation  (e.g. SOLID libraries, actually is this one even possible?)
-        f1f2OrientationColors = new HashMap();
-        //LR
-        f1f2OrientationColors.put("F1F2", LR_COLOR);
-        f1f2OrientationColors.put("R2R1", LR_COLOR);
-        //LL
-        f1f2OrientationColors.put("F1R2", LL_COLOR);
-        f1f2OrientationColors.put("R2F1", LL_COLOR);
-        //RR
-        f1f2OrientationColors.put("R1F2", RR_COLOR);
-        f1f2OrientationColors.put("F2R1", RR_COLOR);
-        //RL
-        f1f2OrientationColors.put("R1R2", RL_COLOR);
-        f1f2OrientationColors.put("F2F1", RL_COLOR);
+        typeToColorMap = new HashMap<AlignmentTrack.OrientationType, Color>(5);
+        typeToColorMap.put(AlignmentTrack.OrientationType.LL, LL_COLOR);
+        typeToColorMap.put(AlignmentTrack.OrientationType.LR, LR_COLOR);
+        typeToColorMap.put(AlignmentTrack.OrientationType.RL, RL_COLOR);
+        typeToColorMap.put(AlignmentTrack.OrientationType.RR, RR_COLOR);
+        typeToColorMap.put(null, grey1);
     }
 
     /**
@@ -1027,7 +1039,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         return c;
     }
 
-    private PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
+    public static PEStats getPEStats(Alignment alignment, RenderOptions renderOptions) {
         String lb = alignment.getLibrary();
         if (lb == null) lb = "null";
         PEStats peStats = null;
@@ -1115,10 +1127,15 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @return
      */
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
+        AlignmentTrack.OrientationType type = getOrientationType(alignment, peStats);
+        Color c = typeToColorMap.get(type);
+        return c == null ? grey1 : c;
 
-        Color c = null;
+    }
+
+    static AlignmentTrack.OrientationType getOrientationType(Alignment alignment, PEStats peStats) {
+        AlignmentTrack.OrientationType type = null;
         if (alignment.isPaired()) { // && !alignment.isProperPair()) {
-
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
                 PEStats.Orientation libraryOrientation = peStats.getOrientation();
@@ -1126,32 +1143,30 @@ public class AlignmentRenderer implements FeatureRenderer {
                     case FR:
                         //if (!alignment.isSmallInsert()) {
                         // if the isize < read length the reads might overlap, invalidating this test
-                        c = frOrientationColors.get(pairOrientation);
+                        type = frOrientationTypes.get(pairOrientation);
                         //}
                         break;
                     case RF:
-                        c = rfOrientationColors.get(pairOrientation);
+                        type = rfOrientationTypes.get(pairOrientation);
                         break;
                     case F1F2:
-                        c = f1f2OrientationColors.get(pairOrientation);
+                        type = f1f2OrientationTypes.get(pairOrientation);
                         break;
                     case F2F1:
-                        c = f2f1OrientationColors.get(pairOrientation);
+                        type = f2f1OrientationTypes.get(pairOrientation);
                         break;
                 }
 
             } else {
                 // No peStats for this library, just guess
                 if (alignment.getAttribute("CS") != null) {
-                    c = f2f1OrientationColors.get(pairOrientation);
+                    type = f2f1OrientationTypes.get(pairOrientation);
                 } else {
-                    c = frOrientationColors.get(pairOrientation);
+                    type = frOrientationTypes.get(pairOrientation);
                 }
             }
         }
-
-        return c == null ? grey1 : c;
-
+        return type;
     }
 
     /**

@@ -105,6 +105,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         CG, CHH, CHG, HCG, GCH, WCG
     }
 
+    enum OrientationType {
+        LR, RL, RR, LL
+    }
+
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();
 
     static {
@@ -1329,7 +1333,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
-            //mappings.put("inversion", GroupOption.PAIR_INVERTED);
+            mappings.put("inversion", GroupOption.PAIR_INVERTED);
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
