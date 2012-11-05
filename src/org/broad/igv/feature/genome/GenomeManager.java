@@ -90,7 +90,8 @@ public class GenomeManager {
 
 
     public void setCurrentGenome(Genome currentGenome) {
-        PreferenceManager.getInstance().setDefaultGenome(currentGenome.getId());
+        String defId = currentGenome != null ? currentGenome.getId() : null;
+        PreferenceManager.getInstance().setDefaultGenome(defId);
         this.currentGenome = currentGenome;
     }
 

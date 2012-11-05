@@ -12,6 +12,7 @@
 package org.broad.igv;
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
@@ -34,12 +35,14 @@ public class AbstractHeadlessTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         setUpHeadless();
+        GenomeManager.getInstance().setCurrentGenome(null);
         genome = TestUtils.loadGenome();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         TestUtils.clearOutputDir();
+        GenomeManager.getInstance().setCurrentGenome(null);
     }
 
     @Before
