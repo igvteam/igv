@@ -21,7 +21,7 @@ import java.sql.Statement;
 
 /**
  * Class for loading ALL of the data from a single table
- * in a single database. A single
+ * in a single database.
  *
  * @author Jacob Silterra
  * @date 2012/05/30
@@ -31,13 +31,13 @@ public abstract class WholeTableDBReader<T> {
     private static Logger log = Logger.getLogger(WholeTableDBReader.class);
 
     protected ResourceLocator locator;
-    protected String table;
+    protected String tableName;
     protected String queryString = "SELECT * FROM ";
 
-    public WholeTableDBReader(ResourceLocator locator, String table) {
+    public WholeTableDBReader(ResourceLocator locator, String tableName) {
         this.locator = locator;
-        this.table = table;
-        queryString += table;
+        this.tableName = tableName;
+        queryString += tableName;
     }
 
     public T load() {

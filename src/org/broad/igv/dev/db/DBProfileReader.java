@@ -35,6 +35,84 @@ import java.util.List;
  */
 public class DBProfileReader {
 
+    public static List<DBTable> parseProfile(String profilePath) {
+        InputStream profileStream = null;
+        String tableName = null;
+
+        try {
+            profileStream = new FileInputStream(profilePath);
+            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
+            NodeList tableNodes = document.getElementsByTagName("table");
+
+            List<DBTable> tableList = new ArrayList<DBTable>(tableNodes.getLength());
+
+            for (int tnum = 0; tnum < tableNodes.getLength(); tnum++) {
+                Node tableNode = tableNodes.item(tnum);
+                NamedNodeMap attr = tableNode.getAttributes();
+
+                tableName = attr.getNamedItem("name").getTextContent();
+                String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
+                String posStartColName = attr.getNamedItem("posStartColName").getTextContent();
+                String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
+                String format = attr.getNamedItem("format").getTextContent();
+                String startColString = Utilities.getNullSafe(attr, "startColIndex");
+                String endColString = Utilities.getNullSafe(attr, "endColIndex");
+                String binColName = Utilities.getNullSafe(attr, "binColName");
+
+                int startColIndex = Integer.parseInt(startColString);
+                int endColIndex = Integer.parseInt(endColString);
+
+                //If present, retrieve list of columns
+                NodeList columns = tableNode.getChildNodes();
+                DBReader.ColumnMap columnMap = null;
+
+                if (columns.getLength() > 0) {
+                    columnMap = new DBReader.ColumnMap();
+
+                    for (int col = 0; col < columns.getLength(); col++) {
+                        Node column = columns.item(col);
+                        NamedNodeMap colAttr = column.getAttributes();
+                        //Whitespace gets in as child nodes
+                        if (colAttr == null) continue;
+                        int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
+
+                        String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
+                        String colIndexStr = Utilities.getNullSafe(colAttr, "colIndex");
+
+                        if (colLabel == null && colIndexStr == null) {
+                            String msg = String.format("Error parsing column %d of %s", col, tableName);
+                            msg += "colName and colIndex both null, at least 1 must be specified.";
+                            throw new SAXParseException(msg, null);
+                        } else if (colIndexStr != null) {
+                            int colIndex = Integer.parseInt(colIndexStr);
+                            columnMap.put(fileIndex, colIndex);
+                        }
+                        columnMap.put(fileIndex, colLabel);
+                    }
+                }
+
+                DBTable table = new DBTable(tableName, format, binColName, chromoColName, posStartColName,
+                        posEndColName, startColIndex, endColIndex, columnMap);
+                tableList.add(table);
+
+
+            }
+
+            return tableList;
+
+        } catch (Exception e) {
+            String msg = "Error reading profile " + profilePath + ", table " + tableName;
+            MessageUtils.showErrorMessage(msg, e);
+            return null;
+        } finally {
+            try {
+                if (profileStream != null) profileStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * Retrieve a reader from the XML profile located at {@code profilePath}.
      * If {@code tableName == null}, all tables in the profile are loaded.
@@ -45,83 +123,82 @@ public class DBProfileReader {
      * @return
      */
     public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
-        ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
-        InputStream profileStream = null;
-        String tabName = tableName;
-        try {
-            profileStream = new FileInputStream(profilePath);
-            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
-            NodeList tableNodes = document.getElementsByTagName("table");
-            List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(tableNodes.getLength());
+        List<DBTable> tableList = parseProfile(profilePath);
+        List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(tableList.size());
 
-            for (int tnum = 0; tnum < tableNodes.getLength(); tnum++) {
-                Node tableNode = tableNodes.item(tnum);
-                NamedNodeMap attr = tableNode.getAttributes();
-                tabName = attr.getNamedItem("name").getTextContent();
-                if (tableName == null || tableName.equals(tabName)) {
-
-                    String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
-                    String posStartColName = attr.getNamedItem("posStartColName").getTextContent();
-                    String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
-                    String format = attr.getNamedItem("format").getTextContent();
-                    String startColString = Utilities.getNullSafe(attr, "startColIndex");
-                    String endColString = Utilities.getNullSafe(attr, "endColIndex");
-                    String binColName = Utilities.getNullSafe(attr, "binColName");
-
-                    int startColIndex = Integer.parseInt(startColString);
-                    int endColIndex = Integer.parseInt(endColString);
-
-                    //If present, retrieve list of columns
-                    NodeList columns = tableNode.getChildNodes();
-                    DBReader.ColumnMap columnMap = null;
-
-                    if (columns.getLength() > 0) {
-                        columnMap = new DBReader.ColumnMap();
-
-                        for (int col = 0; col < columns.getLength(); col++) {
-                            Node column = columns.item(col);
-                            NamedNodeMap colAttr = column.getAttributes();
-                            //Whitespace gets in as child nodes
-                            if (colAttr == null) continue;
-                            int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
-
-                            String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
-                            String colIndexStr = Utilities.getNullSafe(colAttr, "colIndex");
-
-                            if (colLabel == null && colIndexStr == null) {
-                                String msg = String.format("Error parsing column %d of %s", col, tabName);
-                                msg += "colName and colIndex both null, at least 1 must be specified.";
-                                throw new SAXParseException(msg, null);
-                            } else if (colIndexStr != null) {
-                                int colIndex = Integer.parseInt(colIndexStr);
-                                columnMap.put(fileIndex, colIndex);
-                            }
-                            columnMap.put(fileIndex, colLabel);
-                        }
-                    }
-
-                    AsciiFeatureCodec codec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
-                    SQLCodecSource source = new SQLCodecSource(dbLocator, tabName, codec, columnMap,
-                            chromoColName, posStartColName, posEndColName, startColIndex, endColIndex);
-
-                    source.binColName = binColName;
-                    sources.add(source);
-                }
-            }
-
-            return sources;
-
-        } catch (Exception e) {
-            String msg = "Error reading profile " + profilePath + ", table " + tabName;
-            MessageUtils.showErrorMessage(msg, e);
-            return null;
-        } finally {
-            try {
-                if (profileStream != null) profileStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        for (DBTable table : tableList) {
+            if (tableName == null || table.getTableName().equals(tableName)) {
+                AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
+                ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
+                SQLCodecSource source = new SQLCodecSource(dbLocator, table, codec);
+                sources.add(source);
             }
         }
+        return sources;
 
+    }
+
+    static class DBTable {
+        private final String tableName;
+        private final String format;
+        private final String binColName;
+
+        private final String chromoColName;
+        private final String posStartColName;
+        private final String posEndColName;
+        private final int startColIndex;
+        private final int endColIndex;
+
+        private final DBReader.ColumnMap columnMap;
+
+        public DBTable(String tableName, String format, String binColName,
+                       String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
+                       DBReader.ColumnMap columnMap) {
+            this.tableName = tableName;
+            this.format = format;
+            this.binColName = binColName;
+            this.chromoColName = chromoColName;
+            this.posStartColName = posStartColName;
+            this.posEndColName = posEndColName;
+            this.startColIndex = startColIndex;
+            this.endColIndex = endColIndex;
+            this.columnMap = columnMap;
+        }
+
+        public String getBinColName() {
+            return binColName;
+        }
+
+        public String getChromoColName() {
+            return chromoColName;
+        }
+
+        public DBReader.ColumnMap getColumnMap() {
+            return columnMap;
+        }
+
+        public int getEndColIndex() {
+            return endColIndex;
+        }
+
+        public String getFormat() {
+            return format;
+        }
+
+        public String getPosEndColName() {
+            return posEndColName;
+        }
+
+        public String getPosStartColName() {
+            return posStartColName;
+        }
+
+        public int getStartColIndex() {
+            return startColIndex;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
     }
 }

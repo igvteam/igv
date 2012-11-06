@@ -36,9 +36,10 @@ public class SQLCodecSourceTest {
 
         String url = DBManager.createConnectionURL("sqlite", host, path, null);
         ResourceLocator locator = new ResourceLocator(url);
-        String table = "unigene";
+        String tableName = "unigene";
 
-        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE);
+        DBProfileReader.DBTable table = new DBProfileReader.DBTable(tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null);
+        SQLCodecSource reader = new SQLCodecSource(locator, table, codec);
         return reader;
     }
 

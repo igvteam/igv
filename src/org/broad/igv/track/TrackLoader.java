@@ -1046,7 +1046,7 @@ public class TrackLoader {
         for (SQLCodecSource source : sources) {
             CachingFeatureSource cachingReader = new CachingFeatureSource(source);
             FeatureTrack track = new FeatureTrack(locator, cachingReader);
-            track.setName(source.getTable());
+            track.setName(source.getTableName());
             newTracks.add(track);
         }
     }
@@ -1058,7 +1058,7 @@ public class TrackLoader {
             SegmentedAsciiDataSet ds = (new SegmentedSQLReader(locator, genome)).load();
             loadSegTrack(locator, newTracks, genome, ds);
         } else {
-            (new SampleInfoSQLReader(locator)).load();
+            (new SampleInfoSQLReader(locator, "SAMPLE_INFO", "SAMPLE_ID_ARRAY")).load();
         }
     }
 

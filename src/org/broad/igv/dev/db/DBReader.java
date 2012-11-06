@@ -32,15 +32,15 @@ public abstract class DBReader<T> {
     private static Logger log = Logger.getLogger(DBReader.class);
 
     protected ResourceLocator locator;
-    protected String table;
+    protected String tableName;
     protected String baseQueryString = "SELECT * FROM ";
     protected ColumnMap columnMap;
 
-    public DBReader(ResourceLocator locator, String table, ColumnMap columnMap) {
+    public DBReader(ResourceLocator locator, String tableName, ColumnMap columnMap) {
         this.locator = locator;
-        assert table != null;
-        this.table = table;
-        baseQueryString += table;
+        assert tableName != null;
+        this.tableName = tableName;
+        baseQueryString += tableName;
         this.columnMap = columnMap;
 
 
@@ -148,8 +148,8 @@ public abstract class DBReader<T> {
         }
     }
 
-    public String getTable() {
-        return table;
+    public String getTableName() {
+        return tableName;
     }
 
     protected final int getDBColumn(int fileColNum) {

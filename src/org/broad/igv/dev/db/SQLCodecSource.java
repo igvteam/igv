@@ -91,14 +91,17 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private static final int MAX_BINS = 20;
 
-    public SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec, ColumnMap columnMap) {
-        super(locator, table, columnMap);
-        this.codec = codec;
+    SQLCodecSource(ResourceLocator dbLocator, DBProfileReader.DBTable table, AsciiFeatureCodec codec) {
+        this(dbLocator, table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
+                table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnMap());
     }
 
-    public SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec, ColumnMap columnMap,
-                          String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex) {
-        this(locator, table, codec, columnMap);
+    private SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec,
+                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
+                           ColumnMap columnMap) {
+        super(locator, table, columnMap);
+        this.codec = codec;
+        this.binColName = binColName;
         this.chromoColName = chromoColName;
         this.posStartColName = posStartColName;
         this.posEndColName = posEndColName;
@@ -291,7 +294,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     }
 
     public List<String> getSequenceNames() {
-        String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, table);
+        String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, tableName);
 
         ResultSet results = loadResultSet(queryString);
         List<String> names = new ArrayList<String>();

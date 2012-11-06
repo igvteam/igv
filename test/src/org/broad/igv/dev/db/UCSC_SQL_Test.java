@@ -74,11 +74,12 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
         ResourceLocator locator = new ResourceLocator(url);
         locator.setUsername("genome");
 
-        String table = "knownGene";
+        String tableName = "knownGene";
         int strt = 100000;
         int end = 400000;
 
-        SQLCodecSource reader = new SQLCodecSource(locator, table, codec, null);
+        DBProfileReader.DBTable table = new DBProfileReader.DBTable(tableName, "n/a", null, SQLCodecSource.UCSC_CHROMO_COL, SQLCodecSource.UCSC_START_COL, SQLCodecSource.UCSC_END_COL, 1, Integer.MAX_VALUE, null);
+        SQLCodecSource reader = new SQLCodecSource(locator, table, codec);
         Iterator<Feature> SQLFeatures = reader.getFeatures("chr1", strt, end);
 
         int count = 0;
