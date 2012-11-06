@@ -52,10 +52,12 @@ public class DBManagerTest extends AbstractHeadlessTest {
 
     @Test
     public void testGetStoredConnection() throws Exception {
-        String subPath = "sql/unigene_profile.xml";
+        String subPath = "sql/unigene_profile.dbxml";
         File profile = new File(TestUtils.DATA_DIR, subPath);
         ResourceLocator locator = DBManager.getStoredConnection(profile.getAbsolutePath());
         Connection conn = DBManager.getConnection(locator);
+        Statement st = conn.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM unigene");
         assertFalse(conn.isClosed());
         conn.close();
     }

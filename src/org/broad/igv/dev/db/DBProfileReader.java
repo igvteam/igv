@@ -37,6 +37,7 @@ public class DBProfileReader {
 
     /**
      * Retrieve a reader from the XML profile located at {@code profilePath}.
+     * If {@code tableName == null}, all tables in the profile are loaded.
      * TODO If {@code tableName == null}, the user is prompted to choose a table from the list
      *
      * @param profilePath

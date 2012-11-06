@@ -100,13 +100,13 @@ public class SQLCodecSourceTest {
 
     @Test
     public void testLoadReorderedColumnsIndex() throws Exception {
-        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.byindex.xml";
+        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.byindex.dbxml";
         tstLoadReorderedColumns(profilePath);
     }
 
     @Test
     public void testLoadReorderedColumnsLabel() throws Exception {
-        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.bylabel.xml";
+        String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.bylabel.dbxml";
         tstLoadReorderedColumns(profilePath);
     }
 

@@ -31,7 +31,8 @@ description
       host CDATA #REQUIRED
       path CDATA #REQUIRED
       port CDATA #REQUIRED
-      username CDATA #REQUIRED>
+      username CDATA #IMPLIED
+      password CDATA #IMPLIED>
 
 
 <!--
