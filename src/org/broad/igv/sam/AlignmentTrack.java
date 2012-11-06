@@ -1333,8 +1333,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             mappings.put("first-in-pair strand", GroupOption.FIRST_OF_PAIR_STRAND);
             mappings.put("sample", GroupOption.SAMPLE);
             mappings.put("read group", GroupOption.READ_GROUP);
-            mappings.put("inversion", GroupOption.PAIR_INVERTED);
             mappings.put("chromosome of mate", GroupOption.MATE_CHROMOSOME);
+
+            String addExtraStr = System.getProperty("enable.groupby.extras", "false");
+            boolean addExtras = Boolean.parseBoolean(addExtraStr);
+            if (addExtras) {
+                mappings.put("inversion", GroupOption.PAIR_INVERTED);
+            }
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {
                 JCheckBoxMenuItem mi = getGroupMenuItem(el.getKey(), el.getValue());
