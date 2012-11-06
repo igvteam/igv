@@ -17,16 +17,9 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LoginDialog;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 
@@ -185,47 +178,6 @@ public class DBManager {
 
         return url;
     }
-
-    /**
-     * Open connection using parameters specified in the given
-     * profile.
-     *
-     * @param profilePath
-     * @return
-     */
-    public static ResourceLocator getStoredConnection(String profilePath) {
-        InputStream profileStream = null;
-        try {
-            profileStream = new FileInputStream(profilePath);
-            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
-            Node db = document.getElementsByTagName("database").item(0);
-            NamedNodeMap attr = db.getAttributes();
-            String host = attr.getNamedItem("host").getTextContent();
-            String path = attr.getNamedItem("path").getTextContent();
-            String subprotocol = attr.getNamedItem("subprotocol").getTextContent();
-
-            String port = Utilities.getNullSafe(attr, "port");
-            String username = Utilities.getNullSafe(attr, "username");
-            String password = Utilities.getNullSafe(attr, "password");
-
-            ResourceLocator locator = new ResourceLocator(createConnectionURL(subprotocol, host, path, port));
-            locator.setUsername(username);
-            locator.setPassword(password);
-
-            return locator;
-
-        } catch (Exception e) {
-            log.error("Error loading stored connection", e);
-            return null;
-        } finally {
-            try {
-                if (profileStream != null) profileStream.close();
-            } catch (IOException e) {
-                log.error("Error closing profile streame", e);
-            }
-        }
-    }
-
 
     /**
      * Close the specified resources

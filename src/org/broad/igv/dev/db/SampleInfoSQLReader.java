@@ -34,11 +34,6 @@ public class SampleInfoSQLReader extends WholeTableDBReader<Void> {
         this.sampleColumn = sampleColumn;
     }
 
-//    public SampleInfoSQLReader(ResourceLocator locator) {
-//        //TODO Don't hardcode table name, this might note even be right for our target case
-//        super(locator, "SAMPLE_INFO");
-//    }
-
     @Override
     protected Void processResultSet(ResultSet rs) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();

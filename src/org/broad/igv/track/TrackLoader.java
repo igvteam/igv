@@ -1041,14 +1041,28 @@ public class TrackLoader {
         }
     }
 
-    private void loadFromDBProfile(ResourceLocator locator, List<Track> newTracks) throws IOException {
-        List<SQLCodecSource> sources = DBProfileReader.getFromProfile(locator.getPath(), null);
-        for (SQLCodecSource source : sources) {
-            CachingFeatureSource cachingReader = new CachingFeatureSource(source);
-            FeatureTrack track = new FeatureTrack(locator, cachingReader);
-            track.setName(source.getTableName());
-            newTracks.add(track);
+    private void loadFromDBProfile(ResourceLocator profileLocator, List<Track> newTracks) throws IOException {
+        List<DBProfileReader.DBTable> tableList = DBProfileReader.parseProfile(profileLocator.getPath());
+        for (DBProfileReader.DBTable table : tableList) {
+            SQLCodecSource source = SQLCodecSource.getFromTable(table);
+            if (source != null) {
+                CachingFeatureSource cachingReader = new CachingFeatureSource(source);
+                FeatureTrack track = new FeatureTrack(profileLocator, cachingReader);
+                track.setName(source.getTableName());
+                newTracks.add(track);
+            } else if (table.getFormat().equals("seg")) {
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                SegmentedAsciiDataSet ds = (new SegmentedSQLReader(table.getDbLocator(), genome)).load();
+                loadSegTrack(table.getDbLocator(), newTracks, genome, ds);
+
+            } else if (table.getFormat().equals("sample.info")) {
+                //TODO sampleIdColumnLabel was previously hardcoded as "SAMPLE_ID_ARRAY"
+                //TODO Basically I'm shoehorning this information into a field usually used for something else. Only slightly better
+                String sampleIdColumnLabel = table.getBinColName();
+                (new SampleInfoSQLReader(table.getDbLocator(), table.getTableName(), sampleIdColumnLabel)).load();
+            }
         }
+
     }
 
 

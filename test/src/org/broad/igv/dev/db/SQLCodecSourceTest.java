@@ -23,10 +23,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 public class SQLCodecSourceTest {
 
@@ -38,8 +36,8 @@ public class SQLCodecSourceTest {
         ResourceLocator locator = new ResourceLocator(url);
         String tableName = "unigene";
 
-        DBProfileReader.DBTable table = new DBProfileReader.DBTable(tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null);
-        SQLCodecSource reader = new SQLCodecSource(locator, table, codec);
+        DBProfileReader.DBTable table = new DBProfileReader.DBTable(locator, tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null, null);
+        SQLCodecSource reader = new SQLCodecSource(table, codec);
         return reader;
     }
 
@@ -112,10 +110,9 @@ public class SQLCodecSourceTest {
     }
 
     public void tstLoadReorderedColumns(String profilePath) throws Exception {
-        List<SQLCodecSource> sourceList = DBProfileReader.getFromProfile(profilePath, null);
-        assertEquals(1, sourceList.size());
+        SQLCodecSource source0 = SQLCodecSource.getFromProfile(profilePath, "unigene");
+        assertNotNull(source0);
 
-        SQLCodecSource source0 = sourceList.get(0);
         SQLCodecSource source1 = getUnigene("sql/Unigene.unsorted.db");
 
         CloseableTribbleIterator<Feature> features0 = source0.iterator();

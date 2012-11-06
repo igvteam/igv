@@ -11,12 +11,10 @@
 
 package org.broad.igv.dev.db;
 
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.tribble.CodecFactory;
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
-import org.broad.tribble.AsciiFeatureCodec;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -35,6 +33,8 @@ import java.util.List;
  */
 public class DBProfileReader {
 
+    private static Logger log = Logger.getLogger(DBProfileReader.class);
+
     public static List<DBTable> parseProfile(String profilePath) {
         InputStream profileStream = null;
         String tableName = null;
@@ -42,6 +42,8 @@ public class DBProfileReader {
         try {
             profileStream = new FileInputStream(profilePath);
             Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
+            ResourceLocator dbLocator = createDBLocator(document);
+
             NodeList tableNodes = document.getElementsByTagName("table");
 
             List<DBTable> tableList = new ArrayList<DBTable>(tableNodes.getLength());
@@ -92,7 +94,7 @@ public class DBProfileReader {
                     }
                 }
 
-                DBTable table = new DBTable(tableName, format, binColName, chromoColName, posStartColName,
+                DBTable table = new DBTable(dbLocator, tableName, format, binColName, chromoColName, posStartColName,
                         posEndColName, startColIndex, endColIndex, columnMap, baseQuery);
                 tableList.add(table);
             }
@@ -112,32 +114,77 @@ public class DBProfileReader {
         }
     }
 
-    /**
-     * Retrieve a reader from the XML profile located at {@code profilePath}.
-     * If {@code tableName == null}, all tables in the profile are loaded.
-     * TODO If {@code tableName == null}, the user is prompted to choose a table from the list
-     *
-     * @param profilePath
-     * @param tableName
-     * @return
-     */
-    public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
-        List<DBTable> tableList = parseProfile(profilePath);
-        List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(tableList.size());
+    private static ResourceLocator createDBLocator(Document document) {
+        Node db = document.getElementsByTagName("database").item(0);
+        NamedNodeMap attr = db.getAttributes();
+        String host = attr.getNamedItem("host").getTextContent();
+        String path = attr.getNamedItem("path").getTextContent();
+        String subprotocol = attr.getNamedItem("subprotocol").getTextContent();
 
-        for (DBTable table : tableList) {
-            if (tableName == null || table.getTableName().equals(tableName)) {
-                AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
-                ResourceLocator dbLocator = DBManager.getStoredConnection(profilePath);
-                SQLCodecSource source = new SQLCodecSource(dbLocator, table, codec);
-                sources.add(source);
-            }
-        }
-        return sources;
+        String port = Utilities.getNullSafe(attr, "port");
+        String username = Utilities.getNullSafe(attr, "username");
+        String password = Utilities.getNullSafe(attr, "password");
 
+        ResourceLocator locator = new ResourceLocator(DBManager.createConnectionURL(subprotocol, host, path, port));
+        locator.setUsername(username);
+        locator.setPassword(password);
+
+        return locator;
     }
 
-    static class DBTable {
+    /**
+     * Creates a ResourceLocator from the dbxml file specified at
+     * {@code profilePath}. Note that this locator is against the database,
+     * and does not contain information on any particular table.
+     *
+     * @param profilePath
+     * @return
+     */
+    static ResourceLocator createDBLocator(String profilePath) {
+        InputStream profileStream = null;
+        try {
+            profileStream = new FileInputStream(profilePath);
+            Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
+            ResourceLocator locator = createDBLocator(document);
+            return locator;
+
+        } catch (Exception e) {
+            log.error("Error creating DB Locator", e);
+            return null;
+        } finally {
+            try {
+                if (profileStream != null) profileStream.close();
+            } catch (IOException e) {
+                log.error("Error closing profile stream", e);
+            }
+        }
+    }
+
+    /**
+     * //     * Retrieve a reader from the XML profile located at {@code profilePath}.
+     * //     * If {@code tableName == null}, all tables in the profile are loaded.
+     * //     * TODO If {@code tableName == null}, the user is prompted to choose a table from the list
+     * //     *
+     * //     * @param profilePath
+     * //     * @param tableName
+     * //     * @return
+     * //
+     */
+//    public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
+//        List<DBTable> tableList = parseProfile(profilePath);
+//        List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(tableList.size());
+//
+//        for (DBTable table : tableList) {
+//            if (tableName == null || table.getTableName().equals(tableName)) {
+//
+//            }
+//        }
+//        return sources;
+//    }
+
+
+    public static class DBTable {
+        private final ResourceLocator dbLocator;
         private final String tableName;
         private final String format;
         private final String binColName;
@@ -151,9 +198,10 @@ public class DBProfileReader {
         private final DBReader.ColumnMap columnMap;
         private final String baseQuery;
 
-        public DBTable(String tableName, String format, String binColName,
+        public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
                        String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
                        DBReader.ColumnMap columnMap, String baseQuery) {
+            this.dbLocator = dbLocator;
             this.tableName = tableName;
             this.format = format;
             this.binColName = binColName;
@@ -164,6 +212,10 @@ public class DBProfileReader {
             this.endColIndex = endColIndex;
             this.columnMap = columnMap;
             this.baseQuery = baseQuery;
+        }
+
+        public ResourceLocator getDbLocator() {
+            return dbLocator;
         }
 
         public String getBinColName() {

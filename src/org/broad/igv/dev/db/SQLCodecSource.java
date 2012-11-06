@@ -14,6 +14,8 @@ package org.broad.igv.dev.db;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.AsciiFeatureCodec;
@@ -91,8 +93,8 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private static final int MAX_BINS = 20;
 
-    SQLCodecSource(ResourceLocator dbLocator, DBProfileReader.DBTable table, AsciiFeatureCodec codec) {
-        this(dbLocator, table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
+    SQLCodecSource(DBProfileReader.DBTable table, AsciiFeatureCodec codec) {
+        this(table.getDbLocator(), table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
                 table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnMap());
         if (table.getBaseQuery() != null) {
             this.baseQueryString = table.getBaseQuery();
@@ -100,8 +102,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     }
 
     private SQLCodecSource(ResourceLocator locator, String tableName, AsciiFeatureCodec codec,
-                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
-                           ColumnMap columnMap) {
+                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex, ColumnMap columnMap) {
         super(locator, tableName, columnMap);
         this.codec = codec;
         this.binColName = binColName;
@@ -110,6 +111,33 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         this.posEndColName = posEndColName;
         this.startColIndex = startColIndex;
         this.endColIndex = endColIndex;
+    }
+
+
+    /**
+     * @param table
+     * @return a SQLCodecSource, or null if no appropriate codec found
+     */
+    public static SQLCodecSource getFromTable(DBProfileReader.DBTable table) {
+        AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
+        if (codec != null) {
+            SQLCodecSource source = new SQLCodecSource(table, codec);
+            return source;
+        }
+        return null;
+    }
+
+    public static SQLCodecSource getFromProfile(String profilePath, String tableName) {
+        List<DBProfileReader.DBTable> tableList = DBProfileReader.parseProfile(profilePath);
+
+        SQLCodecSource source = null;
+        for (DBProfileReader.DBTable table : tableList) {
+            if (table.getTableName().equals(tableName)) {
+                source = SQLCodecSource.getFromTable(table);
+                break;
+            }
+        }
+        return source;
     }
 
     @Override

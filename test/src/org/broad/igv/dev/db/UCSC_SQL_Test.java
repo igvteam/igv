@@ -78,8 +78,8 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
         int strt = 100000;
         int end = 400000;
 
-        DBProfileReader.DBTable table = new DBProfileReader.DBTable(tableName, "n/a", null, SQLCodecSource.UCSC_CHROMO_COL, SQLCodecSource.UCSC_START_COL, SQLCodecSource.UCSC_END_COL, 1, Integer.MAX_VALUE, null);
-        SQLCodecSource reader = new SQLCodecSource(locator, table, codec);
+        DBProfileReader.DBTable table = new DBProfileReader.DBTable(locator, tableName, "n/a", null, SQLCodecSource.UCSC_CHROMO_COL, SQLCodecSource.UCSC_START_COL, SQLCodecSource.UCSC_END_COL, 1, Integer.MAX_VALUE, null, null);
+        SQLCodecSource reader = new SQLCodecSource(table, codec);
         Iterator<Feature> SQLFeatures = reader.getFeatures("chr1", strt, end);
 
         int count = 0;
@@ -132,7 +132,10 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
     }
 
     public SQLCodecSource tstLoadFromProfile(String profilePath, String tableName) throws Exception {
-        SQLCodecSource source = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource source = SQLCodecSource.getFromProfile(profilePath, tableName);
+        if (source == null) {
+            throw new RuntimeException("Table " + tableName + " not found in profile " + profilePath);
+        }
         int start = 1;
         int end = 100000;
         Iterator<Feature> feats = source.getFeatures("chr1", start, end);
@@ -175,10 +178,10 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
     }
 
     public void tstQueryWithBins(String profilePath, String tableName, String chr, int start, int end) throws Exception {
-        SQLCodecSource binSource = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource binSource = SQLCodecSource.getFromProfile(profilePath, tableName);
         assertNotNull(binSource.binColName);
 
-        SQLCodecSource noBinSource = DBProfileReader.getFromProfile(profilePath, tableName).get(0);
+        SQLCodecSource noBinSource = SQLCodecSource.getFromProfile(profilePath, tableName);
         binSource.binColName = null;
 
 

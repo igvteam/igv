@@ -159,7 +159,7 @@ public abstract class DBReader<T> {
         return fileColNum;
     }
 
-    static class ColumnMap {
+    public static class ColumnMap {
         private Map<Integer, Integer> columnIndexMap = new HashMap<Integer, Integer>();
         private Map<Integer, String> columnLabelMap = new HashMap<Integer, String>();
         int minFileColNum = Integer.MAX_VALUE;
