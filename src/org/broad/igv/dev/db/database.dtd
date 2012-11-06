@@ -40,6 +40,16 @@ A database can have any number of tables within it.
 For each table, we have to specify the location
 of certain columns to perform queries.
 
+baseQuery
+    If not supplied, the constructed SQL is of form (for range-based querying)
+       SELECT * FROM <tableName> WHERE <chromoColName> = <current chromosome> ...
+    If supplied, the query will be
+       <baseQuery> WHERE <chromoColName> = <current chromosome> ...
+
+    So the tableName is completely overridden
+    Certain file types, such as sample information, are limited
+    and the entire file is normally loaded. In this case, when loading
+    from a database, the entire table is loaded, using only <baseQuery>
 name
     Exact name of the table
 description
@@ -69,13 +79,14 @@ posEndColName
     Name of the column which contains end positions of each feature.
 startColIndex
     1-based Column index from which to start reading data. Default 1.
- endColIndex
+endColIndex
     1-based column index, inclusive, at which to stop reading data.
     Default 2147483646 (Integer.MAX_VALUE - 1, ie all)
 
 -->
 <!ELEMENT table (column*)>
 <!ATTLIST table
+      baseQuery CDATA #IMPLIED
       name CDATA #REQUIRED
       description CDATA #IMPLIED
       binColName CDATA #IMPLIED

@@ -94,12 +94,15 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     SQLCodecSource(ResourceLocator dbLocator, DBProfileReader.DBTable table, AsciiFeatureCodec codec) {
         this(dbLocator, table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
                 table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnMap());
+        if (table.getBaseQuery() != null) {
+            this.baseQueryString = table.getBaseQuery();
+        }
     }
 
-    private SQLCodecSource(ResourceLocator locator, String table, AsciiFeatureCodec codec,
+    private SQLCodecSource(ResourceLocator locator, String tableName, AsciiFeatureCodec codec,
                            String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
                            ColumnMap columnMap) {
-        super(locator, table, columnMap);
+        super(locator, tableName, columnMap);
         this.codec = codec;
         this.binColName = binColName;
         this.chromoColName = chromoColName;

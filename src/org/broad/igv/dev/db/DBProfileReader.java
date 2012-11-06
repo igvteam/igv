@@ -58,6 +58,7 @@ public class DBProfileReader {
                 String startColString = Utilities.getNullSafe(attr, "startColIndex");
                 String endColString = Utilities.getNullSafe(attr, "endColIndex");
                 String binColName = Utilities.getNullSafe(attr, "binColName");
+                String baseQuery = Utilities.getNullSafe(attr, "baseQuery");
 
                 int startColIndex = Integer.parseInt(startColString);
                 int endColIndex = Integer.parseInt(endColString);
@@ -92,10 +93,8 @@ public class DBProfileReader {
                 }
 
                 DBTable table = new DBTable(tableName, format, binColName, chromoColName, posStartColName,
-                        posEndColName, startColIndex, endColIndex, columnMap);
+                        posEndColName, startColIndex, endColIndex, columnMap, baseQuery);
                 tableList.add(table);
-
-
             }
 
             return tableList;
@@ -150,10 +149,11 @@ public class DBProfileReader {
         private final int endColIndex;
 
         private final DBReader.ColumnMap columnMap;
+        private final String baseQuery;
 
         public DBTable(String tableName, String format, String binColName,
                        String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
-                       DBReader.ColumnMap columnMap) {
+                       DBReader.ColumnMap columnMap, String baseQuery) {
             this.tableName = tableName;
             this.format = format;
             this.binColName = binColName;
@@ -163,6 +163,7 @@ public class DBProfileReader {
             this.startColIndex = startColIndex;
             this.endColIndex = endColIndex;
             this.columnMap = columnMap;
+            this.baseQuery = baseQuery;
         }
 
         public String getBinColName() {
@@ -199,6 +200,10 @@ public class DBProfileReader {
 
         public String getTableName() {
             return tableName;
+        }
+
+        public String getBaseQuery() {
+            return baseQuery;
         }
     }
 }

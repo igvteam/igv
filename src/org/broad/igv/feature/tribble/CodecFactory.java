@@ -43,14 +43,10 @@ public class CodecFactory {
     }
 
     /**
-     * Return a tribble codec to decode the supplied file.
+     * Return a tribble codec to decode the supplied file, or null if not found.
      *
-     * @param path the path (file or URL) to the feature rile.
+     * @param path the path (file or URL) to the feature file
      */
-
-//    public static FeatureCodec getCodec(String path) {
-//        return getCodec(path, null);
-//    }
     public static AsciiFeatureCodec getCodec(String path, Genome genome) {
 
         String fn = path.toLowerCase();
