@@ -23,8 +23,10 @@ import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -34,7 +36,18 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AlignmentPackerTest extends AbstractHeadlessTest {
 
-    public AlignmentPackerTest() {
+    //Retrieve data to pack
+    String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
+    String chr = "1";
+    int start = 557000;
+    int end = 558000;
+    boolean contained = false;
+
+
+    private CloseableIterator<Alignment> getAlignments() throws Exception {
+        ResourceLocator rl = new ResourceLocator(path);
+        AlignmentReader samReader = AlignmentReaderFactory.getReader(rl);
+        return samReader.query(chr, start, end, contained);
     }
 
     /**
@@ -43,21 +56,13 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
     @Test
     public void testPackAlignments() throws Exception {
 
-        //Retrieve data to pack
-        String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
-        String chr = "1";
-        int start = 557000;
-        int end = 558000;
-        boolean contained = false;
-
-        ResourceLocator rl = new ResourceLocator(path);
-        AlignmentReader samReader = AlignmentReaderFactory.getReader(rl);
-        CloseableIterator<Alignment> iter = samReader.query(chr, start, end, contained);
         ///////////////////////////
-
+        /*
         boolean showDuplicates = false;
         int qualityThreshold = 0;
         int maxLevels = 1000;
+        */
+        CloseableIterator<Alignment> iter = getAlignments();
 
         Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end,
                 new AlignmentTrack.RenderOptions());
@@ -72,6 +77,27 @@ public class AlignmentPackerTest extends AbstractHeadlessTest {
             }
         }
 
+
+    }
+
+    @Test
+    public void testGroupAlignmentsPairOrientation() throws Exception {
+        int expSize = AlignmentTrack.OrientationType.values().length;
+        Map<String, List<AlignmentInterval.Row>> result = tstGroupAlignments(AlignmentTrack.GroupOption.PAIR_ORIENTATION, expSize);
+    }
+
+    public Map<String, List<AlignmentInterval.Row>> tstGroupAlignments(AlignmentTrack.GroupOption groupOption, int expSize) throws Exception {
+
+        AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
+        renderOptions.groupByOption = groupOption;
+
+        CloseableIterator<Alignment> iter = getAlignments();
+        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, renderOptions);
+        Set<String> names = result.keySet();
+        names.removeAll(Arrays.asList("", null));
+
+        assertEquals(expSize, names.size());
+        return result;
 
     }
 

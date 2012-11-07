@@ -97,7 +97,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     enum OrientationType {
-        LR, RL, RR, LL
+        LR, RL, RR, LL, UNKNOWN
     }
 
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();

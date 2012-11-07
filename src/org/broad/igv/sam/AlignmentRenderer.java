@@ -84,6 +84,10 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Map<String, AlignmentTrack.OrientationType> rfOrientationTypes;
     private Map<AlignmentTrack.OrientationType, Color> typeToColorMap;
 
+    static {
+        initializeTagTypes();
+    }
+
     PreferenceManager prefs;
 
     private static AlignmentRenderer instance;
@@ -94,7 +98,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     public static AlignmentRenderer getInstance() {
         if (instance == null) {
-            initializeTagTypes();
             instance = new AlignmentRenderer();
         }
         return instance;
@@ -1166,11 +1169,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
             }
         }
+
         return type;
     }
 
     /**
-     * Similiar to "pair orientation" color, but this method does not attempt to interpret orientations.
+     * Similar to "pair orientation" color, but this method does not attempt to interpret orientations.
      *
      * @param alignment
      * @return

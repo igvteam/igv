@@ -85,7 +85,8 @@ public class AlignmentPacker {
 
             // Now alphabetize (sort) and pack the groups
             List<String> keys = new ArrayList<String>(groupedAlignments.keySet());
-            Collections.sort(keys);
+            Comparator<String> groupComparator = getGroupComparator(renderOptions.groupByOption);
+            Collections.sort(keys, groupComparator);
             for (String key : keys) {
                 List<Row> alignmentRows = new ArrayList<Row>(10000);
                 List<Alignment> group = groupedAlignments.get(key);
@@ -99,6 +100,29 @@ public class AlignmentPacker {
 
         return packedAlignments;
 
+    }
+
+    private Comparator<String> getGroupComparator(AlignmentTrack.GroupOption groupByOption) {
+        switch (groupByOption) {
+            case PAIR_ORIENTATION:
+                return new PairOrientationComparator();
+            default:
+                //Sort null values towards the end
+                return new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        if (o1 != null) {
+                            return o1.compareToIgnoreCase(o2);
+                        } else if (o2 != null) {
+                            return o2.compareToIgnoreCase(o1);
+                        } else {
+                            //Both null;
+                            return 0;
+                        }
+
+                    }
+                };
+        }
     }
 
     private String getGroupValue(Alignment al, AlignmentTrack.RenderOptions renderOptions) {
@@ -124,7 +148,7 @@ public class AlignmentPacker {
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
                 AlignmentTrack.OrientationType type = AlignmentRenderer.getOrientationType(al, peStats);
                 if (type == null) {
-                    return "Unknown";
+                    return AlignmentTrack.OrientationType.UNKNOWN.name();
                 }
                 return type.name();
             case MATE_CHROMOSOME:
@@ -444,6 +468,34 @@ public class AlignmentPacker {
             finished = true;
             keys = new ArrayList<Integer>(buckets.keySet());
             Collections.sort(keys);
+        }
+    }
+
+    private class PairOrientationComparator implements Comparator<String> {
+        private final List<AlignmentTrack.OrientationType> orientationTypes;
+        //private final Set<String> orientationNames = new HashSet<String>(AlignmentTrack.OrientationType.values().length);
+
+        public PairOrientationComparator() {
+            orientationTypes = Arrays.asList(AlignmentTrack.OrientationType.values());
+//            for(AlignmentTrack.OrientationType type: orientationTypes){
+//                orientationNames.add(type.name());
+//            }
+        }
+
+        @Override
+        public int compare(String s0, String s1) {
+            if (s0 != null && s1 != null) {
+                AlignmentTrack.OrientationType t0 = AlignmentTrack.OrientationType.valueOf(s0);
+                AlignmentTrack.OrientationType t1 = AlignmentTrack.OrientationType.valueOf(s1);
+                return orientationTypes.indexOf(t0) - orientationTypes.indexOf(t1);
+            } else if (s0 == null ^ s1 == null) {
+                //exactly one is null
+                return s0 == null ? 1 : -1;
+            } else {
+                //both null
+                return 0;
+            }
+
         }
     }
 
