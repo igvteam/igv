@@ -103,8 +103,6 @@ public class SegmentedReader {
     }
 
     public SegmentedReader(ResourceLocator locator, Genome genome) {
-        //TODO Don't hardcode table name, this might not even be right for our target case
-        //super(locator, "CNV");
         this.locator = locator;
         this.genome = genome;
 

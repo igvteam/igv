@@ -1,0 +1,24 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE database SYSTEM "src/org/broad/igv/dev/db/database.dtd">
+<database version="alpha"
+          host="test/data"
+          path="seg/canFam2_hg18.db"
+          port=""
+          subprotocol="sqlite"
+          name="canFam2"
+          description="canFam2 Segmented File">
+
+    <table name="canFam2" format="seg" description="Gene prediction track"
+           chromoColName="" posStartColName="" posEndColName=""/>
+
+</database>
+	

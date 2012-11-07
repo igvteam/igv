@@ -30,9 +30,8 @@ public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet
     private static Logger log = Logger.getLogger(SegmentedSQLReader.class);
     private Genome genome;
 
-    public SegmentedSQLReader(ResourceLocator locator, Genome genome) {
-        //TODO Don't hardcode table name, this might note even be right for our target case
-        super(locator, "CNV");
+    public SegmentedSQLReader(ResourceLocator locator, String tableName, Genome genome) {
+        super(locator, tableName);
         this.genome = genome;
     }
 
