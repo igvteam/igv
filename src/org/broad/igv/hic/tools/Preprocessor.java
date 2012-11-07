@@ -502,7 +502,7 @@ public class Preprocessor {
 
         final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
 
-        System.out.println("Write contact records : records count = " + records.size());
+       // System.out.println("Write contact records : records count = " + records.size());
 
         // Count records first
         int nRecords;
