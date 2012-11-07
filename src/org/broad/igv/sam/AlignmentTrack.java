@@ -85,20 +85,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     public enum SortOption {
-
         START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG;
-
-        static SortOption strToValue(String str) {
-            try {
-                return valueOf(str);
-            } catch (Exception e) {
-                return SortOption.START;
-            }
-        }
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_INVERTED, MATE_CHROMOSOME, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE
     }
 
     public enum BisulfiteContext {
@@ -1338,7 +1329,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             String addExtraStr = System.getProperty("enable.groupby.extras", "false");
             boolean addExtras = Boolean.parseBoolean(addExtraStr);
             if (addExtras) {
-                mappings.put("inversion", GroupOption.PAIR_INVERTED);
+                mappings.put("pair orientation", GroupOption.PAIR_ORIENTATION);
             }
 
             for (Map.Entry<String, GroupOption> el : mappings.entrySet()) {

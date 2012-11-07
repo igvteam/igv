@@ -120,17 +120,13 @@ public class AlignmentPacker {
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
-            case PAIR_INVERTED:
+            case PAIR_ORIENTATION:
                 PEStats peStats = AlignmentRenderer.getPEStats(al, renderOptions);
                 AlignmentTrack.OrientationType type = AlignmentRenderer.getOrientationType(al, peStats);
                 if (type == null) {
                     return "Unknown";
                 }
-                if (type == AlignmentTrack.OrientationType.LL || type == AlignmentTrack.OrientationType.RR) {
-                    return "Inverted";
-                } else {
-                    return "Normal";
-                }
+                return type.name();
             case MATE_CHROMOSOME:
                 ReadMate mate = al.getMate();
                 if (mate == null) return null;
