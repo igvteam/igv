@@ -30,7 +30,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
      */
     private int imageTileWidth = 500;
 
-    ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(100);
+    ObjectCache<String, ImageTile> tileCache = new ObjectCache<String, ImageTile>(10);
     private Rectangle zoomRectangle;
 
     /**
@@ -69,19 +69,21 @@ public class HeatmapPanel extends JComponent implements Serializable {
         Rectangle clipBounds = g.getClipBounds();
         g.clearRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
-        // Same scale used for X & Y (square pixels)
         if (hic != null && hic.zd != null) {
             if (hic.xContext == null)
                 return;
 
+            // Same scale used for X & Y (square pixels)
+            double scalefactor = hic.xContext.getScaleFactor();
+
             // Bounds in bins
-            int bLeft = hic.xContext.getBinOrigin();
-            int bRight = bLeft + getBounds().width;
+            int binLeft = hic.xContext.getBinOrigin();
+            int bRight = binLeft + (int) (getBounds().width / scalefactor);
             int bTop = hic.yContext.getBinOrigin();
-            int bBottom = bTop + getBounds().height;
+            int bBottom = bTop + (int) (getBounds().height / scalefactor);
 
             // tile coordinates
-            int tLeft = bLeft / imageTileWidth;
+            int tLeft = binLeft / imageTileWidth;
             int tRight = bRight / imageTileWidth;
             int tTop = bTop / imageTileWidth;
             int tBottom = bBottom / imageTileWidth;
@@ -89,14 +91,13 @@ public class HeatmapPanel extends JComponent implements Serializable {
             // Pixels per bin -- used to scale image
 
 
-            double scalefactor = hic.xContext.getScaleFactor();
 
             for (int tileRow = tTop; tileRow <= tBottom; tileRow++) {
                 for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
-                    ImageTile tile = getImageTile(tileRow, tileColumn, scalefactor, hic.getDisplayOption());
+                    ImageTile tile = getImageTile(tileRow, tileColumn, hic.getDisplayOption());
                     if (tile != null) {
 
-                        int pxOffset = (int) ((tile.bLeft - bLeft) * scalefactor);
+                        int pxOffset = (int) ((tile.bLeft - binLeft) * scalefactor);
                         int pyOffset = (int) ((tile.bTop - bTop) * scalefactor);
 
                         g.drawImage(tile.image, pxOffset, pyOffset, null);
@@ -179,11 +180,11 @@ public class HeatmapPanel extends JComponent implements Serializable {
      *
      * @param tileColumn  column index of tile
      * @param tileRow     row index of tile
-     * @param scaleFactor
      * @return
      */
-    private ImageTile getImageTile(int tileRow, int tileColumn, double scaleFactor, MainWindow.DisplayOption displayOption) {
-        String key = "_" + tileRow + "_" + tileColumn + "_" + displayOption;
+    private ImageTile getImageTile(int tileRow, int tileColumn, MainWindow.DisplayOption displayOption) {
+
+        String key = "_" + tileRow + "_" + tileColumn  + "_ " + displayOption;
         ImageTile tile = tileCache.get(key);
 
         if (tile == null) {
@@ -204,16 +205,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
             final int by0 = tileRow * imageTileWidth;
             renderer.render(bx0, by0, imageWidth, imageHeight, hic.zd, displayOption, g2D);
 
-            if (scaleFactor > 0.999 && scaleFactor < 1.001) {
+ //           if (scaleFactor > 0.999 && scaleFactor < 1.001) {
                 tile = new ImageTile(image, bx0, by0);
-            } else {
-                int scaledWidth = (int) (scaleFactor * imageWidth);
-                int scaledHeight = (int) (scaleFactor * imageHeight);
-                Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
-
-                tile = new ImageTile(scaledImage, bx0, by0);
-            }
-            tileCache.put(key, tile);
+//            } else {
+//                int scaledWidth = (int) (scaleFactor * imageWidth);
+//                int scaledHeight = (int) (scaleFactor * imageHeight);
+//                Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+//
+//                tile = new ImageTile(scaledImage, bx0, by0);
+//            }
+//            tileCache.put(key, tile);
         }
         return tile;
     }

@@ -27,8 +27,6 @@ public class Preprocessor {
     public static final int[] fragBinSizes = {500, 200, 100, 50, 20, 5, 2, 1};
     public static final String[] fragResLabels = {"500f", "200f", "100f", "50f", "20f", "5f", "2f", "1f"};
 
-    int nThreads = 0;
-
     private List<Chromosome> chromosomes;
 
     // Map of name -> index
@@ -69,10 +67,6 @@ public class Preprocessor {
             chromosomeIndexes.put(chromosomes.get(i).getName(), i);
         }
 
-    }
-
-    public void setNumberOfThreads(int n) {
-        this.nThreads = n;
     }
 
     public void setCountThreshold(int countThreshold) {
@@ -200,24 +194,6 @@ public class Preprocessor {
         //... repeat for each attribute
     }
 
-    private void processThreads(List<Thread> threads, List<MatrixPP> matrices) throws IOException {
-        for (Thread t : threads) {
-            t.start();
-        }
-        for (Thread t : threads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
-        for (MatrixPP matrix : matrices) {
-            writeMatrix(matrix);
-        }
-    }
-
-
     private void writeBody(List<String> inputFileList) throws IOException {
         int nChrs = chromosomes.size();
         // Compute matrices.  Note that c2 is always >= c1
@@ -278,36 +254,39 @@ public class Preprocessor {
 
         for (String file : inputFileList) {
 
-            PairIterator iter = (file.endsWith(".bin")) ?
-                    new BinPairIterator(file, chromosomeIndexes) :
-                    new AsciiPairIterator(file, chromosomeIndexes);
+            PairIterator iter = null;
 
-            while (iter.hasNext()) {
+            try {
+                iter = (file.endsWith(".bin")) ?
+                        new BinPairIterator(file, chromosomeIndexes) :
+                        new AsciiPairIterator(file, chromosomeIndexes);
 
-                AlignmentPair pair = iter.next();
-                int pos1 = pair.getPos1();
-                int pos2 = pair.getPos2();
-                int chr1 = pair.getChr1();
-                int chr2 = pair.getChr2();
-                if (isWholeGenome) {
-                    pos1 = getGenomicPosition(chr1, pos1);
-                    pos2 = getGenomicPosition(chr2, pos2);
-                    matrix.incrementCount(pos1, pos2, score);
-                } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
-                    // we know c1 <= c2 and that's how the matrix is formed.
-                    // pos1 goes with chr1 and pos2 goes with chr2
-                    if (c1 == chr1) {
+                while (iter.hasNext()) {
+
+                    AlignmentPair pair = iter.next();
+                    int pos1 = pair.getPos1();
+                    int pos2 = pair.getPos2();
+                    int chr1 = pair.getChr1();
+                    int chr2 = pair.getChr2();
+                    if (isWholeGenome) {
+                        pos1 = getGenomicPosition(chr1, pos1);
+                        pos2 = getGenomicPosition(chr2, pos2);
                         matrix.incrementCount(pos1, pos2, score);
-                    } else {// c1 == chr2
-                        matrix.incrementCount(pos2, pos1, score);
+                    } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
+                        // we know c1 <= c2 and that's how the matrix is formed.
+                        // pos1 goes with chr1 and pos2 goes with chr2
+                        if (c1 == chr1) {
+                            matrix.incrementCount(pos1, pos2, score);
+                        } else {// c1 == chr2
+                            matrix.incrementCount(pos2, pos1, score);
+                        }
+
                     }
 
                 }
-
+            } finally {
+                if(iter != null) iter.close();
             }
-
-            iter.close();
-
         }
 
 
@@ -455,6 +434,18 @@ public class Preprocessor {
 
         int numberOfBlocks = zd.getBlocks().size();
 
+        System.out.println("Write zoom header");
+        System.out.println(zd.getUnit());  // Unit, ether "BP" or "FRAG"
+        System.out.println(zd.getZoom());     // zoom index,  lowest res is zero
+        System.out.println((float) zd.getSum());      // sum
+        System.out.println((float) zd.getAverage());
+        System.out.println((float) zd.getStdDev());
+        System.out.println((float) zd.getPercent95());
+        System.out.println(zd.getBinSize());
+        System.out.println(zd.getBlockBinCount());
+        System.out.println(zd.getBlockColumnCount());
+        System.out.println(numberOfBlocks);
+
         fos.writeString(zd.getUnit());  // Unit, ether "BP" or "FRAG"
         fos.writeInt(zd.getZoom());     // zoom index,  lowest res is zero
         fos.writeFloat((float) zd.getSum());      // sum
@@ -465,6 +456,7 @@ public class Preprocessor {
         fos.writeInt(zd.getBlockBinCount());
         fos.writeInt(zd.getBlockColumnCount());
         fos.writeInt(numberOfBlocks);
+
         blockIndexPositions.put(getBlockKey(zd), fos.getWrittenCount());
 
         // Placeholder for block index
@@ -478,7 +470,9 @@ public class Preprocessor {
 
     private IndexEntry[] writeZoomData(MatrixZoomDataPP zd) throws IOException {
 
-        final Map<Integer, Block> blocks = zd.getBlocks();
+         final Map<Integer, Block> blocks = zd.getBlocks();
+
+        System.out.println("Write zoom data : block bount = " + blocks.size());
 
         IndexEntry[] indexEntries = new IndexEntry[blocks.size()];
         int i = 0;
@@ -508,6 +502,7 @@ public class Preprocessor {
 
         final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
 
+        System.out.println("Write contact records : records count = " + records.size());
 
         // Count records first
         int nRecords;

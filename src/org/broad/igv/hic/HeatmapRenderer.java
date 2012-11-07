@@ -111,7 +111,7 @@ public class HeatmapRenderer {
 
 
             for (Block b : blocks) {
-                renderBlock(originX, originY, chr1, chr2, 1.0f, b, cs, df, g);
+                renderBlock(originX, originY, chr1, chr2, b, cs, df, g);
             }
         }
     }
@@ -137,7 +137,6 @@ public class HeatmapRenderer {
 
 
     private void renderBlock(int originX, int originY, int chr1, int chr2,
-                             double colorScaleFactor,
                              Block b,
                              ColorScale colorScale, DensityFunction df, Graphics2D g) {
 
@@ -163,12 +162,12 @@ public class HeatmapRenderer {
                     score = normCounts;
                     score = Math.log10(score);
                 } else {
-                    score = rec.getCounts() / colorScaleFactor;
+                    score = rec.getCounts() ;
                 }
 
                 color = colorScale.getColor((float) score);
-                int px = (rec.getBinX() - originX);
-                int py = (rec.getBinY() - originY);
+                int px = (int) ((rec.getBinX() - originX));
+                int py = (int) ((rec.getBinY() - originY));
                 g.setColor(color);
                 // TODO -- need to check right bounds before drawing
                 if (px > -1 && py > -1) {
@@ -190,9 +189,9 @@ public class HeatmapRenderer {
      * Used for Pearsons correlation (dense matrix).  The bitmap is drawn at 1 data point per pixel, scaling
      * happens elsewhere.
      *
+     * @param rm
      * @param originX    origin in pixels
      * @param originY    origin in pixels
-     * @param rm
      * @param colorScale
      * @param g
      */
@@ -214,14 +213,14 @@ public class HeatmapRenderer {
                 } else {
                     color = score == 0 ? Color.black : colorScale.getColor((float) score);
                 }
-                int px = col - originX;
-                int py = row - originY;
+                int px = (int) ((col - originX));
+                int py = (int) ((row - originY));
                 g.setColor(color);
                 g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 // Assuming same chromosome
                 if (col != row) {
-                    px = (row - originX);
-                    py = (col - originY);
+                    px = (int) ((row - originX));
+                    py = (int) ((col - originY));
                     g.fillRect(px, py, MainWindow.BIN_PIXEL_WIDTH, MainWindow.BIN_PIXEL_WIDTH);
                 }
             }

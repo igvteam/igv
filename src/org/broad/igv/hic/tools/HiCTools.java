@@ -191,7 +191,6 @@ public class HiCTools {
 
             preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
-            preprocessor.setNumberOfThreads(parser.getThreadedOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setFragmentFile(parser.getFragmentOption());
             preprocessor.preprocess(files);
@@ -613,7 +612,6 @@ public class HiCTools {
         private Option diagonalsOption = null;
         private Option chromosomeOption = null;
         private Option countThresholdOption = null;
-        private Option threadedOption = null;
         private Option helpOption = null;
         private Option fragmentOption = null;
 
@@ -621,7 +619,6 @@ public class HiCTools {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
-            threadedOption = addIntegerOption('t', "threads");
             fragmentOption = addStringOption('f', "restriction fragment site file");
             helpOption = addBooleanOption('h', "help");
         }
@@ -661,11 +658,6 @@ public class HiCTools {
             return opt == null ? 0 : ((Number) opt).intValue();
         }
 
-        int getThreadedOption() {
-            Object opt = getOptionValue(threadedOption);
-            return opt == null ? 0 : ((Number) opt).intValue();
-
-        }
     }
 
 
