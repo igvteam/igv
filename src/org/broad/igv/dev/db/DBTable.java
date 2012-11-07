@@ -28,12 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Object representation of a single {@code table} element of
+ * a database profile. Contains static method for parsing dbXML files
+ * <p/>
  * User: jacob
  * Date: 2012-Oct-31
  */
-public class DBProfileReader {
+public class DBTable {
 
-    private static Logger log = Logger.getLogger(DBProfileReader.class);
+    private static Logger log = Logger.getLogger(DBTable.class);
 
     public static List<DBTable> parseProfile(String profilePath) {
         InputStream profileStream = null;
@@ -145,8 +148,7 @@ public class DBProfileReader {
         try {
             profileStream = new FileInputStream(profilePath);
             Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
-            ResourceLocator locator = createDBLocator(document);
-            return locator;
+            return createDBLocator(document);
 
         } catch (Exception e) {
             log.error("Error creating DB Locator", e);
@@ -160,102 +162,77 @@ public class DBProfileReader {
         }
     }
 
-    /**
-     * //     * Retrieve a reader from the XML profile located at {@code profilePath}.
-     * //     * If {@code tableName == null}, all tables in the profile are loaded.
-     * //     * TODO If {@code tableName == null}, the user is prompted to choose a table from the list
-     * //     *
-     * //     * @param profilePath
-     * //     * @param tableName
-     * //     * @return
-     * //
-     */
-//    public static List<SQLCodecSource> getFromProfile(String profilePath, String tableName) {
-//        List<DBTable> tableList = parseProfile(profilePath);
-//        List<SQLCodecSource> sources = new ArrayList<SQLCodecSource>(tableList.size());
-//
-//        for (DBTable table : tableList) {
-//            if (tableName == null || table.getTableName().equals(tableName)) {
-//
-//            }
-//        }
-//        return sources;
-//    }
+    private final ResourceLocator dbLocator;
+    private final String tableName;
+    private final String format;
+    private final String binColName;
 
+    private final String chromoColName;
+    private final String posStartColName;
+    private final String posEndColName;
+    private final int startColIndex;
+    private final int endColIndex;
 
-    public static class DBTable {
-        private final ResourceLocator dbLocator;
-        private final String tableName;
-        private final String format;
-        private final String binColName;
+    private final DBReader.ColumnMap columnMap;
+    private final String baseQuery;
 
-        private final String chromoColName;
-        private final String posStartColName;
-        private final String posEndColName;
-        private final int startColIndex;
-        private final int endColIndex;
+    public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
+                   String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
+                   DBReader.ColumnMap columnMap, String baseQuery) {
+        this.dbLocator = dbLocator;
+        this.tableName = tableName;
+        this.format = format;
+        this.binColName = binColName;
+        this.chromoColName = chromoColName;
+        this.posStartColName = posStartColName;
+        this.posEndColName = posEndColName;
+        this.startColIndex = startColIndex;
+        this.endColIndex = endColIndex;
+        this.columnMap = columnMap;
+        this.baseQuery = baseQuery;
+    }
 
-        private final DBReader.ColumnMap columnMap;
-        private final String baseQuery;
+    public ResourceLocator getDbLocator() {
+        return dbLocator;
+    }
 
-        public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
-                       String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
-                       DBReader.ColumnMap columnMap, String baseQuery) {
-            this.dbLocator = dbLocator;
-            this.tableName = tableName;
-            this.format = format;
-            this.binColName = binColName;
-            this.chromoColName = chromoColName;
-            this.posStartColName = posStartColName;
-            this.posEndColName = posEndColName;
-            this.startColIndex = startColIndex;
-            this.endColIndex = endColIndex;
-            this.columnMap = columnMap;
-            this.baseQuery = baseQuery;
-        }
+    public String getBinColName() {
+        return binColName;
+    }
 
-        public ResourceLocator getDbLocator() {
-            return dbLocator;
-        }
+    public String getChromoColName() {
+        return chromoColName;
+    }
 
-        public String getBinColName() {
-            return binColName;
-        }
+    public DBReader.ColumnMap getColumnMap() {
+        return columnMap;
+    }
 
-        public String getChromoColName() {
-            return chromoColName;
-        }
+    public int getEndColIndex() {
+        return endColIndex;
+    }
 
-        public DBReader.ColumnMap getColumnMap() {
-            return columnMap;
-        }
+    public String getFormat() {
+        return format;
+    }
 
-        public int getEndColIndex() {
-            return endColIndex;
-        }
+    public String getPosEndColName() {
+        return posEndColName;
+    }
 
-        public String getFormat() {
-            return format;
-        }
+    public String getPosStartColName() {
+        return posStartColName;
+    }
 
-        public String getPosEndColName() {
-            return posEndColName;
-        }
+    public int getStartColIndex() {
+        return startColIndex;
+    }
 
-        public String getPosStartColName() {
-            return posStartColName;
-        }
+    public String getTableName() {
+        return tableName;
+    }
 
-        public int getStartColIndex() {
-            return startColIndex;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public String getBaseQuery() {
-            return baseQuery;
-        }
+    public String getBaseQuery() {
+        return baseQuery;
     }
 }

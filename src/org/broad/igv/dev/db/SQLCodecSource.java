@@ -93,7 +93,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     private static final int MAX_BINS = 20;
 
-    SQLCodecSource(DBProfileReader.DBTable table, AsciiFeatureCodec codec) {
+    SQLCodecSource(DBTable table, AsciiFeatureCodec codec) {
         this(table.getDbLocator(), table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
                 table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnMap());
         if (table.getBaseQuery() != null) {
@@ -118,7 +118,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
      * @param table
      * @return a SQLCodecSource, or null if no appropriate codec found
      */
-    public static SQLCodecSource getFromTable(DBProfileReader.DBTable table) {
+    public static SQLCodecSource getFromTable(DBTable table) {
         AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
         if (codec != null) {
             SQLCodecSource source = new SQLCodecSource(table, codec);
@@ -128,10 +128,10 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     }
 
     public static SQLCodecSource getFromProfile(String profilePath, String tableName) {
-        List<DBProfileReader.DBTable> tableList = DBProfileReader.parseProfile(profilePath);
+        List<DBTable> tableList = DBTable.parseProfile(profilePath);
 
         SQLCodecSource source = null;
-        for (DBProfileReader.DBTable table : tableList) {
+        for (DBTable table : tableList) {
             if (table.getTableName().equals(tableName)) {
                 source = SQLCodecSource.getFromTable(table);
                 break;

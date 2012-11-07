@@ -36,7 +36,7 @@ public class SQLCodecSourceTest {
         ResourceLocator locator = new ResourceLocator(url);
         String tableName = "unigene";
 
-        DBProfileReader.DBTable table = new DBProfileReader.DBTable(locator, tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null, null);
+        DBTable table = new DBTable(locator, tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null, null);
         SQLCodecSource reader = new SQLCodecSource(table, codec);
         return reader;
     }
