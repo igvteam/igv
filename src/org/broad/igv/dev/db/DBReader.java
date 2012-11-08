@@ -17,7 +17,6 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.CloseableTribbleIterator;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -35,17 +34,20 @@ public abstract class DBReader<T> {
     protected ResourceLocator locator;
     protected String tableName;
     protected String baseQueryString = "SELECT * FROM ";
-    protected ColumnMap columnMap;
+    /**
+     * Map from file column indexes to SQL column labels
+     */
+    protected Map<Integer, String> columnLabelMap;
 
-    public DBReader(ResourceLocator locator, String tableName, ColumnMap columnMap) {
+    public DBReader(ResourceLocator locator, String tableName, Map<Integer, String> columnLabelMap) {
         this.locator = locator;
         assert tableName != null;
         this.tableName = tableName;
-        this.columnMap = columnMap;
+        this.columnLabelMap = columnLabelMap;
         String colListing = "*";
-        if (this.columnMap != null) {
-            String[] colNames = new String[columnMap.columnLabelMap.size()];
-            for (Map.Entry<Integer, String> entry : columnMap.columnLabelMap.entrySet()) {
+        if (this.columnLabelMap != null) {
+            String[] colNames = new String[columnLabelMap.size()];
+            for (Map.Entry<Integer, String> entry : columnLabelMap.entrySet()) {
                 colNames[entry.getKey()] = entry.getValue();
             }
             colListing = StringUtils.join(colNames, ',');
@@ -158,65 +160,5 @@ public abstract class DBReader<T> {
     public String getTableName() {
         return tableName;
     }
-
-    protected final int getDBColumn(int fileColNum) {
-        if (this.columnMap != null) {
-            return this.columnMap.getDBColumn(fileColNum);
-        }
-        return fileColNum;
-    }
-
-    public static class ColumnMap {
-        private Map<Integer, Integer> columnIndexMap = new HashMap<Integer, Integer>();
-        private Map<Integer, String> columnLabelMap = new HashMap<Integer, String>();
-        int minFileColNum = Integer.MAX_VALUE;
-        int maxFileColNum = -1;
-
-        private void put(int fileColNum, int dbColNum) {
-            columnIndexMap.put(fileColNum, dbColNum);
-            if (dbColNum < minFileColNum) minFileColNum = fileColNum;
-            if (dbColNum > maxFileColNum) maxFileColNum = fileColNum;
-        }
-
-        void put(int fileColNum, String dbLabel) {
-            if (dbLabel != null) {
-                columnLabelMap.put(fileColNum, dbLabel);
-            }
-        }
-
-        public void labelsToIndexes(ResultSetMetaData metaData) throws SQLException {
-            for (Map.Entry<Integer, String> labelEntry : columnLabelMap.entrySet()) {
-                String label = labelEntry.getValue();
-                int index = findColumnByLabel(metaData, label);
-                if (index < 0) {
-                    throw new SQLException("Column " + label + " not found");
-                }
-                put(labelEntry.getKey(), index);
-            }
-        }
-
-        private int findColumnByLabel(ResultSetMetaData metaData, String label) throws SQLException {
-            for (int cc = 1; cc <= metaData.getColumnCount(); cc++) {
-                if (metaData.getColumnLabel(cc).equals(label)) {
-                    return cc;
-                }
-            }
-            return -1;
-        }
-
-        public int getDBColumn(int fileColNum) {
-            return columnIndexMap.get(fileColNum);
-        }
-
-        public int getMaxFileColNum() {
-            return maxFileColNum;
-        }
-
-        public int getMinFileColNum() {
-            return minFileColNum;
-        }
-
-    }
-
 
 }

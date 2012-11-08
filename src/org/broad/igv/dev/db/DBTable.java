@@ -24,7 +24,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Object representation of a single {@code table} element of
@@ -69,10 +71,10 @@ public class DBTable {
 
                 //If present, retrieve list of columns
                 NodeList columns = tableNode.getChildNodes();
-                DBReader.ColumnMap columnMap = null;
+                Map<Integer, String> columnLabelMap = null;
 
                 if (columns.getLength() > 0) {
-                    columnMap = new DBReader.ColumnMap();
+                    columnLabelMap = new HashMap<Integer, String>(columns.getLength());
 
                     for (int col = 0; col < columns.getLength(); col++) {
                         Node column = columns.item(col);
@@ -82,12 +84,12 @@ public class DBTable {
                         int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
 
                         String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
-                        columnMap.put(fileIndex, colLabel);
+                        columnLabelMap.put(fileIndex, colLabel);
                     }
                 }
 
                 DBTable table = new DBTable(dbLocator, tableName, format, binColName, chromoColName, posStartColName,
-                        posEndColName, startColIndex, endColIndex, columnMap, baseQuery);
+                        posEndColName, startColIndex, endColIndex, columnLabelMap, baseQuery);
                 tableList.add(table);
             }
 
@@ -162,12 +164,12 @@ public class DBTable {
     private final int startColIndex;
     private final int endColIndex;
 
-    private final DBReader.ColumnMap columnMap;
+    private final Map<Integer, String> columnLabelMap;
     private final String baseQuery;
 
     public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
                    String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
-                   DBReader.ColumnMap columnMap, String baseQuery) {
+                   Map<Integer, String> columnLabelMap, String baseQuery) {
         this.dbLocator = dbLocator;
         this.tableName = tableName;
         this.format = format;
@@ -177,7 +179,7 @@ public class DBTable {
         this.posEndColName = posEndColName;
         this.startColIndex = startColIndex;
         this.endColIndex = endColIndex;
-        this.columnMap = columnMap;
+        this.columnLabelMap = columnLabelMap;
         this.baseQuery = baseQuery;
     }
 
@@ -191,10 +193,6 @@ public class DBTable {
 
     public String getChromoColName() {
         return chromoColName;
-    }
-
-    public DBReader.ColumnMap getColumnMap() {
-        return columnMap;
     }
 
     public int getEndColIndex() {
@@ -223,5 +221,9 @@ public class DBTable {
 
     public String getBaseQuery() {
         return baseQuery;
+    }
+
+    public Map<Integer, String> getColumnLabelMap() {
+        return columnLabelMap;
     }
 }

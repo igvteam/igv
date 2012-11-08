@@ -95,15 +95,15 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
 
     SQLCodecSource(DBTable table, AsciiFeatureCodec codec) {
         this(table.getDbLocator(), table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
-                table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnMap());
+                table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnLabelMap());
         if (table.getBaseQuery() != null) {
             this.baseQueryString = table.getBaseQuery();
         }
     }
 
     private SQLCodecSource(ResourceLocator locator, String tableName, AsciiFeatureCodec codec,
-                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex, ColumnMap columnMap) {
-        super(locator, tableName, columnMap);
+                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex, Map<Integer, String> columnLabelMap) {
+        super(locator, tableName, columnLabelMap);
         this.codec = codec;
         this.binColName = binColName;
         this.chromoColName = chromoColName;
@@ -146,9 +146,8 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         //TODO We already know how to parse strings, so just turn everything to strings
         //TODO See IParser for better, type-safe way of handling different data sources
         String[] tokens;
-        if (columnMap != null) {
-            columnMap.labelsToIndexes(rs.getMetaData());
-            tokens = DBManager.lineToArray(rs, columnMap);
+        if (columnLabelMap != null) {
+            tokens = DBManager.lineToArray(rs, columnLabelMap);
         } else {
             tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
         }

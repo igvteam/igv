@@ -63,7 +63,7 @@ public class SQLCodecSourceTest {
         assertEquals(71, count);
     }
 
-    //Check that querying returns sorted features
+    //Check that iterating returns sorted features
     @Test
     public void testIterateBEDUnsorted() throws Exception {
         String path = "sql/Unigene.unsorted.db";

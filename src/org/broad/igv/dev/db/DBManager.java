@@ -22,6 +22,7 @@ import java.awt.*;
 import java.io.File;
 import java.sql.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
@@ -211,13 +212,28 @@ public class DBManager {
 
     }
 
-    public static String[] lineToArray(ResultSet rs, DBReader.ColumnMap columnMap) throws SQLException {
-        int colCount = columnMap.getMaxFileColNum() - columnMap.getMinFileColNum() + 1;
+    /**
+     * Convert the ResultSet into a string array, re-arranging columns according to
+     * {@code columnIndexMap}, which is a map from array indexes -> sql column indexes
+     *
+     * @param rs
+     * @param columnIndexMap
+     * @return
+     * @throws SQLException
+     */
+    public static String[] lineToArray(ResultSet rs, Map<Integer, String> columnIndexMap) throws SQLException {
+        List<Integer> arrayIndexes = new ArrayList<Integer>(columnIndexMap.keySet());
+        Collections.sort(arrayIndexes);
+        int minArrayIndex = arrayIndexes.get(0);
+        int maxArrayIndex = arrayIndexes.get(arrayIndexes.size() - 1);
+        int colCount = maxArrayIndex + 1;
         String[] tokens = new String[colCount];
 
-        for (int cc = columnMap.getMinFileColNum(); cc < columnMap.getMaxFileColNum(); cc++) {
-            int sqlCol = columnMap.getDBColumn(cc);
-            tokens[cc] = getStringFromResultSet(rs, sqlCol);
+        for (int cc = minArrayIndex; cc < maxArrayIndex; cc++) {
+            String sqlCol = columnIndexMap.get(cc);
+            if (sqlCol != null) {
+                tokens[cc] = getStringFromResultSet(rs, sqlCol);
+            }
         }
         return tokens;
     }
@@ -239,6 +255,10 @@ public class DBManager {
             tokens[cc] = getStringFromResultSet(rs, sqlCol);
         }
         return tokens;
+    }
+
+    private static String getStringFromResultSet(ResultSet rs, String columnLabel) throws SQLException {
+        return getStringFromResultSet(rs, rs.findColumn(columnLabel));
     }
 
 
