@@ -91,7 +91,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
             // Pixels per bin -- used to scale image
 
 
-
             for (int tileRow = tTop; tileRow <= tBottom; tileRow++) {
                 for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
                     ImageTile tile = getImageTile(tileRow, tileColumn, hic.getDisplayOption());
@@ -100,10 +99,47 @@ public class HeatmapPanel extends JComponent implements Serializable {
                         int pxOffset = (int) ((tile.bLeft - binLeft) * scalefactor);
                         int pyOffset = (int) ((tile.bTop - bTop) * scalefactor);
 
-                        g.drawImage(tile.image, pxOffset, pyOffset, null);
+                        if (scalefactor > 0.99 && scalefactor < 1.01) scalefactor = 1;
+                        int imageWidth = tile.image.getWidth(null);
+                        int imageHeight = tile.image.getHeight(null);
+                        int xFrom, yFrom, xTo, yTo, iw, ih;
+                        if (pxOffset < 0) {
+                            xTo = 0;
+                            xFrom = -pxOffset;
+                            iw = imageWidth - Math.abs(pxOffset);
+                        } else if (pxOffset > 0) {
+                            xTo = pxOffset;
+                            xFrom = 0;
+                            iw = Math.min(imageWidth, getWidth() - pxOffset);
+                        } else {
+                            xTo = 0;
+                            xFrom = 0;
+                            iw = Math.min(imageWidth, getWidth() - pxOffset);
+                        }
+                        if (pyOffset < 0) {
+                            yTo = 0;
+                            yFrom = -pyOffset;
+                            ih = imageHeight - Math.abs(pyOffset);
+                        } else if (pyOffset > 0) {
+                            yTo = pyOffset;
+                            yFrom = 0;
+                            ih = Math.min(imageHeight, getHeight() - pyOffset);
+                        } else {
+                            yTo = 0;
+                            yFrom = 0;
+                            ih = Math.min(imageHeight, getHeight());
+                        }
+                        if (iw <= 0 || ih <= 0) continue;
 
+
+                        g.drawImage(tile.image,
+                                xTo, yTo, xTo + iw, yTo + ih,
+                                xFrom, yFrom, xFrom + iw, yFrom + ih,
+                                null);
                         // Uncomment to see image boundaries (for debugging)
-                        //g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
+                        g.drawRect(pxOffset, pyOffset, imageWidth, imageHeight);
+
+
                     }
 
                 }
@@ -178,13 +214,13 @@ public class HeatmapPanel extends JComponent implements Serializable {
     /**
      * Return the specified image tile, scaled by scaleFactor
      *
-     * @param tileColumn  column index of tile
-     * @param tileRow     row index of tile
+     * @param tileColumn column index of tile
+     * @param tileRow    row index of tile
      * @return
      */
     private ImageTile getImageTile(int tileRow, int tileColumn, MainWindow.DisplayOption displayOption) {
 
-        String key = "_" + tileRow + "_" + tileColumn  + "_ " + displayOption;
+        String key = "_" + tileRow + "_" + tileColumn + "_ " + displayOption;
         ImageTile tile = tileCache.get(key);
 
         if (tile == null) {
@@ -205,8 +241,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
             final int by0 = tileRow * imageTileWidth;
             renderer.render(bx0, by0, imageWidth, imageHeight, hic.zd, displayOption, g2D);
 
- //           if (scaleFactor > 0.999 && scaleFactor < 1.001) {
-                tile = new ImageTile(image, bx0, by0);
+            //           if (scaleFactor > 0.999 && scaleFactor < 1.001) {
+            tile = new ImageTile(image, bx0, by0);
 //            } else {
 //                int scaledWidth = (int) (scaleFactor * imageWidth);
 //                int scaledHeight = (int) (scaleFactor * imageHeight);
@@ -269,8 +305,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
 
-                int binX =    hic.xContext.getBinOrigin() + (int) (zoomRectangle.x / hic.xContext.getScaleFactor());
-                int binY =    hic.yContext.getBinOrigin() + (int) (zoomRectangle.y / hic.yContext.getScaleFactor());
+                int binX = hic.xContext.getBinOrigin() + (int) (zoomRectangle.x / hic.xContext.getScaleFactor());
+                int binY = hic.yContext.getBinOrigin() + (int) (zoomRectangle.y / hic.yContext.getScaleFactor());
                 int wBins = (int) (zoomRectangle.width / hic.xContext.getScaleFactor());
                 int hBins = (int) (zoomRectangle.height / hic.xContext.getScaleFactor());
 
@@ -314,7 +350,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int deltaY = e.getY() - lastMousePoint.y;
             switch (dragMode) {
                 case ZOOM:
-                     Rectangle lastRectangle = zoomRectangle;
+                    Rectangle lastRectangle = zoomRectangle;
 
                     if (deltaX == 0 || deltaY == 0) {
                         return;
@@ -356,7 +392,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseClicked(MouseEvent e) {
 
-            if(hic == null) return;
+            if (hic == null) return;
 
             if (!e.isPopupTrigger()) {
 
