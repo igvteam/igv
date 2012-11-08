@@ -36,7 +36,16 @@ public class CompressionUtils {
 
     private static Logger log = Logger.getLogger(CompressionUtils.class);
 
-    public static byte[] decompress(byte[] data) {
+    private Deflater deflater;
+    private Inflater decompressor;
+
+    public CompressionUtils() {
+        decompressor = new Inflater();
+        deflater = new Deflater();
+        deflater.setLevel(Deflater.DEFAULT_COMPRESSION);
+    }
+
+    public byte[] decompress(byte[] data) {
         return decompress(data, data.length * 4);
     }
 
@@ -45,7 +54,7 @@ public class CompressionUtils {
      * @param uncompressedChunkSize -- an estimate of the uncompressed chunk size.  This need not be exact.
      * @return
      */
-    public static byte[] decompress(byte[] data, int uncompressedChunkSize) {
+    public synchronized byte[] decompress(byte[] data, int uncompressedChunkSize) {
 
         // mpd: new code
         int rem = data.length;
@@ -56,7 +65,7 @@ public class CompressionUtils {
         // Decompress the data
         byte[] outbuf = new byte[uncompressedChunkSize];
 
-        Inflater decompressor = new Inflater();
+        decompressor.reset();
         decompressor.setInput(data);
         while (rem > 0) {
 
@@ -88,13 +97,12 @@ public class CompressionUtils {
     }
 
 
-    public static byte[] compress(byte[] data) {
-        Deflater compressor = new Deflater();
-        compressor.setLevel(Deflater.DEFAULT_COMPRESSION);
+    public synchronized byte[] compress(byte[] data) {
 
         // Give the compressor the data to compress
-        compressor.setInput(data);
-        compressor.finish();
+        deflater.reset();
+        deflater.setInput(data);
+        deflater.finish();
 
         // Create an expandable byte array to hold the compressed data.
         // You cannot use an array that's the same size as the orginal because
@@ -104,23 +112,23 @@ public class CompressionUtils {
 
         // Compress the data
         byte[] buf = new byte[1024];
-        while (!compressor.finished()) {
-            int count = compressor.deflate(buf);
+        while (!deflater.finished()) {
+            int count = deflater.deflate(buf);
             bos.write(buf, 0, count);
         }
         try {
             bos.close();
         } catch (IOException e) {
-            log.error("Error clossing ByteArrayOutputStream", e);
+            System.err.println("Error clossing ByteArrayOutputStream");
+            e.printStackTrace();
         }
-
 
         byte[] compressedData = bos.toByteArray();
         return compressedData;
 
     }
 
-    public static byte[] compress(byte[] data, int chunkSize) {
+    public synchronized byte[] compress(byte[] data, int chunkSize) {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream(data.length);
 

@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
  */
 public class CompressionUtilsTest {
 
+    CompressionUtils compressionUtils = new CompressionUtils();
 
     @Test
     public void testCompression() {
@@ -32,8 +33,8 @@ public class CompressionUtilsTest {
             uncompressedBytes[i] = (byte) (Math.sin(i) * 100);
         }
 
-        byte[] compressedBytes = CompressionUtils.compress(uncompressedBytes);
-        byte[] result = CompressionUtils.decompress(compressedBytes);
+        byte[] compressedBytes = compressionUtils.compress(uncompressedBytes);
+        byte[] result = compressionUtils.decompress(compressedBytes);
 
         assertEquals(uncompressedBytes.length, result.length);
         for (int i = 0; i < result.length; i++) {
@@ -51,17 +52,17 @@ public class CompressionUtilsTest {
 
         // Compress the data in 32k chunks
         int chunkSize = 32000;
-        byte[] compressedBytes = CompressionUtils.compress(uncompressedBytes, chunkSize);
+        byte[] compressedBytes = compressionUtils.compress(uncompressedBytes, chunkSize);
 
         // Decompress.  Pass an incorrect chunk size (too small), it should still decompress correctly
-        byte[] result = CompressionUtils.decompress(compressedBytes, chunkSize - 1000);
+        byte[] result = compressionUtils.decompress(compressedBytes, chunkSize - 1000);
         assertEquals(uncompressedBytes.length, result.length);
         for (int i = 0; i < result.length; i++) {
             assertEquals(uncompressedBytes[i], result[i]);
         }
 
         // Decompress.  Pass an incorrect chunk size (too large), it should still decompress correctly
-        result = CompressionUtils.decompress(compressedBytes, chunkSize + 1000);
+        result = compressionUtils.decompress(compressedBytes, chunkSize + 1000);
         assertEquals(uncompressedBytes.length, result.length);
         for (int i = 0; i < result.length; i++) {
             assertEquals(uncompressedBytes[i], result[i]);

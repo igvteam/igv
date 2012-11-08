@@ -36,6 +36,7 @@ public class DatasetReaderV1 implements DatasetReader {
     private int version = -1;
 
     private Map<String, int[]> fragmentSitesMap;
+    private final CompressionUtils compressionUtils;
 
     public DatasetReaderV1(String path) throws IOException {
         this.path = path;
@@ -47,6 +48,7 @@ public class DatasetReaderV1 implements DatasetReader {
         }
 
         fragmentSitesMap = readFragmentSites();
+        compressionUtils = new CompressionUtils();
     }
 
     @Override
@@ -208,7 +210,7 @@ public class DatasetReaderV1 implements DatasetReader {
         stream.seek(idx.position);
         stream.readFully(compressedBytes);
 
-        byte[] buffer = CompressionUtils.decompress(compressedBytes);
+        byte[] buffer = compressionUtils.decompress(compressedBytes);
         LittleEndianInputStream dis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
 
         int nRecords = dis.readInt();

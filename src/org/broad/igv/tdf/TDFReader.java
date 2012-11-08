@@ -59,6 +59,7 @@ public class TDFReader {
     boolean compressed = false;
 
     Set<String> chrNames;
+    private final CompressionUtils compressionUtils;
 
     //private String path;
 
@@ -81,6 +82,7 @@ public class TDFReader {
             log.error("Error loading file: " + locator.getPath(), ex);
             throw new DataLoadException("Error loading file: " + ex.toString(), locator.getPath());
         }
+        compressionUtils = new CompressionUtils();
     }
 
     public void close() {
@@ -314,7 +316,7 @@ public class TDFReader {
             //readFully(buffer);
             byte[] buffer = readBytes(position, nBytes);
             if (compressed) {
-                buffer = CompressionUtils.decompress(buffer);
+                buffer = compressionUtils.decompress(buffer);
 
             }
 

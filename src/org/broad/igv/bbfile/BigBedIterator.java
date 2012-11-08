@@ -19,6 +19,7 @@
 package org.broad.igv.bbfile;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.IOException;
@@ -49,6 +50,8 @@ public class BigBedIterator implements Iterator<BedFeature> {
     List<BedFeature> features;
     int currentIdx = 0;
 
+    CompressionUtils compressionUtils;
+
     /**
      * Constructor for a BigBed iterator over the specified chromosome region
      * <p/>
@@ -66,11 +69,13 @@ public class BigBedIterator implements Iterator<BedFeature> {
      * else return any intersecting region features
      */
     public BigBedIterator(String path, BPTree chromIDTree, RPTree chromDataTree,
-                          RPChromosomeRegion selectionRegion, boolean contained){
+                          RPChromosomeRegion selectionRegion, boolean contained, CompressionUtils compressionUtils){
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: BigBedIterator selection region is null\n");
+
+        this.compressionUtils = compressionUtils;
 
         this.chromIDTree = chromIDTree;
         this.chromDataTree = chromDataTree;
@@ -155,7 +160,7 @@ public class BigBedIterator implements Iterator<BedFeature> {
 
         // decompress leaf item data block for feature extraction
         BigBedDataBlock bedDataBlock = new BigBedDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh,
-                uncompressBufSize);
+                uncompressBufSize, compressionUtils);
 
         // get data block Bed feature list and set next index to first item
         return bedDataBlock.getBedData(selectionRegion, contained);

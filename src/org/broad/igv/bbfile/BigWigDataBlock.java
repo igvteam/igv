@@ -70,7 +70,8 @@ public class BigWigDataBlock {
     *
     * */
     public BigWigDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-            HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize){
+            HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize,
+            CompressionUtils compressionUtils){
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
         this.isLowToHigh = isLowToHigh;
@@ -87,7 +88,7 @@ public class BigWigDataBlock {
             // decompress if necessary - the buffer size is 0 for uncompressed data
             // Note:  BBFile Table C specifies a decompression buffer size
             if(uncompressBufSize > 0)
-                wigBuffer = CompressionUtils.decompress(buffer, uncompressBufSize);
+                wigBuffer = compressionUtils.decompress(buffer, uncompressBufSize);
             else
                 wigBuffer = buffer;    // use uncompressed read buffer directly
         }catch(IOException ex) {

@@ -28,6 +28,7 @@ public class DatasetReaderV2 implements DatasetReader {
     private Dataset dataset = null;
     private int version = -1;
     private Map<String,int[]> fragmentSitesMap;
+    private final CompressionUtils compressionUtils;
 
     public DatasetReaderV2(String path) throws IOException {
         this.path = path;
@@ -36,6 +37,7 @@ public class DatasetReaderV2 implements DatasetReader {
             masterIndex = new HashMap<String, Preprocessor.IndexEntry>();
             dataset = new Dataset(this);
         }
+        compressionUtils = new CompressionUtils();
     }
 
     public static String getMagicString(String path) throws IOException {
@@ -236,7 +238,7 @@ public class DatasetReaderV2 implements DatasetReader {
         stream.seek(idx.position);
         stream.readFully(compressedBytes);
 
-        byte[] buffer = CompressionUtils.decompress(compressedBytes);
+        byte[] buffer = compressionUtils.decompress(compressedBytes);
         LittleEndianInputStream dis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
 
         int nRecords = dis.readInt();

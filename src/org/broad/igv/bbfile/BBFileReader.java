@@ -25,6 +25,7 @@
  */
 package org.broad.igv.bbfile;
 
+import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.*;
 import org.apache.log4j.Logger;
 
@@ -117,6 +118,8 @@ public class BBFileReader {
     private RPTree chromosomeDataTree;     // Container for the mChromosome data R+ tree
     private String autoSql;
 
+    CompressionUtils compressionUtils;
+
     static SeekableStream getStream(String path) throws IOException{
         return new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path), 128000);
     }
@@ -125,6 +128,8 @@ public class BBFileReader {
 
 
         log.debug("Opening BBFile source  " + path);
+
+        compressionUtils = new CompressionUtils();
 
         // read in file header
         fileOffset = BBFILE_HEADER_OFFSET;
@@ -327,7 +332,7 @@ public class BBFileReader {
         // compose an iterator
         BigBedIterator bedIterator;
         bedIterator = new BigBedIterator(path, chromosomeIDTree, chromosomeDataTree,
-                selectionRegion, contained);
+                selectionRegion, contained, compressionUtils);
 
         return bedIterator;
     }
@@ -369,7 +374,7 @@ public class BBFileReader {
 
         BigWigIterator wigIterator;
         wigIterator = new BigWigIterator(path, chromosomeIDTree, chromosomeDataTree,
-                selectionRegion, contained);
+                selectionRegion, contained, compressionUtils);
 
         return wigIterator;
     }
@@ -414,7 +419,7 @@ public class BBFileReader {
         ZoomLevelIterator zoomIterator;
         try {
             zoomIterator = new ZoomLevelIterator(getStream(path), chromosomeIDTree,
-                    zoomDataTree, zoomLevel, selectionRegion, contained);
+                    zoomDataTree, zoomLevel, selectionRegion, contained, compressionUtils);
         } catch (IOException e) {
             log.error(e);
             throw new RuntimeException(e);

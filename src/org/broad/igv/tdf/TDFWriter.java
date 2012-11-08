@@ -56,6 +56,7 @@ public class TDFWriter {
     Map<String, IndexEntry> groupIndex = new LinkedHashMap();
     long indexPositionPosition;
     boolean compressed;
+    private final CompressionUtils compressionUtils;
 
     public TDFWriter(File f,
                      String genomeId,
@@ -84,6 +85,7 @@ public class TDFWriter {
             throw new DataLoadException("Error creating file", file.getAbsolutePath());
         }
 
+        compressionUtils = new CompressionUtils();
     }
 
     private void writeHeader(String genomeId,
@@ -238,7 +240,7 @@ public class TDFWriter {
 
             byte[] bytes = buffer.getBytes();
             if (compressed) {
-                bytes = CompressionUtils.compress(bytes);
+                bytes = compressionUtils.compress(bytes);
             }
 
             write(bytes);

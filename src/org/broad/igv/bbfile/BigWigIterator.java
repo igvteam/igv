@@ -18,6 +18,7 @@
 
 package org.broad.igv.bbfile;
 
+import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.SeekableStream;
 import org.apache.log4j.Logger;
 
@@ -62,6 +63,8 @@ public class BigWigIterator implements Iterator<WigItem> {
     private ArrayList<WigItem> wigItemList; // array of selected Wig values
     private int wigItemIndex;      // index of next Wig data item from the list
 
+    CompressionUtils compressionUtils;
+
     /**
      * Constructor for a BigWig iterator over the specified chromosome region
      * <p/>
@@ -79,12 +82,13 @@ public class BigWigIterator implements Iterator<WigItem> {
      * else return any intersecting region values
      */
     public BigWigIterator(String path, BPTree chromIDTree, RPTree chromDataTree,
-                          RPChromosomeRegion selectionRegion, boolean contained) {
+                          RPChromosomeRegion selectionRegion, boolean contained, CompressionUtils compressionUtils) {
 
         // check for valid selection region
         if (selectionRegion == null)
             throw new RuntimeException("Error: BigWigIterator selection region is null\n");
 
+        this.compressionUtils = compressionUtils;
         this.path = path;
         this.chromIDTree = chromIDTree;
         this.chromDataTree = chromDataTree;
@@ -365,7 +369,7 @@ public class BigWigIterator implements Iterator<WigItem> {
         SeekableStream fis = null;
         try {
             fis = BBFileReader.getStream(path);
-            wigDataBlock = new BigWigDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh, uncompressBufSize);
+            wigDataBlock = new BigWigDataBlock(fis, leafHitItem, chromosomeMap, isLowToHigh, uncompressBufSize, compressionUtils);
         } catch (IOException e) {
             log.error(e);
             throw new RuntimeException(e);

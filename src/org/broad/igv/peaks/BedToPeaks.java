@@ -36,6 +36,11 @@ import java.util.*;
 public class BedToPeaks {
     private static Map<String, String> colorMap;
     static int[] allTimes = {0, 30, 60, 120};
+    private static CompressionUtils compressionUtils;
+
+    public BedToPeaks() {
+        compressionUtils = new CompressionUtils();
+    }
 
     public static void main(String[] args) throws IOException {
 
@@ -152,7 +157,7 @@ public class BedToPeaks {
                         records.clear();
 
                         byte[] bytes = buffer.getBytes();
-                        bytes = CompressionUtils.compress(bytes);
+                        bytes = compressionUtils.compress(bytes);
                         peakWriter.writeInt(bytes.length);
                         peakWriter.write(bytes);
                     }

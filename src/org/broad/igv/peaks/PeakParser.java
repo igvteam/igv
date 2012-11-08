@@ -46,10 +46,12 @@ public class PeakParser {
     int[] times;
     String signalsPath;
     String[] timeSignalsPath;
+    private final CompressionUtils compressionUtils;
 
     public PeakParser(String path) throws IOException {
         this.path = path;
         loadHeader();
+        compressionUtils = new CompressionUtils();
     }
 
     private void loadHeader() throws IOException {
@@ -117,7 +119,7 @@ public class PeakParser {
                 byte[] compressedBytes = new byte[nBytes];
                 bufferedStream.readFully(compressedBytes);
 
-                byte[] bytes = CompressionUtils.decompress(compressedBytes);
+                byte[] bytes = compressionUtils.decompress(compressedBytes);
 
                 ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                 reader = new LittleEndianInputStream(bis);

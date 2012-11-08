@@ -77,7 +77,9 @@ public class ZoomDataBlock {
     * */
 
     public ZoomDataBlock(int zoomLevel, SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-                         HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
+                         HashMap<Integer, String> chromosomeMap,
+                         boolean isLowToHigh, int uncompressBufSize,
+                         CompressionUtils compressionUtils) {
 
         this.zoomLevel = zoomLevel;
         this.leafHitItem = leafHitItem;
@@ -95,10 +97,13 @@ public class ZoomDataBlock {
 
             // decompress if necessary - the buffer size is 0 for uncomressed data
             // Note:  BBFile Table C specifies a decompression buffer size
-            if (uncompressBufSize > 0)
-                zoomBuffer = CompressionUtils.decompress(buffer, uncompressBufSize);
-            else
+            if (uncompressBufSize > 0)   {
+
+                zoomBuffer = compressionUtils.decompress(buffer, uncompressBufSize);
+            }
+            else {
                 zoomBuffer = buffer;    // use uncompressed read buffer directly
+            }
 
         } catch (IOException ex) {
             log.error("Error reading Zoom level " + this.zoomLevel + " data for leaf item ",  ex);

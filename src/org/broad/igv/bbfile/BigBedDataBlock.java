@@ -76,7 +76,8 @@ public class BigBedDataBlock {
     *       uncompressBufSize - byte size for decompression buffer; else 0 for uncompressed
     * */
     public BigBedDataBlock(SeekableStream fis, RPTreeLeafNodeItem leafHitItem,
-                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize) {
+                           HashMap<Integer, String> chromosomeMap, boolean isLowToHigh, int uncompressBufSize,
+                           CompressionUtils compressionUtils) {
 
         this.leafHitItem = leafHitItem;
         this.chromosomeMap = chromosomeMap;
@@ -95,7 +96,7 @@ public class BigBedDataBlock {
             // decompress if necessary - the buffer size is 0 for uncompressed data
             // Note:  BBFile Table C specifies a decompression buffer size
             if (uncompressBufSize > 0)
-                bedBuffer = CompressionUtils.decompress(buffer, uncompressBufSize);
+                bedBuffer = compressionUtils.decompress(buffer, uncompressBufSize);
             else
                 bedBuffer = buffer;    // use uncompressed read buffer directly
 
