@@ -165,10 +165,9 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         if (queryStatement != null) {
             return;
         }
-        //Include feature iff = (feature.start >= start AND feature.start < end)
-        //OR (feature.start < start AND feature.end >= start);
-        String queryString = String.format("%s WHERE %s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?) )",
-                baseQueryString, chromoColName, posStartColName, posStartColName, posStartColName, posEndColName);
+        String prependWord = baseQueryString.contains("WHERE") ? " AND " : " WHERE ";
+        String queryString = baseQueryString + prependWord + String.format("%s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?) )",
+                chromoColName, posStartColName, posStartColName, posStartColName, posEndColName);
         String orderClause = "ORDER BY " + posStartColName;
 
         try {

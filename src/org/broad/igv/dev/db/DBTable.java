@@ -19,7 +19,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXParseException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -83,16 +82,6 @@ public class DBTable {
                         int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
 
                         String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
-                        String colIndexStr = Utilities.getNullSafe(colAttr, "colIndex");
-
-                        if (colLabel == null && colIndexStr == null) {
-                            String msg = String.format("Error parsing column %d of %s", col, tableName);
-                            msg += "colName and colIndex both null, at least 1 must be specified.";
-                            throw new SAXParseException(msg, null);
-                        } else if (colIndexStr != null) {
-                            int colIndex = Integer.parseInt(colIndexStr);
-                            columnMap.put(fileIndex, colIndex);
-                        }
                         columnMap.put(fileIndex, colLabel);
                     }
                 }

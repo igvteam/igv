@@ -97,7 +97,8 @@ public class SQLCodecSourceTest {
         Assert.assertEquals(72, count);
     }
 
-    @Test
+    //Don't support reordering by index
+    //@Test
     public void testLoadReorderedColumnsIndex() throws Exception {
         String profilePath = TestUtils.DATA_DIR + "sql/unsorted.colsreordered.byindex.dbxml";
         tstLoadReorderedColumns(profilePath);

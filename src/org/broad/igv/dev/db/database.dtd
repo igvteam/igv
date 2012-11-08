@@ -44,12 +44,15 @@ baseQuery
     If not supplied, the constructed SQL is of form (for range-based querying)
        SELECT * FROM <tableName> WHERE <chromoColName> = <current chromosome> ...
     If supplied, the query will be
-       <baseQuery> WHERE <chromoColName> = <current chromosome> ...
+       <baseQuery> <AND or WHERE> <chromoColName> = <current chromosome> ...
 
     So the tableName is completely overridden
     Certain file types, such as sample information, are limited
     and the entire file is normally loaded. In this case, when loading
     from a database, the entire table is loaded, using only <baseQuery>
+
+    The baseQuery may have a where clause, in which case further where
+    clauses may be added with an "AND" for querying by position.
 name
     Exact name of the table
 description
@@ -112,10 +115,10 @@ colName is used.
 
 fileIndex:
     The (0-based) column number.
-colName:
-    Name of the column in the SQL database
-colIndex:
-    Index of the column in the SQL database
+colLabel:
+    Label of the column in the SQL database. If using a custom query this can be different
+    than the column name. For instance, SELECT start AS beginning would have a name of `start`
+    and label of `beginning`.
 name:
     Human-readable name of column. Not used, just for readability
 description:
@@ -123,15 +126,14 @@ description:
 
 
 Possible example for BED file:
-<column fileIndex=0, colName="Chromosome"/>
-<column fileIndex=1, colIndex=4/>
-<column fileIndex=2, colName="end"/>
+<column fileIndex=0, colLabel="Chromosome"/>
+<column fileIndex=1, colLabel="start"/>
+<column fileIndex=2, colLabel="end"/>
 -->
 <!ELEMENT column EMPTY>
 <!ATTLIST column
     fileIndex CDATA #REQUIRED
-    colLabel CDATA #IMPLIED
-    colIndex CDATA #IMPLIED
+    colLabel CDATA #REQUIRED
     name CDATA #IMPLIED
     description CDATA #IMPLIED>
 

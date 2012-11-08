@@ -11,6 +11,7 @@
 
 package org.broad.igv.dev.db;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.CloseableTribbleIterator;
@@ -40,10 +41,16 @@ public abstract class DBReader<T> {
         this.locator = locator;
         assert tableName != null;
         this.tableName = tableName;
-        baseQueryString += tableName;
         this.columnMap = columnMap;
-
-
+        String colListing = "*";
+        if (this.columnMap != null) {
+            String[] colNames = new String[columnMap.columnLabelMap.size()];
+            for (Map.Entry<Integer, String> entry : columnMap.columnLabelMap.entrySet()) {
+                colNames[entry.getKey()] = entry.getValue();
+            }
+            colListing = StringUtils.join(colNames, ',');
+        }
+        this.baseQueryString = String.format("SELECT %s FROM %s", colListing, this.tableName);
     }
 
     protected ResultSet loadResultSet(String queryString) {
@@ -165,7 +172,7 @@ public abstract class DBReader<T> {
         int minFileColNum = Integer.MAX_VALUE;
         int maxFileColNum = -1;
 
-        void put(int fileColNum, int dbColNum) {
+        private void put(int fileColNum, int dbColNum) {
             columnIndexMap.put(fileColNum, dbColNum);
             if (dbColNum < minFileColNum) minFileColNum = fileColNum;
             if (dbColNum > maxFileColNum) maxFileColNum = fileColNum;
