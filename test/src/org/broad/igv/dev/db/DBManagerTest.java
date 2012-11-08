@@ -14,6 +14,7 @@ package org.broad.igv.dev.db;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,6 +31,12 @@ import static junit.framework.Assert.assertFalse;
  * Date: 2012/05/29
  */
 public class DBManagerTest extends AbstractHeadlessTest {
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        DBManager.shutdown();
+    }
 
     static ResultSet getAllFromSQLTable(String path, String table) throws Exception {
         File dataDir = new File(TestUtils.DATA_DIR);
@@ -48,6 +55,7 @@ public class DBManagerTest extends AbstractHeadlessTest {
         ResultSet rs = getAllFromSQLTable(path, "unigene");
 
         assertEquals(12, rs.getMetaData().getColumnCount());
+        rs.close();
     }
 
     @Test

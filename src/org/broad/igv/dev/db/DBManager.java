@@ -127,7 +127,7 @@ public class DBManager {
                 try {
                     conn.close();
                 } catch (SQLException e) {
-
+                    log.error("Error shutting down " + conn.toString(), e);
                 }
             }
         }
