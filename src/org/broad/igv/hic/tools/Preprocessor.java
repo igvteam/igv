@@ -882,8 +882,6 @@ public class Preprocessor {
             e.printStackTrace();
         }
 
-        compressor.end();
-
         byte[] compressedData = bos.toByteArray();
         return compressedData;
     }
