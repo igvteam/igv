@@ -31,7 +31,7 @@ public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet
     private Genome genome;
 
     public SegmentedSQLReader(ResourceLocator locator, String tableName, Genome genome) {
-        super(locator, tableName);
+        super(locator, tableName, null);
         this.genome = genome;
     }
 

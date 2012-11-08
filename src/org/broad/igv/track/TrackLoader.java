@@ -1053,7 +1053,7 @@ public class TrackLoader {
                 newTracks.add(track);
             } else if (table.getFormat().equals("seg")) {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                SegmentedAsciiDataSet ds = (new SegmentedReader(table.getDbLocator(), genome)).loadFromDB(table.getTableName());
+                SegmentedAsciiDataSet ds = (new SegmentedReader(table.getDbLocator(), genome)).loadFromDB(table);
                 loadSegTrack(table.getDbLocator(), newTracks, genome, ds);
 
             } else if (table.getFormat().equals("sample.info")) {
@@ -1063,7 +1063,7 @@ public class TrackLoader {
                 if (sampleIdColumnLabel == null) {
                     throw new IllegalArgumentException("Profile must have binColName specifying the sample id column label");
                 }
-                (new SampleInfoSQLReader(table.getDbLocator(), table.getTableName(), sampleIdColumnLabel)).load();
+                (new SampleInfoSQLReader(table, sampleIdColumnLabel)).load();
             }
         }
 

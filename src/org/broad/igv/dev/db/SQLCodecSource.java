@@ -17,7 +17,6 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.FeatureSource;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
@@ -37,7 +36,7 @@ import java.util.*;
  * @author Jacob Silterra
  * @date 29 May 2012
  */
-public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
+public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSource {
 
     private static Logger log = Logger.getLogger(SQLCodecSource.class);
 
@@ -94,23 +93,14 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     private static final int MAX_BINS = 20;
 
     SQLCodecSource(DBTable table, AsciiFeatureCodec codec) {
-        this(table.getDbLocator(), table.getTableName(), codec, table.getBinColName(), table.getChromoColName(), table.getPosStartColName(),
-                table.getPosEndColName(), table.getStartColIndex(), table.getEndColIndex(), table.getColumnLabelMap());
-        if (table.getBaseQuery() != null) {
-            this.baseQueryString = table.getBaseQuery();
-        }
-    }
-
-    private SQLCodecSource(ResourceLocator locator, String tableName, AsciiFeatureCodec codec,
-                           String binColName, String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex, Map<Integer, String> columnLabelMap) {
-        super(locator, tableName, columnLabelMap);
+        super(table);
         this.codec = codec;
-        this.binColName = binColName;
-        this.chromoColName = chromoColName;
-        this.posStartColName = posStartColName;
-        this.posEndColName = posEndColName;
-        this.startColIndex = startColIndex;
-        this.endColIndex = endColIndex;
+        this.binColName = table.getBinColName();
+        this.chromoColName = table.getChromoColName();
+        this.posStartColName = table.getPosStartColName();
+        this.posEndColName = table.getPosEndColName();
+        this.startColIndex = table.getStartColIndex();
+        this.endColIndex = table.getEndColIndex();
     }
 
 
@@ -146,8 +136,8 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
         //TODO We already know how to parse strings, so just turn everything to strings
         //TODO See IParser for better, type-safe way of handling different data sources
         String[] tokens;
-        if (columnLabelMap != null) {
-            tokens = DBManager.lineToArray(rs, columnLabelMap);
+        if (table.getColumnLabelMap() != null) {
+            tokens = DBManager.lineToArray(rs, table.getColumnLabelMap());
         } else {
             tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
         }
@@ -323,7 +313,7 @@ public class SQLCodecSource extends DBReader<Feature> implements FeatureSource {
     }
 
     public List<String> getSequenceNames() {
-        String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, tableName);
+        String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, this.getTableName());
 
         ResultSet results = loadResultSet(queryString);
         List<String> names = new ArrayList<String>();

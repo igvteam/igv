@@ -18,6 +18,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * Retrieve value from a SQL line. Note that all input {@code index}
+ * values should be 0-based, NOT the SQL standard 1-based
  * User: jacob
  * Date: 2012-Aug-30
  *
@@ -29,7 +31,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final byte getByte(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getByte(index);
+            return rs.getByte(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }
@@ -38,7 +40,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final short getShort(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getShort(index);
+            return rs.getShort(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }
@@ -47,7 +49,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final int getInt(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getInt(index);
+            return rs.getInt(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }
@@ -56,7 +58,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final double getDouble(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getDouble(index);
+            return rs.getDouble(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }
@@ -65,7 +67,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final float getFloat(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getFloat(index);
+            return rs.getFloat(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }
@@ -74,7 +76,7 @@ public class SQLLineParserByIndex implements IParser<ResultSet, Integer> {
     @Override
     public final String getString(ResultSet rs, Integer index) throws ParserException {
         try {
-            return rs.getString(index);
+            return rs.getString(index + 1);
         } catch (SQLException e) {
             throw new ParserException(e.getMessage(), -1);
         }

@@ -29,8 +29,13 @@ public class SampleInfoSQLReader extends WholeTableDBReader<Void> {
 
     String sampleColumn; // = "SAMPLE_ID_ARRAY";
 
+    public SampleInfoSQLReader(DBTable table, String sampleColumn) {
+        super(table);
+        this.sampleColumn = sampleColumn;
+    }
+
     public SampleInfoSQLReader(ResourceLocator locator, String tableName, String sampleColumn) {
-        super(locator, tableName);
+        super(locator, tableName, null);
         this.sampleColumn = sampleColumn;
     }
 

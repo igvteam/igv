@@ -192,14 +192,14 @@ public class DBManager {
             try {
                 rs.close();
             } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
         if (st != null) {
             try {
                 st.close();
             } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
         if (conn != null) {

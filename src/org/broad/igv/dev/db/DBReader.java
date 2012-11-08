@@ -14,45 +14,58 @@ package org.broad.igv.dev.db;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.CloseableTribbleIterator;
 
-import java.sql.*;
-import java.util.Iterator;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
- * Class for reading only portions of a table (queries) repeatedly.
- * The connection is NOT closed between queries.
+ * General class for reading from a SQL Database.
+ * Each instance is attached to a specific database, table, and
+ * configuration of columns.
  *
  * @author Jacob Silterra
  * @date 2012/05/30
  */
-public abstract class DBReader<T> {
+public class DBReader {
 
     private static Logger log = Logger.getLogger(DBReader.class);
 
     protected ResourceLocator locator;
-    protected String tableName;
-    protected String baseQueryString = "SELECT * FROM ";
-    /**
-     * Map from file column indexes to SQL column labels
-     */
-    protected Map<Integer, String> columnLabelMap;
+    protected String baseQueryString;
+    private String tableName;
 
-    public DBReader(ResourceLocator locator, String tableName, Map<Integer, String> columnLabelMap) {
-        this.locator = locator;
-        assert tableName != null;
-        this.tableName = tableName;
-        this.columnLabelMap = columnLabelMap;
+    public static String buildBaseQueryString(String tableName, Map<Integer, String> columnLabelMap) {
         String colListing = "*";
-        if (this.columnLabelMap != null) {
+        if (columnLabelMap != null) {
             String[] colNames = new String[columnLabelMap.size()];
             for (Map.Entry<Integer, String> entry : columnLabelMap.entrySet()) {
                 colNames[entry.getKey()] = entry.getValue();
             }
             colListing = StringUtils.join(colNames, ',');
         }
-        this.baseQueryString = String.format("SELECT %s FROM %s", colListing, this.tableName);
+        return String.format("SELECT %s FROM %s", colListing, tableName);
+    }
+
+    public DBReader(DBTable table) {
+        this(table.getDbLocator(), table.getTableName(), table.getBaseQuery());
+    }
+
+    /**
+     * @param locator
+     * @param tableName
+     * @param baseQueryString Can be null, in which case all columns from {@code tableName} are selected
+     */
+    public DBReader(ResourceLocator locator, String tableName, String baseQueryString) {
+        this.locator = locator;
+        assert tableName != null;
+        this.tableName = tableName;
+        this.baseQueryString = baseQueryString;
+        if (baseQueryString == null) {
+            this.baseQueryString = buildBaseQueryString(this.tableName, null);
+        }
     }
 
     protected ResultSet loadResultSet(String queryString) {
@@ -67,93 +80,6 @@ public abstract class DBReader<T> {
         } catch (SQLException e) {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
-        }
-    }
-
-    protected CloseableTribbleIterator loadIterator(PreparedStatement st) {
-        try {
-            ResultSet rs = st.executeQuery();
-
-            return new ResultIterator(rs, false);
-
-        } catch (SQLException e) {
-            log.error("Database error", e);
-            throw new RuntimeException("Database error", e);
-        }
-    }
-
-    protected CloseableTribbleIterator loadIterator(String queryString) {
-        return new ResultIterator(loadResultSet(queryString));
-    }
-
-    protected abstract T processResult(ResultSet rs) throws SQLException;
-
-    private class ResultIterator implements CloseableTribbleIterator {
-
-        private ResultSet rs;
-        /**
-         * Whether the statement will be closed when iteration
-         * is complete. The ResultSet is always closed
-         */
-        private boolean closeStatement;
-
-        private boolean hasNext;
-        private T next;
-
-        public ResultIterator(ResultSet rs) {
-            this(rs, true);
-        }
-
-        public ResultIterator(ResultSet rs, boolean closeStatement) {
-            this.rs = rs;
-            this.closeStatement = closeStatement;
-            try {
-                hasNext = rs.next();
-            } catch (SQLException e) {
-                log.error("Database error", e);
-                throw new RuntimeException("Database error", e);
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return hasNext;
-        }
-
-        @Override
-        public T next() {
-            try {
-                next = processResult(rs);
-                hasNext = rs.next();
-                if (!hasNext) {
-                    DBManager.closeResources(rs, closeStatement ? rs.getStatement() : null, null);
-                }
-
-                return next;
-            } catch (SQLException e) {
-                log.error(e);
-                throw new RuntimeException("Error processing SQL Results: " + e);
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Cannot remove");
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return this;
-        }
-
-        @Override
-        public void close() {
-            try {
-                DBManager.closeResources(rs, rs.getStatement(), null);
-            } catch (SQLException e) {
-                log.error(e);
-                throw new RuntimeException(e);
-            }
         }
     }
 

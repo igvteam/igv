@@ -14,6 +14,7 @@ package org.broad.igv.dev;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
 import org.broad.igv.dev.db.DBManager;
+import org.broad.igv.dev.db.DBTable;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -60,9 +61,10 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
         String path = "seg/canFam2_hg18.db";
         String url = DBManager.createConnectionURL("sqlite", host, path, null);
         ResourceLocator locator = new ResourceLocator(url);
-        String table = "canFam2";
+        String tableName = "canFam2";
 
         SegmentedReader reader = new SegmentedReader(locator);
+        DBTable table = DBTable.build(locator, tableName);
         SegmentedAsciiDataSet ds = reader.loadFromDB(table);
 
         return ds;
@@ -83,7 +85,8 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
         ResourceLocator locator = new ResourceLocator(url);
         locator.setUsername("igv_nobel_dev");
         locator.setPassword("nottherealpassword");
-        String table = "CNV";
+        String tableName = "CNV";
+        DBTable table = DBTable.build(locator, tableName);
 
         SegmentedReader reader = new SegmentedReader(locator);
         SegmentedAsciiDataSet ds = reader.loadFromDB(table);

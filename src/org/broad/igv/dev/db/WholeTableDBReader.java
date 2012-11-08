@@ -14,10 +14,8 @@ package org.broad.igv.dev.db;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ResourceLocator;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Class for loading ALL of the data from a single table
@@ -26,39 +24,42 @@ import java.sql.Statement;
  * @author Jacob Silterra
  * @date 2012/05/30
  */
-public abstract class WholeTableDBReader<T> {
+public abstract class WholeTableDBReader<T> extends DBReader {
 
     private static Logger log = Logger.getLogger(WholeTableDBReader.class);
 
-    protected ResourceLocator locator;
-    protected String tableName;
-    protected String queryString = "SELECT * FROM ";
-
-    public WholeTableDBReader(ResourceLocator locator, String tableName) {
-        this.locator = locator;
-        this.tableName = tableName;
-        queryString += tableName;
+    /**
+     * See {@link DBReader#DBReader(DBTable)}
+     */
+    public WholeTableDBReader(DBTable table) {
+        super(table);
     }
 
+    /**
+     * See {@link DBReader#DBReader(ResourceLocator, String, String)}
+     */
+    public WholeTableDBReader(ResourceLocator locator, String tableName, String baseQueryString) {
+        super(locator, tableName, baseQueryString);
+    }
+
+    /**
+     * Execute {@code #baseQueryString} and return the processed result
+     * Connection is closed afterwards
+     *
+     * @return
+     */
     public T load() {
 
-        Connection conn = null;
-        Statement st = null;
-        ResultSet rs = null;
         T obj = null;
-
+        ResultSet rs = null;
         try {
-            conn = DBManager.getConnection(locator);
-            st = conn.createStatement();
-            rs = st.executeQuery(queryString);
-
+            rs = super.loadResultSet(baseQueryString);
             obj = processResultSet(rs);
-
         } catch (SQLException e) {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
         } finally {
-            DBManager.closeResources(rs, st, conn);
+            DBManager.closeResources(rs, null, DBManager.getConnection(locator));
         }
 
         return obj;

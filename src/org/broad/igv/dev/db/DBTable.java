@@ -167,6 +167,17 @@ public class DBTable {
     private final Map<Integer, String> columnLabelMap;
     private final String baseQuery;
 
+    /**
+     * Generally just intended for testing, where all we try
+     * to do is get all data from a db and don't need anything fancy
+     *
+     * @param dbLocator
+     * @param tableName
+     */
+    public static DBTable build(ResourceLocator dbLocator, String tableName) {
+        return new DBTable(dbLocator, tableName, null, null, null, null, null, 1, Integer.MAX_VALUE - 1, null, null);
+    }
+
     public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
                    String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
                    Map<Integer, String> columnLabelMap, String baseQuery) {
