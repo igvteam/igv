@@ -72,14 +72,23 @@ public class HiCTrackManager {
 
                     String path = f.getAbsolutePath();
                     // genome = GenomeManager.getInstance().getCurrentGenome();
-                    ResourceLocator locator = new ResourceLocator(path);
-                    List<Track> tracks = (new TrackLoader()).load(locator, genome);
 
-                    for (Track t : tracks) {
-                        HiCDataAdapter da = new HiCDataAdapter(hic, (DataTrack) t);
+                    if (path.endsWith(".wig") || path.endsWith(".bedgraph")) {
+                        HiCWigAdapter da = new HiCWigAdapter(hic, path);
                         HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
                         loadedTracks.add(hicTrack);
                         fileLoadedTracks.add(hicTrack);
+
+                    } else {
+                        ResourceLocator locator = new ResourceLocator(path);
+                        List<Track> tracks = (new TrackLoader()).load(locator, genome);
+
+                        for (Track t : tracks) {
+                            HiCDataAdapter da = new HiCIGVDataAdapter(hic, (DataTrack) t);
+                            HiCDataTrack hicTrack = new HiCDataTrack(hic, da);
+                            loadedTracks.add(hicTrack);
+                            fileLoadedTracks.add(hicTrack);
+                        }
                     }
                     parent.updateTrackPanel();
 
@@ -126,6 +135,7 @@ public class HiCTrackManager {
                         for (String trackName : selectedTracks) {
                             if (!loadedTrackNames.contains(trackName)) {
                                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
                                 ResourceLocator locator = locatorMap.get(trackName);
                                 List<Track> tracks = (new TrackLoader()).load(locator, genome);
 
@@ -138,7 +148,7 @@ public class HiCTrackManager {
                                 }
 
                                 for (Track t : tracks) {
-                                    HiCDataAdapter da = new HiCDataAdapter(hic, (DataTrack) t);
+                                    HiCDataAdapter da = new HiCIGVDataAdapter(hic, (DataTrack) t);
                                     HiCTrack hicTrack = new HiCDataTrack(hic, da);
                                     loadedTracks.add(hicTrack);
                                 }

@@ -356,6 +356,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseClicked(MouseEvent e) {
 
+            if(hic == null) return;
+
             if (!e.isPopupTrigger()) {
 
                 if (hic.isWholeGenome()) {

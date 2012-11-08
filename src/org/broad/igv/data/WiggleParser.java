@@ -101,7 +101,7 @@ public class WiggleParser {
         if (locator.getServerURL() == null) {
             estLines = ParsingUtils.estimateLineCount(locator.getPath());
         }
-        int nChromosomes = genome.getChromosomeNames().size();
+        int nChromosomes = genome == null ? 24 : genome.getChromosomeNames().size();
         return Math.max(1000, (int) (estLines / nChromosomes));
 
     }

@@ -3,6 +3,7 @@ package org.broad.igv.hic.track;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.DataTrack;
 
 import java.awt.*;
@@ -16,20 +17,26 @@ import java.util.List;
  * @author jrobinso
  *         Date: 9/10/12
  */
-public class HiCDataAdapter {
+public abstract class HiCDataAdapter {
 
     HiC hic;
-    DataTrack igvTrack;
+
     LoadedDataInterval loadedDataInterval;
 
-    public HiCDataAdapter(HiC hiC, DataTrack igvTrack) {
-        this.hic = hiC;
-        this.igvTrack = igvTrack;
+    protected HiCDataAdapter(HiC hic) {
+        this.hic = hic;
     }
 
-    public double getMax() {
-        return igvTrack.getDataRange().getMaximum();
-    }
+
+    public abstract String getName();
+
+    public abstract Color getColor();
+
+    public abstract boolean isLogScale();
+
+    public abstract Color getAltColor();
+
+    public abstract DataRange getDataRange();
 
     public WeightedSum[] getData(String chr, int startBin, int endBin) {
 
@@ -51,10 +58,7 @@ public class HiCDataAdapter {
             int gStart = gridAxis.getGenomicStart(startBin);
             int gEnd = gridAxis.getGenomicEnd(endBin);
 
-
-            List<LocusScore> scores = igvTrack.getSummaryScores("chr" + chr, gStart, gEnd, zoom);
-
-
+            List<LocusScore> scores = getLocusScores(chr, zoom, gStart, gEnd);
             for (LocusScore locusScore : scores) {
 
                 int bs = gridAxis.getBinNumberForGenomicPosition(locusScore.getStart());
@@ -76,7 +80,6 @@ public class HiCDataAdapter {
                         data[b - startBin] = dataBin;
                     }
                     dataBin.addScore(locusScore);
-
                 }
             }
 
@@ -84,20 +87,10 @@ public class HiCDataAdapter {
 
             return data;
         }
-
     }
 
-    public String getName() {
-        return igvTrack.getName();
-    }
+    protected abstract List<LocusScore> getLocusScores(String chr, int zoom, int gStart, int gEnd);
 
-    public Color getColor() {
-        return igvTrack.getColor();
-    }
-
-    public boolean isLogScale() {
-        return igvTrack.getDataRange().isLog();
-    }
 
     public static class WeightedSum {
         int binNumber;
@@ -106,7 +99,7 @@ public class HiCDataAdapter {
         int genomicStart;
         int genomicEnd;
 
-        private WeightedSum(int binNumber, int genomicStart, int genomicEnd) {
+        public WeightedSum(int binNumber, int genomicStart, int genomicEnd) {
             this.binNumber = binNumber;
             this.genomicStart = genomicStart;
             this.genomicEnd = genomicEnd;

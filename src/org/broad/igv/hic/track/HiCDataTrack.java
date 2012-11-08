@@ -2,6 +2,8 @@ package org.broad.igv.hic.track;
 
 import org.broad.igv.hic.Context;
 import org.broad.igv.hic.HiC;
+import org.broad.igv.renderer.DataRange;
+import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
 
@@ -15,14 +17,12 @@ public class HiCDataTrack extends HiCTrack {
     static int TRACK_MARGIN = 2;
     HiC hic;
     HiCDataAdapter dataSource;
-    double dataMax;
     boolean logScale = false;
 
 
     public HiCDataTrack(HiC hic, HiCDataAdapter dataSource) {
         this.hic = hic;
         this.dataSource = dataSource;
-        this.dataMax = dataSource.getMax();
         this.logScale = dataSource.isLogScale();
 
     }
@@ -38,6 +38,37 @@ public class HiCDataTrack extends HiCTrack {
         int end = start + (int) (rect.width / context.getScaleFactor());
         HiCDataAdapter.WeightedSum[] data = dataSource.getData(chr, start, end);
 
+        Color posColor = dataSource.getColor();
+        Color negColor = dataSource.getAltColor();
+
+        // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
+        // the base value is == min value which is == 0.
+
+        DataRange dataRange = dataSource.getDataRange();
+        float maxValue = dataRange.getMaximum();
+        float baseValue = dataRange.getBaseline();
+        float minValue = dataRange.getMinimum();
+        boolean isLog = dataRange.isLog();
+
+        if (isLog) {
+            minValue = (float) (minValue == 0 ? 0 : Math.log10(minValue));
+            maxValue = (float) Math.log10(maxValue);
+        }
+
+
+        // Calculate the Y scale factor.
+
+        double delta = (maxValue - minValue);
+        double yScaleFactor = (rect.height - TRACK_MARGIN) / delta;
+
+        // Calculate the Y position in pixels of the base value.  Clip to bounds of rectangle
+        double baseDelta = maxValue - baseValue;
+        int baseY = (int) (rect.y + baseDelta * yScaleFactor);
+        if (baseY < rect.y) {
+            baseY = rect.y;
+        } else if (baseY > rect.y + (rect.height - TRACK_MARGIN)) {
+            baseY = rect.y + (rect.height - TRACK_MARGIN);
+        }
 
         for (int i = 0; i < data.length; i++) {
 
@@ -47,7 +78,7 @@ public class HiCDataTrack extends HiCTrack {
             int bin = d.getBinNumber() - start;
             int xPixelLeft = rect.x + (int) ((bin) * context.getScaleFactor()); //context.getScreenPosition (genomicPosition);
             int xPixelRight = rect.x + (int) ((bin + 1) * context.getScaleFactor());
-
+            int dx = xPixelRight - xPixelLeft;
 
             if (xPixelRight < rect.x) {
                 continue;
@@ -55,20 +86,36 @@ public class HiCDataTrack extends HiCTrack {
                 break;
             }
 
-            double mid = 0;
-            double x = d.getValue() - mid;
-            if(logScale) x = Math.log10(x);
+            double dataY = d.getValue();
+            if (isLog && dataY <= 0) {
+                continue;
+            }
 
-            double max = dataMax - mid;
-            if(logScale) max = Math.log10(max);
+            if (!Double.isNaN(dataY)) {
 
-            int myh = Math.min((rect.height - TRACK_MARGIN), (int) ((x / max) * h));
-            //if (x > 0) {
-            g2d.fillRect(xPixelLeft, rect.y + h - myh, (xPixelRight - xPixelLeft + 1), myh);
-            //} else {
-            //    g2d.fillRect(xPixelLeft, rect.y + h, (xPixelRight - xPixelLeft), -myh);
-            //}
+                // Compute the pixel y location.  Clip to bounds of rectangle.
+                double dy = isLog ? Math.log10(dataY) - baseValue : (dataY - baseValue);
+                int pY = baseY - (int) (dy * yScaleFactor);
+                if (pY < rect.y) {
+                    pY = rect.y;
+                } else if (pY > rect.y + (rect.height - TRACK_MARGIN)) {
+                    pY = rect.y + (rect.height - TRACK_MARGIN);
+                }
 
+                Color color = (dataY >= baseValue) ? posColor : negColor;
+                g2d.setColor(color);
+
+                if (dx <= 1) {
+                    g2d.drawLine(xPixelRight, baseY, xPixelRight, pY);
+                } else {
+                    if (pY > baseY) {
+                        g2d.fillRect(xPixelRight, baseY, dx, pY - baseY);
+
+                    } else {
+                        g2d.fillRect(xPixelRight, pY, dx, baseY - pY);
+                    }
+                }
+            }
         }
     }
 
