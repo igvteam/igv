@@ -12,6 +12,7 @@ import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.Deflater;
 
 /**
  * @author jrobinso
@@ -53,6 +54,7 @@ public class Preprocessor {
     private long masterIndexPositionPosition;
 
     private Map<String, ExpectedValueCalculation> expectedValueCalculations;
+    private final Deflater compressor;
 
     public Preprocessor(File outputFile, String genomeId, List<Chromosome> chromosomes) {
         this.genomeId = genomeId;
@@ -66,6 +68,9 @@ public class Preprocessor {
         for (int i = 0; i < chromosomes.size(); i++) {
             chromosomeIndexes.put(chromosomes.get(i).getName(), i);
         }
+
+        compressor = new Deflater();
+        compressor.setLevel(Deflater.DEFAULT_COMPRESSION);
 
     }
 
@@ -89,7 +94,7 @@ public class Preprocessor {
 
         try {
             if (fragmentFileName != null) {
-                fragmentCalculation =  FragmentCalculation.readFragments(fragmentFileName);
+                fragmentCalculation = FragmentCalculation.readFragments(fragmentFileName);
             } else {
                 System.out.println("WARNING: Not including fragment map");
             }
@@ -285,7 +290,7 @@ public class Preprocessor {
 
                 }
             } finally {
-                if(iter != null) iter.close();
+                if (iter != null) iter.close();
             }
         }
 
@@ -379,7 +384,7 @@ public class Preprocessor {
             for (Map.Entry<Integer, Double> normFactor : normalizationFactors.entrySet()) {
                 buffer.putInt(normFactor.getKey());
                 buffer.putDouble(normFactor.getValue());
-                System.out.println(normFactor.getKey() + "  " + normFactor.getValue());
+                //System.out.println(normFactor.getKey() + "  " + normFactor.getValue());
             }
 
         }
@@ -434,17 +439,17 @@ public class Preprocessor {
 
         int numberOfBlocks = zd.getBlocks().size();
 
-        System.out.println("Write zoom header");
-        System.out.println(zd.getUnit());  // Unit, ether "BP" or "FRAG"
-        System.out.println(zd.getZoom());     // zoom index,  lowest res is zero
-        System.out.println((float) zd.getSum());      // sum
-        System.out.println((float) zd.getAverage());
-        System.out.println((float) zd.getStdDev());
-        System.out.println((float) zd.getPercent95());
-        System.out.println(zd.getBinSize());
-        System.out.println(zd.getBlockBinCount());
-        System.out.println(zd.getBlockColumnCount());
-        System.out.println(numberOfBlocks);
+//        System.out.println("Write zoom header");
+//        System.out.println(zd.getUnit());  // Unit, ether "BP" or "FRAG"
+//        System.out.println(zd.getZoom());     // zoom index,  lowest res is zero
+//        System.out.println((float) zd.getSum());      // sum
+//        System.out.println((float) zd.getAverage());
+//        System.out.println((float) zd.getStdDev());
+//        System.out.println((float) zd.getPercent95());
+//        System.out.println(zd.getBinSize());
+//        System.out.println(zd.getBlockBinCount());
+//        System.out.println(zd.getBlockColumnCount());
+//        System.out.println(numberOfBlocks);
 
         fos.writeString(zd.getUnit());  // Unit, ether "BP" or "FRAG"
         fos.writeInt(zd.getZoom());     // zoom index,  lowest res is zero
@@ -470,9 +475,9 @@ public class Preprocessor {
 
     private IndexEntry[] writeZoomData(MatrixZoomDataPP zd) throws IOException {
 
-         final Map<Integer, Block> blocks = zd.getBlocks();
+        final Map<Integer, Block> blocks = zd.getBlocks();
 
-        System.out.println("Write zoom data : block bount = " + blocks.size());
+//        System.out.println("Write zoom data : block bount = " + blocks.size());
 
         IndexEntry[] indexEntries = new IndexEntry[blocks.size()];
         int i = 0;
@@ -502,7 +507,7 @@ public class Preprocessor {
 
         final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
 
-       // System.out.println("Write contact records : records count = " + records.size());
+        // System.out.println("Write contact records : records count = " + records.size());
 
         // Count records first
         int nRecords;
@@ -528,11 +533,10 @@ public class Preprocessor {
         }
 
         byte[] bytes = buffer.getBytes();
-        byte[] compressedBytes = CompressionUtils.compress(bytes);
+        byte[] compressedBytes = compress(bytes);
         fos.write(compressedBytes);
 
     }
-
 
     public static class IndexEntry {
         int id;
@@ -616,8 +620,8 @@ public class Preprocessor {
          * Constructor for creating a matrix with a single zoom level at a specified bin size.  This is provided
          * primarily for constructing a whole-genome view.
          *
-         * @param chr1Idx    Chromosome 1
-         * @param chr2Idx    Chromosome 2
+         * @param chr1Idx Chromosome 1
+         * @param chr2Idx Chromosome 2
          * @param binSize Bin size
          */
         MatrixPP(int chr1Idx, int chr2Idx, int binSize) {
@@ -849,7 +853,40 @@ public class Preprocessor {
             }
             computeStats();
         }
-
-
     }
+
+
+    private synchronized byte[] compress(byte[] data) {
+
+        // Give the compressor the data to compress
+        compressor.reset();
+        compressor.setInput(data);
+        compressor.finish();
+
+        // Create an expandable byte array to hold the compressed data.
+        // You cannot use an array that's the same size as the orginal because
+        // there is no guarantee that the compressed data will be smaller than
+        // the uncompressed data.
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(data.length);
+
+        // Compress the data
+        byte[] buf = new byte[1024];
+        while (!compressor.finished()) {
+            int count = compressor.deflate(buf);
+            bos.write(buf, 0, count);
+        }
+        try {
+            bos.close();
+        } catch (IOException e) {
+            System.err.println("Error clossing ByteArrayOutputStream");
+            e.printStackTrace();
+        }
+
+        compressor.end();
+
+        byte[] compressedData = bos.toByteArray();
+        return compressedData;
+    }
+
+
 }
