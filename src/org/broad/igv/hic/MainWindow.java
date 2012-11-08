@@ -560,9 +560,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void addPredefinedLoadItems(JMenu fileMenu) {
+    private boolean addPredefinedLoadItems(JMenu fileMenu) {
         InputStream is = null;
         Properties properties = null;
+        boolean isInternal = false;
 
         try {
             String url = System.getProperty("loadMenu");
@@ -570,9 +571,10 @@ public class MainWindow extends JFrame {
             is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);
+            isInternal = (url == DEFAULT_LOAD_MENU);
         } catch (Exception error) {
             System.err.println("Can't find mainwindow.properties.");
-            return;
+            return false;
         }
         // TreeSet is sorted, so properties file is implemented in order
         TreeSet<String> keys = new TreeSet<String>(properties.stringPropertyNames());
@@ -581,7 +583,7 @@ public class MainWindow extends JFrame {
             final String[] values = value.split(",");
             if (values.length != 3 && values.length != 1) {
                 System.err.println("Improperly formatted mainwindow.properties file");
-                return;
+                return false;
             }
             if (values.length == 1) {
                 fileMenu.addSeparator();
@@ -608,6 +610,7 @@ public class MainWindow extends JFrame {
             }
         }
         fileMenu.addSeparator();
+        return isInternal;
     }
 
 
@@ -1018,8 +1021,8 @@ public class MainWindow extends JFrame {
 
         //---- loadFromURL ----
         JMenuItem loadFromURL = new JMenuItem();
-        JMenuItem getEigenvector = new JMenuItem();
-        final JCheckBoxMenuItem viewDNAseI;
+        //JMenuItem getEigenvector = new JMenuItem();
+        //final JCheckBoxMenuItem viewDNAseI;
 
         loadFromURL.setText("Load from URL ...");
         loadFromURL.setName("loadFromURL");
@@ -1032,7 +1035,7 @@ public class MainWindow extends JFrame {
         fileMenu.addSeparator();
 
         // Pre-defined datasets.  TODO -- generate from a file
-        addPredefinedLoadItems(fileMenu);
+        boolean isInternal = addPredefinedLoadItems(fileMenu);
 
         JMenuItem saveToImage = new JMenuItem();
         saveToImage.setText("Save to image");
@@ -1071,13 +1074,13 @@ public class MainWindow extends JFrame {
             }
         });
         fileMenu.add(saveToImage);
-        getEigenvector = new JMenuItem("Get principal eigenvector");
-        getEigenvector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getEigenvectorActionPerformed(e);
-            }
-        });
-        fileMenu.add(getEigenvector);
+        //getEigenvector = new JMenuItem("Get principal eigenvector");
+        //getEigenvector.addActionListener(new ActionListener() {
+        //    public void actionPerformed(ActionEvent e) {
+        //        getEigenvectorActionPerformed(e);
+        //    }
+        //});
+        //fileMenu.add(getEigenvector);
         //---- exit ----
         JMenuItem exit = new JMenuItem();
         exit.setText("Exit");
@@ -1197,8 +1200,9 @@ public class MainWindow extends JFrame {
         extrasMenu.add(readPearsons);
 
         extrasMenu.add(dumpPearsons);
-        menuBar.add(extrasMenu);
-
+        if (isInternal) {
+            menuBar.add(extrasMenu);
+        }
         return menuBar;
     }
 
