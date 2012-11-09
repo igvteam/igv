@@ -33,7 +33,7 @@ public class awkPluginTest extends AbstractPluginTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        pluginPath = "plugins/awk_plugin.xml";
+        pluginPath = "resources/awk_plugin.xml";
         AbstractPluginTest.setUpClass();
     }
 
