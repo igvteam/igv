@@ -28,18 +28,20 @@ public class HiCFragmentAxis implements HiCGridAxis {
     double averageBinSize;
     int igvZoom;
     int[] sites;
+    int chrLength;
 
 
     /**
      * @param sites ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
+     * @param length
      */
-    public HiCFragmentAxis(int[] sites) {
+    public HiCFragmentAxis(int[] sites, int length) {
 
         this.sites = sites;
 
-        double chrLength = sites[sites.length -1];
+        this.chrLength = length;
 
-        averageBinSize = sites.length == 0 ? 0 : (chrLength / (sites.length));
+        averageBinSize = chrLength / (sites.length + 1);
 
         // Compute an approximate igv zoom level
 
@@ -58,13 +60,12 @@ public class HiCFragmentAxis implements HiCGridAxis {
 
     @Override
     public int getGenomicEnd(int binNumber) {
-        return binNumber < sites.length ? sites[binNumber] : sites[sites.length -1] + (int) averageBinSize;
+        return binNumber < sites.length ? sites[binNumber] : chrLength;
     }
 
     @Override
     public int getGenomicMid(int binNumber) {
-        int start = binNumber == 0 ? 0 : sites[binNumber - 1];
-        return (start + sites[binNumber]) / 2;
+        return (getGenomicStart(binNumber) + getGenomicEnd(binNumber)) / 2;
     }
 
 

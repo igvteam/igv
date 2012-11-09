@@ -137,10 +137,10 @@ public class MatrixZoomData {
             yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
         } else {
             int [] xSites = fragmentSitesMap.get(chr1.getName());
-            xGridAxis = new HiCFragmentAxis(xSites);
+            xGridAxis = new HiCFragmentAxis(xSites, chr1.getLength());
 
             int [] ySites = fragmentSitesMap.get(chr2.getName());
-            yGridAxis = new HiCFragmentAxis(ySites);
+            yGridAxis = new HiCFragmentAxis(ySites, chr2.getLength());
 
         }
 
