@@ -15,11 +15,25 @@ import java.util.Map;
  */
 public class HiC {
 
+
+    private int cursorX;
+
     public Unit getUnit() {
         return unit;
     }
 
-    public enum Unit {BP, FRAG};
+    public void setCursorX(int x) {
+        this.cursorX = x;
+
+    }
+
+    public int getCursorX() {
+        return cursorX;
+    }
+
+    public enum Unit {BP, FRAG}
+
+    ;
 
     MainWindow mainWindow;
     Unit unit = Unit.BP;
@@ -208,26 +222,11 @@ public class HiC {
         final int binXMax = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP1);
         final int binYMax = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP1);
 
-        // Don't blow up pixels at high resolution -- performance issues
-        final double scaleFactor;
-        final int binX;
-        final int binY;
-        if (zoomDataIdx < 3) {
-            binX = binX0;
-            binY = binY0;
-            final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
-            final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
-            scaleFactor = Math.max(1, Math.min(xScale, yScale));
-        } else {
-            scaleFactor = 1;
-            int dx = mainWindow.getHeatmapPanel().getWidth() - (binXMax - binX0);
-            binX = Math.max(0, binX0 - dx / 2);
-
-            int dy = mainWindow.getHeatmapPanel().getHeight() - (binYMax - binY0);
-            binY = Math.max(0, binY0 - dy / 2);
-
-        }
-
+        final int binX = binX0;
+        final int binY = binY0;
+        final double xScale = ((double) mainWindow.getHeatmapPanel().getWidth()) / (binXMax - binX);
+        final double yScale = ((double) mainWindow.getHeatmapPanel().getHeight()) / (binYMax - binY);
+        final double scaleFactor = Math.max(1, Math.min(xScale, yScale));
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {
             if (newZoom > 3) {

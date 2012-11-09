@@ -61,6 +61,7 @@ public class MainWindow extends JFrame {
 
     //private static String DEFAULT_LOAD_MENU = "http://www.broadinstitute.org/igvdata/hic/hicExternalMenu.properties";
     private static String DEFAULT_LOAD_MENU = "http://iwww.broadinstitute.org/igvdata/hic/files/hicInternalMenu.properties";
+    public static Color RULER_LINE_COLOR = new Color(0, 0, 0, 100);
 
     private ExecutorService threadExecutor = Executors.newFixedThreadPool(1);
     // The "model" object containing the state for this instance.
@@ -833,6 +834,7 @@ public class MainWindow extends JFrame {
         resolutionLabels.put(9, fragLabel);
         resolutionSlider.setLabelTable(resolutionLabels);
 
+
         // Setting the zoom should always be done by calling resolutionSlider.setValue() so work isn't done twice.
         resolutionSlider.addChangeListener(new ChangeListener() {
             // Change zoom level while staying centered on current location.
@@ -858,6 +860,8 @@ public class MainWindow extends JFrame {
                     if (hic.xContext != null) {
 
                         hic.setUnit(unit);
+                        hic.xContext.setScaleFactor(1.0);
+                        hic.yContext.setScaleFactor(1.0);
 
                         //int centerBinX = hic.xContext.getBinOrigin() + heatmapPanel.getWidth() / 2;
                         //int centerBinY = hic.yContext.getBinOrigin() + heatmapPanel.getHeight() / 2;
@@ -909,7 +913,7 @@ public class MainWindow extends JFrame {
         trackPanel.setMaximumSize(new Dimension(4000, 50));
         trackPanel.setPreferredSize(new Dimension(1, 50));
         trackPanel.setMinimumSize(new Dimension(1, 50));
-        trackPanel.setBorder(null);
+        trackPanel.setBorder(LineBorder.createGrayLineBorder());
         trackPanel.setVisible(false);
         panel2_5.add(trackPanel, BorderLayout.NORTH);
 

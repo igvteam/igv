@@ -1,26 +1,18 @@
 package org.broad.igv.hic.track;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.hic.HiC;
-import org.broad.igv.hic.HiCRenderContext;
+import org.broad.igv.hic.MainWindow;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.Pair;
-import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,6 +32,7 @@ public class TrackPanel extends JPanel {
         this.hic = hiC;
         setAutoscrolls(true);
         trackRectangles = new ArrayList<Pair<Rectangle, HiCTrack>>();
+        setBackground(new Color(238,238,238));
         addMouseListener();
     }
 
@@ -134,6 +127,8 @@ public class TrackPanel extends JPanel {
 
 
         Rectangle rect = getBounds();
+        graphics.setColor(getBackground());
+        graphics.fillRect(rect.x, rect.y, rect.width, rect.height);
         int y = rect.y;
 
         for (HiCTrack hicTrack : tracks) {
@@ -164,6 +159,12 @@ public class TrackPanel extends JPanel {
             trackRectangles.add(new Pair(trackRectangle, eigenvectorTrack));
 
 
+        }
+
+        int cursorX = hic.getCursorX();
+        if(cursorX > 0) {
+            graphics.setColor(MainWindow.RULER_LINE_COLOR);
+            graphics.drawLine(cursorX, 0, cursorX, getHeight());
         }
 
     }

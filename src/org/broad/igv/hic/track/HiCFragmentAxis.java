@@ -58,7 +58,7 @@ public class HiCFragmentAxis implements HiCGridAxis {
 
     @Override
     public int getGenomicEnd(int binNumber) {
-        return sites[binNumber];
+        return binNumber < sites.length ? sites[binNumber] : sites[sites.length -1] + (int) averageBinSize;
     }
 
     @Override

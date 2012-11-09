@@ -1,11 +1,14 @@
 package org.broad.igv.hic;
 
+import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.ObjectCache;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -24,6 +27,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     MainWindow mainWindow;
     private HiC hic;
+    private int lastCursorX;
 
     /**
      * Image tile width in pixels
@@ -95,51 +99,46 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 for (int tileColumn = tLeft; tileColumn <= tRight; tileColumn++) {
                     ImageTile tile = getImageTile(tileRow, tileColumn, hic.getDisplayOption());
                     if (tile != null) {
-
-                        int pxOffset = (int) ((tile.bLeft - binLeft) * scalefactor);
-                        int pyOffset = (int) ((tile.bTop - bTop) * scalefactor);
-
                         if (scalefactor > 0.99 && scalefactor < 1.01) scalefactor = 1;
+
+
+                        int pxSrcOffset = tile.bLeft - binLeft;
+                        int pxDestOffset = (int) (pxSrcOffset * scalefactor);
+                        int pySrcOffset = tile.bTop - bTop;
+                        int pyDestOffset = (int) (pySrcOffset * scalefactor);
+
                         int imageWidth = tile.image.getWidth(null);
                         int imageHeight = tile.image.getHeight(null);
-                        int xFrom, yFrom, xTo, yTo, iw, ih;
-                        if (pxOffset < 0) {
-                            xTo = 0;
-                            xFrom = -pxOffset;
-                            iw = imageWidth - Math.abs(pxOffset);
-                        } else if (pxOffset > 0) {
-                            xTo = pxOffset;
-                            xFrom = 0;
-                            iw = Math.min(imageWidth, getWidth() - pxOffset);
+                        int xSrc1, xSrc2, ySrc1, ySrc2, xDest1, yDest1, xDest2, yDest2;
+                        if (pxSrcOffset < 0) {
+                            xSrc1 = -pxSrcOffset;
+                            xSrc2 = imageWidth;
+                            xDest1 = 0;
                         } else {
-                            xTo = 0;
-                            xFrom = 0;
-                            iw = Math.min(imageWidth, getWidth() - pxOffset);
+                            xSrc1 = 0;
+                            int delta = getWidth() - pxSrcOffset;
+                            xSrc2 = Math.min(imageWidth, delta);
+                            xDest1 = pxDestOffset;
                         }
-                        if (pyOffset < 0) {
-                            yTo = 0;
-                            yFrom = -pyOffset;
-                            ih = imageHeight - Math.abs(pyOffset);
-                        } else if (pyOffset > 0) {
-                            yTo = pyOffset;
-                            yFrom = 0;
-                            ih = Math.min(imageHeight, getHeight() - pyOffset);
+                        if (pySrcOffset < 0) {
+                            ySrc1 = -pySrcOffset;
+                            ySrc2 = imageHeight;
+                            yDest1 = 0;
                         } else {
-                            yTo = 0;
-                            yFrom = 0;
-                            ih = Math.min(imageHeight, getHeight());
+                            ySrc1 = 0;
+                            int delta = getHeight() - pySrcOffset;
+                            ySrc2 = Math.min(imageHeight, delta);
+                            yDest1 = pyDestOffset;
                         }
-                        if (iw <= 0 || ih <= 0) continue;
 
+                        xDest2 = (int) (xDest1 + (xSrc2 - xSrc1) * scalefactor);
+                        yDest2 = (int) (yDest1 + (ySrc2 - ySrc1) * scalefactor);
+                        if (xDest2 <= xDest1 || yDest2 <= yDest1) continue;
 
                         g.drawImage(tile.image,
-                                xTo, yTo, xTo + iw, yTo + ih,
-                                xFrom, yFrom, xFrom + iw, yFrom + ih,
+                                xDest1, yDest1, xDest2, yDest2,
+                                xSrc1, ySrc1, xSrc2, ySrc2,
                                 null);
-                        // Uncomment to see image boundaries (for debugging)
-                        g.drawRect(pxOffset, pyOffset, imageWidth, imageHeight);
-
-
                     }
 
                 }
@@ -175,6 +174,13 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                 g.setColor(color);
             }
+
+            int cursorX = hic.getCursorX();
+            if (cursorX > 0) {
+                g.setColor(MainWindow.RULER_LINE_COLOR);
+                g.drawLine(cursorX, 0, cursorX, getHeight());
+            }
+
 
         }
 
@@ -280,6 +286,24 @@ public class HeatmapPanel extends JComponent implements Serializable {
         DragMode dragMode = DragMode.NONE;
         private Point lastMousePoint;
 
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            if (straightEdgeEnabled) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            } else {
+                setCursor(Cursor.getDefaultCursor());
+            }
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            hic.setCursorX(0);
+            lastCursorX = 0;
+            if (straightEdgeEnabled) {
+                repaint();
+                mainWindow.trackPanel.repaint();
+            }
+        }
 
         @Override
         public void mousePressed(final MouseEvent e) {
@@ -288,12 +312,15 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 return;
             }
 
-            if (e.isAltDown()) {
+            if (e.isPopupTrigger()) {
+                getPopupMenu().show(HeatmapPanel.this, e.getX(), e.getY());
+            } else if (e.isAltDown()) {
                 dragMode = DragMode.ZOOM;
             } else {
                 dragMode = DragMode.PAN;
                 setCursor(mainWindow.fistCursor);
             }
+
 
             lastMousePoint = e.getPoint();
 
@@ -303,7 +330,10 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseReleased(final MouseEvent e) {
 
-            if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
+            if (e.isPopupTrigger()) {
+                getPopupMenu().show(HeatmapPanel.this, e.getX(), e.getY());
+
+            } else if (dragMode == DragMode.ZOOM && zoomRectangle != null) {
 
                 int binX = hic.xContext.getBinOrigin() + (int) (zoomRectangle.x / hic.xContext.getScaleFactor());
                 int binY = hic.yContext.getBinOrigin() + (int) (zoomRectangle.y / hic.yContext.getScaleFactor());
@@ -329,7 +359,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             dragMode = DragMode.NONE;
             lastMousePoint = null;
             zoomRectangle = null;
-            setCursor(Cursor.getDefaultCursor());
+            setCursor(straightEdgeEnabled ? Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR) : Cursor.getDefaultCursor());
             //repaint();
         }
 
@@ -473,6 +503,26 @@ public class HeatmapPanel extends JComponent implements Serializable {
         public void mouseMoved(MouseEvent e) {
             if (hic.xContext != null && hic.zd != null) {
 
+
+                if (straightEdgeEnabled) {
+                    hic.setCursorX(e.getX());
+                    Rectangle damageRect = new Rectangle();
+                    damageRect.x = (lastCursorX > 0 ? Math.min(lastCursorX, e.getX()) : e.getX()) - 1;
+                    damageRect.y = 0;
+                    damageRect.width = lastCursorX > 0 ? Math.abs(e.getX() - lastCursorX) + 2 : 2;
+                    damageRect.height = getHeight();
+
+                    paintImmediately(damageRect);
+
+                    damageRect.height = mainWindow.trackPanel.getHeight();
+                    mainWindow.trackPanel.paintImmediately(damageRect);
+
+                    lastCursorX = e.getX();
+
+                }
+
+
+
                 if (hic.isWholeGenome()) {
 
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
@@ -536,6 +586,39 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 }
             }
         }
+    }
+
+
+    boolean straightEdgeEnabled = false;
+
+    JidePopupMenu getPopupMenu() {
+
+        JidePopupMenu menu = new JidePopupMenu();
+
+        final JCheckBoxMenuItem mi = new JCheckBoxMenuItem("Enable straight edge");
+        mi.setSelected(straightEdgeEnabled);
+        mi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (mi.isSelected()) {
+                    straightEdgeEnabled = true;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+                } else {
+                    straightEdgeEnabled = false;
+                    lastCursorX = 0;
+                    hic.setCursorX(0);
+                    setCursor(Cursor.getDefaultCursor());
+                    repaint();
+                    mainWindow.trackPanel.repaint();
+                }
+
+            }
+        });
+
+        menu.add(mi);
+
+        return menu;
+
     }
 
 }
