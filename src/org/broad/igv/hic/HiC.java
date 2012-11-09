@@ -279,6 +279,18 @@ public class HiC {
         }
     }
 
+    public void centerBP(int bpX, int bpY) {
+        if(zd != null) {
+            HiCGridAxis xAxis = zd.getxGridAxis();
+            HiCGridAxis yAxis = zd.getyGridAxis();
+
+            int binX = xAxis.getBinNumberForGenomicPosition(bpX);
+            int binY = yAxis.getBinNumberForGenomicPosition(bpY);
+            center(binX, binY);
+
+        }
+    }
+
     public void center(int binX, int binY) {
         double w = mainWindow.getHeatmapPanel().getWidth();
         int newX = (int) (binX - w / 2);

@@ -473,7 +473,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                 } else {
 
-                    if (hic == null) return;
+                    if (hic == null  || hic.xContext == null) return;
 
                     int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
@@ -578,7 +578,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                 } else {
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
-                    int binY = hic.xContext.getBinOrigin() + (int) (e.getY() / hic.xContext.getScaleFactor());
+                    int binY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
 
                     int xGenome = xGridAxis.getGenomicStart(binX);
                     int yGenome = yGridAxis.getGenomicStart(binY);
@@ -643,16 +643,31 @@ public class HeatmapPanel extends JComponent implements Serializable {
         });
         menu.add(mi);
 
-        final JMenuItem mi2 = new JMenuItem("Goto fragment...");
+        final JMenuItem mi2 = new JMenuItem("Goto ...");
         mi2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String fragmentString = JOptionPane.showInputDialog(HeatmapPanel.this, "Enter fragment range in the form x:y");
+                String fragmentString = JOptionPane.showInputDialog(HeatmapPanel.this,
+                        "Enter fragment or bp range in the form <bp|frag>:x:y");
                 if (fragmentString != null) {
                     String[] tokens = Globals.colonPattern.split(fragmentString);
-                    int x = Integer.parseInt(tokens[0].replace(",", ""));
-                    int y = (tokens.length > 1) ?  Integer.parseInt(tokens[1].replace(",", "")) : x;
+                    HiC.Unit unit = HiC.Unit.FRAG;
+                    int idx = 0;
+                    if(tokens.length == 3) {
+                        if(tokens[idx++].toLowerCase().equals("bp")) {
+                            unit = HiC.Unit.BP;
+                        }
+                    }
+                    int x = Integer.parseInt(tokens[idx++].replace(",", ""));
+                    int y = (tokens.length > idx) ?  Integer.parseInt(tokens[idx].replace(",", "")) : x;
+
+                    if(unit == HiC.Unit.FRAG) {
                     hic.centerFragment(x, y);
+                    }
+                    else {
+                        hic.centerBP(x, y);
+                    }
+
 
                 }
             }
