@@ -104,7 +104,12 @@ public class IGVMenuBar extends JMenuBar {
 
         List<AbstractButton> menus = new ArrayList<AbstractButton>();
         menus.add(createFileMenu());
-        menus.add(createGenomesMenu());
+
+        boolean affectiveMode =   PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+        if (!affectiveMode) {
+            menus.add(createGenomesMenu());
+        }
+
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());

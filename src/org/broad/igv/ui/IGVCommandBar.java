@@ -585,11 +585,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
         locationPanel.setAlignmentY(CENTER_ALIGNMENT);
         locationPanel.add(Box.createRigidArea(new Dimension(10, 36)), JideBoxLayout.FIX);
 
-        genomeComboBox = new JComboBox();
-        genomeComboBox.setMinimumSize(new Dimension(180, 27));
-        genomeComboBox.setPreferredSize(new Dimension(180, 27));
-        locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
-        locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
+        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+        if (!affectiveMode) {
+            genomeComboBox = new JComboBox();
+            genomeComboBox.setMinimumSize(new Dimension(180, 27));
+            genomeComboBox.setPreferredSize(new Dimension(180, 27));
+            locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
+            locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
+        }
 
         chromosomeComboBox = new javax.swing.JComboBox();
         chromosomeComboBox.setToolTipText("Select a chromosome to view");

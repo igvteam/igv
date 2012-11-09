@@ -29,6 +29,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.dev.affective.AffectiveGenome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
@@ -2195,25 +2196,32 @@ public class IGV {
                 setAppleDockIcon();
             }
 
-            try {
-                contentPane.getCommandBar().initializeGenomeList(monitor);
-            } catch (FileNotFoundException ex) {
-                JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
-                log.error("Error initializing genome list: ", ex);
-            } catch (NoRouteToHostException ex) {
-                JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
-                log.error("Network error initializing genome list: ", ex);
-            } finally {
-                monitor.fireProgressChange(50);
-                closeWindow(progressBar);
-            }
-
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-            if (igvArgs.getGenomeId() != null) {
-                contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
-            } else if (igvArgs.getSessionFile() == null) {
-                String genomeId = preferenceManager.getDefaultGenome();
-                contentPane.getCommandBar().selectGenome(genomeId);
+            boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+            if (affectiveMode) {
+                closeWindow(progressBar);
+                GenomeManager.getInstance().setCurrentGenome(new AffectiveGenome());
+            }
+            else {
+                try {
+                    contentPane.getCommandBar().initializeGenomeList(monitor);
+                } catch (FileNotFoundException ex) {
+                    JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
+                    log.error("Error initializing genome list: ", ex);
+                } catch (NoRouteToHostException ex) {
+                    JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
+                    log.error("Network error initializing genome list: ", ex);
+                } finally {
+                    monitor.fireProgressChange(50);
+                    closeWindow(progressBar);
+                }
+
+                  if (igvArgs.getGenomeId() != null) {
+                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                } else if (igvArgs.getSessionFile() == null) {
+                    String genomeId = preferenceManager.getDefaultGenome();
+                    contentPane.getCommandBar().selectGenome(genomeId);
+                }
             }
 
             //If there is an argument assume it is a session file or url
