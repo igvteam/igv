@@ -561,10 +561,9 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private boolean addPredefinedLoadItems(JMenu fileMenu) {
+    private void addPredefinedLoadItems(JMenu fileMenu) {
         InputStream is = null;
         Properties properties = null;
-        boolean isInternal = false;
 
         try {
             String url = System.getProperty("loadMenu");
@@ -572,10 +571,9 @@ public class MainWindow extends JFrame {
             is = ParsingUtils.openInputStream(url);
             properties = new Properties();
             properties.load(is);
-            isInternal = (url == DEFAULT_LOAD_MENU);
         } catch (Exception error) {
             System.err.println("Can't find mainwindow.properties.");
-            return false;
+            return;
         }
         // TreeSet is sorted, so properties file is implemented in order
         TreeSet<String> keys = new TreeSet<String>(properties.stringPropertyNames());
@@ -584,7 +582,7 @@ public class MainWindow extends JFrame {
             final String[] values = value.split(",");
             if (values.length != 3 && values.length != 1) {
                 System.err.println("Improperly formatted mainwindow.properties file");
-                return false;
+                return;
             }
             if (values.length == 1) {
                 fileMenu.addSeparator();
@@ -613,7 +611,6 @@ public class MainWindow extends JFrame {
             }
         }
         fileMenu.addSeparator();
-        return isInternal;
     }
 
 
@@ -812,30 +809,49 @@ public class MainWindow extends JFrame {
 
         //---- resolutionSlider ----
         resolutionSlider = new JSlider();
-        resolutionSlider.setMaximum(9);
-        resolutionSlider.setMajorTickSpacing(1);
-        resolutionSlider.setPaintTicks(true);
-        resolutionSlider.setSnapToTicks(true);
-        resolutionSlider.setPaintLabels(true);
-        resolutionSlider.setMinorTickSpacing(1);
 
-
-        // TODO -- the available resolutions should be read from the dataset (hic) file
-        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
-        Font f = FontManager.getFont(8);
-        for (int i = 0; i < Preprocessor.bpResLabels.length; i++) {
-            if ((i + 1) % 2 == 0) {
+        if (System.getProperty("restricted") != null && System.getProperty("restricted").equals("true")) {
+            resolutionSlider.setMaximum(6);
+            resolutionSlider.setMajorTickSpacing(1);
+            resolutionSlider.setPaintTicks(true);
+            resolutionSlider.setSnapToTicks(true);
+            resolutionSlider.setPaintLabels(true);
+            resolutionSlider.setMinorTickSpacing(1);
+            // TODO -- the available resolutions should be read from the dataset (hic) file
+            Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
+            Font f = FontManager.getFont(8);
+            for (int i = 0; i < 7; i++) {
                 final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
                 tickLabel.setFont(f);
                 resolutionLabels.put(i, tickLabel);
             }
+            resolutionSlider.setLabelTable(resolutionLabels);
         }
+        else {
+            resolutionSlider.setMaximum(9);
+            resolutionSlider.setMajorTickSpacing(1);
+            resolutionSlider.setPaintTicks(true);
+            resolutionSlider.setSnapToTicks(true);
+            resolutionSlider.setPaintLabels(true);
+            resolutionSlider.setMinorTickSpacing(1);
 
-        JLabel fragLabel = new JLabel("1f");
-        fragLabel.setFont(f);
-        resolutionLabels.put(9, fragLabel);
-        resolutionSlider.setLabelTable(resolutionLabels);
 
+            // TODO -- the available resolutions should be read from the dataset (hic) file
+            Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
+            Font f = FontManager.getFont(8);
+            for (int i = 0; i < Preprocessor.bpResLabels.length; i++) {
+                if ((i + 1) % 2 == 0) {
+                    final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
+                    tickLabel.setFont(f);
+                    resolutionLabels.put(i, tickLabel);
+                }
+            }
+
+            JLabel fragLabel = new JLabel("1f");
+            fragLabel.setFont(f);
+            resolutionLabels.put(9, fragLabel);
+            resolutionSlider.setLabelTable(resolutionLabels);
+        }
 
         // Setting the zoom should always be done by calling resolutionSlider.setValue() so work isn't done twice.
         resolutionSlider.addChangeListener(new ChangeListener() {
@@ -844,28 +860,10 @@ public class MainWindow extends JFrame {
 
             public void stateChanged(ChangeEvent e) {
                 if (!resolutionSlider.getValueIsAdjusting()) {
-
-
                     int idx = resolutionSlider.getValue();
-
                     // Temporary hack -- "9" means fragment resolution  (1f).
                     HiC.Unit unit = idx == 9 ? HiC.Unit.FRAG : HiC.Unit.BP;
-
                     int tmp = idx >= 9 ? idx - 9 : idx;
-                    // Temporary hacks for non-internal hic viewer; called when set maximum called, also when drawing initially
-
-                    if (hic.dataset == null) {
-                        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
-                        Font f = FontManager.getFont(8);
-                        for (int i = 0; i < 7; i++) {
-                            final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
-                            tickLabel.setFont(f);
-                            resolutionLabels.put(i, tickLabel);
-                        }
-                        resolutionSlider.setLabelTable(resolutionLabels);
-                        return;
-                    }
-
                     int zoom = Math.max(0, Math.min(tmp, hic.dataset.getNumberZooms(unit)));
 
                     if (hic.zd != null && zoom == hic.zd.getZoom() && unit == hic.getUnit()) {
@@ -1055,7 +1053,7 @@ public class MainWindow extends JFrame {
         fileMenu.addSeparator();
 
         // Pre-defined datasets.  TODO -- generate from a file
-        boolean isInternal = addPredefinedLoadItems(fileMenu);
+        addPredefinedLoadItems(fileMenu);
 
         JMenuItem saveToImage = new JMenuItem();
         saveToImage.setText("Save to image");
@@ -1220,12 +1218,10 @@ public class MainWindow extends JFrame {
         extrasMenu.add(readPearsons);
 
         extrasMenu.add(dumpPearsons);
-        if (isInternal) {
+        if (System.getProperty("restricted") == null || System.getProperty("restricted").equals("false")) {
             menuBar.add(extrasMenu);
         }
-        else {
-            resolutionSlider.setMaximum(6);
-        }
+
         return menuBar;
     }
 
