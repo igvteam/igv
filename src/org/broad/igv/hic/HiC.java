@@ -2,6 +2,7 @@ package org.broad.igv.hic;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.*;
+import org.broad.igv.hic.track.HiCGridAxis;
 
 import javax.swing.*;
 import java.awt.*;
@@ -264,6 +265,18 @@ public class HiC {
 
         mainWindow.updateZoom(unit, zd.getZoom());
         mainWindow.refresh();
+    }
+
+    public void centerFragment(int fragmentX, int fragmentY) {
+        if(zd != null) {
+            HiCGridAxis xAxis = zd.getxGridAxis();
+            HiCGridAxis yAxis = zd.getyGridAxis();
+
+            int binX = xAxis.getBinNumberForFragment(fragmentX);
+            int binY = yAxis.getBinNumberForFragment(fragmentY);
+            center(binX, binY);
+
+        }
     }
 
     public void center(int binX, int binY) {

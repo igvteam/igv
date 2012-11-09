@@ -1,6 +1,7 @@
 package org.broad.igv.hic;
 
 import com.jidesoft.swing.JidePopupMenu;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.track.HiCFragmentAxis;
@@ -430,7 +431,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             if (hic == null) return;
 
-            if (!e.isPopupTrigger()) {
+            if (!e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1 && !e.isControlDown()) {
 
                 if (hic.isWholeGenome()) {
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
@@ -471,6 +472,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     hic.setZoom(newZoom, xGenome, yGenome);
 
                 } else {
+
+                    if (hic == null) return;
 
                     int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
@@ -588,7 +591,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     txt.append("<html>");
                     txt.append(hic.xContext.getChromosome().getName());
                     txt.append(":");
-                    txt.append(formatter.format (xGenome));
+                    txt.append(formatter.format(xGenome));
                     txt.append("-");
                     txt.append(formatter.format(xGenomeEnd));
                     if (xGridAxis instanceof HiCFragmentAxis) {
@@ -638,8 +641,26 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             }
         });
-
         menu.add(mi);
+
+        final JMenuItem mi2 = new JMenuItem("Goto fragment...");
+        mi2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String fragmentString = JOptionPane.showInputDialog(HeatmapPanel.this, "Enter fragment range in the form x:y");
+                if (fragmentString != null) {
+                    String[] tokens = Globals.colonPattern.split(fragmentString);
+                    int x = Integer.parseInt(tokens[0].replace(",", ""));
+                    int y = (tokens.length > 1) ?  Integer.parseInt(tokens[1].replace(",", "")) : x;
+                    hic.centerFragment(x, y);
+
+                }
+            }
+        });
+        if (hic != null) {
+            menu.add(mi2);
+        }
+
 
         return menu;
 

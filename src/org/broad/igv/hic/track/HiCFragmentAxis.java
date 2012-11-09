@@ -32,7 +32,7 @@ public class HiCFragmentAxis implements HiCGridAxis {
 
 
     /**
-     * @param sites ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
+     * @param sites  ordered by start position.  Its assumed bins are contiguous, no gaps and no overlap.
      * @param length
      */
     public HiCFragmentAxis(int[] sites, int length) {
@@ -81,7 +81,8 @@ public class HiCFragmentAxis implements HiCGridAxis {
      *
      * @param position The genome position to search for within that array
      * @return The fragment location such that position >= sites[retVal-1] and position <  sites[retVal]
-     */    @Override
+     */
+    @Override
     public int getBinNumberForGenomicPosition(int position) {
         int lo = 0;
         int hi = sites.length - 1;
@@ -94,6 +95,15 @@ public class HiCFragmentAxis implements HiCGridAxis {
             else return mid + 1;
         }
         return lo;
+    }
+
+    @Override
+    public int getBinNumberForFragment(int fragment) {
+        if (fragment <= sites.length) {
+            return fragment;
+        } else {
+            throw new RuntimeException("Fragment: " + fragment + " is out of range");
+        }
     }
 
     @Override

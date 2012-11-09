@@ -12,14 +12,16 @@ public class HiCFixedGridAxis implements HiCGridAxis {
     int binCount;
     int binSize;
     int igvZoom;
+    int[] sites;
 
-    public HiCFixedGridAxis(int binCount, int binSize) {
+    public HiCFixedGridAxis(int binCount, int binSize, int [] sites) {
 
         this.binCount = binCount;
         this.binSize = binSize;
+        this.sites = sites;
 
         // Compute an approximate igv zoom level
-        igvZoom = Math.max(0,  (int) (Math.log(binCount / 700) / Globals.log2));
+        igvZoom = Math.max(0, (int) (Math.log(binCount / 700) / Globals.log2));
 
     }
 
@@ -49,7 +51,18 @@ public class HiCFixedGridAxis implements HiCGridAxis {
     }
 
     @Override
+    public int getBinNumberForFragment(int fragment) {
+
+        if (fragment < sites.length) {
+            int genomicPosition = sites[fragment];
+            return getBinNumberForGenomicPosition(genomicPosition);
+        }
+        throw new RuntimeException("Fragment: " + fragment + " is out of range");
+    }
+
+    @Override
     public int getBinCount() {
         return binCount;
     }
+
 }

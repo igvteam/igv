@@ -132,14 +132,13 @@ public class MatrixZoomData {
         }
 
 
+        int[] xSites = fragmentSitesMap.get(chr1.getName());
+        int[] ySites = fragmentSitesMap.get(chr2.getName());
         if (unit == HiC.Unit.BP) {
-            xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
-            yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize);
+            xGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize, xSites);
+            yGridAxis = new HiCFixedGridAxis(blockBinCount * blockColumnCount, binSize, ySites);
         } else {
-            int [] xSites = fragmentSitesMap.get(chr1.getName());
             xGridAxis = new HiCFragmentAxis(xSites, chr1.getLength());
-
-            int [] ySites = fragmentSitesMap.get(chr2.getName());
             yGridAxis = new HiCFragmentAxis(ySites, chr2.getLength());
 
         }
