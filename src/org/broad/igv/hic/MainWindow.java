@@ -850,6 +850,20 @@ public class MainWindow extends JFrame {
                     HiC.Unit unit = idx == 9 ? HiC.Unit.FRAG : HiC.Unit.BP;
 
                     int tmp = idx >= 9 ? idx - 9 : idx;
+                    // Temporary hacks for non-internal hic viewer; called when set maximum called, also when drawing initially
+
+                    if (hic.dataset == null) {
+                        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
+                        Font f = FontManager.getFont(8);
+                        for (int i = 0; i < 7; i++) {
+                            final JLabel tickLabel = new JLabel(Preprocessor.bpResLabels[i]);
+                            tickLabel.setFont(f);
+                            resolutionLabels.put(i, tickLabel);
+                        }
+                        resolutionSlider.setLabelTable(resolutionLabels);
+                        return;
+                    }
+
                     int zoom = Math.max(0, Math.min(tmp, hic.dataset.getNumberZooms(unit)));
 
                     if (hic.zd != null && zoom == hic.zd.getZoom() && unit == hic.getUnit()) {
@@ -1206,6 +1220,9 @@ public class MainWindow extends JFrame {
         extrasMenu.add(dumpPearsons);
         if (isInternal) {
             menuBar.add(extrasMenu);
+        }
+        else {
+            resolutionSlider.setMaximum(6);
         }
         return menuBar;
     }
