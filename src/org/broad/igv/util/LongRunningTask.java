@@ -52,11 +52,9 @@ public class LongRunningTask implements Callable {
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             runnable.run();
-            return null;
         } catch (Exception e) {
             MessageUtils.showMessage("<html>Unexpected error: " + e.getMessage() + ".<br>See igv.log for more details");
             log.error("Exception running task", e);
-            return null;
         } finally {
             //log.info("Removing wait cursor " + runnable.getName());
             WaitCursorManager.removeWaitCursor(token);
@@ -65,6 +63,7 @@ public class LongRunningTask implements Callable {
                 IGV.getInstance().notifyAll();
             }
         }
+        return null;
 
     }
 
