@@ -3,9 +3,12 @@ package org.broad.igv.hic;
 import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.hic.track.HiCFragmentAxis;
+import org.broad.igv.hic.track.HiCGridAxis;
 import org.broad.igv.util.ObjectCache;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.text.NumberFormat;
 
 /**
  * @author jrobinso
@@ -20,6 +24,8 @@ import java.io.*;
  */
 public class HeatmapPanel extends JComponent implements Serializable {
 
+
+    NumberFormat formatter = NumberFormat.getInstance();
 
     enum DragMode {NONE, PAN, ZOOM}
 
@@ -522,14 +528,15 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 }
 
 
-
+                HiCGridAxis xGridAxis = hic.zd.getxGridAxis();
+                HiCGridAxis yGridAxis = hic.zd.getyGridAxis();
                 if (hic.isWholeGenome()) {
 
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int binY = hic.xContext.getBinOrigin() + (int) (e.getY() / hic.xContext.getScaleFactor());
 
-                    int xGenome = hic.zd.getxGridAxis().getGenomicStart(binX);
-                    int yGenome = hic.zd.getyGridAxis().getGenomicStart(binY);
+                    int xGenome = xGridAxis.getGenomicStart(binX);
+                    int yGenome = yGridAxis.getGenomicStart(binY);
 
                     Chromosome xChrom = null;
                     Chromosome yChrom = null;
@@ -550,14 +557,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
                             int yChromPos = (int) ((yGenome - leftBoundaryY) * 1000);
 
                             StringBuffer txt = new StringBuffer();
-                            txt.append("<html>");
-                            txt.append(yChrom.getName());
-                            txt.append(":");
-                            txt.append(String.valueOf(yChromPos));
-                            txt.append("<br>");
                             txt.append(xChrom.getName());
                             txt.append(":");
                             txt.append(String.valueOf(xChromPos));
+                            txt.append("<html>");
+                            txt.append("<br>");
+
+                            txt.append(yChrom.getName());
+                            txt.append(":");
+                            txt.append(String.valueOf(yChromPos));
+
                             setToolTipText(txt.toString());
                             return;
 
@@ -568,8 +577,10 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int binY = hic.xContext.getBinOrigin() + (int) (e.getY() / hic.xContext.getScaleFactor());
 
-                    int xGenome = hic.zd.getxGridAxis().getGenomicStart(binX);
-                    int yGenome = hic.zd.getyGridAxis().getGenomicStart(binY);
+                    int xGenome = xGridAxis.getGenomicStart(binX);
+                    int yGenome = yGridAxis.getGenomicStart(binY);
+                    int xGenomeEnd = xGridAxis.getGenomicEnd(binX);
+                    int yGenomeEnd = yGridAxis.getGenomicEnd(binY);
 
                     //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
                     //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
@@ -577,11 +588,24 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     txt.append("<html>");
                     txt.append(hic.xContext.getChromosome().getName());
                     txt.append(":");
-                    txt.append(String.valueOf(xGenome));
+                    txt.append(formatter.format (xGenome));
+                    txt.append("-");
+                    txt.append(formatter.format(xGenomeEnd));
+                    if (xGridAxis instanceof HiCFragmentAxis) {
+                        txt.append("  (" + formatter.format(binX) + ")");
+                    }
+
                     txt.append("<br>");
                     txt.append(hic.yContext.getChromosome().getName());
                     txt.append(":");
-                    txt.append(String.valueOf(yGenome));
+                    txt.append(formatter.format(yGenome));
+                    txt.append("-");
+                    txt.append(formatter.format(yGenomeEnd));
+
+                    if (yGridAxis instanceof HiCFragmentAxis) {
+                        txt.append("  (" + formatter.format(binY) + ")");
+                    }
+
                     setToolTipText(txt.toString());
                 }
             }
