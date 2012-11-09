@@ -10,6 +10,7 @@
  */
 package org.broad.igv.data;
 
+import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
@@ -18,6 +19,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -70,6 +72,10 @@ public class WiggleParser {
     Set<String> unsortedChromosomes;
     int estArraySize;
     Map<String, Integer> longestFeatureMap = new HashMap();
+    // Used to estimate percentiles
+    DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(1000);
+
+
 
     public WiggleParser(ResourceLocator locator) {
         this(locator, null);
@@ -314,8 +320,16 @@ public class WiggleParser {
             }
         }
 
+
         dataset.sort(unsortedChromosomes);
         dataset.setLongestFeatureMap(longestFeatureMap);
+
+        double [] sd = sampledData.toArray();
+        double percent10 = StatUtils.percentile(sd, 10.0);
+        double percent90 = StatUtils.percentile(sd, 90.0);
+        dataset.setPercent10((float) percent10);
+        dataset.setPercent90((float) percent90);
+
         return dataset;
     }
 
@@ -370,6 +384,13 @@ public class WiggleParser {
             String convertedChr = genome == null ? lastChr : genome.getChromosomeAlias(lastChr);
             dataset.addDataChunk(convertedChr, startLocations, endLocations, data);
             //sz = startLocations.size();
+
+            float [] f = data.toArray();
+            for(int i=0; i<f.length; i++) {
+                sampledData.add(f[i]);
+            }
+
+
         }
         startLocations = new IntArrayList(estArraySize);
         endLocations = new IntArrayList(estArraySize);

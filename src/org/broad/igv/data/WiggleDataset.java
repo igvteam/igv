@@ -46,11 +46,14 @@ public class WiggleDataset implements Dataset {
     Map<String, IntArrayList> startLocationsMap = new HashMap();
     Map<String, IntArrayList> endLocationsMap = new HashMap();
     Map<String, FloatArrayList> dataMap = new HashMap();
+
     float dataMin = 0;
     float dataMax = 0;
+    float percent90 = 0;
+    float percent10 = 0;
+
     private Map<String, Integer> longestFeatureMap;
     private TrackType type = TrackType.OTHER;
-
 
     public WiggleDataset(Genome genome, String name) {
         this.genome = genome;
@@ -240,5 +243,21 @@ public class WiggleDataset implements Dataset {
 
     public void setType(TrackType type) {
         this.type = type;
+    }
+
+    public void setPercent10(float percent10) {
+        this.percent10 = percent10;
+    }
+
+    public float getPercent10() {
+        return percent10;
+    }
+
+    public void setPercent90(float percent90) {
+        this.percent90 = percent90;
+    }
+
+    public float getPercent90() {
+        return percent90;
     }
 }

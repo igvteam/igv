@@ -51,10 +51,12 @@ public class HiCWigAdapter extends HiCDataAdapter {
         float max = properties.getMaxValue();
         float mid = properties.getMidValue();
         if (Float.isNaN(min) || Float.isNaN(max)) {
-            // TODO sample data
-            min = 0;
             mid = 0;
-            max = 10;
+            min = dataset.getPercent10();
+            max = dataset.getPercent90();
+            if(min > 0 && max > 0) min = 0;
+            else if(min < 0 && max < 0) max = 0;
+
 
         } else {
             if (Float.isNaN(mid)) {
