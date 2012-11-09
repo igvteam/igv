@@ -202,7 +202,7 @@ public class MainWindow extends JFrame {
                     DisplayOption.PEARSON}));
 
             displayOptionComboBox.setSelectedIndex(0);
-            setTitle(file);
+            //setTitle(file);
             hic.xContext = null;
             hic.yContext = null;
             refreshChromosomes();
@@ -590,6 +590,7 @@ public class MainWindow extends JFrame {
                 fileMenu.addSeparator();
             } else {
                 final int maxValue = Integer.parseInt(values[2]);
+                final String name = values[0];
                 JMenuItem item = new JMenuItem(values[0]);
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -601,6 +602,7 @@ public class MainWindow extends JFrame {
                             colorRangeSlider.setUpperValue((int) (maxValue * 3 / 4));
                             hic.reset();
                             load(values[1]);
+                            setTitle(name);
                         } catch (IOException e1) {
                             JOptionPane.showMessageDialog(MainWindow.this, "Error loading data: " + e1.getMessage());
                         }
