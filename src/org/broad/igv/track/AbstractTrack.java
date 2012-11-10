@@ -15,6 +15,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.RendererFactory;
@@ -1102,6 +1103,11 @@ public abstract class AbstractTrack implements Track {
 
     public float getYLine() {
         return yLine;
+    }
+
+    @Override
+    public void updateGenome(Genome genome) {
+        // Default is to do nothing
     }
 
     @Override

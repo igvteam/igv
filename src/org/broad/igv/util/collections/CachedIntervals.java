@@ -223,6 +223,12 @@ public class CachedIntervals<T extends Interval> {
             }
         }
         if (trim) {
+            // Expand to max size
+            if (locusEnd - locusStart < maxIntervalSize) {
+                int center = (locusStart + locusEnd) / 2;
+                locusStart = Math.max(0, center - maxIntervalSize / 2);
+                locusEnd = locusStart + maxIntervalSize;
+            }
             interval.trimTo(interval.getChr(), locusStart, locusEnd, interval.getZoom());
         }
     }

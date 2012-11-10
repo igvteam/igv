@@ -191,6 +191,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
+    @Override
+    public void updateGenome(Genome genome) {
+        dataManager.updateGenome(genome);
+    }
+
     /**
      * Set the experiment type (RNA, Bisulfite, or OTHER)
      *
@@ -219,9 +224,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    public void setRenderer(FeatureRenderer renderer) {
-        this.renderer = renderer;
-    }
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
