@@ -116,7 +116,9 @@ public class HiC {
      */
     public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY) {
 
-        if (newZoom < 0 || newZoom > dataset.getNumberZooms(unit)) return;
+        int maxZoom = MainWindow.isRestricted() ? 6 : dataset.getNumberZooms(unit);
+
+        if (newZoom < 0 || newZoom > maxZoom) return;
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
@@ -200,8 +202,10 @@ public class HiC {
      */
     public void zoomTo(final int xBP0, final int yBP0, final int xBP1, int yBP1, double genomicScale) {
 
+        int maxZoom = MainWindow.isRestricted() ? 6 : dataset.getNumberZooms(unit);
+
         // Find zoom level closest to prescribed scale
-        int newZoom = dataset.getNumberZooms(unit) - 1;
+        int newZoom = maxZoom;
         for (int z = 1; z < dataset.getNumberZooms(unit); z++) {
             if (dataset.getZoom(unit, z) < genomicScale) {
                 newZoom = z - 1;

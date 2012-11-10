@@ -113,6 +113,14 @@ public class MainWindow extends JFrame {
         return new MainWindow();
     }
 
+
+    public static  boolean isRestricted() {
+        return System.getProperty("restricted") != null && System.getProperty("restricted").equals("true");
+
+    }
+
+
+
     public void updateColorSlider(int min, int max, int value) {
         colorRangeSlider.setMinimum(min);
         colorRangeSlider.setMaximum(max);
@@ -1223,12 +1231,6 @@ public class MainWindow extends JFrame {
 
         return menuBar;
     }
-
-    private boolean isRestricted() {
-        return System.getProperty("restricted") != null && System.getProperty("restricted").equals("true");
-
-    }
-
 
     private JComboBox chrBox1;
     private JComboBox chrBox2;
