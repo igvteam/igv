@@ -363,6 +363,13 @@ public class AlignmentDataManager {
         //log.info("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
 
+
+        // Insure the cache has enough span to hold alignments
+        int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
+        int maxIntervalSize = MAX_INTERVAL_MULTIPLE * Math.max( (end - start), windowSize);
+        loadedIntervalMap.setMaxIntervalSize(maxIntervalSize);
+
+
         NamedRunnable runnable = new NamedRunnable() {
 
             public String getName() {
@@ -439,7 +446,7 @@ public class AlignmentDataManager {
     }
 
     private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
-        //loadedIntervalMap.setMaxIntervalSize(MAX_INTERVAL_MULTIPLE * (int) (context.getEndLocation() - context.getOrigin()));
+
         loadedIntervalMap.setLocusList(FrameManager.getFrames());
         loadedIntervalMap.put(interval);
     }
