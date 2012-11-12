@@ -521,7 +521,7 @@ public class HiCTools {
 
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr), chromosomeMap.get(chr));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
-        final DensityFunction df = dataset.getDensityFunction(zd.getZoom()); // zoomToDensityMap.get(zd.getZoom());
+        final DensityFunction df = dataset.getExpectedValues(zd.getUnit().toString(), zd.getBinSize());
         double[] eigenvector = zd.computeEigenvector(df, 0);
         for (double ev : eigenvector)
             System.out.print(ev + " ");
@@ -582,7 +582,7 @@ public class HiCTools {
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
         if (type.equals("oe") || type.equals("pearson")) {
-            final DensityFunction df = dataset.getDensityFunction(zd.getZoom());
+            final DensityFunction df = dataset.getExpectedValues(zd.getUnit().toString(), zd.getBinSize());
             if (df == null) {
                 System.err.println("Densities not calculated to this resolution.");
                 System.exit(-1);

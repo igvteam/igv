@@ -3,6 +3,7 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.ChromosomeImpl;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -10,10 +11,7 @@ import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -222,12 +220,19 @@ public class DatasetReaderV2 implements DatasetReader {
         int nResolutions = dis.readInt();
         // dataset.setNumberZooms(nZooms);
 
-        MatrixZoomData[] zd = new MatrixZoomData[nResolutions];
-        for (int i = 0; i < nResolutions; i++) {
-            zd[i] = new MatrixZoomData(chr1, chr2, this, dis, fragmentSitesMap);
-        }
 
-        Matrix m = new Matrix(c1, c2, zd);
+        // TODO temporarily ignore all frag resolutions except "1f".  New UI needed for others
+
+        List<MatrixZoomData> zdList  = new ArrayList<MatrixZoomData>();
+        for (int i = 0; i < nResolutions; i++) {
+            MatrixZoomData zd = new MatrixZoomData(chr1, chr2, this, dis, fragmentSitesMap);
+            if(zd.getUnit() == HiC.Unit.BP || zd.getBinSize() == 1) {
+                zdList.add(zd);
+            }
+        }
+        MatrixZoomData [] zdArray =  zdList.toArray(new MatrixZoomData[zdList.size()]);
+
+        Matrix m = new Matrix(c1, c2, zdArray);
         return m;
     }
 

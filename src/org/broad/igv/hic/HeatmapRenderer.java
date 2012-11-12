@@ -36,7 +36,7 @@ public class HeatmapRenderer {
         this.mainWindow = mainWindow;
         this.hic = hic;
 
-        oeColorScale = new HiCColorScale();
+        oeColorScale = new OEColorScale();
         pearsonColorScale = new HiCColorScale();
     }
 
@@ -88,7 +88,7 @@ public class HeatmapRenderer {
             // Iterate through blocks overlapping visible region
             DensityFunction df = null;
             if (displayOption == MainWindow.DisplayOption.OE) {
-                df = hic.getDensityFunction(zd.getZoom());
+                df = hic.getDensityFunction();
             }
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
@@ -160,7 +160,7 @@ public class HeatmapRenderer {
                     // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     score = normCounts;
-                    score = Math.log10(score);
+                    //score = Math.log10(score);
                 } else {
                     score = rec.getCounts() ;
                 }

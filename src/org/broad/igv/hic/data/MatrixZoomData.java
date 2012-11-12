@@ -176,6 +176,10 @@ public class MatrixZoomData {
 
     }
 
+    public HiC.Unit getUnit() {
+        return unit;
+    }
+
     public int getZoomMultiplier() {
         return binSize / 5000;
     }
