@@ -2217,7 +2217,15 @@ public class IGV {
                 }
 
                 if (igvArgs.getGenomeId() != null) {
-                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                    if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
+                        try {
+                            IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
+                        } catch (IOException e) {
+                            log.error("Error loading genome file: " + igvArgs.getGenomeId());
+                        }
+                    } else {
+                        contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                    }
                 } else if (igvArgs.getSessionFile() == null) {
                     String genomeId = preferenceManager.getDefaultGenome();
                     contentPane.getCommandBar().selectGenome(genomeId);
