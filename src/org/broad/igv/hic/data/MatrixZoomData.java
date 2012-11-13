@@ -280,11 +280,12 @@ public class MatrixZoomData {
     public float getObservedValue(int binX, int binY) {
         List<Block> blocks = getBlocksOverlapping(binX, binY, binX, binY);
         // There should only be one
-
+        boolean intra = (chr1 == chr2);
         if(blocks.size() > 0) {
             Block b = blocks.get(0);
             for(ContactRecord rec : b.getContactRecords()) {
-                if((rec.getBinX() == binX && rec.getBinY() == binY) || (rec.getBinX() == binY && rec.getBinY() == binX)) {
+                if((rec.getBinX() == binX && rec.getBinY() == binY) ||
+                        (intra && rec.getBinX() == binY && rec.getBinY() == binX)) {
                     return rec.getCounts();
                 }
             }
