@@ -11,17 +11,13 @@
 
 package org.broad.igv.track;
 
-import com.google.common.base.Predicate;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.Interval;
-import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
 import java.util.*;
-
-import static org.broad.igv.util.collections.CollUtils.filteredCopy;
 
 /**
  * Represents a table of features, packed so there is no overlap.
@@ -30,7 +26,7 @@ import static org.broad.igv.util.collections.CollUtils.filteredCopy;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature> implements Interval {
+public class PackedFeatures<T extends Feature>{
     protected String trackName;
     protected String chr;
     protected int start;
@@ -40,6 +36,12 @@ public class PackedFeatures<T extends Feature> implements Interval {
     private static Logger log = Logger.getLogger(PackedFeatures.class);
     protected int maxFeatureLength = 0;
     protected static int maxLevels = 200;
+
+    /**
+     * No-arg constructor to allow subclassing
+     */
+    PackedFeatures(){
+    }
 
     PackedFeatures(String chr, int start, int end) {
         this.chr = chr;
@@ -62,11 +64,11 @@ public class PackedFeatures<T extends Feature> implements Interval {
     /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
-     *
      * @param feature
      * @return
      */
-    protected int getFeatureStartForPacking(Feature feature) {
+    protected int getFeatureStartForPacking(Feature feature)
+    {
         return feature.getStart();
     }
 
@@ -74,11 +76,11 @@ public class PackedFeatures<T extends Feature> implements Interval {
     /**
      * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
      * This can be overridden in a subclass
-     *
      * @param feature
      * @return
      */
-    protected int getFeatureEndForPacking(Feature feature) {
+    protected int getFeatureEndForPacking(Feature feature)
+    {
         return feature.getEnd();
     }
 
@@ -86,25 +88,15 @@ public class PackedFeatures<T extends Feature> implements Interval {
         return getRows().size();
     }
 
-    public boolean contains(String chr, int start, int end) {
+    public boolean containsInterval(String chr, int start, int end) {
         return this.getChr().equals(chr) && start >= this.getStart() && end <= this.getEnd();
-    }
-
-    @Override
-    public boolean contains(String chr, int start, int end, int zoom) {
-        return this.contains(chr, start, end);
-    }
-
-    @Override
-    public boolean overlaps(String chr, int start, int end, int zoom) {
-        return this.getChr().equals(chr) && this.start <= end && this.end >= start;
     }
 
     /**
      * Allocates each feature to the rows such that there is no overlap.
      *
      * @param iter TabixLineReader wrapping the collection of alignments. Note that this should
-     *             really be an Iterator<T>, but it can't be subclassed if that's the case.
+     * really be an Iterator<T>, but it can't be subclassed if that's the case.
      */
     List<FeatureRow> packFeatures(Iterator iter) {
 
@@ -155,7 +147,7 @@ public class PackedFeatures<T extends Feature> implements Interval {
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {
 
-                if (IGV.hasInstance()) {
+                if(IGV.hasInstance()) {
                     String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
                             ".<br>Not all features will be shown." +
                             "<br>Please contact igv-team@broadinstitute.org";
@@ -243,60 +235,6 @@ public class PackedFeatures<T extends Feature> implements Interval {
 
     public int getMaxFeatureLength() {
         return maxFeatureLength;
-    }
-
-    @Override
-    public boolean canMerge(Interval i) {
-        if (!overlaps(i.getChr(), i.getStart(), i.getEnd(), i.getZoom())
-                || !(i instanceof PackedFeatures)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean merge(Interval i) {
-        boolean canMerge = this.canMerge(i);
-        if (!canMerge) return false;
-        List<T> originalFeatures = features;
-        try {
-            PackedFeatures<T> other = (PackedFeatures<T>) i;
-            List<T> mergedFeatures = FeatureUtils.combineSortedFeatureListsNoDups(getFeatures(), other.getFeatures(), start, end);
-            features = new ArrayList<T>(mergedFeatures.size());
-            rows = this.packFeatures(mergedFeatures.iterator());
-        } catch (ClassCastException e) {
-            //Try to undo if we hit this
-            features = originalFeatures;
-            return false;
-        }
-
-        start = Math.min(start, i.getStart());
-        end = Math.max(end, i.getEnd());
-
-        return true;
-    }
-
-    @Override
-    public boolean trimTo(String chr, int start, int end, int zoom) {
-        Predicate overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
-
-        Collection<T> newFeatures = filteredCopy(features, overlapPredicate);
-        boolean anyLost = newFeatures.size() != features.size();
-
-        if (anyLost) {
-            features.clear();
-            rows = packFeatures(newFeatures.iterator());
-
-            this.start = start;
-            this.end = end;
-        }
-
-        return anyLost;
-    }
-
-    @Override
-    public int getZoom() {
-        return -1;
     }
 
     class FeatureRow {
