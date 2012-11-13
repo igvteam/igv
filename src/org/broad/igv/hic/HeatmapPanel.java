@@ -3,6 +3,7 @@ package org.broad.igv.hic;
 import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.hic.track.HiCFragmentAxis;
 import org.broad.igv.hic.track.HiCGridAxis;
@@ -473,7 +474,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                 } else {
 
-                    if (hic == null  || hic.xContext == null) return;
+                    if (hic == null || hic.xContext == null) return;
 
                     int centerBinX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int centerBinY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
@@ -581,8 +582,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int binY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
 
-                    float value = hic.zd.getObservedValue(binX, binY);
-
                     int xGenome = xGridAxis.getGenomicStart(binX);
                     int yGenome = yGridAxis.getGenomicStart(binY);
                     int xGenomeEnd = xGridAxis.getGenomicEnd(binX);
@@ -612,7 +611,24 @@ public class HeatmapPanel extends JComponent implements Serializable {
                         txt.append("  (" + formatter.format(binY) + ")");
                     }
 
-                    txt.append("<br>value = " + ((int) value));
+                    if (hic.getDisplayOption() == MainWindow.DisplayOption.PEARSON) {
+                        float value = hic.zd.getPearsonValue(binX, binY);
+                        txt.append("<br>value = " + formatter.format(value));
+                    } else {
+                        float value = hic.zd.getObservedValue(binX, binY);
+                        DensityFunction df = hic.getDensityFunction();
+                        txt.append("<br>observed value = " + ((int) value));
+                        if (df != null) {
+                            int c1 = hic.xContext.getChromosome().getIndex();
+                            int c2 = hic.yContext.getChromosome().getIndex();
+                            if (c1 == c2) {
+                                int distance = Math.abs(binX - binY);
+                                double ev = df.getDensity(c1, distance);
+                                txt.append("<br>expected value = " + formatter.format(ev));
+                                txt.append("<br>O/E            = " + formatter.format(value / ev));
+                            }
+                        }
+                    }
 
                     setToolTipText(txt.toString());
                 }
@@ -658,18 +674,17 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     String[] tokens = Globals.colonPattern.split(fragmentString);
                     HiC.Unit unit = HiC.Unit.FRAG;
                     int idx = 0;
-                    if(tokens.length == 3) {
-                        if(tokens[idx++].toLowerCase().equals("bp")) {
+                    if (tokens.length == 3) {
+                        if (tokens[idx++].toLowerCase().equals("bp")) {
                             unit = HiC.Unit.BP;
                         }
                     }
                     int x = Integer.parseInt(tokens[idx++].replace(",", ""));
-                    int y = (tokens.length > idx) ?  Integer.parseInt(tokens[idx].replace(",", "")) : x;
+                    int y = (tokens.length > idx) ? Integer.parseInt(tokens[idx].replace(",", "")) : x;
 
-                    if(unit == HiC.Unit.FRAG) {
-                    hic.centerFragment(x, y);
-                    }
-                    else {
+                    if (unit == HiC.Unit.FRAG) {
+                        hic.centerFragment(x, y);
+                    } else {
                         hic.centerBP(x, y);
                     }
 
