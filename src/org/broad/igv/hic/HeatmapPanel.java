@@ -531,6 +531,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 }
 
 
+                // Update popup text
                 HiCGridAxis xGridAxis = hic.zd.getxGridAxis();
                 HiCGridAxis yGridAxis = hic.zd.getyGridAxis();
                 if (hic.isWholeGenome()) {
@@ -560,10 +561,10 @@ public class HeatmapPanel extends JComponent implements Serializable {
                             int yChromPos = (int) ((yGenome - leftBoundaryY) * 1000);
 
                             StringBuffer txt = new StringBuffer();
+                            txt.append("<html>");
                             txt.append(xChrom.getName());
                             txt.append(":");
                             txt.append(String.valueOf(xChromPos));
-                            txt.append("<html>");
                             txt.append("<br>");
 
                             txt.append(yChrom.getName());
@@ -579,6 +580,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 } else {
                     int binX = hic.xContext.getBinOrigin() + (int) (e.getX() / hic.xContext.getScaleFactor());
                     int binY = hic.yContext.getBinOrigin() + (int) (e.getY() / hic.yContext.getScaleFactor());
+
+                    float value = hic.zd.getObservedValue(binX, binY);
 
                     int xGenome = xGridAxis.getGenomicStart(binX);
                     int yGenome = yGridAxis.getGenomicStart(binY);
@@ -608,6 +611,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     if (yGridAxis instanceof HiCFragmentAxis) {
                         txt.append("  (" + formatter.format(binY) + ")");
                     }
+
+                    txt.append("<br>value = " + ((int) value));
 
                     setToolTipText(txt.toString());
                 }

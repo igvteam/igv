@@ -272,6 +272,28 @@ public class MatrixZoomData {
         return b;
     }
 
+    /**
+     * Return the observed value at the specified location.   This implementation is naive, might get away with it!
+     * @param binX
+     * @param binY
+     */
+    public float getObservedValue(int binX, int binY) {
+        List<Block> blocks = getBlocksOverlapping(binX, binY, binX, binY);
+        // There should only be one
+
+        if(blocks.size() > 0) {
+            Block b = blocks.get(0);
+            for(ContactRecord rec : b.getContactRecords()) {
+                if((rec.getBinX() == binX && rec.getBinY() == binY) || (rec.getBinX() == binY && rec.getBinY() == binX)) {
+                    return rec.getCounts();
+                }
+            }
+        }
+        // No record found for this bin
+        return 0;
+    }
+
+
     public double[] getEigenvector() {
         return eigenvector;
     }
