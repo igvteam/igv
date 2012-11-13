@@ -241,18 +241,28 @@ public class MatrixZoomData {
 
     /**
      * Return the observed value at the specified location.   This implementation is naive, might get away with it!
+     *
      * @param binX
      * @param binY
      */
     public float getObservedValue(int binX, int binY) {
+
+        // Intra stores only lower diagonal
+        if (chr1 == chr2) {
+            if (binX > binY) {
+                int tmp = binX;
+                binX = binY;
+                binY = tmp;
+
+            }
+        }
+
         List<Block> blocks = getBlocksOverlapping(binX, binY, binX, binY);
-        // There should only be one
-        boolean intra = (chr1 == chr2);
-        if(blocks.size() > 0) {
+
+        if (blocks.size() > 0) {
             Block b = blocks.get(0);
-            for(ContactRecord rec : b.getContactRecords()) {
-                if((rec.getBinX() == binX && rec.getBinY() == binY) ||
-                        (intra && rec.getBinX() == binY && rec.getBinY() == binX)) {
+            for (ContactRecord rec : b.getContactRecords()) {
+                if (rec.getBinX() == binX && rec.getBinY() == binY) {
                     return rec.getCounts();
                 }
             }
@@ -362,12 +372,10 @@ public class MatrixZoomData {
     }
 
 
-
     public float getPearsonValue(int binX, int binY) {
-        if(pearsons != null) {
+        if (pearsons != null) {
             return pearsons.getEntry(binX, binY);
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -603,6 +611,7 @@ public class MatrixZoomData {
     public float getPercent80() {
         return percent80;
     }
+
     public float getPercent95() {
         return percent95;
     }

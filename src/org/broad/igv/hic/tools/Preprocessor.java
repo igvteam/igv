@@ -816,6 +816,7 @@ public class Preprocessor {
             int xBin = pos1 / binSize;
             int yBin = pos2 / binSize;
 
+            // Intra chromosome -- we'll store lower diagonal only
             if (chr1.equals(chr2)) {
                 int b1 = Math.min(xBin, yBin);
                 int b2 = Math.max(xBin, yBin);
