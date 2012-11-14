@@ -592,7 +592,7 @@ public class FilterGeneNetworkUI extends JDialog {
         geneTable = new JTable();
         buttonBar = new JPanel();
         totNumGenes = new JLabel();
-        showSeedOnly = new JToggleButton();
+        showSeedOnly = new JCheckBox();
         refFilter = new JButton();
         keepIsolated = new JCheckBox();
         okButton = new JButton();
@@ -1107,7 +1107,7 @@ public class FilterGeneNetworkUI extends JDialog {
     private JTable geneTable;
     private JPanel buttonBar;
     private JLabel totNumGenes;
-    private JToggleButton showSeedOnly;
+    private JCheckBox showSeedOnly;
     private JButton refFilter;
     private JCheckBox keepIsolated;
     private JButton okButton;
