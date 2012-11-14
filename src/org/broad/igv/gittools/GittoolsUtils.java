@@ -2,23 +2,17 @@ package org.broad.igv.gittools;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.tribble.Feature;
-import sun.org.mozilla.javascript.internal.ast.Loop;
 
-import java.lang.management.LockInfo;
 import java.util.*;
 
 /**
