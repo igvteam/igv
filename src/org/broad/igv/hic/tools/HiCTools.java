@@ -51,7 +51,7 @@ public class HiCTools {
         System.out.println("Usage: hictools sort <infile> <outfile>");
         System.out.println("       hictools pairsToBin <infile> <outfile> <genomeID>");
         System.out.println("       hictools binToPairs <infile> <outfile>");
-        System.out.println("       hictools printmatrix <observed/oe/pearson> <hicFile> <chr1> <chr2> <binsize> [outfile]");
+        System.out.println("       hictools printmatrix <observed/oe/expected/pearson> <hicFile> <chr1> <chr2> <binsize> [outfile]");
         System.out.println("       hictools eigenvector <hicFile> <chr> <binsize>");
         System.out.println("       hictools pre <options> <infile> <outfile> <genomeID>");
         System.out.println("  <options>: -d only calculate intra chromosome (diagonal) [false]");
@@ -579,16 +579,17 @@ public class HiCTools {
             System.err.println("Unknown bin size: " + binsize);
         }
 
+
         Matrix matrix = dataset.getMatrix(chromosomeMap.get(chr1), chromosomeMap.get(chr2));
         MatrixZoomData zd = matrix.getObservedMatrix(zoomIdx);
-        if (type.equals("oe") || type.equals("pearson")) {
+        if (type.equals("oe") || type.equals("pearson") || type.equals("expected")) {
             final DensityFunction df = dataset.getExpectedValues(zd.getUnit().toString(), zd.getBinSize());
             if (df == null) {
                 System.err.println("Densities not calculated to this resolution.");
                 System.exit(-1);
             }
             try {
-                zd.dumpOE(df, type.equals("oe"), les);
+                zd.dumpOE(df, type, les);
             } finally {
                 if (les != null)
                     les.close();

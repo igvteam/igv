@@ -521,13 +521,13 @@ public class MatrixZoomData {
     /**
      * Dump the O/E or Pearsons matrix to standard out in ascii format.
      *
-     * @param df
-     * @param isOE
-     * @param les
+     * @param df  Density function (expected values)
+     * @param type will be "oe", "pearsons", or "expected"
+     * @param les  output stream
      */
-    public void dumpOE(DensityFunction df, boolean isOE, LittleEndianOutputStream les) throws IOException {
+    public void dumpOE(DensityFunction df, String type, LittleEndianOutputStream les) throws IOException {
 
-        if (isOE) {
+        if (type.equals("oe")) {
             SparseRealMatrix oe = computeOE(df);
             int rows = oe.getRowDimension();
             int cols = oe.getColumnDimension();
@@ -566,7 +566,27 @@ public class MatrixZoomData {
             }
             if (les == null)
                 System.out.println();
-        } else {
+        }
+        else if (type.equals("expected")) {
+            int length = df.getLength();
+            if (les != null) {
+                les.writeInt(length);
+            }
+            else {
+                System.out.println(length);
+            }
+            for (int i=0; i<length; i++) {
+                if (les != null) {
+                    les.writeFloat((float)df.getDensity(chr1.getIndex(),i));
+                }
+                else {
+                    System.out.print(df.getDensity(chr1.getIndex(),i) + " ");
+                }
+            }
+            if (les == null)
+                System.out.println();
+        }
+        else {
 
             RealMatrix rm = ((RealMatrixWrapper) computePearsons(df)).getMatrix();
             int rows = rm.getRowDimension();

@@ -52,5 +52,8 @@ public class DensityFunction {
         }
     }
 
+    public int getLength() {
+        return density.length;
+    }
 
 }
