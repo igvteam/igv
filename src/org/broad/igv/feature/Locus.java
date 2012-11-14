@@ -37,6 +37,12 @@ public class Locus implements Feature {
         this.end = end;
     }
 
+    public static Locus fromString(String locusString) {
+        Locus l = new Locus(locusString);
+        return l.isValid() ? l : null;
+    }
+
+    // TODO -- really the factory method above should be used and this constructor made private or removed
     public Locus(String locusString) {
         parseLocusString(locusString);
 

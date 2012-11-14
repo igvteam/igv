@@ -35,6 +35,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -409,6 +410,33 @@ public abstract class DataTrack extends AbstractTrack {
         }
     }
 
+
+    /**
+     * Return the average zcore over the interval.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param zoom
+     * @return
+     */
+    public double getAverageScore(String chr, int start, int end, int zoom) {
+        double regionScore = 0;
+        int intervalSum = 0;
+        Collection<LocusScore> scores = getSummaryScores(chr, start, end, zoom);
+        for (LocusScore score : scores) {
+            if ((score.getEnd() >= start) && (score.getStart() <= end)) {
+                int interval = 1; //Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
+                float value = score.getScore();
+                regionScore += value * interval;
+                intervalSum += interval;
+            }
+        }
+        if (intervalSum > 0) {
+            regionScore /= intervalSum;
+        }
+        return regionScore;
+    }
 
     class InViewInterval {
         int startIdx;

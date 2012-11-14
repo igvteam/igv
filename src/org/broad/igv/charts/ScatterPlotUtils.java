@@ -24,7 +24,7 @@ public class ScatterPlotUtils {
      * ALLELE_FREQUENCY, COVERAGE, REPMASK, EXPR
      */
     static HashSet<TrackType> plottableTypes = new HashSet();
-    private static final String MUTATION_COUNT = "Mutation Count";
+    public static final String MUTATION_COUNT = "Mutation Count";
 
     static {
         plottableTypes.add(TrackType.COPY_NUMBER);
@@ -78,9 +78,6 @@ public class ScatterPlotUtils {
                 // Classify sample by mutation count
                 SampleData sampleData = sampleDataMap.get(sample);
                 if (sampleData != null) {
-                    if (sample.equals("TCGA-02-0003")) {
-                        System.out.println();
-                    }
                     int mutCount = getMutationCount(chr, start, end, zoom, t);
                     String mutCountString = mutCount < 5 ? String.valueOf(mutCount) : "> 5";
                     sampleData.addAttributeValue(MUTATION_COUNT, mutCountString);
@@ -93,7 +90,7 @@ public class ScatterPlotUtils {
                 DataTrack dataTrack = (DataTrack) t;
 
                 if (plottableTypes.contains(type)) {
-                    double regionScore = getAverageScore(chr, start, end, zoom, dataTrack);
+                    double regionScore = dataTrack.getAverageScore(chr, start, end, zoom);
                     if (!Double.isNaN(regionScore)) {
 
                         types.add(type);
@@ -210,26 +207,8 @@ public class ScatterPlotUtils {
     }
 
 
-    //TODO -- move this to track ?
-    private static double getAverageScore(String chr, int start, int end, int zoom, DataTrack dataTrack) {
-        double regionScore = 0;
-        int intervalSum = 0;
-        Collection<LocusScore> scores = dataTrack.getSummaryScores(chr, start, end, zoom);
-        for (LocusScore score : scores) {
-            if ((score.getEnd() >= start) && (score.getStart() <= end)) {
-                int interval = 1; //Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
-                float value = score.getScore();
-                regionScore += value * interval;
-                intervalSum += interval;
-            }
-        }
-        if (intervalSum > 0) {
-            regionScore /= intervalSum;
-        }
-        return regionScore;
-    }
 
-    private static int getMutationCount(String chr, int start, int end, int zoom, Track track) {
+    public static int getMutationCount(String chr, int start, int end, int zoom, Track track) {
 
         return (int) track.getRegionScore(chr, start, end, zoom, RegionScoreType.MUTATION_COUNT, FrameManager.getDefaultFrame().getName());
     }
@@ -238,7 +217,7 @@ public class ScatterPlotUtils {
     /**
      * Container for all data and attributes for a single sample
      */
-    static class SampleData {
+    public static class SampleData {
 
         Map<TrackType, DoubleArrayList> valueMap = new HashMap<TrackType, DoubleArrayList>();
         Map<String, String> attributesMap = new HashMap<String, String>();
