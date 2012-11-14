@@ -5,12 +5,16 @@ package org.broad.igv.hic.tools;
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.IGVUtils;
 import org.broad.igv.hic.data.*;
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.Utilities;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
+import java.lang.management.MemoryUsage;
 import java.util.*;
 import java.util.zip.Deflater;
 
@@ -223,6 +227,9 @@ public class Preprocessor {
                 if (matrix != null) {
                     writeMatrix(matrix);
                 }
+
+                System.gc();
+                System.out.println("Available memory: " + RuntimeUtils.getAvailableMemory());
             }
         } // End of double loop through chromosomes
 

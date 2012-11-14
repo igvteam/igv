@@ -46,7 +46,7 @@ public class GittoolsUtils {
 
         List<Track> tracks = IGV.getInstance().getAllTracks();
         for (Track t : tracks) {
-            if (t instanceof DataTrack || t.getTrackType() == TrackType.MUTATION) {
+            if ((t instanceof DataTrack || t.getTrackType() == TrackType.MUTATION) && t.isVisible()) {
                 loadedTypes.add(t.getTrackType());
                 samples.add(t.getSample());
             }
@@ -64,6 +64,8 @@ public class GittoolsUtils {
         // Loop though tracks and loci and gather data by sample
         Map<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         for (Track t : tracks) {
+            if(!t.isVisible()) continue;
+
             if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
 
