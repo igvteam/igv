@@ -181,10 +181,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Estimate visibility window.
         // TODO -- set beta based on available memory
         int cnt = Math.max(1, allSamples.size());
-        int beta = 1000000;
-        double p = Math.pow(cnt, 2);
-        int visWindow = (int) Math.max(10000, Math.min(500000, (beta / p) * 1000));
+        int beta = 10000000;
+        double p = Math.pow(cnt, 1.5);
+        int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
+
+        // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
+        if(IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
@@ -894,7 +897,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     protected Variant getFeatureClosest(double position, double maxDistance, ReferenceFrame frame) {
 
-        PackedFeatures<IGVFeature> packedFeatures = getPackedFeatures(frame);
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
         if (packedFeatures == null) {
             return null;

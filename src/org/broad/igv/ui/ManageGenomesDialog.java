@@ -160,7 +160,7 @@ public class ManageGenomesDialog extends JDialog {
             dialogPane.setLayout(new BorderLayout());
 
             //---- label1 ----
-            label1.setText("Drag and drop genomes to change their order in the genome list. Select and press delete, or click \"Remove\", to remove them.");
+            label1.setText("Drag and drop genomes to change their order in the genome list. \nSelect and press delete, or click \"Remove\", to remove them.");
             label1.setRows(2);
             label1.setEditable(false);
             label1.setBackground(UIManager.getColor("Button.background"));

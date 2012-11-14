@@ -27,6 +27,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CachedIntervals;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class AlignmentDataManager {
@@ -68,6 +69,11 @@ public class AlignmentDataManager {
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        initChrMap(genome);
+    }
+
+    public void updateGenome(Genome genome) {
+        chrMappings.clear();
         initChrMap(genome);
     }
 
@@ -265,41 +271,60 @@ public class AlignmentDataManager {
         final int start = (int) context.getOrigin();
         final int end = (int) context.getEndLocation();
         List<AlignmentInterval> loadedIntervals = loadedIntervalMap.get(context.getReferenceFrame().getChrName());
-        boolean haveInterval = false;
 
         int adjustedStart = start;
         int adjustedEnd = end;
+        int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
+        int center = (end + start) / 2;
+        int expand = Math.max(end - start, windowSize/2);
 
+        boolean foundInterval = false;
         if (loadedIntervals != null) {
+
+            // First see if we have any loaded intervals that fully contain the requested interval.  If yes we're done
             for (AlignmentInterval loadedInterval : loadedIntervals) {
                 if (loadedInterval.contains(chr, start, end)) {
-                    haveInterval = true;
-                    break;
-                } else if (loadedInterval.overlaps(chr, start, end, context.getZoom())) {
+                    // Requested interval is fully contained in an existing on, we're done
+                    return;
+
+                }
+            }
+
+            // Now search for partial overlap.  We will use the first one we find.
+
+            for (AlignmentInterval loadedInterval : loadedIntervals) {
+                if (loadedInterval.overlaps(chr, start, end, context.getZoom())) {
+
+                    foundInterval = true;
                     //We have part of the interval, only need to load the portion we don't have
                     if (start < loadedInterval.getStart() && end <= loadedInterval.getEnd()) {
                         //new interval on left side
                         adjustedEnd = loadedInterval.getStart() + 1;
+                        if (expandEnds) {
+                            adjustedStart = Math.max(0, Math.min(start, center - expand));
+                        }
                     } else if (start >= loadedInterval.getStart() && end > loadedInterval.getEnd()) {
                         //new interval on right side
                         adjustedStart = loadedInterval.getEnd() - 1;
+                        if (expandEnds) {
+                            adjustedEnd = Math.max(end, center + expand);
+                        }
                     }
                     //Ignoring the case where start < loadedInterval.getStart() && end > loadedInterval.getEnd()
                     //Shouldn't happen too much, and only loss is of efficiency not correctness
+
+                    break;
                 }
             }
         }
 
-        if (expandEnds) {
-            int length = Math.max(100000, end - start);
-            adjustedStart = Math.max(0, start - length / 2);
-            adjustedEnd = end + length / 2;
+        if (!foundInterval && expandEnds) {
+            adjustedStart = Math.max(0, Math.min(start, center - expand));
+            adjustedEnd = Math.max(end, center + expand);
         }
 
-        // If we've moved out of the loaded interval start a new load.
-        if (!haveInterval) {
-            loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
-        }
+
+        loadAlignments(chr, adjustedStart, adjustedEnd, renderOptions, context);
 
     }
 
@@ -335,8 +360,15 @@ public class AlignmentDataManager {
             return;
         }
 
-        log.info("Load alignments.  isLoading=" + isLoading);
+        //log.info("Load alignments.  isLoading=" + isLoading);
         isLoading = true;
+
+
+        // Insure the cache has enough span to hold alignments
+        int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
+        int maxIntervalSize = MAX_INTERVAL_MULTIPLE * Math.max( (end - start), windowSize);
+        loadedIntervalMap.setMaxIntervalSize(maxIntervalSize);
+
 
         NamedRunnable runnable = new NamedRunnable() {
 
@@ -371,8 +403,14 @@ public class AlignmentDataManager {
 
     }
 
-    AlignmentInterval loadInterval(String chr, int start, int end,
-                                   AlignmentTrack.RenderOptions renderOptions) {
+    static int n = 1;
+
+    AlignmentInterval loadInterval(String chr, int start, int end, AlignmentTrack.RenderOptions renderOptions) {
+
+        NumberFormat format = NumberFormat.getInstance();
+        int delta = end - start;
+        //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
+
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
         DownsampleOptions downsampleOptions = new DownsampleOptions();
@@ -402,15 +440,13 @@ public class AlignmentDataManager {
 
         final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
-        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                end, renderOptions);
+        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter, end, renderOptions);
 
-        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctions, downsampledIntervals,
-                renderOptions);
+        return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctions, downsampledIntervals, renderOptions);
     }
 
     private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
-        loadedIntervalMap.setMaxIntervalSize(MAX_INTERVAL_MULTIPLE * (int) (context.getEndLocation() - context.getOrigin()));
+
         loadedIntervalMap.setLocusList(FrameManager.getFrames());
         loadedIntervalMap.put(interval);
     }
@@ -492,6 +528,7 @@ public class AlignmentDataManager {
     public boolean isShowSpliceJunctions() {
         return showSpliceJunctions;
     }
+
 
     public static class DownsampleOptions {
         private boolean downsample;

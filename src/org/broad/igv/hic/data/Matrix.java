@@ -34,7 +34,7 @@ public class Matrix {
 
     public MatrixZoomData getObservedMatrix(int zoomIndex) {
         if (zoomIndex >= zoomData.length)
-            return null;
+            return zoomData[zoomData.length - 1];
         return zoomData[zoomIndex];
     }
 

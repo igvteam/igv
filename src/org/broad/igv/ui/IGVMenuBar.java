@@ -65,6 +65,8 @@ import static org.broad.igv.ui.UIConstants.*;
 public class IGVMenuBar extends JMenuBar {
 
     private static Logger log = Logger.getLogger(IGVMenuBar.class);
+    public static final String GENOME_SPACE_REG_TOOLTIP = "Register for GenomeSpace";
+    public static final String GENOME_SPACE_HOMEPAGE = "http://www.genomespace.org/";
 
     private JMenu extrasMenu;
     //private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
@@ -778,6 +780,25 @@ public class IGVMenuBar extends JMenuBar {
             }
         };
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menu.add(new JSeparator());
+        menuAction =
+                new MenuAction("Register... ") {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            BrowserLauncher.openURL(GENOME_SPACE_HOMEPAGE);
+                        } catch (IOException ex) {
+                            log.error("Error opening browser", ex);
+                        }
+
+                    }
+                };
+        menuAction.setToolTipText(GENOME_SPACE_REG_TOOLTIP);
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
 

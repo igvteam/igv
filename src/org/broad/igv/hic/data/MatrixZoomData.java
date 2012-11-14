@@ -54,44 +54,11 @@ public class MatrixZoomData {
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
     private DatasetReader reader;
 
+    DensityFunction expectedValues;
+
     private BasicMatrix pearsons;
     private double[] eigenvector;
     private int[] nonCentromereColumns;
-
-    public void setPearsons(BasicMatrix bm) {
-        this.pearsons = bm;
-    }
-
-    public HiCGridAxis getXGridAxis() {
-        return xGridAxis;
-    }
-
-    public void setPercent95(float percent95) {
-        this.percent95 = percent95;
-    }
-
-    public void setPercent80(float percent80) {
-        this.percent80 = percent80;
-    }
-
-    public float getPercent80() {
-        return percent80;
-    }
-
-    public class ScaleParameters {
-        double percentile90;
-        double mean;
-
-        ScaleParameters(double mean, double percentile90) {
-            this.mean = mean;
-            this.percentile90 = percentile90;
-        }
-    }
-
-    public float getPercent95() {
-        return percent95;
-    }
-
 
     /**
      * Construct from a binary stream.
@@ -174,6 +141,10 @@ public class MatrixZoomData {
         }
 
 
+    }
+
+    public HiC.Unit getUnit() {
+        return unit;
     }
 
     public int getZoomMultiplier() {
@@ -267,6 +238,39 @@ public class MatrixZoomData {
         }
         return b;
     }
+
+    /**
+     * Return the observed value at the specified location.   This implementation is naive, might get away with it!
+     *
+     * @param binX
+     * @param binY
+     */
+    public float getObservedValue(int binX, int binY) {
+
+        // Intra stores only lower diagonal
+        if (chr1 == chr2) {
+            if (binX > binY) {
+                int tmp = binX;
+                binX = binY;
+                binY = tmp;
+
+            }
+        }
+
+        List<Block> blocks = getBlocksOverlapping(binX, binY, binX, binY);
+
+        if (blocks.size() > 0) {
+            Block b = blocks.get(0);
+            for (ContactRecord rec : b.getContactRecords()) {
+                if (rec.getBinX() == binX && rec.getBinY() == binY) {
+                    return rec.getCounts();
+                }
+            }
+        }
+        // No record found for this bin
+        return 0;
+    }
+
 
     public double[] getEigenvector() {
         return eigenvector;
@@ -367,6 +371,15 @@ public class MatrixZoomData {
         return pearsons;
     }
 
+
+    public float getPearsonValue(int binX, int binY) {
+        if (pearsons != null) {
+            return pearsons.getEntry(binX, binY);
+        } else {
+            return 0;
+        }
+    }
+
     public BasicMatrix computePearsons(DensityFunction df) {
         RealMatrix oe = computeOE(df);
 
@@ -465,33 +478,6 @@ public class MatrixZoomData {
 
         return rm;
     }
-
-    /**
-     * Compute scale parameters by from the first block of data
-     *
-     * @return scale parameters
-     */
-    public ScaleParameters computeScaleParameters() {
-        double binSizeMB = binSize / 1000000.0;
-        double binSizeMB2 = binSizeMB * binSizeMB;
-        Block b = readBlock(0);
-        if (b != null) {
-            ContactRecord[] records = b.getContactRecords();
-            double[] scores = new double[records.length];
-            double sum = 0;
-            for (int i = 0; i < scores.length; i++) {
-                scores[i] = records[i].getCounts();
-                sum += records[i].getCounts();
-            }
-            double percentile90 = StatUtils.percentile(scores, 90) / binSizeMB2;
-            double mean = (sum / scores.length) / binSizeMB2;
-            return new ScaleParameters(mean, percentile90);
-        } else {
-            return null;
-        }
-
-    }
-
 
     public void printDescription() {
         System.out.println("Chromosomes: " + chr1.getName() + " - " + chr2.getName());
@@ -605,5 +591,29 @@ public class MatrixZoomData {
         }
     }
 
+
+    public void setPearsons(BasicMatrix bm) {
+        this.pearsons = bm;
+    }
+
+    public HiCGridAxis getXGridAxis() {
+        return xGridAxis;
+    }
+
+    public void setPercent95(float percent95) {
+        this.percent95 = percent95;
+    }
+
+    public void setPercent80(float percent80) {
+        this.percent80 = percent80;
+    }
+
+    public float getPercent80() {
+        return percent80;
+    }
+
+    public float getPercent95() {
+        return percent95;
+    }
 
 }

@@ -22,6 +22,7 @@
 package org.broad.igv.track;
 
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -205,5 +206,7 @@ public interface Track extends Persistable {
     boolean isDrawYLine();
 
     float getYLine();
+
+    void updateGenome(Genome genome);
 
 }

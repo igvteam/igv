@@ -596,7 +596,7 @@
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JToggleButton</string> 
+              <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
                <string>Seed Genes Only</string> 

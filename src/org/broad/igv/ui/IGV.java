@@ -1045,6 +1045,7 @@ public class IGV {
         LRUCache.clearCaches();
 
         AttributeManager.getInstance().clearAllAttributes();
+        ResourceTree.getInstance().clear();
 
         String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
         mainFrame.setTitle(tile);
@@ -2201,8 +2202,7 @@ public class IGV {
             if (affectiveMode) {
                 closeWindow(progressBar);
                 GenomeManager.getInstance().setCurrentGenome(new AffectiveGenome());
-            }
-            else {
+            } else {
                 try {
                     contentPane.getCommandBar().initializeGenomeList(monitor);
                 } catch (FileNotFoundException ex) {
@@ -2216,8 +2216,16 @@ public class IGV {
                     closeWindow(progressBar);
                 }
 
-                  if (igvArgs.getGenomeId() != null) {
-                    contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                if (igvArgs.getGenomeId() != null) {
+                    if (ParsingUtils.pathExists(igvArgs.getGenomeId())) {
+                        try {
+                            IGV.getInstance().loadGenome(igvArgs.getGenomeId(), null);
+                        } catch (IOException e) {
+                            log.error("Error loading genome file: " + igvArgs.getGenomeId());
+                        }
+                    } else {
+                        contentPane.getCommandBar().selectGenome(igvArgs.getGenomeId());
+                    }
                 } else if (igvArgs.getSessionFile() == null) {
                     String genomeId = preferenceManager.getDefaultGenome();
                     contentPane.getCommandBar().selectGenome(genomeId);

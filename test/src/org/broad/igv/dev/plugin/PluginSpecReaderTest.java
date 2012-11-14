@@ -16,10 +16,14 @@ import org.junit.Test;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static junit.framework.Assert.*;
 
@@ -85,6 +89,38 @@ public class PluginSpecReaderTest {
         String path = TestUtils.DATA_DIR + "sessions/testBedsRelPath.xml";
         PluginSpecReader reader = PluginSpecReader.create(path);
         assertNull(reader);
+    }
+
+
+    //Check that all of the plugins we specify exist
+    @Test
+    public void testBuiltinPluginsValid() throws Exception {
+        List<String> pluginNames = PluginSpecReader.getBuiltinPlugins();
+        for (String pluginName : pluginNames) {
+            String relPath = "resources/" + pluginName;
+            URL url = PluginSpecReader.class.getResource(relPath);
+            //System.out.println(url);
+            assertNotNull(url);
+        }
+    }
+
+    //Check that each plugin file is in the contents file
+    @Test
+    public void testBuiltinPluginsComplete() throws Exception {
+        String pluginsPath = "src/" + PluginSpecReader.class.getPackage().getName().replace('.', '/');
+        File pluginResourceDir = new File(pluginsPath, "resources");
+        String[] fileNames = pluginResourceDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".xml");
+            }
+        });
+
+        Set<String> actPlugins = new HashSet<String>(Arrays.asList(fileNames));
+        Set<String> expPlugins = new HashSet<String>(PluginSpecReader.getBuiltinPlugins());
+
+        assertEquals(expPlugins, actPlugins);
+
     }
 
 

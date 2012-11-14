@@ -113,6 +113,14 @@ public class MainWindow extends JFrame {
         return new MainWindow();
     }
 
+
+    public static  boolean isRestricted() {
+        return System.getProperty("restricted") != null && System.getProperty("restricted").equals("true");
+
+    }
+
+
+
     public void updateColorSlider(int min, int max, int value) {
         colorRangeSlider.setMinimum(min);
         colorRangeSlider.setMaximum(max);
@@ -810,7 +818,7 @@ public class MainWindow extends JFrame {
         //---- resolutionSlider ----
         resolutionSlider = new JSlider();
 
-        if (System.getProperty("restricted") != null && System.getProperty("restricted").equals("true")) {
+        if (isRestricted()) {
             resolutionSlider.setMaximum(6);
             resolutionSlider.setMajorTickSpacing(1);
             resolutionSlider.setPaintTicks(true);
@@ -826,8 +834,7 @@ public class MainWindow extends JFrame {
                 resolutionLabels.put(i, tickLabel);
             }
             resolutionSlider.setLabelTable(resolutionLabels);
-        }
-        else {
+        } else {
             resolutionSlider.setMaximum(9);
             resolutionSlider.setMajorTickSpacing(1);
             resolutionSlider.setPaintTicks(true);
@@ -1218,13 +1225,12 @@ public class MainWindow extends JFrame {
         extrasMenu.add(readPearsons);
 
         extrasMenu.add(dumpPearsons);
-        if (System.getProperty("restricted") == null || System.getProperty("restricted").equals("false")) {
+        if (isRestricted() == false) {
             menuBar.add(extrasMenu);
         }
 
         return menuBar;
     }
-
 
     private JComboBox chrBox1;
     private JComboBox chrBox2;

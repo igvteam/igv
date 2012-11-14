@@ -36,7 +36,7 @@ public class HeatmapRenderer {
         this.mainWindow = mainWindow;
         this.hic = hic;
 
-        oeColorScale = new HiCColorScale();
+        oeColorScale = new OEColorScale();
         pearsonColorScale = new HiCColorScale();
     }
 
@@ -88,7 +88,7 @@ public class HeatmapRenderer {
             // Iterate through blocks overlapping visible region
             DensityFunction df = null;
             if (displayOption == MainWindow.DisplayOption.OE) {
-                df = hic.getDensityFunction(zd.getZoom());
+                df = hic.getDensityFunction();
             }
 
             List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
@@ -135,7 +135,17 @@ public class HeatmapRenderer {
         return dal.size() == 0 ? 1 : (float) StatUtils.percentile(dal.toArray(), p);
     }
 
-
+    /**
+     * Render a sparse-matrix block  (E and O/E)
+     * @param originX
+     * @param originY
+     * @param chr1
+     * @param chr2
+     * @param b
+     * @param colorScale
+     * @param df
+     * @param g
+     */
     private void renderBlock(int originX, int originY, int chr1, int chr2,
                              Block b,
                              ColorScale colorScale, DensityFunction df, Graphics2D g) {
@@ -160,7 +170,7 @@ public class HeatmapRenderer {
                     // double normCounts = (rec.getCounts() / expected);
                     double normCounts = observed / expected;
                     score = normCounts;
-                    score = Math.log10(score);
+                    //score = Math.log10(score);
                 } else {
                     score = rec.getCounts() ;
                 }
@@ -186,8 +196,8 @@ public class HeatmapRenderer {
     }
 
     /**
-     * Used for Pearsons correlation (dense matrix).  The bitmap is drawn at 1 data point per pixel, scaling
-     * happens elsewhere.
+     * Render a dense matrix. Used for Pearsons correlation (dense matrix).  The bitmap is drawn at 1 data point
+     * per pixel, scaling happens elsewhere.
      *
      * @param rm
      * @param originX    origin in pixels

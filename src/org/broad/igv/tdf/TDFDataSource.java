@@ -85,6 +85,21 @@ public class TDFDataSource implements CoverageDataSource {
             log.error("Error reading attribute 'totalCount'", e);
         }
 
+        intChrMap();
+
+        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
+        setNormalize(normalizeCounts);
+
+
+    }
+
+    public void updateGenome(Genome genome) {
+        this.genome = genome;
+        chrNameMap.clear();
+        intChrMap();
+    }
+
+    private void intChrMap() {
         // If we have a genome, build a reverse-lookup table for queries
         if (genome != null) {
             Set<String> chrNames = reader.getChromosomeNames();
@@ -95,11 +110,6 @@ public class TDFDataSource implements CoverageDataSource {
                 }
             }
         }
-
-        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
-        setNormalize(normalizeCounts);
-
-
     }
 
     public void setNormalize(boolean normalizeCounts) {

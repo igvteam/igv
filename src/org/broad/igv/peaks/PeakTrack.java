@@ -140,6 +140,16 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
+    @Override
+    public void updateGenome(Genome genome) {
+        this.genome = genome;
+        signalSource.updateGenome(genome) ;
+        for(WrappedDataSource ds : timeSignalSources) {
+            ds.updateGenome(genome);
+        }
+
+    }
+
     /**
      * timePoints=0,30,60,120
      * peaks=http://www.broadinstitute.org/igvdata/ichip/peaks/AHR.peak
@@ -648,6 +658,10 @@ public class PeakTrack extends AbstractTrack {
 
         public void setNormalizeCounts(boolean b, float v) {
             source.setNormalizeCounts(b, v);
+        }
+
+        public void updateGenome(Genome genome) {
+            source.updateGenome(genome);
         }
     }
 

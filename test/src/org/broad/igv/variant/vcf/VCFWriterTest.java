@@ -12,64 +12,54 @@
 package org.broad.igv.variant.vcf;
 
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.util.TestUtils;
-import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.StandardVCFWriter;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFWriter;
 import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.File;
 
 /**
  * User: jacob
  * Date: 2012/05/11
  */
 // TODO We don't have the necessary dependencies
+// TODO Writer classes were made package private at some point
 @Ignore
 public class VCFWriterTest extends AbstractHeadlessTest {
 
-    @Test
-    public void testWriteHeader() throws Exception {
-        String inpath = TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf";
-        File outFile = new File(TestUtils.DATA_DIR, "testwriter.vcf");
-        VCFWriter writer = new StandardVCFWriter(outFile, null);
-
-        FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
-        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
-        Iterable<Feature> iter = bfs.iterator();
-        Object header = bfs.getHeader();
-
-        writer.writeHeader((VCFHeader) header);
-        writer.close();
-    }
-
-    @Test
-    public void testWriteRecords() throws Exception {
-        String inpath = TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf";
-        File outFile = new File(TestUtils.DATA_DIR, "testwriter.vcf");
-        VCFWriter writer = new StandardVCFWriter(outFile, null);
-
-        FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
-        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
-        Iterable<Feature> iter = bfs.iterator();
-        Object header = bfs.getHeader();
-
-        writer.writeHeader((VCFHeader) header);
-
-        for (Feature feat : iter) {
-            if (feat instanceof VCFVariant) {
-                VCFVariant var = (VCFVariant) feat;
-                writer.add(var.getVariantContext());
-            }
-        }
-
-        writer.close();
-
-
-    }
+//    @Test
+//    public void testWriteHeader() throws Exception {
+//        String inpath = TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf";
+//        File outFile = new File(TestUtils.DATA_DIR, "testwriter.vcf");
+//        VCFWriter writer = new StandardVCFWriter(outFile, null);
+//
+//        FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
+//        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
+//        Iterable<Feature> iter = bfs.iterator();
+//        Object header = bfs.getHeader();
+//
+//        writer.writeHeader((VCFHeader) header);
+//        writer.close();
+//    }
+//
+//    @Test
+//    public void testWriteRecords() throws Exception {
+//        String inpath = TestUtils.DATA_DIR + "vcf/SRP32_v4.0.vcf";
+//        File outFile = new File(TestUtils.DATA_DIR, "testwriter.vcf");
+//        VCFWriter writer = new StandardVCFWriter(outFile, null);
+//
+//        FeatureCodec codec = CodecFactory.getCodec(inpath, genome);
+//        AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(inpath, codec, false);
+//        Iterable<Feature> iter = bfs.iterator();
+//        Object header = bfs.getHeader();
+//
+//        writer.writeHeader((VCFHeader) header);
+//
+//        for (Feature feat : iter) {
+//            if (feat instanceof VCFVariant) {
+//                VCFVariant var = (VCFVariant) feat;
+//                writer.add(var.getVariantContext());
+//            }
+//        }
+//
+//        writer.close();
+//
+//
+//    }
 }

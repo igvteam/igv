@@ -87,19 +87,9 @@ public class HiC {
 
         if (zd == null) return null;
 
-        return getDensityFunction(zd.getZoom());
+        return dataset.getExpectedValues(zd.getUnit().toString(), zd.getBinSize());
     }
 
-    /**
-     * Return the expected density function for a specified zoom level.
-     *
-     * @param zoom
-     * @return density function, or null if expected densities are not available
-     */
-    public DensityFunction getDensityFunction(int zoom) {
-
-        return dataset.getDensityFunction(zoom);
-    }
 
 
     public void setUnit(Unit unit) {
@@ -116,7 +106,9 @@ public class HiC {
      */
     public void setZoom(int newZoom, final double genomePositionX, final double genomePositionY) {
 
-        if (newZoom < 0 || newZoom > dataset.getNumberZooms(unit)) return;
+        int maxZoom = MainWindow.isRestricted() ? 6 : dataset.getNumberZooms(unit);
+
+        if (newZoom < 0 || newZoom > maxZoom) return;
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
@@ -142,7 +134,7 @@ public class HiC {
                 }
             }
 
-            final DensityFunction df = getDensityFunction(newZoom);
+            final DensityFunction df = dataset.getExpectedValues(newZD.getUnit().toString(), newZD.getBinSize());
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
@@ -200,8 +192,10 @@ public class HiC {
      */
     public void zoomTo(final int xBP0, final int yBP0, final int xBP1, int yBP1, double genomicScale) {
 
+        int maxZoom = MainWindow.isRestricted() ? 6 : dataset.getNumberZooms(unit);
+
         // Find zoom level closest to prescribed scale
-        int newZoom = dataset.getNumberZooms(unit) - 1;
+        int newZoom = maxZoom;
         for (int z = 1; z < dataset.getNumberZooms(unit); z++) {
             if (dataset.getZoom(unit, z) < genomicScale) {
                 newZoom = z - 1;
@@ -217,7 +211,6 @@ public class HiC {
 
         final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoomDataIdx);
 
-
         int binX0 = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP0);
         int binY0 = newZD.getyGridAxis().getBinNumberForGenomicPosition((int) yBP0);
         final int binXMax = newZD.getxGridAxis().getBinNumberForGenomicPosition((int) xBP1);
@@ -231,15 +224,11 @@ public class HiC {
 
         if (displayOption == MainWindow.DisplayOption.PEARSON && newZD.getPearsons() == null) {
             if (newZoom > 3) {
-                int ans = JOptionPane.showConfirmDialog(mainWindow, "Pearson's calculation at " +
-                        "this zoom will take a while.\nAre you sure you want to proceed?",
-                        "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                if (ans == JOptionPane.NO_OPTION) {
-                    return;
-                }
+                JOptionPane.showMessageDialog(mainWindow, "Pearsons matrix is not avaiable at this resolution");
+                return;
             }
 
-            final DensityFunction df = getDensityFunction(newZoom);
+            final DensityFunction df = dataset.getExpectedValues(newZD.getUnit().toString(), newZD.getBinSize());
             Runnable callable = new Runnable() {
                 public void run() {
                     newZD.computePearsons(df);
@@ -268,7 +257,7 @@ public class HiC {
     }
 
     public void centerFragment(int fragmentX, int fragmentY) {
-        if(zd != null) {
+        if (zd != null) {
             HiCGridAxis xAxis = zd.getxGridAxis();
             HiCGridAxis yAxis = zd.getyGridAxis();
 
@@ -280,7 +269,7 @@ public class HiC {
     }
 
     public void centerBP(int bpX, int bpY) {
-        if(zd != null) {
+        if (zd != null) {
             HiCGridAxis xAxis = zd.getxGridAxis();
             HiCGridAxis yAxis = zd.getyGridAxis();
 
@@ -334,16 +323,12 @@ public class HiC {
 
             if (newDisplay == MainWindow.DisplayOption.PEARSON && zd.getPearsons() == null) {
                 if (zd.getZoom() > 3) {
-                    int ans = JOptionPane.showConfirmDialog(mainWindow, "Pearson's calculation at " +
-                            "this zoom will take a while.\nAre you sure you want to proceed?",
-                            "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                    if (ans == JOptionPane.NO_OPTION) {
-                        return;
-                    }
+                    JOptionPane.showMessageDialog(mainWindow, "Pearsons matrix is not avaiable at this resolution");
+                    return;
                 }
 
                 this.displayOption = newDisplay;
-                final DensityFunction df = getDensityFunction(zd.getZoom());
+                final DensityFunction df = dataset.getExpectedValues(zd.getUnit().toString(), zd.getBinSize());
                 Runnable callable = new Runnable() {
                     public void run() {
                         zd.computePearsons(df);
@@ -367,15 +352,9 @@ public class HiC {
         if (eigenvector == null) {
             final DensityFunction df = getDensityFunction();
             if (df != null) {
-                if (zd.getZoom() > 2) {
-                    String str = "Eigenvector calculation requires Pearson's correlation matrix.\n";
-                    str += "At this zoom, calculation might take a while.\n";
-                    str += "Are you sure you want to proceed?";
-                    int ans = JOptionPane.showConfirmDialog(mainWindow, str, "Confirm calculation", JOptionPane.YES_NO_OPTION);
-                    if (ans == JOptionPane.NO_OPTION) {
-                        // mainWindow.setViewEigenvector(false);
-                        return null;
-                    }
+                if (zd.getZoom() > 3) {
+                    JOptionPane.showMessageDialog(mainWindow, "Eigenvectors are not avaiable at this resolution");
+                    return null;
                 }
                 Runnable runnable = new Runnable() {
                     public void run() {

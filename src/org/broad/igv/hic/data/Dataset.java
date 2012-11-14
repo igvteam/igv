@@ -64,21 +64,6 @@ public class Dataset {
         return unit == HiC.Unit.BP ?  bpBinSizes[index] : fragBinSizes[index];
     }
 
-    /**
-     * Function needed for legacy datasets.
-     *
-     * @param zoom
-     * @return
-     */
-    public DensityFunction getDensityFunction(int zoom) {
-
-        if (df == null) return null;
-
-        int binSize = Preprocessor.bpBinSizes[zoom];
-        String unit = binSize == 1 ? "FRAG" : "BP";
-
-        return getExpectedValues(unit, binSize);
-    }
 
     public DensityFunction getExpectedValues(String unit, int binSize) {
 

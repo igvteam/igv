@@ -37,7 +37,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        pluginPath = "plugins/bedtools_plugin.xml";
+        pluginPath = "resources/bedtools_plugin.xml";
         AbstractPluginTest.setUpClass();
     }
 

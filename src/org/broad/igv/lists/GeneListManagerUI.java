@@ -93,8 +93,8 @@ public class GeneListManagerUI extends JDialog {
         initComponents();
         initLists();
 
-        boolean showViewNetwork = Boolean.parseBoolean(System.getProperty("showViewNetwork", "false"));
-        viewNetworkButton.setVisible(showViewNetwork);
+       // boolean showViewNetwork = Boolean.parseBoolean(System.getProperty("showViewNetwork", "false"));
+       // viewNetworkButton.setVisible(showViewNetwork);
     }
 
     private void initLists() {
@@ -780,7 +780,6 @@ public class GeneListManagerUI extends JDialog {
 
                 //---- viewNetworkButton ----
                 viewNetworkButton.setText("Retrieve Network");
-                viewNetworkButton.setVisible(false);
                 viewNetworkButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {

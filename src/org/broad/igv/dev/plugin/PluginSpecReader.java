@@ -38,7 +38,8 @@ public class PluginSpecReader {
     protected String specPath;
     protected Document document;
 
-    public static final String CUSTOM_PLUGIN_FILENAME = "custom_plugins.txt";
+    public static final String CUSTOM_PLUGINS_FILENAME = "custom_plugins.txt";
+    public static final String BUILTIN_PLUGINS_FILENAME = "builtin_plugins.txt";
 
     /**
      * List of plugins tha IGV knows about
@@ -83,12 +84,19 @@ public class PluginSpecReader {
         return document.getDocumentElement().getAttribute("id");
     }
 
+    private InputStream getStream(String path) throws IOException {
+        //Check jar first. Returns null if not found
+        InputStream is = getClass().getResourceAsStream(path);
+        if (is == null) {
+            is = ParsingUtils.openInputStream(path);
+        }
+        return is;
+    }
+
     private boolean parseDocument() {
         boolean success = false;
         try {
-            document = Utilities.createDOMDocumentFromXmlStream(
-                    ParsingUtils.openInputStream(specPath)
-            );
+            document = Utilities.createDOMDocumentFromXmlStream(getStream(specPath));
             success = document.getDocumentElement().getTagName().equals("igv_plugin");
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -196,14 +204,17 @@ public class PluginSpecReader {
                 }
 
                 //When a user adds a plugin, we store the path here
-                File customFile = new File(checkDir, CUSTOM_PLUGIN_FILENAME);
+                File customFile = new File(checkDir, CUSTOM_PLUGINS_FILENAME);
                 if (customFile.canRead()) {
                     BufferedReader br = new BufferedReader(new FileReader(customFile));
-                    String customPluginPath = "";
-                    while ((customPluginPath = br.readLine()) != null) {
-                        possPluginsList.add(customPluginPath);
-                    }
+                    possPluginsList.addAll(getPluginPaths(br));
                 }
+
+                //Builtin plugins. Do these last so custom ones take precedence
+                for (String pluginName : getBuiltinPlugins()) {
+                    possPluginsList.add("resources/" + pluginName);
+                }
+
 
                 for (String possPlugin : possPluginsList) {
                     PluginSpecReader reader = PluginSpecReader.create(possPlugin);
@@ -223,11 +234,29 @@ public class PluginSpecReader {
         return readers;
     }
 
+    static List<String> getBuiltinPlugins() throws IOException {
+        InputStream contentsStream = PluginSpecReader.class.getResourceAsStream("resources/" + PluginSpecReader.BUILTIN_PLUGINS_FILENAME);
+        BufferedReader inReader = new BufferedReader(new InputStreamReader(contentsStream));
+        return getPluginPaths(inReader);
+    }
+
+    private static List<String> getPluginPaths(BufferedReader reader) throws IOException {
+        String line;
+        List<String> pluginPaths = new ArrayList<String>(3);
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            pluginPaths.add(line);
+        }
+        return pluginPaths;
+    }
+
     /**
      * @param absolutePath Full path (can be URL) to plugin
      */
     public static void addCustomPlugin(String absolutePath) throws IOException {
-        File outFile = new File(DirectoryManager.getIgvDirectory(), CUSTOM_PLUGIN_FILENAME);
+        File outFile = new File(DirectoryManager.getIgvDirectory(), CUSTOM_PLUGINS_FILENAME);
 
         outFile.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));

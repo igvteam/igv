@@ -252,6 +252,32 @@ public class FeatureDB {
             }
             return features;
         }
+    }
+
+    /**
+     * Return the longest feature with the given name.
+     * @param name
+     * @return
+     */
+    public static NamedFeature getLongestFeatureNamed(String name) {
+
+        List<NamedFeature> featureList = getFeaturesList(name, Integer.MAX_VALUE, true);
+        if (featureList == null) {
+            return null;
+        }
+
+        Iterator<NamedFeature> iter = featureList.iterator();
+        NamedFeature longest = iter.next();
+        int len = longest.getEnd() - longest.getStart();
+        while (iter.hasNext()) {
+            NamedFeature next = iter.next();
+            int nextLen = next.getEnd() - next.getStart();
+            if (nextLen > len) {
+                longest = next;
+                len = nextLen;
+            }
+        }
+        return longest;
 
     }
 

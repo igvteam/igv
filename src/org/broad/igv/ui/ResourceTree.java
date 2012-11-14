@@ -51,6 +51,11 @@ public class ResourceTree {
     private static ResourceTree theInstance;
     private Set<String> selectedLeafNodePaths = new LinkedHashSet();
 
+    public void clear() {
+        leafResources.clear();
+        leafNodeMap.clear();
+    }
+
     private static enum TreeExpansionFlag {
         EXPAND_ALL,
         EXPAND_ROOT_ONLY,
