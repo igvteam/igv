@@ -67,7 +67,29 @@ public class AsciiPairIterator implements PairIterator {
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
                 int nTokens = tokens.length;
-                if (nTokens == 6) {
+
+                // this should be strand, chromosome, position, fragment.
+                if (nTokens == 8) {
+                    String chrom1 = getInternedString(tokens[1]);
+                    String chrom2 = getInternedString(tokens[5]);
+                    if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
+                        int chr1 = chromosomeOrdinals.get(chrom1);
+                        int chr2 = chromosomeOrdinals.get(chrom2);
+                        int pos1 = Integer.parseInt(tokens[2]);
+                        int pos2 = Integer.parseInt(tokens[6]);
+                        int frag1 = Integer.parseInt(tokens[3]);
+                        int frag2 = Integer.parseInt(tokens[7]);
+                        boolean strand1 = Integer.parseInt(tokens[0]) == 0;
+                        boolean strand2 = Integer.parseInt(tokens[4]) == 0;
+                        nextPair = new AlignmentPair(strand1, chr1, pos1, frag1, strand2, chr2, pos2, frag2);
+                        return;
+                    }
+                }
+                else {
+                    throw new IOException("Text file must be 8 fields: str1 chr1 pos1 frag1 str2 chr2 pos2 frag2");
+                }
+                /*
+                else if (nTokens == 6) {
                     String chrom1 = getInternedString(tokens[1]);
                     String chrom2 = getInternedString(tokens[4]);
                     if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
@@ -92,7 +114,7 @@ public class AsciiPairIterator implements PairIterator {
                         nextPair = new AlignmentPair(chr1, pos1, chr2, pos2);
                         return;
                     }
-                }
+                } */
 
             }
         } catch (IOException e) {
@@ -139,5 +161,7 @@ public class AsciiPairIterator implements PairIterator {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
+
+
 
 }

@@ -66,7 +66,7 @@ public class BAMPairIterator implements PairIterator {
                         if (chromosomeOrdinals.containsKey(chrom1) && chromosomeOrdinals.containsKey(chrom2)) {
                             int chr1 = chromosomeOrdinals.get(chrom1);
                             int chr2 = chromosomeOrdinals.get(chrom2);
-                             nextPair = new AlignmentPair(chr1, alignment.getStart(), chr2, mate.getStart());
+                           //  nextPair = new AlignmentPair(chr1, alignment.getStart(), chr2, mate.getStart());
                         }
                         return;
                     }

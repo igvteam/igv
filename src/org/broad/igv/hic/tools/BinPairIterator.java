@@ -54,11 +54,15 @@ public class BinPairIterator implements PairIterator {
     private void advance() {
 
         try {
+            boolean str1 = (is.readByte() != 0);
             int chr1 = is.readInt();
             int pos1 = is.readInt();
+            int frag1 = is.readInt();
+            boolean str2 = (is.readByte() != 0);
             int chr2 = is.readInt();
             int pos2 = is.readInt();
-            next = new AlignmentPair(chr1, pos1, chr2, pos2);
+            int frag2 = is.readInt();
+            next = new AlignmentPair(str1,chr1, pos1, frag1, str2, chr2, pos2, frag2);
         } catch (IOException e) {
             next = null;
             if (!(e instanceof EOFException)) {

@@ -41,12 +41,18 @@ public class AsciiToBinConverter {
             bos = new BufferedOutputStream(new FileOutputStream(outputFile));
             LittleEndianOutputStream les = new LittleEndianOutputStream(bos);
             iter = new AsciiPairIterator(inputPath, chromosomeOrdinals);
+
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
+
+                les.writeBoolean(pair.getStrand1());
                 les.writeInt(pair.getChr1());
                 les.writeInt(pair.getPos1());
+                les.writeInt(pair.getFrag1());
+                les.writeBoolean(pair.getStrand2());
                 les.writeInt(pair.getChr2());
                 les.writeInt(pair.getPos2());
+                les.writeInt(pair.getFrag2());
             }
             les.flush();
             bos.flush();
@@ -60,7 +66,6 @@ public class AsciiToBinConverter {
     }
     
     public static void convertBack(String inputPath, String outputFile) throws IOException {
-        
         PrintWriter pw = null;
         try {
             File f = new File(outputFile);
@@ -70,12 +75,13 @@ public class AsciiToBinConverter {
             BinPairIterator iter = new BinPairIterator(inputPath, chromosomeIndexMap);
             while (iter.hasNext()) {
                 AlignmentPair pair = iter.next();
-                pw.println("R1\t" + pair.getChr1() + "\t" + pair.getPos1() + "\tS1\tR2\t" +pair.getChr2() + "\t" + pair.getPos2() +"\t" + "S2");
-
+                pw.println(pair);
             }
         }
         finally {
-            pw.close();
+            if (pw != null) {
+                pw.close();
+            }
         }
     }
 }
