@@ -1045,7 +1045,6 @@ public class IGV {
         LRUCache.clearCaches();
 
         AttributeManager.getInstance().clearAllAttributes();
-        ResourceTree.getInstance().clear();
 
         String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
         mainFrame.setTitle(tile);

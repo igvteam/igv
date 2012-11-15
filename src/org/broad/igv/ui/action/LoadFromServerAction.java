@@ -127,7 +127,7 @@ public class LoadFromServerAction extends MenuAction {
              * Resource Tree
              */
             LinkedHashSet<ResourceLocator> selectedLocators =
-                    ResourceTree.getInstance().showResourceTreeDialog(mainFrame.getMainFrame(),
+                    ResourceTree.showResourceTreeDialog(mainFrame.getMainFrame(),
                             masterDocument, "Available Datasets");
 
             List<ResourceLocator> newLoadList = new ArrayList();
