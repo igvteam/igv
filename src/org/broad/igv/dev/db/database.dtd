@@ -80,6 +80,7 @@ posStartColName
     of each feature. Necessary for constructing queries.
 posEndColName
     Name of the column which contains end positions of each feature.
+    If not present, only look for overlap of start position
 startColIndex
     1-based Column index from which to start reading data. Default 1.
 endColIndex
@@ -87,7 +88,7 @@ endColIndex
     Default 2147483646 (Integer.MAX_VALUE - 1, ie all)
 
 -->
-<!ELEMENT table (column*)>
+<!ELEMENT table (column*,headerLine*)>
 <!ATTLIST table
       baseQuery CDATA #IMPLIED
       name CDATA #REQUIRED
@@ -95,7 +96,7 @@ endColIndex
       binColName CDATA #IMPLIED
       chromoColName CDATA #REQUIRED
       posStartColName CDATA #REQUIRED
-      posEndColName CDATA #REQUIRED
+      posEndColName CDATA #IMPLIED
       format CDATA #REQUIRED
       startColIndex CDATA "1"
       endColIndex CDATA "2147483646">
@@ -136,5 +137,11 @@ Possible example for BED file:
     colLabel CDATA #REQUIRED
     name CDATA #IMPLIED
     description CDATA #IMPLIED>
+
+<!--
+    Header lines which are fed to the reading codec
+-->
+<!ELEMENT headerLine (#PCDATA)>
+
 
 

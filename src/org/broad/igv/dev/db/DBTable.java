@@ -15,18 +15,12 @@ import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Object representation of a single {@code table} element of
@@ -59,8 +53,9 @@ public class DBTable {
                 tableName = attr.getNamedItem("name").getTextContent();
                 String chromoColName = attr.getNamedItem("chromoColName").getTextContent();
                 String posStartColName = attr.getNamedItem("posStartColName").getTextContent();
-                String posEndColName = attr.getNamedItem("posEndColName").getTextContent();
                 String format = attr.getNamedItem("format").getTextContent();
+
+                String posEndColName = Utilities.getNullSafe(attr, "posEndColName");
                 String startColString = Utilities.getNullSafe(attr, "startColIndex");
                 String endColString = Utilities.getNullSafe(attr, "endColIndex");
                 String binColName = Utilities.getNullSafe(attr, "binColName");
@@ -70,26 +65,35 @@ public class DBTable {
                 int endColIndex = Integer.parseInt(endColString);
 
                 //If present, retrieve list of columns
-                NodeList columns = tableNode.getChildNodes();
+                Element tableElement = (Element) tableNode;
+
+                NodeList columnNodes = tableElement.getElementsByTagName("column");
                 Map<Integer, String> columnLabelMap = null;
+                if (columnNodes.getLength() > 0) {
+                    columnLabelMap = new HashMap<Integer, String>(columnNodes.getLength());
+                    for (int col = 0; col < columnNodes.getLength(); col++) {
+                        Node child = columnNodes.item(col);
+                        NamedNodeMap colAttr = child.getAttributes();
 
-                if (columns.getLength() > 0) {
-                    columnLabelMap = new HashMap<Integer, String>(columns.getLength());
-
-                    for (int col = 0; col < columns.getLength(); col++) {
-                        Node column = columns.item(col);
-                        NamedNodeMap colAttr = column.getAttributes();
-                        //Whitespace gets in as child nodes
-                        if (colAttr == null) continue;
                         int fileIndex = Integer.parseInt(colAttr.getNamedItem("fileIndex").getTextContent());
-
                         String colLabel = Utilities.getNullSafe(colAttr, "colLabel");
                         columnLabelMap.put(fileIndex, colLabel);
+
+                    }
+                }
+
+                NodeList headerLineNodes = tableElement.getElementsByTagName("headerLine");
+                List<String> headerLines = null;
+                if (headerLineNodes.getLength() > 0) {
+                    headerLines = new ArrayList<String>(headerLineNodes.getLength());
+                    for (int hl = 0; hl < headerLineNodes.getLength(); hl++) {
+                        Node child = headerLineNodes.item(hl);
+                        headerLines.add(child.getTextContent().trim());
                     }
                 }
 
                 DBTable table = new DBTable(dbLocator, tableName, format, binColName, chromoColName, posStartColName,
-                        posEndColName, startColIndex, endColIndex, columnLabelMap, baseQuery);
+                        posEndColName, startColIndex, endColIndex, columnLabelMap, baseQuery, headerLines);
                 tableList.add(table);
             }
 
@@ -166,6 +170,7 @@ public class DBTable {
 
     private final Map<Integer, String> columnLabelMap;
     private final String baseQuery;
+    private final List<String> headerLines;
 
     /**
      * Generally just intended for testing, where all we try
@@ -175,12 +180,12 @@ public class DBTable {
      * @param tableName
      */
     public static DBTable build(ResourceLocator dbLocator, String tableName) {
-        return new DBTable(dbLocator, tableName, null, null, null, null, null, 1, Integer.MAX_VALUE - 1, null, null);
+        return new DBTable(dbLocator, tableName, null, null, null, null, null, 1, Integer.MAX_VALUE - 1, null, null, null);
     }
 
     public DBTable(ResourceLocator dbLocator, String tableName, String format, String binColName,
                    String chromoColName, String posStartColName, String posEndColName, int startColIndex, int endColIndex,
-                   Map<Integer, String> columnLabelMap, String baseQuery) {
+                   Map<Integer, String> columnLabelMap, String baseQuery, List<String> headerLines) {
         this.dbLocator = dbLocator;
         this.tableName = tableName;
         this.format = format;
@@ -192,6 +197,7 @@ public class DBTable {
         this.endColIndex = endColIndex;
         this.columnLabelMap = columnLabelMap;
         this.baseQuery = baseQuery;
+        this.headerLines = headerLines;
     }
 
     public ResourceLocator getDbLocator() {
@@ -236,5 +242,28 @@ public class DBTable {
 
     public Map<Integer, String> getColumnLabelMap() {
         return columnLabelMap;
+    }
+
+    public List<String> getHeaderLines() {
+        return headerLines;
+    }
+
+    /**
+     * Return an array of column labels in specified ordinal positions
+     *
+     * @return
+     */
+    public static String[] columnMapToArray(Map<Integer, String> columnLabelMap) {
+        List<Integer> arrayIndexes = new ArrayList<Integer>(columnLabelMap.keySet());
+        Collections.sort(arrayIndexes);
+        int minArrayIndex = arrayIndexes.get(0);
+        int maxArrayIndex = arrayIndexes.get(arrayIndexes.size() - 1);
+        int colCount = maxArrayIndex + 1;
+        String[] tokens = new String[colCount];
+
+        for (int cc = minArrayIndex; cc < maxArrayIndex; cc++) {
+            tokens[cc] = columnLabelMap.get(cc);
+        }
+        return tokens;
     }
 }

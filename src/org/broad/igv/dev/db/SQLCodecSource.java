@@ -20,8 +20,11 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
+import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -101,6 +104,41 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         this.posEndColName = table.getPosEndColName();
         this.startColIndex = table.getStartColIndex();
         this.endColIndex = table.getEndColIndex();
+
+        readHeader();
+    }
+
+    /**
+     * TODO Work in progress
+     * Motivation is mostly for the VCF codec.
+     */
+    private void readHeader() {
+//        String[] headerTokens;
+//        String fmt = table.getFormat();
+//
+//        //Need to feed in version lines for VCF.
+//        //Assume latest of each kind
+//        if(fmt.endsWith("vcf3")){
+//            String line = "##fileformat=VCFv3.3";
+//        }else if(fmt.endsWith("vcf4") || fmt.endsWith("vcf")){
+//            String line = "##fileformat=VCFv4.1";
+//        }
+//
+//        if(table.getColumnLabelMap() != null){
+//            headerTokens = DBTable.columnMapToArray(table.getColumnLabelMap());
+//            String headerText = StringUtils.join(headerTokens,"\t");
+//            headerText = "#" + headerText;
+//        }
+        //String queryString = "SELECT * FROM information_schema.columns WHERE table_name = " + table.getTableName();
+        List<String> headerLines = table.getHeaderLines();
+        if (headerLines != null) {
+            String lines = StringUtils.join(headerLines, "\n");
+            byte[] bytes = lines.getBytes();
+            InputStream is = new ByteArrayInputStream(bytes);
+            AsciiLineReader reader = new AsciiLineReader(is);
+            codec.readHeader(reader);
+        }
+
     }
 
 
@@ -130,18 +168,22 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         return source;
     }
 
-    @Override
-    protected Feature processResult(ResultSet rs) throws SQLException {
+    //TODO We already know how to parse strings, so just turn everything to strings
+    //TODO See IParser for better, type-safe way of handling different data sources
+    private String rowToStringLine(ResultSet rs) throws SQLException {
 
-        //TODO We already know how to parse strings, so just turn everything to strings
-        //TODO See IParser for better, type-safe way of handling different data sources
         String[] tokens;
         if (table.getColumnLabelMap() != null) {
             tokens = DBManager.lineToArray(rs, table.getColumnLabelMap());
         } else {
             tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
         }
-        String line = StringUtils.join(tokens, "\t");
+        return StringUtils.join(tokens, "\t");
+    }
+
+    @Override
+    protected Feature processResult(ResultSet rs) throws SQLException {
+        String line = rowToStringLine(rs);
         return codec.decode(line);
     }
 
@@ -155,8 +197,14 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             return;
         }
         String prependWord = baseQueryString.contains("WHERE") ? " AND " : " WHERE ";
-        String queryString = baseQueryString + prependWord + String.format("%s = ? AND ( (%s >= ? AND %s < ?) OR (%s < ? AND %s >= ?) )",
-                chromoColName, posStartColName, posStartColName, posStartColName, posEndColName);
+        String queryString = baseQueryString + prependWord + String.format("%s = ? AND ( (%s >= ? AND %s < ?)",
+                chromoColName, posStartColName, posStartColName);
+        //Don't always have an end position, just assume locations are single base
+        if (posEndColName != null) {
+            queryString += String.format(" OR (%s < ? AND %s >= ?)", posStartColName, posEndColName);
+        }
+        queryString += " )";
+
         String orderClause = "ORDER BY " + posStartColName;
 
         try {
@@ -171,7 +219,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
 
         } catch (SQLException e) {
-            log.error(e);
+            log.error("Error initializing query statement", e);
             throw new IOException(e);
         }
 
@@ -190,8 +238,13 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             statement.clearParameters();
             statement.setString(1, chr);
             statement.setInt(3, end);
-            int[] cols = new int[]{2, 4, 5};
-            for (Integer cc : cols) {
+
+            int[] startCols = new int[]{2};
+            if (this.posEndColName != null) {
+                startCols = new int[]{2, 4, 5};
+            }
+
+            for (Integer cc : startCols) {
                 statement.setInt(cc, start);
             }
 

@@ -22,7 +22,6 @@ import java.awt.*;
 import java.io.File;
 import java.sql.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
@@ -222,15 +221,11 @@ public class DBManager {
      * @throws SQLException
      */
     public static String[] lineToArray(ResultSet rs, Map<Integer, String> columnIndexMap) throws SQLException {
-        List<Integer> arrayIndexes = new ArrayList<Integer>(columnIndexMap.keySet());
-        Collections.sort(arrayIndexes);
-        int minArrayIndex = arrayIndexes.get(0);
-        int maxArrayIndex = arrayIndexes.get(arrayIndexes.size() - 1);
-        int colCount = maxArrayIndex + 1;
-        String[] tokens = new String[colCount];
+        String[] colNames = DBTable.columnMapToArray(columnIndexMap);
+        String[] tokens = new String[colNames.length];
 
-        for (int cc = minArrayIndex; cc < maxArrayIndex; cc++) {
-            String sqlCol = columnIndexMap.get(cc);
+        for (int cc = 0; cc < colNames.length; cc++) {
+            String sqlCol = colNames[cc];
             if (sqlCol != null) {
                 tokens[cc] = getStringFromResultSet(rs, sqlCol);
             }

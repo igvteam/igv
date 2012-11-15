@@ -15,6 +15,7 @@ import junit.framework.Assert;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.CloseableTribbleIterator;
@@ -36,7 +37,7 @@ public class SQLCodecSourceTest {
         ResourceLocator locator = new ResourceLocator(url);
         String tableName = "unigene";
 
-        DBTable table = new DBTable(locator, tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null, null);
+        DBTable table = new DBTable(locator, tableName, "n/a", null, "chrom", "chromStart", "chromEnd", 1, Integer.MAX_VALUE, null, null, null);
         SQLCodecSource reader = new SQLCodecSource(table, codec);
         return reader;
     }
@@ -124,6 +125,47 @@ public class SQLCodecSourceTest {
             Feature exp_feat = features1.next();
             TestUtils.assertFeaturesEqual(exp_feat, act_feat);
         }
+
+    }
+
+
+    private SQLCodecSource getVCFsrc() throws Exception {
+        String profilePath = TestUtils.DATA_DIR + "sql/SRP32_v40.dbxml";
+        return SQLCodecSource.getFromProfile(profilePath, "SRP32_v40");
+
+    }
+
+    @Test
+    public void testIterateVCF() throws Exception {
+
+        int featCount = 0;
+        CloseableTribbleIterator<Feature> iterator = getVCFsrc().iterator();
+        while (iterator.hasNext()) {
+            iterator.next();
+            featCount++;
+        }
+
+        assertEquals(3963, featCount);
+    }
+
+    @Test
+    public void testQueryVCF() throws Exception {
+        SQLCodecSource source = getVCFsrc();
+        //Target row:
+        //1	201813161	rs2248941	T	C	.	PASS	AA=T;DP=167	GT:GQ:DP	0|1:100:56	0|0:98:33	0|0:100:39
+        int start = 201813161 - 1;
+        int end = start + 2;
+        int count = 0;
+        Iterator<Feature> iterator = source.getFeatures("1", start, end);
+        while (iterator.hasNext()) {
+            VCFVariant feat = (VCFVariant) iterator.next();
+            assertEquals("1", feat.getChr());
+            assertEquals(start, feat.getStart());
+            assertEquals("rs2248941", feat.getID());
+            assertEquals(start + 1, feat.getEnd());
+            count++;
+        }
+        assertEquals(1, count);
 
     }
 }

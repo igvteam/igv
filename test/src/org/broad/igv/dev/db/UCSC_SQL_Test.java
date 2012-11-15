@@ -78,7 +78,7 @@ public class UCSC_SQL_Test extends AbstractHeadlessTest {
         int strt = 100000;
         int end = 400000;
 
-        DBTable table = new DBTable(locator, tableName, "n/a", null, SQLCodecSource.UCSC_CHROMO_COL, SQLCodecSource.UCSC_START_COL, SQLCodecSource.UCSC_END_COL, 1, Integer.MAX_VALUE, null, null);
+        DBTable table = new DBTable(locator, tableName, "n/a", null, SQLCodecSource.UCSC_CHROMO_COL, SQLCodecSource.UCSC_START_COL, SQLCodecSource.UCSC_END_COL, 1, Integer.MAX_VALUE, null, null, null);
         SQLCodecSource reader = new SQLCodecSource(table, codec);
         Iterator<Feature> SQLFeatures = reader.getFeatures("chr1", strt, end);
 
