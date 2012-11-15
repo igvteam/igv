@@ -3,19 +3,17 @@ package org.broad.igv.hic.tools;
 //import org.broad.igv.hic.MainWindow;
 
 import org.apache.commons.math.stat.StatUtils;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.hic.IGVUtils;
-import org.broad.igv.hic.data.*;
 import org.broad.igv.tdf.BufferedByteWriter;
-import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.igv.util.Utilities;
+import org.broad.igv.util.collections.DownsampledDoubleArrayList;
+import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
+import java.awt.*;
 import java.io.*;
-import java.lang.management.MemoryUsage;
 import java.util.*;
+import java.util.List;
 import java.util.zip.Deflater;
 
 /**
@@ -38,12 +36,10 @@ public class Preprocessor {
     private Map<String, Integer> chromosomeIndexes;
 
     private File outputFile;
-    private LittleEndianOutputStream fos;
+    private LittleEndianOutputStream los;
 
     private long masterIndexPosition;
     private Map<String, IndexEntry> matrixPositions;
-    private Map<String, Long> blockIndexPositions;
-    private Map<String, IndexEntry[]> blockIndexMap;
 
     private int countThreshold = 0;
     private boolean diagonalsOnly = false;
@@ -60,12 +56,12 @@ public class Preprocessor {
     private Map<String, ExpectedValueCalculation> expectedValueCalculations;
     private final Deflater compressor;
 
+    File tmpDir;
+
     public Preprocessor(File outputFile, String genomeId, List<Chromosome> chromosomes) {
         this.genomeId = genomeId;
         this.outputFile = outputFile;
         this.matrixPositions = new LinkedHashMap<String, IndexEntry>();
-        this.blockIndexPositions = new LinkedHashMap<String, Long>();
-        this.blockIndexMap = new LinkedHashMap<String, IndexEntry[]>();
 
         this.chromosomes = chromosomes;
         chromosomeIndexes = new Hashtable<String, Integer>();
@@ -75,6 +71,8 @@ public class Preprocessor {
 
         compressor = new Deflater();
         compressor.setLevel(Deflater.DEFAULT_COMPRESSION);
+
+        this.tmpDir = null;  // TODO -- specify this
 
     }
 
@@ -120,7 +118,7 @@ public class Preprocessor {
 
             System.out.println("Start preprocess");
 
-            fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
+            los = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
             writeHeader();
 
@@ -130,52 +128,52 @@ public class Preprocessor {
 
 
         } finally {
-            if (fos != null)
-                fos.close();
+            if (los != null)
+                los.close();
         }
 
-        updateIndexPositions();
+        updateMasterIndex();
     }
 
     private void writeHeader() throws IOException {
         // Magic number
         byte[] magicBytes = "HIC".getBytes();
-        fos.write(magicBytes[0]);
-        fos.write(magicBytes[1]);
-        fos.write(magicBytes[2]);
-        fos.write(0);
+        los.write(magicBytes[0]);
+        los.write(magicBytes[1]);
+        los.write(magicBytes[2]);
+        los.write(0);
 
         // Version
-        fos.writeInt(4);
+        los.writeInt(4);
 
         // Placeholder for master index position, replaced with actual position after all contents are written
-        masterIndexPositionPosition = fos.getWrittenCount();
-        fos.writeLong(0l);
+        masterIndexPositionPosition = los.getWrittenCount();
+        los.writeLong(0l);
 
 
         // Genome ID
-        fos.writeString(genomeId);
+        los.writeString(genomeId);
 
         // Sequence dictionary
         int nChrs = chromosomes.size();
-        fos.writeInt(nChrs);
+        los.writeInt(nChrs);
         for (Chromosome chromosome : chromosomes) {
-            fos.writeString(chromosome.getName());
-            fos.writeInt(chromosome.getLength());
+            los.writeString(chromosome.getName());
+            los.writeInt(chromosome.getLength());
         }
 
         //BP resolution levels
         int nBpRes = bpBinSizes.length;
-        fos.writeInt(nBpRes);
+        los.writeInt(nBpRes);
         for (int i = 0; i < nBpRes; i++) {
-            fos.writeInt(bpBinSizes[i]);
+            los.writeInt(bpBinSizes[i]);
         }
 
         //fragment resolutions
         int nFragRes = fragmentCalculation == null ? 0 : fragBinSizes.length;
-        fos.writeInt(nFragRes);
+        los.writeInt(nFragRes);
         for (int i = 0; i < nFragRes; i++) {
-            fos.writeInt(fragBinSizes[i]);
+            los.writeInt(fragBinSizes[i]);
         }
 
         // fragment sites
@@ -183,21 +181,21 @@ public class Preprocessor {
             for (Chromosome chromosome : chromosomes) {
                 int[] sites = fragmentCalculation.getSites(chromosome.getName());
                 int nSites = sites == null ? 0 : sites.length;
-                fos.writeInt(nSites);
+                los.writeInt(nSites);
                 for (int i = 0; i < nSites; i++) {
-                    fos.writeInt(sites[i]);
+                    los.writeInt(sites[i]);
                 }
             }
         }
 
         //hemi-frag levels (reserved for future use)
         int nHemiFrags = 0;
-        fos.writeInt(nHemiFrags);
+        los.writeInt(nHemiFrags);
 
 
         // Attribute dictionary
         int nAttributes = 0;
-        fos.writeInt(nAttributes);
+        los.writeInt(nAttributes);
         //fos.writeString("theKey");
         //fos.writeString("theValue");
         //... repeat for each attribute
@@ -234,7 +232,7 @@ public class Preprocessor {
         } // End of double loop through chromosomes
 
 
-        masterIndexPosition = fos.getWrittenCount();
+        masterIndexPosition = los.getWrittenCount();
     }
 
     /**
@@ -317,7 +315,7 @@ public class Preprocessor {
 
     }
 
-    public void updateIndexPositions() throws IOException {
+    public void updateMasterIndex() throws IOException {
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(outputFile, "rw");
@@ -328,26 +326,6 @@ public class Preprocessor {
             buffer.putLong(masterIndexPosition);
             raf.write(buffer.getBytes());
 
-            // Block indices
-            for (String key : blockIndexPositions.keySet()) {
-                long pos = blockIndexPositions.get(key);
-                IndexEntry[] blockIndex = blockIndexMap.get(key);
-
-                if (blockIndex == null) {
-                    System.err.println("Missing block index for: " + key);
-                } else {
-                    raf.getChannel().position(pos);
-
-                    // Write as little endian
-                    buffer = new BufferedByteWriter();
-                    for (IndexEntry aBlockIndex : blockIndex) {
-                        buffer.putInt(aBlockIndex.id);
-                        buffer.putLong(aBlockIndex.position);
-                        buffer.putInt(aBlockIndex.size);
-                    }
-                    raf.write(buffer.getBytes());
-                }
-            }
         } finally {
             if (raf != null) raf.close();
         }
@@ -397,18 +375,18 @@ public class Preprocessor {
         }
 
         byte[] bytes = buffer.getBytes();
-        fos.writeInt(bytes.length);
-        fos.write(bytes);
+        los.writeInt(bytes.length);
+        los.write(bytes);
     }
 
     public synchronized void writeMatrix(MatrixPP matrix) throws IOException {
 
         System.out.println("Start writing matrix: " + matrix.getKey());
 
-        long position = fos.getWrittenCount();
+        long position = los.getWrittenCount();
 
-        fos.writeInt(matrix.getChr1Idx());
-        fos.writeInt(matrix.getChr2Idx());
+        los.writeInt(matrix.getChr1Idx());
+        los.writeInt(matrix.getChr2Idx());
         int numResolutions = 0;
 
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
@@ -416,7 +394,7 @@ public class Preprocessor {
                 numResolutions++;
             }
         }
-        fos.writeInt(numResolutions);
+        los.writeInt(numResolutions);
 
         //fos.writeInt(matrix.getZoomData().length);
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
@@ -424,14 +402,13 @@ public class Preprocessor {
                 writeZoomHeader(zd);
         }
 
-        int size = (int) (fos.getWrittenCount() - position);
+        int size = (int) (los.getWrittenCount() - position);
         matrixPositions.put(matrix.getKey(), new IndexEntry(position, size));
 
         for (MatrixZoomDataPP zd : matrix.getZoomData()) {
             if (zd != null) {
-                IndexEntry[] blockIndex = writeZoomData(zd);
-                final String blockKey = getBlockKey(zd);
-                blockIndexMap.put(blockKey, blockIndex);
+                List<IndexEntry> blockIndex = zd.mergeAndWriteBlocks();
+                zd.updateIndexPositions(blockIndex);
             }
         }
 
@@ -444,7 +421,7 @@ public class Preprocessor {
 
     private void writeZoomHeader(MatrixZoomDataPP zd) throws IOException {
 
-        int numberOfBlocks = zd.getBlocks().size();
+        int numberOfBlocks = zd.blockNumbers.size();
 
 //        System.out.println("Write zoom header");
 //        System.out.println(zd.getUnit());  // Unit, ether "BP" or "FRAG"
@@ -458,61 +435,39 @@ public class Preprocessor {
 //        System.out.println(zd.getBlockColumnCount());
 //        System.out.println(numberOfBlocks);
 
-        fos.writeString(zd.getUnit());  // Unit, ether "BP" or "FRAG"
-        fos.writeInt(zd.getZoom());     // zoom index,  lowest res is zero
-        fos.writeFloat((float) zd.getSum());      // sum
-        fos.writeFloat((float) zd.getAverage());
-        fos.writeFloat((float) zd.getStdDev());
-        fos.writeFloat((float) zd.getPercent95());
-        fos.writeInt(zd.getBinSize());
-        fos.writeInt(zd.getBlockBinCount());
-        fos.writeInt(zd.getBlockColumnCount());
-        fos.writeInt(numberOfBlocks);
+        los.writeString(zd.getUnit());  // Unit, ether "BP" or "FRAG"
+        los.writeInt(zd.getZoom());     // zoom index,  lowest res is zero
+        los.writeFloat((float) zd.getSum());      // sum
+        los.writeFloat((float) zd.getOccupiedCellCount());
+        los.writeFloat((float) zd.getPercent5());
+        los.writeFloat((float) zd.getPercent95());
+        los.writeInt(zd.getBinSize());
+        los.writeInt(zd.getBlockBinCount());
+        los.writeInt(zd.getBlockColumnCount());
+        los.writeInt(numberOfBlocks);
 
-        blockIndexPositions.put(getBlockKey(zd), fos.getWrittenCount());
+        zd.blockIndexPosition = los.getWrittenCount();
 
         // Placeholder for block index
         for (int i = 0; i < numberOfBlocks; i++) {
-            fos.writeInt(0);
-            fos.writeLong(0l);
-            fos.writeInt(0);
+            los.writeInt(0);
+            los.writeLong(0l);
+            los.writeInt(0);
         }
-
-    }
-
-    private IndexEntry[] writeZoomData(MatrixZoomDataPP zd) throws IOException {
-
-        final Map<Integer, Block> blocks = zd.getBlocks();
-
-//        System.out.println("Write zoom data : block bount = " + blocks.size());
-
-        IndexEntry[] indexEntries = new IndexEntry[blocks.size()];
-        int i = 0;
-        for (Map.Entry<Integer, Block> entry : blocks.entrySet()) {
-
-            int blockNumber = entry.getKey();
-            Block block = entry.getValue();
-
-            long position = fos.getWrittenCount();
-            writeContactRecords(block);
-            int size = (int) (fos.getWrittenCount() - position);
-
-            indexEntries[i] = new IndexEntry(blockNumber, position, size);
-            i++;
-        }
-        return indexEntries;
 
     }
 
     /**
      * Note -- compressed
      *
-     * @param block Block to write
+     * @param zd
+     * @param block       Block to write
+     * @param sampledData Array to hold a sample of the data (to compute statistics)
      * @throws IOException
      */
-    private void writeContactRecords(Block block) throws IOException {
+    private void writeContactRecords(MatrixZoomDataPP zd, BlockPP block, DownsampledDoubleArrayList sampledData) throws IOException {
 
-        final Collection<ContactRecord> records = block.getContractRecordValues();//   getContactRecords();
+        final Map<Point, ContactCount> records = block.getContractRecordMap();//   getContactRecords();
 
         // System.out.println("Write contact records : records count = " + records.size());
 
@@ -520,7 +475,7 @@ public class Preprocessor {
         int nRecords;
         if (countThreshold > 0) {
             nRecords = 0;
-            for (ContactRecord rec : records) {
+            for (ContactCount rec : records.values()) {
                 if (rec.getCounts() >= countThreshold) {
                     nRecords++;
                 }
@@ -529,20 +484,36 @@ public class Preprocessor {
             nRecords = records.size();
         }
 
+        zd.cellCount += nRecords;
+
         BufferedByteWriter buffer = new BufferedByteWriter(nRecords * 12);
         buffer.putInt(nRecords);
-        for (ContactRecord rec : records) {
-            if (rec.getCounts() >= countThreshold) {
-                buffer.putInt(rec.getBinX());
-                buffer.putInt(rec.getBinY());
-                buffer.putFloat(rec.getCounts());
+        for (Map.Entry<Point, ContactCount> entry : records.entrySet()) {
+            Point point = entry.getKey();
+            float counts = entry.getValue().getCounts();
+            if (counts >= countThreshold) {
+                buffer.putInt(point.x);
+                buffer.putInt(point.y);
+                buffer.putFloat(counts);
+
+                sampledData.add(counts);
+                zd.sum += counts;
             }
         }
 
         byte[] bytes = buffer.getBytes();
         byte[] compressedBytes = compress(bytes);
-        fos.write(compressedBytes);
+        los.write(compressedBytes);
 
+    }
+
+    public void setTmpdir(String tmpDirName) {
+        this.tmpDir = new File(tmpDirName);
+
+        if(!tmpDir.exists()) {
+            System.err.println("Tmp directory does not exist: " + tmpDirName);
+            System.exit(1);
+        }
     }
 
     public static class IndexEntry {
@@ -646,7 +617,7 @@ public class Preprocessor {
         }
 
 
-        void incrementCount(int pos1, int pos2, float score) {
+        void incrementCount(int pos1, int pos2, float score) throws IOException {
 
             for (MatrixZoomDataPP aZoomData : zoomData) {
                 aZoomData.incrementCount(pos1, pos2, score);
@@ -684,9 +655,9 @@ public class Preprocessor {
         private Chromosome chr1;  // Redundant, but convenient    BinDatasetReader
         private Chromosome chr2;  // Redundant, but convenient
 
-        private double sum;
-        private double average;    // Number of occupied cells;
-        private double stdDev;
+        private double sum = 0;
+        private double cellCount = 0;
+        private double percent5;
         private double percent95;
 
         private int zoom;
@@ -696,9 +667,13 @@ public class Preprocessor {
 
         boolean isFrag;
 
-        private LinkedHashMap<Integer, Block> blocks;
-        private Map<Integer, Preprocessor.IndexEntry> blockIndex;
+        private LinkedHashMap<Integer, BlockPP> blocks;
 
+
+        Set<Integer> blockNumbers;  // The only reason for this is to get a count
+
+        List<File> tmpFiles;
+        public long blockIndexPosition;
 
         /**
          * Representation of MatrixZoomData used for preprocessing
@@ -710,6 +685,9 @@ public class Preprocessor {
          * @param zoom             integer zoom (resolution) level index.  TODO Is this needed?
          */
         MatrixZoomDataPP(Chromosome chr1, Chromosome chr2, int binSize, int blockColumnCount, int zoom, boolean isFrag) {
+
+            this.tmpFiles = new ArrayList<File>();
+            this.blockNumbers = new HashSet<Integer>(1000);
 
             this.sum = 0;
             this.chr1 = chr1;
@@ -725,7 +703,7 @@ public class Preprocessor {
             int nBinsX = len / binSize + 1;
 
             blockBinCount = nBinsX / blockColumnCount + 1;
-            blocks = new LinkedHashMap<Integer, Block>(blockColumnCount * blockColumnCount);
+            blocks = new LinkedHashMap<Integer, BlockPP>(blockColumnCount * blockColumnCount);
         }
 
         String getUnit() {
@@ -736,42 +714,16 @@ public class Preprocessor {
             return sum;
         }
 
-        double getAverage() {
-            return average;
-        }
-
-        public double getStdDev() {
-            return stdDev;
+        public double getOccupiedCellCount() {
+            return cellCount;
         }
 
         public double getPercent95() {
             return percent95;
         }
 
-        private void computeStats() {
-            int cellCount = 0;
-            average = 0;
-            double sum = 0;
-            for (Block b : blocks.values()) {
-                for (ContactRecord cr : b.getContractRecordValues()) {
-                    sum += cr.getCounts();
-                    cellCount++;
-                }
-            }
-            average = sum / cellCount;
-
-            double sumSq = 0;
-            int idx = 0;
-            double[] values = new double[cellCount];
-            for (Block b : blocks.values()) {
-                for (ContactRecord cr : b.getContractRecordValues()) {
-                    double diff = cr.getCounts() - average;
-                    sumSq += (diff * diff);
-                    values[idx++] = cr.getCounts();
-                }
-            }
-            stdDev = Math.sqrt(sumSq / cellCount);
-            percent95 = StatUtils.percentile(values, 90);
+        public double getPercent5() {
+            return percent5;
         }
 
 
@@ -801,7 +753,7 @@ public class Preprocessor {
             return blockColumnCount;
         }
 
-        Map<Integer, Block> getBlocks() {
+        Map<Integer, BlockPP> getBlocks() {
             return blocks;
         }
 
@@ -811,7 +763,7 @@ public class Preprocessor {
          * @param gPos1
          * @param gPos2
          */
-        public void incrementCount(int gPos1, int gPos2, float score) {
+        public void incrementCount(int gPos1, int gPos2, float score) throws IOException {
 
             sum += score;
             // Convert to proper units,  fragments or base-pairs
@@ -846,23 +798,197 @@ public class Preprocessor {
             int blockRow = yBin / getBlockBinCount();
             int blockNumber = getBlockColumnCount() * blockRow + blockCol;
 
-            Block block = blocks.get(blockNumber);
+            BlockPP block = blocks.get(blockNumber);
             if (block == null) {
-                block = new Block(blockNumber);
+
+                block = new BlockPP(blockNumber);
                 blocks.put(blockNumber, block);
             }
             block.incrementCount(xBin, yBin, score);
+
+            // If too many blocks write to tmp directory
+            if (blocks.size() > 10000) {
+                File tmpfile = tmpDir == null ? File.createTempFile("blocks", "bin") : File.createTempFile("blocks", "bin", tmpDir);
+                tmpfile.deleteOnExit();
+
+                System.out.println(chr1.getName() + "-" + chr2.getName() + " Dumping blocks to " + tmpfile.getAbsolutePath());
+
+                dumpBlocks(tmpfile);
+                blocks.clear();
+            }
         }
 
-        void parsingComplete() {
-            for (Block b : blocks.values()) {
-                b.parsingComplete();
+
+        /**
+         * Dump the blocks calculated so far to a temporary file
+         *
+         * @param file
+         * @throws IOException
+         */
+        private void dumpBlocks(File file) throws IOException {
+            LittleEndianOutputStream los = null;
+            try {
+                los = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+
+                List<BlockPP> blockList = new ArrayList<BlockPP>(blocks.values());
+                Collections.sort(blockList, new Comparator<BlockPP>() {
+                    @Override
+                    public int compare(BlockPP o1, BlockPP o2) {
+                        return o1.getNumber() - o2.getNumber();
+                    }
+                });
+
+                for (int i = 0; i < blockList.size(); i++) {
+                    BlockPP b = blockList.get(i);
+                    int number = b.getNumber();
+                    blockNumbers.add(number);
+
+                    los.writeInt(number);
+                    Map<Point, ContactCount> records = b.getContractRecordMap();
+
+                    los.writeInt(records.size());
+                    for (Map.Entry<Point, ContactCount> entry : records.entrySet()) {
+
+                        Point point = entry.getKey();
+                        ContactCount count = entry.getValue();
+
+                        los.writeInt(point.x);
+                        los.writeInt(point.y);
+                        los.writeFloat(count.getCounts());
+                    }
+                }
+
+            } finally {
+                if (los == null) los.close();
+            }
+        }
+
+
+        // Merge and write out blocks one at a time.
+        private List<IndexEntry> mergeAndWriteBlocks() throws IOException {
+
+            DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(10000);
+
+            List<BlockQueue> activeList = new ArrayList<BlockQueue>();
+
+            // Initialize queues -- first whatever is left over in memory
+            if (blocks.size() > 0) {
+                BlockQueue bqInMem = new BlockQueueMem(blocks.values());
+                activeList.add(bqInMem);
+            }
+
+            for (File file : tmpFiles) {
+                BlockQueue bq = new BlockQueueFB(file);
+                if (bq.getBlock() != null) activeList.add(bq);
+            }
+
+            List<IndexEntry> indexEntries = new ArrayList<IndexEntry>();
+
+            do {
+                Collections.sort(activeList, new Comparator<BlockQueue>() {
+                    @Override
+                    public int compare(BlockQueue o1, BlockQueue o2) {
+                        return o1.getBlock().getNumber() - o2.getBlock().getNumber();
+                    }
+                });
+
+                BlockQueue topQueue = activeList.get(0);
+                BlockPP currentBlock = topQueue.getBlock();
+                topQueue.advance();
+                int num = currentBlock.getNumber();
+
+
+                for (int i = 1; i < activeList.size(); i++) {
+                    BlockQueue blockQueue = activeList.get(i);
+                    if (blockQueue.getBlock().getNumber() == num) {
+                        currentBlock.merge(blockQueue.getBlock());
+                        blockQueue.advance();
+                    }
+                }
+
+                Iterator<BlockQueue> iterator = activeList.iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next().getBlock() == null) {
+                        iterator.remove();
+                    }
+                }
+
+                // Output block
+                long position = los.getWrittenCount();
+                writeContactRecords(this, currentBlock, sampledData);
+                int size = (int) (los.getWrittenCount() - position);
+
+                indexEntries.add(new IndexEntry(num, position, size));
+
+
+            } while (activeList.size() > 0);
+
+            for (File f : tmpFiles) {
+                f.delete();
+            }
+
+            computeStats(sampledData);
+
+            return indexEntries;
+        }
+
+        private void computeStats(DownsampledDoubleArrayList sampledData) {
+
+            double[] data = sampledData.toArray();
+            this.percent5 = StatUtils.percentile(data, 5);
+            this.percent95 = StatUtils.percentile(data, 95);
+
+        }
+
+        public void parsingComplete() {
+            // Add the block numbers still in memory
+            for (BlockPP block : blocks.values()) {
+                blockNumbers.add(block.getNumber());
+            }
+        }
+
+        public void updateIndexPositions(List<IndexEntry> blockIndex) throws IOException {
+
+            // Temporarily close output stream.  Remember position
+            long losPos = los.getWrittenCount();
+            los.close();
+
+            RandomAccessFile raf = null;
+            try {
+                raf = new RandomAccessFile(outputFile, "rw");
+
+                // Master index
+                raf.getChannel().position(masterIndexPositionPosition);
+                BufferedByteWriter buffer = new BufferedByteWriter();
+                buffer.putLong(masterIndexPosition);
+                raf.write(buffer.getBytes());
+
+                // Block indices
+                long pos = blockIndexPosition;
+                raf.getChannel().position(pos);
+
+                // Write as little endian
+                buffer = new BufferedByteWriter();
+                for (IndexEntry aBlockIndex : blockIndex) {
+                    buffer.putInt(aBlockIndex.id);
+                    buffer.putLong(aBlockIndex.position);
+                    buffer.putInt(aBlockIndex.size);
+                }
+                raf.write(buffer.getBytes());
+
+            } finally {
+
+                if (raf != null) raf.close();
+
+                // Restore
+                FileOutputStream fos = new FileOutputStream(outputFile);
+                fos.getChannel().position(losPos);
+                los = new LittleEndianOutputStream(new BufferedOutputStream(fos));
+                los.setWrittenCount(losPos);
 
             }
-            computeStats();
         }
     }
-
 
     private synchronized byte[] compress(byte[] data) {
 
@@ -892,6 +1018,179 @@ public class Preprocessor {
 
         byte[] compressedData = bos.toByteArray();
         return compressedData;
+    }
+
+
+    // class to support block merging
+
+    static interface BlockQueue {
+
+        void advance() throws IOException;
+
+        BlockPP getBlock();
+
+    }
+
+    static class BlockQueueFB implements BlockQueue {
+
+        File file;
+        BlockPP block;
+        long filePosition;
+
+        BlockQueueFB(File file) {
+            this.file = file;
+            try {
+                advance();
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        public void advance() throws IOException {
+
+            if (filePosition >= file.length()) {
+                block = null;
+                return;
+            }
+
+            FileInputStream fis = new FileInputStream(file);
+            fis.getChannel().position(filePosition);
+
+
+            LittleEndianInputStream lis = new LittleEndianInputStream(new BufferedInputStream(fis));
+
+
+            int blockNumber = lis.readInt();
+            int nRecords = lis.readInt();
+
+            Map<Point, ContactCount> contactRecordMap = new HashMap<Point, ContactCount>(nRecords);
+            for (int i = 0; i < nRecords; i++) {
+                int x = lis.readInt();
+                int y = lis.readInt();
+                float v = lis.readFloat();
+                ContactCount rec = new ContactCount(v);
+                contactRecordMap.put(new Point(x, y), rec);
+            }
+            block = new BlockPP(blockNumber, contactRecordMap);
+
+            // Update file position based on # of bytes read, for next block
+            int nBytes = (1 + 1 + nRecords * 3) * 4;   // ints and floats are 4 bytes
+            filePosition += nBytes;
+        }
+
+        public BlockPP getBlock() {
+            return block;
+        }
+    }
+
+    static class BlockQueueMem implements BlockQueue {
+
+        List<BlockPP> blocks;
+        int idx = 0;
+
+        BlockQueueMem(Collection<BlockPP> blockCollection) {
+
+            this.blocks = new ArrayList<BlockPP>(blockCollection);
+            Collections.sort(blocks, new Comparator<BlockPP>() {
+                @Override
+                public int compare(BlockPP o1, BlockPP o2) {
+                    return o1.getNumber() - o2.getNumber();
+                }
+            });
+        }
+
+        public void advance() {
+            idx++;
+        }
+
+        public BlockPP getBlock() {
+            if (idx >= blocks.size()) {
+                return null;
+            } else {
+                return blocks.get(idx);
+            }
+        }
+    }
+
+
+    /**
+     * Representation of a sparse matrix block used for preprocessing.
+     */
+    static class BlockPP {
+
+        private int number;
+
+        private Map<Point, ContactCount> contactRecordMap;
+
+
+        BlockPP(int number) {
+            this.number = number;
+            this.contactRecordMap = new HashMap<Point, ContactCount>();
+        }
+
+        public BlockPP(int number, Map<Point, ContactCount> contactRecordMap) {
+            this.number = number;
+            this.contactRecordMap = contactRecordMap;
+        }
+
+
+        public int getNumber() {
+            return number;
+        }
+
+        public void incrementCount(int col, int row, float score) {
+            Point p = new Point(col, row);
+            ContactCount rec = contactRecordMap.get(p);
+            if (rec == null) {
+                rec = new ContactCount(1);
+                contactRecordMap.put(p, rec);
+
+            } else {
+                rec.incrementCount(score);
+            }
+        }
+
+        public void parsingComplete() {
+
+        }
+
+        public Map<Point, ContactCount> getContractRecordMap() {
+            return contactRecordMap;
+        }
+
+        public void merge(BlockPP other) {
+
+            for (Map.Entry<Point, ContactCount> entry : other.getContractRecordMap().entrySet()) {
+
+                Point point = entry.getKey();
+                ContactCount otherValue = entry.getValue();
+
+                ContactCount value = contactRecordMap.get(point);
+                if (value == null) {
+                    contactRecordMap.put(point, otherValue);
+                } else {
+                    value.incrementCount(otherValue.getCounts());
+                }
+
+            }
+        }
+    }
+
+
+    static class ContactCount {
+        float value;
+
+        ContactCount(float value) {
+            this.value = value;
+        }
+
+        void incrementCount(float increment) {
+            value += increment;
+        }
+
+        public float getCounts() {
+            return value;
+        }
     }
 
 

@@ -173,8 +173,7 @@ public class FeatureDB {
     }
 
     /**
-     * Return the feature, if any, with the given name.  Genes are given
-     * precedence.
+     * Return a feature with the given name.
      */
     public static NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();
@@ -254,32 +253,6 @@ public class FeatureDB {
         }
     }
 
-    /**
-     * Return the longest feature with the given name.
-     * @param name
-     * @return
-     */
-    public static NamedFeature getLongestFeatureNamed(String name) {
-
-        List<NamedFeature> featureList = getFeaturesList(name, Integer.MAX_VALUE, true);
-        if (featureList == null) {
-            return null;
-        }
-
-        Iterator<NamedFeature> iter = featureList.iterator();
-        NamedFeature longest = iter.next();
-        int len = longest.getEnd() - longest.getStart();
-        while (iter.hasNext()) {
-            NamedFeature next = iter.next();
-            int nextLen = next.getEnd() - next.getStart();
-            if (nextLen > len) {
-                longest = next;
-                len = nextLen;
-            }
-        }
-        return longest;
-
-    }
 
     /**
      * Search for a feature with the given name, which has the specified aminoAcid

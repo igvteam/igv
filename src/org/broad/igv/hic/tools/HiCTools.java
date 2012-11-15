@@ -58,6 +58,7 @@ public class HiCTools {
         System.out.println("           : -f <restriction site file> calculate fragment map");
         System.out.println("           : -m <int> only write cells with count above threshold m [0]");
         System.out.println("           : -c <chromosome ID> only calculate map on specific chromosome");
+        System.out.println("           : --tmdir <temporary file directory>");
         System.out.println("           : -h print help");
     }
 
@@ -193,6 +194,7 @@ public class HiCTools {
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setFragmentFile(parser.getFragmentOption());
+            preprocessor.setTmpdir(parser.getTmpdirOption());
             preprocessor.preprocess(files);
         } else {
             usage();
@@ -615,12 +617,14 @@ public class HiCTools {
         private Option countThresholdOption = null;
         private Option helpOption = null;
         private Option fragmentOption = null;
+        private Option tmpDirOption = null;
 
         CommandLineParser() {
             diagonalsOption = addBooleanOption('d', "diagonals");
             chromosomeOption = addStringOption('c', "chromosomes");
             countThresholdOption = addIntegerOption('m', "minCountThreshold");
             fragmentOption = addStringOption('f', "restriction fragment site file");
+            tmpDirOption = addStringOption('t', "tmpDir");
             helpOption = addBooleanOption('h', "help");
         }
 
@@ -646,6 +650,15 @@ public class HiCTools {
 
         String getFragmentOption() {
             Object opt = getOptionValue(fragmentOption);
+            if (opt != null) {
+                return opt.toString();
+            } else {
+                return null;
+            }
+        }
+
+        String getTmpdirOption() {
+            Object opt = getOptionValue(tmpDirOption);
             if (opt != null) {
                 return opt.toString();
             } else {

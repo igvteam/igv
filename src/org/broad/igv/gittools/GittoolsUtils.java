@@ -29,7 +29,7 @@ public class GittoolsUtils {
         int averageFeatureSize = 0;
         List<Feature> loci = new ArrayList<Feature>(lociStrings.size());
         for (String l : lociStrings) {
-            Feature feature = FeatureDB.getLongestFeatureNamed(l);
+            Feature feature = FeatureDB.getFeature(l);
             if (feature == null) {
                 feature = Locus.fromString(l);
             }

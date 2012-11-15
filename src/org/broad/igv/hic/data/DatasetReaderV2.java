@@ -253,7 +253,7 @@ public class DatasetReaderV2 implements DatasetReader {
                 int bin1 = dis.readInt();
                 int bin2 = dis.readInt();
                 float counts = dis.readFloat();
-                records[i] = new ContactRecord(blockNumber, bin1, bin2, counts);
+                records[i] = new ContactRecord(bin1, bin2, counts);
             } catch (EOFException e) {
                 nRecords = i;
                 ContactRecord[] modifiedRecords = new ContactRecord[nRecords];
