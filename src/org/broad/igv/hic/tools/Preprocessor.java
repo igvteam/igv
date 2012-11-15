@@ -206,6 +206,8 @@ public class Preprocessor {
      * Split the input file list (normally a single file) into a separate file for each chr-chr pair.  Note that
      * 1-2  is equal to 2-1  (order of the pair doesn't matter).
      *
+     * Also compute "whole genome" while we're at it.
+     *
      * @param inputFileList
      * @throws IOException
      */
@@ -215,6 +217,11 @@ public class Preprocessor {
 
         Map<String, LittleEndianOutputStream> outputStreams = new HashMap<String, LittleEndianOutputStream>();
         Map<String, File> files = new HashMap<String, File>();
+
+        int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
+        int binSize = genomeLength / 500;
+        MatrixPP matrix = new MatrixPP(0, 0, binSize);
+        float score = 1.0f;
 
         for (String file : inputFileList) {
 
@@ -228,8 +235,14 @@ public class Preprocessor {
                 while (iter.hasNext()) {
 
                     AlignmentPair pair = iter.next();
+                    int bp1 = pair.getPos1();
+                    int bp2 = pair.getPos2();
                     int chr1 = pair.getChr1();
                     int chr2 = pair.getChr2();
+
+                    int pos1 = getGenomicPosition(chr1, bp1);
+                    int pos2 = getGenomicPosition(chr2, bp2);
+                    matrix.incrementCount(pos1, pos2, pos1, pos2, score);
 
                     int l = Math.min(chr1, chr2);
                     int r = Math.max(chr1, chr2);
@@ -293,7 +306,7 @@ public class Preprocessor {
             }
         } // End of double loop through chromosomes
 
-        for(File f : inputFiles.values()) {
+        for (File f : inputFiles.values()) {
             f.delete();
         }
 
@@ -881,9 +894,7 @@ public class Preprocessor {
             // If too many blocks write to tmp directory
             if (blocks.size() > 1000) {
                 File tmpfile = tmpDir == null ? File.createTempFile("blocks", "bin") : File.createTempFile("blocks", "bin", tmpDir);
-
-                System.out.println(chr1.getName() + "-" + chr2.getName() + " Dumping blocks to " + tmpfile.getAbsolutePath());
-
+                //System.out.println(chr1.getName() + "-" + chr2.getName() + " Dumping blocks to " + tmpfile.getAbsolutePath());
                 dumpBlocks(tmpfile);
                 tmpFiles.add(tmpfile);
                 tmpfile.deleteOnExit();
