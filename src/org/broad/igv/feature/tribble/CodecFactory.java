@@ -59,6 +59,9 @@ public class CodecFactory {
             fn = fn.substring(0, l);
         }
 
+        if (fn.endsWith(".vcf3")) {
+            return new VCFWrapperCodec(new VCF3Codec(), genome);
+        }
         if (fn.endsWith(".vcf4")) {
             return new VCFWrapperCodec(new VCFCodec(), genome);
         } else if (fn.endsWith(".vcf")) {
