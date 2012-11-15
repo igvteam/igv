@@ -11,12 +11,16 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
+
+import java.util.Collection;
 
 import static org.junit.Assert.*;
 
@@ -89,15 +93,47 @@ public class MainTest {
      * @throws Exception
      */
     @Test
-    public void testLoadGenome() throws Exception {
+    public void testLoadGenomeById() throws Exception {
         String genomeId = "mm7";
-        String[] genomes = new String[0]; //PreferenceManager.getInstance().getGenomeIdDisplayList();
-        for (String gen : genomes) {
-            assertNotSame("Bad test setup, test genome in display list", gen, genomeId);
+        Collection<GenomeListItem> genomeListItems = GenomeManager.getInstance().getGenomes();
+        for (GenomeListItem gen : genomeListItems) {
+            assertNotSame("Bad test setup, test genome in display list", gen.getId(), genomeId);
         }
 
         String[] args = new String[]{"-g", genomeId};
         IGV igv = startMain(args, 10000);
+
+        assertEquals(igv.getGenomeManager().getGenomeId(), genomeId);
+    }
+
+    /**
+     * Test loading a genome not in the display list, by full path
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadGenomeByPath() throws Exception {
+        String genomePath = TestUtils.DATA_DIR + "genomes/canFam2.unittest.genome";
+        String genomeId = "canFam2.unittest";
+
+        String[] args = new String[]{"-g", genomePath};
+        IGV igv = startMain(args, 10000);
+
+        assertEquals(igv.getGenomeManager().getGenomeId(), genomeId);
+    }
+
+    /**
+     * Test loading a genome not in the display list, by full path
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadFastaByPath() throws Exception {
+        String genomePath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        String genomeId = genomePath;
+
+        String[] args = new String[]{"-g", genomePath};
+        IGV igv = startMain(args, 5000);
 
         assertEquals(igv.getGenomeManager().getGenomeId(), genomeId);
     }

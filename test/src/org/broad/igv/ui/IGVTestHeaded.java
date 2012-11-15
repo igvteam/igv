@@ -141,7 +141,7 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         Collection<GenomeListItem> currentGenomes = GenomeManager.getInstance().getGenomes();
         String genomeId = "canFam2";
         for (GenomeListItem genomeListItem : currentGenomes) {
-            assertFalse(genomeId.equalsIgnoreCase(genomeListItem.getId()));
+            assertNotSame(genomeId, genomeListItem.getId());
         }
         String sessionPath = TestUtils.DATA_DIR + "sessions/canFam2_server.xml";
         TestUtils.loadSession(IGV.getInstance(), sessionPath);
