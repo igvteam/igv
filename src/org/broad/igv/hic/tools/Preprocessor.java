@@ -793,7 +793,7 @@ public class Preprocessor {
                 yBin = b2;
 
                 if (b1 != b2) {
-                    sum++;  // <= count for mirror cell.
+                    sum += score;  // <= count for mirror cell.
                 }
 
                 String evKey = (isFrag ? "FRAG_" : "BP_") + binSize;
@@ -819,12 +819,12 @@ public class Preprocessor {
             // If too many blocks write to tmp directory
             if (blocks.size() > 1000) {
                 File tmpfile = tmpDir == null ? File.createTempFile("blocks", "bin") : File.createTempFile("blocks", "bin", tmpDir);
-                tmpfile.deleteOnExit();
 
                 System.out.println(chr1.getName() + "-" + chr2.getName() + " Dumping blocks to " + tmpfile.getAbsolutePath());
 
                 dumpBlocks(tmpfile);
-                blocks.clear();
+                tmpFiles.add(tmpfile);
+                tmpfile.deleteOnExit();
             }
         }
 
@@ -848,8 +848,11 @@ public class Preprocessor {
                     }
                 });
 
-                for (int i = 0; i < blockList.size(); i++) {
-                    BlockPP b = blockList.get(i);
+                for (BlockPP b : blockList) {
+
+                    // Remove from map
+                    blocks.remove(b.getNumber());
+
                     int number = b.getNumber();
                     blockNumbers.add(number);
 
@@ -868,8 +871,11 @@ public class Preprocessor {
                     }
                 }
 
+                blocks.clear();
+
             } finally {
-                if (los == null) los.close();
+                if (los != null) los.close();
+
             }
         }
 
@@ -886,10 +892,12 @@ public class Preprocessor {
                 BlockQueue bqInMem = new BlockQueueMem(blocks.values());
                 activeList.add(bqInMem);
             }
-
+            // Now from files
             for (File file : tmpFiles) {
                 BlockQueue bq = new BlockQueueFB(file);
-                if (bq.getBlock() != null) activeList.add(bq);
+                if (bq.getBlock() != null) {
+                    activeList.add(bq);
+                }
             }
 
             List<IndexEntry> indexEntries = new ArrayList<IndexEntry>();
@@ -910,8 +918,9 @@ public class Preprocessor {
 
                 for (int i = 1; i < activeList.size(); i++) {
                     BlockQueue blockQueue = activeList.get(i);
-                    if (blockQueue.getBlock().getNumber() == num) {
-                        currentBlock.merge(blockQueue.getBlock());
+                    BlockPP block = blockQueue.getBlock();
+                    if (block.getNumber() == num) {
+                        currentBlock.merge(block);
                         blockQueue.advance();
                     }
                 }
@@ -967,7 +976,7 @@ public class Preprocessor {
             try {
                 raf = new RandomAccessFile(outputFile, "rw");
 
-               // Block indices
+                // Block indices
                 long pos = blockIndexPosition;
                 raf.getChannel().position(pos);
 
@@ -1057,33 +1066,60 @@ public class Preprocessor {
                 return;
             }
 
-            FileInputStream fis = new FileInputStream(file);
-            fis.getChannel().position(filePosition);
+            FileInputStream fis = null;
+
+            try {
+                fis = new FileInputStream(file);
+                fis.getChannel().position(filePosition);
 
 
-            LittleEndianInputStream lis = new LittleEndianInputStream(new BufferedInputStream(fis));
+                LittleEndianInputStream lis = new LittleEndianInputStream(fis);
+                int blockNumber = lis.readInt();
+                int nRecords = lis.readInt();
+
+                byte[] bytes = new byte[nRecords * 12];
+                readFully(bytes, fis);
+
+                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                lis = new LittleEndianInputStream(bis);
 
 
-            int blockNumber = lis.readInt();
-            int nRecords = lis.readInt();
+                Map<Point, ContactCount> contactRecordMap = new HashMap<Point, ContactCount>(nRecords);
+                for (int i = 0; i < nRecords; i++) {
+                    int x = lis.readInt();
+                    int y = lis.readInt();
+                    float v = lis.readFloat();
+                    ContactCount rec = new ContactCount(v);
+                    contactRecordMap.put(new Point(x, y), rec);
+                }
+                block = new BlockPP(blockNumber, contactRecordMap);
 
-            Map<Point, ContactCount> contactRecordMap = new HashMap<Point, ContactCount>(nRecords);
-            for (int i = 0; i < nRecords; i++) {
-                int x = lis.readInt();
-                int y = lis.readInt();
-                float v = lis.readFloat();
-                ContactCount rec = new ContactCount(v);
-                contactRecordMap.put(new Point(x, y), rec);
+                // Update file position based on # of bytes read, for next block
+                filePosition = fis.getChannel().position();
+
+            } finally {
+                if (fis != null) fis.close();
             }
-            block = new BlockPP(blockNumber, contactRecordMap);
-
-            // Update file position based on # of bytes read, for next block
-            int nBytes = (1 + 1 + nRecords * 3) * 4;   // ints and floats are 4 bytes
-            filePosition += nBytes;
         }
 
         public BlockPP getBlock() {
             return block;
+        }
+
+        /**
+         * Read enough bytes to fill the input buffer
+         */
+        public void readFully(byte b[], InputStream is) throws IOException {
+            int len = b.length;
+            if (len < 0)
+                throw new IndexOutOfBoundsException();
+            int n = 0;
+            while (n < len) {
+                int count = is.read(b, n, len - n);
+                if (count < 0)
+                    throw new EOFException();
+                n += count;
+            }
         }
     }
 
