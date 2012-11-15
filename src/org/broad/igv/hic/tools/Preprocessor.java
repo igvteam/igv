@@ -4,6 +4,7 @@ package org.broad.igv.hic.tools;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.hic.HiC;
 import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.collections.DownsampledDoubleArrayList;
@@ -274,21 +275,28 @@ public class Preprocessor {
                 while (iter.hasNext()) {
 
                     AlignmentPair pair = iter.next();
-                    int pos1 = pair.getPos1();
-                    int pos2 = pair.getPos2();
+                    int bp1 = pair.getPos1();
+                    int bp2 = pair.getPos2();
+                    int frag1 = pair.getFrag1();
+                    int frag2 = pair.getFrag2();
                     int chr1 = pair.getChr1();
                     int chr2 = pair.getChr2();
+
+                    int pos1, pos2;
+
                     if (isWholeGenome) {
-                        pos1 = getGenomicPosition(chr1, pos1);
-                        pos2 = getGenomicPosition(chr2, pos2);
-                        matrix.incrementCount(pos1, pos2, score);
+                        pos1 = getGenomicPosition(chr1, bp1);
+                        pos2 = getGenomicPosition(chr2, bp2);
+                        matrix.incrementCount(pos1, pos2, pos1, pos2, score);
                     } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
                         // we know c1 <= c2 and that's how the matrix is formed.
                         // pos1 goes with chr1 and pos2 goes with chr2
+
                         if (c1 == chr1) {
-                            matrix.incrementCount(pos1, pos2, score);
+
+                            matrix.incrementCount(bp1, bp2, frag1, frag2, score);
                         } else {// c1 == chr2
-                            matrix.incrementCount(pos2, pos1, score);
+                            matrix.incrementCount(bp1, bp2, frag1, frag2, score);
                         }
 
                     }
@@ -508,11 +516,14 @@ public class Preprocessor {
     }
 
     public void setTmpdir(String tmpDirName) {
-        this.tmpDir = new File(tmpDirName);
 
-        if(!tmpDir.exists()) {
-            System.err.println("Tmp directory does not exist: " + tmpDirName);
-            System.exit(1);
+        if (tmpDirName != null) {
+            this.tmpDir = new File(tmpDirName);
+
+            if (!tmpDir.exists()) {
+                System.err.println("Tmp directory does not exist: " + tmpDirName);
+                System.exit(1);
+            }
         }
     }
 
@@ -617,10 +628,14 @@ public class Preprocessor {
         }
 
 
-        void incrementCount(int pos1, int pos2, float score) throws IOException {
+        void incrementCount(int pos1, int pos2, int frag1, int frag2, float score) throws IOException {
 
             for (MatrixZoomDataPP aZoomData : zoomData) {
-                aZoomData.incrementCount(pos1, pos2, score);
+                if (aZoomData.isFrag) {
+                    aZoomData.incrementCount(frag1, frag2, score);
+                } else {
+                    aZoomData.incrementCount(pos1, pos2, score);
+                }
             }
         }
 
@@ -759,17 +774,12 @@ public class Preprocessor {
 
         /**
          * Increment the count for the bin represented by the GENOMIC position (pos1, pos2)
-         *
-         * @param gPos1
-         * @param gPos2
          */
-        public void incrementCount(int gPos1, int gPos2, float score) throws IOException {
+        public void incrementCount(int pos1, int pos2, float score) throws IOException {
 
             sum += score;
             // Convert to proper units,  fragments or base-pairs
 
-            int pos1 = isFrag ? fragmentCalculation.getBin(chr1.getName(), gPos1) : gPos1;
-            int pos2 = isFrag ? fragmentCalculation.getBin(chr2.getName(), gPos2) : gPos2;
             if (pos1 < 0 || pos2 < 0) return;
 
             int xBin = pos1 / binSize;
@@ -807,7 +817,7 @@ public class Preprocessor {
             block.incrementCount(xBin, yBin, score);
 
             // If too many blocks write to tmp directory
-            if (blocks.size() > 10000) {
+            if (blocks.size() > 1000) {
                 File tmpfile = tmpDir == null ? File.createTempFile("blocks", "bin") : File.createTempFile("blocks", "bin", tmpDir);
                 tmpfile.deleteOnExit();
 
@@ -957,18 +967,12 @@ public class Preprocessor {
             try {
                 raf = new RandomAccessFile(outputFile, "rw");
 
-                // Master index
-                raf.getChannel().position(masterIndexPositionPosition);
-                BufferedByteWriter buffer = new BufferedByteWriter();
-                buffer.putLong(masterIndexPosition);
-                raf.write(buffer.getBytes());
-
-                // Block indices
+               // Block indices
                 long pos = blockIndexPosition;
                 raf.getChannel().position(pos);
 
                 // Write as little endian
-                buffer = new BufferedByteWriter();
+                BufferedByteWriter buffer = new BufferedByteWriter();
                 for (IndexEntry aBlockIndex : blockIndex) {
                     buffer.putInt(aBlockIndex.id);
                     buffer.putLong(aBlockIndex.position);
@@ -981,7 +985,7 @@ public class Preprocessor {
                 if (raf != null) raf.close();
 
                 // Restore
-                FileOutputStream fos = new FileOutputStream(outputFile);
+                FileOutputStream fos = new FileOutputStream(outputFile, true);
                 fos.getChannel().position(losPos);
                 los = new LittleEndianOutputStream(new BufferedOutputStream(fos));
                 los.setWrittenCount(losPos);

@@ -50,7 +50,6 @@ public class DatasetReaderV2 implements DatasetReader {
             return magicString;
         } finally {
             if (stream != null) stream.close();
-            ;
         }
     }
 
