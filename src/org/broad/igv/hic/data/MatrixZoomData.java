@@ -568,11 +568,13 @@ public class MatrixZoomData {
                 System.out.println();
         }
         else if (type.equals("expected")) {
+            //PrintWriter pw = new PrintWriter("chr14_expected.txt");
             int length = df.getLength();
             if (les != null) {
                 les.writeInt(length);
             }
             else {
+                //pw.println(length);
                 System.out.println(length);
             }
             for (int i=0; i<length; i++) {
@@ -580,11 +582,11 @@ public class MatrixZoomData {
                     les.writeFloat((float)df.getDensity(chr1.getIndex(),i));
                 }
                 else {
-                    System.out.print(df.getDensity(chr1.getIndex(),i) + " ");
+                    //pw.println(df.getDensity(chr1.getIndex(), i));
+                    System.out.println(df.getDensity(chr1.getIndex(), i));
                 }
             }
-            if (les == null)
-                System.out.println();
+            //pw.close();
         }
         else {
 
