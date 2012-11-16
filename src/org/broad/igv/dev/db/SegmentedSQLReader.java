@@ -20,10 +20,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Experimental class to explore using a SQL database as a data store
+ * Reader for Segmented data, from a SQL database. Column names are hardcoded
  *
  * @author Jim Robinson
  * @date 10/14/11
+ * @deprecated See {@link org.broad.igv.dev.SegmentedReader}
  */
 public class SegmentedSQLReader extends WholeTableDBReader<SegmentedAsciiDataSet> {
 

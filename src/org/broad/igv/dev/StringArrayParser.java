@@ -19,30 +19,6 @@ import org.broad.igv.exceptions.ParserException;
  */
 public class StringArrayParser implements IParser<String[], Integer> {
 
-//    public final byte getByte(Object array, int index) throws NumberFormatException {
-//        return getByte(((String[])array), index);
-//    }
-//
-//    public final short getShort(Object array, int index) throws NumberFormatException {
-//        return getShort(((String[])array), index);
-//    }
-//
-//    public final int getInt(Object array, int index) throws NumberFormatException {
-//        return getInt(((String[])array), index);
-//    }
-//
-//    public final double getDouble(Object array, int index) throws NumberFormatException {
-//        return getDouble(((String[])array), index);
-//    }
-//
-//    public final float getFloat(Object array, int index) throws NumberFormatException {
-//        return getFloat(((String[])array), index);
-//    }
-//
-//    public final String getString(Object array, int index){
-//        return getString((String[])array, index);
-//    }
-
     @Override
     public final byte getByte(String[] array, Integer index) throws NumberFormatException {
         return Byte.parseByte(array[index].trim());

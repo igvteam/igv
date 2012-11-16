@@ -24,8 +24,8 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
- * keeps single connection, etc.
+ * Class for database connections.  Manages connections based on
+ * ResourceLocators, connects, loads drivers, and can perform limited data conversion (from ResultSet -> String, String[])
  *
  * @author Jim Robinson
  * @date 10/31/11
