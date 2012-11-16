@@ -24,7 +24,6 @@ import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
-import org.broad.igv.hic.MainWindow;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
@@ -921,29 +920,6 @@ public class IGVMenuBar extends JMenuBar {
             lfMenu.add(cb);
         }
         menu.add(lfMenu);
-
-
-        menu.addSeparator();
-        JMenuItem hicMenuItem = new JMenuItem("Launch HiC Viewer");
-        hicMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        try {
-                            MainWindow mainWindow = MainWindow.createMainWindow();
-                            mainWindow.setVisible(true);
-                            mainWindow.setSize(780, 660);
-                            mainWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                        } catch (IOException e) {
-                            log.error("Error launching HiC Window", e);
-                        }
-                    }
-                };
-                SwingUtilities.invokeLater(runnable);
-            }
-        });
-        menu.add(hicMenuItem);
-
 
         menu.setVisible(false);
 
