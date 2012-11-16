@@ -13,12 +13,12 @@
           host="test/data"
           path="sql/SRP32_v40.db"
           port=""
-          subprotocol="sqlite">
+          subprotocol="sqlite"
+          name="VCFs">
     <table name="SRP32_v40" format="vcf4"
            chromoColName="CHROM" posStartColName="POS">
-    	
-    	<headerLine>##fileformat=VCFv4.0</headerLine>
-    	<headerLine>#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA12891	NA12892	NA12878</headerLine>
+
+        <headerLine>##fileformat=VCFv4.0</headerLine>
     </table>
 </database>
 	

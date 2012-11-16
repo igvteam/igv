@@ -53,7 +53,7 @@ public abstract class WholeTableDBReader<T> extends DBReader {
         T obj = null;
         ResultSet rs = null;
         try {
-            rs = super.loadResultSet(baseQueryString);
+            rs = super.executeQuery(baseQueryString);
             obj = processResultSet(rs);
         } catch (SQLException e) {
             log.error("Database error", e);

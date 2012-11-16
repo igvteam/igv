@@ -68,7 +68,7 @@ public class DBReader {
         }
     }
 
-    protected ResultSet loadResultSet(String queryString) {
+    protected ResultSet executeQuery(String queryString) {
 
         try {
             Connection conn = DBManager.getConnection(locator);

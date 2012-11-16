@@ -239,15 +239,21 @@ public class DBManager {
      * @param rs
      * @param startColIndex 1-based start column index (lower columns are ignored)
      * @param endColIndex   1-based, inclusive end column index (columns afterwards are ignored)
+     * @param labelsOnly    Whether to only include the column labels, rather than the data contained in the ResultSet
      * @return
      * @throws SQLException
      */
-    public static String[] lineToArray(ResultSet rs, int startColIndex, int endColIndex) throws SQLException {
-        int colCount = Math.min(rs.getMetaData().getColumnCount(), endColIndex) - startColIndex + 1;
+    public static String[] lineToArray(ResultSet rs, int startColIndex, int endColIndex, boolean labelsOnly) throws SQLException {
+        ResultSetMetaData md = rs.getMetaData();
+        int colCount = Math.min(md.getColumnCount(), endColIndex) - startColIndex + 1;
         String[] tokens = new String[colCount];
         for (int cc = 0; cc < colCount; cc++) {
             int sqlCol = cc + startColIndex;
-            tokens[cc] = getStringFromResultSet(rs, sqlCol);
+            if (labelsOnly) {
+                tokens[cc] = md.getColumnLabel(sqlCol);
+            } else {
+                tokens[cc] = getStringFromResultSet(rs, sqlCol);
+            }
         }
         return tokens;
     }
