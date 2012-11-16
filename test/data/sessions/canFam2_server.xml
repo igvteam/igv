@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<Session genome="canFam2" locus="All" version="4">
+    <Resources>
+        <Resource name="CPG Islands" path="http://igvdata.broadinstitute.org/data/canFam2/cpgIslandExt.bed.gz"/>
+    </Resources>
+    <Panel height="622" name="FeaturePanel" width="1380">
+        <Track altColor="0,0,178" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" showDataRange="true" sortable="false" visible="true"/>
+        <Track altColor="0,0,178" color="0,0,178" colorScale="ContinuousColorScale;0.0;14.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="canFam2_genes" name="Refseq genes" renderer="BASIC_FEATURE" showDataRange="true" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="14.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" color="0,0,178" colorScale="ContinuousColorScale;0.0;341.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="45" id="http://igvdata.broadinstitute.org/data/canFam2/cpgIslandExt.bed.gz" name="CPG Islands" renderer="BASIC_FEATURE" showDataRange="true" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="341.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <PanelLayout dividerFractions="0.009478672985781991"/>
+</Session>
