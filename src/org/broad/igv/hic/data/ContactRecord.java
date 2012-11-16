@@ -6,8 +6,6 @@ package org.broad.igv.hic.data;
  */
 public class ContactRecord implements Comparable<ContactRecord> {
 
-    private int blockNumber;
-
     /**
      * Bin number in x coordinate
      */
@@ -23,8 +21,7 @@ public class ContactRecord implements Comparable<ContactRecord> {
      */
     private float counts;
 
-    public ContactRecord(int block, int binX, int binY, float counts) {
-        this.blockNumber = block;
+    public ContactRecord(int binX, int binY, float counts) {
         this.binX = binX;
         this.binY = binY;
         this.counts = counts;
@@ -34,9 +31,6 @@ public class ContactRecord implements Comparable<ContactRecord> {
         counts += score;
     }
 
-    public int getBlockNumber() {
-        return blockNumber;
-    }
 
     public int getBinX() {
         return binX;

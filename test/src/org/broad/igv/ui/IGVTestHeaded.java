@@ -13,6 +13,8 @@ package org.broad.igv.ui;
 
 import junit.framework.Assert;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -24,10 +26,10 @@ import org.fest.swing.fixture.JComboBoxFixture;
 import org.fest.swing.fixture.JPanelFixture;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: jacob
@@ -117,6 +119,37 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         //In all genome view these should be the same
         assertEquals(frame.getChromosomeLength(), frame.getCurrentRange().getEnd());
         Assert.assertEquals(0.0, frame.getOrigin());
+    }
+
+    @Test
+    public void testLoadNewGenomeByPath() throws Exception {
+        String sessionPath = TestUtils.DATA_DIR + "sessions/canFam2_local.xml";
+        String genomeId = "canFam2.unittest";
+
+        TestUtils.loadSession(IGV.getInstance(), sessionPath);
+        assertEquals(genomeId, GenomeManager.getInstance().getGenomeId());
+    }
+
+    /**
+     * Test loading a genome the user hasn't loaded before,
+     * by id (available from server)
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoadNewGenomeById() throws Exception {
+        Collection<GenomeListItem> currentGenomes = GenomeManager.getInstance().getGenomes();
+        String genomeId = "canFam2";
+        for (GenomeListItem genomeListItem : currentGenomes) {
+            assertNotSame(genomeId, genomeListItem.getId());
+        }
+        String sessionPath = TestUtils.DATA_DIR + "sessions/canFam2_server.xml";
+        TestUtils.loadSession(IGV.getInstance(), sessionPath);
+
+        assertEquals(genomeId, GenomeManager.getInstance().getGenomeId());
+
+        //CpG islands, RefSeq genes, ReferenceSequence (has height 0)
+        assertEquals(3, IGV.getInstance().getVisibleTrackCount());
     }
 
     /**

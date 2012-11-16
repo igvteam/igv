@@ -18,6 +18,10 @@
 
 package org.broad.igv.hic.tools;
 
+import org.broad.tribble.util.LittleEndianOutputStream;
+
+import java.io.IOException;
+
 /**
  * @author Jim Robinson
  * @date 9/24/11
@@ -32,14 +36,15 @@ public class AlignmentPair {
     private int pos1;
     private int chr2;
     private int pos2;
-   /*
-    public AlignmentPair(int chr1, int pos1, int chr2, int pos2) {
-        this.chr1 = chr1;
-        this.pos1 = pos1;
-        this.chr2 = chr2;
-        this.pos2 = pos2;
-    }
-     */
+
+    /*
+   public AlignmentPair(int chr1, int pos1, int chr2, int pos2) {
+       this.chr1 = chr1;
+       this.pos1 = pos1;
+       this.chr2 = chr2;
+       this.pos2 = pos2;
+   }
+    */
     public AlignmentPair(boolean strand1, int chr1, int pos1, int frag1, boolean strand2, int chr2, int pos2, int frag2) {
         this.strand1 = strand1;
         this.chr1 = chr1;
@@ -73,11 +78,11 @@ public class AlignmentPair {
     }
 
     public int getStrand1AsInt() {
-        return strand1?0:16;
+        return strand1 ? 0 : 16;          // <= THIS LOOKS BACKWOARDS   TODO
     }
 
     public int getStrand2AsInt() {
-        return strand2?0:16;
+        return strand2 ? 0 : 16;       // <= THIS LOOKS BACKWOARDS   TODO
     }
 
     public boolean getStrand2() {
@@ -95,6 +100,17 @@ public class AlignmentPair {
     public String toString() {
         int str1 = getStrand1AsInt();
         int str2 = getStrand2AsInt();
-        return str1 + "\t" +chr1 + "\t" + pos1 + "\t" + frag1 + "\t" + str2 + "\t" + chr2 + "\t" + pos2 +"\t" + frag2;
+        return str1 + "\t" + chr1 + "\t" + pos1 + "\t" + frag1 + "\t" + str2 + "\t" + chr2 + "\t" + pos2 + "\t" + frag2;
+    }
+
+    public void writeBinary(LittleEndianOutputStream los) throws IOException {
+        los.writeByte(getStrand1AsInt());
+        los.writeInt(chr1);
+        los.writeInt(pos1);
+        los.writeInt(frag1);
+        los.writeByte(getStrand2AsInt());
+        los.writeInt(chr2);
+        los.writeInt(pos2);
+        los.writeInt(frag2);
     }
 }

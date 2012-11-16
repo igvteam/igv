@@ -59,7 +59,10 @@ public class TestUtils {
     public static void setUpTestEnvironment() {
         Globals.setTesting(true);
         //Globals.setBatch(true);
-        PreferenceManager.getInstance().setPrefsFile("testprefs.properties");
+        File prefsFile = new File("testprefs.properties");
+        prefsFile.delete();
+        prefsFile.deleteOnExit();
+        PreferenceManager.getInstance().setPrefsFile(prefsFile.getAbsolutePath());
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
         FTPClient.READ_TIMEOUT = 60 * 1000;

@@ -13,42 +13,16 @@ public class Block {
 
     private int number;
 
-    // Temporary map used during parsing only TODO -- remove from this class
-    private Map<Point, ContactRecord> contactRecordMap;
+   ContactRecord[] records;
 
-    ContactRecord[] records;
-
-    public Block(int number) {
-        this.number = number;
-        contactRecordMap = new HashMap<Point, ContactRecord>();
-    }
 
     public Block(int number, ContactRecord[] records) {
         this.number = number;
         this.records = records;
     }
 
-    public void incrementCount(int col, int row, float score) {
-        Point p = new Point(col, row);
-        ContactRecord rec = contactRecordMap.get(p);
-        if (rec == null) {
-            rec = new ContactRecord(number, col, row, (short) 1);
-            contactRecordMap.put(p, rec);
-
-        } else {
-            rec.incrementCount(score);
-        }
-    }
-
-    public void parsingComplete() {
-//        if (contactRecordMap.size() > 0) {
-//            records = new ContactRecord[contactRecordMap.size()];
-//            int i = 0;
-//            for (ContactRecord rec : contactRecordMap.values()) {
-//                records[i] = rec;
-//                i++;
-//            }
-//        }
+    public int getNumber() {
+        return number;
     }
 
 
@@ -56,7 +30,4 @@ public class Block {
         return records;
     }
 
-    public Collection<ContactRecord> getContractRecordValues() {
-        return contactRecordMap.values();
-    }
 }
