@@ -92,7 +92,7 @@ public class Preprocessor {
         this.fragmentFileName = fragmentFileName;
     }
 
-    public void preprocess(final List<String> inputFileList) throws IOException {
+    public void preprocess(final String inputFile) throws IOException {
 
         try {
             if (fragmentFileName != null) {
@@ -122,7 +122,7 @@ public class Preprocessor {
 
             writeHeader();
 
-            writeBody(inputFileList);
+            writeBody(inputFile);
 
             writeFooter();
 
@@ -205,13 +205,13 @@ public class Preprocessor {
     /**
      * Split the input file list (normally a single file) into a separate file for each chr-chr pair.  Note that
      * 1-2  is equal to 2-1  (order of the pair doesn't matter).
-     *
+     * <p/>
      * Also compute "whole genome" while we're at it.
      *
-     * @param inputFileList
+     * @param file
      * @throws IOException
      */
-    Map<String, File> splitByChromosome(List<String> inputFileList) throws IOException {
+    Map<String, File> splitByChromosome(String file) throws IOException {
 
         System.out.println("Splitting files by chromosome");
 
@@ -221,124 +221,6 @@ public class Preprocessor {
         int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
         int binSize = genomeLength / 500;
         MatrixPP matrix = new MatrixPP(0, 0, binSize);
-        float score = 1.0f;
-
-        for (String file : inputFileList) {
-
-            PairIterator iter = null;
-
-            try {
-                iter = (file.endsWith(".bin")) ?
-                        new BinPairIterator(file, chromosomeIndexes) :
-                        new AsciiPairIterator(file, chromosomeIndexes);
-
-                while (iter.hasNext()) {
-
-                    AlignmentPair pair = iter.next();
-                    int bp1 = pair.getPos1();
-                    int bp2 = pair.getPos2();
-                    int chr1 = pair.getChr1();
-                    int chr2 = pair.getChr2();
-
-                    int pos1 = getGenomicPosition(chr1, bp1);
-                    int pos2 = getGenomicPosition(chr2, bp2);
-                    matrix.incrementCount(pos1, pos2, pos1, pos2, score);
-
-                    int l = Math.min(chr1, chr2);
-                    int r = Math.max(chr1, chr2);
-                    String key = "" + l + "_" + r;
-                    LittleEndianOutputStream los = outputStreams.get(key);
-                    if (los == null) {
-                        File f = tmpDir == null ? File.createTempFile(key, ".bin") : File.createTempFile(key, ".bin", tmpDir);
-                        f.deleteOnExit();
-                        files.put(key, f);
-                        los = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
-                        outputStreams.put(key, los);
-                    }
-                    pair.writeBinary(los);
-                }
-
-            } finally {
-                for (LittleEndianOutputStream os : outputStreams.values()) {
-                    os.close();
-                }
-            }
-        }
-        return files;
-    }
-
-
-    private void writeBody(List<String> inputFileList) throws IOException {
-
-        Map<String, File> inputFiles = splitByChromosome(inputFileList);
-
-        int nChrs = chromosomes.size();
-        // Compute matrices.  Note that c2 is always >= c1
-        for (int c1 = 0; c1 < nChrs; c1++) {
-            for (int c2 = c1; c2 < nChrs; c2++) {
-
-                // Index zero is whole genome
-                if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
-
-                if (diagonalsOnly && c1 != c2) continue;
-
-                // Optionally filter on chromosome
-                if (includedChromosomes != null && c1 != 0) {
-                    String c1Name = chromosomes.get(c1).getName();
-                    String c2Name = chromosomes.get(c2).getName();
-                    if (!(includedChromosomes.contains(c1Name) || includedChromosomes.contains(c2Name))) {
-                        continue;
-                    }
-                }
-
-                String key = "" + c1 + "_" + c2;
-                File f = inputFiles.get(key);
-                if (f == null) {
-                    System.out.println("No input file found for: " + key);
-                } else {
-                    MatrixPP matrix = computeMatrix(f.getAbsolutePath(), c1, c2);
-                    if (matrix != null) {
-                        writeMatrix(matrix);
-                    }
-                }
-                System.gc();
-                System.out.println("Available memory: " + RuntimeUtils.getAvailableMemory());
-            }
-        } // End of double loop through chromosomes
-
-        for (File f : inputFiles.values()) {
-            f.delete();
-        }
-
-
-        masterIndexPosition = los.getWrittenCount();
-    }
-
-    /**
-     * Compute matrix for the given chromosome combination.  This results in full pass through the input files
-     * for each chromosome combination.  This is done to save memory, at the expense of longer running times.
-     *
-     * @param file List of files to read
-     * @param c1   Chromosome 1 -- always <= c2
-     * @param c2   Chromosome 2
-     * @return Matrix with counts in each bin
-     * @throws IOException
-     */
-    public MatrixPP computeMatrix(String file, int c1, int c2) throws IOException {
-
-        boolean isWholeGenome = (c1 == 0 && c2 == 0);
-
-        MatrixPP matrix;
-        // NOTE: always true that c1 <= c2
-        if (isWholeGenome) {
-            int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
-            int binSize = genomeLength / 500;
-            matrix = new MatrixPP(c1, c2, binSize);
-        } else {
-            matrix = new MatrixPP(c1, c2);
-        }
-
-        // TODO -- in the future this value will be read from the file, might not be 1
         float score = 1.0f;
 
         PairIterator iter = null;
@@ -353,29 +235,163 @@ public class Preprocessor {
                 AlignmentPair pair = iter.next();
                 int bp1 = pair.getPos1();
                 int bp2 = pair.getPos2();
-                int frag1 = pair.getFrag1();
-                int frag2 = pair.getFrag2();
+                int chr1 = pair.getChr1();
+                int chr2 = pair.getChr2();
+
+                int pos1 = getGenomicPosition(chr1, bp1);
+                int pos2 = getGenomicPosition(chr2, bp2);
+                matrix.incrementCount(pos1, pos2, pos1, pos2, score);
+
+                int l = Math.min(chr1, chr2);
+                int r = Math.max(chr1, chr2);
+                String key = "" + l + "_" + r;
+                LittleEndianOutputStream los = outputStreams.get(key);
+                if (los == null) {
+                    File f = tmpDir == null ? File.createTempFile(key, ".bin") : File.createTempFile(key, ".bin", tmpDir);
+                    f.deleteOnExit();
+                    files.put(key, f);
+                    los = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+                    outputStreams.put(key, los);
+                }
+                pair.writeBinary(los);
+            }
+
+        } finally {
+            for (LittleEndianOutputStream os : outputStreams.values()) {
+                os.close();
+            }
+        }
+        writeMatrix(matrix);
+        return files;
+    }
+
+
+    private void writeBody(String inputFile) throws IOException {
+
+        int nChrs = chromosomes.size();
+        // Compute matrices.  Note that c2 is always >= c1
+
+        MatrixPP wholeGenomeMatrix = computeWholeGenomeMatrix(inputFile);
+        writeMatrix(wholeGenomeMatrix);
+
+
+        PairIterator iter = (inputFile.endsWith(".bin")) ?
+                new BinPairIterator(inputFile, chromosomeIndexes) :
+                new AsciiPairIterator(inputFile, chromosomeIndexes);
+
+
+        int c1 = -1;
+        int c2 = -1;
+        MatrixPP matrix = null;
+
+        // TODO -- in the future this value will be read from the file, might not be 1
+        float score = 1.0f;
+
+        while (iter.hasNext()) {
+
+            AlignmentPair pair = iter.next();
+
+            // Flip pair if needed so chr1 < chr2
+            int chr1, chr2, bp1, bp2, frag1, frag2;
+            if (pair.getChr1() < pair.getChr2()) {
+                bp1 = pair.getPos1();
+                bp2 = pair.getPos2();
+                frag1 = pair.getFrag1();
+                frag2 = pair.getFrag2();
+                chr1 = pair.getChr1();
+                chr2 = pair.getChr2();
+            } else {
+                bp1 = pair.getPos2();
+                bp2 = pair.getPos1();
+                frag1 = pair.getFrag2();
+                frag2 = pair.getFrag1();
+                chr1 = pair.getChr2();
+                chr2 = pair.getChr1();
+            }
+
+
+            // Filters
+            if (diagonalsOnly && chr1 != chr2) continue;
+            if (includedChromosomes != null && chr1 != 0) {
+                String c1Name = chromosomes.get(chr1).getName();
+                String c2Name = chromosomes.get(chr2).getName();
+                if (!(includedChromosomes.contains(c1Name) || includedChromosomes.contains(c2Name))) {
+                    continue;
+                }
+            }
+
+            if (!(c1 == chr1 && c2 == chr2)) {
+                if (matrix != null) {
+                    matrix.parsingComplete();
+                    writeMatrix(matrix);
+                    matrix = null;
+                    System.gc();
+                    System.out.println("Available memory: " + RuntimeUtils.getAvailableMemory());
+                }
+
+                // Start the next matrix
+                c1 = chr1;
+                c2 = chr2;
+                matrix = new MatrixPP(c1, c2);
+            }
+            matrix.incrementCount(bp1, bp2, frag1, frag2, score);
+        }
+
+
+        if (matrix != null) {
+            matrix.parsingComplete();
+            writeMatrix(matrix);
+        }
+
+        if (iter != null) iter.close();
+
+
+        masterIndexPosition = los.getWrittenCount();
+    }
+
+
+    /**
+     * @param file List of files to read
+     * @return Matrix with counts in each bin
+     * @throws IOException
+     */
+    public MatrixPP computeWholeGenomeMatrix(String file) throws IOException {
+
+
+        MatrixPP matrix;
+        // NOTE: always true that c1 <= c2
+
+        int genomeLength = chromosomes.get(0).getLength();  // <= whole genome in KB
+        int binSize = genomeLength / 500;
+        matrix = new MatrixPP(0, 0, binSize);
+
+
+        // TODO -- in the future this value will be read from the file, might not be 1
+        float score = 1.0f;
+
+        PairIterator iter = null;
+
+
+        // Create an index the first time through
+        try {
+            iter = (file.endsWith(".bin")) ?
+                    new BinPairIterator(file, chromosomeIndexes) :
+                    new AsciiPairIterator(file, chromosomeIndexes);
+
+            while (iter.hasNext()) {
+
+                AlignmentPair pair = iter.next();
+                int bp1 = pair.getPos1();
+                int bp2 = pair.getPos2();
                 int chr1 = pair.getChr1();
                 int chr2 = pair.getChr2();
 
                 int pos1, pos2;
 
-                if (isWholeGenome) {
-                    pos1 = getGenomicPosition(chr1, bp1);
-                    pos2 = getGenomicPosition(chr2, bp2);
-                    matrix.incrementCount(pos1, pos2, pos1, pos2, score);
-                } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
-                    // we know c1 <= c2 and that's how the matrix is formed.
-                    // pos1 goes with chr1 and pos2 goes with chr2
+                pos1 = getGenomicPosition(chr1, bp1);
+                pos2 = getGenomicPosition(chr2, bp2);
+                matrix.incrementCount(pos1, pos2, pos1, pos2, score);
 
-                    if (c1 == chr1) {
-
-                        matrix.incrementCount(bp1, bp2, frag1, frag2, score);
-                    } else {// c1 == chr2
-                        matrix.incrementCount(bp1, bp2, frag1, frag2, score);
-                    }
-
-                }
 
             }
         } finally {
@@ -386,6 +402,7 @@ public class Preprocessor {
         matrix.parsingComplete();
         return matrix;
     }
+
 
     private int getGenomicPosition(int chr, int pos) {
         long len = 0;
@@ -498,26 +515,9 @@ public class Preprocessor {
         System.out.println("Done writing matrix: " + matrix.getKey());
     }
 
-    private String getBlockKey(MatrixZoomDataPP zd) {
-        return zd.getChr1() + "_" + zd.getChr2() + "_" + zd.getUnit() + "_" + zd.getBinSize();
-    }
-
     private void writeZoomHeader(MatrixZoomDataPP zd) throws IOException {
 
         int numberOfBlocks = zd.blockNumbers.size();
-
-//        System.out.println("Write zoom header");
-//        System.out.println(zd.getUnit());  // Unit, ether "BP" or "FRAG"
-//        System.out.println(zd.getZoom());     // zoom index,  lowest res is zero
-//        System.out.println((float) zd.getSum());      // sum
-//        System.out.println((float) zd.getAverage());
-//        System.out.println((float) zd.getStdDev());
-//        System.out.println((float) zd.getPercent95());
-//        System.out.println(zd.getBinSize());
-//        System.out.println(zd.getBlockBinCount());
-//        System.out.println(zd.getBlockColumnCount());
-//        System.out.println(numberOfBlocks);
-
         los.writeString(zd.getUnit());  // Unit, ether "BP" or "FRAG"
         los.writeInt(zd.getZoom());     // zoom index,  lowest res is zero
         los.writeFloat((float) zd.getSum());      // sum
@@ -1107,7 +1107,7 @@ public class Preprocessor {
     }
 
 
-    // class to support block merging
+// class to support block merging
 
     static interface BlockQueue {
 

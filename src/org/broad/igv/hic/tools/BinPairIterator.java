@@ -14,6 +14,7 @@ public class BinPairIterator implements PairIterator {
 
     LittleEndianInputStream is;
     AlignmentPair next;
+    AlignmentPair preNext;
 
     /**
      * TODO -- chromosomeIndexes is ignored for now, but should be used to map the chromosome stored in the
@@ -29,14 +30,34 @@ public class BinPairIterator implements PairIterator {
         advance();
     }
 
+    public BinPairIterator(FileInputStream fis, Map<String, Integer> chromosomeIndexes) throws IOException {
+        is = new LittleEndianInputStream(new BufferedInputStream(fis));
+        advance();
+    }
+
     public boolean hasNext() {
-        return next != null;  //To change body of implemented methods use File | Settings | File Templates.
+        return preNext != null || next != null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public AlignmentPair next() {
-        AlignmentPair retValue = next;
-        advance();
-        return retValue;
+        if (preNext == null) {
+            AlignmentPair retValue = next;
+            advance();
+            return retValue;
+        } else {
+            AlignmentPair retValue = preNext;
+            preNext = null;
+            return retValue;
+        }
+    }
+
+    @Override
+    public void push(AlignmentPair pair) {
+        if (preNext != null) {
+            throw new RuntimeException("Cannot push more than one alignment pair back on stack");
+        } else {
+            preNext = pair;
+        }
     }
 
     public void remove() {
@@ -62,7 +83,7 @@ public class BinPairIterator implements PairIterator {
             int chr2 = is.readInt();
             int pos2 = is.readInt();
             int frag2 = is.readInt();
-            next = new AlignmentPair(str1,chr1, pos1, frag1, str2, chr2, pos2, frag2);
+            next = new AlignmentPair(str1, chr1, pos1, frag1, str2, chr2, pos2, frag2);
         } catch (IOException e) {
             next = null;
             if (!(e instanceof EOFException)) {

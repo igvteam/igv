@@ -34,6 +34,7 @@ import java.util.Map;
 public class BAMPairIterator implements PairIterator {
 
     AlignmentPair nextPair = null;
+    AlignmentPair preNext = null;
     CloseableIterator<Alignment> iterator;
     private AlignmentReader reader;
     // Map of name -> index
@@ -79,13 +80,28 @@ public class BAMPairIterator implements PairIterator {
     }
 
     public boolean hasNext() {
-        return nextPair != null;  //To change body of implemented methods use File | Settings | File Templates.
+        return preNext != null || nextPair != null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public AlignmentPair next() {
-        AlignmentPair p = nextPair;
-        advance();
-        return p;
+        if (preNext == null) {
+            AlignmentPair p = nextPair;
+            advance();
+            return p;
+        } else {
+            AlignmentPair p = preNext;
+            preNext = null;
+            return p;
+        }
+    }
+
+    @Override
+    public void push(AlignmentPair pair) {
+        if (preNext != null) {
+            throw new RuntimeException("Cannot push more than one alignment pair back on stack");
+        } else {
+            preNext = pair;
+        }
     }
 
     public void remove() {

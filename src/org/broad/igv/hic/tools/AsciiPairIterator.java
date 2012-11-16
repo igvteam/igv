@@ -22,7 +22,9 @@ package org.broad.igv.hic.tools;
 import org.broad.igv.Globals;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,6 +38,7 @@ public class AsciiPairIterator implements PairIterator {
     // Map of name -> index
     private Map<String, Integer> chromosomeOrdinals;
     AlignmentPair nextPair = null;
+    AlignmentPair preNext = null;
     BufferedReader reader;
 
     /**
@@ -50,15 +53,20 @@ public class AsciiPairIterator implements PairIterator {
         advance();
     }
 
+    public AsciiPairIterator(FileInputStream fis, Map<String, Integer> chromosomeOrdinals) throws IOException {
+        this.reader = new BufferedReader(new InputStreamReader(fis));
+        this.chromosomeOrdinals = chromosomeOrdinals;
+        advance();
+    }
+
     /**
      * Read the next record
      * <p/>
      * Old form:
-     *   D0J8AACXX120130:6:1101:1003:8700/1 15 61559113 0 D0J8AACXX120130:6:1101:1003:8700/2 15 61559309 16
-     *   D0J8AACXX120130:6:1101:1004:2368/1 10 26641879 16 D0J8AACXX120130:6:1101:1004:2368/2 9 12797549 0
+     * D0J8AACXX120130:6:1101:1003:8700/1 15 61559113 0 D0J8AACXX120130:6:1101:1003:8700/2 15 61559309 16
+     * D0J8AACXX120130:6:1101:1004:2368/1 10 26641879 16 D0J8AACXX120130:6:1101:1004:2368/2 9 12797549 0
      * New form:
      * 0	14	100000012	16	14	100000261
-     *
      */
     private void advance() {
 
@@ -84,8 +92,7 @@ public class AsciiPairIterator implements PairIterator {
                         nextPair = new AlignmentPair(strand1, chr1, pos1, frag1, strand2, chr2, pos2, frag2);
                         return;
                     }
-                }
-                else {
+                } else {
                     throw new IOException("Text file must be 8 fields: str1 chr1 pos1 frag1 str2 chr2 pos2 frag2");
                 }
                 /*
@@ -141,13 +148,28 @@ public class AsciiPairIterator implements PairIterator {
     }
 
     public boolean hasNext() {
-        return nextPair != null;  //To change body of implemented methods use File | Settings | File Templates.
+        return preNext != null || nextPair != null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public AlignmentPair next() {
-        AlignmentPair p = nextPair;
-        advance();
-        return p;
+        if (preNext == null) {
+            AlignmentPair p = nextPair;
+            advance();
+            return p;
+        } else {
+            AlignmentPair p = preNext;
+            preNext = null;
+            return p;
+        }
+    }
+
+    @Override
+    public void push(AlignmentPair pair) {
+        if (preNext != null) {
+            throw new RuntimeException("Cannot push more than one alignment pair back on stack");
+        } else {
+            preNext = pair;
+        }
     }
 
     public void remove() {
@@ -161,7 +183,5 @@ public class AsciiPairIterator implements PairIterator {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
-
-
 
 }

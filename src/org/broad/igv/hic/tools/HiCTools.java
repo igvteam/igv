@@ -181,21 +181,17 @@ public class HiCTools {
             }
             chromosomes.set(0, new ChromosomeImpl(0, "All", (int) (genomeLength / 1000)));
 
-            String[] tokens = args[1].split(",");
-            List<String> files = new ArrayList<String>(tokens.length);
+            String inputFile = args[1];
+            String outputFile = args[2];
 
-            for (String f : tokens) {
-                files.add(f);
-            }
-
-            Preprocessor preprocessor = new Preprocessor(new File(args[2]), genomeId, chromosomes);
+            Preprocessor preprocessor = new Preprocessor(new File(outputFile), genomeId, chromosomes);
 
             preprocessor.setIncludedChromosomes(parser.getChromosomeOption());
             preprocessor.setCountThreshold(parser.getCountThresholdOption());
             preprocessor.setDiagonalsOnly(parser.getDiagonalsOption());
             preprocessor.setFragmentFile(parser.getFragmentOption());
             preprocessor.setTmpdir(parser.getTmpdirOption());
-            preprocessor.preprocess(files);
+            preprocessor.preprocess(inputFile);
         } else {
             usage();
             System.exit(1);

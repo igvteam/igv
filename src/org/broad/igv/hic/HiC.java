@@ -112,11 +112,12 @@ public class HiC {
 
         final Chromosome chr1 = xContext.getChromosome();
         final Chromosome chr2 = yContext.getChromosome();
-
+        Matrix matrix = dataset.getMatrix(chr1, chr2);
+        if(matrix == null) return;
 
         int zoomDataIdx = unit == HiC.Unit.BP ? newZoom : newZoom + 9;
 
-        final MatrixZoomData newZD = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoomDataIdx);
+        final MatrixZoomData newZD = matrix.getObservedMatrix(zoomDataIdx);
         if (newZD == null) {
             JOptionPane.showMessageDialog(mainWindow, "Sorry, this zoom is not available", "Zoom unavailable", JOptionPane.WARNING_MESSAGE);
             return;
@@ -290,8 +291,8 @@ public class HiC {
 
 
     public void moveBy(int dx, int dy) {
-        final int newX = xContext.getBinOrigin() + dx;
-        final int newY = yContext.getBinOrigin() + dy;
+        final int newX = xContext.getBinOrigin() + (int) (dx / xContext.getScaleFactor());
+        final int newY = yContext.getBinOrigin() + (int) (dy / yContext.getScaleFactor());
         moveTo(newX, newY);
     }
 

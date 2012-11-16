@@ -14,4 +14,6 @@ public interface PairIterator extends Iterator<AlignmentPair> {
     void remove();
 
     void close();
+
+    void push(AlignmentPair pair);
 }
