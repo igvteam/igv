@@ -106,7 +106,7 @@ public class IGVMenuBar extends JMenuBar {
         List<AbstractButton> menus = new ArrayList<AbstractButton>();
         menus.add(createFileMenu());
 
-        boolean affectiveMode =   PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+        boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!affectiveMode) {
             menus.add(createGenomesMenu());
         }
@@ -225,7 +225,7 @@ public class IGVMenuBar extends JMenuBar {
                         toolMenu.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                String msg = String.format("No executable found at %s", toolName, path);
+                                String msg = String.format("%s executable not found at %s", toolName, path);
                                 if (tool_url != null) {
                                     msg += "<br/>See " + tool_url + " to install";
                                 }
@@ -796,7 +796,6 @@ public class IGVMenuBar extends JMenuBar {
                 };
         menuAction.setToolTipText(GENOME_SPACE_REG_TOOLTIP);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
 
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
