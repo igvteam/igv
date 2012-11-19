@@ -150,11 +150,6 @@ encoding_codec
     Fully qualified class name to use for encoding features to strings.
     Only applies to data arguments. Must implement FeatureEncoder interface.
 
-
-TODO Things I'd like to add but which don't exist yet
-format
-    bed, bam, etc. What format to write out the data from tracks,
-    if argument is of the appropriate type
     -->
 <!ELEMENT arg EMPTY>
 <!ATTLIST arg

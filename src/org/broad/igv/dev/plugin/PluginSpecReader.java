@@ -86,7 +86,7 @@ public class PluginSpecReader {
 
     private InputStream getStream(String path) throws IOException {
         //Check jar first. Returns null if not found
-        InputStream is = getClass().getResourceAsStream(path);
+        InputStream is = PluginSpecReader.class.getResourceAsStream(path);
         if (is == null) {
             is = ParsingUtils.openInputStream(path);
         }

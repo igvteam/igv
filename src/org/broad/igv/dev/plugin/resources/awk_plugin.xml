@@ -8,19 +8,19 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-<!DOCTYPE igv_plugin SYSTEM "plugins/igv_plugin.dtd">
+<!DOCTYPE igv_plugin SYSTEM "src/org/broad/igv/dev/plugin/resources/igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="0.1" name="awk"
             id="org.broadinstitute.igv.plugin.awk">
     <tool name="awk" path="awk" visible="false">
         <default>
             <arg name="Arguments" cmd_arg="" type="text" default=""/>
-            <arg name="Track" cmd_arg="" type="feature_track" format="bed"/>
+            <arg name="Track" cmd_arg="" type="feature_track"/>
             <parser format="bed"/>
         </default>
 
         <command name="Arbitrary Input" cmd="">
             <arg name="Arguments" cmd_arg="" type="longtext" default="{print}"/>
-            <arg name="Track" cmd_arg="" type="feature_track" format="bed"/>
+            <arg name="Track" cmd_arg="" type="feature_track"/>
         </command>
         <command name="Filter by size" cmd="">
             <arg name="Minimum" type="text" id="min" output="false"/>
@@ -29,7 +29,7 @@
                 We reference the min/max using the $(variable name)
             -->
             <arg name="Track" cmd_arg="{diff=$3-$2; if (diff &gt;= $min &amp;&amp; diff &lt;= $max) print;}"
-                 type="feature_track" format="bed"/>
+                 type="feature_track"/>
         </command>
 
     </tool>

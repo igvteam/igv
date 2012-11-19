@@ -8,13 +8,13 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-<!DOCTYPE igv_plugin SYSTEM "plugins/igv_plugin.dtd">
+<!DOCTYPE igv_plugin SYSTEM "src/org/broad/igv/dev/plugin/resources/igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="0.1" name="general"
             id="org.broadinstitute.igv.plugin.general">
     <tool name="Shell Input" path="" visible="true" description="Command line interface with user-supplied executable">
         <command name="Shell Input" cmd="">
             <arg name="Shell command" cmd_arg="" type="longtext" default=""/>
-            <arg name="Track" cmd_arg="" type="feature_track" format="bed"/>
+            <arg name="Track" cmd_arg="" type="feature_track"/>
             <parser format="bed"/>
         </command>
     </tool>
