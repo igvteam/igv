@@ -223,7 +223,7 @@ public class OSXAdapter implements InvocationHandler {
     public static Image getDockIconImage() {
         try {
             initApplicationClass();
-            Method getDockImageMethod = applicationClass.getDeclaredMethod("getDockIconImage", null);
+            Method getDockImageMethod = applicationClass.getDeclaredMethod("getDockIconImage");
             return (Image) getDockImageMethod.invoke(macOSXApplication);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -247,10 +247,13 @@ public class OSXAdapter implements InvocationHandler {
     }
 
     public static void main(String[] args) {
+
         //Note: may not exist
         String path = "resources/IGV_64.png";
         URL url = OSXAdapter.class.getResource(path);
         Image image = new ImageIcon(url).getImage();
         setDockIconImage(image);
+
+        //System.out.println(getDockIconImage());
     }
 }

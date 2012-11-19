@@ -152,7 +152,7 @@ public class ResourceLocator {
         return (new File(path)).getName();
     }
 
-    @Deprecated
+    //@Deprecated
     public String getServerURL() {
         return serverURL;
     }

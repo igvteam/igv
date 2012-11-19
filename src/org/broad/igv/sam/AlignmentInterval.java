@@ -16,6 +16,7 @@
 package org.broad.igv.sam;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
@@ -28,8 +29,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 
 import java.util.*;
-
-import static org.broad.igv.util.collections.CollUtils.filter;
 
 /**
  * @author jrobinso
@@ -321,8 +320,8 @@ public class AlignmentInterval extends Locus implements Interval {
 
         Predicate<Feature> overlapPredicate = FeatureUtils.getOverlapPredicate(chr, start, end);
         //getCounts().trimTo(chr, start, end);
-        filter(this.getDownsampledIntervals(), overlapPredicate);
-        filter(this.getSpliceJunctions(), overlapPredicate);
+        Collections2.filter(this.getDownsampledIntervals(), overlapPredicate);
+        Collections2.filter(this.getSpliceJunctions(), overlapPredicate);
 
         this.start = Math.max(this.start, start);
         this.end = Math.min(this.end, end);
