@@ -86,7 +86,7 @@ public class SetPluginPathDialog extends JDialog {
 
                 //---- textArea1 ----
                 textArea1.setRows(2);
-                textArea1.setText("Enter the path to the executable.  \nThis can be relative to your PATH if running locally");
+                textArea1.setText("Enter the path to the executable.   \nThis can be relative to your PATH environment variable if running locally");
                 textArea1.setEditable(false);
                 textArea1.setBackground(UIManager.getColor("Label.background"));
                 contentPanel.add(textArea1);

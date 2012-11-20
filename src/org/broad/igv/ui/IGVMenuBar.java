@@ -218,6 +218,8 @@ public class IGVMenuBar extends JMenuBar {
                     };
 
                     toolMenu = new JMenu(toolName);
+                    //Kind of overlaps with the side-pull menu, doesn't look great
+                    //toolMenu.setToolTipText(tool.getAttribute("description"));
                     for (final Element command : pluginSpecReader.getCommands(tool)) {
                         final String cmdName = command.getAttribute("name");
                         JMenuItem cmdItem = new JMenuItem(cmdName);
@@ -229,12 +231,13 @@ public class IGVMenuBar extends JMenuBar {
                                     (new RunPlugin(IGV.getMainFrame(), pluginSpecReader, tool, command)).setVisible(true);
                                 }
                             });
+                            cmdItem.setEnabled(true);
                         } else {
-                            cmdItem.addActionListener(invalidActionListener);
+                            cmdItem.setEnabled(false);
                         }
                     }
                     if (toolPath.length() > 0) {
-                        JMenuItem setPathItem = new JMenuItem("Set path to executable...");
+                        JMenuItem setPathItem = new JMenuItem(String.format("Set path to %s...", toolName));
                         setPathItem.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {

@@ -14,7 +14,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
 						"rows": 2
-						"text": "Enter the path to the executable.  \nThis can be relative to your PATH if running locally"
+						"text": "Enter the path to the executable.   \nThis can be relative to your PATH environment variable if running locally"
 						"editable": false
 						"background": new com.jformdesigner.model.SwingColor( "Label.background" )
 					} )
