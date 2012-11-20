@@ -28,10 +28,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Experimental class to explore using a SQL database as a data store
+ * Experimental class to explore using the same class as a reader for
+ * both a SQL DB and a file.
  *
- * @author Jim Robinson
- * @date 10/14/11
+ * @author Jacob Silterra
+ * @date 2012 Aug 30
  */
 public class SegmentedReader {
 

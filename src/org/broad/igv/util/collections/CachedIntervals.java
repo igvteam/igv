@@ -12,14 +12,13 @@
 package org.broad.igv.util.collections;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
-
-import static org.broad.igv.util.collections.CollUtils.filter;
 
 /**
  * Used for caching data oriented in a genomic interval.
@@ -118,7 +117,7 @@ public class CachedIntervals<T extends Interval> {
 
         List<T> returnedIntervals = new ArrayList<T>(intervals);
         if (predicate != null) {
-            filter(returnedIntervals, predicate);
+            Collections2.filter(returnedIntervals, predicate);
         }
         FeatureUtils.sortFeatureList(returnedIntervals);
 

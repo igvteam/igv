@@ -61,7 +61,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             assertTrue(line.contains(rootPath + "/"));
             count++;
         }
-        assertEquals(4, count);
+        assertEquals(5, count);
     }
 
 }

@@ -8,13 +8,14 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-<!DOCTYPE igv_plugin SYSTEM "plugins/igv_plugin.dtd">
+<!DOCTYPE igv_plugin SYSTEM "igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
             id="org.broadinstitute.igv.plugin.bedtools">
-    <tool name="BEDTools" path="bedtools" tool_url="http://code.google.com/p/bedtools/">
+    <tool name="BEDTools" default_path="bedtools" tool_url="http://code.google.com/p/bedtools/"
+          description="bedtools: a flexible suite of utilities for comparing genomic features.">
         <default>
             <arg name="Arguments" cmd_arg="" type="text" default=""/>
-            <arg name="Track A" cmd_arg="-a" type="feature_track" format="bed"/>
+            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
             <arg name="Track B" cmd_arg="-b" type="feature_track"
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
 

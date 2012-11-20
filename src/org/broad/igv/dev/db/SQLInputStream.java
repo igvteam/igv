@@ -70,7 +70,7 @@ public class SQLInputStream extends InputStream {
                 return false;
             }
             if (convertToString) {
-                String[] tokens = DBManager.lineToArray(rs, minColIndex, maxColIndex);
+                String[] tokens = DBManager.lineToArray(rs, minColIndex, maxColIndex, false);
                 for (String tok : tokens) {
                     dataOutputStream.write(tok.getBytes());
                     dataOutputStream.write(TAB_BYTES);

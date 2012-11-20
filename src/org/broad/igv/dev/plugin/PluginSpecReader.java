@@ -13,16 +13,19 @@ package org.broad.igv.dev.plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -84,19 +87,21 @@ public class PluginSpecReader {
         return document.getDocumentElement().getAttribute("id");
     }
 
-    private InputStream getStream(String path) throws IOException {
-        //Check jar first. Returns null if not found
-        InputStream is = getClass().getResourceAsStream(path);
-        if (is == null) {
-            is = ParsingUtils.openInputStream(path);
-        }
-        return is;
-    }
-
     private boolean parseDocument() {
         boolean success = false;
+        //We want to accept either a path within the JAR file (getResource),
+        //or external path. Also we want to use builder.parse(String) so
+        //that we can use relative links for DTD spec
         try {
-            document = Utilities.createDOMDocumentFromXmlStream(getStream(specPath));
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            URL url = getClass().getResource(specPath);
+            String uri = null;
+            if (url == null) {
+                uri = FileUtils.getAbsolutePath(specPath, (new File(".")).getAbsolutePath());
+            } else {
+                uri = url.toString();
+            }
+            document = builder.parse(uri);
             success = document.getDocumentElement().getTagName().equals("igv_plugin");
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -266,5 +271,25 @@ public class PluginSpecReader {
         writer.close();
 
         pluginList = generatePluginList();
+    }
+
+    public String getName() {
+        return document.getDocumentElement().getAttribute("name");
+    }
+
+    /**
+     * Check the preferences for the tool path, using default from
+     * XML spec if necessary
+     *
+     * @param tool
+     * @return
+     */
+    public String getToolPath(Element tool) {
+        //Check settings for path, use default if not there
+        String toolPath = PreferenceManager.getInstance().getPluginPath(getId(), tool.getAttribute("name"));
+        if (toolPath == null) {
+            toolPath = tool.getAttribute("default_path");
+        }
+        return toolPath;
     }
 }
