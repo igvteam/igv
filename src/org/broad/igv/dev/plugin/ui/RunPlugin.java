@@ -46,7 +46,7 @@ public class RunPlugin extends JDialog {
     private String specPath;
 
 
-    public RunPlugin(Frame owner, Element tool, Element command, PluginSpecReader pluginSpecReader) {
+    public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, Element tool, Element command) {
         super(owner);
         initComponents();
 

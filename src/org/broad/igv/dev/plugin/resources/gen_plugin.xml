@@ -11,7 +11,8 @@
 <!DOCTYPE igv_plugin SYSTEM "igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="0.1" name="general"
             id="org.broadinstitute.igv.plugin.general">
-    <tool name="Shell Input" path="" visible="true" description="Command line interface with user-supplied executable">
+    <tool name="Shell Input" default_path="" visible="true"
+          description="Command line interface with user-supplied executable">
         <command name="Shell Input" cmd="">
             <arg name="Shell command" cmd_arg="" type="longtext" default=""/>
             <arg name="Track" cmd_arg="" type="feature_track"/>

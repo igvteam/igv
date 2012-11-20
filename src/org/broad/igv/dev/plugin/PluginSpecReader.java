@@ -13,6 +13,7 @@ package org.broad.igv.dev.plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.Document;
@@ -270,5 +271,25 @@ public class PluginSpecReader {
         writer.close();
 
         pluginList = generatePluginList();
+    }
+
+    public String getName() {
+        return document.getDocumentElement().getAttribute("name");
+    }
+
+    /**
+     * Check the preferences for the tool path, using default from
+     * XML spec if necessary
+     *
+     * @param tool
+     * @return
+     */
+    public String getToolPath(Element tool) {
+        //Check settings for path, use default if not there
+        String toolPath = PreferenceManager.getInstance().getPluginPath(getId(), tool.getAttribute("name"));
+        if (toolPath == null) {
+            toolPath = tool.getAttribute("default_path");
+        }
+        return toolPath;
     }
 }

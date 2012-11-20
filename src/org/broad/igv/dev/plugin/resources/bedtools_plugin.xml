@@ -11,7 +11,7 @@
 <!DOCTYPE igv_plugin SYSTEM "igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
             id="org.broadinstitute.igv.plugin.bedtools">
-    <tool name="BEDTools" path="bedtools" tool_url="http://code.google.com/p/bedtools/">
+    <tool name="BEDTools" default_path="bedtools" tool_url="http://code.google.com/p/bedtools/">
         <default>
             <arg name="Arguments" cmd_arg="" type="text" default=""/>
             <arg name="Track A" cmd_arg="-a" type="feature_track"/>

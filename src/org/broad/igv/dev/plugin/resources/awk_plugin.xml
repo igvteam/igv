@@ -11,7 +11,7 @@
 <!DOCTYPE igv_plugin SYSTEM "igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="0.1" name="awk"
             id="org.broadinstitute.igv.plugin.awk">
-    <tool name="awk" path="awk" visible="false">
+    <tool name="awk" default_path="awk" visible="false">
         <default>
             <arg name="Arguments" cmd_arg="" type="text" default=""/>
             <arg name="Track" cmd_arg="" type="feature_track"/>

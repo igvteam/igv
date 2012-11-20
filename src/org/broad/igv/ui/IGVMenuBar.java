@@ -18,6 +18,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.dev.plugin.PluginSpecReader;
 import org.broad.igv.dev.plugin.ui.RunPlugin;
+import org.broad.igv.dev.plugin.ui.SetPluginPathDialog;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -198,40 +199,50 @@ public class IGVMenuBar extends JMenuBar {
                 final String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
                 boolean toolVisible = Boolean.parseBoolean(tool.getAttribute("visible"));
                 JMenuItem toolMenu;
+
                 if (toolVisible) {
-                    //Disable tool if we can't find the executable
-                    //We allow a blank path for most general case
-                    final String path = tool.getAttribute("path");
+
+                    final String toolPath = pluginSpecReader.getToolPath(tool);
                     final String tool_url = tool.getAttribute("tool_url");
-                    boolean isValid = PluginSpecReader.isToolPathValid(path);
+                    boolean isValid = PluginSpecReader.isToolPathValid(toolPath);
 
-                    if (isValid || path.length() == 0) {
-                        toolMenu = new JMenu(toolName);
-                        for (final Element command : pluginSpecReader.getCommands(tool)) {
-                            final String cmdName = command.getAttribute("name");
-                            JMenuItem cmdItem = new JMenuItem(cmdName);
-                            toolMenu.add(cmdItem);
+                    ActionListener invalidActionListener = new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            String msg = String.format("%s executable not found at %s", toolName, toolPath);
+                            if (tool_url != null) {
+                                msg += "<br/>See " + tool_url + " to install";
+                            }
+                            MessageUtils.showMessage(msg);
+                        }
+                    };
 
+                    toolMenu = new JMenu(toolName);
+                    for (final Element command : pluginSpecReader.getCommands(tool)) {
+                        final String cmdName = command.getAttribute("name");
+                        JMenuItem cmdItem = new JMenuItem(cmdName);
+                        toolMenu.add(cmdItem);
+                        if (isValid || toolPath.length() == 0) {
                             cmdItem.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    (new RunPlugin(IGV.getMainFrame(), tool, command, pluginSpecReader)).setVisible(true);
+                                    (new RunPlugin(IGV.getMainFrame(), pluginSpecReader, tool, command)).setVisible(true);
                                 }
                             });
+                        } else {
+                            cmdItem.addActionListener(invalidActionListener);
                         }
-
-                    } else {
-                        toolMenu = new JMenuItem(toolName);
-                        toolMenu.addActionListener(new ActionListener() {
+                    }
+                    if (toolPath.length() > 0) {
+                        JMenuItem setPathItem = new JMenuItem("Set path to executable...");
+                        setPathItem.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                String msg = String.format("%s executable not found at %s", toolName, path);
-                                if (tool_url != null) {
-                                    msg += "<br/>See " + tool_url + " to install";
-                                }
-                                MessageUtils.showMessage(msg);
+                                (new SetPluginPathDialog(IGV.getMainFrame(), pluginSpecReader, tool)).setVisible(true);
+                                refreshToolsMenu();
                             }
                         });
+                        toolMenu.add(setPathItem);
                     }
                     menuItems.add(toolMenu);
                 }

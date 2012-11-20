@@ -1130,4 +1130,16 @@ public class PreferenceManager implements PropertyManager {
         }
 
     }
+
+    public String getPluginPath(String pluginId, String toolName) {
+        return get(genPluginKey(pluginId, toolName, "path"));
+    }
+
+    public void putPluginPath(String pluginId, String toolName, String path) {
+        put(genPluginKey(pluginId, toolName, "path"), path);
+    }
+
+    private String genPluginKey(String pluginId, String toolName, String key) {
+        return String.format("%s:%s:%s", pluginId, toolName, key);
+    }
 }
