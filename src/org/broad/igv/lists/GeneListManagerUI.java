@@ -15,12 +15,10 @@
 
 package org.broad.igv.lists;
 
-import javax.swing.plaf.*;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
-import org.broad.igv.gittools.GittoolsUtils;
+import org.broad.igv.gittools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -96,8 +94,8 @@ public class GeneListManagerUI extends JDialog {
         initComponents();
         initLists();
 
-         boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitTools", "false"));
-         exportTDMButton.setVisible(showTDMButton);
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitTools", "false"));
+        exportTDMButton.setVisible(showTDMButton);
     }
 
     private void initLists() {
@@ -357,7 +355,16 @@ public class GeneListManagerUI extends JDialog {
     private void exportTDMButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
-            GittoolsUtils.exportTDM(geneList.getLoci());
+
+            File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
+            if (file != null) {
+                try {
+                    Gitools.exportTDM(geneList.getLoci(), file);
+                } catch (IOException exc) {
+                    log.error("Error exporting TDM data", exc);
+                    MessageUtils.showErrorMessage("Error exporting TDM data", exc);
+                }
+            }
         }
     }
 
@@ -599,12 +606,18 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                        "All"
+                                            "All"
                                     };
+
                                     @Override
-                                    public int getSize() { return values.length; }
+                                    public int getSize() {
+                                        return values.length;
+                                    }
+
                                     @Override
-                                    public Object getElementAt(int i) { return values[i]; }
+                                    public Object getElementAt(int i) {
+                                        return values[i];
+                                    }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {

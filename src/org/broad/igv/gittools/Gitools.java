@@ -14,6 +14,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.tribble.Feature;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -21,10 +22,10 @@ import java.util.*;
  *         Date: 11/13/12
  *         Time: 9:26 PM
  */
-public class GittoolsUtils {
+public class Gitools {
 
 
-    public static void exportTDM(List<String> lociStrings) {
+    public static void exportTDM(List<String> lociStrings, File file) throws IOException {
 
         // Convert the loci strings to a list of lodi, if the loci represents multiple features (e.g. isoforms) use the largest
         int averageFeatureSize = 0;
@@ -89,26 +90,36 @@ public class GittoolsUtils {
             }
         }
 
-        // Finally output data
-        System.out.print("Sample\tLocus");
-        for (TrackType tt : loadedTypes) {
-            System.out.print("\t" + tt.name());
-        }
-        System.out.println();
 
-        for (SampleData sd : sampleDataMap.values()) {
-            System.out.print(sd.sample + "\t" + sd.locus);
+
+        // Finally output data
+        PrintWriter pw = null;
+
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+            pw.print("Sample\tLocus");
             for (TrackType tt : loadedTypes) {
-                System.out.print('\t');
-                double[] values = sd.getValues(tt);
-                if (values == null) {
-                    System.out.print("-");
-                } else {
-                    double avg = StatUtils.max(values);
-                    System.out.print(avg);
-                }
+                pw.print("\t" + tt.name());
             }
-            System.out.println();
+            pw.println();
+
+            for (SampleData sd : sampleDataMap.values()) {
+                pw.print(sd.sample + "\t" + sd.locus);
+                for (TrackType tt : loadedTypes) {
+                    pw.print('\t');
+                    double[] values = sd.getValues(tt);
+                    if (values == null) {
+                        pw.print("-");
+                    } else {
+                        double avg = StatUtils.max(values);
+                        pw.print(avg);
+                    }
+                }
+                pw.println();
+            }
+        } finally {
+            if(pw != null) pw.close();
         }
     }
 
