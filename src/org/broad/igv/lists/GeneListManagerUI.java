@@ -94,7 +94,7 @@ public class GeneListManagerUI extends JDialog {
         initComponents();
         initLists();
 
-        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitTools", "false"));
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitools", "false"));
         exportTDMButton.setVisible(showTDMButton);
     }
 
