@@ -11,6 +11,8 @@
 
 package org.broad.igv.tools.sort;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.util.TestUtils;
@@ -20,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -129,59 +130,35 @@ public class SorterTest extends AbstractHeadlessTest {
 //        tstComparatorSpeed(getTestComparator());
 //    }
 
-    public void tstComparatorSpeed(Comparator<SortableRecord> testComp) throws IOException {
-        File inputFile = new File(TestUtils.DATA_DIR + "bed", "GSM1004654_10k.bed");
-        File outputFile = new File(TestUtils.TMP_OUTPUT_DIR, "GSM1004654_10k.sorted.bed");
+    public void tstComparatorSpeed(final Comparator<SortableRecord> testComp) throws IOException {
+        final File inputFile = new File(TestUtils.DATA_DIR + "bed", "GSM1004654_10k.bed");
+        final File outputFile = new File(TestUtils.TMP_OUTPUT_DIR, "GSM1004654_10k.sorted.bed");
 
         int nTrials = 100;
-        long average = 0;
-        long[] times = new long[nTrials];
-        for (int tri = 0; tri < nTrials; tri++) {
-            ChromosomeNameComparator.get().resetCache();
 
-            long startTime = System.nanoTime();
-            Sorter sorter = new BedSorter(inputFile, outputFile);
-            sorter.setComparator(testComp);
-            sorter.run();
-            long endTime = System.nanoTime();
-            long elapsed = endTime - startTime;
-            times[tri] = elapsed;
-            average += elapsed / nTrials;
-            if (tri % (nTrials / 10) == 0) {
-                System.out.println("Finished trial " + tri);
+        Supplier<Sorter> supplier = new Supplier<Sorter>() {
+            @Override
+            public Sorter get() {
+                ChromosomeNameComparator.get().resetCache();
+                Sorter sorter = new BedSorter(inputFile, outputFile);
+                sorter.setComparator(testComp);
+                return sorter;
             }
-        }
+        };
 
-        Arrays.sort(times);
-        long minTime = times[0];
-        long maxTime = times[nTrials - 1];
-        double stdev = stdev(times, average);
-        System.out.println(String.format("Average time: %f seconds", average * 1.0 / 1e9));
-        System.out.println(String.format("Best: %f sec. Worst: %f sec", minTime * 1.0 / 1e9, maxTime * 1.0 / 1e9));
-        System.out.println(String.format("Standard deviation: %f sec", stdev / 1e9));
+        Predicate<Sorter> predicate = new Predicate<Sorter>() {
+            @Override
+            public boolean apply(Sorter input) {
+                try {
+                    input.run();
+                } catch (IOException e) {
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        long[] times = TestUtils.timeMethod(supplier, predicate, nTrials);
     }
 
-    public double stdev(long[] vals, long mean) {
-        long sum = 0;
-        for (Long i : vals)
-            sum += Math.pow((i - mean), 2);
-        return Math.sqrt(sum / (vals.length - 1)); // sample
-    }
-
-//    public static Comparator<SortableRecord> getTestComparator(){
-//        Comparator<SortableRecord> comp = new Comparator<SortableRecord>() {
-//            private Comparator<String> nameComparator = ChromosomeNameComparator.get();
-//
-//            public int compare(SortableRecord o1, SortableRecord o2) {
-//
-//                int nameComp = nameComparator.compare(o1.getChromosome(), o2.getChromosome());
-//                if (nameComp == 0) {
-//                    return o1.getStart() - o2.getStart();
-//                } else {
-//                    return nameComp;
-//                }
-//            }
-//        };
-//        return comp;
-//    }
 }
