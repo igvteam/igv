@@ -18,7 +18,7 @@ package org.broad.igv.lists;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
-import org.broad.igv.gittools.Gitools;
+import org.broad.igv.gitools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;

@@ -1,4 +1,4 @@
-package org.broad.igv.gittools;
+package org.broad.igv.gitools;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.Globals;
@@ -12,7 +12,6 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
