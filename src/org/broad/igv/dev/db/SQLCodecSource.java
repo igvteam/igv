@@ -109,28 +109,56 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     }
 
     /**
-     * TODO Work in progress
+     * Read header information from file or database
      * Motivation is mostly for the VCF codec.
      */
     private void readHeader() {
-//        String[] headerTokens;
-//        String fmt = table.getFormat();
-//
-//        //Need to feed in version lines for VCF.
-//        //Assume latest of each kind
-//        if(fmt.endsWith("vcf3")){
-//            String line = "##fileformat=VCFv3.3";
-//        }else if(fmt.endsWith("vcf4") || fmt.endsWith("vcf")){
-//            String line = "##fileformat=VCFv4.1";
-//        }
-//
-//        if(table.getColumnLabelMap() != null){
-//            headerTokens = DBTable.columnMapToArray(table.getColumnLabelMap());
-//            String headerText = StringUtils.join(headerTokens,"\t");
-//            headerText = "#" + headerText;
-//        }
-        //String queryString = "SELECT * FROM information_schema.columns WHERE table_name = " + table.getTableName();
+
         List<String> headerLines = table.getHeaderLines();
+        //If column labels provided in xml spec, use those
+        //Otherwise, check the db
+        String[] columnLabels;
+        if (table.getColumnLabelMap() != null) {
+            columnLabels = DBTable.columnMapToArray(table.getColumnLabelMap());
+        } else {
+
+            //Preferred method
+            /*
+            String queryString = String.format("SELECT COLUMN_NAME, ORDINAL_POSITION FROM information_schema.columns WHERE TABLE_NAME = '%s' ORDER BY ORDINAL_POSITION", table.getTableName());
+
+            ResultSet rs = executeQuery(queryString);
+            List<String> colLabs = new ArrayList<String>();
+            try{
+                while(rs.next()){
+                    String lab = rs.getString(0);
+                    colLabs.add(lab);
+                }
+            }catch(SQLException e){
+                log.error("Error reading column labels", e);
+                columnLabels = null;
+            } */
+
+            //SQLite doesn't seem to have the information_schema table,
+            //and the relevant pragma doesn't have any backwards compatibility guarantees
+            //We just query for nothing and read off the column names
+            String queryString = String.format("SELECT * FROM %s WHERE 0 = 1", table.getTableName());
+            ResultSet rs = executeQuery(queryString);
+            try {
+                columnLabels = DBManager.lineToArray(rs, table.getStartColIndex(), table.getEndColIndex(), true);
+            } catch (SQLException e) {
+                log.error("Error reading column labels", e);
+                columnLabels = null;
+            }
+
+
+        }
+        if (columnLabels != null) {
+            if (headerLines == null) headerLines = new ArrayList<String>(1);
+            String columnLine = StringUtils.join(columnLabels, "\t");
+            columnLine = "#" + columnLine;
+            headerLines.add(columnLine);
+        }
+
         if (headerLines != null) {
             String lines = StringUtils.join(headerLines, "\n");
             byte[] bytes = lines.getBytes();
@@ -176,7 +204,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         if (table.getColumnLabelMap() != null) {
             tokens = DBManager.lineToArray(rs, table.getColumnLabelMap());
         } else {
-            tokens = DBManager.lineToArray(rs, startColIndex, endColIndex);
+            tokens = DBManager.lineToArray(rs, startColIndex, endColIndex, false);
         }
         return StringUtils.join(tokens, "\t");
     }
@@ -368,7 +396,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     public List<String> getSequenceNames() {
         String queryString = String.format("SELECT DISTINCT %s FROM %s", chromoColName, this.getTableName());
 
-        ResultSet results = loadResultSet(queryString);
+        ResultSet results = executeQuery(queryString);
         List<String> names = new ArrayList<String>();
         try {
             while (results.next()) {

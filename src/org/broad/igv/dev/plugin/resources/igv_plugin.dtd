@@ -49,12 +49,13 @@ Each tool represents a command line executable.
 Attributes
 name
     The name of the tool as it appears to the user
-path
-    Path to the executable. This can be an absolute path, if it
+default_path
+    Default path to the executable. This can be an absolute path, if it
     is a relative path the users PATH environment variable
     is checked for the relevant tool. The developer is reminded
     that the PATH environment variable can vary depending on how
-    IGV is launched.
+    IGV is launched.  This value is overridden if the user
+    changes it in settings
 
 description:
     Human readable description of the tool
@@ -68,7 +69,7 @@ tool_url:
 -->
 <!ELEMENT tool (default?, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
-    path CDATA #REQUIRED
+    default_path CDATA #REQUIRED
     description CDATA #IMPLIED
     visible (true|false) "true"
     tool_url CDATA #IMPLIED>
@@ -150,11 +151,6 @@ encoding_codec
     Fully qualified class name to use for encoding features to strings.
     Only applies to data arguments. Must implement FeatureEncoder interface.
 
-
-TODO Things I'd like to add but which don't exist yet
-format
-    bed, bam, etc. What format to write out the data from tracks,
-    if argument is of the appropriate type
     -->
 <!ELEMENT arg EMPTY>
 <!ATTLIST arg

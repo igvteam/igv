@@ -157,7 +157,7 @@ public class StringUtils {
         try {
             return URLDecoder.decode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            return URLDecoder.decode(s);
+            throw new RuntimeException(e);
         }
     }
 
@@ -168,7 +168,7 @@ public class StringUtils {
         try {
             return URLEncoder.encode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            return URLEncoder.encode(s);
+            throw new RuntimeException(e);
         }
     }
 

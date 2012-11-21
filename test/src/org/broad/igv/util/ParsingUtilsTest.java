@@ -11,6 +11,8 @@
 
 package org.broad.igv.util;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import junit.framework.Assert;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
@@ -39,7 +41,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
 
     private static final int connectTimeout = 30 * 1000;
     @Rule
-    public TestRule testTimeout = new Timeout(4*connectTimeout);
+    public TestRule testTimeout = new Timeout(4 * connectTimeout);
 
     @Before
     public void setUp() throws Exception {
@@ -104,13 +106,6 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         }
     }
 
-
-    @Test
-    public void testComputeReadingShifts
-            () {
-        // Add your code here
-    }
-
     @Test
     public void testGetContentLengthFTP() {
         long contLength = ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL);
@@ -156,5 +151,70 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         assertEquals(new Color(255, 0, 0), props.getColor());
         assertEquals("http://www.broadinstitute.org/epigenomics/dataportal/track_00196.portal.bw", props.getDataURL());
     }
+
+    //@Test
+    public void compareSpeedStringDotSplit() throws Exception {
+        int nTrials = 500000;
+        TestStringSupplier supplier = new TestStringSupplier(nTrials);
+
+        final char cdelim = '\t';
+        final String sdelim = String.valueOf(cdelim);
+
+        Predicate<String> stringSplitPredicate = new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+                String[] tokens = Globals.tabPattern.split(input);
+                return true;
+            }
+        };
+
+        //ParsingUtils.split seems to be about 2x as fast, that is
+        //takes 1/2 the time
+        Predicate<String> parsingUtilsPredicate = new Predicate<String>() {
+            String[] buffer = new String[20];
+
+            @Override
+            public boolean apply(String input) {
+                int count = org.broad.tribble.util.ParsingUtils.split(input, buffer, cdelim);
+                return true;
+            }
+        };
+
+        supplier.reset();
+        System.out.println("\nString.split");
+        TestUtils.timeMethod(supplier, stringSplitPredicate, nTrials);
+
+        supplier.reset();
+        System.out.println("\nParsingUtils.split");
+        TestUtils.timeMethod(supplier, parsingUtilsPredicate, nTrials);
+    }
+
+    private class TestStringSupplier implements Supplier<String> {
+
+        final String[] testStrings;
+        private int counter = 0;
+
+        TestStringSupplier(int nTrials) {
+            testStrings = new String[nTrials];
+
+            //Generate test data
+            for (int ii = 0; ii < nTrials; ii++) {
+                testStrings[ii] = genRandString();
+            }
+        }
+
+
+        @Override
+        public String get() {
+            return testStrings[counter++];
+        }
+
+        public void reset() {
+            counter = 0;
+        }
+
+    }
+
+
 }
 

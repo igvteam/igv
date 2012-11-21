@@ -14,6 +14,7 @@ package org.broad.igv.cbio;
 import biz.source_code.base64Coder.Base64Coder;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -25,7 +26,6 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.*;
-import org.broad.igv.util.collections.CollUtils;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.w3c.dom.*;
@@ -271,7 +271,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      */
     public Set<Node> geneVertexSet() {
         Set<Node> filteredSet = new HashSet<Node>(vertexSet());
-        CollUtils.filter(filteredSet, isGene);
+        Collections2.filter(filteredSet, isGene);
         return filteredSet;
     }
 

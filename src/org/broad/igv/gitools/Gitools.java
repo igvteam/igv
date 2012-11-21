@@ -1,9 +1,10 @@
-package org.broad.igv.gittools;
+package org.broad.igv.gitools;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.DataTrack;
@@ -11,8 +12,8 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.tribble.Feature;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -20,16 +21,16 @@ import java.util.*;
  *         Date: 11/13/12
  *         Time: 9:26 PM
  */
-public class GittoolsUtils {
+public class Gitools {
 
 
-    public static void exportTDM(List<String> lociStrings) {
+    public static void exportTDM(List<String> lociStrings, File file) throws IOException {
 
         // Convert the loci strings to a list of lodi, if the loci represents multiple features (e.g. isoforms) use the largest
         int averageFeatureSize = 0;
-        List<Feature> loci = new ArrayList<Feature>(lociStrings.size());
+        List<NamedFeature> loci = new ArrayList<NamedFeature>(lociStrings.size());
         for (String l : lociStrings) {
-            Feature feature = FeatureDB.getFeature(l);
+            NamedFeature feature = FeatureDB.getFeature(l);
             if (feature == null) {
                 feature = Locus.fromString(l);
             }
@@ -61,7 +62,7 @@ public class GittoolsUtils {
         }
 
 
-        // Loop though tracks and loci and gather data by sample
+        // Loop though tracks and loci and gather data by sample & gene
         Map<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         for (Track t : tracks) {
             if(!t.isVisible()) continue;
@@ -69,14 +70,18 @@ public class GittoolsUtils {
             if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
 
-                for (Feature locus : loci) {
+                for (NamedFeature locus : loci) {
                     double regionScore = dataTrack.getAverageScore(locus.getChr(), locus.getStart(), locus.getEnd(), zoom);
                     if (!Double.isNaN(regionScore)) {
                         String sample = t.getSample();
-                        SampleData sd = sampleDataMap.get(sample);
+                        String locusString =  locus.getName();
+                        String key = sample + "_" + locusString;
+
+                        SampleData sd = sampleDataMap.get(key);
                         if (sd == null) {
-                            sd = new SampleData(sample);
-                            sampleDataMap.put(sample, sd);
+
+                            sd = new SampleData(sample, locusString);
+                            sampleDataMap.put(key, sd);
                         }
                         sd.addValue(t.getTrackType(), regionScore);
                     }
@@ -84,36 +89,48 @@ public class GittoolsUtils {
             }
         }
 
-        // Finally output data
-        System.out.print("Sample");
-        for (TrackType tt : loadedTypes) {
-            System.out.print("\t" + tt.name());
-        }
-        System.out.println();
 
-        for (Map.Entry<String, SampleData> entry : sampleDataMap.entrySet()) {
-            String sample = entry.getKey();
-            SampleData sd = entry.getValue();
-            System.out.print(sample);
+
+        // Finally output data
+        PrintWriter pw = null;
+
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+            pw.print("Sample\tLocus");
             for (TrackType tt : loadedTypes) {
-                System.out.print('\t');
-                double[] values = sd.getValues(tt);
-                if (values == null) {
-                    // Print nothing, or "null" indicator?
-                } else {
-                    double avg = StatUtils.max(values);
-                    System.out.print(avg);
-                }
+                pw.print("\t" + tt.name());
             }
+            pw.println();
+
+            for (SampleData sd : sampleDataMap.values()) {
+                pw.print(sd.sample + "\t" + sd.locus);
+                for (TrackType tt : loadedTypes) {
+                    pw.print('\t');
+                    double[] values = sd.getValues(tt);
+                    if (values == null) {
+                        pw.print("-");
+                    } else {
+                        double avg = StatUtils.max(values);
+                        pw.print(avg);
+                    }
+                }
+                pw.println();
+            }
+        } finally {
+            if(pw != null) pw.close();
         }
     }
 
     static class SampleData {
-        String name;
+
+        String sample;
+        String locus;
         Map<TrackType, DoubleArrayList> valueMap;
 
-        SampleData(String name) {
-            this.name = name;
+        SampleData(String sample, String locus) {
+            this.sample = sample;
+            this.locus = locus;
             this.valueMap = new HashMap<TrackType, DoubleArrayList>();
         }
 

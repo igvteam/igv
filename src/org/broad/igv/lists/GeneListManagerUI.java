@@ -18,6 +18,7 @@ package org.broad.igv.lists;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
+import org.broad.igv.gitools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -93,8 +94,8 @@ public class GeneListManagerUI extends JDialog {
         initComponents();
         initLists();
 
-       // boolean showViewNetwork = Boolean.parseBoolean(System.getProperty("showViewNetwork", "false"));
-       // viewNetworkButton.setVisible(showViewNetwork);
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitools", "false"));
+        exportTDMButton.setVisible(showTDMButton);
     }
 
     private void initLists() {
@@ -341,10 +342,29 @@ public class GeneListManagerUI extends JDialog {
     }
 
     private void viewNetworkButtonActionPerformed(ActionEvent e) {
+    }
+
+    private void retrieveNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
             FilterGeneNetworkUI fgnUI = new FilterGeneNetworkUI(IGV.getMainFrame(), geneList);
             fgnUI.setVisible(true);
+        }
+    }
+
+    private void exportTDMButtonActionPerformed(ActionEvent e) {
+        if (selectedList != null) {
+            GeneList geneList = geneLists.get(selectedList);
+
+            File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
+            if (file != null) {
+                try {
+                    Gitools.exportTDM(geneList.getLoci(), file);
+                } catch (IOException exc) {
+                    log.error("Error exporting TDM data", exc);
+                    MessageUtils.showErrorMessage("Error exporting TDM data", exc);
+                }
+            }
         }
     }
 
@@ -492,6 +512,7 @@ public class GeneListManagerUI extends JDialog {
         lociJList = new JList();
         panel9 = new JPanel();
         buttonBar = new JPanel();
+        exportTDMButton = new JButton();
         viewNetworkButton = new JButton();
         loadButton = new JButton();
         closeButton = new JButton();
@@ -778,6 +799,16 @@ public class GeneListManagerUI extends JDialog {
                 buttonBar.setBorder(null);
                 buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
+                //---- exportTDMButton ----
+                exportTDMButton.setText("Export TDM");
+                exportTDMButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        exportTDMButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(exportTDMButton);
+
                 //---- viewNetworkButton ----
                 viewNetworkButton.setText("Retrieve Network");
                 viewNetworkButton.addActionListener(new ActionListener() {
@@ -852,6 +883,7 @@ public class GeneListManagerUI extends JDialog {
     private JList lociJList;
     private JPanel panel9;
     private JPanel buttonBar;
+    private JButton exportTDMButton;
     private JButton viewNetworkButton;
     private JButton loadButton;
     private JButton closeButton;

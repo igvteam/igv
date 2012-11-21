@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_35" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_37" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -823,11 +823,27 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Retrieve Network</string> 
+             <string>Export TDM</string> 
             </void> 
+            <void property="name"> 
+             <string>exportTDMButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>exportTDMButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
-             <string>visible</string> 
-             <boolean>false</boolean> 
+             <string>text</string> 
+             <string>Retrieve Network</string> 
             </void> 
             <void property="name"> 
              <string>viewNetworkButton</string> 

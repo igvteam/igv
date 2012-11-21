@@ -11,6 +11,8 @@
 
 package org.broad.igv.util;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
@@ -30,10 +32,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -254,6 +253,65 @@ public class TestUtils {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(checker, 0, period);
         return timer;
+    }
+
+    /**
+     * Executes {@code predicate} on those objects supplied by {@code supplier},
+     * timing each iteration. Goes {@code nTrials} times
+     *
+     * @param supplier
+     * @param predicate
+     * @param nTrials
+     * @param <T>
+     * @return
+     */
+    public static <T> long[] timeMethod(Supplier<T> supplier, Predicate<T> predicate, int nTrials) {
+        long average = 0;
+        long[] times = new long[nTrials];
+        Runtime.getRuntime().gc();
+
+        for (int tri = 0; tri < nTrials; tri++) {
+
+            T input = supplier.get();
+
+            long startTime = System.nanoTime();
+
+            predicate.apply(input);
+
+            long endTime = System.nanoTime();
+            long elapsed = endTime - startTime;
+            times[tri] = elapsed;
+            average += elapsed / nTrials;
+//            if (tri % (nTrials / 10) == 0) {
+//                System.out.println("Finished trial " + tri);
+//            }
+        }
+
+        Arrays.sort(times);
+        long minTime = times[0];
+        long maxTime = times[nTrials - 1];
+        double stdev = stdev(times, average);
+        System.out.println(String.format("Average time: %2.2e seconds", average * 1.0 / 1e9));
+        System.out.println(String.format("Best: %2.2e sec. Worst: %2.2e sec", minTime * 1.0 / 1e9, maxTime * 1.0 / 1e9));
+        System.out.println(String.format("Standard deviation: %2.2e sec", stdev / 1e9));
+        System.out.println(String.format("Total time: %2.2e sec", average * nTrials * 1.0 / 1e9));
+
+        return times;
+    }
+
+    public static double average(long[] vals) {
+        long sum = 0;
+        double n = (double) vals.length;
+        for (Long i : vals)
+            sum += i / n;
+        return sum;
+    }
+
+    public static double stdev(long[] vals, long average) {
+        long sum = 0;
+        for (Long i : vals)
+            sum += Math.pow((i - average), 2);
+        return Math.sqrt(sum / (vals.length - 1)); // sample
     }
 
 }

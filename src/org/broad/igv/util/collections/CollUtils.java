@@ -27,40 +27,31 @@ public class CollUtils {
 
 
     /**
-     * Filters the provided collection in place. Only those objects for which
-     * predicate(object) returns true will be kept. Collection must support object
-     * removal.
+     * Wrapper for {@link com.google.common.collect.Collections2#filter(Collection, Predicate)}
+     * which is a no-op if {@code objects} is null
      *
-     * @param objects
+     * @param unfiltered
      * @param predicate
      * @param <T>
-     * @Deprecated Use com.google.common.collect.Collections2 from Guava
      */
-    @Deprecated
-    public static <T> void filter(Collection<? extends T> objects, Predicate<T> predicate) {
-        if (objects == null) return;
-        Iterator<? extends T> iter = objects.iterator();
-        while (iter.hasNext()) {
-            T next = iter.next();
-            if (!predicate.apply(next)) {
-                iter.remove();
-            }
-        }
-    }
+//    public static <T> void filter(Collection<? extends T> unfiltered, Predicate<T> predicate) {
+//        if (unfiltered == null) return;
+//        Collections2.filter(unfiltered, predicate);
+//
+//    }
 
     /**
-     * Filters the provided collection in place. Only those objects for which
-     * predicate(object) returns true will be kept. Collection must support object
-     * removal.
+     * Filters the provided collection, and returns a copy. Only those objects for which
+     * predicate(object) returns true will be kept. {@code unfiltered} is not modified
      *
-     * @param objects
+     * @param unfiltered
      * @param predicate
      * @param <T>
      */
-    public static <T> Collection<T> filteredCopy(Collection<? extends T> objects, Predicate<T> predicate) {
-        if (objects == null) return null;
-        Collection<T> coll = new ArrayList<T>(objects.size());
-        Iterator<? extends T> iter = objects.iterator();
+    public static <T> Collection<T> filteredCopy(Collection<? extends T> unfiltered, Predicate<T> predicate) {
+        if (unfiltered == null) return null;
+        Collection<T> coll = new ArrayList<T>(unfiltered.size());
+        Iterator<? extends T> iter = unfiltered.iterator();
         while (iter.hasNext()) {
             T next = iter.next();
             if (predicate.apply(next)) {

@@ -34,7 +34,7 @@ public abstract class DBQueryReader<T> extends DBReader {
         this.table = table;
     }
 
-    protected ResultSet loadResultSet(String queryString) {
+    protected ResultSet executeQuery(String queryString) {
 
         try {
             Connection conn = DBManager.getConnection(locator);
@@ -62,7 +62,7 @@ public abstract class DBQueryReader<T> extends DBReader {
     }
 
     protected CloseableTribbleIterator loadIterator(String queryString) {
-        return new ResultIterator(loadResultSet(queryString));
+        return new ResultIterator(executeQuery(queryString));
     }
 
     protected abstract T processResult(ResultSet rs) throws SQLException;
