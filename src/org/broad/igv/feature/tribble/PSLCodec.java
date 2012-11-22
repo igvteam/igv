@@ -119,6 +119,31 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             } else {
                 // TODO -- warn
             }
+
+            //score = percentId = 100.0 * (match + repMatch)  / (misMatch + match + repMatch + qNumInsert + tNumInsert)
+            int match = Integer.parseInt(tokens[0]);
+            int misMatch = Integer.parseInt(tokens[1]);
+            int repMatch = Integer.parseInt(tokens[2]);
+            int qNumInsert = Integer.parseInt(tokens[4]);
+            int tNumInsert = Integer.parseInt(tokens[6]);
+            int qSize = Integer.parseInt(tokens[10]);
+
+            float score = (1000.0f * (match + repMatch - misMatch - qNumInsert - tNumInsert)) / qSize;
+            f.setScore(score);
+
+            // Build description
+            StringBuffer desc = new StringBuffer();
+            desc.append("matches = " + tokens[0]);
+            desc.append("<br>");
+            desc.append("mismatches = " + tokens[1]);
+            desc.append("<br>");
+            desc.append("repeat matches = " + tokens[2]);
+            desc.append("<br>");
+            desc.append("# inserts in query = " + tokens[4]);
+            desc.append("<br>");
+            desc.append("# inserts in target = " + tokens[6]);
+            f.setDescription(desc.toString());
+
         } catch (NumberFormatException e) {
             return null;
         }
