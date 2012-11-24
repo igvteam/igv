@@ -55,7 +55,7 @@ public class TestUtils {
         LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY, LARGE_DATA_DIR);
     }
 
-    public static void setUpTestEnvironment() {
+    public static void setUpTestEnvironment() throws IOException {
         Globals.setTesting(true);
         //Globals.setBatch(true);
         File prefsFile = new File("testprefs.properties");
@@ -71,6 +71,7 @@ public class TestUtils {
         if (!outDir.exists()) {
             outDir.mkdir();
         }
+        clearOutputDir();
     }
 
     /**

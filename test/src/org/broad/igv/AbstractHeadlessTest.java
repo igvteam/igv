@@ -18,6 +18,8 @@ import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import java.io.IOException;
+
 
 /**
  * General setup/takedown/rules for headless tests
@@ -56,7 +58,7 @@ public class AbstractHeadlessTest {
     }
 
 
-    private static void setUpHeadless() {
+    private static void setUpHeadless() throws IOException {
         Globals.setHeadless(true);
         TestUtils.setUpTestEnvironment();
     }
