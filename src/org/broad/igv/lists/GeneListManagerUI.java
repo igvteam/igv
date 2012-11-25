@@ -341,9 +341,6 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
-    private void viewNetworkButtonActionPerformed(ActionEvent e) {
-    }
-
     private void retrieveNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
@@ -606,18 +603,12 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                            "All"
+                                        "All"
                                     };
-
                                     @Override
-                                    public int getSize() {
-                                        return values.length;
-                                    }
-
+                                    public int getSize() { return values.length; }
                                     @Override
-                                    public Object getElementAt(int i) {
-                                        return values[i];
-                                    }
+                                    public Object getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {
@@ -814,7 +805,7 @@ public class GeneListManagerUI extends JDialog {
                 viewNetworkButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        viewNetworkButtonActionPerformed(e);
+                        retrieveNetworkButtonActionPerformed(e);
                     }
                 });
                 buttonBar.add(viewNetworkButton);

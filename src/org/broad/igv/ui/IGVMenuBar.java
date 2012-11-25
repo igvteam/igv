@@ -861,11 +861,13 @@ public class IGVMenuBar extends JMenuBar {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         String value = JOptionPane.showInputDialog("Enter dimensions, e.g. 800x400");
-                        String[] vals = value.split("x");
-                        if (vals.length == 2) {
-                            int w = Integer.parseInt(vals[0]);
-                            int h = Integer.parseInt(vals[1]);
-                            IGV.getMainFrame().setSize(w, h);
+                        if (value != null) {
+                            String[] vals = value.split("x");
+                            if (vals.length == 2) {
+                                int w = Integer.parseInt(vals[0]);
+                                int h = Integer.parseInt(vals[1]);
+                                IGV.getMainFrame().setSize(w, h);
+                            }
                         }
                     }
                 };
