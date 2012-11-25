@@ -846,13 +846,13 @@
              <string>Retrieve Network</string> 
             </void> 
             <void property="name"> 
-             <string>viewNetworkButton</string> 
+             <string>retrieveNetworkButton</string> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
-              <string>viewNetworkButtonActionPerformed</string> 
+              <string>retrieveNetworkButtonActionPerformed</string> 
               <boolean>true</boolean> 
              </object> 
             </void> 

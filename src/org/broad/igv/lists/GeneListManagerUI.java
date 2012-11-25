@@ -15,6 +15,7 @@
 
 package org.broad.igv.lists;
 
+import javax.swing.plaf.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
@@ -341,9 +342,6 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
-    private void viewNetworkButtonActionPerformed(ActionEvent e) {
-    }
-
     private void retrieveNetworkButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
@@ -513,7 +511,7 @@ public class GeneListManagerUI extends JDialog {
         panel9 = new JPanel();
         buttonBar = new JPanel();
         exportTDMButton = new JButton();
-        viewNetworkButton = new JButton();
+        retrieveNetworkButton = new JButton();
         loadButton = new JButton();
         closeButton = new JButton();
 
@@ -606,18 +604,12 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                            "All"
+                                        "All"
                                     };
-
                                     @Override
-                                    public int getSize() {
-                                        return values.length;
-                                    }
-
+                                    public int getSize() { return values.length; }
                                     @Override
-                                    public Object getElementAt(int i) {
-                                        return values[i];
-                                    }
+                                    public Object getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {
@@ -809,15 +801,15 @@ public class GeneListManagerUI extends JDialog {
                 });
                 buttonBar.add(exportTDMButton);
 
-                //---- viewNetworkButton ----
-                viewNetworkButton.setText("Retrieve Network");
-                viewNetworkButton.addActionListener(new ActionListener() {
+                //---- retrieveNetworkButton ----
+                retrieveNetworkButton.setText("Retrieve Network");
+                retrieveNetworkButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        viewNetworkButtonActionPerformed(e);
+                        retrieveNetworkButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(viewNetworkButton);
+                buttonBar.add(retrieveNetworkButton);
 
                 //---- loadButton ----
                 loadButton.setText("View");
@@ -884,7 +876,7 @@ public class GeneListManagerUI extends JDialog {
     private JPanel panel9;
     private JPanel buttonBar;
     private JButton exportTDMButton;
-    private JButton viewNetworkButton;
+    private JButton retrieveNetworkButton;
     private JButton loadButton;
     private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
