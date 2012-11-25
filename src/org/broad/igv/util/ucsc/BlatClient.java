@@ -5,7 +5,13 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
+import org.broad.igv.lists.GeneList;
+import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.track.FeatureCollectionSource;
+import org.broad.igv.track.FeatureSource;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.BufferedReader;
@@ -16,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.broad.igv.Globals;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 import org.broad.tribble.Feature;
 
 /**
@@ -27,7 +35,7 @@ import org.broad.tribble.Feature;
  */
 public class BlatClient {
 
-    static int sleepTime = 120 * 1000;  //	#	milli seconds to sleep after request returned
+    static int sleepTime = 15 * 1000;  //	#	milli seconds to wait between requests
 
     static String hgsid;  // cached, not sure what this is for but apparently its best to reuse it.
     static long lastQueryTime = 0;
@@ -181,6 +189,59 @@ public class BlatClient {
             }
         }
         return features;
+    }
+
+    public static void doBlatQuery(final String chr, final int start, final int end) {
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        final byte[] seqBytes = genome.getSequence(chr, start, end);
+        String userSeq = new String(seqBytes);
+
+        doBlatQuery(userSeq);
+    }
+
+    public static void doBlatQuery(final String userSeq) {
+        LongRunningTask.submit(new NamedRunnable() {
+            public String getName() {
+                return "Blat sequence";
+            }
+
+            public void run() {
+                try {
+
+                    // TODO -- something better than this!
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    String db = genome.getId();
+                    String species = GenomeManager.getUCSCSpecies(db);
+                    if (species == null) species = genome.getDisplayName();
+
+                    List<Feature> features = blat(species, db, userSeq);
+                    if (features.isEmpty()) {
+                        MessageUtils.showMessage("No features found");
+                    } else {
+
+                        FeatureSource<Feature> source = new FeatureCollectionSource(features, genome);
+                        FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
+                        newTrack.setUseScore(true);
+                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+
+                        // Create gene list from top 10 hits -- assumed these are sorted by score
+                        ArrayList<String> loci = new ArrayList(10);
+                        for (Feature f : features) {
+                            String l = f.getChr() + ":" + f.getStart() + "-" + f.getEnd();
+                            loci.add(l);
+                            if (loci.size() == 10) break;
+                        }
+                        GeneList gl = new GeneList("Blat", loci);
+                        GeneListManager.getInstance().addGeneList(gl);
+                        IGV.getInstance().setGeneList("Blat");
+                    }
+                } catch (IOException e1) {
+
+                    MessageUtils.showErrorMessage("Error running blat", e1);
+                }
+            }
+        });
     }
 }
 

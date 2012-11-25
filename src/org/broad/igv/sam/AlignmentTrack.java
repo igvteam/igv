@@ -46,6 +46,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
+import org.broad.igv.util.ucsc.BlatClient;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1229,6 +1230,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addClearSelectionsMenuItem();
 
             addSeparator();
+            addBlatItem(e);
+
+            addSeparator();
             add(TrackMenuUtils.getRemoveMenuItem(tracks));
 
             return;
@@ -1880,6 +1884,29 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             add(item);
         }
+
+        public void addBlatItem(final TrackClickEvent te) {
+            // Change track height by attribute
+            final JMenuItem item = new JMenuItem("Blat read sequence");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    MouseEvent e = te.getMouseEvent();
+
+                    final ReferenceFrame frame = te.getFrame();
+                    if (frame == null) {
+                        item.setEnabled(false);
+                    } else {
+                        double location = frame.getChromosomePosition(e.getX());
+                        final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
+                        String sequence = alignment.getReadSequence();
+                        BlatClient.doBlatQuery(sequence);
+                    }
+                }
+            });
+            add(item);
+        }
+
 
         private void addIonTorrentAuxiliaryViews(final TrackClickEvent e) {
 

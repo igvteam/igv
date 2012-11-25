@@ -16,23 +16,13 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListManager;
-import org.broad.igv.track.FeatureCollectionSource;
-import org.broad.igv.track.FeatureSource;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.ucsc.BlatClient;
-import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -40,8 +30,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -187,54 +175,14 @@ public class RegionOfInterestPanel extends JPanel {
             }
         });
 
+
         item = new JMenuItem("Blat sequence");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
-                LongRunningTask.submit(new NamedRunnable() {
-                    public String getName() {
-                        return "Blat sequence";
-                    }
+                BlatClient.doBlatQuery(roi.getChr(), roi.getStart(), roi.getEnd());
 
-                    public void run() {
-                        try {
-                            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                            byte[] seqBytes = genome.getSequence(roi.getChr(), roi.getStart(), roi.getEnd());
-                            String userSeq = new String(seqBytes);
-
-                            // TODO -- something better than this!
-                            String db = genome.getId();
-                            String species = GenomeManager.getUCSCSpecies(db);
-                            if (species == null) species = genome.getDisplayName();
-
-                            java.util.List<Feature> features = BlatClient.blat(species, db, userSeq);
-                            if (features.isEmpty()) {
-                                MessageUtils.showMessage("No features found");
-                            } else {
-
-                                FeatureSource<Feature> source = new FeatureCollectionSource(features, genome);
-                                FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
-                                newTrack.setUseScore(true);
-                                IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
-
-                                // Create gene list from top 10 hits -- assumed these are sorted by score
-                                ArrayList<String> loci = new ArrayList(10);
-                                for (Feature f : features) {
-                                    String l = f.getChr() + ":" + f.getStart() + "-" + f.getEnd();
-                                    loci.add(l);
-                                    if(loci.size() == 10) break;
-                                }
-                                GeneList gl = new GeneList("Blat", loci);
-                                GeneListManager.getInstance().addGeneList(gl);
-                                IGV.getInstance().setGeneList("Blat");
-                            }
-                        } catch (IOException e1) {
-
-                            MessageUtils.showErrorMessage("Error running blat", e1);
-                        }
-                    }
-                });
             }
         });
 

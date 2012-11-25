@@ -32,6 +32,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
+import org.broad.igv.util.ucsc.BlatClient;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
@@ -325,6 +326,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
                 featurePopupMenu.add(getCopySequenceItem(f));
+                featurePopupMenu.add(getBlatItem(f));
             }
         }
 
@@ -949,6 +951,20 @@ public class TrackMenuUtils {
         });
         return item;
     }
+
+
+    public static JMenuItem getBlatItem(final Feature f) {
+        JMenuItem item = new JMenuItem("Blat Sequence");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                BlatClient.doBlatQuery(f.getChr(), f.getStart(), f.getEnd());
+            }
+        });
+        return item;
+    }
+
+
 
     /**
      * Return a representative track height to use as the default.  For now
