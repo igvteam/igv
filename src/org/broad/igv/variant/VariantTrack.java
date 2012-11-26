@@ -187,7 +187,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         setVisibilityWindow(visWindow);
 
         // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
-        if(IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
+        if (IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
@@ -1106,7 +1106,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         if (genotype != null) {
-            toolTip = toolTip.append(getSampleInfo(genotype) + "<br>");
+            String sInfoStr = getSampleInfo(genotype);
+            if (sInfoStr != null) {
+                toolTip = toolTip.append(sInfoStr + "<br>");
+            }
         }
         return toolTip.toString();
     }
