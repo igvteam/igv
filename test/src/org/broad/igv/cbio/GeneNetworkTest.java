@@ -111,36 +111,91 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     }
 
-    @Test
-    public void testFilter() throws Exception {
-        Predicate tPred = new Predicate() {
+    private static Predicate evenPred = new Predicate() {
 
-            public boolean apply(Object object) {
-                Node node = (Node) object;
-                NamedNodeMap map = node.getAttributes();
-                if (map == null) {
-                    return false;
-                }
-                int id = Integer.parseInt(map.getNamedItem("id").getTextContent());
-                return id % 2 == 0;
+        public boolean apply(Object object) {
+            Node node = (Node) object;
+            NamedNodeMap map = node.getAttributes();
+            if (map == null) {
+                return false;
             }
-        };
+            int id = Integer.parseInt(map.getNamedItem("id").getTextContent());
+            return id % 2 == 0;
+        }
+    };
 
+    @Test
+    public void testReset() throws Exception {
         network.loadNetwork(testpath);
         int initSize = network.vertexSet().size();
-        int numRemoved = network.filterGenes(tPred);
+        int nonQuery = network.filterGenes(GeneNetwork.inQuery);
+        assertTrue("Bad test setup, all genes in query", nonQuery > 0);
+        assertEquals(initSize - network.vertexSet().size(), nonQuery);
+
+        network.reset();
+        assertEquals("Resetting network did not bring back everything", initSize, network.vertexSet().size());
+    }
+
+    @Test
+    public void testFilterKeepsQuery() throws Exception {
+        network.loadNetwork(testpath);
+
+        network.filterGenes(GeneNetwork.inQuery);
+
+        Collection<Node> queryGenes = network.geneVertexes();
+        network.reset();
+
+        int numRemoved = network.filterGenes(evenPred);
+        assertTrue(numRemoved > 0);
+        Collection<Node> randomGenes = network.geneVertexes();
+        Set<Node> randomGeneSet = new HashSet<Node>(randomGenes);
+
+        for (Node queryGene : queryGenes) {
+            assertTrue(randomGeneSet.contains(queryGene));
+        }
+    }
+
+    @Test
+    public void testFilterKeepsEdges() throws Exception {
+        network.loadNetwork(testpath);
+        int initSize = network.vertexSet().size();
+
+        int numRemoved = network.filterGenes(evenPred);
         assertTrue(numRemoved > 0);
 
         //Test that we can get the filtered edges of a node
         Set<Node> keptNodes = new HashSet<Node>();
-        for (Node n : network.geneVertexSet()) {
+        for (Node n : network.geneVertexes()) {
             for (Node e : network.edgesOf(n)) {
                 keptNodes.add(network.getEdgeSource(e));
                 keptNodes.add(network.getEdgeTarget(e));
             }
         }
-        assertEquals(network.geneVertexSet().size(), keptNodes.size());
+        assertEquals(network.geneVertexes().size(), keptNodes.size());
         assertTrue("Filtering not performed", keptNodes.size() < initSize);
+    }
+
+    @Test
+    public void testFilterOnEvidence() throws Exception {
+        GeneNetwork geneNetwork = new GeneNetwork();
+        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz") > 0);
+
+        final String badname = "NA";
+
+        Predicate<Node> has_evidence = new Predicate<Node>() {
+            public boolean apply(Node object) {
+                String label = GeneNetwork.getNodeKeyData(object, "EXPERIMENTAL_TYPE");
+                return label != null && !label.equals(badname);
+            }
+        };
+
+        //Perform the filtering.
+        //This is true if any modifications are made.
+        assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
+
+        for (Node e : geneNetwork.edgeSet()) {
+            assertTrue(has_evidence.apply(e));
+        }
     }
 
     @Test
@@ -225,30 +280,6 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testFilterGraph() throws Exception {
-        GeneNetwork geneNetwork = new GeneNetwork();
-        assertTrue(geneNetwork.loadNetwork(TestUtils.DATA_DIR + "xml/egfr_brca1.xml.gz") > 0);
-
-        final String badname = "NA";
-
-        Predicate<Node> has_evidence = new Predicate<Node>() {
-            public boolean apply(Node object) {
-                String label = GeneNetwork.getNodeKeyData(object, "EXPERIMENTAL_TYPE");
-                return label != null && !label.equals(badname);
-            }
-        };
-
-        //Perform the filtering.
-        //This is true if any modifications are made.
-        assertTrue(geneNetwork.filterEdges(has_evidence) > 0);
-
-        for (Node e : geneNetwork.edgeSet()) {
-            assertTrue(has_evidence.apply(e));
-        }
-    }
-
-
-    @Test
     public void testPruneGraph() throws Exception {
         int size = 10;
         int exp_edges = size - 1 + size - 1;
@@ -319,6 +350,10 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         }
     }
 
+    /**
+     * Generates nodes with unique IDs, all with <data key="type">Protein</data>
+     * attributes
+     */
     public static class SimpleVertexFactory implements VertexFactory<Node> {
         private long vCounter = 0;
 
@@ -328,6 +363,14 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         public Node createVertex() {
             Element v = new IIOMetadataNode("v" + vCounter);
             v.setAttribute("id", "" + vCounter);
+
+            //<data key="type">Protein</data>
+            Element type = new IIOMetadataNode("data");
+//            Attr attr = document.createAttribute("key");
+//            attr.setTextContent("type");
+            type.setAttribute("key", "type");
+            type.setTextContent("Protein");
+            v.appendChild(type);
             vCounter++;
             return v;
         }
