@@ -50,7 +50,7 @@ public class RunPlugin extends JDialog {
         super(owner);
         initComponents();
 
-        final String toolPath = tool.getAttribute("path");
+        final String toolPath = tool.getAttribute("default_path");
         final String cmdName = command.getAttribute("name");
         final String cmdVal = command.getAttribute("cmd");
 

@@ -36,7 +36,7 @@ public class AbstractPluginTest extends AbstractHeadlessTest {
 
         reader = PluginSpecReader.create(pluginPath);
         tool = reader.getTools().get(0);
-        toolPath = tool.getAttribute("path");
+        toolPath = tool.getAttribute("default_path");
         haveTool = PluginSpecReader.isToolPathValid(toolPath);
         Assume.assumeTrue(haveTool);
     }
