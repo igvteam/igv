@@ -31,6 +31,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
+import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -187,7 +188,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         setVisibilityWindow(visWindow);
 
         // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
-        if(IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
+        if (IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
@@ -1096,7 +1097,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (genotype != null) {
             toolTip = toolTip.append("<br>Bases: " + genotype.getGenotypeString());
             toolTip = toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
-            toolTip = toolTip.append("<br>Type: " + genotype.getType());
+            toolTip = toolTip.append("<br>Type: " + genotype.getTypeString());
         }
         if (variant.isFiltered()) {
             toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
@@ -1265,13 +1266,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 if (selectedSample != null) {
                     // Select clicked sample and all other adjacent with the same genotype
                     Genotype genotype = f.getGenotype(selectedSample);
-                    String type = genotype.getType();
+                    GenotypeType type = genotype.getType();
 
                     int idx = getSampleIndex(selectedSample);
                     for (int i = idx; i < sampleBounds.size(); i++) {
                         String s = sampleBounds.get(i).sample;
                         Genotype gt = f.getGenotype(s);
-                        if (gt != null && type.equals(gt.getType())) {
+                        if (gt != null && type == gt.getType()) {
                             selectedSamples.add(s);
                         } else {
                             break;
@@ -1280,7 +1281,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     for (int i = idx - 1; i >= 0; i--) {
                         String s = sampleBounds.get(i).sample;
                         Genotype gt = f.getGenotype(s);
-                        if (gt != null && type.equals(gt.getType())) {
+                        if (gt != null && type == gt.getType()) {
                             selectedSamples.add(s);
                         } else {
                             break;

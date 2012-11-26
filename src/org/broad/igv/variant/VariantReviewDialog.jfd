@@ -49,9 +49,8 @@ new FormModel {
 							"horizontalAlignment": 2
 							"maximumSize": #Dimension0
 						} )
-						add( new FormComponent( "javax.swing.JLabel" ) {
+						add( new FormComponent( "javax.swing.JComboBox" ) {
 							name: "genotypeField"
-							"text": "text"
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {

@@ -15,12 +15,14 @@
 
 package org.broad.igv.variant;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-
 import org.broadinstitute.sting.gatk.walkers.na12878kb.TruthStatus;
+import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author User #2
@@ -31,6 +33,7 @@ public class VariantReviewDialog extends JDialog {
         initComponents();
 
         truthField.setModel(new DefaultComboBoxModel(TruthStatus.values()));
+        genotypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
         initComponentData(sample, variant);
     }
 
@@ -43,13 +46,14 @@ public class VariantReviewDialog extends JDialog {
         stopField.setText("" + variant.getEnd());
 
         Genotype genotype = variant.getGenotype(sample);
-        String genoString = genotype.getGenotypeString();
-        genotypeField.setText(genoString);
+        GenotypeType gtt = genotype.getType();
+        if (gtt == null) gtt = GenotypeType.UNAVAILABLE;
+        genotypeField.setSelectedItem(gtt);
 
         String type = variant.getType();
         System.out.println("type: " + type);
 
-        truthField.getModel().setSelectedItem(TruthStatus.UNKNOWN);
+        truthField.setSelectedItem(TruthStatus.UNKNOWN);
 
         validate();
     }
@@ -72,7 +76,7 @@ public class VariantReviewDialog extends JDialog {
         truthField = new JComboBox();
         panel3 = new JPanel();
         label6 = new JLabel();
-        genotypeField = new JLabel();
+        genotypeField = new JComboBox();
         panel4 = new JPanel();
         label7 = new JLabel();
         chrField = new JLabel();
@@ -135,9 +139,6 @@ public class VariantReviewDialog extends JDialog {
                     label6.setHorizontalAlignment(SwingConstants.LEFT);
                     label6.setMaximumSize(new Dimension(80, 16));
                     panel3.add(label6);
-
-                    //---- genotypeField ----
-                    genotypeField.setText("text");
                     panel3.add(genotypeField);
                 }
                 contentPanel.add(panel3);
@@ -187,14 +188,14 @@ public class VariantReviewDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -205,8 +206,8 @@ public class VariantReviewDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.PAGE_END);
         }
@@ -228,7 +229,7 @@ public class VariantReviewDialog extends JDialog {
     private JComboBox truthField;
     private JPanel panel3;
     private JLabel label6;
-    private JLabel genotypeField;
+    private JComboBox genotypeField;
     private JPanel panel4;
     private JLabel label7;
     private JLabel chrField;
