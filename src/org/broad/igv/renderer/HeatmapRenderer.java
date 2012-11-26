@@ -22,6 +22,7 @@ import org.broad.igv.data.rnai.RNAIGeneScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackType;
 
 import java.awt.*;
 import java.util.Hashtable;
@@ -95,9 +96,18 @@ public class HeatmapRenderer extends DataRenderer {
 
             if ((pStart + w) >= 0 && (lastPStart <= maxX)) {
 
+                // Minimum width for DNA methylation
+                if(track.getTrackType() == TrackType.DNA_METHYLATION) {
+                    if(w < 6) {
+                        int pMid = (pStart + pEnd) / 2;
+                        pStart = pMid - 3;
+                        w = 6;
+                    }
+                }
+
                 // This test handles the rather pathological case where the previous feature was 1 pixel wide, and
                 // the current feature overlaps it because of roundoff error when scaling.
-                if (pStart < lastPEnd && w > 1 && lastW == 1) {
+                else if (pStart < lastPEnd && w > 1 && lastW == 1) {
                     pStart++;
                     w--;
                 }

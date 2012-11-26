@@ -790,7 +790,7 @@ public class PreferenceManager implements PropertyManager {
                 return cs;
 
             case DNA_METHYLATION:
-                cs = new ContinuousColorScale(0, 1, new Color(0, 150, 0), Color.RED);
+                cs = new ContinuousColorScale(0, 1, Color.BLUE, Color.RED);
                 cs.setNoDataColor(Color.WHITE);
                 return cs;
 
