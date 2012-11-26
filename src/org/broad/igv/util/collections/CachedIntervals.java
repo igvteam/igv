@@ -12,7 +12,6 @@
 package org.broad.igv.util.collections;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import org.broad.igv.data.Interval;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
@@ -115,9 +114,11 @@ public class CachedIntervals<T extends Interval> {
 
         if (intervals == null) return null;
 
-        List<T> returnedIntervals = new ArrayList<T>(intervals);
+        List<T> returnedIntervals;
         if (predicate != null) {
-            Collections2.filter(returnedIntervals, predicate);
+            returnedIntervals = CollUtils.filter(intervals, predicate);
+        } else {
+            returnedIntervals = new ArrayList<T>(intervals);
         }
         FeatureUtils.sortFeatureList(returnedIntervals);
 

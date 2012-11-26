@@ -95,7 +95,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     @Test
     public void testFilterWithDrugs() throws Exception {
         assertTrue("Failed to load network", network.loadNetwork(drugTestPath) > 0);
-        Collection<Node> nonGenesBeforeFilter = CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGene);
+        Collection<Node> nonGenesBeforeFilter = CollUtils.filter(network.vertexSet(), GeneNetwork.isNotGene);
         assertTrue("Bad test setup, no non-gene nodes", nonGenesBeforeFilter.size() > 0);
 
         doTestAnnotation(network);
@@ -103,7 +103,7 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
         assertTrue("Bad test setup, Filter didn't remove any genes", genesRemoved > 0);
 
         Set<Node> nonGenesAfterFilter =
-                new HashSet<Node>(CollUtils.filteredCopy(network.vertexSet(), GeneNetwork.isNotGene));
+                new HashSet<Node>(CollUtils.filter(network.vertexSet(), GeneNetwork.isNotGene));
         for (Node nonGene : nonGenesBeforeFilter) {
             String msg = String.format("Filtered out node %s which we shouldn't have", GeneNetwork.getNodeKeyData(nonGene, GeneNetwork.LABEL));
             assertTrue(msg, nonGenesAfterFilter.contains(nonGene));

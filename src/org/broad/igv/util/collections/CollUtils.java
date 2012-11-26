@@ -12,10 +12,11 @@
 package org.broad.igv.util.collections;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * Utility methods which are useful for collections.
@@ -25,40 +26,11 @@ import java.util.Iterator;
  */
 public class CollUtils {
 
-
-    /**
-     * Wrapper for {@link com.google.common.collect.Collections2#filter(Collection, Predicate)}
-     * which is a no-op if {@code objects} is null
-     *
-     * @param unfiltered
-     * @param predicate
-     * @param <T>
-     */
-//    public static <T> void filter(Collection<? extends T> unfiltered, Predicate<T> predicate) {
-//        if (unfiltered == null) return;
-//        Collections2.filter(unfiltered, predicate);
-//
-//    }
-
-    /**
-     * Filters the provided collection, and returns a copy. Only those objects for which
-     * predicate(object) returns true will be kept. {@code unfiltered} is not modified
-     *
-     * @param unfiltered
-     * @param predicate
-     * @param <T>
-     */
-    public static <T> Collection<T> filteredCopy(Collection<? extends T> unfiltered, Predicate<T> predicate) {
+    public static <T> List<T> filter(Collection<T> unfiltered, Predicate<? super T> predicate) {
         if (unfiltered == null) return null;
-        Collection<T> coll = new ArrayList<T>(unfiltered.size());
-        Iterator<? extends T> iter = unfiltered.iterator();
-        while (iter.hasNext()) {
-            T next = iter.next();
-            if (predicate.apply(next)) {
-                coll.add(next);
-            }
-        }
-        return coll;
+        Collection<T> filteredColl = Collections2.filter(unfiltered, predicate);
+        List<T> filteredList = new ArrayList<T>(filteredColl);
+        return filteredList;
     }
 
     /**

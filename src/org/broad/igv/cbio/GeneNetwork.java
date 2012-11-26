@@ -269,10 +269,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      *
      * @return
      */
-    public Set<Node> geneVertexSet() {
-        Set<Node> filteredSet = new HashSet<Node>(vertexSet());
-        Collections2.filter(filteredSet, isGene);
-        return filteredSet;
+    public Collection<Node> geneVertexSet() {
+        return Collections2.filter(vertexSet(), isGene);
     }
 
     /**
