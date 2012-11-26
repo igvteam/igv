@@ -618,7 +618,7 @@ public class CommandExecutor {
 
         Component target = null;
         if (region == null || region.trim().length() == 0) {
-            target = IGV.getInstance().getContentPane();
+            target = IGV.getInstance().getContentPane().getMainPanel();
         } else if ("trackpanels".equalsIgnoreCase(region)) {
             target = IGV.getInstance().getMainPanel().getCenterSplitPane();
         }
