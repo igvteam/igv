@@ -1176,7 +1176,7 @@ public class FilterGeneNetworkUI extends JDialog {
 
         private List<Node> getGeneVertices() {
             if (geneVertices == null) {
-                Set<Node> nodes = network.geneVertexSet();
+                Collection<Node> nodes = network.geneVertexSet();
                 geneVertices = Arrays.asList(nodes.toArray(new Node[0]));
             }
             return geneVertices;
