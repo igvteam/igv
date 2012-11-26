@@ -47,8 +47,8 @@ import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.util.ucsc.BlatClient;
-
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;

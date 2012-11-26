@@ -47,7 +47,7 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    public VariantMenu(final VariantTrack variantTrack, Variant variant) {
+    public VariantMenu(final VariantTrack variantTrack, final String sample, final Variant variant) {
 
         this.track = variantTrack;
 
@@ -145,7 +145,16 @@ public class VariantMenu extends IGVPopupMenu {
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
-
+        //TODO Experimental. Let user choose opinion and send info to DB
+        addSeparator();
+        JMenuItem review = new JMenuItem("Review");
+        review.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                (new VariantReviewDialog(IGV.getMainFrame(), sample, variant)).setVisible(true);
+            }
+        });
+        add(review);
     }
 
     private JMenuItem getFeatureVisibilityItem() {

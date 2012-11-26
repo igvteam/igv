@@ -1166,7 +1166,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             }
         }
 
-        return new VariantMenu(this, selectedVariant);
+        return new VariantMenu(this, getSampleAtPosition(te.getMouseEvent().getY()), selectedVariant);
     }
 
 
