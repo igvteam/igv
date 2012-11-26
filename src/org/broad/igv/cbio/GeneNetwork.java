@@ -269,7 +269,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
      *
      * @return
      */
-    public Collection<Node> geneVertexSet() {
+    public Collection<Node> geneVertexes() {
         return Collections2.filter(vertexSet(), isGene);
     }
 
@@ -479,8 +479,8 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
             try {
                 NamedNodeMap map = el.getAttributes();
                 Node label = map.getNamedItem(attrName);
-                String textContent = label.getTextContent();
-                if (textContent.compareToIgnoreCase(attrValue) == 0) {
+                String nodeValue = label.getNodeValue();
+                if (nodeValue.compareToIgnoreCase(attrValue) == 0) {
                     return el.getTextContent();
                 }
             } catch (NullPointerException e) {
