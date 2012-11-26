@@ -296,7 +296,7 @@ public class GeneNetwork extends DirectedMultigraph<Node, Node> {
                 return edgesOf(object).size() >= 1;
             }
         };
-        return this.filterNodes(min_connections) > 0;
+        return this.filterGenes(min_connections) > 0;
     }
 
     /**
