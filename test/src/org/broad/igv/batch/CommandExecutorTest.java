@@ -133,6 +133,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
     }
 
     @Test
+    public void testSnapshotTracksOnly() throws Exception {
+        String outFileName = outFileBase + "_track.png";
+        tstSnapshot(outFileName, true, "trackpanels");
+    }
+
+    @Test
     public void testSnapShotJpeg() throws Exception {
         tstSnapshot(outFileBase + ".jpeg");
     }
@@ -153,23 +159,28 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         String[] exts = new String[]{"abc", "svt", "pnq"};
         for (String ext : exts) {
             String outFileName = outFileBase + "." + ext;
-            tstSnapshot(outFileName, false);
+            tstSnapshot(outFileName, false, null);
         }
     }
 
 
-    public void tstSnapshot(String outFileName) throws Exception {
-        tstSnapshot(outFileName, true);
+    public File tstSnapshot(String outFileName) throws Exception {
+        return tstSnapshot(outFileName, true, null);
     }
 
-    public void tstSnapshot(String outFileName, boolean shouldSucceed) throws Exception {
-
+    public File tstSnapshot(String outFileName, boolean shouldSucceed, String moreargs) throws Exception {
         File out = new File(snapshotDir, outFileName);
         assertFalse(out.exists());
 
-        exec.execute("snapshot " + outFileName);
+        String toexec = "snapshot " + outFileName;
+        if (moreargs != null && moreargs.length() > 0) {
+            toexec += " " + moreargs;
+        }
+        exec.execute(toexec);
 
         assertEquals(shouldSucceed, out.exists());
+
+        return out;
     }
 
     @Test

@@ -94,7 +94,7 @@ public class CommandExecutor {
                     result = setSnapshotDirectory(param1);
                 } else if (cmd.equalsIgnoreCase("snapshot")) {
                     String filename = param1;
-                    result = createSnapshot(filename);
+                    result = createSnapshot(filename, param2);
                 } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
                     result = load(param1, param2, param3);
                 } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
@@ -606,7 +606,7 @@ public class CommandExecutor {
     }
 
 
-    private String createSnapshot(String filename) {
+    private String createSnapshot(String filename, String region) {
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
@@ -615,8 +615,22 @@ public class CommandExecutor {
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
+
+        Component target = null;
+        if (region == null || region.trim().length() == 0) {
+            target = IGV.getInstance().getContentPane().getMainPanel();
+        } else if ("trackpanels".equalsIgnoreCase(region)) {
+            target = IGV.getInstance().getMainPanel().getCenterSplitPane();
+        }
+
+        if (target == null) {
+            String msg = "ERROR. Could not create snapshot. Unknown region: " + region;
+            log.error(msg);
+            return msg;
+        }
+
         try {
-            IGV.getInstance().createSnapshotNonInteractive(file);
+            IGV.getInstance().createSnapshotNonInteractive(target, file);
         } catch (IOException e) {
             log.error(e);
             return e.getMessage();
