@@ -39,8 +39,7 @@ public class PluginFeatureSourceTest extends AbstractHeadlessTest {
 
         Assume.assumeTrue(!Globals.IS_WINDOWS);
 
-        String specPath = TestUtils.DATA_DIR + "plugin/cat_plugin.xml";
-        PluginSpecReader reader = PluginSpecReader.create(specPath);
+        PluginSpecReader reader =AbstractPluginTest.getCatReader();
 
         Element tool = reader.getTools().get(0);
         Element command = reader.getCommands(tool).get(0);
@@ -62,7 +61,7 @@ public class PluginFeatureSourceTest extends AbstractHeadlessTest {
 
 
         List<String> cmd = Arrays.asList(tool.getAttribute("path"), command.getAttribute("cmd_arg"));
-        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, reader.getParsingAttributes(tool, command), specPath);
+        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, reader.getParsingAttributes(tool, command), reader.getSpecPath());
 
         Iterator<Feature> featuresExp = ((FeatureTrack) arguments.get(argumentList.get(1))).getFeatures("chr2", 1, 30).iterator();
         Iterator<Feature> featuresAct = pluginSource.getFeatures("chr2", 1, 30);
