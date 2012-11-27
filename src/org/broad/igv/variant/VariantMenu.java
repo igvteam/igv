@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.variant;
@@ -23,6 +16,8 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.variant.vcf.VCFVariant;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -47,6 +42,8 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
+    private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
+
     public VariantMenu(final VariantTrack variantTrack, final String sample, final Variant variant) {
 
         this.track = variantTrack;
@@ -69,7 +66,7 @@ public class VariantMenu extends IGVPopupMenu {
             }
 
             private void close() {
-               // track.clearSelectedVariant();
+                // track.clearSelectedVariant();
             }
 
         });
@@ -145,16 +142,22 @@ public class VariantMenu extends IGVPopupMenu {
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
+
         //TODO Experimental. Let user choose opinion and send info to DB
-        addSeparator();
-        JMenuItem review = new JMenuItem("Review");
-        review.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                (new VariantReviewDialog(IGV.getMainFrame(), sample, variant)).setVisible(true);
-            }
-        });
-        add(review);
+        boolean showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
+        if (showReviewOption) {
+            addSeparator();
+            JMenuItem review = new JMenuItem("Submit Review to DB");
+            final VariantContext vc = VCFVariant.getVariantContext(variant);
+            review.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    (new VariantReviewDialog(IGV.getMainFrame(), sample, vc)).setVisible(true);
+                }
+            });
+            add(review);
+            review.setEnabled(vc != null && vc.hasGenotype(sample));
+        }
     }
 
     private JMenuItem getFeatureVisibilityItem() {

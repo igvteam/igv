@@ -1142,4 +1142,35 @@ public class PreferenceManager implements PropertyManager {
     private String genPluginKey(String pluginId, String toolName, String key) {
         return String.format("%s:%s:%s", pluginId, toolName, key);
     }
+
+    /**
+     * Returns a preference value from either the preferences,
+     * or system property. If the value was provided as a system property,
+     * is is saved to the preferences.
+     * Intended usecase is features only usable by certain groups but
+     * not intended for all of IGV.
+     * <p/>
+     * Example
+     * java -jar Denable.tools=true igv.jar
+     * <p/>
+     * getPersistent("enable.tools", null) returns "true"
+     * and saves it to preferences, so a subsequent invocation
+     * will return true as well:
+     * java -jar igv.jar
+     * getPersistent("enable.tools", "false") returns "true" also
+     *
+     * @param key
+     * @param def default value. NOT SAVED
+     * @return
+     * @see org.broad.igv.session.Session#getPersistent(String, String)
+     */
+    public String getPersistent(String key, String def) {
+        String value = System.getProperty(key);
+        if (value != null) {
+            put(key, value);
+            return value;
+        } else {
+            return get(key, def);
+        }
+    }
 }

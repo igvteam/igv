@@ -14,6 +14,7 @@
 
 package org.broad.igv.variant;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
@@ -929,9 +930,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
-        Set<Allele> alternates = variant.getAlternateAlleles();
+        List<Allele> alternates = variant.getAlternateAlleles();
         if (alternates.size() > 0) {
-            toolTip.append("<br>Alternate: " + alternates.toString());
+            toolTip.append("<br>Alternate: " + StringUtils.join(alternates, ","));
         }
 
         toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));

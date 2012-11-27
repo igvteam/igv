@@ -15,29 +15,49 @@
 
 package org.broad.igv.variant;
 
-import org.broadinstitute.sting.gatk.walkers.na12878kb.TruthStatus;
+import com.mongodb.WriteResult;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.*;
+import org.broadinstitute.sting.utils.variantcontext.Allele;
+import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.List;
+
+import static org.broadinstitute.sting.utils.variantcontext.GenotypeType.UNAVAILABLE;
 
 /**
- * @author User #2
+ * Dialog for reviewing a variant from a VCF file.
+ * The users opinion is submitted to a MongoDB
  */
 public class VariantReviewDialog extends JDialog {
-    public VariantReviewDialog(Frame owner, String sample, Variant variant) {
+    private VariantContext variantContext;
+
+
+    private static final String USE_LOCAL_KEY = "VARIANT_DB_PATH";
+    //Path can be relative to either the local machine,
+    //or NA12878kb package or the GenomeAnalysisTK jar
+    private static final String USE_LOCAL_DEFAULT = "resources/NA12878kb_local.json";
+
+    public VariantReviewDialog(Frame owner, String sample, VariantContext vc) {
         super(owner);
         initComponents();
 
         truthField.setModel(new DefaultComboBoxModel(TruthStatus.values()));
-        genotypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
-        initComponentData(sample, variant);
+        genotypeTypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
+        this.variantContext = vc;
+        initComponentData(sample, vc);
     }
 
-    private void initComponentData(String sample, Variant variant) {
+    private void initComponentData(String sample, VariantContext variant) {
         String uname = System.getProperty("user.name", "unknown");
         callsetField.setText(uname);
 
@@ -47,11 +67,10 @@ public class VariantReviewDialog extends JDialog {
 
         Genotype genotype = variant.getGenotype(sample);
         GenotypeType gtt = genotype.getType();
-        if (gtt == null) gtt = GenotypeType.UNAVAILABLE;
-        genotypeField.setSelectedItem(gtt);
+        if (gtt == null) gtt = UNAVAILABLE;
+        genotypeTypeField.setSelectedItem(gtt);
 
-        String type = variant.getType();
-        System.out.println("type: " + type);
+        mutField.setText(genotype.getGenotypeString());
 
         truthField.setSelectedItem(TruthStatus.UNKNOWN);
 
@@ -60,6 +79,69 @@ public class VariantReviewDialog extends JDialog {
 
     private void cancelButtonActionPerformed(ActionEvent e) {
         setVisible(false);
+    }
+
+    private void okButtonActionPerformed(ActionEvent e) {
+        //Save information to Mongo
+        String callsetName = callsetField.getText();
+
+        TruthStatus truthStatus = (TruthStatus) truthField.getSelectedItem();
+//
+//        List<org.broadinstitute.sting.utils.variantcontext.Allele> alternateList = variantContext.getAlternateAlleles();
+//
+//        if(alternateList.size() != 1){
+//            //Only allow a single alternate
+//            throw new RuntimeException("Only allow single alternates, found " + alternateList.size());
+//        }
+//        org.broadinstitute.sting.utils.variantcontext.Allele alternate = alternateList.get(0);
+//        String alternateStr = new String(alternate.getBases());
+
+        List<Allele> alleleList = variantContext.getAlleles();
+
+        int allele0 = -1;
+        int allele1 = -1;
+
+        GenotypeType gtt = (GenotypeType) genotypeTypeField.getSelectedItem();
+        switch (gtt) {
+            case HOM_REF:
+                allele0 = allele1 = 0;
+                break;
+            case HOM_VAR:
+                allele0 = allele1 = 1;
+                break;
+            case HET:
+                allele0 = 0;
+                allele1 = 1;
+                break;
+        }
+        MongoGenotype mgt = new MongoGenotype(allele0, allele1);
+        Genotype gt = mgt.toGenotype(alleleList);
+        MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
+
+
+        //Can be path to db spec file, or else boolean true/false indicating local/remote use
+        //and default DB
+        String dbPathString = IGV.getInstance().getSession().getPersistent(USE_LOCAL_KEY, USE_LOCAL_DEFAULT);
+
+        NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbPathString);
+
+        String errorMessage = null;
+        NA12878KnowledgeBase kb = null;
+        try {
+            kb = new NA12878KnowledgeBase(null, args);
+            WriteResult wr = kb.addCall(mvc);
+            errorMessage = wr.getError();
+        } catch (Exception ex) {
+            errorMessage = ex.getMessage();
+        } finally {
+            if (kb != null) kb.close();
+        }
+
+        if (errorMessage != null) {
+            MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
+        } else {
+            setVisible(false);
+        }
     }
 
 
@@ -71,18 +153,26 @@ public class VariantReviewDialog extends JDialog {
         panel1 = new JPanel();
         label4 = new JLabel();
         callsetField = new JTextField();
+        hSpacer1 = new JPanel(null);
         panel2 = new JPanel();
         label5 = new JLabel();
         truthField = new JComboBox();
         panel3 = new JPanel();
         label6 = new JLabel();
-        genotypeField = new JComboBox();
+        genotypeTypeField = new JComboBox();
+        hSpacer2 = new JPanel(null);
+        panel7 = new JPanel();
+        label10 = new JLabel();
+        mutField = new JLabel();
+        hSpacer5 = new JPanel(null);
         panel4 = new JPanel();
         label7 = new JLabel();
         chrField = new JLabel();
+        hSpacer3 = new JPanel(null);
         panel5 = new JPanel();
         label8 = new JLabel();
         startField = new JLabel();
+        hSpacer4 = new JPanel(null);
         panel6 = new JPanel();
         label9 = new JLabel();
         stopField = new JLabel();
@@ -97,6 +187,7 @@ public class VariantReviewDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+            dialogPane.setPreferredSize(new Dimension(600, 115));
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -105,16 +196,23 @@ public class VariantReviewDialog extends JDialog {
 
                 //======== panel1 ========
                 {
-                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
+                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
 
                     //---- label4 ----
-                    label4.setText("Callset:");
-                    label4.setHorizontalAlignment(SwingConstants.LEFT);
+                    label4.setText("Callset");
+                    label4.setHorizontalAlignment(SwingConstants.CENTER);
                     label4.setMaximumSize(new Dimension(80, 16));
+                    label4.setAlignmentX(0.5F);
                     panel1.add(label4);
+
+                    //---- callsetField ----
+                    callsetField.setMaximumSize(new Dimension(200, 1000));
+                    callsetField.setMinimumSize(new Dimension(100, 28));
+                    callsetField.setPreferredSize(new Dimension(100, 28));
                     panel1.add(callsetField);
                 }
                 contentPanel.add(panel1);
+                contentPanel.add(hSpacer1);
 
                 //======== panel2 ========
                 {
@@ -122,9 +220,10 @@ public class VariantReviewDialog extends JDialog {
 
                     //---- label5 ----
                     label5.setText("Truth");
-                    label5.setHorizontalAlignment(SwingConstants.LEFT);
-                    label5.setMaximumSize(new Dimension(80, 16));
+                    label5.setHorizontalAlignment(SwingConstants.CENTER);
                     label5.setLabelFor(truthField);
+                    label5.setHorizontalTextPosition(SwingConstants.CENTER);
+                    label5.setAlignmentX(0.5F);
                     panel2.add(label5);
                     panel2.add(truthField);
                 }
@@ -136,48 +235,114 @@ public class VariantReviewDialog extends JDialog {
 
                     //---- label6 ----
                     label6.setText("Genotype");
-                    label6.setHorizontalAlignment(SwingConstants.LEFT);
-                    label6.setMaximumSize(new Dimension(80, 16));
+                    label6.setHorizontalAlignment(SwingConstants.CENTER);
+                    label6.setAlignmentX(0.5F);
                     panel3.add(label6);
-                    panel3.add(genotypeField);
+                    panel3.add(genotypeTypeField);
                 }
                 contentPanel.add(panel3);
 
+                //---- hSpacer2 ----
+                hSpacer2.setMinimumSize(new Dimension(20, 12));
+                hSpacer2.setPreferredSize(new Dimension(20, 10));
+                contentPanel.add(hSpacer2);
+
+                //======== panel7 ========
+                {
+                    panel7.setMaximumSize(new Dimension(46, 1000));
+                    panel7.setLayout(new BoxLayout(panel7, BoxLayout.Y_AXIS));
+
+                    //---- label10 ----
+                    label10.setText("Mut");
+                    label10.setHorizontalAlignment(SwingConstants.LEFT);
+                    label10.setMaximumSize(new Dimension(80, 16));
+                    panel7.add(label10);
+
+                    //---- mutField ----
+                    mutField.setText("A/G");
+                    mutField.setMaximumSize(new Dimension(46, 1000));
+                    panel7.add(mutField);
+                }
+                contentPanel.add(panel7);
+
+                //---- hSpacer5 ----
+                hSpacer5.setMinimumSize(new Dimension(20, 12));
+                hSpacer5.setPreferredSize(new Dimension(20, 10));
+                contentPanel.add(hSpacer5);
+
                 //======== panel4 ========
                 {
+                    panel4.setMaximumSize(new Dimension(46, 1000));
                     panel4.setLayout(new BoxLayout(panel4, BoxLayout.Y_AXIS));
 
                     //---- label7 ----
                     label7.setText("Chr");
                     label7.setHorizontalAlignment(SwingConstants.LEFT);
-                    label7.setMaximumSize(new Dimension(80, 16));
+                    label7.setVerticalAlignment(SwingConstants.TOP);
                     panel4.add(label7);
+
+                    //---- chrField ----
+                    chrField.setText("testChr");
+                    chrField.setAlignmentY(0.0F);
+                    chrField.setMaximumSize(new Dimension(46, 1000));
                     panel4.add(chrField);
                 }
                 contentPanel.add(panel4);
 
+                //---- hSpacer3 ----
+                hSpacer3.setMinimumSize(new Dimension(20, 12));
+                hSpacer3.setPreferredSize(new Dimension(20, 10));
+                contentPanel.add(hSpacer3);
+
                 //======== panel5 ========
                 {
+                    panel5.setMaximumSize(new Dimension(500, 1000));
+                    panel5.setMinimumSize(new Dimension(80, 32));
+                    panel5.setPreferredSize(new Dimension(80, 32));
                     panel5.setLayout(new BoxLayout(panel5, BoxLayout.Y_AXIS));
 
                     //---- label8 ----
                     label8.setText("Start");
                     label8.setHorizontalAlignment(SwingConstants.LEFT);
-                    label8.setMaximumSize(new Dimension(80, 16));
+                    label8.setMaximumSize(new Dimension(100, 16));
                     panel5.add(label8);
+
+                    //---- startField ----
+                    startField.setText("54321");
+                    startField.setMaximumSize(new Dimension(500, 1000));
+                    startField.setMinimumSize(new Dimension(80, 16));
+                    startField.setPreferredSize(new Dimension(80, 16));
+                    startField.setHorizontalTextPosition(SwingConstants.LEFT);
+                    startField.setHorizontalAlignment(SwingConstants.LEFT);
                     panel5.add(startField);
                 }
                 contentPanel.add(panel5);
 
+                //---- hSpacer4 ----
+                hSpacer4.setMinimumSize(new Dimension(20, 12));
+                hSpacer4.setPreferredSize(new Dimension(20, 10));
+                contentPanel.add(hSpacer4);
+
                 //======== panel6 ========
                 {
+                    panel6.setMaximumSize(new Dimension(500, 1000));
+                    panel6.setMinimumSize(new Dimension(100, 32));
+                    panel6.setPreferredSize(new Dimension(100, 32));
                     panel6.setLayout(new BoxLayout(panel6, BoxLayout.Y_AXIS));
 
                     //---- label9 ----
                     label9.setText("Stop");
                     label9.setHorizontalAlignment(SwingConstants.LEFT);
-                    label9.setMaximumSize(new Dimension(80, 16));
+                    label9.setMaximumSize(new Dimension(100, 16));
                     panel6.add(label9);
+
+                    //---- stopField ----
+                    stopField.setText("12345");
+                    stopField.setMaximumSize(new Dimension(500, 1000));
+                    stopField.setHorizontalTextPosition(SwingConstants.LEADING);
+                    stopField.setHorizontalAlignment(SwingConstants.LEFT);
+                    stopField.setMinimumSize(new Dimension(100, 16));
+                    stopField.setPreferredSize(new Dimension(100, 16));
                     panel6.add(stopField);
                 }
                 contentPanel.add(panel6);
@@ -192,7 +357,13 @@ public class VariantReviewDialog extends JDialog {
                 ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
-                okButton.setText("OK");
+                okButton.setText("Save");
+                okButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 5), 0, 0));
@@ -212,7 +383,7 @@ public class VariantReviewDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.PAGE_END);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        pack();
+        setSize(700, 135);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -224,18 +395,26 @@ public class VariantReviewDialog extends JDialog {
     private JPanel panel1;
     private JLabel label4;
     private JTextField callsetField;
+    private JPanel hSpacer1;
     private JPanel panel2;
     private JLabel label5;
     private JComboBox truthField;
     private JPanel panel3;
     private JLabel label6;
-    private JComboBox genotypeField;
+    private JComboBox genotypeTypeField;
+    private JPanel hSpacer2;
+    private JPanel panel7;
+    private JLabel label10;
+    private JLabel mutField;
+    private JPanel hSpacer5;
     private JPanel panel4;
     private JLabel label7;
     private JLabel chrField;
+    private JPanel hSpacer3;
     private JPanel panel5;
     private JLabel label8;
     private JLabel startField;
+    private JPanel hSpacer4;
     private JPanel panel6;
     private JLabel label9;
     private JLabel stopField;

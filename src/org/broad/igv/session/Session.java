@@ -8,10 +8,6 @@
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.session;
 
 
@@ -150,6 +146,20 @@ public class Session {
             return (preferences.get(key));
         } else {
             return PreferenceManager.getInstance().get(key);
+        }
+    }
+
+    /**
+     * @param key
+     * @param def Default value. Not saved
+     * @return Preference if found, or else default value
+     * @see PreferenceManager#getPersistent(String, String)
+     */
+    public String getPersistent(String key, String def) {
+        if (preferences.containsKey(key)) {
+            return (preferences.get(key));
+        } else {
+            return PreferenceManager.getInstance().getPersistent(key, def);
         }
     }
 

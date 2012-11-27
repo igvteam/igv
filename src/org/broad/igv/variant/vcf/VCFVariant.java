@@ -17,8 +17,12 @@ import org.broad.igv.variant.Genotype;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.sting.utils.variantcontext.VariantContextBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 //import org.broadinstitute.sting.utils.variantcontext.Allele;
 
@@ -31,7 +35,7 @@ public class VCFVariant implements Variant {
     private static Logger log = Logger.getLogger(Variant.class);
 
     VariantContext variantContext;
-    Set<Allele> alternateAlleles;
+    List<Allele> alternateAlleles;
     private ZygosityCount zygosityCount;
     private boolean isIndel;
 
@@ -127,10 +131,10 @@ public class VCFVariant implements Variant {
         return variantContext.getReference().toString();
     }
 
-    public Set<Allele> getAlternateAlleles() {
+    public List<Allele> getAlternateAlleles() {
         if (alternateAlleles == null) {
             List<org.broadinstitute.sting.utils.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
-            alternateAlleles = new HashSet(tmp.size());
+            alternateAlleles = new ArrayList<Allele>(tmp.size());
             for (org.broadinstitute.sting.utils.variantcontext.Allele a : tmp) {
                 alternateAlleles.add(new VCFAllele(a.getBases()));
             }
@@ -256,6 +260,20 @@ public class VCFVariant implements Variant {
 
     public VariantContext getVariantContext() {
         return variantContext;
+    }
+
+    public static VariantContext getVariantContext(Variant variant) {
+        if (variant instanceof VCFVariant) {
+            return ((VCFVariant) variant).getVariantContext();
+        } else {
+            List<org.broadinstitute.sting.utils.variantcontext.Allele> alleleList = new ArrayList<org.broadinstitute.sting.utils.variantcontext.Allele>(variant.getAlternateAlleles().size() + 1);
+            alleleList.add(org.broadinstitute.sting.utils.variantcontext.Allele.create(variant.getReference(), true));
+            for (Allele all : variant.getAlternateAlleles()) {
+                alleleList.add(org.broadinstitute.sting.utils.variantcontext.Allele.create(all.getBases(), false));
+            }
+            VariantContextBuilder vcb = new VariantContextBuilder(variant.getID(), variant.getChr(), variant.getStart(), variant.getEnd(), alleleList);
+            return vcb.make();
+        }
     }
 
     /**
