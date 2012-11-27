@@ -50,7 +50,7 @@ public class RunPlugin extends JDialog {
         super(owner);
         initComponents();
 
-        final String toolPath = tool.getAttribute("default_path");
+        final String toolPath = pluginSpecReader.getToolPath(tool);
         final String cmdName = command.getAttribute("name");
         final String cmdVal = command.getAttribute("cmd");
 
@@ -111,7 +111,7 @@ public class RunPlugin extends JDialog {
         setVisible(false);
     }
 
-    private void okButtonActionPerformed(ActionEvent e) {
+    void okButtonActionPerformed(ActionEvent e) {
         Track newTrack = genNewTrack();
         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
