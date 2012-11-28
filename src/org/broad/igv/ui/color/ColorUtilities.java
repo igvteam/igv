@@ -180,6 +180,9 @@ public class ColorUtilities {
     public static Color stringToColor(String string) {
 
         try {
+            // Excel will quote color strings, strip all quotes
+            string = string.replace("\"", "").replace("'", "");
+
             Color c = colorCache.get(string);
             if (c == null) {
                 if (string.contains(",")) {
