@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import javax.imageio.metadata.IIOMetadataNode;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashSet;
@@ -284,8 +284,9 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     public void testPruneGraph() throws Exception {
         int size = 10;
         int exp_edges = size - 1 + size - 1;
-        SimpleVertexFactory vFactory = new SimpleVertexFactory();
-        SimpleEdgeFactory eFactory = new SimpleEdgeFactory();
+        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        SimpleVertexFactory vFactory = new SimpleVertexFactory(document);
+        SimpleEdgeFactory eFactory = new SimpleEdgeFactory(document);
         GeneNetwork graph = new GeneNetwork(eFactory);
 
 
@@ -358,17 +359,18 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
     public static class SimpleVertexFactory implements VertexFactory<Node> {
         private long vCounter = 0;
 
-        public SimpleVertexFactory() {
+        private final Document document;
+
+        public SimpleVertexFactory(Document document) {
+            this.document = document;
         }
 
         public Node createVertex() {
-            Element v = new IIOMetadataNode("v" + vCounter);
+            Element v = document.createElement("v" + vCounter);
             v.setAttribute("id", "" + vCounter);
 
             //<data key="type">Protein</data>
-            Element type = new IIOMetadataNode("data");
-//            Attr attr = document.createAttribute("key");
-//            attr.setTextContent("type");
+            Element type = document.createElement("data");
             type.setAttribute("key", "type");
             type.setTextContent("Protein");
             v.appendChild(type);
@@ -379,18 +381,19 @@ public class GeneNetworkTest extends AbstractHeadlessTest {
 
     public static class SimpleEdgeFactory implements EdgeFactory<Node, Node> {
         private long eCounter = 0;
+        private final Document document;
 
-        public SimpleEdgeFactory() {
+        public SimpleEdgeFactory(Document document) {
+            this.document = document;
         }
 
         public Node createEdge(Node sourceVertex, Node targetVertex) {
-            Element e = new IIOMetadataNode("e" + eCounter);
+            Element e = document.createElement("e" + eCounter);
             e.setAttribute("source", sourceVertex.getAttributes().getNamedItem("id").toString());
             e.setAttribute("target", targetVertex.getAttributes().getNamedItem("id").toString());
             eCounter++;
             return e;
         }
     }
-
 
 }
