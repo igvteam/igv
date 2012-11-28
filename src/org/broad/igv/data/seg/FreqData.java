@@ -208,6 +208,14 @@ public class FreqData {
         return del.get(chr);
     }
 
+    public float getAmpThreshold() {
+        return ampThreshold;
+    }
+
+    public float getDelThreshold() {
+        return delThreshold;
+    }
+
 
     public class Bin implements LocusScore {
         String chr;
