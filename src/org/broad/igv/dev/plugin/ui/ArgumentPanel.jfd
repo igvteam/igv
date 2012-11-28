@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -15,12 +15,6 @@ new FormModel {
 				"text": "Argument: "
 				"requestFocusEnabled": false
 				"minimumSize": new java.awt.Dimension( 80, 16 )
-			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "cmdArg"
-				"text": "text"
-				"maximumSize": new java.awt.Dimension( 30, 16 )
-				"requestFocusEnabled": false
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
