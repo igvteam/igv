@@ -205,15 +205,15 @@ public class RNAIGCTDatasetParser {
     }
 
 
-    public final static String RNAI_MAPPING_PATH_KEY = "RNAI_MAPPING_PATH";
-    private final static String DEFAULT_RNAI_MAPPING_PATH = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
-    private static String RNAI_MAPPING_PATH;
+    public final static String RNAI_MAPPING_URL_KEY = "RNAI_MAPPING_URL";
+    private final static String DEFAULT_RNAI_MAPPING_URL = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
+    private static String RNAI_MAPPING_URL;
 
     static {
         if (IGV.hasInstance()) {
-            RNAI_MAPPING_PATH = IGV.getInstance().getSession().getPersistent(RNAI_MAPPING_PATH_KEY, DEFAULT_RNAI_MAPPING_PATH);
+            RNAI_MAPPING_URL = IGV.getInstance().getSession().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
         } else {
-            RNAI_MAPPING_PATH = PreferenceManager.getInstance().getPersistent(RNAI_MAPPING_PATH_KEY, DEFAULT_RNAI_MAPPING_PATH);
+            RNAI_MAPPING_URL = PreferenceManager.getInstance().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
         }
     }
 
@@ -222,7 +222,7 @@ public class RNAIGCTDatasetParser {
     private synchronized static Map<String, String[]> getProbeMap() throws IOException {
         if (rnaiProbeMap == null) {
             rnaiProbeMap = Collections.synchronizedMap(new HashMap<String, String[]>(20000));
-            URL url = new URL(RNAI_MAPPING_PATH);
+            URL url = new URL(RNAI_MAPPING_URL);
 
             InputStream probeMappingStream = null;
             try {
@@ -231,7 +231,7 @@ public class RNAIGCTDatasetParser {
 
                 ProbeToLocusMap.getInstance().loadMapping(br, rnaiProbeMap);
             } catch (Exception e) {
-                throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_PATH, e.getClass().getSimpleName());
+                throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_URL, e.getClass().getSimpleName());
             } finally {
                 if (probeMappingStream != null) {
                     probeMappingStream.close();
