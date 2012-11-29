@@ -18,7 +18,7 @@ package org.broad.igv.variant;
 import com.mongodb.WriteResult;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.*;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
 import org.broadinstitute.sting.utils.variantcontext.Allele;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
@@ -36,16 +36,16 @@ import static org.broadinstitute.sting.utils.variantcontext.GenotypeType.UNAVAIL
 
 /**
  * Dialog for reviewing a variant from a VCF file.
- * The users opinion is submitted to a MongoDB
+ * The users opinion is submitted to a MongoDB, specified by
+ * system property {@link #DB_PATH_KEY}. Path can be relative to either the local machine,
+ * or NA12878kb package or the GenomeAnalysisTK jar
  */
 public class VariantReviewDialog extends JDialog {
     private VariantContext variantContext;
 
 
-    private static final String USE_LOCAL_KEY = "VARIANT_DB_PATH";
-    //Path can be relative to either the local machine,
-    //or NA12878kb package or the GenomeAnalysisTK jar
-    private static final String USE_LOCAL_DEFAULT = "resources/NA12878kb_local.json";
+    private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
+    private static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
 
     public VariantReviewDialog(Frame owner, String sample, VariantContext vc) {
         super(owner);
@@ -81,20 +81,16 @@ public class VariantReviewDialog extends JDialog {
         setVisible(false);
     }
 
+    /**
+     * Save information to Mongo
+     *
+     * @param e
+     */
     private void okButtonActionPerformed(ActionEvent e) {
-        //Save information to Mongo
+
         String callsetName = callsetField.getText();
 
         TruthStatus truthStatus = (TruthStatus) truthField.getSelectedItem();
-//
-//        List<org.broadinstitute.sting.utils.variantcontext.Allele> alternateList = variantContext.getAlternateAlleles();
-//
-//        if(alternateList.size() != 1){
-//            //Only allow a single alternate
-//            throw new RuntimeException("Only allow single alternates, found " + alternateList.size());
-//        }
-//        org.broadinstitute.sting.utils.variantcontext.Allele alternate = alternateList.get(0);
-//        String alternateStr = new String(alternate.getBases());
 
         List<Allele> alleleList = variantContext.getAlleles();
 
@@ -118,10 +114,7 @@ public class VariantReviewDialog extends JDialog {
         Genotype gt = mgt.toGenotype(alleleList);
         MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
 
-
-        //Can be path to db spec file, or else boolean true/false indicating local/remote use
-        //and default DB
-        String dbPathString = IGV.getInstance().getSession().getPersistent(USE_LOCAL_KEY, USE_LOCAL_DEFAULT);
+        String dbPathString = IGV.getInstance().getSession().getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
 
         NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbPathString);
 
