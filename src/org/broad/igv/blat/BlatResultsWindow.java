@@ -39,7 +39,7 @@ public class BlatResultsWindow extends JFrame {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
-        blatTable = new JTable(model);
+        blatTable = new JTable(model)
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
