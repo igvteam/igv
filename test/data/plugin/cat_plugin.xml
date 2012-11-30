@@ -11,7 +11,7 @@
 <!DOCTYPE igv_plugin SYSTEM "../../../src/org/broad/igv/dev/plugin/resources/igv_plugin.dtd">
 <igv_plugin api_version="alpha" plugin_version="1.0" name="cat"
             id="org.broadinstitute.igv.plugin.cat">
-    <tool name="cat" path="cat">
+    <tool name="cat" default_path="cat">
         <default>
             <arg name="Arguments" cmd_arg="" type="text"/>
             <arg name="Track A" cmd_arg="" type="feature_track"/>

@@ -100,7 +100,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
-                    newSession();
+                    igv.newSession();
                 } else if (cmd.equalsIgnoreCase("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equalsIgnoreCase("sort")) {
@@ -165,11 +165,6 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
-    }
-
-    private void newSession() {
-        igv.resetSession(null);
-        igv.setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
     }
 
     private String setDataRange(String dataRangeString, String trackName) {
