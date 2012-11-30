@@ -19,11 +19,11 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.tribble.Feature;
 
 /**
  * @author jrobinso
@@ -66,9 +66,9 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
         this.genome = genome;
     }
 
-    public BasicFeature decode(String line) {
+    public PSLRecord decode(String line) {
 
-        BasicFeature f = null;
+        PSLRecord f = null;
         try {
             if (line.trim().length() == 0 || line.startsWith("#") || line.startsWith("track") ||
                     line.startsWith("browser")) {
@@ -94,7 +94,7 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
                 gNeg = strandString.charAt(1) == '-';
             }
 
-            f = new BasicFeature();
+            f = new PSLRecord();
             f.setName(tokens[9]);
             f.setChr(chr);
             f.setStart(start);
@@ -120,15 +120,29 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
                 // TODO -- warn
             }
 
-            //score = percentId = 100.0 * (match + repMatch)  / (misMatch + match + repMatch + qNumInsert + tNumInsert)
+            //score = percentId = 100.0 * (match + repMatch)  / (misMatch + match + repMatch + qGapCount + tGapCount)
             int match = Integer.parseInt(tokens[0]);
             int misMatch = Integer.parseInt(tokens[1]);
             int repMatch = Integer.parseInt(tokens[2]);
-            int qNumInsert = Integer.parseInt(tokens[4]);
-            int tNumInsert = Integer.parseInt(tokens[6]);
+            int ns = Integer.parseInt(tokens[3]);
+            int qGapCount = Integer.parseInt(tokens[4]);
+            int qGapBases = Integer.parseInt(tokens[5]);
+            int tGapCount = Integer.parseInt(tokens[6]);
+            int tGapBases = Integer.parseInt(tokens[7]);
             int qSize = Integer.parseInt(tokens[10]);
 
-            float score = (1000.0f * (match + repMatch - misMatch - qNumInsert - tNumInsert)) / qSize;
+            float score = (1000.0f * (match + repMatch - misMatch - qGapCount - tGapCount)) / qSize;
+
+            f.setMatch(match);
+            f.setMisMatch(misMatch);
+            f.setRepMatch(repMatch);
+            f.setNs(ns);
+            f.setQGapCount(qGapCount);
+            f.setQGapBases(qGapBases);
+            f.setTGapCount(tGapCount);
+            f.setTGapBases(tGapBases);
+            f.setQSize(qSize);
+
             f.setScore(score);
 
             // Build description

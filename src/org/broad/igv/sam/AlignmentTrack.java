@@ -46,7 +46,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.util.ucsc.BlatClient;
+import org.broad.igv.blat.BlatClient;
 
 import javax.swing.*;
 import java.awt.*;
