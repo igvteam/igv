@@ -25,6 +25,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.util.HttpUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -74,7 +75,7 @@ public class SequenceWrapperTest {
             int start = 55054464;
             int end = start + 10000;
 
-           byte[] cachedSeq = helper.getSequence(chr, start, end);
+            byte[] cachedSeq = helper.getSequence(chr, start, end);
 
             SequenceWrapper.setCacheSequences(false);
 
@@ -127,14 +128,21 @@ public class SequenceWrapperTest {
      */
     @Test
     public void testRangeService() {
-        seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
-        readEGFRSequence();
 
-        seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
-        readEGFRSequence();
+        try {
+            HttpUtils.disableByteRange(true);
 
-        seqPath = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/";
-        readEGFRSequence();
+            seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
+            readEGFRSequence();
+
+            seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
+            readEGFRSequence();
+
+            seqPath = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/";
+            readEGFRSequence();
+        } finally {
+            HttpUtils.disableByteRange(false);
+        }
     }
 
 }

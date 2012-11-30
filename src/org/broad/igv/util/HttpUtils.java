@@ -61,6 +61,9 @@ public class HttpUtils {
     private char[] defaultPassword = null;
     private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 
+    // static provided to support unit testing
+    private static boolean  BYTE_RANGE_DISABLED = false;
+
     /**
      * @return the single instance
      */
@@ -89,6 +92,16 @@ public class HttpUtils {
         String lcString = string.toLowerCase();
         return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://");
     }
+
+    /**
+     * Provided to support unit testing (force disable byte range requests)
+     * @return
+     */
+    public static void disableByteRange(boolean b) {
+         BYTE_RANGE_DISABLED = b;
+    }
+
+
 
     /**
      * Join the {@code elements} with the character {@code joiner},
@@ -603,6 +616,9 @@ public class HttpUtils {
      * @return
      */
     public boolean useByteRange(URL url) {
+
+
+        if(BYTE_RANGE_DISABLED) return false;
 
         // We can test byte-range success for hosts we can reach.
 
