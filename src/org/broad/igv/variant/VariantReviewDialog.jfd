@@ -47,6 +47,7 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JComboBox" ) {
 							name: "truthField"
+							addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "truthFieldItemStateChanged", true ) )
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {

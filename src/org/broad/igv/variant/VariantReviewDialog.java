@@ -29,10 +29,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.List;
-
-import static org.broadinstitute.sting.utils.variantcontext.GenotypeType.UNAVAILABLE;
 
 /**
  * Dialog for reviewing a variant from a VCF file.
@@ -47,32 +47,33 @@ public class VariantReviewDialog extends JDialog {
     private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
     private static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
 
-    public VariantReviewDialog(Frame owner, String sample, VariantContext vc) {
+    private static final String PREFERENTIAL_SAMPLE_KEY = "PREFERENTIAL_SAMPLE";
+    private static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
+    private String userName;
+
+    public VariantReviewDialog(Frame owner, VariantContext vc) {
         super(owner);
         initComponents();
 
         truthField.setModel(new DefaultComboBoxModel(TruthStatus.values()));
         genotypeTypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
         this.variantContext = vc;
-        initComponentData(sample, vc);
+        this.userName = System.getProperty("user.name", "unknown");
+
+        initComponentData(vc);
     }
 
-    private void initComponentData(String sample, VariantContext variant) {
-        String uname = System.getProperty("user.name", "unknown");
-        callsetField.setText(uname);
+    private void initComponentData(VariantContext variant) {
+
+        callsetField.setText(userName);
 
         chrField.setText(variant.getChr());
         startField.setText("" + variant.getStart());
         stopField.setText("" + variant.getEnd());
 
-        Genotype genotype = variant.getGenotype(sample);
-        GenotypeType gtt = genotype.getType();
-        if (gtt == null) gtt = UNAVAILABLE;
-        genotypeTypeField.setSelectedItem(gtt);
-
-        mutField.setText(genotype.getGenotypeString());
-
         truthField.setSelectedItem(TruthStatus.UNKNOWN);
+
+        initGenotypeTypeField(variant);
 
         validate();
     }
@@ -135,6 +136,45 @@ public class VariantReviewDialog extends JDialog {
         } else {
             setVisible(false);
         }
+    }
+
+    private void truthFieldItemStateChanged(ItemEvent e) {
+        if (truthField.getSelectedItem() == TruthStatus.FALSE_POSITIVE) {
+            genotypeTypeField.setSelectedItem(GenotypeType.NO_CALL);
+            genotypeTypeField.setEnabled(false);
+        } else {
+            genotypeTypeField.setEnabled(true);
+            initGenotypeTypeField(this.variantContext);
+        }
+
+    }
+
+    private void initGenotypeTypeField(VariantContext variant) {
+        String mutationString = null;
+        GenotypeType gtt = GenotypeType.NO_CALL;
+        String prefSampleName = IGV.getInstance().getSession().getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
+
+        //If there is only one sample, or we find the preferential sample,
+        //use that data.
+        for (String sampleName : variant.getSampleNamesOrderedByName()) {
+            boolean isPref = sampleName.equalsIgnoreCase(prefSampleName);
+            if (isPref || mutationString == null) {
+                Genotype genotype = variant.getGenotype(sampleName);
+                gtt = genotype.getType();
+                mutationString = genotype.getGenotypeString(false);
+                if (isPref) break;
+            } else {
+                //If we have several samples with different mutations, don't know which
+                //to pick. Make that obvious to the user
+                if (gtt != variant.getGenotype(sampleName).getType()) {
+                    mutationString = "./.";
+                    gtt = GenotypeType.UNAVAILABLE;
+                }
+            }
+        }
+
+        genotypeTypeField.setSelectedItem(gtt);
+        mutField.setText(mutationString);
     }
 
 
@@ -218,6 +258,14 @@ public class VariantReviewDialog extends JDialog {
                     label5.setHorizontalTextPosition(SwingConstants.CENTER);
                     label5.setAlignmentX(0.5F);
                     panel2.add(label5);
+
+                    //---- truthField ----
+                    truthField.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                            truthFieldItemStateChanged(e);
+                        }
+                    });
                     panel2.add(truthField);
                 }
                 contentPanel.add(panel2);

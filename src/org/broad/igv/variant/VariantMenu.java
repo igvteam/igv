@@ -152,11 +152,11 @@ public class VariantMenu extends IGVPopupMenu {
             review.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    (new VariantReviewDialog(IGV.getMainFrame(), sample, vc)).setVisible(true);
+                    (new VariantReviewDialog(IGV.getMainFrame(), vc)).setVisible(true);
                 }
             });
             add(review);
-            review.setEnabled(vc != null && vc.hasGenotype(sample));
+
         }
     }
 
