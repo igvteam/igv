@@ -90,9 +90,7 @@ public class VariantReviewDialog extends JDialog {
     private void okButtonActionPerformed(ActionEvent e) {
 
         String callsetName = callsetField.getText();
-
         TruthStatus truthStatus = (TruthStatus) truthField.getSelectedItem();
-
         List<Allele> alleleList = variantContext.getAlleles();
 
         int allele0 = -1;
@@ -116,7 +114,6 @@ public class VariantReviewDialog extends JDialog {
         MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
 
         String dbPathString = IGV.getInstance().getSession().getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
-
         NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbPathString);
 
         String errorMessage = null;
