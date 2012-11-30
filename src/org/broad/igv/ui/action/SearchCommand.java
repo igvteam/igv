@@ -54,7 +54,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
-public class SearchCommand implements Command {
+public class SearchCommand {
 
     private static Logger log = Logger.getLogger(SearchCommand.class);
     public static int SEARCH_LIMIT = 20;

@@ -265,4 +265,14 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         }
     }
 
+
+    @Test
+    public void testCustomCommand() throws Exception {
+        String cmd = EchoCommand.class.getName();
+        String otherArgs = "fly high free bird";
+        String fullCmd = String.format("%s %s", cmd, otherArgs);
+        String response = exec.execute(fullCmd);
+
+        assertEquals(otherArgs, response);
+    }
 }
