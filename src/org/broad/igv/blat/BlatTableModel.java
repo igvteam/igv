@@ -1,6 +1,5 @@
 package org.broad.igv.blat;
 
-import com.sun.prism.impl.Disposer;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
 
