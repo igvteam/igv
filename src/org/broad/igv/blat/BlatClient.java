@@ -213,7 +213,7 @@ public class BlatClient {
                 try {
 
                     Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
-                    PSLCodec codec = new PSLCodec(genome);
+                    PSLCodec codec = new PSLCodec(genome, true);
 
                     // TODO -- something better than this!
                     String db = genome.getId();
@@ -226,21 +226,24 @@ public class BlatClient {
                     List<PSLRecord> features = new ArrayList<PSLRecord>(tokensList.size());
                     for (String[] tokens : tokensList) {
                         PSLRecord f = (PSLRecord) codec.decode(tokens);
-                        if(f != null) {
+                        if (f != null) {
                             features.add(f);
                         }
                     }
 
-                        if (features.isEmpty()) {
+                    if (features.isEmpty()) {
                         MessageUtils.showMessage("No features found");
                     } else {
 
-                            BlatResultsWindow win = new BlatResultsWindow(features);
-                            win.setVisible(true);
-//                        FeatureSource<Feature> source = new FeatureCollectionSource(features, genome);
-//                        FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
-//                        newTrack.setUseScore(true);
-//                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+                        FeatureSource<PSLRecord> source = new FeatureCollectionSource(features, genome);
+                        FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
+                        newTrack.setUseScore(true);
+                        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+
+                        BlatResultsWindow win = new BlatResultsWindow(userSeq, features);
+                        win.setVisible(true);
+
+
 //
 //                        // Create gene list from top 10 hits -- assumed these are sorted by score
 //                        ArrayList<String> loci = new ArrayList(10);

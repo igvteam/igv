@@ -56,14 +56,21 @@ import org.broad.igv.feature.genome.Genome;
 public class PSLCodec extends UCSCCodec<BasicFeature> {
 
     Genome genome;
+    boolean keepText;
 
     public PSLCodec(){
         this(null);
     }
 
     public PSLCodec(Genome genome) {
+        this(genome, false);
+    }
+
+    public PSLCodec(Genome genome, boolean keepText) {
         super(BasicFeature.class);
         this.genome = genome;
+        this.keepText = keepText;
+
     }
 
     public PSLRecord decode(String line) {
@@ -157,6 +164,10 @@ public class PSLCodec extends UCSCCodec<BasicFeature> {
             desc.append("<br>");
             desc.append("# inserts in target = " + tokens[6]);
             f.setDescription(desc.toString());
+
+            if(keepText) {
+                f.setText(line);
+            }
 
         } catch (NumberFormatException e) {
             return null;

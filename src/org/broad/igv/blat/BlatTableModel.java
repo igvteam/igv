@@ -1,9 +1,11 @@
 package org.broad.igv.blat;
 
+import com.sun.prism.impl.Disposer;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
 
 import javax.swing.table.AbstractTableModel;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -18,7 +20,7 @@ import java.util.List;
 public class BlatTableModel extends AbstractTableModel {
 
 
-    String[] columnNames = {"chr", "start", "end", "strand", "score (0-1000)", "match", "mis-match", "rep. match", "N's",
+    String[] columnNames = {"chr", "start", "end", "strand", "score", "match", "mis-match", "rep. match", "N's",
             "Q gap count", "Q gap bases", "T gap count", "T gap bases"};
 
     List<PSLRecord> records;
@@ -58,7 +60,7 @@ public class BlatTableModel extends AbstractTableModel {
             case 3:
                 return (record.getStrand() == Strand.POSITIVE ? "+" : "-");
             case 4:
-                return record.getScore();
+                return (int) record.getScore();
             case 5:
                 return record.getMatch();
             case 6:
@@ -77,6 +79,34 @@ public class BlatTableModel extends AbstractTableModel {
                 return record.getTGapBases();
             default:
                 return "?";
+        }
+
+    }
+
+    public String getChr(int rowIndex) {
+        PSLRecord record = records.get(rowIndex);
+        return record.getChr();
+    }
+
+    public int getStart(int rowIndex) {
+        PSLRecord record = records.get(rowIndex);
+        return record.getStart();
+    }
+
+    public int getEnd(int rowIndex) {
+        PSLRecord record = records.get(rowIndex);
+        return record.getEnd();
+    }
+
+    public void save(File f) throws IOException {
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(f)));
+            for (PSLRecord record : records) {
+                pw.println(record.getText());
+            }
+        } finally {
+            if (pw != null) pw.close();
         }
 
     }

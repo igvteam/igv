@@ -23,6 +23,7 @@ public class PSLRecord extends BasicFeature {
     private int ns;
     private int qGapBases;
     private int tGapBases;
+    private String text;
 
 
     public void setMatch(int match) {
@@ -107,5 +108,13 @@ public class PSLRecord extends BasicFeature {
 
     public int getTGapBases() {
         return tGapBases;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
     }
 }
