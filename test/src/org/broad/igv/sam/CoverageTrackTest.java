@@ -57,11 +57,12 @@ public class CoverageTrackTest extends AbstractHeadedTest {
      */
     @Test
     public void testAfterBAMRemoved() throws Exception {
+        int startingNumTracks = igv.getAllTracks().size();
         String bamPath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
         Collection<ResourceLocator> locators = Arrays.asList(new ResourceLocator(bamPath));
         igv.loadResources(locators);
         List<Track> tracks = igv.getAllTracks();
-        assertEquals(2, tracks.size());
+        assertEquals(startingNumTracks + 2, tracks.size());
 
         String startLocString = "chr1:151666494-151666594";
 
