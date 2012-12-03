@@ -34,6 +34,8 @@ public class RunPluginTest extends AbstractHeadedTest {
     @Test
     public void testCatPlugin() throws Exception {
         PluginSpecReader catReader = AbstractPluginTest.getCatReader();
+        AbstractPluginTest.initTool(catReader);
+
         Element tool = catReader.getTools().get(0);
         Element command = catReader.getCommands(tool).get(0);
         RunPlugin rp = new RunPlugin(IGV.getMainFrame(), catReader, tool, command);
