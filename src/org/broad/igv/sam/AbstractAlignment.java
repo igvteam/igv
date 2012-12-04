@@ -268,7 +268,11 @@ public abstract class AbstractAlignment implements Alignment {
 
     public boolean isSmallInsert() {
         int absISize = Math.abs(getInferredInsertSize());
-        return absISize > 0 && absISize <= getReadSequence().length();
+        return absISize > 0 && absISize <= getReadLength();
+    }
+
+    public int getReadLength() {
+        return getReadSequence().length();
     }
 
     public float getScore() {

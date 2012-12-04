@@ -215,19 +215,19 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             }
 
             //if (isize > estReadLen) {
-                if (isize > 0) {
-                    tmp[0] = s1;
-                    tmp[1] = o1;
-                    tmp[2] = s2;
-                    tmp[3] = o2;
+            if (isize > 0) {
+                tmp[0] = s1;
+                tmp[1] = o1;
+                tmp[2] = s2;
+                tmp[3] = o2;
 
-                } else {
-                    tmp[2] = s1;
-                    tmp[3] = o1;
-                    tmp[0] = s2;
-                    tmp[1] = o2;
-                }
-           // }
+            } else {
+                tmp[2] = s1;
+                tmp[3] = o1;
+                tmp[0] = s2;
+                tmp[1] = o2;
+            }
+            // }
             pairOrientation = new String(tmp);
         }
     }
@@ -517,6 +517,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return !readUnmappedFlag;
     }
 
+    @Override
     public int getReadLength() {
         return this.readLength;
     }
