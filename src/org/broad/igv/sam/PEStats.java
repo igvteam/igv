@@ -13,6 +13,7 @@ package org.broad.igv.sam;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.util.collections.DoubleArrayList;
 
 /**
  * @author jrobinso
@@ -24,12 +25,12 @@ public class PEStats {
 
     public enum Orientation {FR, RF, F1F2, F2F1}
 
-    ;
-
-    private static int MAX = 10000;
     String library;
-    int nPairs = 0;
-    private double[] insertSizes = new double[MAX];
+
+
+    //Maximum number of insertSizes to store
+    private static final int MAX = 10000;
+    private DoubleArrayList insertSizes;
     private int minThreshold = 10;
     private int maxThreshold = 5000;
 
@@ -55,14 +56,14 @@ public class PEStats {
 
     public PEStats(String library) {
         this.library = library;
+        this.insertSizes = new DoubleArrayList();
     }
 
 
     public void update(Alignment alignment) {
 
-        if (nPairs < insertSizes.length) {
-            insertSizes[nPairs] = Math.abs(alignment.getInferredInsertSize());
-            nPairs++;
+        if (insertSizes.size() < MAX) {
+            insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
         }
 
         String po = alignment.getPairOrientation();
@@ -99,15 +100,12 @@ public class PEStats {
 
     public void compute(double minPercentile, double maxPercentile) {
 
-        if (nPairs > 100 && insertSizes != null) {
+        if (insertSizes.size() > 100) {
             minThreshold = computePercentile(minPercentile);
             maxThreshold = computePercentile(maxPercentile);
 
             minOutlierInsertSize = computePercentile(minOutlierInsertSizePercentile);
             maxOutlierInsertSize = computePercentile(maxOutlierInsertSizePercentile);
-
-            //log.info(library + "  " + nPairs + "  " + minThreshold + "  " + maxThreshold + " fr =" + frCount +
-            //        "  ff = " + ffCount + "  rf = " + rfCount);
         }
     }
 
@@ -138,7 +136,7 @@ public class PEStats {
     }
 
     private int computePercentile(double percentile) {
-        return (int) StatUtils.percentile(insertSizes, 0, nPairs, percentile);
+        return (int) StatUtils.percentile(insertSizes.toArray(), 0, insertSizes.size(), percentile);
     }
 
     int getMinOutlierInsertSize() {
