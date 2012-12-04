@@ -1899,8 +1899,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     } else {
                         double location = frame.getChromosomePosition(e.getX());
                         final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
-                        String sequence = alignment.getReadSequence();
-                        BlatClient.doBlatQuery(sequence);
+
+                        String sequence;
+                        if (alignment != null) {
+                            sequence = alignment.getReadSequence();
+                        } else {
+                            sequence = MessageUtils.showInputDialog("Enter sequence");
+                        }
+
+                        if (sequence != null && sequence.trim().length() > 0) {
+                            BlatClient.doBlatQuery(sequence);
+                        }
                     }
                 }
             });
