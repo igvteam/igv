@@ -112,6 +112,7 @@ public class VariantReviewDialog extends JDialog {
         MongoGenotype mgt = new MongoGenotype(allele0, allele1);
         Genotype gt = mgt.toGenotype(alleleList);
         MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
+        mvc.setReviewed(true);
 
         String dbPathString = IGV.getInstance().getSession().getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
         NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbPathString);
