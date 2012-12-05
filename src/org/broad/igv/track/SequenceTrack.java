@@ -76,7 +76,8 @@ public class SequenceTrack extends AbstractTrack {
         Font font = FontManager.getFont(fontSize);
         if (sequenceVisible) {
             graphics.setFont(font);
-            graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);
+            int textBaseline = trackRectangle.y + 12;
+            graphics.drawString(NAME, trackRectangle.x + 5, textBaseline);
 
             int rx = trackRectangle.x + trackRectangle.width - 20;
             arrowRect = new Rectangle(rx, trackRectangle.y + 2, 15, 10);
@@ -84,13 +85,10 @@ public class SequenceTrack extends AbstractTrack {
 
             //Show icon when translation non-standard
             if (AminoAcidManager.getInstance().getCodonTable().getId() != AminoAcidManager.STANDARD_TABLE_ID) {
-                Image img = getImageIcon();
-                if (img == null) {
-                    log.error("Could not load translation image icon");
-                } else {
-                    int transx = rx - img.getWidth(null) - 5;
-                    graphics.drawImage(img, transx, trackRectangle.y, null);
-                }
+                Font labFont = font.deriveFont(Font.BOLD);
+                graphics.setFont(labFont);
+                graphics.drawString("A", rx - 20, textBaseline);
+                graphics.setFont(font);
             }
 
         }
