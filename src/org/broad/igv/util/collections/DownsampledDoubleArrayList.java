@@ -1,11 +1,20 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.util.collections;
 
 import java.util.Random;
 
 /**
- *
  * Collection that holds up to maxSize doubles.  Additions > maxSize are uniformly downsampled.
- *
  *
  * @author jrobinso
  *         Date: 7/14/12
@@ -19,9 +28,13 @@ public class DownsampledDoubleArrayList {
     DoubleArrayList data;
     int downsampledCount = 0;
 
-    public DownsampledDoubleArrayList(int maxSize) {
+    /**
+     * @param initialSize Initial size of the array allocated to store results
+     * @param maxSize     Maximum number of doubles stored.
+     */
+    public DownsampledDoubleArrayList(int initialSize, int maxSize) {
         this.maxSize = maxSize;
-        data = new DoubleArrayList(maxSize);
+        data = new DoubleArrayList(initialSize);
     }
 
 

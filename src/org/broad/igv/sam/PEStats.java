@@ -13,7 +13,7 @@ package org.broad.igv.sam;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
-import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.DownsampledDoubleArrayList;
 
 /**
  * @author jrobinso
@@ -29,8 +29,8 @@ public class PEStats {
 
 
     //Maximum number of insertSizes to store
-    private static final int MAX = 10000;
-    private DoubleArrayList insertSizes;
+    private static final int MAX = 1000;
+    private DownsampledDoubleArrayList insertSizes;
     private int minThreshold = 10;
     private int maxThreshold = 5000;
 
@@ -56,15 +56,13 @@ public class PEStats {
 
     public PEStats(String library) {
         this.library = library;
-        this.insertSizes = new DoubleArrayList();
+        this.insertSizes = new DownsampledDoubleArrayList(100, MAX);
     }
 
 
     public void update(Alignment alignment) {
 
-        if (insertSizes.size() < MAX) {
-            insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
-        }
+        insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
 
         String po = alignment.getPairOrientation();
         if (po != null && po.length() == 4) {
