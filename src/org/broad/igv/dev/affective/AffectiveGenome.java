@@ -86,6 +86,11 @@ public class AffectiveGenome implements Genome {
         return "affective";
     }
 
+    @Override
+    public String getSpecies() {
+        return null;
+    }
+
     public String getHomeChromosome() {
         if (getChromosomeNames().size() == 1) {
             return getChromosomeNames().get(0);

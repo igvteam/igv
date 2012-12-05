@@ -1,0 +1,27 @@
+# Mappings of genome id prefix -> species
+hg	Human
+mm 	Mouse
+sacCer	Yeast
+panTro	Chimp
+gorGor  Gorilla
+ponAbe  Orangutan
+nomLeu  Gibbon
+rheMac  Rhesus
+papHam  Baboon
+saiBol  Squirrel monkey
+galGal  Chicken
+bosTau  Cow
+canFam  Dog
+cavPor  Guinea pig
+equCab  Horse
+monDom  Opossum
+susScr  Pig
+rn  Rat
+gasAcu  Stickleback
+xenTro  X. tropicalis
+danRer  Zebrafish
+strPur  S. purpuratus
+dm  D. melanogaster
+ce  C. elegans
+
+

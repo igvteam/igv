@@ -1259,25 +1259,4 @@ public class GenomeManager {
     }
 
 
-
-    // TODO A hack (obviously),  we need to record the UCSC species in the genome definitions (for those genomes)
-    static Map<String, String> ucscSpeciesMap = new Hashtable<String, String>();
-    public static String getUCSCSpecies(String id) {
-        if(ucscSpeciesMap.isEmpty()) {
-            ucscSpeciesMap.put("hg", "Muman");
-            ucscSpeciesMap.put("mm", "Mouse");
-            ucscSpeciesMap.put("canFam", "Dog");
-            ucscSpeciesMap.put("sacCer", "Yeast");
-        }
-
-        for(Map.Entry<String, String> entry : ucscSpeciesMap.entrySet()) {
-            if(id.startsWith(entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return null;
-    }
-
-
-
 }

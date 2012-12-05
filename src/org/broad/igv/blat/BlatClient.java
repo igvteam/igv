@@ -217,7 +217,7 @@ public class BlatClient {
 
                     // TODO -- something better than this!
                     String db = genome.getId();
-                    String species = GenomeManager.getUCSCSpecies(db);
+                    String species = genome.getSpecies();
                     if (species == null) species = genome.getDisplayName();
 
                     List<String[]> tokensList = blat(species, db, userSeq);
