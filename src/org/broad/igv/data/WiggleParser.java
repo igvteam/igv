@@ -73,8 +73,8 @@ public class WiggleParser {
     int estArraySize;
     Map<String, Integer> longestFeatureMap = new HashMap();
     // Used to estimate percentiles
-    DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(1000);
-
+    private static final int maxSamples = 1000;
+    DownsampledDoubleArrayList sampledData = new DownsampledDoubleArrayList(maxSamples, maxSamples);
 
 
     public WiggleParser(ResourceLocator locator) {
@@ -324,7 +324,7 @@ public class WiggleParser {
         dataset.sort(unsortedChromosomes);
         dataset.setLongestFeatureMap(longestFeatureMap);
 
-        double [] sd = sampledData.toArray();
+        double[] sd = sampledData.toArray();
         double percent10 = StatUtils.percentile(sd, 10.0);
         double percent90 = StatUtils.percentile(sd, 90.0);
         dataset.setPercent10((float) percent10);
@@ -385,8 +385,8 @@ public class WiggleParser {
             dataset.addDataChunk(convertedChr, startLocations, endLocations, data);
             //sz = startLocations.size();
 
-            float [] f = data.toArray();
-            for(int i=0; i<f.length; i++) {
+            float[] f = data.toArray();
+            for (int i = 0; i < f.length; i++) {
                 sampledData.add(f[i]);
             }
 
