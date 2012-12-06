@@ -617,7 +617,6 @@ public class HttpUtils {
      */
     public boolean useByteRange(URL url) {
 
-
         if(BYTE_RANGE_DISABLED) return false;
 
         // We can test byte-range success for hosts we can reach.
@@ -688,9 +687,11 @@ public class HttpUtils {
             testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
         } else if(host.startsWith("igvdata.broadinstitute.org")) {
             testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-        } else {
+        } else if (host.startsWith("igv.broadinstitute.org")) {
             testURL = "http://igv.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-
+        } else {
+            // be optimistic
+            return true;
         }
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
@@ -699,6 +700,7 @@ public class HttpUtils {
         str.seek(25350000);
         byte[] buffer = new byte[80000];
         str.read(buffer);
+        String result = new String(buffer);
         for (int i = 0; i < expectedBytes.length; i++) {
             if (buffer[i] != expectedBytes[i]) {
                 return false;
