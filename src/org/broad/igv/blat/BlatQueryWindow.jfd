@@ -6,34 +6,45 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
 			"$sizePolicy": 1
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
-				name: "dialogPane"
-				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
-					"vgap": 5
-				} ) {
-					name: "contentPanel"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+				"vgap": 5
+			} ) {
+				name: "contentPanel"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTable" ) {
+						name: "blatTable"
+						auxiliary() {
+							"JavaCodeGenerator.customCreateCode": "new JTable(model);"
+						}
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "headerPanel"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+						"alignment": 0
+					} ) {
+						name: "panel1"
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "North"
+					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "scrollPane1"
-						add( new FormComponent( "javax.swing.JTable" ) {
-							name: "blatTable"
-							auxiliary() {
-								"JavaCodeGenerator.customCreateCode": "new JTable(model);"
-							}
+						name: "scrollPane2"
+						"horizontalScrollBarPolicy": 31
+						add( new FormComponent( "javax.swing.JTextArea" ) {
+							name: "querySeqTextArea"
+							"lineWrap": true
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
-					"value": "Center"
+					"value": "North"
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "South"
-			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "headerLabel"
-			}, new FormLayoutConstraints( class java.lang.String ) {
-				"value": "North"
+				"value": "Center"
 			} )
 			menuBar: new FormContainer( "javax.swing.JMenuBar", new FormLayoutManager( class javax.swing.JMenuBar ) ) {
 				name: "menuBar"

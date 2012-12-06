@@ -24,11 +24,11 @@ import javax.swing.event.ListSelectionListener;
 /**
  * @author Jim Robinson
  */
-public class BlatResultsWindow extends JFrame {
+public class BlatQueryWindow extends JFrame {
 
     BlatTableModel model;
 
-    public BlatResultsWindow(String querySequence, java.util.List<PSLRecord> records) {
+    public BlatQueryWindow(String querySequence, java.util.List<PSLRecord> records) {
 
         model = new BlatTableModel(records);
         initComponents();
@@ -38,7 +38,7 @@ public class BlatResultsWindow extends JFrame {
         headerBuffer.append("&nbsp;&nbsp;BLAT result for query sequence: <br>&nbsp;&nbsp&nbsp;&nbsp;");
         headerBuffer.append(querySequence);
         headerBuffer.append("<br><br>&nbsp;&nbsp;<i>Click on a row to go to alignment");
-        headerLabel.setText(headerBuffer.toString());
+        querySeqTextArea.setText(headerBuffer.toString());
     }
 
     private void addSelectionListener() {
@@ -96,7 +96,10 @@ public class BlatResultsWindow extends JFrame {
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
         blatTable = new JTable(model);
-        headerLabel = new JLabel();
+        headerPanel = new JPanel();
+        panel1 = new JPanel();
+        scrollPane2 = new JScrollPane();
+        querySeqTextArea = new JTextArea();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -142,7 +145,28 @@ public class BlatResultsWindow extends JFrame {
                 scrollPane1.setViewportView(blatTable);
             }
             contentPanel.add(scrollPane1, BorderLayout.CENTER);
-            contentPanel.add(headerLabel, BorderLayout.NORTH);
+
+            //======== headerPanel ========
+            {
+                headerPanel.setLayout(new BorderLayout());
+
+                //======== panel1 ========
+                {
+                    panel1.setLayout(new FlowLayout(FlowLayout.LEFT));
+                }
+                headerPanel.add(panel1, BorderLayout.NORTH);
+
+                //======== scrollPane2 ========
+                {
+                    scrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+                    //---- querySeqTextArea ----
+                    querySeqTextArea.setLineWrap(true);
+                    scrollPane2.setViewportView(querySeqTextArea);
+                }
+                headerPanel.add(scrollPane2, BorderLayout.CENTER);
+            }
+            contentPanel.add(headerPanel, BorderLayout.NORTH);
         }
         contentPane.add(contentPanel, BorderLayout.CENTER);
         setSize(870, 570);
@@ -159,6 +183,9 @@ public class BlatResultsWindow extends JFrame {
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
     private JTable blatTable;
-    private JLabel headerLabel;
+    private JPanel headerPanel;
+    private JPanel panel1;
+    private JScrollPane scrollPane2;
+    private JTextArea querySeqTextArea;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

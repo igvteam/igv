@@ -1,13 +1,9 @@
 package org.broad.igv.blat;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -25,7 +21,6 @@ import java.util.List;
 import org.broad.igv.Globals;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
-import org.broad.tribble.Feature;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -240,7 +235,7 @@ public class BlatClient {
                         newTrack.setUseScore(true);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
-                        BlatResultsWindow win = new BlatResultsWindow(userSeq, features);
+                        BlatQueryWindow win = new BlatQueryWindow(userSeq, features);
                         win.setVisible(true);
 
 
