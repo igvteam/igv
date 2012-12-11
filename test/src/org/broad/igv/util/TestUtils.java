@@ -264,7 +264,8 @@ public class TestUtils {
      * @param predicate
      * @param nTrials
      * @param <T>
-     * @return
+     * @return The runtime, in nanoseconds, of each call of predicate with input of supplier.
+     *         Array is sorted ascending
      */
     public static <T> long[] timeMethod(Supplier<T> supplier, Predicate<T> predicate, int nTrials) {
         long total = 0;
@@ -318,7 +319,22 @@ public class TestUtils {
 
     public static long getBenchmarkTime() {
         if (benchmarkTime < 0) {
+            //Generate some numbers to average
+            Random r = new Random();
+            int numNumbers = 1000000;
+            long[] vals = new long[numNumbers];
+            for (int rr = 0; rr < numNumbers; rr++) {
+                vals[rr] = r.nextInt();
+            }
+            System.gc();
 
+            long startTime = System.nanoTime();
+
+            double avg = average(vals);
+
+            long endTime = System.nanoTime();
+            benchmarkTime = endTime - startTime;
+            System.out.println("Benchmark Time (ns): " + benchmarkTime);
         }
         return benchmarkTime;
     }

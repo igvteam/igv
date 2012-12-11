@@ -11,7 +11,6 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.broad.igv.Globals;
 import org.broad.igv.dev.plugin.Argument;
 import org.broad.igv.dev.plugin.LineFeatureDecoder;
 import org.broad.igv.dev.plugin.LineFeatureEncoder;
@@ -58,8 +57,18 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         return this.gffTags;
     }
 
+    @Override
     public BasicFeature decode(String[] tokens) {
-        int tokenCount = tokens.length;
+        return decode(tokens, tokens.length);
+    }
+
+    /**
+     * @param tokens
+     * @param tokenCount The number of tokens contained in {@code tokens}. We use
+     *                   a separate parameter so we can use an arraybuffer and only
+     * @return
+     */
+    public BasicFeature decode(String[] tokens, int tokenCount) {
 
         // The first 3 columns are non optional for BED.  We will relax this
         // and only require 2.
@@ -191,6 +200,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
         return feature;
     }
 
+    private String[] tokens = new String[50];
+
     @Override
     public BasicFeature decode(String nextLine) {
 
@@ -203,9 +214,10 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
             return null;
         }
 
-        String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
-
-        return decode(tokens);
+        //String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
+        //return decode(tokens);
+        int numTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+        return decode(tokens, numTokens);
     }
 
 
