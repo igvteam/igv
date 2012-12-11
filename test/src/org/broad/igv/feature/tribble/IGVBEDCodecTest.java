@@ -68,7 +68,7 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
             maxMultiplier = 10000;
         }
         //we are somewhat forgiving, for the sake of portability
-        assertTrue("Decoding median speed too slow", average < benchTime / maxMultiplier || average < 1e-6);
+        assertTrue("Decoding median speed too slow", average < benchTime / maxMultiplier || average < 2e-6);
     }
 
 
