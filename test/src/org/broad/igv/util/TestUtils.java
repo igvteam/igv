@@ -291,7 +291,13 @@ public class TestUtils {
         long maxTime = times[nTrials - 1];
         long median = times[times.length / 2];
         double average = (total * 1.0 / nTrials);
-        double stdev = stdev(times, (long) average);
+        double stdev = -1;
+        try {
+            stdev(times, (long) average);
+        } catch (ArithmeticException e) {
+            //pass
+        }
+
         System.out.println(String.format("Avg. time: %2.2e sec. Median: %2.2e sec", average * 1.0 / 1e9, median * 1.0 / 1e9));
         System.out.println(String.format("Best: %2.2e sec. Worst: %2.2e sec", minTime * 1.0 / 1e9, maxTime * 1.0 / 1e9));
         System.out.println(String.format("Standard deviation: %2.2e sec", stdev / 1e9));

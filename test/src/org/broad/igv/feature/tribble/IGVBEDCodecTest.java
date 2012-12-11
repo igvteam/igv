@@ -17,8 +17,16 @@ import org.apache.commons.lang.StringUtils;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
+
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -27,6 +35,9 @@ import static org.junit.Assert.assertTrue;
  * Date: 2012-Dec-11
  */
 public class IGVBEDCodecTest extends AbstractHeadlessTest {
+
+    @Rule
+    public TestRule testTimeout = new Timeout((int) 30e5);
 
 
     @Test
@@ -56,6 +67,29 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
             maxMultiplier = 10000;
         }
         assertTrue("Decoding median speed too slow", median < benchTime / maxMultiplier);
+    }
+
+
+    public void timeLoadBigFile() throws Exception {
+        final String path = "/Users/jacob/Data/GSM288345_Nanog.bed";
+        Supplier<String> supplier = new Supplier<String>() {
+            @Override
+            public String get() {
+                return path;
+            }
+        };
+
+        final TrackLoader loader = new TrackLoader();
+
+        Predicate<String> loadFile = new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+                List<Track> newTrack = loader.load(new ResourceLocator(path), genome);
+                return true;
+            }
+        };
+
+        TestUtils.timeMethod(supplier, loadFile, 1);
     }
 
     private class BEDStringSupplier implements Supplier<String> {
