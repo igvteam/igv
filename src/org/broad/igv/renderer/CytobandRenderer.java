@@ -58,6 +58,7 @@ public class CytobandRenderer {
                 String locus = frame.getChrName();
                 if (locus != null) {
                     Graphics g2 = g2D.create();
+                    ((Graphics2D) g2).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                     //Color c = ChromosomeColors.getColor(locus);
                     //g2.setColor(c);

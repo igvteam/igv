@@ -88,6 +88,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
+            graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             // Divide the remaining space to get column widths
             int columnWidth = getAttributeColumnWidth();

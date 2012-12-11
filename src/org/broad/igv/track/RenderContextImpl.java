@@ -43,6 +43,8 @@ public class RenderContextImpl implements RenderContext {
 
     public RenderContextImpl(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.graphics = graphics;
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         this.panel = panel;
         this.graphicCacheByColor = new HashMap();
         this.referenceFrame = referenceFrame;
@@ -56,6 +58,8 @@ public class RenderContextImpl implements RenderContext {
             g = (Graphics2D) graphics.create();
             graphicCacheByColor.put(color, g);
             g.setColor(color);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         }
         return g;
     }

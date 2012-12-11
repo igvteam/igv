@@ -109,9 +109,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         if (!groups.isEmpty()) {
             final Graphics2D graphics2D = (Graphics2D) g.create();
+            graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics2D.setColor(Color.BLACK);
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
+            greyGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             greyGraphics.setColor(UIConstants.LIGHT_GREY);
 
             int regionY = 0;
