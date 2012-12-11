@@ -310,8 +310,8 @@ public class TestUtils {
         long sum = 0;
         double n = (double) vals.length;
         for (Long i : vals)
-            sum += ((double) i) / n;
-        return sum;
+            sum += ((double) i);
+        return sum / n;
     }
 
     public static double stdev(long[] vals, long average) {

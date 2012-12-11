@@ -42,6 +42,8 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
 
     @Test
     public void decodeSpeedTest() throws Exception {
+        long benchTime = TestUtils.getBenchmarkTime();
+
         int nTrials = 5000000;
         BEDStringSupplier supplier = new BEDStringSupplier(nTrials);
         final IGVBEDCodec codec = new IGVBEDCodec();
@@ -58,15 +60,15 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         String jVersion = System.getProperty(Globals.JAVA_VERSION_STRING);
         System.out.println("\nIGVBEDCodec.decode. java version " + jVersion);
         long[] times = TestUtils.timeMethod(supplier, decodePredicate, nTrials);
-        long median = times[times.length / 2];
-
-        long benchTime = TestUtils.getBenchmarkTime();
+        //Get average
+        double average = TestUtils.average(times);
 
         int maxMultiplier = 200000;
         if (jVersion.contains("1.7")) {
             maxMultiplier = 10000;
         }
-        assertTrue("Decoding median speed too slow", median < benchTime / maxMultiplier);
+        //we are somewhat forgiving, for the sake of portability
+        assertTrue("Decoding median speed too slow", average < benchTime / maxMultiplier || average < 1e-6);
     }
 
 
