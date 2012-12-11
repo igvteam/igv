@@ -668,15 +668,15 @@ public class HttpUtils {
         log.info("Testing range-byte request on host: " + host);
 
         String testURL;
-        if (host.endsWith("www.broadinstitute.org")) {
-            testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
-        } else if(host.startsWith("igvdata.broadinstitute.org")) {
+        if (host.startsWith("igvdata.broadinstitute.org")) {
+            // Amazon cloud front
             testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
         } else if (host.startsWith("igv.broadinstitute.org")) {
+            // Amazon S3
             testURL = "http://igv.broadinstitute.org/genomes/seq/hg19/chr12.txt";
         } else {
-            // be optimistic
-            return true;
+            // All others
+            testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
         }
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
@@ -693,6 +693,7 @@ public class HttpUtils {
         }
         return true;
     }
+
 
 
 
