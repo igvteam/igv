@@ -205,7 +205,8 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
     @Override
     public BasicFeature decode(String nextLine) {
 
-        if (nextLine.trim().length() == 0) {
+        String trimLine = nextLine.trim();
+        if (trimLine.length() == 0) {
             return null;
         }
 
@@ -216,7 +217,7 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> implements LineFeatureE
 
         //String[] tokens = Globals.singleTabMultiSpacePattern.split(nextLine);
         //return decode(tokens);
-        int numTokens = ParsingUtils.splitWhitespace(nextLine, tokens);
+        int numTokens = ParsingUtils.splitWhitespace(trimLine, tokens);
         return decode(tokens, numTokens);
     }
 
