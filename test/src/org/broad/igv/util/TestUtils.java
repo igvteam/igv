@@ -267,9 +267,9 @@ public class TestUtils {
      * @return
      */
     public static <T> long[] timeMethod(Supplier<T> supplier, Predicate<T> predicate, int nTrials) {
-        long average = 0;
+        long total = 0;
         long[] times = new long[nTrials];
-        Runtime.getRuntime().gc();
+        System.gc();
 
         for (int tri = 0; tri < nTrials; tri++) {
 
@@ -282,20 +282,19 @@ public class TestUtils {
             long endTime = System.nanoTime();
             long elapsed = endTime - startTime;
             times[tri] = elapsed;
-            average += elapsed / nTrials;
-//            if (tri % (nTrials / 10) == 0) {
-//                System.out.println("Finished trial " + tri);
-//            }
+            total += elapsed;
         }
 
         Arrays.sort(times);
         long minTime = times[0];
         long maxTime = times[nTrials - 1];
-        double stdev = stdev(times, average);
-        System.out.println(String.format("Average time: %2.2e seconds", average * 1.0 / 1e9));
+        long median = times[times.length / 2];
+        double average = (total * 1.0 / nTrials);
+        double stdev = stdev(times, (long) average);
+        System.out.println(String.format("Avg. time: %2.2e sec. Median: %2.2e sec", average * 1.0 / 1e9, median * 1.0 / 1e9));
         System.out.println(String.format("Best: %2.2e sec. Worst: %2.2e sec", minTime * 1.0 / 1e9, maxTime * 1.0 / 1e9));
         System.out.println(String.format("Standard deviation: %2.2e sec", stdev / 1e9));
-        System.out.println(String.format("Total time: %2.2e sec", average * nTrials * 1.0 / 1e9));
+        System.out.println(String.format("Total time: %2.2e sec", total * 1.0 / 1e9));
 
         return times;
     }
@@ -304,7 +303,7 @@ public class TestUtils {
         long sum = 0;
         double n = (double) vals.length;
         for (Long i : vals)
-            sum += i / n;
+            sum += ((double) i) / n;
         return sum;
     }
 
@@ -314,5 +313,15 @@ public class TestUtils {
             sum += Math.pow((i - average), 2);
         return Math.sqrt(sum / (vals.length - 1)); // sample
     }
+
+    private static long benchmarkTime = -1;
+
+    public static long getBenchmarkTime() {
+        if (benchmarkTime < 0) {
+
+        }
+        return benchmarkTime;
+    }
+
 
 }
