@@ -244,6 +244,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         boolean drawBars = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_REGION_BARS);
         Graphics2D graphics2D = (Graphics2D) g.create();
+        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         try {
 
             for (RegionOfInterest regionOfInterest : regions) {

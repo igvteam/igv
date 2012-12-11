@@ -45,7 +45,7 @@ public class LohLegendPanel extends HeatmapLegendPanel {
 
         try {
             g2D = (Graphics2D) g.create();
-
+            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2D.setFont(FontManager.getFont(10));
             FontMetrics fm = g2D.getFontMetrics();
             int dh = fm.getHeight() / 2 + 3;

@@ -67,6 +67,7 @@ public class DataPanelPainter {
 
         try {
             graphics2D = (Graphics2D) context.getGraphics().create();
+            graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics2D.setBackground(background);
             graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
             graphics2D.setColor(Color.BLACK);
@@ -114,6 +115,8 @@ public class DataPanelPainter {
                         Rectangle rect = new Rectangle(pStart, visibleRect.y, pEnd - pStart, visibleRect.height);
 
                         Graphics2D exomeGraphics = (Graphics2D) context.getGraphics().create();
+                        exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                         //Shape clip = exomeGraphics.getClip();
 
 //                         Color c = ColorUtilities.randomColor(idx);

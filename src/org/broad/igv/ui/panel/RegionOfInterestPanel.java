@@ -174,6 +174,7 @@ public class RegionOfInterestPanel extends JPanel {
                 });
             }
         });
+        popupMenu.add(item);
 
 
         item = new JMenuItem("Blat sequence");
