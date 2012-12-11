@@ -166,4 +166,5 @@ public class SamAlignmentTest extends AbstractHeadlessTest {
         Assert.assertNull(SamAlignment.decodeReduceCounts(record));
     }
 
+
 }

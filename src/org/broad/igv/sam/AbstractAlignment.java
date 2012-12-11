@@ -340,5 +340,10 @@ public abstract class AbstractAlignment implements Alignment {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
+    @Override
+    public void finish() {
+        //default operation is nothing
+    }
+
 
 }
