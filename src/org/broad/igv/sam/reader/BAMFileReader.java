@@ -23,6 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.File;
@@ -44,8 +45,8 @@ public class BAMFileReader implements AlignmentReader {
         try {
             File indexFile = findIndexFile(bamFile);
             reader = new SAMFileReader(bamFile, indexFile);
-            reader.enableFileSource(true);
             reader.setValidationStringency(ValidationStringency.SILENT);
+            reader.enableFileSource(SamAlignment.LAZY_LOAD);
             loadHeader();
         } catch (Exception e) {
             MessageUtils.showMessage("Error loading SAM header: " + e.getMessage());

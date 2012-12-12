@@ -109,11 +109,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * Whether to load read sequence / record / other data lazily.
      * Eventually we will likely remove this flag, here for easy testing
      */
-    static boolean LAZY_LOAD = Boolean.parseBoolean(System.getProperty("LAZY_LOAD", "false"));
-
-    static {
-        System.out.println("lazy load: " + LAZY_LOAD);
-    }
+    public static final boolean LAZY_LOAD = Boolean.parseBoolean(System.getProperty("LAZY_LOAD", "false"));
 
     // Default constructor to support unit tests
     //SamAlignment() {}
@@ -768,7 +764,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public void finish() {
         super.finish();
         //To save memory
-        if (LAZY_LOAD) {
+        if (LAZY_LOAD && this.getFileSource() != null) {
             this.record = null;
             this.readSequence = null;
         }
