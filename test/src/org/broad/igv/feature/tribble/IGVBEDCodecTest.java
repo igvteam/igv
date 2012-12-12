@@ -21,10 +21,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.List;
 
@@ -35,10 +32,6 @@ import static org.junit.Assert.assertTrue;
  * Date: 2012-Dec-11
  */
 public class IGVBEDCodecTest extends AbstractHeadlessTest {
-
-    @Rule
-    public TestRule testTimeout = new Timeout((int) 30e5);
-
 
     @Test
     public void decodeSpeedTest() throws Exception {
@@ -74,7 +67,8 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
 
 
     public void timeLoadBigFile() throws Exception {
-        final String path = "/Users/jacob/Data/GSM288345_Nanog.bed";
+        //File not in repo
+        final String path = "GSM288345_Nanog.bed";
         Supplier<String> supplier = new Supplier<String>() {
             @Override
             public String get() {
