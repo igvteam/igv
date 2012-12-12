@@ -284,6 +284,7 @@ public class KMPlotFrame extends JFrame {
 
                         //---- survivalColumnControl ----
                         survivalColumnControl.addActionListener(new ActionListener() {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 survivalColumnControlActionPerformed(e);
                             }
@@ -293,7 +294,7 @@ public class KMPlotFrame extends JFrame {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel2.getComponentCount(); i++) {
+                            for(int i = 0; i < panel2.getComponentCount(); i++) {
                                 Rectangle bounds = panel2.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -313,12 +314,13 @@ public class KMPlotFrame extends JFrame {
                         panel3.setLayout(null);
 
                         //---- label3 ----
-                        label3.setText("Censure column");
+                        label3.setText("Censored column");
                         panel3.add(label3);
                         label3.setBounds(new Rectangle(new Point(5, 10), label3.getPreferredSize()));
 
                         //---- censurColumnControl ----
                         censurColumnControl.addActionListener(new ActionListener() {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 survivalColumnControlActionPerformed(e);
                             }
@@ -328,7 +330,7 @@ public class KMPlotFrame extends JFrame {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel3.getComponentCount(); i++) {
+                            for(int i = 0; i < panel3.getComponentCount(); i++) {
                                 Rectangle bounds = panel3.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -354,6 +356,7 @@ public class KMPlotFrame extends JFrame {
 
                         //---- groupByControl ----
                         groupByControl.addActionListener(new ActionListener() {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 survivalColumnControlActionPerformed(e);
                             }
@@ -363,7 +366,7 @@ public class KMPlotFrame extends JFrame {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel4.getComponentCount(); i++) {
+                            for(int i = 0; i < panel4.getComponentCount(); i++) {
                                 Rectangle bounds = panel4.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
