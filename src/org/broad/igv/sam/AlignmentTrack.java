@@ -1888,19 +1888,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void addBlatItem(final TrackClickEvent te) {
             // Change track height by attribute
             final JMenuItem item = new JMenuItem("Blat read sequence");
+            MouseEvent e = te.getMouseEvent();
+            final ReferenceFrame frame = te.getFrame();
+            final double location = frame.getChromosomePosition(e.getX());
+            final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    MouseEvent e = te.getMouseEvent();
-
-                    final ReferenceFrame frame = te.getFrame();
                     if (frame == null) {
                         item.setEnabled(false);
                     } else {
-                        double location = frame.getChromosomePosition(e.getX());
-                        final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
-
-                        String sequence;
+                         String sequence;
                         if (alignment != null) {
                             sequence = alignment.getReadSequence();
                         } else {
@@ -1913,6 +1911,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
                 }
             });
+
+            String seq = alignment.getReadSequence();
+            item.setEnabled(seq != null && seq.length() > 10);
             add(item);
         }
 
