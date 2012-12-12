@@ -101,7 +101,7 @@ public class RunPlugin extends JDialog {
         }
         this.validate();
 
-        outputName.setText(toolName + " " + cmdName + "addedtexttomakeitlong");
+        outputName.setText(toolName + " " + cmdName);
     }
 
     private Track genNewTrack() {

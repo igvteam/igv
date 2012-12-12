@@ -117,7 +117,7 @@ public final class BEDToolsDecoder extends AsciiDecoder<BasicFeature> implements
         numCols = new int[attributes.size()];
         int ind = 0;
         for (Map<String, Object> attributeMap : attributes) {
-            int curOutCols = (Integer) attributeMap.get("numCols");
+            int curOutCols = (Integer) attributeMap.get(AsciiEncoder.NUM_COLS_ATTR);
             numCols[ind++] = curOutCols;
         }
     }
