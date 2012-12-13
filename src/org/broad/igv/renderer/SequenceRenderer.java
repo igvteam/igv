@@ -47,8 +47,9 @@ public class SequenceRenderer {
 
 
     static {
-        nucleotideColors.put('A', new Color(0, 150, 10));
-        nucleotideColors.put('a', new Color(0, 150, 10));
+        Color AColor = new Color(0, 150, 0);
+        nucleotideColors.put('A', AColor);
+        nucleotideColors.put('a', AColor);
         nucleotideColors.put('C', Color.BLUE);
         nucleotideColors.put('c', Color.BLUE);
         nucleotideColors.put('T', Color.RED);
