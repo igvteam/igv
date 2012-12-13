@@ -315,13 +315,9 @@ public class TrackPanel extends IGVPanel {
                     float s1 = group1.getRegionScore(chr, start, end, zoom, type, frameName);
                     float s2 = group2.getRegionScore(chr, start, end, zoom, type, frameName);
 
-                    if (s1 < s2) {
-                        return 1;
-                    } else if (s1 > s2) {
-                        return -1;
-                    } else {
-                        return 0;
-                    }
+                    // Use the Float comparator as it handles NaN.  Need to flip the order to make it descending
+                    return Float.compare(s2, s1);
+
 
                 }
             };

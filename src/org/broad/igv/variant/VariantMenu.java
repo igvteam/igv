@@ -436,15 +436,9 @@ public class VariantMenu extends IGVPopupMenu {
             double readDepth1 = variant.getGenotype(s1).getAttributeAsDouble("DP");
             double readDepth2 = variant.getGenotype(s2).getAttributeAsDouble("DP");
 
-            double depth1 = Double.isNaN(readDepth1) ? -1 : readDepth1;
-            double depth2 = Double.isNaN(readDepth2) ? -1 : readDepth2;
-            if (depth2 == depth1) {
-                return 0;
-            } else if (depth2 < depth1) {
-                return depthSortingDirection ? -1 : 1;
-            } else {
-                return depthSortingDirection ? 1 : 1;
-            }
+            int sign = depthSortingDirection ? -1 : 1;
+            return sign * Double.compare(readDepth1, readDepth2);
+
         }
     }
 
@@ -461,13 +455,9 @@ public class VariantMenu extends IGVPopupMenu {
             double qual1 = variant.getGenotype(s1).getPhredScaledQual();
             double qual2 = variant.getGenotype(s2).getPhredScaledQual();
 
-            if (qual2 == qual1) {
-                return 0;
-            } else if (qual2 < qual1) {
-                return qualitySortingDirection ? -1 : 1;
-            } else {
-                return qualitySortingDirection ? 1 : 1;
-            }
+            int sign = qualitySortingDirection ? -1 : 1;
+            return sign * Double.compare(qual1, qual2);
+
         }
     }
 

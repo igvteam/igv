@@ -237,8 +237,7 @@ public class TrackGroup {
                                 } catch (NumberFormatException e) {
                                     d2 = Double.MIN_VALUE;
                                 }
-                                if (d2 > d1) c = 1;
-                                else if (d2 < d1) c = -1;
+                                c = Double.compare(d1, d2);
                             } else {
                                 c = value1.compareTo(value2);
                             }
