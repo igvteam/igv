@@ -733,7 +733,13 @@ public class DataPanel extends JComponent implements Paintable {
                 //Mouse move up is negative, that should zoom in
                 int zoomIncr = -wheelRotation / 2;
                 getFrame().incrementZoom(zoomIncr);
-            } else {
+            }
+            //TODO Use this to pan. Seems weird, but it's how side scrolling on my mouse gets interpreted,
+            //so could be handy for people with 2D wheels
+//            else if(e.isShiftDown()){
+//                System.out.println(e);
+//            }
+            else {
                 //Default action if no modifier
                 e.getComponent().getParent().dispatchEvent(e);
             }
