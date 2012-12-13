@@ -247,6 +247,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         int col = 3;
         try {
             start = Integer.parseInt(tokens[col]) - 1;
+            if(start < 0) throw new ParserException("Start index must be 1 or larger; GFF is 1-based", -1, line);
             col++;
             end = Integer.parseInt(tokens[col]);
         } catch (NumberFormatException ne) {
