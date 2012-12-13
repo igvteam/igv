@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -508,6 +509,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         addMouseMotionListener(mouseAdapter);
         addMouseListener(mouseAdapter);
+        addMouseWheelListener(mouseAdapter);
     }
 
 
@@ -715,6 +717,25 @@ public class DataPanel extends JComponent implements Paintable {
                     }
 
                 }
+            }
+        }
+
+        /**
+         * Zoom in/out when modifier + scroll wheel used
+         *
+         * @param e
+         */
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e) {
+            //we use either ctrl or meta to deal with PCs and Macs
+            if (e.isControlDown() || e.isMetaDown()) {
+                int wheelRotation = e.getWheelRotation();
+                //Mouse move up is negative, that should zoom in
+                int zoomIncr = -wheelRotation / 2;
+                getFrame().incrementZoom(zoomIncr);
+            } else {
+                //Default action if no modifier
+                e.getComponent().getParent().dispatchEvent(e);
             }
         }
     }
