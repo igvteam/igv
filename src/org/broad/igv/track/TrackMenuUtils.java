@@ -32,7 +32,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
-import org.broad.igv.util.ucsc.BlatClient;
+import org.broad.igv.blat.BlatClient;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;

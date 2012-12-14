@@ -17,6 +17,8 @@ public interface Genome {
 
     String getId();
 
+    String getSpecies();
+
     String getHomeChromosome();
 
     Chromosome getChromosome(String chrName);

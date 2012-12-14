@@ -12,12 +12,9 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMReadGroupRecord;
-import net.sf.samtools.SAMRecord;
+import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -72,6 +69,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private String library;
     private String sample;
 
+    /**
+     * Pointer to the reader and location in the file
+     * where this file was derived from
+     */
+    private SAMFileSource fileSource;
+
     private boolean firstInPair;
     private Strand firstOfPairStrand;
     private Strand secondOfPairStrand;
@@ -102,6 +105,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public static final String REDUCE_READS_TAG = "RR";
 
+    /**
+     * Whether to load read sequence / record / other data lazily.
+     * Eventually we will likely remove this flag, here for easy testing
+     */
+    public static final boolean LAZY_LOAD = Boolean.parseBoolean(System.getProperty("LAZY_LOAD", "false"));
+
     // Default constructor to support unit tests
     //SamAlignment() {}
 
@@ -111,6 +120,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         String keySequence = null;
 
         this.record = record;
+        this.fileSource = record.getFileSource();
 
         String refName = record.getReferenceName();
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -171,6 +181,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     private void setMatePair(Genome genome) {
+        SAMRecord record = getRecord();
         if (record.getReadPairedFlag()) {
             String mateReferenceName = record.getMateReferenceName();
             String mateChr = genome == null ? mateReferenceName : genome.getChromosomeAlias(mateReferenceName);
@@ -186,6 +197,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     private void setPairOrientation() {
+        SAMRecord record = getRecord();
         if (record.getReadPairedFlag() &&
                 !readUnmappedFlag &&
                 !record.getMateUnmappedFlag() &&
@@ -215,19 +227,19 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             }
 
             //if (isize > estReadLen) {
-                if (isize > 0) {
-                    tmp[0] = s1;
-                    tmp[1] = o1;
-                    tmp[2] = s2;
-                    tmp[3] = o2;
+            if (isize > 0) {
+                tmp[0] = s1;
+                tmp[1] = o1;
+                tmp[2] = s2;
+                tmp[3] = o2;
 
-                } else {
-                    tmp[2] = s1;
-                    tmp[3] = o1;
-                    tmp[0] = s2;
-                    tmp[1] = o2;
-                }
-           // }
+            } else {
+                tmp[2] = s1;
+                tmp[3] = o1;
+                tmp[0] = s2;
+                tmp[1] = o2;
+            }
+            // }
             pairOrientation = new String(tmp);
         }
     }
@@ -517,6 +529,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return !readUnmappedFlag;
     }
 
+    @Override
     public int getReadLength() {
         return this.readLength;
     }
@@ -538,16 +551,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     /**
-     * Note: This method is required by the interface, but never used.
-     *
-     * @return
-     */
-    public LocusScore copy() {
-        return new SamAlignment(record);
-    }
-
-
-    /**
      * @return the unclippedStart
      */
     public int getAlignmentStart() {
@@ -558,8 +561,17 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return cigarString;
     }
 
-    public String getReadSequence() {
+    //For testing
+    String getReadSequenceField() {
         return readSequence;
+    }
+
+    public String getReadSequence() {
+        String output = readSequence;
+        if (output == null && LAZY_LOAD) {
+            output = getRecord().getReadString();
+        }
+        return output;
     }
 
     /**
@@ -597,13 +609,37 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return library;
     }
 
+    private SAMFileSource getFileSource() {
+        return fileSource;
+    }
+
+    /**
+     * Retrieves the SAMRecord corresponding to this alignment.
+     * May be loaded from the file if not in memory
+     *
+     * @return The SAMRecord which created this SamAlignment
+     */
     public SAMRecord getRecord() {
-        return this.record;
+        SAMRecord record = this.record;
+        if (record == null && LAZY_LOAD) {
+            SAMFileSource source = this.getFileSource();
+            SAMFileSpan span = source.getFilePointer();
+            SAMRecordIterator iter = source.getReader().iterator(span);
+
+            //In theory there should only be one
+            record = iter.next();
+
+            if (iter.hasNext()) {
+                log.error("Found multiple records during query of file span:" + span);
+            }
+            iter.close();
+        }
+        return record;
     }
 
     @Override
     public String toString() {
-        return record.getSAMString();
+        return getRecord().getSAMString();
     }
 
     @Override
@@ -613,7 +649,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public Object getAttribute(String key) {
         // SAM alignment tag keys must be of length 2
-        return key.length() == 2 ? record.getAttribute(key) :
+        return key.length() == 2 ? getRecord().getAttribute(key) :
                 (key.equals("TEMPLATE_ORIENTATION") ? pairOrientation : null);
     }
 
@@ -635,7 +671,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     String getValueStringImpl(double position, boolean truncate) {
 
         StringBuffer buf = new StringBuffer(super.getValueString(position, null));
-
+        SAMRecord record = getRecord();
         if (isPaired()) {
             boolean sectionBreak = false;
             if (record.getFirstOfPairFlag()) {
@@ -724,8 +760,18 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return pairOrientation;
     }
 
+    @Override
+    public void finish() {
+        super.finish();
+        //To save memory
+        if (LAZY_LOAD && this.getFileSource() != null) {
+            this.record = null;
+            this.readSequence = null;
+        }
+    }
+
     public boolean isVendorFailedRead() {
-        return record.getReadFailsVendorQualityCheckFlag();
+        return getRecord().getReadFailsVendorQualityCheckFlag();
     }
 
     public Color getDefaultColor() {
@@ -775,7 +821,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      *         or non-numeric
      */
     public int getFlowSignalsStart() {
-        Object attribute = record.getAttribute(FLOW_SIGNAL_TAG); // NB: from a TMAP optional tag
+        Object attribute = getRecord().getAttribute(FLOW_SIGNAL_TAG); // NB: from a TMAP optional tag
         int toRet = -1;
         if (attribute != null && attribute instanceof Integer) {
             toRet = (Integer) attribute;
@@ -806,6 +852,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
 
         // get the # of bases that the first base in the read overlaps with the last base(s) in the key
+        SAMRecord record = getRecord();
         if (this.readNegativeStrandFlag) {
             firstBase = (char) NT2COMP[record.getReadBases()[record.getReadLength() - 1]];
         } else {

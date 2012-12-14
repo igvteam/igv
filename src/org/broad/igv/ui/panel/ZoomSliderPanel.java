@@ -96,6 +96,7 @@ public class ZoomSliderPanel extends JPanel {
     protected void paintHorizontal(Graphics g) {
 
         Graphics2D transGraphics = (Graphics2D) g.create();
+        transGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         transGraphics.setColor(TRANSPARENT_GRAY);
 
         int buttonWidth = zoomPlus.getWidth(null);

@@ -361,6 +361,8 @@ public class AlignmentTileLoader {
             } else {
                 alignments.add(alignment);
             }
+
+            alignment.finish();
         }
 
         private void emptyBucket() {

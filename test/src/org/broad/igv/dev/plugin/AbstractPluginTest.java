@@ -12,6 +12,7 @@
 package org.broad.igv.dev.plugin;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -35,9 +36,25 @@ public class AbstractPluginTest extends AbstractHeadlessTest {
         AbstractHeadlessTest.setUpClass();
 
         reader = PluginSpecReader.create(pluginPath);
+        initTool(reader);
+    }
+
+    /**
+     * Sets static variables, and checks that tool exists
+     * on this machine
+     *
+     * @param reader
+     */
+    public static void initTool(PluginSpecReader reader) {
         tool = reader.getTools().get(0);
-        toolPath = tool.getAttribute("path");
+        toolPath = reader.getToolPath(tool);
         haveTool = PluginSpecReader.isToolPathValid(toolPath);
         Assume.assumeTrue(haveTool);
+    }
+
+    public static PluginSpecReader getCatReader() {
+        String path = TestUtils.DATA_DIR + "plugin/cat_plugin.xml";
+        PluginSpecReader reader = PluginSpecReader.create(path);
+        return reader;
     }
 }

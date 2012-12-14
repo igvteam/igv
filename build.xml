@@ -105,14 +105,15 @@
     to include the main classes in the JAR and so it's easier to run
     tests later. -->
     <target name="compile" depends="init" description="Compile main source files to temp directory">
-        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" encoding="${java.encoding}">
+        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" encoding="${java.encoding}"
+               target="${javac.target}" source="${javac.target}">
             <classpath refid="@jars"/>
         </javac>
     </target>
 
     <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
-               encoding="${java.encoding}">
+               target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
             <classpath refid="test.classpath"/>
         </javac>
     </target>

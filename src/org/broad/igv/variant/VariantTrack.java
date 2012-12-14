@@ -1108,7 +1108,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         if (genotype != null) {
-            toolTip = toolTip.append(getSampleInfo(genotype) + "<br>");
+            String sInfoStr = getSampleInfo(genotype);
+            if (sInfoStr != null) {
+                toolTip = toolTip.append(sInfoStr + "<br>");
+            }
         }
         return toolTip.toString();
     }

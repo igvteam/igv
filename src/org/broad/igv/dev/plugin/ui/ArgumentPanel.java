@@ -67,28 +67,9 @@ public class ArgumentPanel extends JPanel {
 
     }
 
-    /**
-     * I really have no idea why this is necessary,
-     * but it seems to be to keep the label from growing too
-     * big.
-     */
-    void fixCmdArgSize() {
-        int width = (int) Math.min(cmdArg.getMaximumSize().getWidth(), cmdArg.getWidth());
-        int height = (int) Math.min(cmdArg.getMaximumSize().getHeight(), cmdArg.getHeight());
-        Dimension newSize = new Dimension(width, height);
-        cmdArg.setPreferredSize(newSize);
-        cmdArg.setSize(newSize);
-    }
-
-    protected void setCmdArgText(String text) {
-        cmdArg.setText(text);
-        cmdArg.setToolTipText(text);
-    }
-
     protected final void initCommon(Argument argument) {
         if (argument != null) {
             argName.setText(argument.getName() + ":");
-            setCmdArgText(argument.getCmdArg());
         }
     }
 
@@ -96,7 +77,6 @@ public class ArgumentPanel extends JPanel {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         argName = new JLabel();
-        cmdArg = new JLabel();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -106,19 +86,12 @@ public class ArgumentPanel extends JPanel {
         argName.setRequestFocusEnabled(false);
         argName.setMinimumSize(new Dimension(80, 16));
         add(argName);
-
-        //---- cmdArg ----
-        cmdArg.setText("text");
-        cmdArg.setMaximumSize(new Dimension(30, 16));
-        cmdArg.setRequestFocusEnabled(false);
-        add(cmdArg);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JLabel argName;
-    private JLabel cmdArg;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 }

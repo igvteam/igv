@@ -50,17 +50,19 @@ public class RunPlugin extends JDialog {
         super(owner);
         initComponents();
 
-        final String toolPath = tool.getAttribute("path");
+        final String toolPath = pluginSpecReader.getToolPath(tool);
+        final String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
         final String cmdName = command.getAttribute("name");
         final String cmdVal = command.getAttribute("cmd");
 
         specPath = pluginSpecReader.getSpecPath();
         argumentList = pluginSpecReader.getArguments(tool, command);
         parsingAttrs = pluginSpecReader.getParsingAttributes(tool, command);
-        initArgumentComponents(toolPath, cmdName, cmdVal);
+        initArgumentComponents(toolName, toolPath, cmdName, cmdVal);
     }
 
-    private void initArgumentComponents(String toolPath, String cmdName, String cmdVal) {
+    private void initArgumentComponents(String toolName, String toolPath, String cmdName, String cmdVal) {
+
 
         if (toolPath.length() > 0) {
             this.cmd.add(toolPath);
@@ -70,7 +72,12 @@ public class RunPlugin extends JDialog {
         }
         argumentComponents = new LinkedHashMap<Argument, ArgumentPanel>(this.argumentList.size());
 
-        this.cmdName.setText(cmdName);
+        String titleText = toolName;
+        if (cmdName.length() > 0) {
+            titleText += ": " + cmdName;
+        }
+        setTitle(titleText);
+
         Dimension minSize = getMinimumSize();
         for (Argument argument : argumentList) {
             ArgumentPanel panel = ArgumentPanel.create(argument);
@@ -82,13 +89,19 @@ public class RunPlugin extends JDialog {
 
         this.validate();
 
+        double minWidth = minSize.getWidth();
         for (ArgumentPanel panel : argumentComponents.values()) {
-            minSize.setSize(minSize.getWidth(), minSize.getHeight() + panel.getHeight());
-            this.setMinimumSize(minSize);
-            panel.fixCmdArgSize();
-        }
 
-        outputName.setText(cmdName + " result");
+            //If track names are long, feature track combo box can get big
+            //TODO Multi-intersect box is in a scrollpanel so it doesn't enlarge quite the same. Maybe we want that, maybe not
+            minWidth = Math.max(minWidth, panel.getMinimumSize().getWidth());
+
+            minSize.setSize(minWidth, minSize.getHeight() + panel.getHeight());
+            this.setMinimumSize(minSize);
+        }
+        this.validate();
+
+        outputName.setText(toolName + " " + cmdName);
     }
 
     private Track genNewTrack() {
@@ -111,7 +124,7 @@ public class RunPlugin extends JDialog {
         setVisible(false);
     }
 
-    private void okButtonActionPerformed(ActionEvent e) {
+    void okButtonActionPerformed(ActionEvent e) {
         Track newTrack = genNewTrack();
         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
@@ -125,7 +138,6 @@ public class RunPlugin extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        cmdName = new JLabel();
         panel1 = new JPanel();
         label1 = new JLabel();
         outputName = new JTextField();
@@ -149,15 +161,14 @@ public class RunPlugin extends JDialog {
             {
                 contentPanel.setMaximumSize(new Dimension(2000000, 16));
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-
-                //---- cmdName ----
-                cmdName.setText("text");
-                contentPanel.add(cmdName);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
 
             //======== panel1 ========
             {
+                panel1.setMaximumSize(new Dimension(2000, 28));
+                panel1.setMinimumSize(new Dimension(200, 28));
+                panel1.setPreferredSize(new Dimension(200, 28));
                 panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
                 //---- label1 ----
@@ -214,7 +225,6 @@ public class RunPlugin extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JLabel cmdName;
     private JPanel panel1;
     private JLabel label1;
     private JTextField outputName;

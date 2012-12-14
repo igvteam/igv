@@ -30,10 +30,7 @@ import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.ui.util.MessageUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -54,6 +51,7 @@ public class GenomeImpl implements Genome {
     private Map<String, String> chrAliasTable;
     private Sequence sequence;
     private FeatureTrack geneTrack;
+    private String species;
 
     public GenomeImpl(String id, String displayName, Sequence sequence) {
         this(id, displayName, sequence, false);
@@ -335,6 +333,14 @@ public class GenomeImpl implements Genome {
         return id;
     }
 
+    @Override
+    public String getSpecies() {
+        if (species == null) {
+            species = GenomeImpl.getSpeciesForID(id);
+        }
+        return species;
+    }
+
     public String getNextChrName(String chr) {
         List<String> chrList = getChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
@@ -403,5 +409,51 @@ public class GenomeImpl implements Genome {
     public FeatureTrack getGeneTrack() {
         return geneTrack;
     }
+
+
+    // TODO A hack (
+    // obviously),  we need to record a species in the genome definitions
+    private static Map<String, String> ucscSpeciesMap;
+
+    private static synchronized String getSpeciesForID(String id) {
+        if (ucscSpeciesMap == null) {
+            ucscSpeciesMap = new HashMap<String, String>();
+
+            InputStream is = null;
+
+            try {
+                is = GenomeImpl.class.getResourceAsStream("speciesMapping.txt");
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+                String nextLine;
+                while ((nextLine = br.readLine()) != null) {
+                    if (nextLine.startsWith("#")) continue;
+                    String[] tokens = Globals.tabPattern.split(nextLine);
+                    if (tokens.length == 2) {
+                        ucscSpeciesMap.put(tokens[0], tokens[1]);
+                    } else {
+                        log.error("Unexpected number of tokens in species mapping file for line: " + nextLine);
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error reading species mapping table", e);
+            } finally {
+                if (is != null) try {
+                    is.close();
+                } catch (IOException e) {
+                    log.error("", e);
+                }
+            }
+
+        }
+
+        for (Map.Entry<String, String> entry : ucscSpeciesMap.entrySet()) {
+            if (id.startsWith(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
 
 }

@@ -1,12 +1,9 @@
-package org.broad.igv.util.ucsc;
+package org.broad.igv.blat;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
-import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -24,7 +21,6 @@ import java.util.List;
 import org.broad.igv.Globals;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
-import org.broad.tribble.Feature;
 
 /**
  * Port of perl script blatPlot.pl   http://genomewiki.cse.ucsc.edu/index.php/Blat_Scripts
@@ -73,17 +69,20 @@ public class BlatClient {
         blat(org, db, searchType, sortOrder, outputType, userSeq);
 
 
-
     }
 
-    public static List<Feature>  blat(String org, String db, String userSeq) throws IOException {
+    public static List<String[]> blat(String org, String db, String userSeq) throws IOException {
         String searchType = "DNA";
         String sortOrder = "query,score";
         String outputType = "psl";
-        return blat(org, db, searchType, sortOrder, outputType, userSeq);
+
+        List<String[]> blatRecords = blat(org, db, searchType, sortOrder, outputType, userSeq);
+        return blatRecords;
+
+
     }
 
-    public static List<Feature>  blat(String org, String db, String searchType, String sortOrder, String outputType, String userSeq) throws IOException {
+    public static List<String[]> blat(String org, String db, String searchType, String sortOrder, String outputType, String userSeq) throws IOException {
         if (searchType.equals("BLATGuess")) {
             searchType = "Blat's Guess";
         } else if (searchType.equals("transDNA")) {
@@ -133,16 +132,16 @@ public class BlatClient {
         return parseResult(result);
     }
 
-    static List<Feature> parseResult(String result) throws IOException {
+    /**
+     * Return the parsed results as an array of PSL records, where each record is simply an array of tokens.
+     *
+     * @param result
+     * @return
+     * @throws IOException
+     */
+    static List<String[]> parseResult(String result) throws IOException {
 
-        ArrayList<Feature> features = new ArrayList<Feature>();
-
-        Genome genome = null;
-        if(IGV.hasInstance()) {
-            genome = GenomeManager.getInstance().getCurrentGenome();
-        }
-
-        PSLCodec codec = new PSLCodec(genome);
+        ArrayList<String[]> records = new ArrayList<String[]>();
 
         BufferedReader br = new BufferedReader(new StringReader(result));
         String line;
@@ -156,10 +155,9 @@ public class BlatClient {
                 int startIDX = line.indexOf("hgsid=") + 6;
                 String sub = line.substring(startIDX);
                 int endIDX = sub.indexOf("\"");
-                if(endIDX < 0) endIDX = sub.indexOf("&");
-                if(endIDX > 0) {
+                if (endIDX < 0) endIDX = sub.indexOf("&");
+                if (endIDX > 0) {
                     hgsid = sub.substring(0, endIDX);
-                    System.out.println("hgsid = " + hgsid);
                     hgsidFound = true;
                 }
             }
@@ -184,11 +182,11 @@ public class BlatClient {
                     System.err.println("Unexpected number of fields (" + tokens.length + ")");
                     System.err.println(line);
                 } else {
-                    features.add(codec.decode(tokens));
+                    records.add(tokens);
                 }
             }
         }
-        return features;
+        return records;
     }
 
     public static void doBlatQuery(final String chr, final int start, final int end) {
@@ -209,32 +207,49 @@ public class BlatClient {
             public void run() {
                 try {
 
+                    Genome genome = IGV.hasInstance() ? GenomeManager.getInstance().getCurrentGenome() : null;
+                    PSLCodec codec = new PSLCodec(genome, true);
+
                     // TODO -- something better than this!
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     String db = genome.getId();
-                    String species = GenomeManager.getUCSCSpecies(db);
+                    String species = genome.getSpecies();
                     if (species == null) species = genome.getDisplayName();
 
-                    List<Feature> features = blat(species, db, userSeq);
+                    List<String[]> tokensList = blat(species, db, userSeq);
+
+                    // Convert tokens to features
+                    List<PSLRecord> features = new ArrayList<PSLRecord>(tokensList.size());
+                    for (String[] tokens : tokensList) {
+                        PSLRecord f = (PSLRecord) codec.decode(tokens);
+                        if (f != null) {
+                            features.add(f);
+                        }
+                    }
+
                     if (features.isEmpty()) {
                         MessageUtils.showMessage("No features found");
                     } else {
 
-                        FeatureSource<Feature> source = new FeatureCollectionSource(features, genome);
+                        FeatureSource<PSLRecord> source = new FeatureCollectionSource(features, genome);
                         FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
                         newTrack.setUseScore(true);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
-                        // Create gene list from top 10 hits -- assumed these are sorted by score
-                        ArrayList<String> loci = new ArrayList(10);
-                        for (Feature f : features) {
-                            String l = f.getChr() + ":" + f.getStart() + "-" + f.getEnd();
-                            loci.add(l);
-                            if (loci.size() == 10) break;
-                        }
-                        GeneList gl = new GeneList("Blat", loci);
-                        GeneListManager.getInstance().addGeneList(gl);
-                        IGV.getInstance().setGeneList("Blat");
+                        BlatQueryWindow win = new BlatQueryWindow(userSeq, features);
+                        win.setVisible(true);
+
+
+//
+//                        // Create gene list from top 10 hits -- assumed these are sorted by score
+//                        ArrayList<String> loci = new ArrayList(10);
+//                        for ( Feature f : features) {
+//                            String l = f.getChr() + ":" + f.getStart() + "-" + f.getEnd();
+//                            loci.add(l);
+//                            if (loci.size() == 10) break;
+//                        }
+//                        GeneList gl = new GeneList("Blat", loci);
+//                        GeneListManager.getInstance().addGeneList(gl);
+//                        IGV.getInstance().setGeneList("Blat");
                     }
                 } catch (IOException e1) {
 

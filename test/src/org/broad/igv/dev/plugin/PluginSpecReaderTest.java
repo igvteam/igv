@@ -11,6 +11,7 @@
 
 package org.broad.igv.dev.plugin;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 import org.w3c.dom.Element;
@@ -89,6 +90,19 @@ public class PluginSpecReaderTest {
         String path = TestUtils.DATA_DIR + "sessions/testBedsRelPath.xml";
         PluginSpecReader reader = PluginSpecReader.create(path);
         assertNull(reader);
+    }
+
+    @Test
+    public void testCustomToolPath() throws Exception{
+        String path = TestUtils.DATA_DIR + "plugin/cat_plugin.xml";
+        PluginSpecReader reader = PluginSpecReader.create(path);
+        Element tool = reader.getTools().get(0);
+        String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
+        assertEquals("cat", toolName);
+
+        String newpath = "/dev/zero";
+        PreferenceManager.getInstance().putPluginPath(reader.getId(), toolName, newpath);
+        assertEquals(newpath, reader.getToolPath(tool));
     }
 
 

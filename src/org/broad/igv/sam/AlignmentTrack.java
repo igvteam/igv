@@ -46,7 +46,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.util.ucsc.BlatClient;
+import org.broad.igv.blat.BlatClient;
 import javax.swing.*;
 
 import java.awt.*;
@@ -1888,22 +1888,32 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void addBlatItem(final TrackClickEvent te) {
             // Change track height by attribute
             final JMenuItem item = new JMenuItem("Blat read sequence");
+            MouseEvent e = te.getMouseEvent();
+            final ReferenceFrame frame = te.getFrame();
+            final double location = frame.getChromosomePosition(e.getX());
+            final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    MouseEvent e = te.getMouseEvent();
-
-                    final ReferenceFrame frame = te.getFrame();
                     if (frame == null) {
                         item.setEnabled(false);
                     } else {
-                        double location = frame.getChromosomePosition(e.getX());
-                        final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
-                        String sequence = alignment.getReadSequence();
-                        BlatClient.doBlatQuery(sequence);
+                         String sequence;
+                        if (alignment != null) {
+                            sequence = alignment.getReadSequence();
+                        } else {
+                            sequence = MessageUtils.showInputDialog("Enter sequence");
+                        }
+
+                        if (sequence != null && sequence.trim().length() > 0) {
+                            BlatClient.doBlatQuery(sequence);
+                        }
                     }
                 }
             });
+
+            String seq = alignment.getReadSequence();
+            item.setEnabled(seq != null && seq.length() > 10);
             add(item);
         }
 

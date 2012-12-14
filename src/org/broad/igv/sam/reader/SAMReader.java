@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -25,12 +18,12 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.util.SeekableStream;
@@ -40,7 +33,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -90,7 +82,6 @@ public class SAMReader implements AlignmentReader {
             BufferedInputStream bis = new BufferedInputStream(is);
             reader = new SAMFileReader(bis);
             header = reader.getFileHeader();
-
         } catch (IOException e) {
             log.error("Error loading header", e);
         } finally {
@@ -129,22 +120,10 @@ public class SAMReader implements AlignmentReader {
         FeatureIndex.TileDef seekPos = featureIndex.getTileDef(sequence, startTileNumber);
 
         if (seekPos != null) {
-            SeekableStream stream = null;
-            try {
-
-                // Skip to the start of the query interval and open a sam file reader
-                stream = SeekableStreamFactory.getStreamFor(samFile);
-                stream.seek(seekPos.getStartPosition());
-                SAMFileReader reader = new SAMFileReader(stream);
-                reader.setValidationStringency(ValidationStringency.SILENT);
-
-                CloseableIterator<SAMRecord> iter = reader.iterator();
-                return new SAMQueryIterator(sequence, start, end, contained, iter);
-
-            } catch (IOException ex) {
-                log.error("Error opening sam file", ex);
-                throw new RuntimeException("Error opening: " + samFile, ex);
-            }
+            // Skip to the start of the query interval and open a sam file reader
+            SAMFileReader reader = getSAMFileReader(samFile, seekPos.getStartPosition());
+            CloseableIterator<SAMRecord> iter = reader.iterator();
+            return new SAMQueryIterator(sequence, start, end, contained, iter);
         }
         return EmptyAlignmentIterator.getInstance();
     }
@@ -182,21 +161,28 @@ public class SAMReader implements AlignmentReader {
     }
 
     public CloseableIterator<Alignment> iterator() {
+        SAMFileReader reader = getSAMFileReader(samFile, -1);
+        CloseableIterator<SAMRecord> iter = reader.iterator();
+        return new SAMQueryIterator(iter);
+    }
+
+    private SAMFileReader getSAMFileReader(String samFile, long startPosition) {
         try {
-
-            // Skip to the start of the query interval and open a sam file reader
             SeekableStream stream = SeekableStreamFactory.getStreamFor(samFile);
-
+            if (startPosition >= 0) {
+                stream.seek(startPosition);
+            }
             SAMFileReader reader = new SAMFileReader(stream);
             reader.setValidationStringency(ValidationStringency.SILENT);
-            CloseableIterator<SAMRecord> iter = reader.iterator();
-            return new SAMQueryIterator(iter);
-        } catch (IOException e) {
-            log.error("Error opening stream: " + samFile);
-            throw new RuntimeException("Error creating stream for: " + samFile, e);
+
+            //Need to keep the file source, if loading lazily
+            reader.enableFileSource(SamAlignment.LAZY_LOAD);
+
+            return reader;
+        } catch (IOException ex) {
+            log.error("Error opening sam file", ex);
+            throw new RuntimeException("Error opening: " + samFile, ex);
         }
-
-
     }
 
 }

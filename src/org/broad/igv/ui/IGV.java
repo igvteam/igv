@@ -1071,6 +1071,11 @@ public class IGV {
 
     }
 
+    public void newSession() {
+        resetSession(null);
+        setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
+    }
+
     /**
      * Set the status bar message.  If the message equals "Done." intercept
      * and reset to the default "quite" message,  currently the number of tracks
@@ -2062,13 +2067,9 @@ public class IGV {
                         float s1 = t1.getRegionScore(chr, start, end, zoom, type, frameName);
                         float s2 = t2.getRegionScore(chr, start, end, zoom, type, frameName);
 
-                        if (s1 < s2) {
-                            return 1;
-                        } else if (s1 > s2) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
+                        return Float.compare(s2, s1);
+
+
                     } catch (Exception e) {
                         log.error("Error sorting tracks. Sort might not be accurate.", e);
                         return 0;

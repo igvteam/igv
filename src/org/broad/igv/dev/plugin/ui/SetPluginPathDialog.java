@@ -37,7 +37,7 @@ public class SetPluginPathDialog extends JDialog {
         super(owner);
         initComponents();
 
-        String toolName = tool.getAttribute("name");
+        String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
         String title = pluginSpecReader.getName() + ": " + toolName;
         setTitle(title);
 

@@ -47,19 +47,16 @@ public class SequenceRenderer {
 
 
     static {
-        //nucleotideColors.put('A', new Color(160, 160, 255));
-        //nucleotideColors.put('C', new Color(255, 140, 75));
-        //nucleotideColors.put('T', new Color(160, 255, 255));
-        //nucleotideColors.put('G', new Color(255, 112, 112));
-        //nucleotideColors.put('N', Color.gray);    
-        nucleotideColors.put('A', Color.GREEN);
-        nucleotideColors.put('a', Color.GREEN);
+        Color AColor = new Color(0, 150, 0);
+        nucleotideColors.put('A', AColor);
+        nucleotideColors.put('a', AColor);
         nucleotideColors.put('C', Color.BLUE);
         nucleotideColors.put('c', Color.BLUE);
         nucleotideColors.put('T', Color.RED);
         nucleotideColors.put('t', Color.RED);
-        nucleotideColors.put('G', new Color(209, 113, AMINO_ACID_RESOLUTION));
-        nucleotideColors.put('g', new Color(209, 113, AMINO_ACID_RESOLUTION));
+        Color GColor = new Color(209, 113, 5);
+        nucleotideColors.put('G', GColor);
+        nucleotideColors.put('g', GColor);
         nucleotideColors.put('N', Color.gray);
         nucleotideColors.put('n', Color.gray);
     }
@@ -164,6 +161,8 @@ public class SequenceRenderer {
                 int dX = (int) (1.0 / locScale);
                 // Create a graphics to use
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 //dhmay adding check for adequate track height
                 int fontSize = Math.min(untranslatedSequenceRect.height, Math.min(dX, 12));
                 if (fontSize >= 8) {
@@ -447,6 +446,7 @@ public class SequenceRenderer {
             double origin = context.getOrigin();
 
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(AA_FONT_COLOR).create();
+            fontGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             //The start location of the first codon that overlaps this region
             int readingFrameOfFullSeq = start % 3;
@@ -456,6 +456,8 @@ public class SequenceRenderer {
 
             if (seq != null && seq.length > 0) {
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
 
                 String nucSequence = new String(seq, indexOfFirstCodonStart, seq.length - indexOfFirstCodonStart);
                 AminoAcidSequence aaSequence = AminoAcidManager.getInstance().

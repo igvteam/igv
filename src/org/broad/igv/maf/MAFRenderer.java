@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * @author jrobinso
  */
-public class MAFRenderer  {
+public class MAFRenderer {
 
     static Map<Character, Color> nucleotideColors = new HashMap();
 
@@ -85,7 +85,7 @@ public class MAFRenderer  {
 
     /**
      * Method description
-
+     *
      * @param context
      * @param trackRectangle
      * @param track
@@ -148,6 +148,8 @@ public class MAFRenderer  {
 
             // Create a graphics to use
             Graphics2D g = (Graphics2D) context.getGraphics().create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
             if (dX >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
                 g.setFont(f);

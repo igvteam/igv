@@ -1086,6 +1086,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(TOOLTIP_RESHOW_DELAY, "50");
         defaultValues.put(TOOLTIP_DISMISS_DELAY, "60000");
         defaultValues.put(DETAILS_BEHAVIOR_KEY, IGVCommandBar.SHOW_DETAILS_BEHAVIOR.HOVER.name());
+
+        defaultValues.put(SHOW_SIZE_WARNING, "true");
     }
 
     /**

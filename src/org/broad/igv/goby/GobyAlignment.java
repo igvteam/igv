@@ -811,4 +811,8 @@ public class GobyAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
+
+    @Override
+    public void finish() {
+    }
 }

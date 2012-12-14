@@ -19,6 +19,7 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.plugin.batch.Command;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -63,6 +64,25 @@ public class CommandExecutor {
         return args;
     }
 
+    private String executeCustomCommand(String cmd, List<String> args) {
+
+        List<String> subArgs = Collections.emptyList();
+        if (args.size() > 1) subArgs = args.subList(1, args.size());
+        try {
+            Object ocommand = Class.forName(cmd).newInstance();
+            Command command = (Command) ocommand;
+            return command.run(subArgs);
+        } catch (InstantiationException e) {
+            return e.getMessage();
+        } catch (IllegalAccessException e) {
+            return e.getMessage();
+        } catch (ClassNotFoundException e) {
+            return null;
+        } catch (ClassCastException e) {
+            return e.getMessage();
+        }
+    }
+
     public String execute(String command) {
 
         List<String> args = getArgs(StringUtils.breakQuotedString(command, ' ').toArray(new String[]{}));
@@ -73,13 +93,21 @@ public class CommandExecutor {
         System.out.println();
         log.debug("Executing: " + command);
         try {
-            if (args.size() > 0) {
+            if (args.size() == 0) {
+                return "Empty command string";
+            }
+            //Custom command, user can make own
+            String custRes = executeCustomCommand(args.get(0), args);
+            if (custRes != null) {
+                result = custRes;
+            } else {
 
                 String cmd = args.get(0).toLowerCase();
                 String param1 = args.size() > 1 ? args.get(1) : null;
                 String param2 = args.size() > 2 ? args.get(2) : null;
                 String param3 = args.size() > 3 ? args.get(3) : null;
                 String param4 = args.size() > 4 ? args.get(4) : null;
+
 
                 if (cmd.equalsIgnoreCase("echo")) {
                     result = cmd;
@@ -100,7 +128,7 @@ public class CommandExecutor {
                 } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
-                    newSession();
+                    igv.newSession();
                 } else if (cmd.equalsIgnoreCase("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equalsIgnoreCase("sort")) {
@@ -138,11 +166,10 @@ public class CommandExecutor {
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
-                    log.error("UNKOWN COMMAND: " + command);
-                    return "UNKOWN COMMAND: " + command;
+                    result = "UNKOWN COMMAND: " + command;
+                    log.error(result);
+                    return result;
                 }
-            } else {
-                return "Empty command string";
             }
             igv.doRefresh();
 
@@ -165,11 +192,6 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
-    }
-
-    private void newSession() {
-        igv.resetSession(null);
-        igv.setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
     }
 
     private String setDataRange(String dataRangeString, String trackName) {

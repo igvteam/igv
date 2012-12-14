@@ -359,7 +359,9 @@ public class RulerPanel extends JPanel {
 
 
                 Graphics2D exomeGraphics = (Graphics2D) g.create();
-                //Shape clip = exomeGraphics.getClip();
+                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+//Shape clip = exomeGraphics.getClip();
 
                 Color c = idx % 2 == 0 ? grey1 : grey2;
 
@@ -416,7 +418,8 @@ public class RulerPanel extends JPanel {
 
 
                 Graphics2D exomeGraphics = (Graphics2D) g.create();
-                //Shape clip = exomeGraphics.getClip();
+                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//Shape clip = exomeGraphics.getClip();
 
                 Color c = idx % 2 == 0 ? gene1 : gene2;
 

@@ -63,6 +63,7 @@ public class ChromosomeColorLegend extends JPanel {
     public void paintLegend(Graphics g) {
 
         Graphics textGraphics = g.create();
+        ((Graphics2D) textGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         textGraphics.setColor(Color.black);
         textGraphics.setFont(FontManager.getFont(10));
 

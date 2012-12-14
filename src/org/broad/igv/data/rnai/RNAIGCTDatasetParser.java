@@ -1,29 +1,25 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.data.rnai;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -50,9 +46,8 @@ public class RNAIGCTDatasetParser {
 
 
     /**
-     * Constructs ...
-     *
      * @param gctFile
+     * @param genome
      */
     public RNAIGCTDatasetParser(ResourceLocator gctFile, Genome genome) {
         this.dataFileLocator = gctFile;
@@ -210,13 +205,24 @@ public class RNAIGCTDatasetParser {
     }
 
 
-    private final static String RNAI_MAPPING_FILE = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
+    public final static String RNAI_MAPPING_URL_KEY = "RNAI_MAPPING_URL";
+    private final static String DEFAULT_RNAI_MAPPING_URL = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
+    private static String RNAI_MAPPING_URL;
+
+    static {
+        if (IGV.hasInstance()) {
+            RNAI_MAPPING_URL = IGV.getInstance().getSession().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
+        } else {
+            RNAI_MAPPING_URL = PreferenceManager.getInstance().getPersistent(RNAI_MAPPING_URL_KEY, DEFAULT_RNAI_MAPPING_URL);
+        }
+    }
+
     private static Map<String, String[]> rnaiProbeMap = null;
 
     private synchronized static Map<String, String[]> getProbeMap() throws IOException {
         if (rnaiProbeMap == null) {
             rnaiProbeMap = Collections.synchronizedMap(new HashMap<String, String[]>(20000));
-            URL url = new URL(RNAI_MAPPING_FILE);
+            URL url = new URL(RNAI_MAPPING_URL);
 
             InputStream probeMappingStream = null;
             try {
@@ -225,7 +231,7 @@ public class RNAIGCTDatasetParser {
 
                 ProbeToLocusMap.getInstance().loadMapping(br, rnaiProbeMap);
             } catch (Exception e) {
-                throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_FILE, e.getClass().getSimpleName());
+                throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_URL, e.getClass().getSimpleName());
             } finally {
                 if (probeMappingStream != null) {
                     probeMappingStream.close();

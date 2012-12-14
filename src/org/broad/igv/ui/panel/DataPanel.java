@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -244,6 +245,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         boolean drawBars = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_REGION_BARS);
         Graphics2D graphics2D = (Graphics2D) g.create();
+        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         try {
 
             for (RegionOfInterest regionOfInterest : regions) {
@@ -507,6 +509,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         addMouseMotionListener(mouseAdapter);
         addMouseListener(mouseAdapter);
+        addMouseWheelListener(mouseAdapter);
     }
 
 
@@ -714,6 +717,31 @@ public class DataPanel extends JComponent implements Paintable {
                     }
 
                 }
+            }
+        }
+
+        /**
+         * Zoom in/out when modifier + scroll wheel used
+         *
+         * @param e
+         */
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e) {
+            //we use either ctrl or meta to deal with PCs and Macs
+            if (e.isControlDown() || e.isMetaDown()) {
+                int wheelRotation = e.getWheelRotation();
+                //Mouse move up is negative, that should zoom in
+                int zoomIncr = -wheelRotation / 2;
+                getFrame().incrementZoom(zoomIncr);
+            }
+            //TODO Use this to pan. Seems weird, but it's how side scrolling on my mouse gets interpreted,
+            //so could be handy for people with 2D wheels
+//            else if(e.isShiftDown()){
+//                System.out.println(e);
+//            }
+            else {
+                //Default action if no modifier
+                e.getComponent().getParent().dispatchEvent(e);
             }
         }
     }

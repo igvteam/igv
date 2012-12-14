@@ -120,11 +120,9 @@ public class CytobandPanel extends JPanel {
             double scale = getReferenceFrame().getScale();
 
             double origin = isDragging ? viewOrigin : getReferenceFrame().getOrigin();
+
             int start = (int) (origin / cytobandScale);
-
-            double end = getReferenceFrame().getEnd();
-
-            double scaledDataPanelWidth = end - origin;
+            double scaledDataPanelWidth = dataPanelWidth * scale;
             int span = (int) (scaledDataPanelWidth / cytobandScale);
 
             // Draw Cytoband current region viewer

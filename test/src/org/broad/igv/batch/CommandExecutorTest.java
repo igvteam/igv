@@ -11,8 +11,10 @@
 
 package org.broad.igv.batch;
 
+import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.plugin.batch.Command;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RegionScoreType;
@@ -54,14 +56,12 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         super.setUp();
         Globals.setBatch(true);
         igv.loadGenome(TestUtils.defaultGenome, null);
-        igv.removeTracks(igv.getAllTracks());
-        igv.getSession().clearRegionsOfInterest();
+        igv.newSession();
         exec.setSnapshotDirectory(snapshotDir);
     }
 
     @After
     public void tearDown() throws Exception {
-        igv.removeTracks(igv.getAllTracks());
         Globals.setBatch(false);
     }
 
@@ -265,4 +265,20 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         }
     }
 
+    @Test
+    public void testCustomCommand_Echo() throws Exception {
+        String cmd = EchoCommand.class.getName();
+        String otherArgs = "fly high free bird";
+        String fullCmd = String.format("%s %s", cmd, otherArgs);
+        String response = exec.execute(fullCmd);
+
+        assertEquals(otherArgs, response);
+    }
+
+    public static class EchoCommand implements Command {
+        @Override
+        public String run(List<String> args) {
+            return StringUtils.join(args, " ");
+        }
+    }
 }

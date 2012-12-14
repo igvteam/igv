@@ -12,6 +12,7 @@
 
 package org.broad.igv.methyl;
 
+import org.broad.igv.Globals;
 import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bbfile.BedFeature;
 import org.broad.igv.bbfile.BigBedIterator;
@@ -32,7 +33,9 @@ public class BBMethylDataSource implements MethylDataSource {
 
     static Pattern percentPattern = Pattern.compile("%");
 
-    enum Type {ZILLER, USC};
+    enum Type {ZILLER, USC}
+
+    ;
 
     BBFileReader reader;
     Type type;
@@ -48,7 +51,7 @@ public class BBMethylDataSource implements MethylDataSource {
         init(genome);
     }
 
-    public Iterator<MethylScore> query(String chr, int start, int end){
+    public Iterator<MethylScore> query(String chr, int start, int end) {
         String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
         BigBedIterator bedIterator = reader.getBigBedIterator(querySeq, start, chr, end, false);
@@ -92,37 +95,42 @@ public class BBMethylDataSource implements MethylDataSource {
                 feat = bedIterator.next();
                 String[] restOfFields = feat.getRestOfFields();
                 MethylScore score = type == Type.ZILLER ?
-                        createZillerScore(feat, restOfFields) :
-                        createUSCScore(feat, restOfFields);
-
-
+                        createZillerScore(feat, restOfFields) : createUSCScore(feat, restOfFields);
                 return score;
             }
-
             return null;
 
         }
 
         private MethylScore createZillerScore(BedFeature feat, String[] restOfFields) {
+
+            float percent;
+            float count;
             String name = restOfFields[0];
-            //'92%[51]'
-            String[] tokens = percentPattern.split(name.replace("'", "").replace("[", "").replace("]", ""));
-            float percent = Float.parseFloat(tokens[0]);
-            int count = Integer.parseInt(tokens[1]);
-            return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(),
-                    Strand.NONE, percent, count);
+            if (name.contains("%")) {
+                //'92%[51]'
+                String[] tokens = percentPattern.split(name.replace("'", "").replace("[", "").replace("]", ""));
+                percent = Float.parseFloat(tokens[0]);
+                count = Float.parseFloat(tokens[1]);
+            } else {
+                //  methylatedReads/totalreads
+                String[] tokens = Globals.forwardSlashPattern.split(name.replace("'", ""));
+                float methylatedReads = Float.parseFloat(tokens[0]);
+                count = Float.parseFloat(tokens[1]);
+                percent = (methylatedReads / count) * 100;
+            }
+            return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), Strand.NONE, percent, (int) count);
         }
 
         private MethylScore createUSCScore(BedFeature feat, String[] restOfFields) {
-            String name = restOfFields[0];
-            int score = Integer.parseInt(restOfFields[1]);
+            //String name = restOfFields[0];
+            //int score = Integer.parseInt(restOfFields[1]);
             char strandChar = restOfFields[2].charAt(0);
-            Strand strand = strandChar == '+'  ? Strand.POSITIVE :
-                    (strandChar == '-' ? Strand.NEGATIVE : Strand.NONE);
+            Strand strand = strandChar == '+' ? Strand.POSITIVE : (strandChar == '-' ? Strand.NEGATIVE : Strand.NONE);
             float percentMethyl = Float.parseFloat(restOfFields[3]);
             int count = Integer.parseInt(restOfFields[4]);
             return new MethylScore(feat.getChromosome(), feat.getStartBase(), feat.getEndBase(), strand, percentMethyl, count);
-         }
+        }
 
         public void remove() {
             //To change body of implemented methods use File | Settings | File Templates.

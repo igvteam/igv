@@ -33,11 +33,14 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
         this.lineFeatureEncoder = lineFeatureEncoder;
     }
 
+    public static final String NUM_COLS_ATTR = "numCols";
+
     @Override
     public Map<String, Object> encodeAll(OutputStream outputStream, Iterator<E> features) {
         LineFeatureEncoder<E> encoder = lineFeatureEncoder;
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream));
         Map<String, Object> attributes = new HashMap<String, Object>(1);
+        int tmpNumCols = 0;
 
         if (features != null) {
             String header = encoder.getHeader();
@@ -52,10 +55,11 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
                 writer.println(line);
 
                 //We do not require consistency of output
-                int tmpNumCols = encoder.getNumCols(line);
-                attributes.put("numCols", tmpNumCols);
+                tmpNumCols = encoder.getNumCols(line);
             }
         }
+
+        attributes.put(NUM_COLS_ATTR, tmpNumCols);
         writer.flush();
         writer.close();
         return attributes;

@@ -16,9 +16,13 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.DirectoryManager;
 
 import java.io.*;
 import java.lang.instrument.Instrumentation;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * @author jrobinso
@@ -145,6 +149,40 @@ public class RuntimeUtils {
 
             }
         }
+    }
+
+    private static URL[] getClassURLs() {
+        String[] paths = new String[2];
+        paths[0] = (new File(DirectoryManager.getIgvDirectory(), "plugins/")).getAbsolutePath();
+
+        URL[] urls = new URL[paths.length];
+        for (int pp = 0; pp < paths.length; pp++) {
+            try {
+                urls[pp] = new URL("file://" + paths[pp]);
+            } catch (MalformedURLException e) {
+                log.error(e);
+            }
+        }
+        return urls;
+    }
+
+    public static Object loadClassForName(String className) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+
+        Object object = null;
+        //Easy way
+        try {
+            object = Class.forName(className).newInstance();
+        } catch (ClassNotFoundException e) {
+            //Try with custom loader below
+        }
+        if (object != null) return object;
+
+        //If not found, check other locations
+        ClassLoader loader = URLClassLoader.newInstance(
+                getClassURLs(),
+                ClassLoader.getSystemClassLoader()
+        );
+        return loader.loadClass(className);
     }
 
 

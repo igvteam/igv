@@ -153,14 +153,14 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
     }
 
     //@Test
-    public void compareSpeedStringDotSplit() throws Exception {
+    public void compareSpeedPatternDotSplit() throws Exception {
         int nTrials = 500000;
         TestStringSupplier supplier = new TestStringSupplier(nTrials);
 
         final char cdelim = '\t';
         final String sdelim = String.valueOf(cdelim);
 
-        Predicate<String> stringSplitPredicate = new Predicate<String>() {
+        Predicate<String> patternSplitPredicate = new Predicate<String>() {
             @Override
             public boolean apply(String input) {
                 String[] tokens = Globals.tabPattern.split(input);
@@ -181,12 +181,86 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         };
 
         supplier.reset();
-        System.out.println("\nString.split");
-        TestUtils.timeMethod(supplier, stringSplitPredicate, nTrials);
+        System.out.println("\nPattern.split");
+        TestUtils.timeMethod(supplier, patternSplitPredicate, nTrials);
 
         supplier.reset();
         System.out.println("\nParsingUtils.split");
         TestUtils.timeMethod(supplier, parsingUtilsPredicate, nTrials);
+    }
+
+    //@Test
+    public void compareSpeedStringJoin() throws Exception {
+        int nTrials = 5000;
+        TestStringArraySupplier supplier = new TestStringArraySupplier(nTrials, 100);
+
+        final char cdelim = '\t';
+        final String sdelim = String.valueOf(cdelim);
+
+        Predicate<String[]> stringBuilderPredicate = new Predicate<String[]>() {
+            @Override
+            public boolean apply(String[] input) {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int el = 0; el < input.length; el++) {
+                    stringBuilder.append(input[el]);
+                    if (el < input.length - 1) {
+                        stringBuilder.append(sdelim);
+                    }
+                }
+                return true;
+            }
+        };
+
+        //ParsingUtils.split seems to be about 2x as fast, that is
+        //takes 1/2 the time
+        Predicate<String[]> stringAddPred = new Predicate<String[]>() {
+            @Override
+            public boolean apply(String[] input) {
+                String result = "";
+
+                for (int el = 0; el < input.length; el++) {
+                    result += input[el];
+                    if (el < input.length - 1) {
+                        result += sdelim;
+                    }
+                }
+
+                return true;
+
+                //String res = org.broad.tribble.util.ParsingUtils.join(sdelim, input);
+                //return true;
+            }
+        };
+
+        supplier.reset();
+        System.out.println("\nStringBuilder");
+        TestUtils.timeMethod(supplier, stringBuilderPredicate, nTrials);
+
+        supplier.reset();
+        System.out.println("\nStringAdd");
+        TestUtils.timeMethod(supplier, stringAddPred, nTrials);
+    }
+
+    private class TestStringArraySupplier implements Supplier<String[]> {
+        final String[][] testStringArrays;
+        private int counter = 0;
+
+        TestStringArraySupplier(int nTrials, int maxStringsPerArray) {
+            testStringArrays = new String[nTrials][];
+            for (int ii = 0; ii < nTrials; ii++) {
+                int numEntries = (int) Math.floor(Math.random() * maxStringsPerArray);
+                testStringArrays[ii] = genTestStringArray(numEntries);
+            }
+        }
+
+        @Override
+        public String[] get() {
+            return testStringArrays[counter++];
+        }
+
+        public void reset() {
+            counter = 0;
+        }
     }
 
     private class TestStringSupplier implements Supplier<String> {
@@ -195,12 +269,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         private int counter = 0;
 
         TestStringSupplier(int nTrials) {
-            testStrings = new String[nTrials];
-
-            //Generate test data
-            for (int ii = 0; ii < nTrials; ii++) {
-                testStrings[ii] = genRandString();
-            }
+            testStrings = genTestStringArray(nTrials);
         }
 
 
@@ -213,6 +282,16 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
             counter = 0;
         }
 
+    }
+
+    private String[] genTestStringArray(int numEntries) {
+        String[] testStrings = new String[numEntries];
+
+        //Generate test data
+        for (int ii = 0; ii < numEntries; ii++) {
+            testStrings[ii] = genRandString();
+        }
+        return testStrings;
     }
 
 

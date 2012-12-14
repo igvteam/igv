@@ -210,16 +210,17 @@ public class ResourceTree {
         );
         locator.setName(name);
 
+        String infoLink = getAttribute(xmlNode, HYPERLINK.getText());
+        if (infoLink == null) {
+            infoLink = getAttribute(xmlNode, INFOLINK.getText());
+        }
+        locator.setInfolink(infoLink);
+
         if (xmlNode.getTagName().equalsIgnoreCase("Resource")) {
 
             String resourceType = getAttribute(xmlNode, RESOURCE_TYPE.getText());
             locator.setType(resourceType);
 
-            String infoLink = getAttribute(xmlNode, HYPERLINK.getText());
-            if (infoLink == null) {
-                infoLink = getAttribute(xmlNode, INFOLINK.getText());
-            }
-            locator.setInfolink(infoLink);
 
             String sampleId = getAttribute(xmlNode, SAMPLE_ID.getText());
             if (sampleId == null) {

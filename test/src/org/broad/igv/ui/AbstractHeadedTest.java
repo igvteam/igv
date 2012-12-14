@@ -13,6 +13,7 @@ package org.broad.igv.ui;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
@@ -49,14 +50,14 @@ public class AbstractHeadedTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        //TestUtils.clearOutputDir();
+        TestUtils.clearOutputDir();
         stopGUI();
         igv = null;
     }
 
     @Before
     public void setUp() throws Exception {
-        igv.resetSession(null);
+        igv.newSession();
         IGV.getMainFrame().requestFocus();
     }
 
@@ -137,5 +138,17 @@ public class AbstractHeadedTest {
             System.out.println("You are trying to start a GUI in a headless environment. Aborting test");
         }
         org.junit.Assume.assumeTrue(!headless);
+    }
+
+
+    public void testTest() throws Exception {
+        java.util.List<Track> tracks = IGV.getInstance().getAllTracks();
+        System.out.println("# tracks: " + tracks.size());
+        for (Track track : tracks) {
+            System.out.println(track.getName());
+        }
+
+        java.util.List<Track> featureTracks = IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).getTracks();
+        System.out.println(featureTracks.size());
     }
 }

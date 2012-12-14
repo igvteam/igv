@@ -61,6 +61,9 @@ public class HttpUtils {
     private char[] defaultPassword = null;
     private static Pattern URLmatcher = Pattern.compile(".{1,8}://.*");
 
+    // static provided to support unit testing
+    private static boolean  BYTE_RANGE_DISABLED = false;
+
     /**
      * @return the single instance
      */
@@ -89,6 +92,16 @@ public class HttpUtils {
         String lcString = string.toLowerCase();
         return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://");
     }
+
+    /**
+     * Provided to support unit testing (force disable byte range requests)
+     * @return
+     */
+    public static void disableByteRange(boolean b) {
+         BYTE_RANGE_DISABLED = b;
+    }
+
+
 
     /**
      * Join the {@code elements} with the character {@code joiner},
@@ -604,6 +617,8 @@ public class HttpUtils {
      */
     public boolean useByteRange(URL url) {
 
+        if(BYTE_RANGE_DISABLED) return false;
+
         // We can test byte-range success for hosts we can reach.
 
         final String host = url.getHost();
@@ -668,13 +683,15 @@ public class HttpUtils {
         log.info("Testing range-byte request on host: " + host);
 
         String testURL;
-        if (host.endsWith("www.broadinstitute.org")) {
-            testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
-        } else if(host.startsWith("igvdata.broadinstitute.org")) {
+        if (host.startsWith("igvdata.broadinstitute.org")) {
+            // Amazon cloud front
             testURL = "http://igvdata.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-        } else {
+        } else if (host.startsWith("igv.broadinstitute.org")) {
+            // Amazon S3
             testURL = "http://igv.broadinstitute.org/genomes/seq/hg19/chr12.txt";
-
+        } else {
+            // All others
+            testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr12.txt";
         }
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
@@ -683,6 +700,7 @@ public class HttpUtils {
         str.seek(25350000);
         byte[] buffer = new byte[80000];
         str.read(buffer);
+        String result = new String(buffer);
         for (int i = 0; i < expectedBytes.length; i++) {
             if (buffer[i] != expectedBytes[i]) {
                 return false;
