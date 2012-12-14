@@ -322,10 +322,11 @@ public class TrackLoader {
             t.setMargin(0);
             newTracks.add(t);
 
-            if(t.isShowReviewOption() && allSamples.contains(t.getPreferentialSampleName())){
+            if(t.shouldLoadReviewTrack(allSamples)){
                 VariantTrack reviewTrack = loadVariantReview(new ResourceLocator(t.getDbSpecPath()));
                 reviewTrack.setMargin(0);
-                newTracks.add(reviewTrack);
+                newTracks.add(0, reviewTrack);
+                VariantTrack.hasReviewTrack = true;
             }
         } else {
 

@@ -1061,6 +1061,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return selectedSamples;
     }
 
+    public static boolean hasReviewTrack = false;
+    public boolean shouldLoadReviewTrack(List<String> allSamples) {
+        if(hasReviewTrack || !isShowReviewOption()){
+            return false;
+        }
+        return allSamples.contains(getPreferentialSampleName());
+    }
+
     public static enum ColorMode {
         GENOTYPE, METHYLATION_RATE, ALLELE
     }
