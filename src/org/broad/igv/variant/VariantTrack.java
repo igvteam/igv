@@ -32,6 +32,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
 import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 
 import java.awt.*;
@@ -160,6 +161,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     Map<String, String> alignmentFiles;
 
 
+    //TODO Experimental. Let user choose opinion and send info to DB
+    private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
+    final boolean showReviewOption;
+    public boolean isShowReviewOption(){
+        return showReviewOption;
+    }
+
+
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
@@ -188,15 +197,23 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
 
-        // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
-        if (IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
+        // Listen for "group by" events.
+        if (IGV.hasInstance()) {
+            IGV.getInstance().addGroupEventListener(this);
+        }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
         if (ParsingUtils.pathExists(bamListPath)) {
             loadAlignmentMappings(bamListPath);
-
         }
+
+        //TODO Experimental, view reviewed variants
+        showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
+        if(isShowReviewOption()){
+            //allSamples.add("Reviews");
+        }
+
 
     }
 
@@ -612,12 +629,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         if (grouped) {
             for (List<String> sampleList : samplesByGroups.values()) {
-                renderAttibuteBand(g2D, bandRectangle, visibleRectangle, attributeNames, sampleList, mouseRegions);
+                renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, sampleList, mouseRegions);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
             }
         } else {
-            renderAttibuteBand(g2D, bandRectangle, visibleRectangle, attributeNames, allSamples, mouseRegions);
+            renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, allSamples, mouseRegions);
 
         }
 
@@ -640,7 +657,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Render attribues for a sample.   This is mostly a copy of AbstractTrack.renderAttibutes().
+     * Render attributes for a sample.   This is mostly a copy of AbstractTrack.renderAttributes().
      * TODO -- refactor to eliminate duplicate code from AbstractTrack
      *
      * @param g2D
@@ -651,8 +668,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @param mouseRegions
      * @return
      */
-    private void renderAttibuteBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
-                                    List<String> attributeNames, List<String> sampleList, List<MouseableRegion> mouseRegions) {
+    private void renderAttributeBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                                     List<String> attributeNames, List<String> sampleList, List<MouseableRegion> mouseRegions) {
 
 
         for (String sample : sampleList) {
@@ -917,7 +934,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 ((position < feature.getStart() - maxDistance) || (position > feature.getEnd() + maxDistance))) {
             return null;
         } else {
-            return (Variant) feature;     // TODO -- don't like this cast
+            return (Variant) feature;
         }
     }
 
@@ -1171,7 +1188,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             }
         }
 
-        return new VariantMenu(this, getSampleAtPosition(te.getMouseEvent().getY()), selectedVariant);
+        return new VariantMenu(this, selectedVariant);
     }
 
 
@@ -1447,5 +1464,19 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
+    }
+
+    private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
+    private static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
+
+    private static final String PREFERENTIAL_SAMPLE_KEY = "PREFERENTIAL_SAMPLE";
+    private static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
+
+    static String getPreferentialSampleName() {
+        return IGV.getInstance().getSession().getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
+    }
+
+    static String getDBPath(){
+        return IGV.getInstance().getSession().getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
     }
 }

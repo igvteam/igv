@@ -42,9 +42,7 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
-
-    public VariantMenu(final VariantTrack variantTrack, final String sample, final Variant variant) {
+    public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
 
         this.track = variantTrack;
 
@@ -141,9 +139,7 @@ public class VariantMenu extends IGVPopupMenu {
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
 
-        //TODO Experimental. Let user choose opinion and send info to DB
-        boolean showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
-        if (showReviewOption) {
+        if (track.isShowReviewOption()) {
             addSeparator();
             JMenuItem review = new JMenuItem("Submit Review to DB");
             review.addActionListener(new ActionListener() {
