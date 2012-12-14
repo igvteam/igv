@@ -17,6 +17,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureSource;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
 import org.broadinstitute.sting.utils.GenomeLocParser;
@@ -40,8 +41,8 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
     private NA12878KnowledgeBase kb;
     private GenomeLocParser parser;
 
-    public NA12878KBReviewSource(String dbSpecPath){
-        this.args = new NA12878DBArgumentCollection(dbSpecPath);
+    public NA12878KBReviewSource(ResourceLocator locator){
+        this.args = new NA12878DBArgumentCollection(locator.getPath());
         parser = createGenomeLocParser();
 
     }
@@ -71,12 +72,13 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
 
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
-        criteria.addInterval(chr, start + 1, end).onlyReviewed();
+        criteria.addInterval(chromoNameToStandard(chr), start + 1, end).onlyReviewed();
         SiteIterator<MongoVariantContext> iterator  = kb.getCalls(criteria);
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
             MongoVariantContext mvc = iterator.next();
-            VCFVariant vcf = new VCFVariant(mvc.getVariantContext(), mvc.getChr());
+            VariantContext vc = mvc.getVariantContext();
+            VCFVariant vcf = new VCFVariant(vc, mvc.getChr());
             variants.add(vcf);
         }
         return variants.iterator();
@@ -98,10 +100,20 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
         this.featureWindowSize = size;
     }
 
+    /**
+     * TODO This chromosome replacement is a hack
+     * The db uses digits, IGV uses "chr#"
+     * @param chromoName
+     * @return
+     */
+    private String chromoNameToStandard(String chromoName){
+        return chromoName.toLowerCase().replace("chr", "");
+    }
+
     private GenomeLocParser createGenomeLocParser(){
         SAMSequenceDictionary dict = new SAMSequenceDictionary();
         for(Chromosome chr: GenomeManager.getInstance().getCurrentGenome().getChromosomes()){
-            dict.addSequence(new SAMSequenceRecord(chr.getName(), chr.getLength()));
+            dict.addSequence(new SAMSequenceRecord(chromoNameToStandard(chr.getName()), chr.getLength()));
         }
         return new GenomeLocParser(dict);
     }
@@ -115,5 +127,9 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
         mvc.setReviewed(true);
         return mvc;
     }
+
+
+
+
 
 }

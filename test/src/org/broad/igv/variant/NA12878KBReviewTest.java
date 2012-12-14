@@ -14,6 +14,7 @@ package org.broad.igv.variant;
 import com.mongodb.WriteResult;
 import junit.framework.Assert;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
@@ -76,7 +77,7 @@ public class NA12878KBReviewTest extends AbstractHeadlessTest{
         }
         Assume.assumeTrue(errorsResetting == 0);
 
-        source = new NA12878KBReviewSource(dbSpecPath);
+        source = new NA12878KBReviewSource(new ResourceLocator(dbSpecPath));
     }
 
     private boolean checkFeatureNotPresent() throws Exception{

@@ -210,11 +210,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         //TODO Experimental, view reviewed variants
         showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
-        if(isShowReviewOption()){
-            //allSamples.add("Reviews");
-        }
-
-
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -1475,14 +1470,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     private String preferentialSampleName;
     private String dbSpecPath;
 
-    String getPreferentialSampleName() {
+    public String getPreferentialSampleName() {
         if(preferentialSampleName == null){
             preferentialSampleName = IGV.getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
         }
         return preferentialSampleName;
     }
 
-    String getDbSpecPath(){
+    public String getDbSpecPath(){
         if(dbSpecPath == null){
             dbSpecPath = IGV.getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
         }
@@ -1495,5 +1490,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     void setDbSpecPath(String dbSpecPath){
         this.dbSpecPath = dbSpecPath;
+    }
+
+    /**
+     * Used to force a refresh
+     */
+    void clearPackedFeatures(){
+        this.packedFeaturesMap.clear();
     }
 }

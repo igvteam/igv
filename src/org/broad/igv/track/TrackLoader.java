@@ -64,6 +64,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.variant.NA12878KBReviewSource;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
@@ -75,10 +76,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: jrobinso
@@ -323,6 +321,12 @@ public class TrackLoader {
             // VCF tracks handle their own margin
             t.setMargin(0);
             newTracks.add(t);
+
+            if(t.isShowReviewOption() && allSamples.contains(t.getPreferentialSampleName())){
+                VariantTrack reviewTrack = loadVariantReview(new ResourceLocator(t.getDbSpecPath()));
+                reviewTrack.setMargin(0);
+                newTracks.add(reviewTrack);
+            }
         } else {
 
             // Create feature source and track
@@ -350,6 +354,14 @@ public class TrackLoader {
 
     }
 
+    private VariantTrack loadVariantReview(ResourceLocator locator){
+        //TODO Figure out how to name the samples properly
+        List<String> allSamples = Collections.emptyList();
+        NA12878KBReviewSource source = new NA12878KBReviewSource(locator);
+        VariantTrack track = new VariantTrack(locator, source, allSamples, false);
+        return track;
+    }
+
 
     private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
@@ -374,7 +386,6 @@ public class TrackLoader {
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);
-
     }
 
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

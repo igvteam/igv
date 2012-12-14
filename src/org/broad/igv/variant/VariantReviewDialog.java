@@ -16,6 +16,8 @@
 package org.broad.igv.variant;
 
 import com.mongodb.WriteResult;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
@@ -113,6 +115,13 @@ public class VariantReviewDialog extends JDialog {
             MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
         } else {
             setVisible(false);
+            //Find the track showing results, clear it to force a refresh
+            for(Track t: IGV.getInstance().getFeatureTracks()){
+                if(t instanceof VariantTrack){
+                    ((VariantTrack) t).clearPackedFeatures();
+                }
+            }
+            IGV.getInstance().repaintDataPanels();
         }
     }
 
