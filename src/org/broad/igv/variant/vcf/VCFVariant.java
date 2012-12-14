@@ -199,8 +199,9 @@ public class VCFVariant implements Variant {
 
     @Override
     public Genotype getGenotype(String sample) {
-        // TODO -- cache these rather than make a new object each call?
-        return new VCFGenotype(variantContext.getGenotype(sample));
+        org.broadinstitute.sting.utils.variantcontext.Genotype gt = variantContext.getGenotype(sample);
+        if(gt == null) return null;
+        return new VCFGenotype(gt);
     }
 
     public Collection<String> getFilters() {
