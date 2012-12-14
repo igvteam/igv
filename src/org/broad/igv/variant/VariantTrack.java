@@ -1467,16 +1467,33 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
-    private static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
+    public static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
 
     private static final String PREFERENTIAL_SAMPLE_KEY = "PREFERENTIAL_SAMPLE";
-    private static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
+    public static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
 
-    static String getPreferentialSampleName() {
-        return IGV.getInstance().getSession().getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
+    private String preferentialSampleName;
+    private String dbSpecPath;
+
+    String getPreferentialSampleName() {
+        if(preferentialSampleName == null){
+            preferentialSampleName = IGV.getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
+        }
+        return preferentialSampleName;
     }
 
-    static String getDBPath(){
-        return IGV.getInstance().getSession().getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
+    String getDbSpecPath(){
+        if(dbSpecPath == null){
+            dbSpecPath = IGV.getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
+        }
+        return dbSpecPath;
+    }
+
+    void setPreferentialSampleName(String preferentialSampleName){
+        this.preferentialSampleName = preferentialSampleName;
+    }
+
+    void setDbSpecPath(String dbSpecPath){
+        this.dbSpecPath = dbSpecPath;
     }
 }

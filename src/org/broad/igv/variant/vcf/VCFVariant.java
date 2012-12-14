@@ -257,6 +257,9 @@ public class VCFVariant implements Variant {
 
     }
 
+    public String getSource(){
+        return variantContext.getSource();
+    }
 
     public VariantContext getVariantContext() {
         return variantContext;

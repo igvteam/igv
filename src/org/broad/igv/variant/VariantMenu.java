@@ -146,7 +146,7 @@ public class VariantMenu extends IGVPopupMenu {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     VariantContext vc = VCFVariant.getVariantContext(variant);
-                    (new VariantReviewDialog(IGV.getMainFrame(), vc)).setVisible(true);
+                    (new VariantReviewDialog(IGV.getMainFrame(), track, vc)).setVisible(true);
                 }
             });
             add(review);

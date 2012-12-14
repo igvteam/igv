@@ -1306,6 +1306,24 @@ public class IGV {
 
 
     /**
+     * Uses either current session.getPersistent, or preferences, depending
+     * on if IGV has an instance or not. Generally intended for testing
+     * @see Session#getPersistent(String, String)
+     * @see PreferenceManager#getPersistent(String, String)
+     * @param key
+     * @param def
+     * @return
+     */
+    public static String getPersistent(String key, String def){
+        if(IGV.hasInstance()){
+            return IGV.getInstance().getSession().getPersistent(key, def);
+        }else{
+            return PreferenceManager.getInstance().getPersistent(key, def);
+        }
+    }
+
+
+    /**
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {

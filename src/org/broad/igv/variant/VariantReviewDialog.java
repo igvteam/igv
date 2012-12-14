@@ -17,8 +17,10 @@ package org.broad.igv.variant;
 
 import com.mongodb.WriteResult;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
-import org.broadinstitute.sting.utils.variantcontext.Allele;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878KnowledgeBase;
+import org.broadinstitute.sting.gatk.walkers.na12878kb.core.TruthStatus;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
@@ -31,7 +33,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Dialog for reviewing a variant from a VCF file.
@@ -43,13 +44,15 @@ public class VariantReviewDialog extends JDialog {
 
     private VariantContext variantContext;
     private String userName;
+    private VariantTrack track;
 
-    public VariantReviewDialog(Frame owner, VariantContext vc) {
+    public VariantReviewDialog(Frame owner, VariantTrack track, VariantContext vc) {
         super(owner);
         initComponents();
 
         truthField.setModel(new DefaultComboBoxModel(TruthStatus.values()));
         genotypeTypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
+        this.track = track;
         this.variantContext = vc;
         this.userName = System.getProperty("user.name", "unknown");
 
@@ -84,7 +87,6 @@ public class VariantReviewDialog extends JDialog {
 
         String callsetName = callsetField.getText();
         TruthStatus truthStatus = (TruthStatus) truthField.getSelectedItem();
-        List<Allele> alleleList = variantContext.getAlleles();
 
         int allele0 = -1;
         int allele1 = -1;
@@ -102,13 +104,27 @@ public class VariantReviewDialog extends JDialog {
                 allele1 = 1;
                 break;
         }
-        MongoGenotype mgt = new MongoGenotype(allele0, allele1);
-        Genotype gt = mgt.toGenotype(alleleList);
-        MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
-        mvc.setReviewed(true);
 
-        String dbPathString = VariantTrack.getDBPath();
-        NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbPathString);
+
+        MongoVariantContext mvc = NA12878KBReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus);
+        String errorMessage = addCall(this.track.getDbSpecPath(), mvc);
+
+        if (errorMessage != null) {
+            MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
+        } else {
+            setVisible(false);
+        }
+    }
+
+    /**
+     * Add the specified mvc to the specified database
+     * @param dbSpecPath
+     * @param mvc
+     * @return
+     */
+    static String addCall(String dbSpecPath, MongoVariantContext mvc){
+
+        NA12878DBArgumentCollection args = new NA12878DBArgumentCollection(dbSpecPath);
 
         String errorMessage = null;
         NA12878KnowledgeBase kb = null;
@@ -118,15 +134,12 @@ public class VariantReviewDialog extends JDialog {
             errorMessage = wr.getError();
         } catch (Exception ex) {
             errorMessage = ex.getMessage();
+            if(errorMessage == null) errorMessage = "" + ex;
         } finally {
             if (kb != null) kb.close();
         }
 
-        if (errorMessage != null) {
-            MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
-        } else {
-            setVisible(false);
-        }
+        return errorMessage;
     }
 
     private void truthFieldItemStateChanged(ItemEvent e) {
@@ -143,7 +156,7 @@ public class VariantReviewDialog extends JDialog {
     private void initGenotypeTypeField(VariantContext variant) {
         String mutationString = null;
         GenotypeType gtt = GenotypeType.NO_CALL;
-        String prefSampleName = VariantTrack.getPreferentialSampleName();
+        String prefSampleName = this.track.getPreferentialSampleName();
 
         //If there is only one sample, or we find the preferential sample,
         //use that data.
