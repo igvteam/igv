@@ -102,9 +102,7 @@ public class VariantMenu extends IGVPopupMenu {
         addSeparator();
         for (JMenuItem item : getSortMenuItems(variant)) {
             add(item);
-            if (variant == null) {
-                item.setEnabled(false);
-            }
+            item.setEnabled(variant != null);
         }
 
         //Variant Information
@@ -148,15 +146,15 @@ public class VariantMenu extends IGVPopupMenu {
         if (showReviewOption) {
             addSeparator();
             JMenuItem review = new JMenuItem("Submit Review to DB");
-            final VariantContext vc = VCFVariant.getVariantContext(variant);
             review.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    VariantContext vc = VCFVariant.getVariantContext(variant);
                     (new VariantReviewDialog(IGV.getMainFrame(), vc)).setVisible(true);
                 }
             });
             add(review);
-
+            review.setEnabled(variant != null);
         }
     }
 
