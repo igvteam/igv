@@ -363,9 +363,9 @@ public class CoverageCounter {
                                 // If both postExtFactor and extFactor are specified, postExtFactor takes precedence
                                 if (postExtFactor > 0) {
                                     if (readNegStrand) {
-                                        adjustedStart = Math.max(0, blockStart - postExtFactor);
+                                        adjustedStart = Math.max(0, blockEnd - postExtFactor);
                                     } else {
-                                        adjustedEnd = blockEnd + postExtFactor;
+                                        adjustedEnd = blockStart + postExtFactor;
                                     }
 
                                 } else if (extFactor > 0) {
