@@ -28,6 +28,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.session.Persistable;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.session.Session;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
@@ -849,9 +851,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> attrs = super.getPersistentState();
-        attrs.putAll(renderOptions.getPersistentState());
+    public RecursiveAttributes getPersistentState() {
+        RecursiveAttributes attrs = super.getPersistentState();
+        attrs.putAll(renderOptions.getPersistentState().getAttributes());
 
         if (dataManager.isShowSpliceJunctions()) {
             attrs.put("showSpliceJunctions", String.valueOf(dataManager.isShowSpliceJunctions()));
@@ -861,8 +863,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public void restorePersistentState(Map<String, String> attributes) {
-        super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
+    public void restorePersistentState(RecursiveAttributes attributes) {
+        super.restorePersistentState(attributes);
         renderOptions.restorePersistentState(attributes);
 
         String spliceJunctionOption = attributes.get("showSpliceJunctions");
@@ -913,7 +915,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         refresh();
     }
 
-    public static class RenderOptions {
+    public static class RenderOptions implements Persistable{
 
         ShadeBasesOption shadeBasesOption;
         boolean shadeCenters;
@@ -990,7 +992,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
          *
          * @return
          */
-        public Map<String, String> getPersistentState() {
+        public RecursiveAttributes getPersistentState() {
             Map<String, String> attributes = new HashMap();
             PreferenceManager prefs = PreferenceManager.getInstance();
             if (shadeBasesOption != DEFAULT_SHADE_BASES_OPTION) {
@@ -1027,17 +1029,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 attributes.put("sortByTag", sortByTag);
             }
 
-            return attributes;
+            return new RecursiveAttributes("renderOptions", attributes);
         }
 
         /**
          * Called by session reader.  Restores state of object.
          *
-         * @param attributes
+         * @param recursiveAttributes
          */
-        public void restorePersistentState(Map<String, String> attributes) {
+        @Override
+        public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
 
             String value;
+            Map<String, String> attributes = recursiveAttributes.getAttributes();
             value = attributes.get("insertSizeThreshold");
             if (value != null) {
                 maxInsertSize = Integer.parseInt(value);

@@ -18,6 +18,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -695,10 +696,13 @@ public abstract class AbstractTrack implements Track {
      *
      * @return
      */
-
-    public Map<String, String> getPersistentState() {
+    @Override
+    public RecursiveAttributes getPersistentState() {
 
         LinkedHashMap<String, String> attributes = new LinkedHashMap();
+
+        attributes.put(IGVSessionReader.SessionAttribute.ID.getText(), getId());
+        attributes.put(IGVSessionReader.SessionAttribute.NAME.getText(), getName());
 
         // Color scale
         if (colorScale != null && !colorScale.isDefault()) {
@@ -761,17 +765,52 @@ public abstract class AbstractTrack implements Track {
         }
 
         attributes.put("fontSize", String.valueOf(fontSize));
-
         attributes.put(IGVSessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
-
         attributes.put(IGVSessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
 
 
-        return attributes;
+        List<RecursiveAttributes> children = null;
+        if (hasDataRange()) {
+            DataRange dr = getDataRange();
+            if (dr != null) {
+                RecursiveAttributes child = new RecursiveAttributes(IGVSessionReader.SessionElement.DATA_RANGE.getText(),
+                        dr.getPersistentState().getAttributes());
+                children = Arrays.asList(child);
+            }
+        }
+
+        RecursiveAttributes recursiveAttributes = new RecursiveAttributes(IGVSessionReader.SessionElement.TRACK.getText(),
+                attributes, children);
+
+        return recursiveAttributes;
     }
 
+    @Override
+    public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
+        String name = recursiveAttributes.getName();
+        if(IGVSessionReader.SessionElement.TRACK.getText().equals(name)){
+            restorePersistentTrackAttributes(recursiveAttributes.getAttributes());
+        }else if(IGVSessionReader.SessionElement.DATA_RANGE.getText().equals(name)){
+            DataRange dr = getDataRange();
+            dr.restorePersistentState(recursiveAttributes);
+            setDataRange(dr);
+        }
 
-    public void restorePersistentState(Map<String, String> attributes) {
+        List<RecursiveAttributes> children = recursiveAttributes.getChildren();
+        if(children != null){
+            for(RecursiveAttributes child: children){
+                restorePersistentState(child);
+            }
+        }
+
+
+    }
+
+    /**
+     * Restore attributes from track tag, no children
+     * @param attributes
+     */
+    private void restorePersistentTrackAttributes(Map<String, String> attributes) {
 
         String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
         String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
@@ -788,7 +827,7 @@ public abstract class AbstractTrack implements Track {
 
         if (colorScale != null) {
             ColorScale cs = ColorScaleFactory.getScaleFromString(colorScale);
-            // This test should not be neccessary, refactor to eliminate it
+            // This test should not be necessary, refactor to eliminate it
             if (cs instanceof ContinuousColorScale) {
                 this.setColorScale((ContinuousColorScale) cs);
             }
@@ -916,7 +955,6 @@ public abstract class AbstractTrack implements Track {
                 log.error("Error restoring featureVisibilityWindow: " + fvw);
             }
         }
-
 
     }
 

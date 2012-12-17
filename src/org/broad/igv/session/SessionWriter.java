@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.session;
 
@@ -23,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.renderer.DataRange;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
 import org.broad.igv.track.AttributeManager;
@@ -34,7 +26,6 @@ import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
@@ -47,7 +38,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -351,23 +345,7 @@ public class SessionWriter {
                 for (Track track : tracks) {
 
                     Element trackElement = document.createElement(SessionElement.TRACK.getText());
-                    trackElement.setAttribute(IGVSessionReader.SessionAttribute.ID.getText(), track.getId());
-                    trackElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), track.getName());
-                    for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
-                        trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
-                    }
-
-                    // TODO -- DataRange element,  create element, append as child to track
-                    if (track.hasDataRange()) {
-                        DataRange dr = track.getDataRange();
-                        if (dr != null) {
-                            Element drElement = document.createElement(SessionElement.DATA_RANGE.getText());
-                            for (Map.Entry<String, String> attrValue : dr.getPersistentState().entrySet()) {
-                                drElement.setAttribute(attrValue.getKey(), attrValue.getValue());
-                            }
-                            trackElement.appendChild(drElement);
-                        }
-                    }
+                    RecursiveAttributes.writeElement(trackElement, document, track.getPersistentState());
 
                     panelElement.appendChild(trackElement);
                 }

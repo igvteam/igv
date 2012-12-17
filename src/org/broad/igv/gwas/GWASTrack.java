@@ -18,6 +18,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -38,9 +39,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-
-//import org.broad.igv.ui.IGVModel;
 
 /**
  * Created by IntelliJ IDEA.
@@ -760,8 +758,8 @@ public class GWASTrack extends AbstractTrack {
     }
 
     @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> attributes = super.getPersistentState();
+    public RecursiveAttributes getPersistentState() {
+        RecursiveAttributes attributes = super.getPersistentState();
         attributes.put("minPointSize", String.valueOf(minPointSize));
         attributes.put("maxPointSize", String.valueOf(maxPointSize));
         attributes.put("useChrColors", String.valueOf(useChrColors));
@@ -779,7 +777,7 @@ public class GWASTrack extends AbstractTrack {
     }
 
     @Override
-    public void restorePersistentState(Map<String, String> attributes) {
+    public void restorePersistentState(RecursiveAttributes attributes) {
         super.restorePersistentState(attributes);
 
         String tmp = attributes.get("minPointSize");
