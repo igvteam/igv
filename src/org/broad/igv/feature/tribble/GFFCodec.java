@@ -293,6 +293,15 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         if (attributes.containsKey("color")) {
             f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
         }
+        if (attributes.containsKey("Color")) {
+            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
+        }
+        if (attributes.containsKey("colour")) {
+            f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
+        }
+        if (attributes.containsKey("Colour")) {
+            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
+        }
 
 
         if (featuresToHide.contains(featureType)) {

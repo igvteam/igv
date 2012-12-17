@@ -120,6 +120,8 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
                 Exon exon = new Exon(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
 
+                if(bf.getColor() != null) exon.setColor(bf.getColor());
+
                 String sPhase = bf.getAttributes().remove(PHASE_STRING);
                 exon.setAttributes(bf.getAttributes());
 
@@ -322,6 +324,10 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
             for (Exon exon : exons) {
                 transcript.addExon(exon);
+
+                if(transcript.getColor() == null && exon.getColor() != null) {
+                    transcript.setColor(exon.getColor());
+                }
             }
 
 

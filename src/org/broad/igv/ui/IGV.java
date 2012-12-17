@@ -30,6 +30,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.affective.AffectiveGenome;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
@@ -914,6 +915,16 @@ public class IGV {
         createSnapshotNonInteractive(contentPane.getMainPanel(), file);
     }
 
+    /**
+     * Create a snapshot image of {@code target} and save it to {@code file}. The file type of the exported
+     * snapshot will be chosen by the extension of {@code file}, which must be a supported type.
+     *
+     * @see SnapshotFileChooser.SnapshotFileType
+     * @param target
+     * @param file
+     * @throws IOException
+     */
+    @api
     public void createSnapshotNonInteractive(Component target, File file) throws IOException {
 
         log.debug("Creating snapshot: " + file.getName());
@@ -1353,10 +1364,13 @@ public class IGV {
     }
 
     /**
-     * Method provided to jump to a locus synchronously.  Used for port command options
+     * Jump to a locus synchronously. {@code locus} can be any valid search term,
+     * including gene names. Genomic coordinates (e.g. "chr5:500-1000") are recommended
+     * Used for port command options
      *
      * @param locus
      */
+    @api
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
     }
@@ -1702,6 +1716,11 @@ public class IGV {
         }
     }
 
+    /**
+     * Group all alignment tracks
+     * @param option
+     */
+    @api
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {
