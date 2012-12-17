@@ -19,7 +19,7 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.plugin.batch.Command;
+import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;

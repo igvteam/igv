@@ -14,7 +14,7 @@ package org.broad.igv.batch;
 import org.apache.commons.lang.StringUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.dev.plugin.batch.Command;
+import org.broad.igv.dev.api.batch.Command;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RegionScoreType;
