@@ -16,6 +16,7 @@ package org.broad.igv.variant;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -1503,7 +1504,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * Used to force a refresh
      */
-    void clearPackedFeatures(){
+    @api
+    public void clearPackedFeatures(){
         this.packedFeaturesMap.clear();
     }
 }

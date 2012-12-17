@@ -9,12 +9,13 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.variant;
+package org.broad.igv.plugin.mongovariant;
 
 import com.mongodb.WriteResult;
 import junit.framework.Assert;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.variant.Allele;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
@@ -50,7 +51,7 @@ public class NA12878KBReviewTest extends AbstractHeadlessTest{
     private String callsetName = "test_callset";
     private TruthStatus truthStatus = TruthStatus.SUSPECT;
 
-    private String chr = "chr10";
+    private String chr = NA12878KBReviewSource.chromoNameToStandard("chr10");
     //0-based coords
     private int start = (int) 1e6;
     private int end = start + 1;

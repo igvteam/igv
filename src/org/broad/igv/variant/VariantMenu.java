@@ -12,6 +12,7 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.plugin.mongovariant.VariantReviewDialog;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
