@@ -20,6 +20,7 @@ import com.iontorrent.views.FlowSignalDistributionPanel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.blat.BlatClient;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Locus;
@@ -46,7 +47,6 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
-import org.broad.igv.blat.BlatClient;
 
 import javax.swing.*;
 import java.awt.*;
@@ -409,15 +409,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     /**
-     * Sort alignment rows based on alignments that intersent location
+     * Sort alignment rows based on alignments that intersect location
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
         dataManager.sortRows(option, referenceFrame, location, tag);
     }
 
     /**
-     * Sort alignment rows such that alignments that intersect from the center
-     * appear left to right by start position
+     * Visually regroup alignments by the provided {@code GroupOption}.
+     * @see AlignmentDataManager#repackAlignments(org.broad.igv.ui.panel.ReferenceFrame, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @param option
+     * @param referenceFrame
      */
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {

@@ -11,6 +11,8 @@
 
 package org.broad.igv.dev.api.batch;
 
+import org.broad.igv.dev.api.api;
+
 import java.util.List;
 
 /**
@@ -20,6 +22,7 @@ import java.util.List;
  * User: jacob
  * Date: 2012-Nov-30
  */
+@api
 public interface Command {
 
     /**

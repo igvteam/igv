@@ -45,8 +45,8 @@ public class AlignmentPacker {
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
-     * @param iter
-     * @param end
+     * @param iter Iterator of alignments, sorted by start position
+     * @param end  Last index of the last alignment
      * @param renderOptions
      */
     public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(

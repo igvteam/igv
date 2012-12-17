@@ -237,9 +237,11 @@ public class AlignmentDataManager {
     }
 
     /**
-     * Repack currently loaded alignments.
+     * Repack currently loaded alignments of the provided reference frame
+     * @see AlignmentPacker#packAlignments(java.util.Iterator, int, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      *
      * @param referenceFrame
+     * @param renderOptions
      */
     public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.RenderOptions renderOptions) {
 
