@@ -16,22 +16,64 @@ import org.broad.igv.Globals;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: jacob
  * Date: 2012-Aug-10
  */
 public class PluginFeatureSourceTest extends AbstractHeadlessTest {
+
+
+    @Test
+    public void testSimpleRuntimeIO() throws Exception{
+        String[] fullCmd = null;
+        String expLine = null;
+        int expLines = -1;
+        if(Globals.IS_MAC || Globals.IS_LINUX){
+            fullCmd = new String[]{"/bin/bash", "-c", "whereis bash"};
+            expLine = "/bin/bash";
+            expLines = 1;
+        }else if(Globals.IS_WINDOWS){
+            fullCmd = new String[]{"cmd","/C","ver"};
+            expLine = "Microsoft Windows";
+            expLines = 2;
+        }
+
+        Assume.assumeNotNull(fullCmd);
+        Process process = RuntimeUtils.startExternalProcess(fullCmd, null, null);
+        InputStream is = process.getInputStream();
+        BufferedReader bis = new BufferedReader(new InputStreamReader(is));
+
+        String line;
+        boolean foundLine = false;
+        int count = 0;
+
+        process.waitFor();
+        while((line = bis.readLine()) != null){
+            System.out.println(line);
+            count++;
+            foundLine |= line.contains(expLine);
+        }
+        assertTrue(foundLine);
+        assertEquals(expLines, count);
+    }
 
 
     @Test
