@@ -27,6 +27,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
+import org.broad.igv.util.collections.CollUtils;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -2868,7 +2869,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
             samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         } else {
             PreferenceManager prefMgr = PreferenceManager.getInstance();
-            if (ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(prefMgr.get(PreferenceManager.SAM_SHADE_BASES))) {
+            if (ShadeBasesOption.QUALITY ==
+                    CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(PreferenceManager.SAM_SHADE_BASES), ShadeBasesOption.QUALITY)) {
                 updatedPreferenceMap.put(
                         PreferenceManager.SAM_SHADE_BASES,
                         ShadeBasesOption.NONE.toString());
@@ -3663,7 +3665,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
         samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
         showCenterLineCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE));
-        samShadeMismatchedBaseCB.setSelected(ShadeBasesOption.QUALITY == ShadeBasesOption.valueOf(prefMgr.get(PreferenceManager.SAM_SHADE_BASES)));
+        samShadeMismatchedBaseCB.setSelected(ShadeBasesOption.QUALITY ==
+                CollUtils.valueOf(ShadeBasesOption.class, prefMgr.get(PreferenceManager.SAM_SHADE_BASES), ShadeBasesOption.QUALITY));
         samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN))));
         samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX))));
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
