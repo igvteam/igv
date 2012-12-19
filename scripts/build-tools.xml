@@ -10,7 +10,7 @@
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
 
-<project name="igvtools" basedir="../." default="create-nogenomes-zip">
+<project name="igvtools" basedir="../." default="create-both-zips">
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="docs.dir" value="${basedir}/docs"/>
     <property name="tmp.dir" value="tmp"/>
