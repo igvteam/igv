@@ -574,6 +574,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return output;
     }
 
+    @Override
+    public boolean isPrimary() {
+        return !record.getNotPrimaryAlignmentFlag();
+    }
+
     /**
      * @return the alignmentEnd
      */

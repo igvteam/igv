@@ -815,4 +815,9 @@ public class GobyAlignment implements Alignment {
     @Override
     public void finish() {
     }
+
+    @Override
+    public boolean isPrimary() {
+        return !EntryFlagHelper.isNotPrimaryAlignment(entry);
+    }
 }
