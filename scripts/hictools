@@ -1,2 +1,0 @@
-#!/bin/sh
-java -Djava.awt.headless=true  -Xmx4000m  -jar `dirname $0`/hictools.jar $*
