@@ -101,7 +101,7 @@ public class PluginSpecReaderTest {
         assertEquals("cat", toolName);
 
         String newpath = "/dev/zero";
-        PreferenceManager.getInstance().putPluginPath(reader.getId(), toolName, newpath);
+        PreferenceManager.getInstance().putToolPath(reader.getId(), toolName, newpath);
         assertEquals(newpath, reader.getToolPath(tool));
     }
 

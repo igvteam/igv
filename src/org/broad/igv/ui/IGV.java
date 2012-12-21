@@ -30,6 +30,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.affective.AffectiveGenome;
+import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
@@ -2369,9 +2370,12 @@ public class IGV {
                 }
             });
 
+            initIGVPlugins();
+
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
             }
+
         }
 
         private void setAppleDockIcon() {
@@ -2379,7 +2383,6 @@ public class IGV {
                 Image image = getIconImage();
                 OSXAdapter.setDockIconImage(image);
             } catch (Exception e) {
-                //ain't no thang
                 log.error("Error setting apple dock icon", e);
             }
         }
@@ -2391,8 +2394,25 @@ public class IGV {
             return image;
         }
 
-    }
 
+        private void initIGVPlugins(){
+            List<String> pluginClassNames = new ArrayList<String>(1);
+            //TODO Manually added for now
+            pluginClassNames.add("org.broad.igv.plugin.mongovariant.VariantReviewPlugin");
+            pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
+            for(String classname: pluginClassNames){
+                try {
+                    Class clazz = Class.forName(classname);
+                    IGVPlugin plugin = (IGVPlugin) clazz.newInstance();
+                    plugin.init();
+                } catch (Exception e) {
+                    log.error("Error loading " + classname, e);
+                }
+            }
+
+        }
+
+    }
 
     public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
         try {

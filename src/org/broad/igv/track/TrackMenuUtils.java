@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.blat.BlatClient;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -40,6 +41,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -59,6 +61,18 @@ public class TrackMenuUtils {
             WindowFunction.max,
             WindowFunction.none
     };
+
+    private static List<TrackMenuItemBuilder> trackMenuItems = new ArrayList<TrackMenuItemBuilder>();
+
+    /**
+     * Called by plugins to add a listener, which is then called when TrackMenus are created
+     * to generate menu entries.
+     * @param builder
+     */
+    @api
+    public static void addTrackMenuItemBuilder(TrackMenuItemBuilder builder){
+        trackMenuItems.add(builder);
+    }
 
 
     /**
@@ -86,6 +100,29 @@ public class TrackMenuUtils {
 
         return menu;
 
+    }
+
+    /**
+     * Add menu items which have been added through the api, not known until runtime
+     * @param menu
+     * @param tracks
+     * @param te
+     */
+    public static void addPluginItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {
+        List<JMenuItem> items = new ArrayList<JMenuItem>(0);
+        for(TrackMenuItemBuilder builder: trackMenuItems){
+            JMenuItem item = builder.build(tracks, te);
+            if(item != null){
+                items.add(item);
+            }
+        }
+
+        if(items.size() > 0){
+            menu.addSeparator();
+            for(JMenuItem item: items){
+                menu.add(item);
+            }
+        }
     }
 
     public static void addStandardItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {

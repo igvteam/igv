@@ -1156,22 +1156,29 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return toolTip;
     }
 
-
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-
+    /**
+     * Return the {@code Variant} object closest to the specified event
+     * @param te
+     * @return
+     */
+    @api
+    public Variant getSelectedVariant(final TrackClickEvent te){
         final ReferenceFrame referenceFrame = te.getFrame();
-        selectedVariant = null;
+        Variant selVariant = null;
         if (referenceFrame != null && referenceFrame.getName() != null) {
             final double position = te.getChromosomePosition();
             double maxDistance = 10 * referenceFrame.getScale();
-            Variant f = getFeatureClosest(position, maxDistance, referenceFrame);
-            // If more than ~ 20 pixels distance reject
-            if (f != null) {
-                selectedVariant = f;
-                IGV.getInstance().doRefresh();
-            }
+            selVariant = getFeatureClosest(position, maxDistance, referenceFrame);
         }
+        return selVariant;
+    }
 
+
+    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
+        selectedVariant = getSelectedVariant(te);
+        if(selectedVariant != null){
+            IGV.getInstance().doRefresh();
+        }
         return new VariantMenu(this, selectedVariant);
     }
 
