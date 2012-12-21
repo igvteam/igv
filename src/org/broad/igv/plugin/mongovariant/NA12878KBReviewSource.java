@@ -74,7 +74,7 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
 
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
-        criteria.addInterval(chromoNameToStandard(chr), start + 1, end).onlyReviewed();
+        criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
         SiteIterator<MongoVariantContext> iterator  = kb.getCalls(criteria);
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
