@@ -22,6 +22,7 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,9 +58,23 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private boolean readUnmappedFlag;
     private boolean readPairedFlag;
     private boolean properPairFlag;
+
+    /**
+     * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS.
+     * USE {@link #getRecord}. We use a soft reference
+     */
     private SAMRecord record;
-    private String cigarString;
+    private SoftReference<SAMRecord> softRecord;
+
+    /**
+     * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS
+     * USE {@link #getReadSequence}
+     */
     private String readSequence;
+    private SoftReference<String> softReadSequence;
+
+
+    private String cigarString;
     private boolean firstRead = false;
     private boolean secondRead = false;
     private String mateSequence = null;
@@ -109,17 +124,14 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * Whether to load read sequence / record / other data lazily.
      * Eventually we will likely remove this flag, here for easy testing
      */
-    public static final boolean LAZY_LOAD = Boolean.parseBoolean(System.getProperty("LAZY_LOAD", "false"));
-
-    // Default constructor to support unit tests
-    //SamAlignment() {}
-
+    public static final boolean DEFAULT_LAZY_LOAD = Boolean.parseBoolean(System.getProperty("DEFAULT_LAZY_LOAD", "false"));
 
     public SamAlignment(SAMRecord record) {
         flowOrder = null;
         String keySequence = null;
 
         this.record = record;
+        this.softRecord = new SoftReference<SAMRecord>(record);
         this.fileSource = record.getFileSource();
 
         String refName = record.getReferenceName();
@@ -139,7 +151,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.readUnmappedFlag = record.getReadUnmappedFlag();
         this.readPairedFlag = record.getReadPairedFlag();
         this.setInferredInsertSize(record.getInferredInsertSize());
+
         this.readSequence = record.getReadString();
+        this.softReadSequence = new SoftReference<String>(record.getReadString());
+
         this.readLength = record.getReadLength();
         this.firstInPair = record.getReadPairedFlag() ? record.getFirstOfPairFlag() : true;
 
@@ -567,16 +582,16 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public String getReadSequence() {
-        String output = readSequence;
-        if (output == null && LAZY_LOAD) {
-            output = getRecord().getReadString();
+        String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
+        if (readSequence == null) {
+            readSequence = getRecord().getReadString();
         }
-        return output;
+        return readSequence;
     }
 
     @Override
     public boolean isPrimary() {
-        return !record.getNotPrimaryAlignmentFlag();
+        return !getRecord().getNotPrimaryAlignmentFlag();
     }
 
     /**
@@ -625,9 +640,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @return The SAMRecord which created this SamAlignment
      */
     public SAMRecord getRecord() {
-        SAMRecord record = this.record;
-        if (record == null && LAZY_LOAD) {
+        SAMRecord record = this.record != null ? this.record : this.softRecord.get();
+        if (record == null) {
             SAMFileSource source = this.getFileSource();
+            if(source == null){
+                throw new IllegalStateException("SAMRecord is null but we don't have a file pointer to reload it");
+            }
             SAMFileSpan span = source.getFilePointer();
             SAMRecordIterator iter = source.getReader().iterator(span);
 
@@ -768,8 +786,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     @Override
     public void finish() {
         super.finish();
-        //To save memory
-        if (LAZY_LOAD && this.getFileSource() != null) {
+        if (DEFAULT_LAZY_LOAD && this.getFileSource() != null) {
             this.record = null;
             this.readSequence = null;
         }
