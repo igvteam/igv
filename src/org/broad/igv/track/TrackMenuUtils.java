@@ -16,6 +16,7 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.blat.BlatClient;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
@@ -32,12 +33,9 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.stats.KMPlotFrame;
-import org.broad.igv.blat.BlatClient;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,7 +73,6 @@ public class TrackMenuUtils {
             log.debug("enter getPopupMenu");
         }
 
-        //JidePopupMenu menu = new JidePopupMenu();
         IGVPopupMenu menu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
@@ -86,28 +83,6 @@ public class TrackMenuUtils {
         }
 
         addStandardItems(menu, tracks, te);
-
-        menu.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
-
-            }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            private void close() {
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().clearSelections();
-                    IGV.getInstance().repaint();
-                }
-            }
-
-        });
 
         return menu;
 

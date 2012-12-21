@@ -23,8 +23,6 @@ import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,32 +46,12 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean hasReviewTrack = false;
 
     public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
-
+        super();
         this.track = variantTrack;
 
         if (track.hasAlignmentFiles()) {
             selectedSamples = track.getSelectedSamples();
         }
-
-        this.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
-
-            }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            private void close() {
-                // track.clearSelectedVariant();
-            }
-
-        });
-
 
         //Title
         JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.LEFT);

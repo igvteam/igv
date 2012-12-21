@@ -51,7 +51,6 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.CollUtils;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -1181,7 +1180,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
-
+            super();
             Collection<Track> tracks = new ArrayList();
             tracks.add(AlignmentTrack.this);
 
