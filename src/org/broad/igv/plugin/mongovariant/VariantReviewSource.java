@@ -37,14 +37,14 @@ import java.util.List;
  * User: jacob
  * Date: 2012-Dec-14
  */
-public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
+public class VariantReviewSource implements FeatureSource<VCFVariant> {
 
     private int featureWindowSize = 1000000;
     private NA12878DBArgumentCollection args;
     private NA12878KnowledgeBase kb;
     private GenomeLocParser parser;
 
-    public NA12878KBReviewSource(ResourceLocator locator){
+    public VariantReviewSource(ResourceLocator locator){
         this.args = new NA12878DBArgumentCollection(locator.getPath());
         parser = createGenomeLocParser();
     }
@@ -134,7 +134,7 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
     public static VariantTrack loadVariantReview(ResourceLocator locator, List<Track> newTracks){
         //TODO Figure out how to name the samples properly
         List<String> allSamples = Collections.emptyList();
-        NA12878KBReviewSource source = new NA12878KBReviewSource(locator);
+        VariantReviewSource source = new VariantReviewSource(locator);
         VariantTrack track = new VariantTrack(locator, source, allSamples, false);
         newTracks.add(track);
         track.setMargin(0);

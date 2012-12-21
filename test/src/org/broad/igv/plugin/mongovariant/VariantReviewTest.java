@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * User: jacob
  * Date: 2012-Dec-14
  */
-public class NA12878KBReviewTest extends AbstractHeadlessTest{
+public class VariantReviewTest extends AbstractHeadlessTest{
 
     String dbSpecPath = "resources/NA12878kb_local.json";
 
@@ -51,14 +51,14 @@ public class NA12878KBReviewTest extends AbstractHeadlessTest{
     private String callsetName = "test_callset";
     private TruthStatus truthStatus = TruthStatus.SUSPECT;
 
-    private String chr = NA12878KBReviewSource.chromoNameToStandard("chr10");
+    private String chr = VariantReviewSource.chromoNameToStandard("chr10");
     //0-based coords
     private int start = (int) 1e6;
     private int end = start + 1;
     private List<String> alleles = Arrays.asList("A", "G");
     private MongoVariantContext mvc;
 
-    private NA12878KBReviewSource source;
+    private VariantReviewSource source;
 
     @Before
     public void setUp() throws Exception{
@@ -67,7 +67,7 @@ public class NA12878KBReviewTest extends AbstractHeadlessTest{
         //Convert from exclusive end to inclusive end
         builder.start(start + 1).stop(end).chr(chr).alleles(alleles);
         VariantContext vc = builder.make();
-        mvc = NA12878KBReviewSource.createMVC(allele0, allele1, callsetName, vc, truthStatus);
+        mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, vc, truthStatus);
 
         int errorsResetting = 0;
         try{
@@ -78,7 +78,7 @@ public class NA12878KBReviewTest extends AbstractHeadlessTest{
         }
         Assume.assumeTrue(errorsResetting == 0);
 
-        source = new NA12878KBReviewSource(new ResourceLocator(dbSpecPath));
+        source = new VariantReviewSource(new ResourceLocator(dbSpecPath));
     }
 
     private boolean checkFeatureNotPresent() throws Exception{
