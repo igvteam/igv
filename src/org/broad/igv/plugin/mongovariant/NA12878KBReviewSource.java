@@ -17,7 +17,9 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureSource;
+import org.broad.igv.track.Track;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
 import org.broadinstitute.sting.utils.GenomeLocParser;
@@ -27,6 +29,7 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,7 +47,6 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
     public NA12878KBReviewSource(ResourceLocator locator){
         this.args = new NA12878DBArgumentCollection(locator.getPath());
         parser = createGenomeLocParser();
-
     }
 
     private void initKB() {
@@ -129,8 +131,15 @@ public class NA12878KBReviewSource implements FeatureSource<VCFVariant> {
         return mvc;
     }
 
-
-
+    public static VariantTrack loadVariantReview(ResourceLocator locator, List<Track> newTracks){
+        //TODO Figure out how to name the samples properly
+        List<String> allSamples = Collections.emptyList();
+        NA12878KBReviewSource source = new NA12878KBReviewSource(locator);
+        VariantTrack track = new VariantTrack(locator, source, allSamples, false);
+        newTracks.add(track);
+        track.setMargin(0);
+        return track;
+    }
 
 
 }

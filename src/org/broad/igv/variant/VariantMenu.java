@@ -12,11 +12,13 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.plugin.mongovariant.NA12878KBReviewSource;
 import org.broad.igv.plugin.mongovariant.VariantReviewDialog;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
@@ -42,6 +44,8 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean genotypeSortingDirection;
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
+
+    static boolean hasReviewTrack = false;
 
     public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
 
@@ -139,21 +143,42 @@ public class VariantMenu extends IGVPopupMenu {
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
-
-        if (track.isShowReviewOption()) {
+        //Experimental, view reviewed variants
+        //TODO Add API Hooks so we can move this out of VariantMenu class
+        boolean showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
+        if (showReviewOption) {
             addSeparator();
-            JMenuItem review = new JMenuItem("Submit Review to DB");
-            review.addActionListener(new ActionListener() {
+
+            JMenuItem showReviewMenuItem = new JMenuItem("Load Review Track");
+            showReviewMenuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    List<Track> newTracks = new ArrayList<Track>(1);
+                    ResourceLocator locator = new ResourceLocator(VariantReviewDialog.getDbSpecPath());
+                    NA12878KBReviewSource.loadVariantReview(locator, newTracks);
+                    IGV.getInstance().addTracks(newTracks, locator);
+                    hasReviewTrack = true;
+                }
+            });
+            add(showReviewMenuItem);
+            showReviewMenuItem.setEnabled(!hasReviewTrack);
+
+            JMenuItem addReviewMenuItem = new JMenuItem("Submit Review to DB");
+            addReviewMenuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     VariantContext vc = VCFVariant.getVariantContext(variant);
-                    (new VariantReviewDialog(IGV.getMainFrame(), track, vc)).setVisible(true);
+                    (new VariantReviewDialog(IGV.getMainFrame(), vc)).setVisible(true);
                 }
             });
-            add(review);
-            review.setEnabled(variant != null);
+            add(addReviewMenuItem);
+            addReviewMenuItem.setEnabled(variant != null);
         }
     }
+
+    //TODO Experimental. Let user choose opinion and send info to DB
+    private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
+
 
     private JMenuItem getFeatureVisibilityItem() {
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");

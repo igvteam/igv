@@ -51,7 +51,6 @@ import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MultipleAlignmentTrack;
 import org.broad.igv.methyl.MethylTrack;
 import org.broad.igv.peaks.PeakTrack;
-import org.broad.igv.plugin.mongovariant.NA12878KBReviewSource;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
 import org.broad.igv.sam.reader.IndexNotFoundException;
@@ -76,7 +75,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: jrobinso
@@ -321,13 +323,6 @@ public class TrackLoader {
             // VCF tracks handle their own margin
             t.setMargin(0);
             newTracks.add(t);
-
-            if(t.shouldLoadReviewTrack(allSamples)){
-                VariantTrack reviewTrack = loadVariantReview(new ResourceLocator(t.getDbSpecPath()));
-                reviewTrack.setMargin(0);
-                newTracks.add(0, reviewTrack);
-                VariantTrack.hasReviewTrack = true;
-            }
         } else {
 
             // Create feature source and track
@@ -354,15 +349,6 @@ public class TrackLoader {
         }
 
     }
-
-    private VariantTrack loadVariantReview(ResourceLocator locator){
-        //TODO Figure out how to name the samples properly
-        List<String> allSamples = Collections.emptyList();
-        NA12878KBReviewSource source = new NA12878KBReviewSource(locator);
-        VariantTrack track = new VariantTrack(locator, source, allSamples, false);
-        return track;
-    }
-
 
     private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 

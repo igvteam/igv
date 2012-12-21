@@ -34,7 +34,6 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
-import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
 import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 
 import java.awt.*;
@@ -162,15 +161,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     Map<String, String> alignmentFiles;
 
-
-    //TODO Experimental. Let user choose opinion and send info to DB
-    private static final String SHOW_REVIEW_KEY = "SHOW_VARIANT_REVIEW";
-    final boolean showReviewOption;
-    public boolean isShowReviewOption(){
-        return showReviewOption;
-    }
-
-
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
@@ -209,9 +199,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (ParsingUtils.pathExists(bamListPath)) {
             loadAlignmentMappings(bamListPath);
         }
-
-        //TODO Experimental, view reviewed variants
-        showReviewOption = Boolean.parseBoolean(IGV.getInstance().getSession().getPersistent(SHOW_REVIEW_KEY, "false"));
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -1063,14 +1050,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return selectedSamples;
     }
 
-    public static boolean hasReviewTrack = false;
-    public boolean shouldLoadReviewTrack(List<String> allSamples) {
-        if(hasReviewTrack || !isShowReviewOption()){
-            return false;
-        }
-        return allSamples.contains(getPreferentialSampleName());
-    }
-
     public static enum ColorMode {
         GENOTYPE, METHYLATION_RATE, ALLELE
     }
@@ -1468,37 +1447,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
-    }
-
-    private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
-    public static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
-
-    private static final String PREFERENTIAL_SAMPLE_KEY = "PREFERENTIAL_SAMPLE";
-    public static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
-
-    private String preferentialSampleName;
-    private String dbSpecPath;
-
-    public String getPreferentialSampleName() {
-        if(preferentialSampleName == null){
-            preferentialSampleName = IGV.getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
-        }
-        return preferentialSampleName;
-    }
-
-    public String getDbSpecPath(){
-        if(dbSpecPath == null){
-            dbSpecPath = IGV.getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
-        }
-        return dbSpecPath;
-    }
-
-    void setPreferentialSampleName(String preferentialSampleName){
-        this.preferentialSampleName = preferentialSampleName;
-    }
-
-    void setDbSpecPath(String dbSpecPath){
-        this.dbSpecPath = dbSpecPath;
     }
 
     /**

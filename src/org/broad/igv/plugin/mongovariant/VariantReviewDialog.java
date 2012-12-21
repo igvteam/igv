@@ -40,22 +40,20 @@ import java.io.IOException;
 /**
  * Dialog for reviewing a variant from a VCF file.
  * The users opinion is submitted to a MongoDB, specified by
- * system property {@link org.broad.igv.variant.VariantTrack#DB_PATH_KEY}. Path can be relative to either the local machine,
+ * system property {@link VariantReviewDialog#DB_PATH_KEY}. Path can be relative to either the local machine,
  * or NA12878kb package or the GenomeAnalysisTK jar
  */
 public class VariantReviewDialog extends JDialog {
 
     private VariantContext variantContext;
     private String userName;
-    private VariantTrack track;
 
-    public VariantReviewDialog(Frame owner, VariantTrack track, VariantContext vc) {
+    public VariantReviewDialog(Frame owner, VariantContext vc) {
         super(owner);
         initComponents();
 
         truthField.setModel(new DefaultComboBoxModel(TruthStatus.values()));
         genotypeTypeField.setModel(new DefaultComboBoxModel(GenotypeType.values()));
-        this.track = track;
         this.variantContext = vc;
         this.userName = System.getProperty("user.name", "unknown");
 
@@ -110,7 +108,7 @@ public class VariantReviewDialog extends JDialog {
 
 
         MongoVariantContext mvc = NA12878KBReviewSource.createMVC(allele0, allele1, callsetName, variantContext, truthStatus);
-        String errorMessage = addCall(this.track.getDbSpecPath(), mvc);
+        String errorMessage = addCall(this.getDbSpecPath(), mvc);
 
         if (errorMessage != null) {
             MessageUtils.showErrorMessage(errorMessage, new IOException(errorMessage));
@@ -166,7 +164,7 @@ public class VariantReviewDialog extends JDialog {
     private void initGenotypeTypeField(VariantContext variant) {
         String mutationString = null;
         GenotypeType gtt = GenotypeType.NO_CALL;
-        String prefSampleName = this.track.getPreferentialSampleName();
+        String prefSampleName = this.getPreferentialSampleName();
 
         //If there is only one sample, or we find the preferential sample,
         //use that data.
@@ -189,6 +187,29 @@ public class VariantReviewDialog extends JDialog {
 
         genotypeTypeField.setSelectedItem(gtt);
         mutField.setText(mutationString);
+    }
+
+    private static final String DB_PATH_KEY = "VARIANT_DB_PATH";
+    public static final String DB_PATH_DEFAULT = NA12878DBArgumentCollection.DEFAULT_SPEC_PATH;
+
+    private static final String PREFERENTIAL_SAMPLE_KEY = "PREFERENTIAL_SAMPLE";
+    public static final String DEFAULT_PREFERENTIAL_SAMPLE = "NA12878";
+
+    private static String preferentialSampleName;
+    private static String dbSpecPath;
+
+    public static String getPreferentialSampleName() {
+        if(preferentialSampleName == null){
+            preferentialSampleName = IGV.getPersistent(PREFERENTIAL_SAMPLE_KEY, DEFAULT_PREFERENTIAL_SAMPLE);
+        }
+        return preferentialSampleName;
+    }
+
+    public static String getDbSpecPath(){
+        if(dbSpecPath == null){
+            dbSpecPath = IGV.getPersistent(DB_PATH_KEY, DB_PATH_DEFAULT);
+        }
+        return dbSpecPath;
     }
 
     private void initComponents() {
