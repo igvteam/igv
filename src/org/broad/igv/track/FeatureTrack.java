@@ -21,11 +21,9 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.broad.igv.util.collections.CachedIntervals;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
@@ -945,20 +943,6 @@ public class FeatureTrack extends AbstractTrack {
 
     public IGVFeature getSelectedFeature() {
         return selectedFeature;
-    }
-
-    @Override
-    public void restorePersistentState(Map<String, String> attributes) {
-        super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
-
-
-    }
-
-    @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> stateMap = super.getPersistentState();
-        return stateMap;
-
     }
 
     public static boolean isDrawBorder() {

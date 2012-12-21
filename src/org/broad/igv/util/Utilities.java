@@ -101,11 +101,13 @@ public class Utilities {
         HashMap<String, String> attributes = new HashMap();
 
         NamedNodeMap tNodeMap = node.getAttributes();
-        for (int i = 0; i < tNodeMap.getLength(); i++) {
-            Node nd = tNodeMap.item(i);
-            String value = nd.getNodeValue();
-            if (value != null && value.length() > 0) {
-                attributes.put(nd.getNodeName(), value);
+        if(tNodeMap != null){
+            for (int i = 0; i < tNodeMap.getLength(); i++) {
+                Node nd = tNodeMap.item(i);
+                String value = nd.getNodeValue();
+                if (value != null && value.length() > 0) {
+                    attributes.put(nd.getNodeName(), value);
+                }
             }
         }
         return attributes;

@@ -21,7 +21,6 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -914,19 +913,7 @@ public class IGVSessionReader implements SessionReader {
 
         String id = getAttribute(element, SessionAttribute.ID.getText());
 
-        Map<String, String> tAttributes = Utilities.getAttributes(element);
-
-        Map<String, String> drAttributes = null;
-
-
-        if (element.hasChildNodes()) {
-            Node childNode = element.getFirstChild();
-            Node sibNode = childNode.getNextSibling();
-            String sibName = sibNode.getNodeName();
-            if (sibName.equals(SessionElement.DATA_RANGE.getText())) {
-                drAttributes = Utilities.getAttributes(sibNode);
-            }
-        }
+        RecursiveAttributes trackAttributes = RecursiveAttributes.readElement(element);
 
         // Get matching tracks.
         List<Track> matchedTracks = trackDictionary.get(id);
@@ -941,16 +928,9 @@ public class IGVSessionReader implements SessionReader {
                     igv.removeTracks(Arrays.asList(track));
                 }
 
-                track.restorePersistentState(tAttributes);
-                if (drAttributes != null) {
-                    DataRange dr = track.getDataRange();
-                    dr.restorePersistentState(drAttributes);
-                    track.setDataRange(dr);
-                }
+                track.restorePersistentState(trackAttributes);
             }
             trackDictionary.remove(id);
-
-
         }
 
         NodeList elements = element.getChildNodes();

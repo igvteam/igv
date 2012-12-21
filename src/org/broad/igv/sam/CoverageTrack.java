@@ -26,6 +26,7 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -48,7 +49,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -611,8 +611,8 @@ public class CoverageTrack extends AbstractTrack {
      * @return
      */
     @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> attributes = super.getPersistentState();
+    public RecursiveAttributes getPersistentState() {
+        RecursiveAttributes attributes = super.getPersistentState();
         prefs = PreferenceManager.getInstance();
         if (snpThreshold != prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
             attributes.put("snpThreshold", String.valueOf(snpThreshold));
@@ -631,8 +631,8 @@ public class CoverageTrack extends AbstractTrack {
      * @param attributes
      */
     @Override
-    public void restorePersistentState(Map<String, String> attributes) {
-        super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
+    public void restorePersistentState(RecursiveAttributes attributes) {
+        super.restorePersistentState(attributes);
 
         String value;
         value = attributes.get("snpThreshold");

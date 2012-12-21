@@ -101,4 +101,6 @@ public interface Alignment extends LocusScore {
     Strand getReadStrand();
 
     void finish();
+
+    boolean isPrimary();
 }

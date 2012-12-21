@@ -17,6 +17,7 @@
 package org.broad.igv.renderer;
 
 import org.broad.igv.session.Persistable;
+import org.broad.igv.session.RecursiveAttributes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -121,8 +122,8 @@ public class DataRange implements Persistable {
         this.drawBaseline = drawBaseline;
     }
 
-
-    public Map<String, String> getPersistentState() {
+    @Override
+    public RecursiveAttributes getPersistentState() {
         Map<String, String> attributes = new HashMap();
         attributes.put("type", type.toString());
         attributes.put("minimum", String.valueOf(minimum));
@@ -130,11 +131,13 @@ public class DataRange implements Persistable {
         attributes.put("maximum", String.valueOf(maximum));
         attributes.put("flipAxis", String.valueOf(flipAxis));
         attributes.put("drawBaseline", String.valueOf(drawBaseline));
-        return attributes;
+        return new RecursiveAttributes(DataRange.class.getName(), attributes);
     }
 
-    public void restorePersistentState(Map<String, String> values) {
+    @Override
+    public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
 
+        Map<String, String> values = recursiveAttributes.getAttributes();
         //TODO Go through generically and set the types
         String typeString = values.get("type");
         if (typeString != null) {

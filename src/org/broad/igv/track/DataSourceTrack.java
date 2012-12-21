@@ -19,12 +19,12 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -90,8 +90,8 @@ public class DataSourceTrack extends DataTrack {
     }
 
     @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> properties = super.getPersistentState();
+    public RecursiveAttributes getPersistentState() {
+        RecursiveAttributes properties = super.getPersistentState();
         if (normalize != false) {
             properties.put("normalize", String.valueOf(normalize));
         }
@@ -100,7 +100,7 @@ public class DataSourceTrack extends DataTrack {
 
 
     @Override
-    public void restorePersistentState(Map<String, String> attributes) {
+    public void restorePersistentState(RecursiveAttributes attributes) {
         super.restorePersistentState(attributes);
         String as = attributes.get("normalize");
         if (as != null) {

@@ -29,6 +29,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -38,7 +39,6 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a track of numeric data
@@ -292,15 +292,15 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
     @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> properties = super.getPersistentState();
+    public RecursiveAttributes getPersistentState() {
+        RecursiveAttributes properties = super.getPersistentState();
         properties.put("autoScale", String.valueOf(autoScale));
         return properties;
     }
 
 
     @Override
-    public void restorePersistentState(Map<String, String> attributes) {
+    public void restorePersistentState(RecursiveAttributes attributes) {
         super.restorePersistentState(attributes);
         String as = attributes.get("autoScale");
         if (as != null) {
