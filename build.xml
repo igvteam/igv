@@ -167,6 +167,34 @@
         <build includedFileset="files"/>
     </target>
 
+    <condition property="isWindows">
+        <os family="windows" />
+    </condition>
+
+    <condition property="isLinux">
+        <os family="unix" />
+    </condition>
+
+    <condition property="isMac">
+        <os family="mac" />
+    </condition>
+
+    <!-- Copy launching scripts to dest dir, where igv.jar is -->
+    <target name="copy-launch-scripts-win" if="isWindows">
+        <copy file="scripts/igv.bat" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools.bat" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui.bat" todir="${dist.dir}" overwrite="false"/>
+    </target>
+    <target name="copy-launch-scripts-mac" if="isMac">
+        <copy file="scripts/igv.command" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui.command" todir="${dist.dir}" overwrite="false"/>
+    </target><target name="copy-launch-scripts-linux" if="isLinux">
+        <copy file="scripts/igv.sh" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui" todir="${dist.dir}" overwrite="false"/>
+    </target>
+
     <target name="build" depends="build-small,build-all"/>
 
     <target name="all" depends="build, clean"/>
