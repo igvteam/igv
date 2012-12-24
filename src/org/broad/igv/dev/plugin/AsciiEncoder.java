@@ -27,6 +27,13 @@ import java.util.Map;
  */
 public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
 
+    /**
+     * Current use-case is BEDTools, which requires unix-style
+     * line endings (linefeed). Instead of ending the line
+     * based on platform, we use a constant.
+     */
+    public static final String EOL_CHAR = "\n";
+
     protected LineFeatureEncoder<E> lineFeatureEncoder;
 
     public AsciiEncoder(LineFeatureEncoder<E> lineFeatureEncoder) {
@@ -52,7 +59,8 @@ public class AsciiEncoder<E extends Feature> implements FeatureEncoder<E> {
                 feature = features.next();
                 String line = encoder.encode(feature);
                 if (line == null) continue;
-                writer.println(line);
+                writer.print(line);
+                writer.print(EOL_CHAR);
 
                 //We do not require consistency of output
                 tmpNumCols = encoder.getNumCols(line);
