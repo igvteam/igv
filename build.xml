@@ -111,6 +111,17 @@
         </javac>
     </target>
 
+    <target name="build-runtime-utils" description="Create RuntimeUtils.jar in testlib directory. Necessary for profiling"
+            depends="compile">
+        <jar destfile="${testlib.dir}/RuntimeUtils.jar" basedir="${tmp.dir}" compress="true" duplicate="preserve">
+            <include name="org/broad/igv/util/RuntimeUtils.class"/>
+            <manifest>
+                <attribute name="Premain-Class" value="org.broad.igv.util.RuntimeUtils"/>
+            </manifest>
+    </jar>
+    </target>
+
+
     <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
                target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">

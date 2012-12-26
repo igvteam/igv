@@ -17,6 +17,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -108,5 +109,16 @@ public class RuntimeUtilsTest extends AbstractHeadlessTest {
 
         assertEquals(2, readlines);
         assertEquals(0, errlines);
+    }
+
+    @Test
+    public void testGetSize_String() throws Exception{
+        String testObj = "abcdefghi";
+        //Strings have some overhead: pointer itself, int offset,hash,count
+        //Not exactly sure how much memory a char[] takes up, doesn't seem precisely linear
+        long expSize = 32 + 32*3 + 32 + testObj.length()*16 + 8;
+
+        long actSize = RuntimeUtils.getObjectSizeRecursive(testObj, new HashSet<Object>());
+        assertEquals(String.format("Characters: %d. Difference: %d in size", testObj.length(), expSize - actSize), expSize, actSize);
     }
 }
