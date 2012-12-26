@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE igv_plugin SYSTEM "igv_plugin.dtd">
+<igv_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
+            id="org.broadinstitute.igv.plugin.bedtools">
+    <tool name="BEDTools" default_path="bedtools" tool_url="http://code.google.com/p/bedtools/"
+          description="bedtools: a flexible suite of utilities for comparing genomic features.">
+        <default>
+            <arg name="Arguments" cmd_arg="" type="text" default=""/>
+            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
+            <arg name="Track B" cmd_arg="-b" type="feature_track"
+                 encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
+
+            <parser format="bed" decoding_codec="org.broad.igv.cli_plugin.BEDToolsDecoder"
+                    strict="true" libs="BEDToolsPluginCodec.jar"/>
+        </default>
+
+        <command name="Intersect" cmd="intersect">
+            <arg name="Arguments" cmd_arg="" type="text" default="-bed -split"/>
+            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
+            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+        </command>
+
+        <command name="Remove/Subtract" cmd="subtract"/>
+
+        <command name="Closest" cmd="closest">
+            <parser strict="false" decoding_codec="org.broad.igv.cli_plugin.BEDToolsDecoder"/>
+        </command>
+
+        <command name="Window" cmd="window">
+            <arg name="Arguments" cmd_arg="-bed" type="text" default=""/>
+            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
+            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+        </command>
+
+        <command name="Coverage" cmd="coverage">
+            <arg name="Arguments" cmd_arg="" type="text" default="-split"/>
+            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
+            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+        </command>
+
+        <command name="Multi-intersect" cmd="multiinter">
+            <arg name="Arguments" type="text"/>
+            <arg name="Tracks" cmd_arg="-i" type="multi_feature_track"/>
+        </command>
+    </tool>
+</igv_plugin>

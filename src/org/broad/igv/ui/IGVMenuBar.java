@@ -16,9 +16,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.charts.ScatterPlotUtils;
-import org.broad.igv.dev.plugin.PluginSpecReader;
-import org.broad.igv.dev.plugin.ui.RunPlugin;
-import org.broad.igv.dev.plugin.ui.SetPluginPathDialog;
+import org.broad.igv.cli_plugin.PluginSpecReader;
+import org.broad.igv.cli_plugin.ui.RunPlugin;
+import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -158,19 +158,19 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         //-------------------------------------//
-        //"Add tool" option, for loading plugin from someplace else
+        //"Add tool" option, for loading cli_plugin from someplace else
         JMenuItem addTool = new JMenuItem("Add tool");
         addTool.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File pluginFi = FileDialogUtils.chooseFile("Select plugin .xml spec");
+                File pluginFi = FileDialogUtils.chooseFile("Select cli_plugin .xml spec");
                 if (pluginFi == null) return;
 
                 try {
                     PluginSpecReader.addCustomPlugin(pluginFi.getAbsolutePath());
                     refreshToolsMenu();
                 } catch (IOException e1) {
-                    MessageUtils.showErrorMessage("Error loading custom plugin", e1);
+                    MessageUtils.showErrorMessage("Error loading custom cli_plugin", e1);
                 }
             }
         });
