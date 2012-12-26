@@ -14,6 +14,7 @@ package org.broad.igv.util;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
@@ -111,6 +112,8 @@ public class RuntimeUtilsTest extends AbstractHeadlessTest {
         assertEquals(0, errlines);
     }
 
+    //Behavior is platform dependent
+    @Ignore
     @Test
     public void testGetSize_String() throws Exception{
         String testObj = "abcdefghi";
