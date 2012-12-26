@@ -24,7 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -54,57 +55,6 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         String path = System.getenv("PATH");
         //System.out.println("System path: " + path);
         assertNotNull(path);
-    }
-
-    //Test our ability to write to stdin and read from stdout
-    //XXX This test won't work on windows
-    //TODO Move this to RuntimeUtilsTest (which doesn't exist yet)
-    @Test
-    public void testWriteStdIn() throws Exception {
-        if (Globals.IS_WINDOWS) {
-            return;
-        }
-        Runtime run = Runtime.getRuntime();
-        Process pr = null;
-
-        String msg = "Never have I ever \n thought twas ever thus \n a good movie \n thus I'm glad it's over";
-        try {
-            pr = run.exec("/usr/bin/grep -i thus", null, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-        BufferedReader err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(pr.getOutputStream())), true);
-        out.println(msg);
-
-        String line;
-
-        out.flush();
-        out.close();
-        pr.waitFor();
-
-        int readlines = 0;
-        while ((line = in.readLine()) != null) {
-            //System.out.println(line);
-            readlines++;
-        }
-
-        in.close();
-
-
-        //System.out.println("errors:");
-
-        int errlines = 0;
-        while ((line = err.readLine()) != null) {
-            System.out.println(line);
-            errlines++;
-        }
-
-        assertEquals(2, readlines);
-        assertEquals(0, errlines);
-
     }
 
     private List<Feature> tstOperationBED3(String cmdArg, int expectedNumFeatures) throws Exception {
