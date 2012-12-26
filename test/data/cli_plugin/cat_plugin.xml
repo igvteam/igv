@@ -8,8 +8,8 @@
   ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
   ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
   -->
-<!DOCTYPE igv_plugin SYSTEM "../../../src/org/broad/igv/cli_plugin/resources/igv_plugin.dtd">
-<igv_plugin api_version="alpha" plugin_version="1.0" name="cat"
+<!DOCTYPE cli_plugin SYSTEM "../../../src/org/broad/igv/cli_plugin/resources/cli_plugin.dtd">
+<cli_plugin api_version="alpha" plugin_version="1.0" name="cat"
             id="org.broadinstitute.igv.plugin.cat">
     <tool name="cat" default_path="cat">
         <default>
@@ -21,4 +21,4 @@
         </default>
         <command name="Concatenate" cmd=""/>
     </tool>
-</igv_plugin>
+</cli_plugin>

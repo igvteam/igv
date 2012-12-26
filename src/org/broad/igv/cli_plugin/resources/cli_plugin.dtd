@@ -11,9 +11,9 @@
 
 <!--
 
-plugin.dtd
+cli_plugin.dtd
 
-An XML DTD specifying a plugin for IGV which accepts
+An XML DTD specifying a command line interface plugin for IGV which accepts
 some number of inputs from the user (which may be data loaded into IGV at runtime),
 and feeds those inputs to a command line program to create a new track.
 
@@ -23,7 +23,7 @@ Version Alpha
 -->
 
 <!--
-igv_plugin, the root element under which all elements are contained
+cli_plugin, the root element under which all elements are contained
 api_version
 	The API version of IGV this plugin targets. Current
 name
@@ -35,8 +35,8 @@ plugin_version
 plugin_url
     URL where the user can go for help / installation instructions.
  -->
-<!ELEMENT igv_plugin (tool+)>
-<!ATTLIST igv_plugin api_version (alpha) #REQUIRED
+<!ELEMENT cli_plugin (tool+)>
+<!ATTLIST cli_plugin api_version (alpha) #REQUIRED
     name CDATA #REQUIRED
     id CDATA #REQUIRED
     plugin_url CDATA #IMPLIED

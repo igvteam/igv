@@ -104,7 +104,7 @@ public class PluginSpecReader {
                 uri = url.toString();
             }
             document = builder.parse(uri);
-            success = document.getDocumentElement().getTagName().equals("igv_plugin");
+            success = document.getDocumentElement().getTagName().equals("cli_plugin");
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
