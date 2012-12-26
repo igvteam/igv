@@ -30,7 +30,7 @@ import java.util.Map;
  * User: jacob
  * Date: 2012/05/01
  */
-public class PluginFeatureSource extends PluginSource implements FeatureSource<Feature> {
+public class PluginFeatureSource extends PluginSource implements FeatureSource<Feature>{
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
@@ -97,5 +97,6 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
     public final void setFeatureWindowSize(int size) {
         //no-op
     }
+
 
 }

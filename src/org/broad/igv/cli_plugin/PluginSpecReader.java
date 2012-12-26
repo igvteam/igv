@@ -45,6 +45,8 @@ public class PluginSpecReader {
     public static final String BUILTIN_PLUGINS_FILENAME = "builtin_plugins.txt";
 
     public static final String TOOL_NAME_KEY = "name";
+    public static final String COMMAND = "command";
+    public static final String CMD_ARG = "cmd_arg";
 
     /**
      * List of plugins tha IGV knows about

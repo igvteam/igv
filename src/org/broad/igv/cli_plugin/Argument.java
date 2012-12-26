@@ -11,7 +11,10 @@
 
 package org.broad.igv.cli_plugin;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.session.Persistable;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.Utilities;
@@ -19,9 +22,20 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Argument {
+public class Argument implements Persistable{
+
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String CMD_ARG = "cmd_arg";
+    public static final String DEFAULT = "default";
+    public static final String ENCODING_CODEC = "encoding_codec";
+    public static final String LIBS = "libs";
+    public static final String OUTPUT = "output";
+    public static final String ID = "id";
 
     private static final Logger log = Logger.getLogger(Argument.class);
 
@@ -65,6 +79,25 @@ public class Argument {
         return encodingCodec;
     }
 
+    @Override
+    public RecursiveAttributes getPersistentState() {
+        Map<String, String> props = new HashMap<String, String>(10);
+        props.put(NAME, name);
+        props.put(TYPE, type.name());
+        props.put(CMD_ARG, cmdArg);
+        props.put(DEFAULT, defaultValue);
+        props.put(ENCODING_CODEC, encodingCodec);
+        props.put(LIBS, StringUtils.join(libURLs, ","));
+        props.put(OUTPUT, "" + output);
+        props.put(ID, id);
+        return new RecursiveAttributes("arg", props);
+    }
+
+    @Override
+    public void restorePersistentState(RecursiveAttributes values) {
+        //TODO
+    }
+
     public enum InputType {
         TEXT,
         LONGTEXT,
@@ -93,18 +126,18 @@ public class Argument {
 
     static Argument parseFromNode(Node node, String specPath) {
         NamedNodeMap attrs = node.getAttributes();
-        String name = Utilities.getNullSafe(attrs, "name");
-        InputType type = InputType.valueOf(Utilities.getNullSafe(attrs, "type").toUpperCase());
-        String cmdArg = Utilities.getNullSafe(attrs, "cmd_arg");
-        String defVal = Utilities.getNullSafe(attrs, "default");
-        String encCodec = Utilities.getNullSafe(attrs, "encoding_codec");
-        String libString = Utilities.getNullSafe(attrs, "libs");
+        String name = Utilities.getNullSafe(attrs, NAME);
+        InputType type = InputType.valueOf(Utilities.getNullSafe(attrs, TYPE).toUpperCase());
+        String cmdArg = Utilities.getNullSafe(attrs, PluginSpecReader.CMD_ARG);
+        String defVal = Utilities.getNullSafe(attrs, DEFAULT);
+        String encCodec = Utilities.getNullSafe(attrs, ENCODING_CODEC);
+        String libString = Utilities.getNullSafe(attrs, LIBS);
         libString = libString != null ? libString : "";
 
-        String soutput = Utilities.getNullSafe(attrs, "output");
+        String soutput = Utilities.getNullSafe(attrs, OUTPUT);
         boolean output = soutput == null || Boolean.parseBoolean(soutput);
 
-        String id = Utilities.getNullSafe(attrs, "id");
+        String id = Utilities.getNullSafe(attrs, ID);
         return new Argument(name, type, cmdArg, defVal, encCodec, libString, specPath, output, id);
     }
 

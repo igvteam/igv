@@ -11,10 +11,13 @@
 
 package org.broad.igv.cli_plugin;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.session.Persistable;
+import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.FileUtils;
@@ -34,7 +37,7 @@ import java.util.*;
  * User: jacob
  * Date: 2012/05/01
  */
-abstract class PluginSource<E extends Feature, D extends Feature> {
+abstract class PluginSource<E extends Feature, D extends Feature> implements Persistable{
 
     private static Logger log = Logger.getLogger(PluginSource.class);
 
@@ -50,11 +53,21 @@ abstract class PluginSource<E extends Feature, D extends Feature> {
     protected URL[] decodingLibURLs = new URL[0];
     protected String format = "bed";
 
+    protected String specPath = null;
+
     /**
      * For decoding, we may need to know how many columns
      * were written out in the first place
      */
     protected List<Map<String, Object>> attributes = new ArrayList<Map<String, Object>>(2);
+
+
+    private static final String DECODING_CODEC = "decoding_codec";
+    private static final String FORMAT = "format";
+    private static final String DECODING_LIBS = "libs";
+    private static final String STRICT = "strict";
+    private static final String VALUE = "value";
+
 
     public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
         this.commands = commands;
@@ -64,15 +77,17 @@ abstract class PluginSource<E extends Feature, D extends Feature> {
     }
 
     private void setParsingAttributes(Map<String, String> parsingAttrs, String specPath) {
-        this.decodingCodec = parsingAttrs.get("decoding_codec");
+        this.decodingCodec = parsingAttrs.get(DECODING_CODEC);
 
-        String tmpStrict = parsingAttrs.get("strict");
-        String fmt = parsingAttrs.get("format");
+        String tmpStrict = parsingAttrs.get(STRICT);
+        String fmt = parsingAttrs.get(FORMAT);
         this.format = fmt != null ? fmt : this.format;
         if (tmpStrict != null) this.strictParsing = Boolean.parseBoolean(tmpStrict);
-        String libs = parsingAttrs.get("libs");
+        String libs = parsingAttrs.get(DECODING_LIBS);
         libs = libs != null ? libs : "";
         decodingLibURLs = FileUtils.getURLsFromString(libs, specPath);
+
+        this.specPath = specPath;
     }
 
 
@@ -326,6 +341,92 @@ abstract class PluginSource<E extends Feature, D extends Feature> {
             throw new RuntimeException(e);
         }
 
+    }
+
+
+    @Override
+    public RecursiveAttributes getPersistentState() {
+        /**
+         * The structure here uses similar tags to the plugin XML spec, but is not exactly
+         * the same. Because one and only one command was actually used we don't need
+         * to nest as much. We also need to store argument values as well as inputs
+         */
+
+        Map<String, String> parentProps = new HashMap<String, String>(5);
+        parentProps.put(DECODING_CODEC, decodingCodec);
+        //TODO Less ambiguous name to not clash with argument
+        parentProps.put(DECODING_LIBS, StringUtils.join(decodingLibURLs, ","));
+        parentProps.put(FORMAT, format);
+        parentProps.put("specPath", specPath);
+
+        List<RecursiveAttributes> allChildren = new ArrayList<RecursiveAttributes>(4);
+
+
+        List<RecursiveAttributes> persCommands = new ArrayList<RecursiveAttributes>();
+        for(int ii=0; ii < commands.size(); ii++){
+            String command = commands.get(ii);
+            Map<String, String> props = new HashMap<String, String>(1);
+            props.put("value", command);
+            props.put("index", "" + ii);
+            RecursiveAttributes persCommand = new RecursiveAttributes(PluginSpecReader.CMD_ARG, props);
+            persCommands.add(persCommand);
+        }
+        RecursiveAttributes persCommandParent = new RecursiveAttributes(PluginSpecReader.COMMAND, Collections.<String, String>emptyMap(),
+                persCommands);
+
+
+        allChildren.add(persCommandParent);
+
+        for(Map.Entry<Argument, Object> entry: arguments.entrySet()){
+            Argument argument = entry.getKey();
+            List<String> values = null;
+            String sval;
+            switch (argument.getType()) {
+                case MULTI_FEATURE_TRACK:
+                    List<FeatureTrack> lVal = (List<FeatureTrack>) entry.getValue();
+                    values = new ArrayList<String>(lVal.size());
+                    for(FeatureTrack fTrack: lVal){
+                        values.add(fTrack.getId());
+                    }
+                    break;
+                case LONGTEXT:
+                case TEXT:
+                    sval = (String) entry.getValue();
+                    values = Arrays.asList(sval);
+                    break;
+                case FEATURE_TRACK:
+                case DATA_TRACK:
+                case ALIGNMENT_TRACK:
+                    sval = ((Track) entry.getValue()).getId();
+                    values = Arrays.asList(sval);
+                    break;
+            }
+
+            if(values == null) continue;
+
+            //Generate list of values for the argument
+            List<RecursiveAttributes> persValues = new ArrayList<RecursiveAttributes>();
+            for(String value: values){
+                Map<String, String> cprop = new HashMap<String, String>(1);
+                cprop.put(VALUE, value);
+                persValues.add(new RecursiveAttributes(VALUE, cprop));
+            }
+
+            //Group values together under relevant argument
+            RecursiveAttributes persArgument = argument.getPersistentState();
+            persArgument.getChildren().addAll(persValues);
+
+            //Arguments aren't grouped together, just put flat in the children of the highest level
+            allChildren.add(persArgument);
+        }
+
+        RecursiveAttributes overall = new RecursiveAttributes(getClass().getName(), parentProps, allChildren);
+        return overall;
+    }
+
+    @Override
+    public void restorePersistentState(RecursiveAttributes values) {
+        //TODO
     }
 
 }
