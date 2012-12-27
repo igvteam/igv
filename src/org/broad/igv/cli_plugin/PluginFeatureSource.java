@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A feature source which derives its information
@@ -35,7 +34,7 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
 
-    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
         super(commands, arguments, parsingAttrs, specPath);
     }
 

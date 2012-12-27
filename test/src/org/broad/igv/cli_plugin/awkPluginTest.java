@@ -59,7 +59,7 @@ public class awkPluginTest extends AbstractPluginTest {
             }
         }
 
-        Map<String, String> parsingAttrs = reader.getParsingAttributes(tool, command);
+        PluginSpecReader.Parser parsingAttrs = reader.getParsingAttributes(tool, command);
 
         String testFile = TestUtils.DATA_DIR + "bed/Unigene.sample.bed";
         FeatureTrack track = (FeatureTrack) (new TrackLoader()).load(new ResourceLocator(testFile), genome).get(0);

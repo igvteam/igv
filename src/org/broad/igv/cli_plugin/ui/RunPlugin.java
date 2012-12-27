@@ -41,7 +41,7 @@ public class RunPlugin extends JDialog {
     private List<Argument> argumentList;
     private List<String> cmd = new ArrayList<String>();
     private Map<Argument, ArgumentPanel> argumentComponents;
-    private Map<String, String> parsingAttrs;
+    private PluginSpecReader.Parser parsingAttrs;
 
     private String specPath;
 

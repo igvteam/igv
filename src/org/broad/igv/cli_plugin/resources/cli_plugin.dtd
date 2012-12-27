@@ -103,7 +103,7 @@ strict
 format
     The format returned. Must be a file extension readable by
     IGV.
-decoding_codec
+decodingCodec
     Class used for decoding the output.
     Takes precedence over format if both provided
 libs
@@ -115,8 +115,8 @@ libs
 <!ATTLIST parser
     strict (true|false) "true"
     format CDATA "bed"
-    libs CDATA #IMPLIED
-    decoding_codec CDATA #IMPLIED>
+    libs CDATA ""
+    decodingCodec CDATA #IMPLIED>
 
 
 <!-- arg element
@@ -146,7 +146,7 @@ output
     If true this argument is written to the command line
     If false it isn't. This is so we can feed inputs to a different command
 
-encoding_codec
+encodingCodec
     Optional; default is BED format
     Fully qualified class name to use for encoding features to strings.
     Only applies to data arguments. Must implement FeatureEncoder interface.
@@ -160,6 +160,6 @@ encoding_codec
     default CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
-    encoding_codec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec"
-    libs CDATA #IMPLIED>
+    encodingCodec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec"
+    libs CDATA "">
 

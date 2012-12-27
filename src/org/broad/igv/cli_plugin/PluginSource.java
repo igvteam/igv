@@ -62,32 +62,30 @@ abstract class PluginSource<E extends Feature, D extends Feature> implements Per
     protected List<Map<String, Object>> attributes = new ArrayList<Map<String, Object>>(2);
 
 
-    private static final String DECODING_CODEC = "decoding_codec";
+    static final String DECODING_CODEC = "decodingCodec";
     private static final String FORMAT = "format";
     private static final String DECODING_LIBS = "libs";
     private static final String STRICT = "strict";
     private static final String VALUE = "value";
 
 
-    public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+    public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
         this.commands = commands;
         this.arguments = arguments;
 
         setParsingAttributes(parsingAttrs, specPath);
     }
 
-    private void setParsingAttributes(Map<String, String> parsingAttrs, String specPath) {
-        this.decodingCodec = parsingAttrs.get(DECODING_CODEC);
+    private void setParsingAttributes(PluginSpecReader.Parser parsingAttrs, String specPath) {
+        this.decodingCodec = parsingAttrs.decodingCodec;
+        this.strictParsing = parsingAttrs.strict;
+        this.format = parsingAttrs.format;
+        this.specPath = specPath;
 
-        String tmpStrict = parsingAttrs.get(STRICT);
-        String fmt = parsingAttrs.get(FORMAT);
-        this.format = fmt != null ? fmt : this.format;
-        if (tmpStrict != null) this.strictParsing = Boolean.parseBoolean(tmpStrict);
-        String libs = parsingAttrs.get(DECODING_LIBS);
+        String libs = parsingAttrs.libs;
         libs = libs != null ? libs : "";
         decodingLibURLs = FileUtils.getURLsFromString(libs, specPath);
 
-        this.specPath = specPath;
     }
 
 
@@ -413,11 +411,11 @@ abstract class PluginSource<E extends Feature, D extends Feature> implements Per
             }
 
             //Group values together under relevant argument
-            RecursiveAttributes persArgument = argument.getPersistentState();
-            persArgument.getChildren().addAll(persValues);
+            //RecursiveAttributes persArgument = argument.getPersistentState();
+            //persArgument.getChildren().addAll(persValues);
 
             //Arguments aren't grouped together, just put flat in the children of the highest level
-            allChildren.add(persArgument);
+            //allChildren.add(persArgument);
         }
 
         RecursiveAttributes overall = new RecursiveAttributes(getClass().getName(), parentProps, allChildren);

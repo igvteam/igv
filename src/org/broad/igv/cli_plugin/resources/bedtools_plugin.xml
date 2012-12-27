@@ -17,10 +17,10 @@
             <arg name="Arguments" cmd_arg="" type="TEXT" default=""/>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
-                 encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
+                 encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
 
-            <parser format="bed" decoding_codec="org.broad.igv.cli_plugin.BEDToolsDecoder"
-                    strict="true" libs="BEDToolsPluginCodec.jar"/>
+            <parser format="bed" strict="true" libs="BEDToolsPluginCodec.jar"
+                    decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder"/>
         </default>
 
         <command name="Intersect" cmd="intersect">
@@ -32,7 +32,7 @@
         <command name="Remove/Subtract" cmd="subtract"/>
 
         <command name="Closest" cmd="closest">
-            <parser strict="false" decoding_codec="org.broad.igv.cli_plugin.BEDToolsDecoder"/>
+            <parser strict="false" decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder"/>
         </command>
 
         <command name="Window" cmd="window">

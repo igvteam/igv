@@ -65,9 +65,8 @@ public class PluginSpecReaderTest {
     }
 
     @Test
-    public void testReadSpec() throws Exception {
-        String path = TestUtils.DATA_DIR + "cli_plugin/cat_plugin.xml";
-        PluginSpecReader reader = PluginSpecReader.create(path);
+    public void testReadCatSpec() throws Exception {
+        PluginSpecReader reader = AbstractPluginTest.getCatReader();
         assertNotNull(reader.document);
 
         List<Element> tools = reader.getTools();
@@ -86,6 +85,28 @@ public class PluginSpecReaderTest {
             assertEquals(defOutput, arg.isOutput());
             assertEquals(defEncCodec, arg.getEncodingCodec());
         }
+    }
+
+    /**
+     * Check that we can read parsing attributes
+     * @throws Exception
+     */
+    @Test
+    public void testReadParser() throws Exception{
+        String path = "resources/bedtools_plugin.xml";
+        PluginSpecReader reader = PluginSpecReader.create(path);
+        Element tool = reader.getTools().get(0);
+        List<Element> commands = reader.getCommands(tool);
+        int ind = 0;
+        Element multiinter_command = commands.get(ind);
+        while(!multiinter_command.getAttribute("cmd").equals("multiinter")){
+            multiinter_command = commands.get(ind++);
+        }
+
+        PluginSpecReader.Parser parser = reader.getParsingAttributes(tool, multiinter_command);
+        assertEquals("bed", parser.format);
+        assertEquals(true, parser.strict);
+        assertTrue(parser.decodingCodec.contains("BEDToolsDecoder"));
     }
 
     /**
@@ -144,6 +165,5 @@ public class PluginSpecReaderTest {
         assertEquals(expPlugins, actPlugins);
 
     }
-
 
 }

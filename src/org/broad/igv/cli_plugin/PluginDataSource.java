@@ -36,7 +36,7 @@ public class PluginDataSource extends PluginSource<LocusScore, LocusScore> imple
     private double dataMax;
     private WindowFunction windowFunction;
 
-    public PluginDataSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, Map<String, String> parsingAttrs, String specPath) {
+    public PluginDataSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
         super(commands, arguments, parsingAttrs, specPath);
     }
 

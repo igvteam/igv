@@ -15,18 +15,27 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class used to parse a cli_plugin specification file (currently XML).
@@ -142,7 +151,7 @@ public class PluginSpecReader {
     private List<Argument> elementsToArguments(List<Element> argEls) {
         List<Argument> argumentList = new ArrayList<Argument>();
         for (Element argEl : argEls) {
-            argumentList.add(Argument.parseFromNode(argEl));
+            argumentList.add(PluginSpecReader.<Argument>unmarshall(argEl));
         }
         return argumentList;
     }
@@ -154,10 +163,9 @@ public class PluginSpecReader {
             outNodes.add((Element) nodes.item(nn));
         }
         return outNodes;
-
     }
 
-    public Map<String, String> getParsingAttributes(Element tool, Element command) {
+    public PluginSpecReader.Parser getParsingAttributes(Element tool, Element command) {
         List<Element> parserEls = getElementsByTag(command, "parser");
         if (parserEls.size() == 0) {
             parserEls = getDefaultValues(tool, "parser");
@@ -166,7 +174,7 @@ public class PluginSpecReader {
         //Definitely cannot have more than one, though
         if (parserEls.size() == 0) return null;
         assert parserEls.size() == 1;
-        return Utilities.getAttributes(parserEls.get(0));
+        return unmarshall(parserEls.get(0));
     }
 
     public static List<PluginSpecReader> getPlugins() {
@@ -295,5 +303,66 @@ public class PluginSpecReader {
             toolPath = tool.getAttribute("default_path");
         }
         return toolPath;
+    }
+
+
+    private static JAXBContext jc = null;
+    static JAXBContext getJAXBContext() throws JAXBException {
+        if(jc == null){
+            jc = JAXBContext.newInstance(Argument.class, Parser.class, Command.class);
+        }
+        return jc;
+    }
+
+
+    static <T> T unmarshall(Node node) {
+        try {
+            Unmarshaller u = PluginSpecReader.getJAXBContext().createUnmarshaller();
+            //TODO change schema to W3C
+            //u.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(myFile);
+            return (T) u.unmarshal(node);
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Description of how to parse each line read back from command line tool
+     * User: jacob
+     * Date: 2012-Dec-27
+     */
+    @XmlRootElement
+    public static class Parser {
+
+        @XmlAttribute
+        boolean strict;
+
+        @XmlAttribute
+        String format;
+
+        @XmlAttribute
+        String libs;
+
+        @XmlAttribute
+        String decodingCodec;
+    }
+
+    /**
+     * Represents a single command to be applied to a tool. e.g. intersect
+     */
+    @XmlRootElement
+    public static class Command{
+
+        @XmlElement
+        List<Argument> arguments;
+
+        @XmlElement
+        Parser parser;
+
+        @XmlElement
+        String name;
+
+        @XmlElement
+        String cmd = "";
     }
 }
