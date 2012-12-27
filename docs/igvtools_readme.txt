@@ -138,7 +138,7 @@ Options:
 
 Example:
 
-      igvtoolsh toTDF -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
+      igvtools toTDF -z 5  copyNumberFile.cn copyNumberFile.tdf hg18
 
 
 Notes:
