@@ -78,6 +78,14 @@ public class PluginSpecReaderTest {
 
         List<Argument> arguments = reader.getArguments(tools.get(0), commands.get(0));
         assertEquals(3, arguments.size());
+
+        //Check that the default values get read
+        boolean defOutput = true;
+        String defEncCodec = "org.broad.igv.feature.tribble.IGVBEDCodec";
+        for(Argument arg: arguments){
+            assertEquals(defOutput, arg.isOutput());
+            assertEquals(defEncCodec, arg.getEncodingCodec());
+        }
     }
 
     /**

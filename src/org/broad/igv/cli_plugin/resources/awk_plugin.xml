@@ -13,23 +13,23 @@
             id="org.broadinstitute.igv.plugin.awk">
     <tool name="awk" default_path="awk" visible="false">
         <default>
-            <arg name="Arguments" cmd_arg="" type="text" default=""/>
-            <arg name="Track" cmd_arg="" type="feature_track"/>
+            <arg name="Arguments" cmd_arg="" type="TEXT" default=""/>
+            <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
             <parser format="bed"/>
         </default>
 
         <command name="Arbitrary Input" cmd="">
-            <arg name="Arguments" cmd_arg="" type="longtext" default="{print}"/>
-            <arg name="Track" cmd_arg="" type="feature_track"/>
+            <arg name="Arguments" cmd_arg="" type="LONGTEXT" default="{print}"/>
+            <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
         </command>
         <command name="Filter by size" cmd="">
-            <arg name="Minimum" type="text" id="min" output="false"/>
-            <arg name="Maximum" type="text" id="max" output="false"/>
+            <arg name="Minimum" type="TEXT" id="min" output="false"/>
+            <arg name="Maximum" type="TEXT" id="max" output="false"/>
             <!--
                 We reference the min/max using the $(variable name)
             -->
             <arg name="Track" cmd_arg="{diff=$3-$2; if (diff &gt;= $min &amp;&amp; diff &lt;= $max) print;}"
-                 type="feature_track"/>
+                 type="FEATURE_TRACK"/>
         </command>
 
     </tool>

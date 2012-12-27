@@ -16,16 +16,21 @@ import org.apache.log4j.Logger;
 import org.broad.igv.session.Persistable;
 import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.Utilities;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+@XmlRootElement(name = "arg")
 public class Argument implements Persistable{
 
     public static final String NAME = "name";
@@ -39,13 +44,20 @@ public class Argument implements Persistable{
 
     private static final Logger log = Logger.getLogger(Argument.class);
 
+    @XmlAttribute
     private String name;
+
+    //@XmlJavaTypeAdapter(MyHashMapAdapter.class)
+    @XmlAttribute
     private InputType type;
 
     /**
      * Text which goes before Argument value on command line
      */
+    @XmlAttribute(name = CMD_ARG)
     private String cmdArg;
+
+    @XmlAttribute
     private String defaultValue;
 
     /**
@@ -53,13 +65,15 @@ public class Argument implements Persistable{
      * This is true by default (usually it will be). Some only exist
      * to take user input, and feed the result to another argument
      */
-    private boolean output;
+    @XmlAttribute
+    private boolean output = false;
 
     /**
      * id used by spec by which this argument can be referred.
      * Does not need to be human readable, must be unique
      * within a command
      */
+    @XmlAttribute
     private String id;
 
     /**
@@ -67,16 +81,23 @@ public class Argument implements Persistable{
      * In addition to default classpath, will
      * also search {@link #libURLs}
      */
+    @XmlAttribute(name = ENCODING_CODEC)
     private String encodingCodec;
 
     /**
      * URLs to search for encoding codec class, in addition
      * to current classpath
      */
+    @XmlAttribute
     private URL[] libURLs;
 
-    public String getEncodingCodec() {
-        return encodingCodec;
+    private static JAXBContext jc = null;
+
+    private static JAXBContext getJAXBContext() throws JAXBException{
+        if(jc == null){
+            jc = JAXBContext.newInstance(Argument.class);
+        }
+        return jc;
     }
 
     @Override
@@ -98,7 +119,9 @@ public class Argument implements Persistable{
         //TODO
     }
 
+    @XmlEnum
     public enum InputType {
+        //@XmlEnumValue("TEXT")
         TEXT,
         LONGTEXT,
         FEATURE_TRACK,
@@ -107,14 +130,18 @@ public class Argument implements Persistable{
         ALIGNMENT_TRACK
     }
 
+    //Here for JAXB Implementation only
+    private Argument(){}
+
+    //Here largely for testing, should consider getting rid of it
     Argument(String name, InputType type, String cmdArg, String defaultValue, String encodingCodec,
-             String libs, String specPath, boolean isOutput, String id) {
+             URL[] libURLs, boolean isOutput, String id) {
         this.name = name;
         this.type = type;
         this.cmdArg = cmdArg != null ? cmdArg : "";
         this.defaultValue = defaultValue;
         this.encodingCodec = encodingCodec;
-        this.libURLs = FileUtils.getURLsFromString(libs, specPath);
+        this.libURLs = libURLs;
         this.output = isOutput;
         this.id = id;
 
@@ -124,21 +151,16 @@ public class Argument implements Persistable{
         }
     }
 
-    static Argument parseFromNode(Node node, String specPath) {
-        NamedNodeMap attrs = node.getAttributes();
-        String name = Utilities.getNullSafe(attrs, NAME);
-        InputType type = InputType.valueOf(Utilities.getNullSafe(attrs, TYPE).toUpperCase());
-        String cmdArg = Utilities.getNullSafe(attrs, PluginSpecReader.CMD_ARG);
-        String defVal = Utilities.getNullSafe(attrs, DEFAULT);
-        String encCodec = Utilities.getNullSafe(attrs, ENCODING_CODEC);
-        String libString = Utilities.getNullSafe(attrs, LIBS);
-        libString = libString != null ? libString : "";
-
-        String soutput = Utilities.getNullSafe(attrs, OUTPUT);
-        boolean output = soutput == null || Boolean.parseBoolean(soutput);
-
-        String id = Utilities.getNullSafe(attrs, ID);
-        return new Argument(name, type, cmdArg, defVal, encCodec, libString, specPath, output, id);
+    static Argument parseFromNode(Node node) {
+        try {
+            Unmarshaller u = getJAXBContext().createUnmarshaller();
+            //TODO change schema to W3C
+            //u.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(myFile);
+            Object outObj = u.unmarshal(node);
+            return (Argument) outObj;
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     boolean isValidValue(Object value) {
@@ -187,6 +209,10 @@ public class Argument implements Persistable{
 
     public String getId() {
         return id;
+    }
+
+    public String getEncodingCodec() {
+        return encodingCodec;
     }
 
 }

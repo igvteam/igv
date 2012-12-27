@@ -14,8 +14,8 @@
     <tool name="Shell Input" default_path="" visible="false"
           description="Command line interface with user-supplied executable">
         <command name="Shell Input" cmd="">
-            <arg name="Shell command" cmd_arg="" type="longtext" default=""/>
-            <arg name="Track" cmd_arg="" type="feature_track"/>
+            <arg name="Shell command" cmd_arg="" type="LONGTEXT" default=""/>
+            <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
             <parser format="bed"/>
         </command>
     </tool>

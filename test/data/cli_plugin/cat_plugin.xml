@@ -13,9 +13,9 @@
             id="org.broadinstitute.igv.plugin.cat">
     <tool name="cat" default_path="cat">
         <default>
-            <arg name="Arguments" cmd_arg="" type="text"/>
-            <arg name="Track A" cmd_arg="" type="feature_track"/>
-            <arg name="Track B" cmd_arg="" type="feature_track"
+            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Track A" cmd_arg="" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="" type="FEATURE_TRACK"
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
             <parser format="bed" strict="true"/>
         </default>

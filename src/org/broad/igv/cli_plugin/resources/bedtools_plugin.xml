@@ -14,9 +14,9 @@
     <tool name="BEDTools" default_path="bedtools" tool_url="http://code.google.com/p/bedtools/"
           description="bedtools: a flexible suite of utilities for comparing genomic features.">
         <default>
-            <arg name="Arguments" cmd_arg="" type="text" default=""/>
-            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
-            <arg name="Track B" cmd_arg="-b" type="feature_track"
+            <arg name="Arguments" cmd_arg="" type="TEXT" default=""/>
+            <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
                  encoding_codec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
 
             <parser format="bed" decoding_codec="org.broad.igv.cli_plugin.BEDToolsDecoder"
@@ -24,9 +24,9 @@
         </default>
 
         <command name="Intersect" cmd="intersect">
-            <arg name="Arguments" cmd_arg="" type="text" default="-bed -split"/>
-            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
-            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+            <arg name="Arguments" cmd_arg="" type="TEXT" default="-bed -split"/>
+            <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
 
         <command name="Remove/Subtract" cmd="subtract"/>
@@ -36,20 +36,20 @@
         </command>
 
         <command name="Window" cmd="window">
-            <arg name="Arguments" cmd_arg="-bed" type="text" default=""/>
-            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
-            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+            <arg name="Arguments" cmd_arg="-bed" type="TEXT" default=""/>
+            <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
 
         <command name="Coverage" cmd="coverage">
-            <arg name="Arguments" cmd_arg="" type="text" default="-split"/>
-            <arg name="Track A" cmd_arg="-a" type="feature_track"/>
-            <arg name="Track B" cmd_arg="-b" type="feature_track"/>
+            <arg name="Arguments" cmd_arg="" type="TEXT" default="-split"/>
+            <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"/>
         </command>
 
         <command name="Multi-intersect" cmd="multiinter">
-            <arg name="Arguments" type="text"/>
-            <arg name="Tracks" cmd_arg="-i" type="multi_feature_track"/>
+            <arg name="Arguments" type="TEXT"/>
+            <arg name="Tracks" cmd_arg="-i" type="MULTI_FEATURE_TRACK"/>
         </command>
     </tool>
 </cli_plugin>

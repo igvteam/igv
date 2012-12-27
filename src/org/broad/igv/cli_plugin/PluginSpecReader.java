@@ -142,7 +142,7 @@ public class PluginSpecReader {
     private List<Argument> elementsToArguments(List<Element> argEls) {
         List<Argument> argumentList = new ArrayList<Argument>();
         for (Element argEl : argEls) {
-            argumentList.add(Argument.parseFromNode(argEl, this.getSpecPath()));
+            argumentList.add(Argument.parseFromNode(argEl));
         }
         return argumentList;
     }
