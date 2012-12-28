@@ -28,6 +28,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.XYPlotRenderer;
 import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.ui.IGV;
@@ -83,6 +84,12 @@ public abstract class DataTrack extends AbstractTrack {
             int adjustedStart = Math.max(0, start - delta);
             int adjustedEnd = end + delta;
             inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
+        }
+
+        //For TDF backwards incompatibility, tell user if CHR_ALL not available
+        if (inViewScores.size() == 0 && Globals.CHR_ALL.equals(chr)) {
+            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
         }
 
         if (autoScale && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {

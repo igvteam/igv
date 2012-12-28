@@ -15,7 +15,6 @@
  */
 package org.broad.igv.tools;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -282,15 +281,25 @@ public class Preprocessor implements DataConsumer {
             return;
         }
 
+        /**
+         * We output the chromosomes in the order specified by the Genome,
+         * since that was how the overall genome data was calculated.
+         * However we only include those genomes which were actually found
+         * in the file
+         */
         StringBuffer chrString = new StringBuffer();
-        Iterator<String> iter = chromosomes.iterator();
+        Iterator<String> iter = genome.getChromosomeNames().iterator();
         while (iter.hasNext()) {
-            chrString.append(iter.next());
+            String chromoName = iter.next();
+            if(!chromosomes.contains(chromoName)){
+                continue;
+            }
+            chrString.append(chromoName);
             if (iter.hasNext()) {
                 chrString.append(",");
             }
         }
-        writer.getRootGroup().setAttribute("chromosomes", chrString.toString());
+        writer.getRootGroup().setAttribute(TDFWriter.CHROMOSOMES, chrString.toString());
 
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             writer.getRootGroup().setAttribute(entry.getKey(), entry.getValue());
