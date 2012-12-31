@@ -46,8 +46,8 @@ public class ChromosomeNameComparatorTest {
     @Test
     public void testSort() {
 
-        String[] chrs = {"chr12", "chr10", "chrMT", "chr1", "chrLongName", "chrLongName1"};
-        String[] expectedResult = {"chr1", "chr10", "chr12", "chrLongName", "chrLongName1", "chrMT"};
+        String[] chrs = {"chr12", "chr10", "chr2", "chrX", "chrM", "chr1", "chrLongName", "chrLongName1"};
+        String[] expectedResult = {"chr1", "chr2", "chr10", "chr12", "chrLongName", "chrLongName1", "chrX", "chrM"};
 
         Arrays.sort(chrs, ChromosomeNameComparator.get());
         for (int i = 0; i < chrs.length; i++) {
