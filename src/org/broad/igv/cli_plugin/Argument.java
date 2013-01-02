@@ -16,11 +16,9 @@ import org.broad.igv.track.FeatureTrack;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URL;
 import java.util.List;
 
-@XmlRootElement
 public class Argument{
 
     public static final String CMD_ARG = "cmd_arg";

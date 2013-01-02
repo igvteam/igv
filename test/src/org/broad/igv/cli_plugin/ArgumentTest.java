@@ -17,8 +17,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -53,12 +55,14 @@ public class ArgumentTest extends AbstractHeadlessTest{
         Marshaller m = jc.createMarshaller();
         m.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-        //m.marshal(inArg, System.out);
-        m.marshal(inArg, doc);
+        //This JAXBElement business is necessary because we don't have @XmlRootElement on Argument
+        JAXBElement inel = new JAXBElement(new QName("", "arg"), Argument.class, inArg);
+        m.marshal(inel, System.out);
+        m.marshal(inel, doc);
 
         Unmarshaller u = jc.createUnmarshaller();
-        Object outObj = u.unmarshal(doc);
-        Argument outArg = (Argument) outObj;
+        JAXBElement el = (JAXBElement) u.unmarshal(doc, Argument.class);
+        Argument outArg = (Argument) el.getValue();
 
         assertTrue(argumentsEqual(inArg, outArg));
     }
