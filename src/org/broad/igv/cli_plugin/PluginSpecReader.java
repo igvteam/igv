@@ -53,7 +53,6 @@ public class PluginSpecReader {
     public static final String CUSTOM_PLUGINS_FILENAME = "custom_plugins.txt";
     public static final String BUILTIN_PLUGINS_FILENAME = "builtin_plugins.txt";
 
-    public static final String TOOL_NAME_KEY = "name";
     public static final String COMMAND = "command";
     public static final String CMD_ARG = "cmd_arg";
 
@@ -61,6 +60,11 @@ public class PluginSpecReader {
      * List of plugins tha IGV knows about
      */
     private static List<PluginSpecReader> pluginList;
+
+    /**
+     * List of tools described contained in this pluginSpec
+     */
+    private List<Tool> tools;
 
     private PluginSpecReader(String path) {
         this.specPath = path;
@@ -126,55 +130,20 @@ public class PluginSpecReader {
         return success;
     }
 
-    public List<Element> getTools() {
-        return getElementsByTag(document.getDocumentElement(), "tool");
-    }
-
-    public List<Element> getCommands(Element tool) {
-        return getElementsByTag(tool, "command");
-    }
-
-    public List<Argument> getArguments(Element tool, Element command) {
-        List<Element> argEls = getElementsByTag(command, "arg");
-        if (argEls.size() == 0) {
-            argEls = getDefaultValues(tool, "arg");
+    public List<Tool> getTools() {
+        if(tools == null){
+            tools = PluginSpecReader.<Tool>unmarshalElementsByTag(document.getDocumentElement(), "tool");
         }
-        return elementsToArguments(argEls);
+        return tools;
     }
 
-    private List<Element> getDefaultValues(Element tool, String tag) {
-        NodeList defaults = tool.getElementsByTagName("default");
-        assert defaults.getLength() == 1;
-        return getElementsByTag((Element) defaults.item(0), tag);
-    }
-
-    private List<Argument> elementsToArguments(List<Element> argEls) {
-        List<Argument> argumentList = new ArrayList<Argument>();
-        for (Element argEl : argEls) {
-            argumentList.add(PluginSpecReader.<Argument>unmarshall(argEl));
-        }
-        return argumentList;
-    }
-
-    private List<Element> getElementsByTag(Element topElement, String tag) {
+    private static <T> List<T> unmarshalElementsByTag(Element topElement, String tag){
         NodeList nodes = topElement.getElementsByTagName(tag);
-        List<Element> outNodes = new ArrayList<Element>(nodes.getLength());
+        List<T> outNodes = new ArrayList<T>(nodes.getLength());
         for (int nn = 0; nn < nodes.getLength(); nn++) {
-            outNodes.add((Element) nodes.item(nn));
+            outNodes.add(PluginSpecReader.<T>unmarshal(nodes.item(nn)));
         }
         return outNodes;
-    }
-
-    public PluginSpecReader.Parser getParsingAttributes(Element tool, Element command) {
-        List<Element> parserEls = getElementsByTag(command, "parser");
-        if (parserEls.size() == 0) {
-            parserEls = getDefaultValues(tool, "parser");
-        }
-        //Parser element not required, if not found we use default values
-        //Definitely cannot have more than one, though
-        if (parserEls.size() == 0) return null;
-        assert parserEls.size() == 1;
-        return unmarshall(parserEls.get(0));
     }
 
     public static List<PluginSpecReader> getPlugins() {
@@ -296,11 +265,11 @@ public class PluginSpecReader {
      * @param tool
      * @return
      */
-    public String getToolPath(Element tool) {
+    public String getToolPath(Tool tool) {
         //Check settings for path, use default if not there
-        String toolPath = PreferenceManager.getInstance().getPluginPath(getId(), tool.getAttribute(TOOL_NAME_KEY));
+        String toolPath = PreferenceManager.getInstance().getPluginPath(getId(), tool.name);
         if (toolPath == null) {
-            toolPath = tool.getAttribute("default_path");
+            toolPath = tool.defaultPath;
         }
         return toolPath;
     }
@@ -309,15 +278,16 @@ public class PluginSpecReader {
     private static JAXBContext jc = null;
     static JAXBContext getJAXBContext() throws JAXBException {
         if(jc == null){
-            jc = JAXBContext.newInstance(Argument.class, Parser.class, Command.class);
+            jc = JAXBContext.newInstance(Tool.class, Command.class, Argument.class, Parser.class);
         }
         return jc;
     }
 
 
-    static <T> T unmarshall(Node node) {
+    static <T> T unmarshal(Node node) {
         try {
             Unmarshaller u = PluginSpecReader.getJAXBContext().createUnmarshaller();
+            u.setListener(ToolListener.getInstance());
             //TODO change schema to W3C
             //u.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(myFile);
             return (T) u.unmarshal(node);
@@ -327,42 +297,74 @@ public class PluginSpecReader {
     }
 
     /**
+     * Each tool may contain default settings for each constituent command, we write
+     * those settings into each command after unmarshalling
+     */
+    private static class ToolListener extends Unmarshaller.Listener{
+        private static ToolListener instance;
+
+        @Override
+        public void afterUnmarshal(Object target, Object parent) {
+            super.afterUnmarshal(target, parent);
+            if(target instanceof Tool){
+                Tool tool = (Tool) target;
+                boolean hasDefault = tool.defaultSettings != null;
+                if(hasDefault){
+                    for(Command command: ((Tool) target).commandList){
+                        if(command.argumentList == null) command.argumentList = tool.defaultSettings.argumentList;
+                        if(command.parser == null) command.parser = tool.defaultSettings.parser;
+                    }
+                }
+            }
+
+        }
+
+        public static Unmarshaller.Listener getInstance() {
+            if(instance == null) instance = new ToolListener();
+            return instance;
+        }
+    }
+
+    /**
+     * Represents an individual command line tool/executable, e.g. bedtools
+     */
+    @XmlRootElement
+    public static class Tool{
+        @XmlAttribute public String name;
+        @XmlAttribute public String defaultPath;
+        @XmlAttribute public boolean visible;
+        @XmlAttribute public String toolUrl;
+
+        /**
+         * Contains the default settings for commands, including
+         * parser and arguments.
+         */
+        @XmlElement(name = "default") private Command defaultSettings;
+
+        @XmlElement(name = "command") public List<Command> commandList;
+    }
+    /**
      * Description of how to parse each line read back from command line tool
      * User: jacob
      * Date: 2012-Dec-27
      */
-    @XmlRootElement
     public static class Parser {
-
-        @XmlAttribute
-        boolean strict;
-
-        @XmlAttribute
-        String format;
-
-        @XmlAttribute
-        String libs;
-
-        @XmlAttribute
-        String decodingCodec;
+        @XmlAttribute boolean strict;
+        @XmlAttribute String format;
+        @XmlAttribute String libs;
+        @XmlAttribute String decodingCodec;
     }
 
     /**
      * Represents a single command to be applied to a tool. e.g. intersect
      */
-    @XmlRootElement
     public static class Command{
+        @XmlAttribute public String name;
+        @XmlAttribute public String cmd = "";
 
-        @XmlElement
-        List<Argument> arguments;
-
-        @XmlElement
-        Parser parser;
-
-        @XmlElement
-        String name;
-
-        @XmlElement
-        String cmd = "";
+        @XmlElement(name = "arg") public List<Argument> argumentList;
+        @XmlElement public Parser parser;
     }
+
+
 }

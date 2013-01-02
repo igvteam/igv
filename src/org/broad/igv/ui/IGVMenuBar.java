@@ -39,7 +39,6 @@ import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.tribble.Feature;
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
@@ -195,15 +194,15 @@ public class IGVMenuBar extends JMenuBar {
         //-------------------------------------//
 
         for (final PluginSpecReader pluginSpecReader : PluginSpecReader.getPlugins()) {
-            for (final Element tool : pluginSpecReader.getTools()) {
-                final String toolName = tool.getAttributes().getNamedItem("name").getTextContent();
-                boolean toolVisible = Boolean.parseBoolean(tool.getAttribute("visible"));
+            for (final PluginSpecReader.Tool tool : pluginSpecReader.getTools()) {
+                final String toolName = tool.name;
+                boolean toolVisible = tool.visible;
                 JMenuItem toolMenu;
 
                 if (toolVisible) {
 
                     final String toolPath = pluginSpecReader.getToolPath(tool);
-                    final String tool_url = tool.getAttribute("tool_url");
+                    final String tool_url = tool.toolUrl;
                     boolean isValid = PluginSpecReader.isToolPathValid(toolPath);
 
                     ActionListener invalidActionListener = new ActionListener() {
@@ -220,8 +219,8 @@ public class IGVMenuBar extends JMenuBar {
                     toolMenu = new JMenu(toolName);
                     //Kind of overlaps with the side-pull menu, doesn't look great
                     //toolMenu.setToolTipText(tool.getAttribute("description"));
-                    for (final Element command : pluginSpecReader.getCommands(tool)) {
-                        final String cmdName = command.getAttribute("name");
+                    for (final PluginSpecReader.Command command : tool.commandList) {
+                        final String cmdName = command.name;
                         JMenuItem cmdItem = new JMenuItem(cmdName);
                         toolMenu.add(cmdItem);
                         if (isValid || toolPath.length() == 0) {

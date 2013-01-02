@@ -21,7 +21,6 @@ import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,18 +45,18 @@ public class RunPlugin extends JDialog {
     private String specPath;
 
 
-    public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, Element tool, Element command) {
+    public RunPlugin(Frame owner, PluginSpecReader pluginSpecReader, PluginSpecReader.Tool tool, PluginSpecReader.Command command) {
         super(owner);
         initComponents();
 
         final String toolPath = pluginSpecReader.getToolPath(tool);
-        final String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
-        final String cmdName = command.getAttribute("name");
-        final String cmdVal = command.getAttribute("cmd");
+        final String toolName = tool.name;
+        final String cmdName = command.name;
+        final String cmdVal = command.cmd;
 
         specPath = pluginSpecReader.getSpecPath();
-        argumentList = pluginSpecReader.getArguments(tool, command);
-        parsingAttrs = pluginSpecReader.getParsingAttributes(tool, command);
+        argumentList = command.argumentList;
+        parsingAttrs = command.parser;
         initArgumentComponents(toolName, toolPath, cmdName, cmdVal);
     }
 

@@ -18,7 +18,6 @@ import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.junit.Test;
-import org.w3c.dom.Element;
 
 import java.util.List;
 
@@ -36,8 +35,8 @@ public class RunPluginTest extends AbstractHeadedTest {
         PluginSpecReader catReader = AbstractPluginTest.getCatReader();
         AbstractPluginTest.initTool(catReader);
 
-        Element tool = catReader.getTools().get(0);
-        Element command = catReader.getCommands(tool).get(0);
+        PluginSpecReader.Tool tool = catReader.getTools().get(0);
+        PluginSpecReader.Command command = tool.commandList.get(0);
         RunPlugin rp = new RunPlugin(IGV.getMainFrame(), catReader, tool, command);
 
         int numTracksBefore = IGV.getInstance().getAllTracks().size();

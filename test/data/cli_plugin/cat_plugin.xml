@@ -11,7 +11,7 @@
 <!DOCTYPE cli_plugin SYSTEM "../../../src/org/broad/igv/cli_plugin/resources/cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="1.0" name="cat"
             id="org.broadinstitute.igv.plugin.cat">
-    <tool name="cat" default_path="cat">
+    <tool name="cat" defaultPath="cat">
         <default>
             <arg name="Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Track A" cmd_arg="" type="FEATURE_TRACK"/>

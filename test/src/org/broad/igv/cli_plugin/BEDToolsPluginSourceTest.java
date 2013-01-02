@@ -22,7 +22,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Element;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -73,15 +72,15 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
                                           String cmd, int expectedNumFeatures) throws Exception {
 
         //Find the command element
-        Element command = null;
-        for (Element curCmd : reader.getCommands(tool)) {
-            if (curCmd.getAttribute("cmd").equals(cmd)) {
+        PluginSpecReader.Command command = null;
+        for (PluginSpecReader.Command curCmd : tool.commandList) {
+            if (curCmd.cmd.equals(cmd)) {
                 command = curCmd;
                 break;
             }
         }
 
-        List<Argument> argumentList = reader.getArguments(tool, command);
+        List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;
         arguments.put(argumentList.get(argnum), argumentList.get(argnum).getDefaultValue());
@@ -104,7 +103,7 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
         }
 
         List<String> fullCmd = Arrays.asList(toolPath, cmd);
-        PluginSpecReader.Parser parser = reader.getParsingAttributes(tool, command);
+        PluginSpecReader.Parser parser = command.parser;
         PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(fullCmd, arguments, parser, pluginPath);
         Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         List<Feature> featureList = new ArrayList(10);

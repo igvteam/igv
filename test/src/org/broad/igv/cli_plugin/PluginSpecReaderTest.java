@@ -14,7 +14,6 @@ package org.broad.igv.cli_plugin;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
-import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -69,13 +68,13 @@ public class PluginSpecReaderTest {
         PluginSpecReader reader = AbstractPluginTest.getCatReader();
         assertNotNull(reader.document);
 
-        List<Element> tools = reader.getTools();
+        List<PluginSpecReader.Tool> tools = reader.getTools();
         assertEquals(1, tools.size());
 
-        List<Element> commands = reader.getCommands(tools.get(0));
+        List<PluginSpecReader.Command> commands = tools.get(0).commandList;
         assertEquals(1, commands.size());
 
-        List<Argument> arguments = reader.getArguments(tools.get(0), commands.get(0));
+        List<Argument> arguments = commands.get(0).argumentList;
         assertEquals(3, arguments.size());
 
         //Check that the default values get read
@@ -95,15 +94,15 @@ public class PluginSpecReaderTest {
     public void testReadParser() throws Exception{
         String path = "resources/bedtools_plugin.xml";
         PluginSpecReader reader = PluginSpecReader.create(path);
-        Element tool = reader.getTools().get(0);
-        List<Element> commands = reader.getCommands(tool);
+        PluginSpecReader.Tool tool = reader.getTools().get(0);
+        List<PluginSpecReader.Command> commands = tool.commandList;
         int ind = 0;
-        Element multiinter_command = commands.get(ind);
-        while(!multiinter_command.getAttribute("cmd").equals("multiinter")){
+        PluginSpecReader.Command multiinter_command = commands.get(ind);
+        while(!multiinter_command.cmd.equals("multiinter")){
             multiinter_command = commands.get(ind++);
         }
 
-        PluginSpecReader.Parser parser = reader.getParsingAttributes(tool, multiinter_command);
+        PluginSpecReader.Parser parser = multiinter_command.parser;
         assertEquals("bed", parser.format);
         assertEquals(true, parser.strict);
         assertTrue(parser.decodingCodec.contains("BEDToolsDecoder"));
@@ -125,8 +124,8 @@ public class PluginSpecReaderTest {
     public void testCustomToolPath() throws Exception{
         String path = TestUtils.DATA_DIR + "cli_plugin/cat_plugin.xml";
         PluginSpecReader reader = PluginSpecReader.create(path);
-        Element tool = reader.getTools().get(0);
-        String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
+        PluginSpecReader.Tool tool = reader.getTools().get(0);
+        String toolName = tool.name;
         assertEquals("cat", toolName);
 
         String newpath = "/dev/zero";
@@ -163,7 +162,7 @@ public class PluginSpecReaderTest {
         Set<String> expPlugins = new HashSet<String>(PluginSpecReader.getBuiltinPlugins());
 
         assertEquals(expPlugins, actPlugins);
-
     }
+
 
 }

@@ -18,7 +18,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Element;
 
 import java.util.*;
 
@@ -51,20 +50,20 @@ public class awkPluginTest extends AbstractPluginTest {
     public List<Feature> tstFilterSize(int min, int max, int expectedNum) throws Exception {
 
         //Find the command element
-        Element command = null;
-        for (Element curCmd : reader.getCommands(tool)) {
-            if (curCmd.getAttribute("name").equals("Filter by size")) {
+        PluginSpecReader.Command  command = null;
+        for (PluginSpecReader.Command  curCmd : tool.commandList) {
+            if (curCmd.name.equals("Filter by size")) {
                 command = curCmd;
                 break;
             }
         }
 
-        PluginSpecReader.Parser parsingAttrs = reader.getParsingAttributes(tool, command);
+        PluginSpecReader.Parser parsingAttrs = command.parser;
 
         String testFile = TestUtils.DATA_DIR + "bed/Unigene.sample.bed";
         FeatureTrack track = (FeatureTrack) (new TrackLoader()).load(new ResourceLocator(testFile), genome).get(0);
 
-        List<Argument> argumentList = reader.getArguments(tool, command);
+        List<Argument> argumentList = command.argumentList;
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
         int argnum = 0;
 

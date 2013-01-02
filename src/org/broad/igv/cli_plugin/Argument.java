@@ -20,8 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URL;
 import java.util.List;
 
-
-@XmlRootElement(name = "arg")
+@XmlRootElement
 public class Argument{
 
     public static final String CMD_ARG = "cmd_arg";
@@ -41,7 +40,7 @@ public class Argument{
     @XmlAttribute(name = CMD_ARG)
     private String cmdArg;
 
-    @XmlAttribute
+    @XmlAttribute(name="default")
     private String defaultValue;
 
     /**
@@ -136,7 +135,6 @@ public class Argument{
     public String getEncodingCodec() {
         return encodingCodec;
     }
-
 
     //Here for JAXB Implementation only
     private Argument(){}

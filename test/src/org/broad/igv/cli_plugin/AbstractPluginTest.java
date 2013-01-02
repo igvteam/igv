@@ -16,7 +16,6 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.w3c.dom.Element;
 
 /**
  * User: jacob
@@ -29,7 +28,7 @@ public class AbstractPluginTest extends AbstractHeadlessTest {
     protected static String pluginPath;
     static PluginSpecReader reader;
     static String toolPath;
-    static Element tool;
+    static PluginSpecReader.Tool tool;
 
     @BeforeClass
     public static void setUpClass() throws Exception {

@@ -17,7 +17,6 @@ package org.broad.igv.cli_plugin.ui;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.cli_plugin.PluginSpecReader;
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,11 +32,11 @@ public class SetPluginPathDialog extends JDialog {
     String pluginId;
     String toolName;
 
-    public SetPluginPathDialog(Frame owner, PluginSpecReader pluginSpecReader, Element tool) {
+    public SetPluginPathDialog(Frame owner, PluginSpecReader pluginSpecReader, PluginSpecReader.Tool tool) {
         super(owner);
         initComponents();
 
-        String toolName = tool.getAttribute(PluginSpecReader.TOOL_NAME_KEY);
+        String toolName = tool.name;
         String title = pluginSpecReader.getName() + ": " + toolName;
         setTitle(title);
 

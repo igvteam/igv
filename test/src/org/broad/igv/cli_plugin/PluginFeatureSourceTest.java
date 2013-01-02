@@ -20,7 +20,6 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Assume;
 import org.junit.Test;
-import org.w3c.dom.Element;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -40,9 +39,9 @@ public class PluginFeatureSourceTest extends AbstractHeadlessTest {
 
         PluginSpecReader reader = AbstractPluginTest.getCatReader();
 
-        Element tool = reader.getTools().get(0);
-        Element command = reader.getCommands(tool).get(0);
-        List<Argument> argumentList = reader.getArguments(tool, command);
+        PluginSpecReader.Tool tool = reader.getTools().get(0);
+        PluginSpecReader.Command command = tool.commandList.get(0);
+        List<Argument> argumentList = command.argumentList;
 
 
         LinkedHashMap<Argument, Object> arguments = new LinkedHashMap<Argument, Object>(argumentList.size());
@@ -59,8 +58,8 @@ public class PluginFeatureSourceTest extends AbstractHeadlessTest {
         }
 
 
-        List<String> cmd = Arrays.asList(reader.getToolPath(tool), command.getAttribute("cmd_arg"));
-        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, reader.getParsingAttributes(tool, command), reader.getSpecPath());
+        List<String> cmd = Arrays.asList(reader.getToolPath(tool), command.cmd);
+        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, command.parser, reader.getSpecPath());
 
         Iterator<Feature> featuresExp = ((FeatureTrack) arguments.get(argumentList.get(1))).getFeatures("chr2", 1, 30).iterator();
         Iterator<Feature> featuresAct = pluginSource.getFeatures("chr2", 1, 30);
