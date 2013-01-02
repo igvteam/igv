@@ -57,7 +57,7 @@ public class ArgumentTest extends AbstractHeadlessTest{
 
         //This JAXBElement business is necessary because we don't have @XmlRootElement on Argument
         JAXBElement inel = new JAXBElement(new QName("", "arg"), Argument.class, inArg);
-        m.marshal(inel, System.out);
+        //m.marshal(inel, System.out);
         m.marshal(inel, doc);
 
         Unmarshaller u = jc.createUnmarshaller();

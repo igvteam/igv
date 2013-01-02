@@ -24,9 +24,7 @@ import org.xml.sax.SAXException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -329,6 +327,7 @@ public class PluginSpecReader {
      * Represents an individual command line tool/executable, e.g. bedtools
      */
     @XmlRootElement
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class Tool{
         @XmlAttribute public String name;
         @XmlAttribute public String defaultPath;
@@ -348,6 +347,7 @@ public class PluginSpecReader {
      * User: jacob
      * Date: 2012-Dec-27
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class Parser {
         @XmlAttribute boolean strict;
         @XmlAttribute String format;
@@ -358,6 +358,7 @@ public class PluginSpecReader {
     /**
      * Represents a single command to be applied to a tool. e.g. intersect
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class Command{
         @XmlAttribute public String name;
         @XmlAttribute public String cmd = "";

@@ -14,11 +14,14 @@ package org.broad.igv.cli_plugin;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.FeatureTrack;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlEnum;
 import java.net.URL;
 import java.util.List;
 
+@XmlAccessorType(XmlAccessType.NONE)
 public class Argument{
 
     public static final String CMD_ARG = "cmd_arg";
