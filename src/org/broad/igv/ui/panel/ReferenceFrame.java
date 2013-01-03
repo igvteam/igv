@@ -172,6 +172,7 @@ public class ReferenceFrame {
         nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
         maxPixel = getTilesTimesBinsPerTile();
         invalidateLocationScale();
+        this.setEnd = -1;
 
         // TODO -- do this with events,
         IGV.repaintPanelsHeadlessSafe();
@@ -298,7 +299,6 @@ public class ReferenceFrame {
 
     public void setOrigin(double position) {
         setOrigin(position, true);
-
     }
 
     /**
@@ -498,7 +498,6 @@ public class ReferenceFrame {
 
 
     public void invalidateLocationScale() {
-        //Thread.dumpStack();
         locationScaleValid = false;
     }
 
