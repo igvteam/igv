@@ -46,7 +46,7 @@ public class BAMFileReader implements AlignmentReader {
             File indexFile = findIndexFile(bamFile);
             reader = new SAMFileReader(bamFile, indexFile);
             reader.setValidationStringency(ValidationStringency.SILENT);
-            reader.enableFileSource(SamAlignment.LAZY_LOAD);
+            reader.enableFileSource(SamAlignment.DEFAULT_LAZY_LOAD);
             loadHeader();
         } catch (Exception e) {
             MessageUtils.showMessage("Error loading SAM header: " + e.getMessage());

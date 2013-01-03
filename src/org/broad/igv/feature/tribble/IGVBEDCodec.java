@@ -11,9 +11,9 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.broad.igv.dev.plugin.Argument;
-import org.broad.igv.dev.plugin.LineFeatureDecoder;
-import org.broad.igv.dev.plugin.LineFeatureEncoder;
+import org.broad.igv.cli_plugin.Argument;
+import org.broad.igv.cli_plugin.LineFeatureDecoder;
+import org.broad.igv.cli_plugin.LineFeatureEncoder;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;

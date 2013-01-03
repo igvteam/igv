@@ -20,7 +20,7 @@ import java.util.Comparator;
  * Comparator for chromosome names. All pure string comparisons are case insensitive.
  * In general, we compare strings lexicographically, but attempt to include numbers
  * if they are in the same position
- * 0. Mitochondria are sorted to the end
+ * 0. Mitochondria are sorted to the end  (chrM, MT)
  * 1. If BOTH strings contain a number starting at the same location,
  * we first by the leading string, then sort by that number. Examples:
  * a. "chr1" < "chr10" because 1 < 10

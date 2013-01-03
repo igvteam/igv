@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
+<cli_plugin api_version="alpha" plugin_version="0.1" name="awk"
+            id="org.broadinstitute.igv.plugin.awk">
+    <tool name="awk" defaultPath="awk" visible="false">
+        <default>
+            <arg name="Arguments" cmd_arg="" type="TEXT" default=""/>
+            <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
+            <parser format="bed"/>
+        </default>
+
+        <command name="Arbitrary Input" cmd="">
+            <arg name="Arguments" cmd_arg="" type="LONGTEXT" default="{print}"/>
+            <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
+        </command>
+        <command name="Filter by size" cmd="">
+            <arg name="Minimum" type="TEXT" id="min" output="false"/>
+            <arg name="Maximum" type="TEXT" id="max" output="false"/>
+            <!--
+                We reference the min/max using the $(variable name)
+            -->
+            <arg name="Track" cmd_arg="{diff=$3-$2; if (diff &gt;= $min &amp;&amp; diff &lt;= $max) print;}"
+                 type="FEATURE_TRACK"/>
+        </command>
+
+    </tool>
+</cli_plugin>

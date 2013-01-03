@@ -373,25 +373,25 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      */
     @Test
     public void testLazyLoadSequence() throws Exception {
+        System.out.println("Lazy loading: " + SamAlignment.DEFAULT_LAZY_LOAD);
         AlignmentDataManager manager = getManager171();
         final String chr = "chr1";
         final int start = 151666494;
         final int end = start + 1000;
         Iterator<Alignment> iter = loadInterval(manager, chr, start, end).getAlignmentIterator();
         List<SamAlignment> alignmentList = new ArrayList<SamAlignment>(100);
-        List<String> readSeqs = new ArrayList<String>(100);
+        //List<String> readSeqs = new ArrayList<String>(100);
         while (iter.hasNext()) {
             Alignment al = iter.next();
             SamAlignment sal = (SamAlignment) al;
             alignmentList.add(sal);
 
-            String readSeq = sal.getReadSequenceField();
-            readSeqs.add(readSeq);
+            //TODO Alignment has already been finished, should rewrite this test loading twice
+//            String readSeq = sal.getReadSequenceField();
+//            readSeqs.add(readSeq);
+//            al.finish();
 
-
-            al.finish();
-
-            if (SamAlignment.LAZY_LOAD) {
+            if (SamAlignment.DEFAULT_LAZY_LOAD) {
                 assertNull(sal.getReadSequenceField());
             } else {
                 assertNotNull(sal.getReadSequenceField());
@@ -402,7 +402,9 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         for (SamAlignment al : alignmentList) {
             String readSeq = al.getReadSequence();
             assertNotNull(readSeq);
-            assertEquals(readSeqs.get(counter++), readSeq);
+            assertTrue(readSeq.length() > 0);
+            String rem = readSeq.toUpperCase().replaceAll("[ACGTN]", "");
+            assertEquals("", rem);
         }
     }
 

@@ -1,0 +1,24 @@
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+<!DOCTYPE cli_plugin SYSTEM "../../../src/org/broad/igv/cli_plugin/resources/cli_plugin.dtd">
+<cli_plugin api_version="alpha" plugin_version="1.0" name="cat"
+            id="org.broadinstitute.igv.plugin.cat">
+    <tool name="cat" defaultPath="cat">
+        <default>
+            <arg name="Arguments" cmd_arg="" type="TEXT"/>
+            <arg name="Track A" cmd_arg="" type="FEATURE_TRACK"/>
+            <arg name="Track B" cmd_arg="" type="FEATURE_TRACK"
+                 encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
+            <parser format="bed" strict="true"/>
+        </default>
+        <command name="Concatenate" cmd=""/>
+    </tool>
+</cli_plugin>

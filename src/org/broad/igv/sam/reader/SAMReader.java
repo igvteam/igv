@@ -176,7 +176,7 @@ public class SAMReader implements AlignmentReader {
             reader.setValidationStringency(ValidationStringency.SILENT);
 
             //Need to keep the file source, if loading lazily
-            reader.enableFileSource(SamAlignment.LAZY_LOAD);
+            reader.enableFileSource(SamAlignment.DEFAULT_LAZY_LOAD);
 
             return reader;
         } catch (IOException ex) {

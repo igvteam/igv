@@ -37,7 +37,7 @@ public class RecursiveAttributes {
 
     private final String name;
     private final Map<String, String> attributes;
-    private List<RecursiveAttributes> children;
+    private final List<RecursiveAttributes> children;
 
     public RecursiveAttributes(String name, Map<String, String> attributes){
         this(name, attributes, null);

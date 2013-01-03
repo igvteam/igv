@@ -160,6 +160,12 @@ public class ReferenceFrame {
 
     }
 
+
+    private void computeZoomTiles(int newZoom){
+        zoom = Math.min(maxZoom, newZoom);
+        nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
+        maxPixel = getTilesTimesBinsPerTile();
+    }
     /**
      * Change the zoom level, keeping the center the same
      * zoom events "release" the frame, enabling pan and zoom
@@ -167,11 +173,9 @@ public class ReferenceFrame {
      * @param newZoom
      */
     private void zoomTo(int newZoom) {
-
-        zoom = Math.min(maxZoom, newZoom);
-        nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
-        maxPixel = getTilesTimesBinsPerTile();
+        computeZoomTiles(newZoom);
         invalidateLocationScale();
+        this.setEnd = -1;
 
         // TODO -- do this with events,
         IGV.repaintPanelsHeadlessSafe();
@@ -298,7 +302,6 @@ public class ReferenceFrame {
 
     public void setOrigin(double position) {
         setOrigin(position, true);
-
     }
 
     /**
@@ -383,9 +386,7 @@ public class ReferenceFrame {
     protected void imputeZoom(double start, double end) {
         int z = (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
         if (z != this.zoom) {
-            zoom = Math.min(maxZoom, Math.max(minZoom, z));
-            nTiles = (int) Math.pow(2, zoom);
-            maxPixel = getTilesTimesBinsPerTile();
+            computeZoomTiles(Math.max(minZoom, z));
         }
         if (IGV.hasInstance())
             IGV.getInstance().repaintStatusAndZoomSlider();
@@ -498,7 +499,6 @@ public class ReferenceFrame {
 
 
     public void invalidateLocationScale() {
-        //Thread.dumpStack();
         locationScaleValid = false;
     }
 

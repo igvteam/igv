@@ -111,6 +111,17 @@
         </javac>
     </target>
 
+    <target name="build-runtime-utils" description="Create RuntimeUtils.jar in testlib directory. Necessary for profiling"
+            depends="compile">
+        <jar destfile="${testlib.dir}/RuntimeUtils.jar" basedir="${tmp.dir}" compress="true" duplicate="preserve">
+            <include name="org/broad/igv/util/RuntimeUtils.class"/>
+            <manifest>
+                <attribute name="Premain-Class" value="org.broad.igv.util.RuntimeUtils"/>
+            </manifest>
+    </jar>
+    </target>
+
+
     <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
                target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
@@ -165,6 +176,34 @@
         <property name="class-path" value="batic-codec.jar goby-io-igv.jar"/>
 
         <build includedFileset="files"/>
+    </target>
+
+    <condition property="isWindows">
+        <os family="windows" />
+    </condition>
+
+    <condition property="isLinux">
+        <os family="unix" />
+    </condition>
+
+    <condition property="isMac">
+        <os family="mac" />
+    </condition>
+
+    <!-- Copy launching scripts to dest dir, where igv.jar is -->
+    <target name="copy-launch-scripts-win" if="isWindows">
+        <copy file="scripts/igv.bat" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools.bat" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui.bat" todir="${dist.dir}" overwrite="false"/>
+    </target>
+    <target name="copy-launch-scripts-mac" if="isMac">
+        <copy file="scripts/igv.command" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui.command" todir="${dist.dir}" overwrite="false"/>
+    </target><target name="copy-launch-scripts-linux" if="isLinux">
+        <copy file="scripts/igv.sh" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
+        <copy file="scripts/igvtools_gui" todir="${dist.dir}" overwrite="false"/>
     </target>
 
     <target name="build" depends="build-small,build-all"/>
