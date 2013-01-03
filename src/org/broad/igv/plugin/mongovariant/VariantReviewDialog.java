@@ -20,6 +20,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.variant.VariantTrack;
+import org.broad.tribble.util.ParsingUtils;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.MongoVariantContext;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878KnowledgeBase;
@@ -171,9 +172,9 @@ public class VariantReviewDialog extends JDialog {
         for (String sampleName : variant.getSampleNamesOrderedByName()) {
             boolean isPref = sampleName.equalsIgnoreCase(prefSampleName);
             if (isPref || mutationString == null) {
+                mutationString = ParsingUtils.join("/", ParsingUtils.sortList(variant.getAlleles()));
                 Genotype genotype = variant.getGenotype(sampleName);
                 gtt = genotype.getType();
-                mutationString = genotype.getGenotypeString(false);
                 if (isPref) break;
             } else {
                 //If we have several samples with different mutations, don't know which
@@ -187,6 +188,7 @@ public class VariantReviewDialog extends JDialog {
 
         genotypeTypeField.setSelectedItem(gtt);
         mutField.setText(mutationString);
+        mutField.setToolTipText(mutationString);
     }
 
     private void initComponents() {
@@ -405,8 +407,8 @@ public class VariantReviewDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("Save");
@@ -417,8 +419,8 @@ public class VariantReviewDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -429,8 +431,8 @@ public class VariantReviewDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.PAGE_END);
         }
