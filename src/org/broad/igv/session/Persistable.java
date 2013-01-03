@@ -11,11 +11,10 @@
 
 package org.broad.igv.session;
 
+import java.util.Map;
+
 /**
- * Interface for a session persistable object.  Implementations must be able to return object state as a map of
- * key-value string pairs, and restore state from such a map.
- *
- * // TODO -- this whole scheme could probably be more elegantly handled with annotations.
+ * Interface for a session persistable object.
  *
  * @author User: jrobinso
  * Date: Feb 23, 2010
@@ -27,11 +26,11 @@ public interface Persistable {
      * @return
      */
 
-    public RecursiveAttributes getPersistentState();
+    public Map<String, String> getPersistentState();
 
     /**
      * Restore object state from a map of key-value string pairs
      * @param values
      */
-    public void restorePersistentState(RecursiveAttributes values);
+    public void restorePersistentState(Map<String, String> values);
 }

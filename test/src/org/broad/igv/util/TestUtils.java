@@ -22,7 +22,15 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
+import org.w3c.dom.Document;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -346,4 +354,32 @@ public class TestUtils {
     }
 
 
+
+    /**
+     * Marshalls {@code inObj} and unmarshalls the result, returning the
+     * unmarshalled version
+     *
+     * @param inObj
+     * @return
+     * @throws Exception
+     */
+    public static <T> T marshallUnmarshall(T inObj) throws Exception{
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.newDocument();
+
+        JAXBContext jc = JAXBContext.newInstance(inObj.getClass());
+        Marshaller m = jc.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+        //This JAXBElement business is necessary because we don't know if we have @XmlRootElement on inObj
+        JAXBElement inel = new JAXBElement(new QName("", "obj"), inObj.getClass(), inObj);
+        //m.marshal(inel, System.out);
+        m.marshal(inel, doc);
+
+        Unmarshaller u = jc.createUnmarshaller();
+        JAXBElement el = (JAXBElement) u.unmarshal(doc, inObj.getClass());
+        return (T) el.getValue();
+    }
 }

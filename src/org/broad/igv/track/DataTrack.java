@@ -30,7 +30,6 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.XYPlotRenderer;
-import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -296,29 +295,6 @@ public abstract class DataTrack extends AbstractTrack {
         }
 
         return interval;
-    }
-
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes properties = super.getPersistentState();
-        properties.put("autoScale", String.valueOf(autoScale));
-        return properties;
-    }
-
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-        String as = attributes.get("autoScale");
-        if (as != null) {
-            try {
-                autoScale = Boolean.parseBoolean(as);
-
-            } catch (Exception e) {
-                log.error("Error restoring session.  Invalid autoScale value: " + autoScale);
-
-            }
-        }
     }
 
     /**

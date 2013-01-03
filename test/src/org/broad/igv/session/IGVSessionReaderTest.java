@@ -12,6 +12,7 @@
 package org.broad.igv.session;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ParsingUtils;
@@ -24,14 +25,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.awt.*;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -83,4 +86,36 @@ public class IGVSessionReaderTest extends AbstractHeadlessTest {
             assertEquals(1, testTrack.size());
         }
     }
+
+    @Test
+    public void testReadWriteColorString() throws Exception{
+        SessionDataHolder inVal = new SessionDataHolder();
+        Color inCol = new Color(0, 100, 200);
+        inVal.color = inCol;
+        SessionDataHolder outVal = TestUtils.marshallUnmarshall(inVal);
+        assertEquals(inCol, outVal.color);
+        assertNull(outVal.renderer);
+    }
+
+    @Test
+    public void testReadWriteRenderer() throws Exception{
+        SessionDataHolder inVal = new SessionDataHolder();
+        inVal.renderer = (Renderer) RendererFactory.defaultRendererClass.newInstance();
+
+        assert inVal.renderer != null;
+
+        SessionDataHolder outVal = TestUtils.marshallUnmarshall(inVal);
+        assertEquals(inVal.renderer.getClass().getName(), outVal.renderer.getClass().getName());
+    }
+
+    private static class SessionDataHolder{
+        @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
+        @XmlAttribute public Color color;
+
+        @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
+        @XmlAttribute public Renderer renderer;
+    }
+
+
+
 }

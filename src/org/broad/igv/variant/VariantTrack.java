@@ -19,7 +19,6 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -1303,15 +1302,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
 
-    /**
-     * Return the current state of this object as map of key-value pairs.  Used to store session state.
-     *
-     * @return
-     */
     @Override
-    public RecursiveAttributes getPersistentState() {
-
-        RecursiveAttributes attributes = super.getPersistentState();
+    public Map<String, String> getPersistentState() {
+        Map<String, String> attributes = super.getPersistentState();
         attributes.put(IGVSessionReader.SessionAttribute.RENDER_NAME.getText(), String.valueOf(renderID));
 
         ColorMode mode = getColorMode();
@@ -1327,7 +1320,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
+    public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);
 
         String rendername = attributes.get(IGVSessionReader.SessionAttribute.RENDER_NAME.getText());

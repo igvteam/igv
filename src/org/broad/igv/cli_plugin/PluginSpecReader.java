@@ -284,7 +284,7 @@ public class PluginSpecReader {
 
     static <T> T unmarshal(Node node) {
         try {
-            Unmarshaller u = PluginSpecReader.getJAXBContext().createUnmarshaller();
+            Unmarshaller u = getJAXBContext().createUnmarshaller();
             u.setListener(ToolListener.getInstance());
             //TODO change schema to W3C
             //u.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(myFile);

@@ -29,7 +29,6 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.Persistable;
-import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.session.Session;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
@@ -851,9 +850,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes attrs = super.getPersistentState();
-        attrs.putAll(renderOptions.getPersistentState().getAttributes());
+    public Map<String, String> getPersistentState() {
+        Map<String, String> attrs = super.getPersistentState();
+        attrs.putAll(renderOptions.getPersistentState());
 
         if (dataManager.isShowSpliceJunctions()) {
             attrs.put("showSpliceJunctions", String.valueOf(dataManager.isShowSpliceJunctions()));
@@ -863,7 +862,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
+    public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);
         renderOptions.restorePersistentState(attributes);
 
@@ -973,17 +972,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             peStats = new HashMap<String, PEStats>();
         }
 
-        /*
-         * private void updateColorScale() { int delta = 1; if (medianInsertSize
-         * == 0 || madInsertSize == 0) { delta = (maxInsertSizeThreshold -
-         * minInsertSizeThreshold) / 10; } else { delta =
-         * Math.min((maxInsertSizeThreshold - minInsertSizeThreshold) / 3,
-         * madInsertSize); } insertSizeColorScale = new
-         * ContinuousColorScale(minInsertSizeThreshold, minInsertSizeThreshold +
-         * delta, maxInsertSizeThreshold - delta, maxInsertSizeThreshold,
-         * Color.blue, AlignmentRenderer.grey1, Color.red); }
-         */
-
         /**
          * Called by session writer. Return instance variable values as a map of
          * strings. Used to record current state of object. Variables with
@@ -992,7 +980,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
          *
          * @return
          */
-        public RecursiveAttributes getPersistentState() {
+        public Map<String, String> getPersistentState() {
             Map<String, String> attributes = new HashMap();
             PreferenceManager prefs = PreferenceManager.getInstance();
             if (shadeBasesOption != DEFAULT_SHADE_BASES_OPTION) {
@@ -1029,20 +1017,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 attributes.put("sortByTag", sortByTag);
             }
 
-            return new RecursiveAttributes("renderOptions", attributes);
+            return attributes;
         }
 
         /**
          * Called by session reader.  Restores state of object.
          *
-         * @param recursiveAttributes
+         * @param attributes
          */
         @Override
-        public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
-
-            String value;
-            Map<String, String> attributes = recursiveAttributes.getAttributes();
-            value = attributes.get("insertSizeThreshold");
+        public void restorePersistentState(Map<String, String> attributes) {
+            String value = attributes.get("insertSizeThreshold");
             if (value != null) {
                 maxInsertSize = Integer.parseInt(value);
             }

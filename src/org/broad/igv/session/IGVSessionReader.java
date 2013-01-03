@@ -21,6 +21,7 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -41,6 +42,10 @@ import org.broad.igv.util.Utilities;
 import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.*;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,6 +86,9 @@ public class IGVSessionReader implements SessionReader {
     private Track geneTrack = null;
     private Track seqTrack = null;
     private boolean hasTrackElments;
+
+    //Temporary holder for generating tracks
+    private static AbstractTrack nextTrack;
 
 
     static {
@@ -146,6 +154,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
     }
+
 
     /**
      * Session Attribute types
@@ -913,8 +922,6 @@ public class IGVSessionReader implements SessionReader {
 
         String id = getAttribute(element, SessionAttribute.ID.getText());
 
-        RecursiveAttributes trackAttributes = RecursiveAttributes.readElement(element);
-
         // Get matching tracks.
         List<Track> matchedTracks = trackDictionary.get(id);
 
@@ -928,7 +935,12 @@ public class IGVSessionReader implements SessionReader {
                     igv.removeTracks(Arrays.asList(track));
                 }
 
-                track.restorePersistentState(trackAttributes);
+                try {
+                    unmarshalTrackElement(element, (AbstractTrack) track);
+                } catch (JAXBException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
             trackDictionary.remove(id);
         }
@@ -937,6 +949,31 @@ public class IGVSessionReader implements SessionReader {
         process(session, elements, additionalInformation);
 
         return matchedTracks;
+    }
+
+
+    private static void setNextTrack(AbstractTrack track){
+        nextTrack = track;
+    }
+
+    /**
+     * Used for unmarshalling track; JAXB needs a static no-arg factory method
+     * @return
+     */
+    public static AbstractTrack getNextTrack(){
+        return nextTrack;
+    }
+
+    protected Track unmarshalTrackElement(Element element, AbstractTrack track) throws JAXBException{
+        AbstractTrack ut;
+        synchronized (IGVSessionReader.class){
+            setNextTrack(track);
+            ut = unmarshal(element);
+            setNextTrack(null);
+        }
+        Map<String, String> attributes = Utilities.getAttributes(element);
+        ut.restorePersistentState(attributes);
+        return ut;
     }
 
     private void processColorScales(Session session, Element element, HashMap additionalInformation) {
@@ -1011,5 +1048,28 @@ public class IGVSessionReader implements SessionReader {
         return value;
     }
 
+
+    private static JAXBContext jc = null;
+    static JAXBContext getJAXBContext() throws JAXBException {
+        if(jc == null){
+            jc = JAXBContext.newInstance(AbstractTrack.class);
+        }
+        return jc;
+    }
+
+    /**
+     * Unmarshall node into an AbstractTrack
+     * @param node
+     * @return
+     */
+    public static AbstractTrack unmarshal(Node node) {
+        try {
+            Unmarshaller u = getJAXBContext().createUnmarshaller();
+            JAXBElement el = u.unmarshal(node, AbstractTrack.class);
+            return (AbstractTrack) el.getValue();
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

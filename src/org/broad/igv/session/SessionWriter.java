@@ -18,6 +18,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
+import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -33,15 +34,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -342,12 +344,28 @@ public class SessionWriter {
                 panelElement.setAttribute("height", String.valueOf(trackPanel.getHeight()));
                 panelElement.setAttribute("width", String.valueOf(trackPanel.getWidth()));
 
-                for (Track track : tracks) {
+                //We create a temporary element into which to marshall, so we
+                //can add custom attributes
+                Element tmpTrackParent = document.createElement("dummy");
 
-                    Element trackElement = document.createElement(SessionElement.TRACK.getText());
-                    RecursiveAttributes.writeElement(trackElement, document, track.getPersistentState());
+                try {
+                    Marshaller m = IGVSessionReader.getJAXBContext().createMarshaller();
+                    m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+                    for (Track track : tracks) {
+                        JAXBElement el = new JAXBElement(new QName("", SessionElement.TRACK.getText()), AbstractTrack.class, track);
+                        m.marshal(el, tmpTrackParent);
 
-                    panelElement.appendChild(trackElement);
+                        Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);
+
+
+                        for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
+                            trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
+                        }
+
+                        panelElement.appendChild(trackElement);
+                    }
+                } catch (JAXBException e) {
+                    throw new RuntimeException(e);
                 }
                 globalElement.appendChild(panelElement);
             }

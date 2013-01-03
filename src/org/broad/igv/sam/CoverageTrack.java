@@ -26,7 +26,6 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -42,6 +41,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
+import javax.xml.bind.annotation.XmlAttribute;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -68,13 +69,12 @@ public class CoverageTrack extends AbstractTrack {
     private static final boolean DEFAULT_SHOW_REFERENCE = false;
 
     // User settable state -- these attributes should be stored in the session file
-    boolean showReference;
-    boolean autoScale = DEFAULT_AUTOSCALE;
-    private float snpThreshold;
+    @XmlAttribute boolean showReference;
+    @XmlAttribute private float snpThreshold;
 
     AlignmentDataManager dataManager;
     CoverageDataSource dataSource;
-    DataRenderer dataSourceRenderer; // = new BarChartRenderer();
+    DataRenderer dataSourceRenderer;
     IntervalRenderer intervalRenderer;
     PreferenceManager prefs;
     JMenuItem dataRangeItem;
@@ -611,13 +611,13 @@ public class CoverageTrack extends AbstractTrack {
      * @return
      */
     @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes attributes = super.getPersistentState();
+    public Map<String, String> getPersistentState() {
+        Map<String, String> attributes = super.getPersistentState();
         prefs = PreferenceManager.getInstance();
         if (snpThreshold != prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
             attributes.put("snpThreshold", String.valueOf(snpThreshold));
         }
-        attributes.put("autoScale", String.valueOf(autoScale));
+
         if (showReference != DEFAULT_SHOW_REFERENCE) {
             attributes.put("showReference", String.valueOf(showReference));
         }
@@ -626,12 +626,12 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     /**
-     * Called by session reader.  Restores state of object.
+     *
      *
      * @param attributes
      */
     @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
+    public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);
 
         String value;

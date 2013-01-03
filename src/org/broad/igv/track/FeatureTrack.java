@@ -19,8 +19,6 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.session.Persistable;
-import org.broad.igv.session.RecursiveAttributes;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -928,21 +926,6 @@ public class FeatureTrack extends AbstractTrack {
 
         return f;
     }
-
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes state = super.getPersistentState();
-        /**
-         * As of this writing, we only need additional state from
-         * a PluginFeatureSource. If we start getting state elsewhere,
-         * then FeatureSource should probably extend Persistable
-         */
-        if(source instanceof Persistable){
-            state.getChildren().add(((Persistable) source).getPersistentState());
-        }
-        return state;
-    }
-
 
     public void setVisibilityWindow(int windowSize) {
         super.setVisibilityWindow(windowSize);
