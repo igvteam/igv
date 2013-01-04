@@ -22,6 +22,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
@@ -62,7 +63,7 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
 
     public static void exportTDM(List<String> lociStrings, File file) throws IOException {
 
-        // Convert the loci strings to a list of lodi, if the loci represents multiple features (e.g. isoforms) use the largest
+        // Convert the loci strings to a list of loci, if the loci represents multiple features (e.g. isoforms) use the largest
         int averageFeatureSize = 0;
         List<NamedFeature> loci = new ArrayList<NamedFeature>(lociStrings.size());
         for (String l : lociStrings) {
@@ -79,13 +80,13 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
 
         // Determine data types -- all data tracks + mutation, and samples
         LinkedHashSet<TrackType> loadedTypes = new LinkedHashSet<TrackType>();
-        LinkedHashSet<String> samples = new LinkedHashSet<String>();
+        //LinkedHashSet<String> samples = new LinkedHashSet<String>();
 
         List<Track> tracks = IGV.getInstance().getAllTracks();
         for (Track t : tracks) {
             if ((t instanceof DataTrack || t.getTrackType() == TrackType.MUTATION) && t.isVisible()) {
                 loadedTypes.add(t.getTrackType());
-                samples.add(t.getSample());
+                //samples.add(t.getSample());
             }
         }
 
@@ -101,31 +102,35 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
         // Loop though tracks and loci and gather data by sample & gene
         Map<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         for (Track t : tracks) {
-            if(!t.isVisible()) continue;
+            if (!t.isVisible()) continue;
 
-            if (t instanceof DataTrack) {
-                DataTrack dataTrack = (DataTrack) t;
+            String sampleName = t.getSample();
+            List<Track> overlays = IGV.getInstance().getOverlayTracks(t);
 
-                for (NamedFeature locus : loci) {
-                    double regionScore = dataTrack.getAverageScore(locus.getChr(), locus.getStart(), locus.getEnd(), zoom);
-                    if (!Double.isNaN(regionScore)) {
-                        String sample = t.getSample();
-                        String locusString =  locus.getName();
-                        String key = sample + "_" + locusString;
+            for (NamedFeature locus : loci) {
 
-                        SampleData sd = sampleDataMap.get(key);
-                        if (sd == null) {
+                double regionScore;
+                if (t instanceof DataTrack) {
+                    DataTrack dataTrack = (DataTrack) t;
+                    regionScore = dataTrack.getAverageScore(locus.getChr(), locus.getStart(), locus.getEnd(), zoom);
+                    addToSampleData(sampleDataMap, sampleName, locus.getName(), t.getTrackType(), regionScore);
+                }
 
-                            sd = new SampleData(sample, locusString);
-                            sampleDataMap.put(key, sd);
+                if(overlays != null) {
+                    for (Track overlay : overlays) {
+                        if (overlay.getTrackType() == TrackType.MUTATION) {
+                            regionScore = overlay.getRegionScore(locus.getChr(), locus.getStart(), locus.getEnd(), zoom,
+                                    RegionScoreType.MUTATION_COUNT, locus.getName());
+                            //Only add if we found a mutation. Should we put it in anyway?
+                            if (regionScore > 0) {
+                                addToSampleData(sampleDataMap, sampleName, locus.getName(), overlay.getTrackType(), regionScore);
+                            }
                         }
-                        sd.addValue(t.getTrackType(), regionScore);
                     }
                 }
             }
+
         }
-
-
 
         // Finally output data
         PrintWriter pw = null;
@@ -155,6 +160,21 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
             }
         } finally {
             if(pw != null) pw.close();
+        }
+    }
+
+    private static void addToSampleData(Map<String, SampleData> sampleDataMap, String sampleName, String locusString, TrackType tt, double regionScore){
+        if (!Double.isNaN(regionScore)) {
+            //String locusString = locus.getName();
+            String key = sampleName + "_" + locusString;
+
+            SampleData sd = sampleDataMap.get(key);
+            if (sd == null) {
+
+                sd = new SampleData(sampleName, locusString);
+                sampleDataMap.put(key, sd);
+            }
+            sd.addValue(tt, regionScore);
         }
     }
 
