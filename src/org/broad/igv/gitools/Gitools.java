@@ -1,28 +1,64 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.gitools;
 
 import org.apache.commons.math.stat.StatUtils;
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.lists.GeneList;
+import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
 /**
+ * Class for integrating with Gitools. Writes out data in TDM format.
+ * We implement GeneListUIActionListener so the gene list can be selected using
+ * our current UI
  * @author jrobinso
  *         Date: 11/13/12
  *         Time: 9:26 PM
  */
-public class Gitools {
+public class Gitools implements GeneListManagerUI.GeneListListener{
 
+    private static Logger log = Logger.getLogger(Gitools.class);
+
+    public static final String ENABLE_PROPERTY = "enableGitools";
+
+    @Override
+    public void actionPerformed(JDialog dialog, GeneList geneList) {
+        File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
+        if (file != null) {
+            try {
+                Gitools.exportTDM(geneList.getLoci(), file);
+            } catch (IOException exc) {
+                log.error("Error exporting TDM data", exc);
+                MessageUtils.showErrorMessage("Error exporting TDM data", exc);
+            }
+        }
+    }
 
     public static void exportTDM(List<String> lociStrings, File file) throws IOException {
 

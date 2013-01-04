@@ -22,6 +22,7 @@ import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.gitools.Gitools;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
@@ -115,10 +116,8 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createTracksMenu());
         menus.add(createRegionsMenu());
 
-        if (true || Globals.toolsMenuEnabled) {
-            refreshToolsMenu();
-            menus.add(toolsMenu);
-        }
+        refreshToolsMenu();
+        menus.add(toolsMenu);
 
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
@@ -154,6 +153,22 @@ public class IGVMenuBar extends JMenuBar {
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        //TODO Add api hook to insert things in tool menu
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "false"));
+        if(showTDMButton){
+            JMenuItem gitoolsItem = new JMenuItem("Export TDM");
+            gitoolsItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
+                            "Export TDM", new Gitools());
+                    dialog.setVisible(true);
+                }
+            });
+        menuItems.add(gitoolsItem);
+        }
+
         menuItems.add(new JSeparator());
 
         //-------------------------------------//

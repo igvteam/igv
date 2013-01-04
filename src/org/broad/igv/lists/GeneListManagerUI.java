@@ -18,6 +18,7 @@ package org.broad.igv.lists;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.cbio.FilterGeneNetworkUI;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.gitools.Gitools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -55,6 +56,15 @@ public class GeneListManagerUI extends JDialog {
     private static Logger log = Logger.getLogger(GeneListManagerUI.class);
 
     private static String ALL = "All";
+    private static String DEFAULT_ACTION_TEXT = "View";
+    private static final GeneListListener DEFAULT_ACTION_LISTENER = new GeneListListener() {
+        @Override
+        public void actionPerformed(JDialog dialog, GeneList geneList) {
+            IGV.getInstance().setGeneList(geneList);
+            dialog.setVisible(false);
+            dialog.dispose();
+        }
+    };
 
     // This is a static so its "remembered" withing the context of a session.
     static String lastSelectedGroup;
@@ -72,6 +82,7 @@ public class GeneListManagerUI extends JDialog {
     GeneListManager manager;
 
     private static GeneListManagerUI instance;
+    private GeneListListener listener;
 
     /**
      * Get or create new GeneListManagerUI.
@@ -81,9 +92,24 @@ public class GeneListManagerUI extends JDialog {
      * @return
      */
     public static GeneListManagerUI getInstance(Frame owner) {
+        return getInstance(owner, DEFAULT_ACTION_TEXT, DEFAULT_ACTION_LISTENER);
+    }
+
+    /**
+     *
+     * @param owner
+     * @param actionText Text to be displayed when the action is performed. Default is "View", for simply viewing the gene list
+     * @param listener The action performed with the specified GeneList
+     * @return
+     */
+    public static GeneListManagerUI getInstance(Frame owner, String actionText, GeneListListener listener) {
         if (instance == null) {
             instance = new GeneListManagerUI(owner);
         }
+
+        instance.actionButton.setText(actionText);
+        instance.listener = listener;
+
         return instance;
     }
 
@@ -94,8 +120,8 @@ public class GeneListManagerUI extends JDialog {
         initComponents();
         initLists();
 
-        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitools", "false"));
-        exportTDMButton.setVisible(showTDMButton);
+//        boolean showTDMButton = Boolean.parseBoolean(System.getProperty("enableGitools", "false"));
+//        exportTDMButton.setVisible(showTDMButton);
     }
 
     private void initLists() {
@@ -149,7 +175,7 @@ public class GeneListManagerUI extends JDialog {
         if (selectedList == null) {
             geneListModel.clear();
         } else {
-            loadButton.setEnabled(true);
+            actionButton.setEnabled(true);
             GeneList gl = listModel.getGeneList(selectedList);
             geneListModel.setGeneList(gl);
             lociJList.setModel(geneListModel);
@@ -325,19 +351,16 @@ public class GeneListManagerUI extends JDialog {
         setVisible(false);
     }
 
-    private void loadButtonActionPerformed(ActionEvent e) {
+    private void actionButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
-            //TODO Allow user to select partial list
-            IGV.getInstance().setGeneList(selectedList);
-            setVisible(false);
-            dispose();
+            GeneList geneList = geneLists.get(selectedList);
+            listener.actionPerformed(this, geneList);
         }
-
     }
 
     private void glJListMouseClicked(MouseEvent e) {
         if (e.getClickCount() > 1) {
-            this.loadButtonActionPerformed(null);
+            this.actionButtonActionPerformed(null);
         }
     }
 
@@ -349,7 +372,7 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
-    private void exportTDMButtonActionPerformed(ActionEvent e) {
+    private void exportTDMButtonActionPerformed_deleteme(ActionEvent e) {
         if (selectedList != null) {
             GeneList geneList = geneLists.get(selectedList);
 
@@ -511,7 +534,7 @@ public class GeneListManagerUI extends JDialog {
         buttonBar = new JPanel();
         exportTDMButton = new JButton();
         viewNetworkButton = new JButton();
-        loadButton = new JButton();
+        actionButton = new JButton();
         closeButton = new JButton();
 
         //======== this ========
@@ -792,10 +815,11 @@ public class GeneListManagerUI extends JDialog {
 
                 //---- exportTDMButton ----
                 exportTDMButton.setText("Export TDM");
+                exportTDMButton.setVisible(false);
                 exportTDMButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        exportTDMButtonActionPerformed(e);
+                        exportTDMButtonActionPerformed_deleteme(e);
                     }
                 });
                 buttonBar.add(exportTDMButton);
@@ -810,16 +834,16 @@ public class GeneListManagerUI extends JDialog {
                 });
                 buttonBar.add(viewNetworkButton);
 
-                //---- loadButton ----
-                loadButton.setText("View");
-                loadButton.setEnabled(false);
-                loadButton.addActionListener(new ActionListener() {
+                //---- actionButton ----
+                actionButton.setText("View");
+                actionButton.setEnabled(false);
+                actionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        loadButtonActionPerformed(e);
+                        actionButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(loadButton);
+                buttonBar.add(actionButton);
 
                 //---- closeButton ----
                 closeButton.setText("Close");
@@ -876,8 +900,21 @@ public class GeneListManagerUI extends JDialog {
     private JPanel buttonBar;
     private JButton exportTDMButton;
     private JButton viewNetworkButton;
-    private JButton loadButton;
+    private JButton actionButton;
     private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
+    /**
+     * Custom action listener for receiving a GeneList
+     * and taking some action based on that. Listeners
+     * implementing this interface can be used as callbacks
+     * once a GeneList is selected from GeneListManagerUI
+     * User: jacob
+     * Date: 2013-Jan-04
+     */
+    @api
+    public interface GeneListListener {
+
+        void actionPerformed(JDialog dialog, GeneList geneList);
+    }
 }

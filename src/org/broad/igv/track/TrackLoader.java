@@ -288,7 +288,7 @@ public class TrackLoader {
         List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
         if (lists.size() == 1) {
             GeneList gl = lists.get(0);
-            IGV.getInstance().setGeneList(gl.getName(), true);
+            IGV.getInstance().setGeneList(gl, true);
         } else {
             MessageUtils.showMessage("Loaded " + lists.size() + " gene lists.");
         }

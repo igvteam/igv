@@ -825,6 +825,10 @@
              <string>text</string> 
              <string>Export TDM</string> 
             </void> 
+            <void method="setProperty"> 
+             <string>visible</string> 
+             <boolean>false</boolean> 
+            </void> 
             <void property="name"> 
              <string>exportTDMButton</string> 
             </void> 
@@ -832,7 +836,7 @@
              <object class="com.jformdesigner.model.FormEvent"> 
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
-              <string>exportTDMButtonActionPerformed</string> 
+              <string>exportTDMButtonActionPerformed_deleteme</string> 
               <boolean>true</boolean> 
              </object> 
             </void> 
@@ -870,13 +874,13 @@
              <boolean>false</boolean> 
             </void> 
             <void property="name"> 
-             <string>loadButton</string> 
+             <string>actionButton</string> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
-              <string>loadButtonActionPerformed</string> 
+              <string>actionButtonActionPerformed</string> 
               <boolean>true</boolean> 
              </object> 
             </void> 

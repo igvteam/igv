@@ -37,7 +37,6 @@ import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.sam.AlignmentTrack;
@@ -680,33 +679,24 @@ public class IGV {
     }
 
 
-    public void setGeneList(String listID) {
-        setGeneList(listID, true);
+    public void setGeneList(GeneList geneList) {
+        setGeneList(geneList, true);
     }
 
-    public void setGeneList(final String listID, final boolean recordHistory) {
-
-        //LongRunningTask.submit(new NamedRunnable() {
-        //    public String getName() {
-        //        return "setGeneList";
-        //    }
-        //
-        //    public void run() {
+    public void setGeneList(final GeneList geneList, final boolean recordHistory) {
 
         final CursorToken token = WaitCursorManager.showWaitCursor();
 
         SwingUtilities.invokeLater(new NamedRunnable() {
             public void run() {
                 try {
-                    if (listID == null) {
+                    if (geneList == null) {
                         session.setCurrentGeneList(null);
                     } else {
-                        GeneList gl = GeneListManager.getInstance().getGeneList(listID);
-
                         if (recordHistory) {
-                            session.getHistory().push("List: " + listID, 0);
+                            session.getHistory().push("List: " + geneList.getName(), 0);
                         }
-                        session.setCurrentGeneList(gl);
+                        session.setCurrentGeneList(geneList);
                     }
                     Preloader.preload();
                     resetFrames();
