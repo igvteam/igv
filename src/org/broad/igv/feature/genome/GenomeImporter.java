@@ -174,7 +174,7 @@ public class GenomeImporter {
      *
      * @param genomeId
      * @param genomeDisplayName
-     * @param relativeSequenceLocation
+     * @param sequenceLocation Path to nucleotide sequence. Can be absolute or relative, also local or remote
      * @param refFlatFile
      * @param cytobandFile
      * @param fastaFileNames
@@ -182,7 +182,7 @@ public class GenomeImporter {
      */
     public byte[] createGenomePropertyFile(String genomeId,
                                            String genomeDisplayName,
-                                           String relativeSequenceLocation,
+                                           String sequenceLocation,
                                            File refFlatFile,
                                            File cytobandFile,
                                            File chrAliasFile,
@@ -225,11 +225,11 @@ public class GenomeImporter {
             if (chrAliasFile != null) {
                 propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
-            if (relativeSequenceLocation != null) {
-                if (!HttpUtils.isRemoteURL(relativeSequenceLocation)) {
-                    relativeSequenceLocation = relativeSequenceLocation.replace('\\', '/');
+            if (sequenceLocation != null) {
+                if (!HttpUtils.isRemoteURL(sequenceLocation)) {
+                    sequenceLocation = sequenceLocation.replace('\\', '/');
                 }
-                propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + relativeSequenceLocation);
+                propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + sequenceLocation);
             }
 
             propertyFileWriter.flush();
