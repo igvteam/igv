@@ -450,13 +450,11 @@ public class IGV {
             String chrAliasFile = genomeBuilderDialog.getChrAliasFileName();
             String genomeDisplayName = genomeBuilderDialog.getGenomeDisplayName();
             String genomeId = genomeBuilderDialog.getGenomeId();
-            String genomeFileName = genomeBuilderDialog.getArchiveFileName();
-
 
             GenomeListItem genomeListItem = getGenomeManager().defineGenome(
                     genomeZipFile, cytobandFileName, refFlatFileName,
                     fastaFileName, chrAliasFile, genomeDisplayName,
-                    genomeId, genomeFileName, monitor);
+                    genomeId, monitor);
 
             if (genomeListItem != null) {
                 contentPane.getCommandBar().refreshGenomeListComboBox();

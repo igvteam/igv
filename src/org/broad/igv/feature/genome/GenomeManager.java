@@ -502,12 +502,13 @@ public class GenomeManager {
 
                     if ((sequenceLocation != null) && !HttpUtils.isRemoteURL(sequenceLocation)) {
                         File sequenceFolder = null;
-                        // Relative or absolute location?
-                        if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
-                            sequenceFolder = new File(sequenceLocation);
-                        } else {
+                        // Relative or absolute location? We use a few redundant methods to check,
+                        //since we don't know what platform the file was created on or is running on
+                        sequenceFolder = new File(sequenceLocation);
+                        boolean isAbsolutePath = sequenceFolder.isAbsolute() ||
+                                sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\");
+                        if (!isAbsolutePath) {
                             sequenceFolder = new File(f.getParent(), sequenceLocation);
-
                         }
                         sequenceLocation = sequenceFolder.getCanonicalPath();
                         sequenceLocation.replace('\\', '/');
@@ -1064,8 +1065,6 @@ public class GenomeManager {
      *                          the new genome will be written.
      * @param genomeDisplayName The unique user-readable name of the new genome.
      * @param genomeId          The id to be assigned to the genome.
-     * @param genomeFileName    The file name (not path) of the .genome archive
-     *                          file to be created.
      * @param monitor           A ProgressMonitor used to track progress - null,
      *                          if no progress updating is required.
      * @return GenomeListItem
@@ -1078,7 +1077,6 @@ public class GenomeManager {
                                        String chrAliasFileName,
                                        String genomeDisplayName,
                                        String genomeId,
-                                       String genomeFileName,
                                        ProgressMonitor monitor)
             throws IOException {
 
