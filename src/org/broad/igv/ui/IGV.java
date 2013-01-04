@@ -30,6 +30,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.affective.AffectiveGenome;
+import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
@@ -1315,6 +1316,24 @@ public class IGV {
 
 
     /**
+     * Uses either current session.getPersistent, or preferences, depending
+     * on if IGV has an instance or not. Generally intended for testing
+     * @see Session#getPersistent(String, String)
+     * @see PreferenceManager#getPersistent(String, String)
+     * @param key
+     * @param def
+     * @return
+     */
+    public static String getPersistent(String key, String def){
+        if(IGV.hasInstance()){
+            return IGV.getInstance().getSession().getPersistent(key, def);
+        }else{
+            return PreferenceManager.getInstance().getPersistent(key, def);
+        }
+    }
+
+
+    /**
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
@@ -1490,24 +1509,9 @@ public class IGV {
                 public void run() {
                     try {
                         List<Track> tracks = load(locator);
-                        if (tracks.size() > 0) {
-                            String path = locator.getPath();
-
-                            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
-                            // is greater than 10
-                            TrackPanel panel = getPanelFor(locator);
-                            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-                                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-                                Track t = tracks.get(0);
-                                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
-                                    String newPanelName = "Panel" + System.currentTimeMillis();
-                                    panel = addDataPanel(newPanelName).getTrackPanel();
-                                }
-                            }
-                            panel.addTracks(tracks);
-                        }
+                        addTracks(tracks, locator);
                     } catch (Exception e) {
-                        log.error("Error loading tracks", e);
+                        log.error("Error loading track", e);
                         messages.append("Error loading " + locator + ": " + e.getMessage());
                     }
                 }
@@ -1534,6 +1538,35 @@ public class IGV {
             for (String message : messages.getMessages()) {
                 MessageUtils.showMessage(message);
             }
+        }
+    }
+
+
+    /**
+     *
+     * Add the specified tracks to the appropriate panel. Panel
+     * is chosen based on characteristics of the {@code locator}.
+     *
+     * @param tracks
+     * @param locator
+     */
+    @api
+    public void addTracks(List<Track> tracks, ResourceLocator locator){
+        if (tracks.size() > 0) {
+            String path = locator.getPath();
+
+            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
+            // is greater than 10
+            TrackPanel panel = getPanelFor(locator);
+            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+                Track t = tracks.get(0);
+                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
+                    String newPanelName = "Panel" + System.currentTimeMillis();
+                    panel = addDataPanel(newPanelName).getTrackPanel();
+                }
+            }
+            panel.addTracks(tracks);
         }
     }
 
@@ -1586,17 +1619,6 @@ public class IGV {
         doRefresh();
     }
 
-    public Set<TrackType> getLoadedTypes() {
-        Set<TrackType> types = new HashSet();
-        for (Track t : getAllTracks()) {
-            TrackType type = t.getTrackType();
-            if (t != null) {
-                types.add(type);
-            }
-        }
-        return types;
-    }
-
     /**
      * Return a DataPanel appropriate for the resource type
      *
@@ -1615,14 +1637,22 @@ public class IGV {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
-            //} else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-            //        path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-            //    String newPanelName = "Panel" + System.currentTimeMillis();
-            //    return igv.addDataPanel(newPanelName).getTrackPanel();
         } else {
             return getDefaultPanel(locator);
         }
     }
+
+    public Set<TrackType> getLoadedTypes() {
+        Set<TrackType> types = new HashSet();
+        for (Track t : getAllTracks()) {
+            TrackType type = t.getTrackType();
+            if (t != null) {
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
 
     /**
      * Experimental method to support VCF -> BAM coupling
@@ -2338,9 +2368,12 @@ public class IGV {
                 }
             });
 
+            initIGVPlugins();
+
             synchronized (IGV.getInstance()) {
                 IGV.getInstance().notifyAll();
             }
+
         }
 
         private void setAppleDockIcon() {
@@ -2348,7 +2381,6 @@ public class IGV {
                 Image image = getIconImage();
                 OSXAdapter.setDockIconImage(image);
             } catch (Exception e) {
-                //ain't no thang
                 log.error("Error setting apple dock icon", e);
             }
         }
@@ -2360,8 +2392,25 @@ public class IGV {
             return image;
         }
 
-    }
 
+        private void initIGVPlugins(){
+            List<String> pluginClassNames = new ArrayList<String>(1);
+            //TODO Manually added for now
+            pluginClassNames.add("org.broad.igv.plugin.mongovariant.VariantReviewPlugin");
+            pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
+            for(String classname: pluginClassNames){
+                try {
+                    Class clazz = Class.forName(classname);
+                    IGVPlugin plugin = (IGVPlugin) clazz.newInstance();
+                    plugin.init();
+                } catch (Exception e) {
+                    log.error("Error loading " + classname, e);
+                }
+            }
+
+        }
+
+    }
 
     public static void copySequenceToClipboard(Genome genome, String chr, int start, int end) {
         try {

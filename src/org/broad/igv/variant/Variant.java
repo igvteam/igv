@@ -14,8 +14,8 @@ package org.broad.igv.variant;
 import org.broad.tribble.Feature;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Represents a variant call on a collection of samples.
@@ -70,11 +70,11 @@ public interface Variant extends Feature {
     String getReference();
 
     /**
-     * Return the set of alternate alleles for this variant.  This should not return null.
+     * Return the list of alternate alleles for this variant.  This should not return null.
      *
-     * @return The set of alternate alleles
+     * @return
      */
-    Set<Allele> getAlternateAlleles();
+    List<Allele> getAlternateAlleles();
 
     /**
      * Return the allele frequency for this variant, possibly from an annotation as opposed to the actual

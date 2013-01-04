@@ -1180,7 +1180,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
-
+            super();
             Collection<Track> tracks = new ArrayList();
             tracks.add(AlignmentTrack.this);
 

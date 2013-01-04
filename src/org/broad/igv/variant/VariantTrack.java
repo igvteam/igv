@@ -14,7 +14,9 @@
 
 package org.broad.igv.variant;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -32,6 +34,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
+import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -158,7 +161,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     Map<String, String> alignmentFiles;
 
-
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
@@ -187,16 +189,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
 
-        // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
-        if (IGV.hasInstance()) IGV.getInstance().addGroupEventListener(this);
+        // Listen for "group by" events.
+        if (IGV.hasInstance()) {
+            IGV.getInstance().addGroupEventListener(this);
+        }
 
         // If sample->bam list file is supplied enable vcfToBamMode.
         String bamListPath = locator.getPath() + ".mapping";
         if (ParsingUtils.pathExists(bamListPath)) {
             loadAlignmentMappings(bamListPath);
-
         }
-
     }
 
     private void loadAlignmentMappings(String bamListPath) {
@@ -611,12 +613,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         if (grouped) {
             for (List<String> sampleList : samplesByGroups.values()) {
-                renderAttibuteBand(g2D, bandRectangle, visibleRectangle, attributeNames, sampleList, mouseRegions);
+                renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, sampleList, mouseRegions);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
             }
         } else {
-            renderAttibuteBand(g2D, bandRectangle, visibleRectangle, attributeNames, allSamples, mouseRegions);
+            renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, allSamples, mouseRegions);
 
         }
 
@@ -639,7 +641,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Render attribues for a sample.   This is mostly a copy of AbstractTrack.renderAttibutes().
+     * Render attributes for a sample.   This is mostly a copy of AbstractTrack.renderAttributes().
      * TODO -- refactor to eliminate duplicate code from AbstractTrack
      *
      * @param g2D
@@ -650,8 +652,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * @param mouseRegions
      * @return
      */
-    private void renderAttibuteBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
-                                    List<String> attributeNames, List<String> sampleList, List<MouseableRegion> mouseRegions) {
+    private void renderAttributeBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                                     List<String> attributeNames, List<String> sampleList, List<MouseableRegion> mouseRegions) {
 
 
         for (String sample : sampleList) {
@@ -916,7 +918,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 ((position < feature.getStart() - maxDistance) || (position > feature.getEnd() + maxDistance))) {
             return null;
         } else {
-            return (Variant) feature;     // TODO -- don't like this cast
+            return (Variant) feature;
         }
     }
 
@@ -929,9 +931,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         toolTip.append("<br>Position: " + variant.getPositionString());
         toolTip.append("<br>ID: " + id);
         toolTip.append("<br>Reference: " + variant.getReference());
-        Set<Allele> alternates = variant.getAlternateAlleles();
+        List<Allele> alternates = variant.getAlternateAlleles();
         if (alternates.size() > 0) {
-            toolTip.append("<br>Alternate: " + alternates.toString());
+            toolTip.append("<br>Alternate: " + StringUtils.join(alternates, ","));
         }
 
         toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
@@ -1097,7 +1099,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (genotype != null) {
             toolTip = toolTip.append("<br>Bases: " + genotype.getGenotypeString());
             toolTip = toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
-            toolTip = toolTip.append("<br>Type: " + genotype.getType());
+            toolTip = toolTip.append("<br>Type: " + genotype.getTypeString());
         }
         if (variant.isFiltered()) {
             toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
@@ -1154,22 +1156,29 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return toolTip;
     }
 
-
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-
+    /**
+     * Return the {@code Variant} object closest to the specified event
+     * @param te
+     * @return
+     */
+    @api
+    public Variant getSelectedVariant(final TrackClickEvent te){
         final ReferenceFrame referenceFrame = te.getFrame();
-        selectedVariant = null;
+        Variant selVariant = null;
         if (referenceFrame != null && referenceFrame.getName() != null) {
             final double position = te.getChromosomePosition();
             double maxDistance = 10 * referenceFrame.getScale();
-            Variant f = getFeatureClosest(position, maxDistance, referenceFrame);
-            // If more than ~ 20 pixels distance reject
-            if (f != null) {
-                selectedVariant = f;
-                IGV.getInstance().doRefresh();
-            }
+            selVariant = getFeatureClosest(position, maxDistance, referenceFrame);
         }
+        return selVariant;
+    }
 
+
+    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
+        selectedVariant = getSelectedVariant(te);
+        if(selectedVariant != null){
+            IGV.getInstance().doRefresh();
+        }
         return new VariantMenu(this, selectedVariant);
     }
 
@@ -1269,13 +1278,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 if (selectedSample != null) {
                     // Select clicked sample and all other adjacent with the same genotype
                     Genotype genotype = f.getGenotype(selectedSample);
-                    String type = genotype.getType();
+                    GenotypeType type = genotype.getType();
 
                     int idx = getSampleIndex(selectedSample);
                     for (int i = idx; i < sampleBounds.size(); i++) {
                         String s = sampleBounds.get(i).sample;
                         Genotype gt = f.getGenotype(s);
-                        if (gt != null && type.equals(gt.getType())) {
+                        if (gt != null && type == gt.getType()) {
                             selectedSamples.add(s);
                         } else {
                             break;
@@ -1284,7 +1293,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     for (int i = idx - 1; i >= 0; i--) {
                         String s = sampleBounds.get(i).sample;
                         Genotype gt = f.getGenotype(s);
-                        if (gt != null && type.equals(gt.getType())) {
+                        if (gt != null && type == gt.getType()) {
                             selectedSamples.add(s);
                         } else {
                             break;
@@ -1445,5 +1454,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
+    }
+
+    /**
+     * Used to force a refresh
+     */
+    @api
+    public void clearPackedFeatures(){
+        this.packedFeaturesMap.clear();
     }
 }

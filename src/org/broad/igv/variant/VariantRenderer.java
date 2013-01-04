@@ -161,7 +161,7 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         Genotype genotype = variant.getGenotype(sampleName);
         if (genotype == null) {
-            log.error("Now what?");
+            log.error("Genotype not found for sample " + sampleName);
         } else {
             Color b1Color = Color.gray;
             Color b2Color = Color.gray;

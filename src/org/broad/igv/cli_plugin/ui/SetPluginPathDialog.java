@@ -53,7 +53,7 @@ public class SetPluginPathDialog extends JDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
-        PreferenceManager.getInstance().putPluginPath(pluginId, toolName, pathInput.getText());
+        PreferenceManager.getInstance().putToolPath(pluginId, toolName, pathInput.getText());
         setVisible(false);
     }
 

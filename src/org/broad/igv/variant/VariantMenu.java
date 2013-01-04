@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.variant;
@@ -25,8 +18,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,33 +38,15 @@ public class VariantMenu extends IGVPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    public VariantMenu(final VariantTrack variantTrack, Variant variant) {
+    static boolean hasReviewTrack = false;
 
+    public VariantMenu(final VariantTrack variantTrack, final Variant variant) {
+        super();
         this.track = variantTrack;
 
         if (track.hasAlignmentFiles()) {
             selectedSamples = track.getSelectedSamples();
         }
-
-        this.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
-
-            }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
-                close();
-            }
-
-            private void close() {
-               // track.clearSelectedVariant();
-            }
-
-        });
-
 
         //Title
         JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.LEFT);
@@ -105,9 +78,7 @@ public class VariantMenu extends IGVPopupMenu {
         addSeparator();
         for (JMenuItem item : getSortMenuItems(variant)) {
             add(item);
-            if (variant == null) {
-                item.setEnabled(false);
-            }
+            item.setEnabled(variant != null);
         }
 
         //Variant Information
@@ -144,8 +115,6 @@ public class VariantMenu extends IGVPopupMenu {
 
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
-
-
     }
 
     private JMenuItem getFeatureVisibilityItem() {

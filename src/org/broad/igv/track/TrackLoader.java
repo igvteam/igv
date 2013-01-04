@@ -350,7 +350,6 @@ public class TrackLoader {
 
     }
 
-
     private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         TribbleListFeatureSource src = new TribbleListFeatureSource(locator.getPath(), genome);
@@ -374,7 +373,6 @@ public class TrackLoader {
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);
-
     }
 
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
