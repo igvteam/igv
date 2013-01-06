@@ -71,9 +71,9 @@ public class GenomeSummaryData {
     public GenomeSummaryData(Genome genome, String[] samples) {
         this.genome = genome;
         this.samples = samples;
-        scale = (genome.getLength() / locationUnit) / nPixels;
+        scale = (genome.getNominalLength() / locationUnit) / nPixels;
 
-        List<String> chrNames = genome.getChromosomeNames();
+        List<String> chrNames = genome.getLongChromosomeNames();
         locationMap = new HashMap();
         dataMap = new HashMap();
         for (String chr : chrNames) {
@@ -154,7 +154,7 @@ public class GenomeSummaryData {
     private synchronized void createDataArrays() {
         locations = new int[nDataPts];
         int offset = 0;
-        List<String> chrNames = genome.getChromosomeNames();
+        List<String> chrNames = genome.getLongChromosomeNames();
         for (String chr : chrNames) {
             int[] chrLocs = locationMap.get(chr).toArray();
             System.arraycopy(chrLocs, 0, locations, offset, chrLocs.length);

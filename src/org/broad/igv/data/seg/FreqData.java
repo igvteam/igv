@@ -24,10 +24,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -76,12 +73,12 @@ public class FreqData {
         amp.clear();
         del.clear();
 
-        int sizeInKB = (int) (genome.getLength() / 1000);
+        int sizeInKB = (int) (genome.getNominalLength() / 1000);
         int wgBinSize = sizeInKB / 700;
         int wgBinCount = sizeInKB / wgBinSize + 1;
 
         //Chromosome bins
-        for (String chr : genome.getChromosomeNames()) {
+        for (String chr : genome.getAllChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
             int len = c.getLength();
             int nBins = len / binSize + 1;
@@ -109,9 +106,12 @@ public class FreqData {
         amp.put(Globals.CHR_ALL, ampBins);
         del.put(Globals.CHR_ALL, delBins);
 
+        // Chromsomes visible in whole genome view
+        Set<String> wgChromosomes = new HashSet<String>(genome.getLongChromosomeNames());
+
         final boolean logNormalized = dataset.isLogNormalized();
         for (String sample : sampleNames) {
-            for (String chr : genome.getChromosomeNames()) {
+            for (String chr : genome.getLongChromosomeNames()) {
                 List<LocusScore> segments = dataset.getSegments(sample, chr);
                 if (segments != null) {
 
@@ -130,15 +130,17 @@ public class FreqData {
                                 binCounts(chr, seg.getStart(), seg.getEnd(), segScore, b, binSize);
                             }
 
-                            int gStart = genome.getGenomeCoordinate(chr, seg.getStart());
-                            int gEnd = genome.getGenomeCoordinate(chr, seg.getEnd());
-                            int wgStartBin = gStart / wgBinSize;
-                            int wgEndBin = gEnd / wgBinSize;
-                            for (int b = wgStartBin; b <= wgEndBin; b++) {
-                                if (b >= amp.get(Globals.CHR_ALL).size()) {
-                                    break;
+                            if (wgChromosomes.contains(chr)) {
+                                int gStart = genome.getGenomeCoordinate(chr, seg.getStart());
+                                int gEnd = genome.getGenomeCoordinate(chr, seg.getEnd());
+                                int wgStartBin = gStart / wgBinSize;
+                                int wgEndBin = gEnd / wgBinSize;
+                                for (int b = wgStartBin; b <= wgEndBin; b++) {
+                                    if (b >= amp.get(Globals.CHR_ALL).size()) {
+                                        break;
+                                    }
+                                    binCounts(Globals.CHR_ALL, gStart, gEnd, segScore, b, wgBinSize);
                                 }
-                                binCounts(Globals.CHR_ALL, gStart, gEnd, segScore, b, wgBinSize);
                             }
                         }
                     }

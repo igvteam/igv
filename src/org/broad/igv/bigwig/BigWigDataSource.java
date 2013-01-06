@@ -23,7 +23,6 @@ import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.tribble.Feature;
@@ -196,7 +195,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         return headers.get(headers.size() - 1);
     }
 
-    protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom){
+    protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
 
         Chromosome c = genome.getChromosome(chr);
         if (c == null) return null;
@@ -251,7 +250,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
 
     @Override
-    protected synchronized DataTile getRawData(String chr, int start, int end){
+    protected synchronized DataTile getRawData(String chr, int start, int end) {
 
         if (chr.equals(Globals.CHR_ALL)) {
             return null;
@@ -289,14 +288,15 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
             if (wholeGenomeScores == null) {
-                double scale = genome.getLength() / screenWidth;
+                double scale = genome.getNominalLength() / screenWidth;
                 wholeGenomeScores = new ArrayList<LocusScore>();
-                for (Chromosome chr : genome.getChromosomes()) {
+
+                for (String chrName : genome.getLongChromosomeNames()) {
+                    Chromosome chr = genome.getChromosome(chrName);
 
                     BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
 
                     int lastGenomeEnd = -1;
-                    String chrName = chr.getName();
                     int end = chr.getLength();
 
                     String tmp = chrNameMap.get(chrName);
@@ -319,6 +319,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                         lastGenomeEnd = genomeEnd;
                     }
                 }
+
 
             }
             return wholeGenomeScores;

@@ -734,7 +734,7 @@ public class IgvTools {
             String[] tracknames = counter.getTrackNames(prefix + " ");
             p.setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
 
-            p.setSizeEstimate(((int) (genome.getLength() / windowSizeValue)));
+            p.setSizeEstimate(((int) (genome.getNominalLength() / windowSizeValue)));
 
             counter.parse();
 

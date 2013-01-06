@@ -32,7 +32,6 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.GisticTrack;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -169,9 +168,9 @@ public class GisticFileParser {
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genome.getId());
         }
-        genome.getChromosomeNames();
+        genome.getLongChromosomeNames();
         long offset = 0;
-        for (String chr : genome.getChromosomeNames()) {
+        for (String chr : genome.getLongChromosomeNames()) {
             int chrLength = genome.getChromosome(chr).getLength();
             int chrStart = (int) (offset / unit);
             allFeatures.add(new GisticScore(chrAll, chrStart, chrStart, 0, 0, GisticScore.Type.AMP));
@@ -179,8 +178,9 @@ public class GisticFileParser {
             List<GisticScore> ampScores = track.getAmpScores(chr);
             if (ampScores != null) {
                 for (GisticScore m : ampScores) {
-                    int start = (int) ((offset + m.getStart()) / unit);
-                    int end = (int) ((offset + m.getEnd()) / unit);
+
+                    int start = genome.getGenomeCoordinate(chr, m.getStart());
+                    int end = genome.getGenomeCoordinate(chr, m.getEnd());
 
                     allFeatures.add(new GisticScore(chrAll, start, end,
                             (float) m.getQValue(),
