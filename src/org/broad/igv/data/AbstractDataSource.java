@@ -69,7 +69,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     public int getChrLength(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
-            return (int) (genome.getLength() / 1000);
+            return (int) (genome.getNominalLength() / 1000);
         } else {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();

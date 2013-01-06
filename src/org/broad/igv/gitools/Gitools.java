@@ -57,7 +57,7 @@ public class Gitools {
         int zoom = 0;
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome != null) {
-            double averageChrLength = genome.getLength() / genome.getChromosomes().size();
+            double averageChrLength = genome.getTotalLength() / genome.getChromosomes().size();
             zoom = (int) (Math.log(averageChrLength / averageFeatureSize) / Globals.log2) + 1;
         }
 

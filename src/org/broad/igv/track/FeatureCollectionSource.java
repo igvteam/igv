@@ -125,9 +125,9 @@ public class FeatureCollectionSource implements FeatureSource {
 
     protected void sampleGenomeFeatures() {
         List<Feature> chrAllFeatures = new ArrayList(1000);
-        int sampleLength = (int) ((double) genome.getLength() / (1000 * 700));
+        int sampleLength = (int) ((double) genome.getNominalLength() / (1000 * 700));
         int lastFeaturePosition = -1;
-        for (String chr : genome.getChromosomeNames()) {
+        for (String chr : genome.getLongChromosomeNames()) {
             List<Feature> features = getFeatures(chr);
             if (features != null) {
                 long offset = genome.getCumulativeOffset(chr);
@@ -165,14 +165,14 @@ public class FeatureCollectionSource implements FeatureSource {
         Arrays.fill(values, 0);
 
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        double step = ((double) currentGenome.getLength() / 1000) / nBins;
+        double step = ((double) currentGenome.getNominalLength() / 1000) / nBins;
         for (int i = 0; i < nBins; i++) {
             starts[i] = (int) (i * step);
             ends[i] = (int) ((i + 1) * step);
         }
 
 
-        for (String chr : currentGenome.getChromosomeNames()) {
+        for (String chr : currentGenome.getLongChromosomeNames()) {
             List<Feature> features = featureMap.get(chr);
             if (features != null) {
                 long offset = currentGenome.getCumulativeOffset(chr);
@@ -273,14 +273,14 @@ public class FeatureCollectionSource implements FeatureSource {
             Arrays.fill(values, 0);
 
 
-            double step = ((double) genome.getLength() / 1000) / nBins;
+            double step = ((double) genome.getNominalLength() / 1000) / nBins;
             for (int i = 0; i < nBins; i++) {
                 starts[i] = (int) (i * step);
                 ends[i] = (int) ((i + 1) * step);
             }
 
 
-            for (String chr : genome.getChromosomeNames()) {
+            for (String chr : genome.getLongChromosomeNames()) {
                 List<Feature> features = featureMap.get(chr);
                 if (features != null) {
                     long offset = genome.getCumulativeOffset(chr);

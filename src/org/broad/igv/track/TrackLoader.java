@@ -1011,7 +1011,7 @@ public class TrackLoader {
             }
             message.append("<br>Genome: ");
             n = 0;
-            for (String cn : genome.getChromosomeNames()) {
+            for (String cn : genome.getAllChromosomeNames()) {
                 message.append(cn + ", ");
                 n++;
                 if (n > 3) {

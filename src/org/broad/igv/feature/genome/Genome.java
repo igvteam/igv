@@ -23,28 +23,15 @@ public interface Genome {
 
     Collection<Chromosome> getChromosomes();
 
-    List<String> getChromosomeNames();
-
-    String getChromosomeAlias(String str);
-
-    long getLength();
-
-    long getCumulativeOffset(String chr);
-
-    int getGenomeCoordinate(String chr, int locationBP);
-
-    /**
-     * Translated a genome coordinate, in kilo-basepairs, to a chromosome & position in basepairs
-     *
-     * @param genomeKBP The "genome coordinate" in kilo-basepairs.  This is the distance in kbp from the start of the
-     *                  first chromosome.
-     * @return
-     */
-    ChromosomeCoordinate getChromosomeCoordinate(int genomeKBP);
+    List<String> getAllChromosomeNames();
 
     String getNextChrName(String chr);
 
     String getPrevChrName(String chr);
+
+    String getChromosomeAlias(String str);
+
+    long getTotalLength();
 
     /**
      * Return the nucleotide sequence on the + strand for the genomic interval.  This method can return null
@@ -61,6 +48,30 @@ public interface Genome {
 
     byte getReference(String chr, int pos);
 
-
     FeatureTrack getGeneTrack();
+
+
+    // Methods to support whole-genome view follow
+
+    /**
+     * Return "getChromosomeNames()" with small chromosomes removed.
+     *
+     * @return
+     */
+    long getNominalLength();
+
+    List<String> getLongChromosomeNames();
+
+    long getCumulativeOffset(String chr);
+
+    int getGenomeCoordinate(String chr, int locationBP);
+
+    /**
+     * Translated a genome coordinate, in kilo-basepairs, to a chromosome & position in basepairs.
+     *
+     * @param genomeKBP The "genome coordinate" in kilo-basepairs.  This is the distance in kbp from the start of the
+     *                  first chromosome.
+     * @return
+     */
+    ChromosomeCoordinate getChromosomeCoordinate(int genomeKBP);
 }

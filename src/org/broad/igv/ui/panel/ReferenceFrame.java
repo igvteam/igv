@@ -252,7 +252,7 @@ public class ReferenceFrame {
     private void jumpToChromosomeForGenomeLocation(double locationMB) {
         double startMB = 0;
 
-        for (String chr : getGenome().getChromosomeNames()) {
+        for (String chr : getGenome().getLongChromosomeNames()) {
             double endMB = startMB + getGenome().getChromosome(chr).getLength() / 1000.0;
 
             if ((locationMB > startMB) && (locationMB <= endMB)) {
@@ -585,7 +585,7 @@ public class ReferenceFrame {
         if (chrName.equals("All")) {
 
             // TODO -- remove the hardcoded unit divider ("1000")
-            return (int) (genome.getLength() / 1000);
+            return (int) (genome.getNominalLength() / 1000);
 
             // return genome.getLength();
         } else {

@@ -2,13 +2,10 @@ package org.broad.igv.dev.affective;
 
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
-import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
-import org.broad.igv.track.WindowFunction;
 
-import java.io.StreamCorruptedException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -77,11 +74,11 @@ public class AffectiveDataSource extends TDFDataSource {
         }
     }
 
-    List<LocusScore> getWholeGenomeScores() {
+    public List<LocusScore> getWholeGenomeScores() {
 
-        if (wholeGenomeScores == null && affectiveGenome.getChromosomeNames().size() > 1) {
+        if (wholeGenomeScores == null && affectiveGenome.getLongChromosomeNames().size() > 1) {
             wholeGenomeScores = new ArrayList<LocusScore>(1000);
-            for (String chr : affectiveGenome.getChromosomeNames()) {
+            for (String chr : affectiveGenome.getLongChromosomeNames()) {
                 wholeGenomeScores.addAll(getWholeGenomeScoresForChromosome(chr));
             }
 

@@ -5,8 +5,6 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVCommandBar;
 
 import java.text.ParseException;
 import java.util.*;
@@ -87,8 +85,8 @@ public class AffectiveGenome implements Genome {
     }
 
     public String getHomeChromosome() {
-        if (getChromosomeNames().size() == 1) {
-            return getChromosomeNames().get(0);
+        if (getLongChromosomeNames().size() == 1) {
+            return getLongChromosomeNames().get(0);
         } else {
             return Globals.CHR_ALL;
         }
@@ -99,7 +97,7 @@ public class AffectiveGenome implements Genome {
         return chromosomeMap.values();
     }
 
-    public List<String> getChromosomeNames() {
+    public List<String> getAllChromosomeNames() {
         ArrayList<String> names = new ArrayList<String>(chromosomeMap.size());
         for (Chromosome chromosome : chromosomeMap.values()) {
             names.add(chromosome.getName());
@@ -111,7 +109,12 @@ public class AffectiveGenome implements Genome {
         return str;
     }
 
-    public long getLength() {
+    @Override
+    public long getTotalLength() {
+        return length;
+    }
+
+    public long getNominalLength() {
         return length;
     }
 
@@ -164,7 +167,7 @@ public class AffectiveGenome implements Genome {
     }
 
     public String getNextChrName(String chr) {
-        List<String> chrList = getChromosomeNames();
+        List<String> chrList = getAllChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i + 1);
@@ -174,7 +177,7 @@ public class AffectiveGenome implements Genome {
     }
 
     public String getPrevChrName(String chr) {
-        List<String> chrList = getChromosomeNames();
+        List<String> chrList = getAllChromosomeNames();
         for (int i = chrList.size() - 1; i > 0; i--) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i - 1);
@@ -202,6 +205,11 @@ public class AffectiveGenome implements Genome {
     @Override
     public FeatureTrack getGeneTrack() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public List<String> getLongChromosomeNames() {
+        return getAllChromosomeNames();
     }
 
     public void addChrAliases(Map<String, String> aliases) {

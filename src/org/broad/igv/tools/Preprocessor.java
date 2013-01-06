@@ -123,7 +123,7 @@ public class Preprocessor implements DataConsumer {
 
             // Convert genome coordinates from bp to kbp
             if (computeWholeGenome) {
-                int genomeLength = (int) (genome.getLength() / 1000);
+                int genomeLength = (int) (genome.getNominalLength()/ 1000);
                 genomeZoom = new Zoom(Globals.CHR_ALL, 0, genomeLength);
             }
 
@@ -288,7 +288,7 @@ public class Preprocessor implements DataConsumer {
          * in the file
          */
         StringBuffer chrString = new StringBuffer();
-        Iterator<String> iter = genome.getChromosomeNames().iterator();
+        Iterator<String> iter = genome.getLongChromosomeNames().iterator();
         while (iter.hasNext()) {
             String chromoName = iter.next();
             if(!chromosomes.contains(chromoName)){

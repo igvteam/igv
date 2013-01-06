@@ -24,6 +24,7 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -204,11 +205,15 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
     protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
-        List<LocusScore> scores;
-        boolean fileDataValid = !Globals.CHR_ALL.equals(querySeq) || isChrAllValid();
-        if (zoom <= this.maxPrecomputedZoom && fileDataValid) {
 
-            // Window function == none => no windowing, so its not clear what to do.  For now use mean
+        List<LocusScore> scores;
+
+        if (querySeq.equals(Globals.CHR_ALL)) {
+            return getWholeGenomeScores();
+        }
+
+        if (zoom <= this.maxPrecomputedZoom) {
+           // Window function == none => no windowing, so its not clear what to do.  For now use mean
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             scores = new ArrayList(1000);
@@ -250,9 +255,70 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
 
+    public List<LocusScore> getWholeGenomeScores() {
+
+        List<LocusScore> wholeGenomeScores = summaryScoreCache.get(Globals.CHR_ALL);
+
+
+
+        if (wholeGenomeScores == null) {
+
+            int binCount = 700;
+            wholeGenomeScores = new ArrayList<LocusScore>(binCount);
+            summaryScoreCache.put(Globals.CHR_ALL, wholeGenomeScores);
+
+            if (reader.getVersion() == 4) {
+                // TODO -- take advantage of precomputed data.  Must first "deconvolute" it to chr based scores
+            }
+
+
+            double binSize = (genome.getNominalLength() / 1000) / binCount;
+            Accumulator [] accumulators = new Accumulator[binCount];
+
+            for (String chrName : genome.getLongChromosomeNames()) {
+
+                List<LocusScore> chrScores = this.getSummaryScores(chrName, 0, Integer.MAX_VALUE, 0);
+
+                for (LocusScore score : chrScores) {
+
+                    int gStart = genome.getGenomeCoordinate(chrName, score.getStart());
+                    int gEnd = genome.getGenomeCoordinate(chrName, score.getEnd());
+
+                    int binStart = (int) (gStart / binSize);
+                    int binEnd = Math.min(binCount - 1, (int) (gEnd / binSize));
+                    for(int b = binStart; b <= binEnd; b++) {
+                        Accumulator acc = accumulators[b];
+                        if(acc == null) {
+                            acc = new Accumulator(WindowFunction.mean);
+                            accumulators[b] = acc;
+                        }
+                        acc.add((int) binSize, score.getScore(), null);
+                    }
+                }
+            }
+
+            for(int i=0; i<accumulators.length; i++) {
+                Accumulator acc = accumulators[i];
+                if(acc != null) {
+                    acc.finish();
+
+                    int genomeStart = (int) (i * binSize);
+                    int genomeEnd = (int) ((i+1) * binSize);
+                    final BasicScore e = new BasicScore(genomeStart, genomeEnd, acc.getValue());
+                    wholeGenomeScores.add(e);
+                }
+            }
+
+
+        }
+        return wholeGenomeScores;
+
+    }
+
+
     public int getChrLength(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
-            return (int) (genome.getLength() / 1000);
+            return (int) (genome.getNominalLength() / 1000);
         } else {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();
@@ -398,7 +464,7 @@ public class TDFDataSource implements CoverageDataSource {
             // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
             double tileWidth = 0;
             if (chr.equals(Globals.CHR_ALL)) {
-                tileWidth = (genome.getLength() / 1000.0);
+                tileWidth = (genome.getNominalLength() / 1000.0);
             } else {
                 if (chromosome != null) {
                     tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
@@ -455,136 +521,5 @@ public class TDFDataSource implements CoverageDataSource {
         return availableFunctions;
     }
 
-    /**
-     * Check the sort. {@code fileChromos} is allowed to be missing entries
-     * which are in {@code genomeChromos}, but the ordinality of the entries
-     * contained must be the same
-     * @see #isChrAllValid()
-     * @param fileChromos
-     * @param genomeChromos
-     * @return
-     */
-    static boolean checkChromoNameOrder(List<String> fileChromos, List<String> genomeChromos){
-        Set<String> skippedChromos = new HashSet<String>();
-        int fiChrInd = 0;
-        for (String genChromo : genomeChromos) {
-            if (fiChrInd >= fileChromos.size()) return false;
-
-            String curFiChr = fileChromos.get(fiChrInd);
-            //We found a chromosome out of order
-            if (skippedChromos.contains(curFiChr)) {
-                return false;
-            }
-
-            if (genChromo.equals(curFiChr)) {
-                fiChrInd++;
-            } else {
-                skippedChromos.add(genChromo);
-            }
-
-        }
-        //If we get this far, the chromo order is good as far as we know
-        return true;
-    }
-
-    /**
-     * We changed how chromosomes were sorted in v2.2
-     * This had the unintended side effect of introducing
-     * backwards incompatibility in CHR_ALL. Version 4+ should include
-     * the chromosome names in Genome order (rather than file order); which we check against
-     * @return Whether we believe the data stored for whole genome view is valid or not
-     */
-    boolean isChrAllValid(){
-
-        String chromosomeNames;
-        List<String> fileChromos = null;
-        //Extract the chromosome names. Not sure when that attribute was put in
-        //If it's not in the file, give up
-        try{
-            TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
-            chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
-            fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
-        } catch (Exception e) {
-            return false;
-        }
-
-        if (reader.getVersion() < 4) {
-            log.info("This file was created with an old version of IGV, from which we cannot read whole chromosome view");
-            //We run the old comparator against the list; that's the order in which
-            //they were calculated
-            Pre3Sort(fileChromos);
-        }
-        return checkChromoNameOrder(fileChromos, genome.getChromosomeNames());
-    }
-
-    static void Pre3Sort(List<String> chromoNames){
-        Collections.sort(chromoNames, new Pre3Comparator());
-    }
-
-    /**
-     * DO NOT CHANGE THIS CLASS
-     * DO NOT USE THIS CLASS ANYWHERE ELSE
-     * IT IS HERE TO CHECK FOR BACKWARDS COMPATIBILITY
-     */
-    private static class Pre3Comparator implements Comparator<String> {
-
-        /**
-         * @param chr1
-         * @param chr2
-         * @return
-         */
-        public int compare(String chr1, String chr2) {
-
-            try {
-
-                // Special rule -- put the mitochondria at the end
-                if (chr1.equals("chrM") || chr1.equals("MT")) {
-                    return 1;
-                } else if (chr2.equals("chrM") || chr2.equals("MT")) {
-                    return -1;
-                }
-
-                // Find the first digit
-                int idx1 = findDigitIndex(chr1);
-                int idx2 = findDigitIndex(chr2);
-                if (idx1 == idx2) {
-                    String alpha1 = idx1 == -1 ? chr1 : chr1.substring(0, idx1);
-                    String alpha2 = idx2 == -1 ? chr2 : chr2.substring(0, idx2);
-                    int alphaCmp = alpha1.compareTo(alpha2);
-                    if (alphaCmp != 0) {
-                        return alphaCmp;
-                    } else {
-                        int dig1 = Integer.parseInt(chr1.substring(idx1));
-                        int dig2 = Integer.parseInt(chr2.substring(idx2));
-                        return dig1 - dig2;
-                    }
-                } else if (idx1 == -1) {
-                    return 1;
-
-                } else if (idx2 == -1) {
-                    return -1;
-                }
-                return idx1 - idx2;
-            } catch (Exception numberFormatException) {
-                return 0;
-            }
-
-        }
-
-        int findDigitIndex(String chr) {
-
-            int n = chr.length() - 1;
-            if (!Character.isDigit(chr.charAt(n))) {
-                return -1;
-            }
-
-            for (int i = n - 1; i > 0; i--) {
-                if (!Character.isDigit(chr.charAt(i))) {
-                    return i + 1;
-                }
-            }
-            return 0;
-        }
-    }
 }
 
