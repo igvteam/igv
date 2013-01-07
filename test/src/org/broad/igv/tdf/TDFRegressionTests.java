@@ -101,8 +101,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
         //TDF file generated from wiggle, using IGV 2.1.30 (tdf version 3)
         String tdf3Path = TestUtils.DATA_DIR + "tdf/hg18_var_sample.wig.v2.1.30.tdf";
 
-        //Chromosome order for this genome didn't change, at least for the relevant chromosomes
-        tstCHR_ALL(genPath, wigPath, tdf3Path, true, hg18posChromos, hg18emptyChromos);
+        tstCHR_ALL(genPath, wigPath, tdf3Path, false, hg18posChromos, hg18emptyChromos);
     }
 
     @Test
