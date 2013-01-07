@@ -259,8 +259,6 @@ public class TDFDataSource implements CoverageDataSource {
 
         List<LocusScore> wholeGenomeScores = summaryScoreCache.get(Globals.CHR_ALL);
 
-
-
         if (wholeGenomeScores == null) {
 
             int binCount = 700;
@@ -292,7 +290,8 @@ public class TDFDataSource implements CoverageDataSource {
                             acc = new Accumulator(WindowFunction.mean);
                             accumulators[b] = acc;
                         }
-                        acc.add((int) binSize, score.getScore(), null);
+                        int basesCovered = Math.min(gEnd, binEnd) - Math.max(gStart,  binStart);
+                        acc.add(basesCovered, score.getScore(), null);
                     }
                 }
             }
