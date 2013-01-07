@@ -32,6 +32,7 @@ import org.broad.igv.util.collections.DoubleArrayList;
 
 import javax.swing.*;
 import java.io.*;
+import java.net.Socket;
 import java.util.*;
 
 /**
@@ -42,23 +43,82 @@ import java.util.*;
  *         Date: 11/13/12
  *         Time: 9:26 PM
  */
-public class Gitools implements GeneListManagerUI.GeneListListener{
+public class Gitools{
 
     private static Logger log = Logger.getLogger(Gitools.class);
 
     public static final String ENABLE_PROPERTY = "enableGitools";
 
-    @Override
-    public void actionPerformed(JDialog dialog, GeneList geneList) {
-        File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
-        if (file != null) {
-            try {
-                Gitools.exportTDM(geneList.getLoci(), file);
-            } catch (IOException exc) {
-                log.error("Error exporting TDM data", exc);
-                MessageUtils.showErrorMessage("Error exporting TDM data", exc);
-            }
+    private static int port = 50151;
+    private static String host = "localhost";
+
+    public static void main(String[] args){
+        try {
+            sendCommand("version");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Send a command to gitools, and read the response.
+     * @param command
+     * @return First line of response only TODO This is stupid but readLine is hanging so hack it for now
+     * @throws IOException
+     */
+    private static List<String> sendCommand(String command) throws IOException{
+        Socket socket = null;
+        try{
+            socket = new Socket(host, port);
+            socket.setSoTimeout(1000);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(),
+                    true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    socket.getInputStream()));
+
+            out.println(command);
+            List<String> response = new ArrayList<String>();
+            String line;
+            while( (line = in.readLine()) != null){
+                response.add(line);
+                break;
+            }
+            return response;
+
+        }catch(IOException e){
+            System.out.println(e);
+            throw new IOException("Error communicating with gitools", e);
+        }finally{
+            if(socket != null) socket.close();
+        }
+    }
+
+    public static boolean canConnect(){
+        boolean canConnect = false;
+        try{
+            List<String> version = sendCommand("version");
+            canConnect = version.get(0).toLowerCase().contains("gitools");
+        } catch (IOException e) {
+            //
+        }
+        return canConnect;
+    }
+
+    /**
+     * Export data at specified loci to temp file, and tell gitools to load it.
+     * gitools must already be running
+     * @param lociStrings
+     * @return
+     * @throws IOException
+     */
+    public static List<String> gitoolsLoad(String name, List<String> lociStrings) throws IOException{
+        String prefix = name + "-igv";
+        prefix = prefix.replace(" ", "_");
+        File tmpFile = File.createTempFile(prefix, "tdm");
+
+        exportTDM(lociStrings, tmpFile);
+
+        return sendCommand(String.format("load %s", tmpFile.getAbsolutePath()));
     }
 
     public static void exportTDM(List<String> lociStrings, File file) throws IOException {
@@ -80,7 +140,6 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
 
         // Determine data types -- all data tracks + mutation, and samples
         LinkedHashSet<TrackType> loadedTypes = new LinkedHashSet<TrackType>();
-        //LinkedHashSet<String> samples = new LinkedHashSet<String>();
 
         List<Track> tracks = IGV.getInstance().getAllTracks();
         for (Track t : tracks) {
@@ -132,7 +191,17 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
 
         }
 
-        // Finally output data
+        writeTDM(loadedTypes, sampleDataMap, file);
+    }
+
+    /**
+     * Export calculated data to file
+     * @param loadedTypes Ordered set of track types
+     * @param sampleDataMap Map from sample name to SampleData
+     * @param file Output file
+     * @throws IOException
+     */
+    private static void writeTDM(LinkedHashSet<TrackType> loadedTypes, Map<String, SampleData> sampleDataMap, File file) throws IOException {
         PrintWriter pw = null;
 
         try {
@@ -158,8 +227,10 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
                 }
                 pw.println();
             }
-        } finally {
-            if(pw != null) pw.close();
+        } catch(IOException e){
+            throw new IOException("Error exporting TDM", e);
+        } finally{
+            if (pw != null) pw.close();
         }
     }
 
@@ -203,6 +274,43 @@ public class Gitools implements GeneListManagerUI.GeneListListener{
         public double[] getValues(TrackType tt) {
             DoubleArrayList dal = valueMap.get(tt);
             return dal == null ? null : dal.toArray();
+        }
+    }
+
+    public static class ExportFileListener implements GeneListManagerUI.GeneListListener{
+
+        @Override
+        public void actionPerformed(JDialog dialog, GeneList geneList) {
+            File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
+            if (file != null) {
+                try {
+                    Gitools.exportTDM(geneList.getLoci(), file);
+                } catch (IOException exc) {
+                    MessageUtils.showErrorMessage("Error exporting TDM", exc);
+                }
+            }
+        }
+    }
+
+    public static class DirectLoadListener implements GeneListManagerUI.GeneListListener{
+
+        @Override
+        public void actionPerformed(JDialog dialog, GeneList geneList) {
+
+            //Test communication
+            boolean canConnect = canConnect();
+            if(!canConnect){
+                MessageUtils.showMessage("Cannot communicate with gitools, check that it is running on port " + port);
+                return;
+            }
+
+            try {
+                gitoolsLoad(geneList.getName(), geneList.getLoci());
+            } catch (IOException exc) {
+                MessageUtils.showErrorMessage(exc.getMessage(), exc);
+            }
+
+
         }
     }
 }

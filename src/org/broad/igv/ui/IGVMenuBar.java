@@ -157,16 +157,29 @@ public class IGVMenuBar extends JMenuBar {
         //TODO Add api hook to insert things in tool menu
         boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "false"));
         if(showTDMButton){
-            JMenuItem gitoolsItem = new JMenuItem("Export TDM");
+            JMenuItem gitoolsItem = new JMenuItem("Export TDM...");
             gitoolsItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
-                            "Export TDM", new Gitools());
+                            "Export TDM", new Gitools.ExportFileListener());
                     dialog.setVisible(true);
                 }
             });
-        menuItems.add(gitoolsItem);
+            menuItems.add(gitoolsItem);
+
+            JMenuItem directLoadItem = new JMenuItem("Load with Gitools...");
+            directLoadItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
+                            "Gitools Load", new Gitools.DirectLoadListener());
+                    dialog.setVisible(true);
+                }
+            });
+            //Test communication
+            directLoadItem.setEnabled(Gitools.canConnect());
+            menuItems.add(directLoadItem);
         }
 
         menuItems.add(new JSeparator());
