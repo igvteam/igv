@@ -17,6 +17,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.ui.FontManager;
@@ -29,8 +31,13 @@ import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
+import org.w3c.dom.Node;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
@@ -41,11 +48,24 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-@XmlType(name = "Track", factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
+@XmlType(factoryMethod = "getNextTrack")
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);
+
+
+    public static final List<Class> JAXBKnownClasses;
+    public static final Class defaultTrackClass = AbstractTrack.class;
+
+    static{
+        List<Class> jaxbList = new ArrayList<Class>(5);
+        jaxbList.add(defaultTrackClass);
+        jaxbList.add(CoverageTrack.class);
+        jaxbList.add(AlignmentTrack.class);
+        jaxbList.add(AlignmentTrack.RenderOptions.class);
+        JAXBKnownClasses = Collections.unmodifiableList(jaxbList);
+    }
 
     /**
      * Set default renderer classes by track type.
@@ -715,6 +735,16 @@ public abstract class AbstractTrack implements Track {
         return new HashMap<String, String>();
     }
 
+
+    /**
+     * Restore from XML node. Default implementation just turns attributes
+     * into a map
+     * @param node
+     */
+    public void restorePersistentState(Node node){
+        Map<String, String> attributes = Utilities.getAttributes(node);
+        restorePersistentState(attributes);
+    }
     /**
      * Restore attributes from track tag, no children
      * Only those attributes not unmarshalled (meaning not part of AbstractTrack)
@@ -941,4 +971,38 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
+
+    /**
+     * Unmarshall node into an AbstractTrack
+     * @param node
+     * @return
+     */
+    public static AbstractTrack unmarshalTrack(Node node, Class clazz) {
+        try {
+            Unmarshaller u = IGVSessionReader.getJAXBContext().createUnmarshaller();
+            JAXBElement el = u.unmarshal(node, clazz);
+            return (AbstractTrack) el.getValue();
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /**
+     * Return the class which should be used for unmarshalling
+     * This will be AbstractTrack for many, unless the appropriate
+     * static methods have been implemented for the given track class
+     * @param track
+     * @return
+     */
+    public static Class getTrackClassUnmarshall(Track track){
+        Class clazz = defaultTrackClass;
+        if(JAXBKnownClasses.contains(track.getClass())){
+            clazz = track.getClass();
+        }
+        return clazz;
+    }
+
+
+    private static AbstractTrack getNextTrack(){
+        return IGVSessionReader.getNextTrack(AbstractTrack.class);
+    }
 }

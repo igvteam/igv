@@ -53,7 +53,7 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
-    private static int CURRENT_VERSION = 4;
+    private static int CURRENT_VERSION = 5;
 
     /**
      * Method description
@@ -352,7 +352,7 @@ public class SessionWriter {
                     Marshaller m = IGVSessionReader.getJAXBContext().createMarshaller();
                     m.setProperty(Marshaller.JAXB_FRAGMENT, true);
                     for (Track track : tracks) {
-                        JAXBElement el = new JAXBElement(new QName("", SessionElement.TRACK.getText()), AbstractTrack.class, track);
+                        JAXBElement el = new JAXBElement(new QName("", SessionElement.TRACK.getText()), AbstractTrack.getTrackClassUnmarshall(track), track);
                         m.marshal(el, tmpTrackParent);
 
                         Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);

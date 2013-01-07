@@ -43,9 +43,7 @@ import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.*;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,12 +86,13 @@ public class IGVSessionReader implements SessionReader {
     private boolean hasTrackElments;
 
     //Temporary holder for generating tracks
-    private static AbstractTrack nextTrack;
-
+    protected static Map<Class, AbstractTrack> nextTracks;
 
     static {
         attributeSynonymMap.put("DATA FILE", "DATA SET");
         attributeSynonymMap.put("TRACK NAME", "NAME");
+
+        nextTracks = new HashMap<Class, AbstractTrack>(AbstractTrack.JAXBKnownClasses.size());
     }
 
     /**
@@ -951,28 +950,27 @@ public class IGVSessionReader implements SessionReader {
         return matchedTracks;
     }
 
-
     private static void setNextTrack(AbstractTrack track){
-        nextTrack = track;
+        Class clazz = AbstractTrack.getTrackClassUnmarshall(track);
+        nextTracks.put(clazz, track);
     }
 
     /**
      * Used for unmarshalling track; JAXB needs a static no-arg factory method
      * @return
      */
-    public static AbstractTrack getNextTrack(){
-        return nextTrack;
+    public static AbstractTrack getNextTrack(Class trackClass){
+        return nextTracks.get(trackClass);
     }
 
     protected Track unmarshalTrackElement(Element element, AbstractTrack track) throws JAXBException{
         AbstractTrack ut;
+
         synchronized (IGVSessionReader.class){
             setNextTrack(track);
-            ut = unmarshal(element);
-            setNextTrack(null);
+            ut = AbstractTrack.unmarshalTrack(element, AbstractTrack.getTrackClassUnmarshall(track));
         }
-        Map<String, String> attributes = Utilities.getAttributes(element);
-        ut.restorePersistentState(attributes);
+        ut.restorePersistentState(element);
         return ut;
     }
 
@@ -1050,26 +1048,11 @@ public class IGVSessionReader implements SessionReader {
 
 
     private static JAXBContext jc = null;
-    static JAXBContext getJAXBContext() throws JAXBException {
+    public static JAXBContext getJAXBContext() throws JAXBException {
         if(jc == null){
-            jc = JAXBContext.newInstance(AbstractTrack.class);
+            jc = JAXBContext.newInstance(AbstractTrack.JAXBKnownClasses.toArray(new Class[0]));
         }
         return jc;
-    }
-
-    /**
-     * Unmarshall node into an AbstractTrack
-     * @param node
-     * @return
-     */
-    public static AbstractTrack unmarshal(Node node) {
-        try {
-            Unmarshaller u = getJAXBContext().createUnmarshaller();
-            JAXBElement el = u.unmarshal(node, AbstractTrack.class);
-            return (AbstractTrack) el.getValue();
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
