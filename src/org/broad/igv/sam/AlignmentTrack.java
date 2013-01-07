@@ -885,6 +885,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public void restorePersistentState(Node node) {
         super.restorePersistentState(node);
+
         //For legacy sessions (<= v4. RenderOptions used to be stuffed in
         //with Track tag, now it's a sub element
         boolean hasRenderSubTag = false;
@@ -901,6 +902,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             if(hasRenderSubTag) return;
             RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
+
+            String shadeBasesKey = "shadeBases";
+            String value = node.getAttributes().getNamedItem(shadeBasesKey).getNodeValue();  // For older sessions
+            if (value != null) {
+                if (value.equals("false")) {
+                    ro.shadeBasesOption = ShadeBasesOption.NONE;
+                } else if (value.equals("true")) {
+                    ro.shadeBasesOption = ShadeBasesOption.QUALITY;
+                }
+            }
+
             this.setRenderOptions(ro);
         } catch (JAXBException e) {
             throw new RuntimeException(e);
