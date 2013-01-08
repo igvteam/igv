@@ -13,6 +13,7 @@ package org.broad.igv.session;
 
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -25,15 +26,8 @@ public class SessionXmlAdapters{
     public static class Color extends XmlAdapter<String, java.awt.Color>{
         @Override
         public String marshal(java.awt.Color value) throws Exception {
-            // color
             if (value != null) {
-                StringBuffer stringBuffer = new StringBuffer();
-                stringBuffer.append(value.getRed());
-                stringBuffer.append(",");
-                stringBuffer.append(value.getGreen());
-                stringBuffer.append(",");
-                stringBuffer.append(value.getBlue());
-                return stringBuffer.toString();
+                return ColorUtilities.colorToString(value);
             }
             return null;
         }
@@ -41,15 +35,7 @@ public class SessionXmlAdapters{
         @Override
         public java.awt.Color unmarshal(String colorString) throws Exception {
             if (colorString != null) {
-                try {
-                    String[] rgb = colorString.split(",");
-                    int red = Integer.parseInt(rgb[0]);
-                    int green = Integer.parseInt(rgb[1]);
-                    int blue = Integer.parseInt(rgb[2]);
-                    return new java.awt.Color(red, green, blue);
-                } catch (NumberFormatException e) {
-                    //log.error("Error restoring color: " + colorString);
-                }
+                ColorUtilities.stringToColor(colorString);
             }
             return null;
         }

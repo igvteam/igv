@@ -19,6 +19,8 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -28,6 +30,8 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
 
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -37,6 +41,8 @@ import java.util.List;
 /**
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
+@XmlSeeAlso({VariantTrack.class})
 public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
@@ -955,6 +961,11 @@ public class FeatureTrack extends AbstractTrack {
 
     public boolean isAlternateExonColor() {
         return alternateExonColor;
+    }
+
+    @SubtlyImportant
+    private static FeatureTrack getNextTrack(){
+        return (FeatureTrack) IGVSessionReader.getNextTrack();
     }
 
 

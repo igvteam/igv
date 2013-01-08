@@ -18,6 +18,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.variant.VariantTrack;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -83,6 +84,27 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertEquals(CoverageTrack.DEFAULT_SHOW_REFERENCE, covTrack.isShowReference());
         assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.isAutoScale());
         assertEquals(0.1337f, covTrack.getSnpThreshold(), 1e-5);
+    }
+
+    @Test
+    public void testLoadVCF_v4() throws Exception{
+        String path = TestUtils.DATA_DIR + "sessions/vcf_session_v4.xml";
+        tstLoadVCF(path);
+    }
+
+    @Test
+    public void testLoadVCF_v5() throws Exception{
+        String path = TestUtils.DATA_DIR + "sessions/vcf_session_v5.xml";
+        tstLoadVCF(path);
+    }
+
+    private void tstLoadVCF(String path) throws Exception{
+        IGV.getInstance().doRestoreSession(path, null, false);
+        VariantTrack vTrack = (VariantTrack) IGV.getInstance().getAllTracks().get(0);
+
+        assertEquals(3, vTrack.getAllSamples().size());
+        assertEquals(8, vTrack.getSquishedHeight());
+        assertEquals(VariantTrack.ColorMode.ALLELE, vTrack.getColorMode());
     }
 
 

@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
@@ -48,7 +49,7 @@ import java.util.List;
  */
 @XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class})
+@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class})
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);

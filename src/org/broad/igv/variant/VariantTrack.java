@@ -19,6 +19,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -32,6 +33,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -44,6 +47,7 @@ import java.util.List;
 /**
  * @author Jesse Whitworth, Jim Robinson, Fabien Campagne
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class VariantTrack extends FeatureTrack implements TrackGroupEventListener {
 
     private static Logger log = Logger.getLogger(VariantTrack.class);
@@ -85,6 +89,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     /**
      * The height of a single row in in squished mode
      */
+    @XmlAttribute(name = "SQUISHED_ROW_HEIGHT")
     private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
 
     /**
@@ -123,11 +128,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * When true, variants that are marked filtering are not drawn.
      */
     private boolean hideFiltered = false;
-
-    /**
-     * If true the variant ID, when present, will be rendered.
-     */
-    private boolean renderID = true;
 
     /**
      * The currently selected variant.  This is a transient variable, set only while the popup menu is up.
@@ -175,8 +175,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         setupGroupsFromAttributes();
 
         setDisplayMode(DisplayMode.EXPANDED);
-
-        setRenderID(false);
 
         // Estimate visibility window.
         // TODO -- set beta based on available memory
@@ -778,11 +776,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return coloredLast;
     }
 
-    public void setRenderID(boolean value) {
-        this.renderID = value;
-    }
-
-
     public boolean getHideFiltered() {
         return hideFiltered;
     }
@@ -791,7 +784,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         this.hideFiltered = value;
     }
 
-
+    @XmlAttribute
     public ColorMode getColorMode() {
         return coloring;
     }
@@ -1301,53 +1294,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return true;
     }
 
-
-    @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> attributes = super.getPersistentState();
-        attributes.put(IGVSessionReader.SessionAttribute.RENDER_NAME.getText(), String.valueOf(renderID));
-
-        ColorMode mode = getColorMode();
-        if (mode != null) {
-            attributes.put(IGVSessionReader.SessionAttribute.COLOR_MODE.getText(), mode.toString());
-        }
-
-        if (squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
-            attributes.put("SQUISHED_ROW_HEIGHT", String.valueOf(squishedHeight));
-        }
-
-        return attributes;
-    }
-
-    @Override
-    public void restorePersistentState(Map<String, String> attributes) {
-        super.restorePersistentState(attributes);
-
-        String rendername = attributes.get(IGVSessionReader.SessionAttribute.RENDER_NAME.getText());
-        if (rendername != null) {
-            setRenderID(rendername.equalsIgnoreCase("true"));
-        }
-
-        String colorModeText = attributes.get(IGVSessionReader.SessionAttribute.COLOR_MODE.getText());
-        if (colorModeText != null) {
-            try {
-                setColorMode(ColorMode.valueOf(colorModeText));
-            } catch (Exception e) {
-                log.error("Error interpreting display mode: " + colorModeText);
-            }
-        }
-
-        String squishedHeightText = attributes.get("SQUISHED_ROW_HEIGHT");
-        if (squishedHeightText != null) {
-            try {
-                squishedHeight = Integer.parseInt(squishedHeightText);
-            } catch (Exception e) {
-                log.error("Error restoring squished height: " + squishedHeightText);
-            }
-        }
-    }
-
-
     public void loadSelectedBams() {
         Runnable runnable = new Runnable() {
             public void run() {
@@ -1438,5 +1384,10 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         boolean contains(int y) {
             return y >= top && y <= bottom;
         }
+    }
+
+    @SubtlyImportant
+    private static VariantTrack getNextTrack(){
+        return (VariantTrack) IGVSessionReader.getNextTrack();
     }
 }
