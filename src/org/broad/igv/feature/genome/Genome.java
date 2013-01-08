@@ -60,9 +60,9 @@ public interface Genome {
      *
      * @return
      */
-    long getNominalLength();
-
     List<String> getLongChromosomeNames();
+
+    long getNominalLength();
 
     long getCumulativeOffset(String chr);
 
