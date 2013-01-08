@@ -1168,15 +1168,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Handle a mouse click from the name panel.
-     * <p/>
-     * if (e.isMetaDown() || e.isControlDown()) {
-     * toggleTrackSelections(e);
-     * } else if (e.isShiftDown()) {
-     * shiftSelectTracks(e);
-     * } else if (!isTrackSelected(e)) {
-     * clearTrackSelections();
-     * selectTracks(e);
-     * }
      *
      * @param e
      */

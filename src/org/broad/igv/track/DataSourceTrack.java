@@ -92,32 +92,6 @@ public class DataSourceTrack extends DataTrack {
         return dataSource.getAvailableWindowFunctions();
     }
 
-//    @Override
-//    public Map<String, String> getPersistentState() {
-//        Map<String, String> properties = super.getPersistentState();
-//        if (normalize != false) {
-//            properties.put("normalize", String.valueOf(normalize));
-//        }
-//        return properties;
-//    }
-//
-//
-//    @Override
-//    public void restorePersistentState(Map<String, String> attributes) {
-//        super.restorePersistentState(attributes);
-//        String as = attributes.get("normalize");
-//        if (as != null) {
-//            try {
-//                normalize = Boolean.parseBoolean(as);
-//                if (dataSource != null && dataSource instanceof CoverageDataSource) {
-//                    ((CoverageDataSource) dataSource).setNormalize(normalize);
-//                }
-//            } catch (Exception e) {
-//                log.error("Error restoring session.  Invalid normalization value: " + normalize);
-//            }
-//        }
-//    }
-
     @SubtlyImportant
     @XmlAttribute
     private void setNormalize(boolean normalize){
