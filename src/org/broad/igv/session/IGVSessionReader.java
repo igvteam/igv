@@ -43,7 +43,9 @@ import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.*;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,13 +88,11 @@ public class IGVSessionReader implements SessionReader {
     private boolean hasTrackElments;
 
     //Temporary holder for generating tracks
-    protected static Map<Class, AbstractTrack> nextTracks;
+    protected static AbstractTrack nextTrack;
 
     static {
         attributeSynonymMap.put("DATA FILE", "DATA SET");
         attributeSynonymMap.put("TRACK NAME", "NAME");
-
-        nextTracks = new HashMap<Class, AbstractTrack>(AbstractTrack.JAXBKnownClasses.size());
     }
 
     /**
@@ -927,19 +927,21 @@ public class IGVSessionReader implements SessionReader {
         if (matchedTracks == null) {
             log.info("Warning.  No tracks were found with id: " + id + " in session file");
         } else {
-            for (final Track track : matchedTracks) {
 
-                // Special case for sequence & gene tracks,  they need to be removed before being placed.
-                if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
-                    igv.removeTracks(Arrays.asList(track));
+            try {
+                Unmarshaller u = getJAXBContext().createUnmarshaller();
+                for (final Track track : matchedTracks) {
+
+                    // Special case for sequence & gene tracks,  they need to be removed before being placed.
+                    if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
+                        igv.removeTracks(Arrays.asList(track));
+                    }
+
+                    unmarshalTrackElement(u, element, (AbstractTrack) track);
                 }
 
-                try {
-                    unmarshalTrackElement(element, (AbstractTrack) track);
-                } catch (JAXBException e) {
-                    throw new RuntimeException(e);
-                }
-
+            } catch (JAXBException e) {
+                throw new RuntimeException(e);
             }
             trackDictionary.remove(id);
         }
@@ -951,24 +953,23 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private static void setNextTrack(AbstractTrack track){
-        Class clazz = AbstractTrack.getTrackClassUnmarshall(track);
-        nextTracks.put(clazz, track);
+        nextTrack = track;
     }
 
     /**
      * Used for unmarshalling track; JAXB needs a static no-arg factory method
      * @return
      */
-    public static AbstractTrack getNextTrack(Class trackClass){
-        return nextTracks.get(trackClass);
+    public static AbstractTrack getNextTrack(){
+        return nextTrack;
     }
 
-    protected Track unmarshalTrackElement(Element element, AbstractTrack track) throws JAXBException{
+    protected Track unmarshalTrackElement(Unmarshaller u, Element element, AbstractTrack track) throws JAXBException{
         AbstractTrack ut;
 
         synchronized (IGVSessionReader.class){
             setNextTrack(track);
-            ut = AbstractTrack.unmarshalTrack(element, AbstractTrack.getTrackClassUnmarshall(track));
+            ut = unmarshalTrack(u, element, track.getClass(), track.getClass());
         }
         ut.restorePersistentState(element);
         return ut;
@@ -1050,9 +1051,39 @@ public class IGVSessionReader implements SessionReader {
     private static JAXBContext jc = null;
     public static JAXBContext getJAXBContext() throws JAXBException {
         if(jc == null){
-            jc = JAXBContext.newInstance(AbstractTrack.JAXBKnownClasses.toArray(new Class[0]));
+            jc = JAXBContext.newInstance(AbstractTrack.defaultTrackClass);
         }
         return jc;
+    }
+
+    /**
+     * Unmarshal node. We first attempt to unmarshal into the specified {@code clazz}
+     * if that fails, we try the superclass, and so on up.
+     *
+     * @param node
+     * @param unmarshalClass Class to which to use for unmarshalling
+     * @param firstClass The first class used for invocation. For helpful error message only
+     *
+     * @return
+     */
+    public static AbstractTrack unmarshalTrack(Unmarshaller u, Node node, Class unmarshalClass,Class firstClass) throws JAXBException{
+
+        if(unmarshalClass == null || unmarshalClass.equals(Object.class)){
+            throw new JAXBException(firstClass + " and none of its superclasses are known");
+        }
+
+        if(AbstractTrack.knownUnknownTrackClasses.contains(unmarshalClass)){
+            return unmarshalTrack(u, node, firstClass, unmarshalClass.getSuperclass());
+        }
+
+        JAXBElement el;
+        try {
+            el = u.unmarshal(node, unmarshalClass);
+        } catch (JAXBException e) {
+            AbstractTrack.knownUnknownTrackClasses.add(unmarshalClass);
+            return unmarshalTrack(u, node, firstClass, unmarshalClass.getSuperclass());
+        }
+        return (AbstractTrack) el.getValue();
     }
 
 }

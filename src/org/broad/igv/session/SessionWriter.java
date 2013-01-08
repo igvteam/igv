@@ -32,6 +32,7 @@ import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.swing.*;
 import javax.xml.bind.JAXBElement;
@@ -54,6 +55,8 @@ public class SessionWriter {
 
     Session session;
     private static int CURRENT_VERSION = 5;
+
+    private static final String TRACK_TAG = SessionElement.TRACK.getText();
 
     /**
      * Method description
@@ -352,8 +355,8 @@ public class SessionWriter {
                     Marshaller m = IGVSessionReader.getJAXBContext().createMarshaller();
                     m.setProperty(Marshaller.JAXB_FRAGMENT, true);
                     for (Track track : tracks) {
-                        JAXBElement el = new JAXBElement(new QName("", SessionElement.TRACK.getText()), AbstractTrack.getTrackClassUnmarshall(track), track);
-                        m.marshal(el, tmpTrackParent);
+
+                        marshalTrack(m, track, tmpTrackParent, track.getClass());
 
                         Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);
 
@@ -369,6 +372,35 @@ public class SessionWriter {
                 }
                 globalElement.appendChild(panelElement);
             }
+        }
+    }
+
+    /**
+     * Attempt to marshall the {@code track} into {@code trackParent} as it's
+     * own class, if that fails, try the superclass, and so on up
+     * @param m
+     * @param track
+     * @param trackParent
+     * @throws javax.xml.bind.JAXBException
+     */
+    private static void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException{
+
+        if(marshalClass == null || marshalClass.equals(Object.class)){
+            throw new JAXBException(track.getClass() + " and none of its superclasses are known");
+        }
+
+        if(AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)){
+            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
+            return;
+        }
+
+        JAXBElement el;
+        try {
+            el = new JAXBElement(new QName("", TRACK_TAG), marshalClass, track);
+            m.marshal(el, trackParent);
+        } catch (JAXBException e) {
+            AbstractTrack.knownUnknownTrackClasses.add(marshalClass);
+            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
         }
     }
 

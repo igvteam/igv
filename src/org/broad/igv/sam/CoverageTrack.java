@@ -27,6 +27,7 @@ import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -42,8 +43,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
@@ -58,7 +57,6 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-@XmlAccessorType(XmlAccessType.NONE)
 public class CoverageTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
@@ -796,9 +794,9 @@ public class CoverageTrack extends AbstractTrack {
         menu.add(logScaleItem);
     }
 
-    //Used by JAXB, DO NOT REMOVE
+    @SubtlyImportant
     private static CoverageTrack getNextTrack(){
-        return (CoverageTrack) IGVSessionReader.getNextTrack(CoverageTrack.class);
+        return (CoverageTrack) IGVSessionReader.getNextTrack();
     }
 
 

@@ -30,11 +30,14 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +48,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
 public abstract class DataTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
@@ -426,6 +430,11 @@ public abstract class DataTrack extends AbstractTrack {
         int endIdx;
         float dataMax = 0;
         float dataMin = 0;
+    }
+
+    @SubtlyImportant
+    private static DataTrack getNextTrack(){
+        return (DataTrack) IGVSessionReader.getNextTrack();
     }
 
 }

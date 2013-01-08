@@ -30,6 +30,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -47,6 +48,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.broad.igv.util.collections.CollUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -69,7 +71,7 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-@XmlAccessorType(XmlAccessType.NONE)
+@XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
@@ -139,8 +141,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
 
-    //We annotate the setter ONLY
-    //@XmlElement(name = RenderOptions.RENDER_OPTIONS_NAME)
     private RenderOptions renderOptions = new RenderOptions();
 
     private int expandedHeight = 14;
@@ -225,7 +225,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         this.coverageTrack.setRenderOptions(this.renderOptions);
     }
 
-    @XmlElement(name=RenderOptions.RENDER_OPTIONS_NAME)
+    @XmlElement(name=RenderOptions.NAME)
     private void setRenderOptions(RenderOptions renderOptions){
         this.renderOptions = renderOptions;
         if(this.coverageTrack != null){
@@ -233,7 +233,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         }
     }
 
-    //Here for JAXB, DO NOT DELETE
+    @SubtlyImportant
     private RenderOptions getRenderOptions(){
         return this.renderOptions;
     }
@@ -710,7 +710,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager.isShowSpliceJunctions();
     }
 
-    public void setShowSpliceJunctions(boolean showSpliceJunctions){
+    @SubtlyImportant
+    private void setShowSpliceJunctions(boolean showSpliceJunctions){
         dataManager.setShowSpliceJunctions(showSpliceJunctions);
     }
 
@@ -894,7 +895,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 NodeList list = node.getChildNodes();
                 for(int ii=0; ii < list.getLength(); ii++){
                     Node item = list.item(ii);
-                    if(item.getNodeName().equals(RenderOptions.RENDER_OPTIONS_NAME)){
+                    if(item.getNodeName().equals(RenderOptions.NAME)){
                         hasRenderSubTag = true;
                         break;
                     }
@@ -904,7 +905,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
 
             String shadeBasesKey = "shadeBases";
-            String value = node.getAttributes().getNamedItem(shadeBasesKey).getNodeValue();  // For older sessions
+            String value = Utilities.getNullSafe(node.getAttributes(), shadeBasesKey);  // For older sessions
             if (value != null) {
                 if (value.equals("false")) {
                     ro.shadeBasesOption = ShadeBasesOption.NONE;
@@ -956,11 +957,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         refresh();
     }
 
-    @XmlType(name = RenderOptions.RENDER_OPTIONS_NAME)
+    @XmlType(name = RenderOptions.NAME)
     @XmlAccessorType(XmlAccessType.NONE)
     public static class RenderOptions{
 
-        public static final String RENDER_OPTIONS_NAME = "RenderOptions";
+        public static final String NAME = "RenderOptions";
 
         @XmlAttribute ShadeBasesOption shadeBasesOption;
         @XmlAttribute boolean shadeCenters;
@@ -1986,8 +1987,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return distributions;
     }
 
-    //Used by JAXB, DO NOT REMOVE
+    @SubtlyImportant
     private static AlignmentTrack getNextTrack(){
-        return (AlignmentTrack) IGVSessionReader.getNextTrack(AlignmentTrack.class);
+        return (AlignmentTrack) IGVSessionReader.getNextTrack();
     }
 }

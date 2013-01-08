@@ -80,6 +80,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
         assertEquals(CoverageTrack.DEFAULT_SHOW_REFERENCE, covTrack.isShowReference());
         assertEquals(CoverageTrack.DEFAULT_AUTOSCALE, covTrack.isAutoScale());
+        assertEquals(0.1337f, covTrack.getSnpThreshold(), 1e-5);
     }
 
 

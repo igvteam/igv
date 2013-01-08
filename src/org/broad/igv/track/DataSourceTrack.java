@@ -19,17 +19,21 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 
 /**
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class DataSourceTrack extends DataTrack {
 
     private static Logger log = Logger.getLogger(DataSourceTrack.class);
@@ -89,29 +93,48 @@ public class DataSourceTrack extends DataTrack {
         return dataSource.getAvailableWindowFunctions();
     }
 
-    @Override
-    public Map<String, String> getPersistentState() {
-        Map<String, String> properties = super.getPersistentState();
-        if (normalize != false) {
-            properties.put("normalize", String.valueOf(normalize));
+//    @Override
+//    public Map<String, String> getPersistentState() {
+//        Map<String, String> properties = super.getPersistentState();
+//        if (normalize != false) {
+//            properties.put("normalize", String.valueOf(normalize));
+//        }
+//        return properties;
+//    }
+//
+//
+//    @Override
+//    public void restorePersistentState(Map<String, String> attributes) {
+//        super.restorePersistentState(attributes);
+//        String as = attributes.get("normalize");
+//        if (as != null) {
+//            try {
+//                normalize = Boolean.parseBoolean(as);
+//                if (dataSource != null && dataSource instanceof CoverageDataSource) {
+//                    ((CoverageDataSource) dataSource).setNormalize(normalize);
+//                }
+//            } catch (Exception e) {
+//                log.error("Error restoring session.  Invalid normalization value: " + normalize);
+//            }
+//        }
+//    }
+
+    @SubtlyImportant
+    @XmlAttribute
+    private void setNormalize(boolean normalize){
+        this.normalize = normalize;
+        if (dataSource != null && dataSource instanceof CoverageDataSource) {
+            ((CoverageDataSource) dataSource).setNormalize(normalize);
         }
-        return properties;
     }
 
+    @SubtlyImportant
+    private boolean getNormalize(){
+        return normalize;
+    }
 
-    @Override
-    public void restorePersistentState(Map<String, String> attributes) {
-        super.restorePersistentState(attributes);
-        String as = attributes.get("normalize");
-        if (as != null) {
-            try {
-                normalize = Boolean.parseBoolean(as);
-                if (dataSource != null && dataSource instanceof CoverageDataSource) {
-                    ((CoverageDataSource) dataSource).setNormalize(normalize);
-                }
-            } catch (Exception e) {
-                log.error("Error restoring session.  Invalid normalization value: " + normalize);
-            }
-        }
+    @SubtlyImportant
+    private static DataSourceTrack getNextTrack(){
+        return (DataSourceTrack) IGVSessionReader.getNextTrack();
     }
 }
