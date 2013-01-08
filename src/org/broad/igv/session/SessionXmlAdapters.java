@@ -35,7 +35,7 @@ public class SessionXmlAdapters{
         @Override
         public java.awt.Color unmarshal(String colorString) throws Exception {
             if (colorString != null) {
-                ColorUtilities.stringToColor(colorString);
+                return ColorUtilities.stringToColor(colorString);
             }
             return null;
         }
