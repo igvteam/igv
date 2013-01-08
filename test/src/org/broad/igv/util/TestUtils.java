@@ -40,6 +40,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -382,4 +383,44 @@ public class TestUtils {
         JAXBElement el = (JAXBElement) u.unmarshal(doc, inObj.getClass());
         return (T) el.getValue();
     }
+
+    private static Object getField(Object object, Class clazz, String fieldName) throws Exception{
+        if(clazz == null) throw new NoSuchFieldException(fieldName + " not found all the way up");
+        Field field;
+        try{
+            field = object.getClass().getDeclaredField(fieldName);
+        }catch (NoSuchFieldException e){
+            return getField(object, clazz.getSuperclass(), fieldName);
+        }
+        field.setAccessible(true);
+        return field.get(object);
+    }
+
+    /**
+     * Get the specified field, ignoring access restrictions
+     * @param object
+     * @param fieldName
+     * @return
+     */
+    public static Object getField(Object object, String fieldName) throws Exception{
+        return getField(object, object.getClass(), fieldName);
+    }
+
+    private static Object runMethod(Object object, Class clazz, String methodName, Object... args) throws Exception{
+        if(clazz == null) throw new NoSuchFieldException(methodName + " not found all the way up");
+        Method method;
+        try{
+            method = object.getClass().getDeclaredMethod(methodName);
+        }catch (NoSuchMethodException e){
+            return runMethod(object, clazz.getSuperclass(), methodName, args);
+        }
+        method.setAccessible(true);
+        return method.invoke(object, args);
+    }
+
+    public static Object runMethod(Object object, String methodName, Object... args) throws Exception{
+        return runMethod(object, object.getClass(), methodName, args);
+    }
+
+  
 }

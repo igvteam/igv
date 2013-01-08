@@ -13,13 +13,12 @@ package org.broad.igv.session;
 
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
-
-import java.lang.reflect.Method;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -38,18 +37,21 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         IGV.getInstance().doRestoreSession(path, null, false);
 
         //We should have 1 coverage track
-        CoverageTrack track = null;
-        for(Track tk: IGV.getInstance().getAllTracks()){
-            if(tk instanceof CoverageTrack){
-                track = (CoverageTrack) tk;
-                break;
-            }
-
-        }
+        CoverageTrack track = (CoverageTrack) IGV.getInstance().getAllTracks().get(0);
 
         assertTrue(track.isShowReference());
         assertEquals(0.5, track.getSnpThreshold(), 1e-5);
         assertTrue(track.isAutoScale());
+    }
+
+    @Test
+    public void testLoadDataSourceTrack() throws Exception{
+        String path = TestUtils.DATA_DIR + "sessions/tdf_session.xml";
+        IGV.getInstance().doRestoreSession(path, null, false);
+
+        DataSourceTrack track = (DataSourceTrack) IGV.getInstance().getAllTracks().get(0);
+        assertEquals(true, TestUtils.runMethod(track, "getNormalize"));
+        assertEquals("NA12878.SLX.egfr.sam.tdf", track.getName());
     }
 
     /**
@@ -115,9 +117,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
      * @throws Exception
      */
     private AlignmentTrack.RenderOptions getRenderOptions(Track track) throws Exception{
-        Method getRenderOptions = track.getClass().getDeclaredMethod("getRenderOptions");
-        getRenderOptions.setAccessible(true);
-        Object result = getRenderOptions.invoke(track);
+        Object result = TestUtils.getField(track, "renderOptions");
         return (AlignmentTrack.RenderOptions) result;
     }
 }

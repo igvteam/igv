@@ -39,7 +39,6 @@ public class DataSourceTrack extends DataTrack {
     private static Logger log = Logger.getLogger(DataSourceTrack.class);
 
     private DataSource dataSource;
-    boolean normalize = false;
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
@@ -122,7 +121,6 @@ public class DataSourceTrack extends DataTrack {
     @SubtlyImportant
     @XmlAttribute
     private void setNormalize(boolean normalize){
-        this.normalize = normalize;
         if (dataSource != null && dataSource instanceof CoverageDataSource) {
             ((CoverageDataSource) dataSource).setNormalize(normalize);
         }
@@ -130,7 +128,10 @@ public class DataSourceTrack extends DataTrack {
 
     @SubtlyImportant
     private boolean getNormalize(){
-        return normalize;
+        if (dataSource != null && dataSource instanceof CoverageDataSource) {
+            return ((CoverageDataSource) dataSource).getNormalize();
+        }
+        return false;
     }
 
     @SubtlyImportant
