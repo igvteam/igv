@@ -106,17 +106,20 @@ format
 decodingCodec
     Class used for decoding the output.
     Takes precedence over format if both provided
-libs
-    Location (relative to the directory in which the xml file is located)
-    to look for the decoding_codec. Multiple locations must be
-    separated by ":"
 -->
-<!ELEMENT parser EMPTY>
+<!ELEMENT parser (libs*)>
 <!ATTLIST parser
     strict (true|false) "true"
     format CDATA "bed"
-    libs CDATA ""
     decodingCodec CDATA #IMPLIED>
+
+<!--
+libs
+    Location (relative to the directory in which the xml file is located)
+    to look for the decoding_codec. Can be URLs, absolute, or
+    paths relative to the location of the XML spec file
+-->
+<!ELEMENT libs (#PCDATA)>
 
 
 <!-- arg element
@@ -152,7 +155,7 @@ encodingCodec
     Only applies to data arguments. Must implement FeatureEncoder interface.
 
     -->
-<!ELEMENT arg EMPTY>
+<!ELEMENT arg (libs*)>
 <!ATTLIST arg
     name CDATA #REQUIRED
     cmd_arg CDATA ""
@@ -160,6 +163,5 @@ encodingCodec
     default CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
-    encodingCodec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec"
-    libs CDATA "">
+    encodingCodec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec">
 

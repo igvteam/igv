@@ -12,13 +12,10 @@
 package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureTrack;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlEnum;
-import java.net.URL;
+import javax.xml.bind.annotation.*;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.NONE)
@@ -63,7 +60,7 @@ public class Argument{
     /**
      * Full class name of encoding codec to be used
      * In addition to default classpath, will
-     * also search {@link #libURLs}
+     * also search {@link #libPaths}
      */
     @XmlAttribute
     private String encodingCodec;
@@ -72,8 +69,8 @@ public class Argument{
      * URLs to search for encoding codec class, in addition
      * to current classpath
      */
-    @XmlAttribute(name = LIBS)
-    private URL[] libURLs;
+    @XmlElement(name = LIBS)
+    private String[] libPaths;
 
     @XmlEnum
     public enum InputType {
@@ -121,8 +118,8 @@ public class Argument{
         return defaultValue;
     }
 
-    public URL[] getLibURLs() {
-        return libURLs;
+    public String[] getLibPaths(){
+        return this.libPaths;
     }
 
     public boolean isOutput() {
@@ -137,18 +134,18 @@ public class Argument{
         return encodingCodec;
     }
 
-    //Here for JAXB Implementation only
+    @SubtlyImportant
     private Argument(){}
 
     //This constructor is here largely for testing, should consider getting rid of it
     Argument(String name, InputType type, String cmdArg, String defaultValue, String encodingCodec,
-             URL[] libURLs, boolean isOutput, String id) {
+             String[] libPaths, boolean isOutput, String id) {
         this.name = name;
         this.type = type;
         this.cmdArg = cmdArg != null ? cmdArg : "";
         this.defaultValue = defaultValue;
         this.encodingCodec = encodingCodec;
-        this.libURLs = libURLs;
+        this.libPaths = libPaths;
         this.output = isOutput;
         this.id = id;
 

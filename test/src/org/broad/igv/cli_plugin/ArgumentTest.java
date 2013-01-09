@@ -17,7 +17,6 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertTrue;
@@ -32,14 +31,14 @@ public class ArgumentTest extends AbstractHeadlessTest{
     @Test
     public void testTypeText() throws Exception{
         File loclib = new File("test/lib/RuntimeUtils.jar");
-        URL[] libURLs = new URL[]{new URL("file://" + loclib.getAbsolutePath()), new URL("http://www.example.com/test.jar")};
+        String[] libURLs = new String[]{"file://" + loclib.getAbsolutePath(), loclib.getPath(), "http://www.example.com/test.jar"};
         Argument inArg = new Argument("name", Argument.InputType.TEXT, "cmdArg", "defVal", "encCodec", libURLs, true, "id");
 
         Argument outArg = TestUtils.marshallUnmarshall(inArg);
         assertTrue(argumentsEqual(inArg, outArg));
     }
 
-    private boolean argumentsEqual(Argument a0, Argument a1){
+    private boolean argumentsEqual(Argument a0, Argument a1) throws Exception{
         boolean eq = Objects.equal(a0.getType(), a1.getType()) &&
                 Objects.equal(a0.getCmdArg(), a1.getCmdArg()) &&
                 Objects.equal(a0.getDefaultValue(), a1.getDefaultValue()) &&
@@ -48,7 +47,7 @@ public class ArgumentTest extends AbstractHeadlessTest{
                 Objects.equal(a0.getName(), a1.getName()) &&
                 Objects.equal(a0.isOutput(), a1.isOutput());
 
-        eq &= Arrays.deepEquals(a0.getLibURLs(), a1.getLibURLs());
+        eq &= Arrays.deepEquals(a0.getLibPaths(), a1.getLibPaths());
         return eq;
     }
 

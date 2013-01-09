@@ -24,6 +24,7 @@ import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -79,10 +80,14 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
         this.format = parsingAttrs.format;
         this.specPath = specPath;
 
-        String libs = parsingAttrs.libs;
-        libs = libs != null ? libs : "";
-        decodingLibURLs = FileUtils.getURLsFromString(libs, specPath);
-
+        String[] libs = parsingAttrs.libs;
+        libs = libs != null ? libs : new String[]{};
+        try {
+            decodingLibURLs = PluginSpecReader.getLibURLs(libs, FileUtils.getParent(specPath));
+        } catch (MalformedURLException e) {
+            log.error("Error parsing library URL", e);
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -259,9 +264,9 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
 
         if (encodingCodec == null) return new AsciiEncoder(new IGVBEDCodec());
 
-        URL[] libURLs = argument.getLibURLs();
-
         try {
+            URL[] libURLs = PluginSpecReader.getLibURLs(argument.getLibPaths(), FileUtils.getParent(specPath));
+            if(libURLs == null) libURLs = new URL[0];
             ClassLoader loader = URLClassLoader.newInstance(
                     libURLs, getClass().getClassLoader()
             );
@@ -279,6 +284,9 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
         } catch (ClassNotFoundException e) {
             log.error("Could not find class " + encodingCodec, e);
             throw new IllegalArgumentException(e);
+        } catch (MalformedURLException e){
+            log.error("Malformed library URL", e);
+            throw new RuntimeException(e);
         } catch (Exception e) {
             log.error("Exception getting encoding codec", e);
             throw new RuntimeException(e);
@@ -316,6 +324,7 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
 
         try {
 
+            if(libURLs == null) libURLs = new URL[0];
             ClassLoader loader = URLClassLoader.newInstance(libURLs,
                     getClass().getClassLoader());
 

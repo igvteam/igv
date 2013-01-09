@@ -19,8 +19,9 @@
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
                  encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
 
-            <parser format="bed" strict="true" libs="BEDToolsPluginCodec.jar"
-                    decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder"/>
+            <parser format="bed" strict="true" decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder">
+                <libs>BEDToolsPluginCodec.jar</libs>
+            </parser>
         </default>
 
         <command name="Intersect" cmd="intersect">

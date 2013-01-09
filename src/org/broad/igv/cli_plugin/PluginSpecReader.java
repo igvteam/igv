@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,6 +30,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -351,8 +353,9 @@ public class PluginSpecReader {
     public static class Parser {
         @XmlAttribute boolean strict;
         @XmlAttribute String format;
-        @XmlAttribute String libs;
         @XmlAttribute String decodingCodec;
+
+        @XmlElement String[] libs;
     }
 
     /**
@@ -365,6 +368,26 @@ public class PluginSpecReader {
 
         @XmlElement(name = "arg") public List<Argument> argumentList;
         @XmlElement public Parser parser;
+    }
+
+    public static URL[] getLibURLs(String[] libPaths, String absRoot) throws MalformedURLException {
+        if(libPaths == null) return null;
+        List<URL> urls = new ArrayList<URL>(libPaths.length);
+        for(String libPath: libPaths){
+
+            String urlPath = libPath;
+
+            if(HttpUtils.isRemoteURL(urlPath) || urlPath.startsWith("file://")){
+                //do nothing
+            }else if(org.apache.tools.ant.util.FileUtils.isAbsolutePath(urlPath)){
+                urlPath = "file://" + urlPath;
+            }else{
+                //Relative path
+                urlPath = "file://" + absRoot + "/" + urlPath;
+            }
+            urls.add(new URL(urlPath));
+        }
+        return urls.toArray(new URL[0]);
     }
 
 
