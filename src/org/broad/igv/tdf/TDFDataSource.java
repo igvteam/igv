@@ -205,6 +205,7 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
     protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
+
         List<LocusScore> scores;
 
         if (querySeq.equals(Globals.CHR_ALL)) {
@@ -212,8 +213,7 @@ public class TDFDataSource implements CoverageDataSource {
         }
 
         if (zoom <= this.maxPrecomputedZoom) {
-
-            // Window function == none => no windowing, so its not clear what to do.  For now use mean
+           // Window function == none => no windowing, so its not clear what to do.  For now use mean
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             scores = new ArrayList(1000);
@@ -520,6 +520,7 @@ public class TDFDataSource implements CoverageDataSource {
         return availableFunctions;
     }
 
+
     /**
      * Check the sort. {@code fileChromos} is allowed to be missing entries
      * which are in {@code genomeChromos}, but the ordinality of the entries
@@ -652,4 +653,3 @@ public class TDFDataSource implements CoverageDataSource {
         }
     }
 }
-
