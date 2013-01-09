@@ -144,7 +144,9 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     }
 
     public void readHeaderLine(String line) {
-        header = new FeatureFileHeader();
+        if(header == null) {
+            header = new FeatureFileHeader();
+        }
         if (line.startsWith("#track") || line.startsWith("##track")) {
             trackProperties = new TrackProperties();
             ParsingUtils.parseTrackLine(line, trackProperties);
@@ -171,6 +173,9 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public Object readHeader(LineReader reader) {
 
+        if(header == null) {
+            header = new FeatureFileHeader();
+        }
         header = new FeatureFileHeader();
         String line;
         int nLines = 0;
