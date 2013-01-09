@@ -19,7 +19,10 @@
 
 package org.broad.igv.goby;
 
-import edu.cornell.med.icb.goby.counts.*;
+import edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader;
+import edu.cornell.med.icb.goby.counts.CountBinningAdapterI;
+import edu.cornell.med.icb.goby.counts.CountBinningAdaptor;
+import edu.cornell.med.icb.goby.counts.CountsReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
@@ -237,5 +240,9 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
 
     public void setNormalize(boolean normalize) {
         this.doNormalize = normalize;
+    }
+
+    public boolean getNormalize(){
+        return this.doNormalize;
     }
 }

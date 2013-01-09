@@ -16,18 +16,18 @@
 */
 package org.broad.igv.renderer;
 
-import org.broad.igv.session.Persistable;
-import org.broad.igv.session.RecursiveAttributes;
-
-import java.util.HashMap;
-import java.util.Map;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Encapsulates parameter for an x-y plot axis.
  *
  * @author jrobinso
  */
-public class DataRange implements Persistable {
+@XmlAccessorType(XmlAccessType.NONE)
+public class DataRange{
+
 
     public enum Type {
         LOG, LINEAR
@@ -36,30 +36,32 @@ public class DataRange implements Persistable {
     /**
      * The scale type,  linear by default
      */
-    private Type type = Type.LINEAR;
+    @XmlAttribute private Type type = Type.LINEAR;
 
     /**
      * Minimum data value displayed.  Zero by default.
      */
-    private float minimum = 0;
+    @XmlAttribute private float minimum = 0;
 
     /**
      * Where to draw the plot baseline.  Zero by default
      */
-    private float baseline = 0;
+    @XmlAttribute private float baseline = 0;
 
     /**
      * Maximum data value displayed. This value is required, no default
      */
-    private float maximum;
+    @XmlAttribute private float maximum;
 
     /**
      * If true the Y axis is "flipped" (most negative value at top)
      */
-    private boolean flipAxis = false;
+    @XmlAttribute private boolean flipAxis = false;
 
-    private boolean drawBaseline = true;
+    @XmlAttribute private boolean drawBaseline = true;
 
+    //Here for JAXB Compatibility
+    private DataRange(){}
 
     public DataRange(float minimum, float maximum) {
         this(minimum, minimum, maximum, true);
@@ -122,46 +124,4 @@ public class DataRange implements Persistable {
         this.drawBaseline = drawBaseline;
     }
 
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        Map<String, String> attributes = new HashMap();
-        attributes.put("type", type.toString());
-        attributes.put("minimum", String.valueOf(minimum));
-        attributes.put("baseline", String.valueOf(baseline));
-        attributes.put("maximum", String.valueOf(maximum));
-        attributes.put("flipAxis", String.valueOf(flipAxis));
-        attributes.put("drawBaseline", String.valueOf(drawBaseline));
-        return new RecursiveAttributes(DataRange.class.getName(), attributes);
-    }
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
-
-        Map<String, String> values = recursiveAttributes.getAttributes();
-        //TODO Go through generically and set the types
-        String typeString = values.get("type");
-        if (typeString != null) {
-            type = Type.valueOf(typeString);
-        }
-        String minimumString = values.get("minimum");
-        if (minimumString != null) {
-            minimum = Float.parseFloat(minimumString);
-        }
-        String baselineString = values.get("baseline");
-        if (typeString != null) {
-            baseline = Float.parseFloat(baselineString);
-        }
-        String maximumString = values.get("maximum");
-        if (typeString != null) {
-            maximum = Float.parseFloat(maximumString);
-        }
-        String flipAxisString = values.get("flipAxis");
-        if (typeString != null) {
-            flipAxis = Boolean.parseBoolean(flipAxisString);
-        }
-        String drawBaselineString = values.get("drawBaseline");
-        if (drawBaselineString != null) {
-            drawBaseline = Boolean.parseBoolean(drawBaselineString);
-        }
-    }
 }

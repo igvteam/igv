@@ -135,7 +135,7 @@ public class Utilities {
 
 
     /**
-     * Get the text content of the attribute {@code key} from
+     * Get the node value of the attribute {@code key} from
      * the set {@code attr}. If that attribute is not present, null is returned
      *
      * @param attr
@@ -144,7 +144,7 @@ public class Utilities {
      */
     public static String getNullSafe(NamedNodeMap attr, String key) {
         Node node = attr.getNamedItem(key);
-        return node != null ? node.getTextContent() : null;
+        return node != null ? node.getNodeValue() : null;
     }
 
     static public Comparator getNumericStringComparator() {

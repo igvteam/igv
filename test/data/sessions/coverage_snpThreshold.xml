@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2007-2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  -->
+
+<Session genome="hg18" locus="chr7:54585224-54593909" version="4">
+    <Resources>
+        <Resource coverage="http://www.broadinstitute.org/igvdata/1KG/freeze5/NA12891.pilot2.SLX.bam.tdf" name="NA12891 SLX (CEU father)" path="http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam"/>
+    </Resources>
+    <Panel height="292" name="Panel1349127502242" width="1154">
+        <Track altColor="0,0,178" autoScale="true" color="175,175,175" colorScale="ContinuousColorScale;0.0;85.62000274658203;255,255,255;175,175,175" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12891.SLX.bam_coverage" name="NA12891 SLX (CEU father) Coverage" showReference="true" snpThreshold="0.5" sortable="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="85.62" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="113" name="FeaturePanel" width="1154">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <PanelLayout dividerFractions="0.014251781472684086,0.7197149643705463"/>
+</Session>

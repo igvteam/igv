@@ -19,9 +19,12 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.session.RecursiveAttributes;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,12 +33,12 @@ import java.util.List;
 /**
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class DataSourceTrack extends DataTrack {
 
     private static Logger log = Logger.getLogger(DataSourceTrack.class);
 
     private DataSource dataSource;
-    boolean normalize = false;
 
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
@@ -89,29 +92,24 @@ public class DataSourceTrack extends DataTrack {
         return dataSource.getAvailableWindowFunctions();
     }
 
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes properties = super.getPersistentState();
-        if (normalize != false) {
-            properties.put("normalize", String.valueOf(normalize));
+    @SubtlyImportant
+    @XmlAttribute
+    private void setNormalize(boolean normalize){
+        if (dataSource != null && dataSource instanceof CoverageDataSource) {
+            ((CoverageDataSource) dataSource).setNormalize(normalize);
         }
-        return properties;
     }
 
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-        String as = attributes.get("normalize");
-        if (as != null) {
-            try {
-                normalize = Boolean.parseBoolean(as);
-                if (dataSource != null && dataSource instanceof CoverageDataSource) {
-                    ((CoverageDataSource) dataSource).setNormalize(normalize);
-                }
-            } catch (Exception e) {
-                log.error("Error restoring session.  Invalid normalization value: " + normalize);
-            }
+    @SubtlyImportant
+    private boolean getNormalize(){
+        if (dataSource != null && dataSource instanceof CoverageDataSource) {
+            return ((CoverageDataSource) dataSource).getNormalize();
         }
+        return false;
+    }
+
+    @SubtlyImportant
+    private static DataSourceTrack getNextTrack(){
+        return (DataSourceTrack) IGVSessionReader.getNextTrack();
     }
 }

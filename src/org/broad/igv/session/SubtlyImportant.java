@@ -11,26 +11,27 @@
 
 package org.broad.igv.session;
 
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Interface for a session persistable object.
+ * Annotates something which seem like it's not used anywhere,
+ * but is. An example might be private getter/setter/constructors
+ * used in tracks which JAXB requires. Since these are only
+ * called reflectively, and IDE might report them as
+ * never being used.
  *
- * @author User: jrobinso
- * Date: Feb 23, 2010
+ * User: jacob
+ * Date: 2013-Jan-08
  */
-public interface Persistable {
+@Retention(RetentionPolicy.SOURCE)
+public @interface SubtlyImportant {
+    String description() default "";
 
     /**
-     * Return object state as a map of key-value string pairs
+     * Comma-separated list of methods which
+     * rely on this
      * @return
      */
-
-    public Map<String, String> getPersistentState();
-
-    /**
-     * Restore object state from a map of key-value string pairs
-     * @param values
-     */
-    public void restorePersistentState(Map<String, String> values);
+    String whereUsed() default "";
 }

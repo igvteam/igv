@@ -28,9 +28,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.Persistable;
-import org.broad.igv.session.RecursiveAttributes;
+import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.Session;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -48,9 +48,14 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.broad.igv.util.collections.CollUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -65,6 +70,8 @@ import java.util.List;
 /**
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
+@XmlSeeAlso(AlignmentTrack.RenderOptions.class)
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
@@ -133,7 +140,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private SequenceTrack sequenceTrack;
     private CoverageTrack coverageTrack;
     private SpliceJunctionFinderTrack spliceJunctionTrack;
-    private final RenderOptions renderOptions = new RenderOptions();
+
+    private RenderOptions renderOptions = new RenderOptions();
+
     private int expandedHeight = 14;
     private int maxSquishedHeight = 4;
     private int squishedHeight = maxSquishedHeight;
@@ -214,6 +223,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
         this.coverageTrack.setRenderOptions(this.renderOptions);
+    }
+
+    @XmlElement(name=RenderOptions.NAME)
+    private void setRenderOptions(RenderOptions renderOptions){
+        this.renderOptions = renderOptions;
+        if(this.coverageTrack != null){
+            this.coverageTrack.setRenderOptions(this.renderOptions);
+        }
+    }
+
+    @SubtlyImportant
+    private RenderOptions getRenderOptions(){
+        return this.renderOptions;
     }
 
     public CoverageTrack getCoverageTrack() {
@@ -682,6 +704,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return dataManager;
     }
 
+    //Public only for testing
+    @XmlAttribute
+    public boolean isShowSpliceJunctions(){
+        return dataManager.isShowSpliceJunctions();
+    }
+
+    @SubtlyImportant
+    private void setShowSpliceJunctions(boolean showSpliceJunctions){
+        dataManager.setShowSpliceJunctions(showSpliceJunctions);
+    }
+
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
@@ -851,31 +884,40 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes attrs = super.getPersistentState();
-        attrs.putAll(renderOptions.getPersistentState().getAttributes());
+    public void restorePersistentState(Node node) {
+        super.restorePersistentState(node);
 
-        if (dataManager.isShowSpliceJunctions()) {
-            attrs.put("showSpliceJunctions", String.valueOf(dataManager.isShowSpliceJunctions()));
-        }
-
-        return attrs;
-    }
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-        renderOptions.restorePersistentState(attributes);
-
-        String spliceJunctionOption = attributes.get("showSpliceJunctions");
-        if (spliceJunctionOption != null) {
-            try {
-                dataManager.setShowSpliceJunctions(Boolean.parseBoolean(spliceJunctionOption));
-            } catch (Exception e) {
-                log.error("Error restoring splice junction option: " + spliceJunctionOption);
+        //For legacy sessions (<= v4. RenderOptions used to be stuffed in
+        //with Track tag, now it's a sub element
+        boolean hasRenderSubTag = false;
+        try {
+            if(node.hasChildNodes()){
+                NodeList list = node.getChildNodes();
+                for(int ii=0; ii < list.getLength(); ii++){
+                    Node item = list.item(ii);
+                    if(item.getNodeName().equals(RenderOptions.NAME)){
+                        hasRenderSubTag = true;
+                        break;
+                    }
+                }
             }
-        }
+            if(hasRenderSubTag) return;
+            RenderOptions ro = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(node, RenderOptions.class).getValue();
 
+            String shadeBasesKey = "shadeBases";
+            String value = Utilities.getNullSafe(node.getAttributes(), shadeBasesKey);  // For older sessions
+            if (value != null) {
+                if (value.equals("false")) {
+                    ro.shadeBasesOption = ShadeBasesOption.NONE;
+                } else if (value.equals("true")) {
+                    ro.shadeBasesOption = ShadeBasesOption.QUALITY;
+                }
+            }
+
+            this.setRenderOptions(ro);
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setViewAsPairs(boolean vAP) {
@@ -915,29 +957,33 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         refresh();
     }
 
-    public static class RenderOptions implements Persistable{
+    @XmlType(name = RenderOptions.NAME)
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class RenderOptions{
 
-        ShadeBasesOption shadeBasesOption;
-        boolean shadeCenters;
-        boolean flagUnmappedPairs;
-        boolean showAllBases;
+        public static final String NAME = "RenderOptions";
+
+        @XmlAttribute ShadeBasesOption shadeBasesOption;
+        @XmlAttribute boolean shadeCenters;
+        @XmlAttribute boolean flagUnmappedPairs;
+        @XmlAttribute boolean showAllBases;
         boolean showMismatches = true;
         private boolean computeIsizes;
-        private int minInsertSize;
-        private int maxInsertSize;
+        @XmlAttribute private int minInsertSize;
+        @XmlAttribute private int maxInsertSize;
         private double minInsertSizePercentile;
         private double maxInsertSizePercentile;
-        private ColorOption colorOption;
-        GroupOption groupByOption = null;
+        @XmlAttribute private ColorOption colorOption;
+        @XmlAttribute GroupOption groupByOption = null;
         BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
         private boolean pairedArcView = false;
         public boolean flagZeroQualityAlignments = true;
         Map<String, PEStats> peStats;
-        private String colorByTag;
-        private String groupByTag;
-        private String sortByTag;
+        @XmlAttribute private String colorByTag;
+        @XmlAttribute private String groupByTag;
+        @XmlAttribute private String sortByTag;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -971,102 +1017,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             //updateColorScale();
 
             peStats = new HashMap<String, PEStats>();
-        }
-
-        /*
-         * private void updateColorScale() { int delta = 1; if (medianInsertSize
-         * == 0 || madInsertSize == 0) { delta = (maxInsertSizeThreshold -
-         * minInsertSizeThreshold) / 10; } else { delta =
-         * Math.min((maxInsertSizeThreshold - minInsertSizeThreshold) / 3,
-         * madInsertSize); } insertSizeColorScale = new
-         * ContinuousColorScale(minInsertSizeThreshold, minInsertSizeThreshold +
-         * delta, maxInsertSizeThreshold - delta, maxInsertSizeThreshold,
-         * Color.blue, AlignmentRenderer.grey1, Color.red); }
-         */
-
-        /**
-         * Called by session writer. Return instance variable values as a map of
-         * strings. Used to record current state of object. Variables with
-         * default values are not stored, as it is presumed the user has not
-         * changed them.
-         *
-         * @return
-         */
-        public RecursiveAttributes getPersistentState() {
-            Map<String, String> attributes = new HashMap();
-            PreferenceManager prefs = PreferenceManager.getInstance();
-            if (shadeBasesOption != DEFAULT_SHADE_BASES_OPTION) {
-                attributes.put("shadeBasesOption", shadeBasesOption.toString());
-            }
-            if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
-                attributes.put("shadeCenters", String.valueOf(shadeCenters));
-            }
-            if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
-                attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
-            }
-            if (maxInsertSize != prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("insertSizeThreshold", String.valueOf(maxInsertSize));
-            }
-            if (getMinInsertSize() != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("minInsertSizeThreshold", String.valueOf(maxInsertSize));
-            }
-            if (showAllBases != DEFAULT_SHOWALLBASES) {
-                attributes.put("showAllBases", String.valueOf(showAllBases));
-            }
-            if (colorOption != DEFAULT_COLOR_OPTION) {
-                attributes.put("colorOption", colorOption.toString());
-            }
-            if (groupByOption != null) {
-                attributes.put("groupByOption", groupByOption.toString());
-            }
-            if (colorByTag != null && colorByTag.length() > 0) {
-                attributes.put("colorByTag", colorByTag);
-            }
-            if (groupByTag != null && groupByTag.length() > 0) {
-                attributes.put("groupByTag", groupByTag);
-            }
-            if (sortByTag != null) {
-                attributes.put("sortByTag", sortByTag);
-            }
-
-            return new RecursiveAttributes("renderOptions", attributes);
-        }
-
-        /**
-         * Called by session reader.  Restores state of object.
-         *
-         * @param recursiveAttributes
-         */
-        @Override
-        public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
-
-            String value;
-            Map<String, String> attributes = recursiveAttributes.getAttributes();
-            value = attributes.get("insertSizeThreshold");
-            if (value != null) {
-                maxInsertSize = Integer.parseInt(value);
-            }
-            value = attributes.get("minInsertSizeThreshold");
-            if (value != null) {
-                setMinInsertSize(Integer.parseInt(value));
-            }
-            value = attributes.get("shadeBases");  // For older sessions
-            if (value != null) {
-                if (value.equals("false")) {
-                    shadeBasesOption = ShadeBasesOption.NONE;
-                } else if (value.equals("true")) {
-                    shadeBasesOption = ShadeBasesOption.QUALITY;
-                }
-            }
-            shadeBasesOption = getFromMap(attributes, "shadeBasesOption", ShadeBasesOption.class, ShadeBasesOption.QUALITY);
-            colorOption = getFromMap(attributes, "colorOption", ColorOption.class, ColorOption.NONE);
-            groupByOption = getFromMap(attributes, "groupByOption", GroupOption.class, GroupOption.NONE);
-            bisulfiteContext = getFromMap(attributes, "bisulfiteContextRenderOption", BisulfiteContext.class, BisulfiteContext.CG);
-
-
-            groupByTag = getFromMap(attributes, "groupByTag", groupByTag);
-            sortByTag = getFromMap(attributes, "sortByTag", sortByTag);
-            colorByTag = getFromMap(attributes, "colorByTag", colorByTag);
         }
 
         private <T extends Enum<T>> T getFromMap(Map<String, String> attributes, String key, Class<T> clazz, T defaultValue) {
@@ -1175,6 +1125,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public void setGroupByTag(String groupByTag) {
             this.groupByTag = groupByTag;
         }
+
+        public GroupOption getGroupByOption() {
+            return groupByOption;
+        }
     }
 
     class PopupMenu extends IGVPopupMenu {
@@ -1240,8 +1194,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             add(TrackMenuUtils.getRemoveMenuItem(tracks));
-
-            return;
         }
 
         private JMenu getBisulfiteContextMenuItem(ButtonGroup group) {
@@ -2036,4 +1988,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return distributions;
     }
 
+    @SubtlyImportant
+    private static AlignmentTrack getNextTrack(){
+        return (AlignmentTrack) IGVSessionReader.getNextTrack();
+    }
 }

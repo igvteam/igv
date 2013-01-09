@@ -18,6 +18,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
+import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -31,17 +32,19 @@ import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -51,7 +54,9 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
-    private static int CURRENT_VERSION = 4;
+    private static int CURRENT_VERSION = 5;
+
+    private static final String TRACK_TAG = SessionElement.TRACK.getText();
 
     /**
      * Method description
@@ -342,15 +347,60 @@ public class SessionWriter {
                 panelElement.setAttribute("height", String.valueOf(trackPanel.getHeight()));
                 panelElement.setAttribute("width", String.valueOf(trackPanel.getWidth()));
 
-                for (Track track : tracks) {
+                //We create a temporary element into which to marshall, so we
+                //can add custom attributes
+                Element tmpTrackParent = document.createElement("dummy");
 
-                    Element trackElement = document.createElement(SessionElement.TRACK.getText());
-                    RecursiveAttributes.writeElement(trackElement, document, track.getPersistentState());
+                try {
+                    Marshaller m = IGVSessionReader.getJAXBContext().createMarshaller();
+                    m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+                    for (Track track : tracks) {
 
-                    panelElement.appendChild(trackElement);
+                        marshalTrack(m, track, tmpTrackParent, track.getClass());
+
+                        Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);
+
+
+                        for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
+                            trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
+                        }
+
+                        panelElement.appendChild(trackElement);
+                    }
+                } catch (JAXBException e) {
+                    throw new RuntimeException(e);
                 }
                 globalElement.appendChild(panelElement);
             }
+        }
+    }
+
+    /**
+     * Attempt to marshall the {@code track} into {@code trackParent} as it's
+     * own class, if that fails, try the superclass, and so on up
+     * @param m
+     * @param track
+     * @param trackParent
+     * @throws javax.xml.bind.JAXBException
+     */
+    private static void marshalTrack(Marshaller m, Track track, Node trackParent, Class marshalClass) throws JAXBException{
+
+        if(marshalClass == null || marshalClass.equals(Object.class)){
+            throw new JAXBException(track.getClass() + " and none of its superclasses are known");
+        }
+
+        if(AbstractTrack.knownUnknownTrackClasses.contains(marshalClass)){
+            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
+            return;
+        }
+
+        JAXBElement el;
+        try {
+            el = new JAXBElement(new QName("", TRACK_TAG), marshalClass, track);
+            m.marshal(el, trackParent);
+        } catch (JAXBException e) {
+            AbstractTrack.knownUnknownTrackClasses.add(marshalClass);
+            marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
         }
     }
 
