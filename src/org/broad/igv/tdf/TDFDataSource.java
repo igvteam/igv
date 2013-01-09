@@ -116,6 +116,10 @@ public class TDFDataSource implements CoverageDataSource {
         setNormalizeCounts(normalizeCounts, 1.0e6f);
     }
 
+    public boolean getNormalize(){
+        return this.normalizeCounts;
+    }
+
     public void setNormalizeCounts(boolean normalizeCounts, float scalingFactor) {
         this.normalizeCounts = normalizeCounts;
         if (normalizeCounts && totalCount > 0) {

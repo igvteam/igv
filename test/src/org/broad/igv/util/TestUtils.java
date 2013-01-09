@@ -22,7 +22,15 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
+import org.w3c.dom.Document;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +40,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -346,4 +355,72 @@ public class TestUtils {
     }
 
 
+
+    /**
+     * Marshalls {@code inObj} and unmarshalls the result, returning the
+     * unmarshalled version
+     *
+     * @param inObj
+     * @return
+     * @throws Exception
+     */
+    public static <T> T marshallUnmarshall(T inObj) throws Exception{
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.newDocument();
+
+        JAXBContext jc = JAXBContext.newInstance(inObj.getClass());
+        Marshaller m = jc.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+        //This JAXBElement business is necessary because we don't know if we have @XmlRootElement on inObj
+        JAXBElement inel = new JAXBElement(new QName("", "obj"), inObj.getClass(), inObj);
+        //m.marshal(inel, System.out);
+        m.marshal(inel, doc);
+
+        Unmarshaller u = jc.createUnmarshaller();
+        JAXBElement el = (JAXBElement) u.unmarshal(doc, inObj.getClass());
+        return (T) el.getValue();
+    }
+
+    private static Object getField(Object object, Class clazz, String fieldName) throws Exception{
+        if(clazz == null) throw new NoSuchFieldException(fieldName + " not found all the way up");
+        Field field;
+        try{
+            field = object.getClass().getDeclaredField(fieldName);
+        }catch (NoSuchFieldException e){
+            return getField(object, clazz.getSuperclass(), fieldName);
+        }
+        field.setAccessible(true);
+        return field.get(object);
+    }
+
+    /**
+     * Get the specified field, ignoring access restrictions
+     * @param object
+     * @param fieldName
+     * @return
+     */
+    public static Object getField(Object object, String fieldName) throws Exception{
+        return getField(object, object.getClass(), fieldName);
+    }
+
+    private static Object runMethod(Object object, Class clazz, String methodName, Object... args) throws Exception{
+        if(clazz == null) throw new NoSuchFieldException(methodName + " not found all the way up");
+        Method method;
+        try{
+            method = object.getClass().getDeclaredMethod(methodName);
+        }catch (NoSuchMethodException e){
+            return runMethod(object, clazz.getSuperclass(), methodName, args);
+        }
+        method.setAccessible(true);
+        return method.invoke(object, args);
+    }
+
+    public static Object runMethod(Object object, String methodName, Object... args) throws Exception{
+        return runMethod(object, object.getClass(), methodName, args);
+    }
+
+  
 }

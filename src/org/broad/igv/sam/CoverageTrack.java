@@ -26,7 +26,8 @@ import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.session.RecursiveAttributes;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
@@ -42,6 +43,8 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,6 +56,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class CoverageTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
@@ -64,17 +68,17 @@ public class CoverageTrack extends AbstractTrack {
     public static final Color negStrandColor = new Color(140, 140, 160);
     public static final Color posStrandColor = new Color(160, 140, 140);
 
-    private static final boolean DEFAULT_AUTOSCALE = true;
-    private static final boolean DEFAULT_SHOW_REFERENCE = false;
+    public static final boolean DEFAULT_AUTOSCALE = true;
+    public static final boolean DEFAULT_SHOW_REFERENCE = false;
 
     // User settable state -- these attributes should be stored in the session file
-    boolean showReference;
-    boolean autoScale = DEFAULT_AUTOSCALE;
-    private float snpThreshold;
+    @XmlAttribute private float snpThreshold;
+    //TODO This appears to not be used anywhere, remove?
+    @XmlAttribute boolean showReference;
 
     AlignmentDataManager dataManager;
     CoverageDataSource dataSource;
-    DataRenderer dataSourceRenderer; // = new BarChartRenderer();
+    DataRenderer dataSourceRenderer;
     IntervalRenderer intervalRenderer;
     PreferenceManager prefs;
     JMenuItem dataRangeItem;
@@ -123,6 +127,14 @@ public class CoverageTrack extends AbstractTrack {
         // Explicitly setting a data range turns off auto-scale
         autoScale = false;
         super.setDataRange(axisDefinition);
+    }
+
+    public float getSnpThreshold() {
+        return snpThreshold;
+    }
+
+    public boolean isShowReference() {
+        return showReference;
     }
 
     public void rescale() {
@@ -603,52 +615,6 @@ public class CoverageTrack extends AbstractTrack {
         }
     }
 
-
-    /**
-     * Called by session writer.  Return instance variable values as a map of strings.  Used to record current state
-     * of object.   Variables with default values are not stored, as it is presumed the user has not changed them.
-     *
-     * @return
-     */
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes attributes = super.getPersistentState();
-        prefs = PreferenceManager.getInstance();
-        if (snpThreshold != prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
-            attributes.put("snpThreshold", String.valueOf(snpThreshold));
-        }
-        attributes.put("autoScale", String.valueOf(autoScale));
-        if (showReference != DEFAULT_SHOW_REFERENCE) {
-            attributes.put("showReference", String.valueOf(showReference));
-        }
-
-        return attributes;
-    }
-
-    /**
-     * Called by session reader.  Restores state of object.
-     *
-     * @param attributes
-     */
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-
-        String value;
-        value = attributes.get("snpThreshold");
-        if (value != null) {
-            snpThreshold = Float.parseFloat(value);
-        }
-        value = attributes.get("autoScale");
-        if (value != null) {
-            autoScale = Boolean.parseBoolean(value);
-        }
-        value = attributes.get("showReference");
-        if (value != null) {
-            showReference = Boolean.parseBoolean(value);
-        }
-    }
-
     /**
      * Override to return a specialized popup menu
      *
@@ -786,7 +752,6 @@ public class CoverageTrack extends AbstractTrack {
 
     }
 
-
     public void addAutoscaleItem(JPopupMenu menu) {
         // Change track height by attribute
         autoscaleItem = new JCheckBoxMenuItem("Autoscale");
@@ -828,5 +793,11 @@ public class CoverageTrack extends AbstractTrack {
 
         menu.add(logScaleItem);
     }
+
+    @SubtlyImportant
+    private static CoverageTrack getNextTrack(){
+        return (CoverageTrack) IGVSessionReader.getNextTrack();
+    }
+
 
 }

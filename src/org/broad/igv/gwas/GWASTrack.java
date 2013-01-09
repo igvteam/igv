@@ -18,7 +18,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.RecursiveAttributes;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SessionXmlAdapters;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -32,6 +34,9 @@ import org.broad.igv.util.collections.DoubleArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
 import javax.swing.*;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,30 +52,34 @@ import java.util.Collection;
  * Time: 4:56:40 PM
  * To change this template use File | Settings | File Templates.
  */
+@XmlType(factoryMethod = "getNextTrack")
 public class GWASTrack extends AbstractTrack {
 
     // Color properties
-    private int minPointSize;
-    private int maxPointSize;
-    private boolean useChrColors;
-    private boolean singleColor;
-    private boolean alternatingColors;
-    private Color primaryColor;
-    private Color secondaryColor;
+    @XmlAttribute private int minPointSize;
+    @XmlAttribute private int maxPointSize;
 
+    @XmlAttribute private boolean useChrColors;
+    @XmlAttribute private boolean singleColor;
+    @XmlAttribute private boolean alternatingColors;
+
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
+    @XmlAttribute private Color primaryColor;
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
+    @XmlAttribute private Color secondaryColor;
 
     private GWASData gData;
     private static final Logger log = Logger.getLogger(GWASTrack.class);
 
     private static final int AXIS_AREA_WIDTH = 60;
-    private double trackMinY;
-    private double maxY;
-    private double scale;
+    @XmlAttribute private double trackMinY;
+    @XmlAttribute private double maxY;
+    @XmlAttribute private double scale;
     private GWASParser parser;
     private static final DecimalFormat formatter = new DecimalFormat();
     //private String displayName = "GWAS Track";
-    private String displayName = null;
-    private boolean drawYAxis = true;
+    @XmlAttribute private String displayName = null;
+    @XmlAttribute private boolean drawYAxis = true;
     private boolean showAxis = true;
 
     String getDisplayName() {
@@ -757,76 +766,8 @@ public class GWASTrack extends AbstractTrack {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes attributes = super.getPersistentState();
-        attributes.put("minPointSize", String.valueOf(minPointSize));
-        attributes.put("maxPointSize", String.valueOf(maxPointSize));
-        attributes.put("useChrColors", String.valueOf(useChrColors));
-        attributes.put("singleColor", String.valueOf(singleColor));
-        attributes.put("alternatingColors", String.valueOf(alternatingColors));
-        if (primaryColor != null) attributes.put("primaryColor", ColorUtilities.colorToString(primaryColor));
-        if (secondaryColor != null) attributes.put("secondaryColor", ColorUtilities.colorToString(secondaryColor));
-        attributes.put("trackMinY", String.valueOf(trackMinY));
-        attributes.put("maxY", String.valueOf(maxY));
-        attributes.put("scale", String.valueOf(scale));
-        attributes.put("displayName", String.valueOf(displayName));
-        attributes.put("drawYAxis", String.valueOf(drawYAxis));
-
-        return attributes;
-    }
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-
-        String tmp = attributes.get("minPointSize");
-        if (tmp != null) {
-            minPointSize = Integer.parseInt(tmp);
-        }
-        tmp = attributes.get("maxPointSize");
-        if (tmp != null) {
-            maxPointSize = Integer.parseInt("tmp");
-        }
-        tmp = attributes.get("useChrColors");
-        if (tmp != null) {
-            useChrColors = Boolean.parseBoolean(tmp);
-        }
-        tmp = attributes.get("singleColor");
-        if (tmp != null) {
-            singleColor = Boolean.parseBoolean(tmp);
-        }
-        tmp = attributes.get("alternatingColors");
-        if (tmp != null) {
-            alternatingColors = Boolean.parseBoolean(tmp);
-        }
-        tmp = attributes.get("primaryColor");
-        if (tmp != null) {
-            primaryColor = ColorUtilities.stringToColor(tmp);
-        }
-        tmp = attributes.get("secondaryColor");
-        if (tmp != null) {
-            secondaryColor = primaryColor = ColorUtilities.stringToColor(tmp);
-        }
-        tmp = attributes.get("trackMinY");
-        if (tmp != null) {
-            trackMinY = Double.parseDouble(tmp);
-        }
-        tmp = attributes.get("maxY");
-        if (tmp != null) {
-            maxY = Double.parseDouble(tmp);
-        }
-        tmp = attributes.get("scale");
-        if (tmp != null) {
-            scale = Double.parseDouble(tmp);
-        }
-        tmp = attributes.get("displayName");
-        if (tmp != null) {
-            displayName = tmp;
-        }
-        tmp = attributes.get("drawYAxis");
-        if (tmp != null) {
-            drawYAxis = Boolean.parseBoolean(tmp);
-        }
+    @SubtlyImportant
+    private static GWASTrack getNextTrack(){
+        return (GWASTrack) IGVSessionReader.getNextTrack();
     }
 }

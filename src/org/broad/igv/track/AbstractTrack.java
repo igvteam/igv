@@ -16,10 +16,13 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.renderer.*;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.session.IGVSessionReader;
-import org.broad.igv.session.RecursiveAttributes;
-import org.broad.igv.session.RendererFactory;
+import org.broad.igv.session.SessionXmlAdapters;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TooltipTextFrame;
@@ -30,8 +33,12 @@ import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
+import org.w3c.dom.Node;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -40,9 +47,20 @@ import java.util.List;
 /**
  * @author jrobinso
  */
+@XmlType(factoryClass = IGVSessionReader.class, factoryMethod = "getNextTrack")
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlSeeAlso({CoverageTrack.class, AlignmentTrack.class, DataSourceTrack.class, GWASTrack.class, FeatureTrack.class})
 public abstract class AbstractTrack implements Track {
 
     private static Logger log = Logger.getLogger(AbstractTrack.class);
+
+    /**
+     * Classes which we have tried to marshal/unmarshal
+     * and have failed. Since we just use exception catching (slow),
+     * we don't want to repeat failures
+     */
+    public static final Set<Class> knownUnknownTrackClasses = new HashSet<Class>();
+    public static final Class defaultTrackClass = AbstractTrack.class;
 
     /**
      * Set default renderer classes by track type.
@@ -63,8 +81,8 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    private String id;
-    private String name;
+    @XmlAttribute private String id;
+    @XmlAttribute private String name;
     private String url;
     private boolean itemRGB = true;
 
@@ -73,9 +91,10 @@ public abstract class AbstractTrack implements Track {
     private float viewLimitMax = Float.NaN;  // From UCSC track line
 
 
-    protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+    @XmlAttribute protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
+
     private ResourceLocator resourceLocator;
 
     private int top;
@@ -85,8 +104,10 @@ public abstract class AbstractTrack implements Track {
     private TrackType trackType = TrackType.OTHER;
 
     private boolean selected = false;
-    private boolean visible = true;
-    private boolean sortable = true;
+
+    @XmlAttribute private boolean visible = true;
+    @XmlAttribute private boolean sortable = true;
+
     boolean overlaid;
 
     boolean drawYLine = false;
@@ -96,18 +117,30 @@ public abstract class AbstractTrack implements Track {
     private Map<String, String> attributes = new HashMap();
 
     // Scale for heatmaps
-    private ContinuousColorScale colorScale;
+    @XmlJavaTypeAdapter(SessionXmlAdapters.ContinuousColorScale.class)
+    @XmlAttribute private ContinuousColorScale colorScale;
 
+    //TODO Only write it out for applicable tracks
     //Not applicable to all tracks.
-    protected boolean autoScale;
+    @XmlAttribute protected boolean autoScale;
 
-    private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
-    private Color altColor = Color.blue.darker();
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
+    @XmlAttribute(name = "color") private Color posColor = Color.blue.darker();
+
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Color.class)
+    @XmlAttribute private Color altColor = Color.blue.darker();
+
+    @XmlAttribute(name = "featureVisibilityWindow") protected int visibilityWindow = -1;
+    @XmlAttribute private DisplayMode displayMode = DisplayMode.COLLAPSED;
+
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Height.class)
+    @XmlAttribute protected Integer height = -1;
+
+    @XmlElement(name = "DataRange")
     private DataRange dataRange;
-    protected int visibilityWindow = -1;
-    private DisplayMode displayMode = DisplayMode.COLLAPSED;
-    protected int height = -1;
-    private final PreferenceManager prefMgr;
+
+    @SubtlyImportant
+    private AbstractTrack(){}
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
@@ -117,7 +150,6 @@ public abstract class AbstractTrack implements Track {
         this.id = id;
         this.name = name;
         init();
-        prefMgr = PreferenceManager.getInstance();
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator, String id) {
@@ -170,7 +202,6 @@ public abstract class AbstractTrack implements Track {
     }
 
     public String getName() {
-
         return name;
     }
 
@@ -398,7 +429,7 @@ public abstract class AbstractTrack implements Track {
                 if (overlaid) {
                     return false;
                 } else {
-                    return prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS);
+                    return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS);
                 }
             }
         }
@@ -446,7 +477,6 @@ public abstract class AbstractTrack implements Track {
         this.height = Math.min(Math.max(getMinimumHeight(), height), getMaximumHeight());
     }
 
-
     public int getHeight() {
         return (height < 0) ? getDefaultHeight() : height;
     }
@@ -457,7 +487,7 @@ public abstract class AbstractTrack implements Track {
 
     public DataRange getDataRange() {
         if (dataRange == null) {
-            // Use the color scale if htere is one
+            // Use the color scale if there is one
             float min = (float) (colorScale == null ? 0 : colorScale.getMinimum());
             float max = (float) (colorScale == null ? 10 : colorScale.getMaximum());
             float baseline = (float) (colorScale == null ? 0 : (colorScale.getNegStart() + colorScale.getPosStart()) / 2);
@@ -691,147 +721,36 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Return the current state of this object as map of key-value pairs.  Used to store session state.
-     * <p/>
-     * // TODO -- this whole scheme could probably be more elegantly handled with annotations.
+     * Only those attributes not already annotated in AbstractTrack need to be included here
+     * @see #restorePersistentState
      *
      * @return
      */
-    @Override
-    public RecursiveAttributes getPersistentState() {
-
-        LinkedHashMap<String, String> attributes = new LinkedHashMap();
-
-        attributes.put(IGVSessionReader.SessionAttribute.ID.getText(), getId());
-        attributes.put(IGVSessionReader.SessionAttribute.NAME.getText(), getName());
-
-        // Color scale
-        if (colorScale != null && !colorScale.isDefault()) {
-            attributes.put(IGVSessionReader.SessionAttribute.COLOR_SCALE.getText(), colorScale.asString());
-        }
-
-        attributes.put("showDataRange", String.valueOf(showDataRange));
-
-        attributes.put(IGVSessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(visible));
-
-        // height
-        if (height >= 0) {
-            String value = Integer.toString(height);
-            attributes.put(IGVSessionReader.SessionAttribute.HEIGHT.getText(), value);
-        }
-
-
-        if (name != null) {
-            attributes.put(IGVSessionReader.SessionAttribute.NAME.getText(), name);
-        }
-
-        if (sortable != true) {
-            attributes.put("sortable", "false");
-        }
-
-
-        // color
-        if (posColor != null) {
-            StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append(posColor.getRed());
-            stringBuffer.append(",");
-            stringBuffer.append(posColor.getGreen());
-            stringBuffer.append(",");
-            stringBuffer.append(posColor.getBlue());
-            attributes.put(IGVSessionReader.SessionAttribute.COLOR.getText(), stringBuffer.toString());
-        }
-        if (altColor != null) {
-            StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append(altColor.getRed());
-            stringBuffer.append(",");
-            stringBuffer.append(altColor.getGreen());
-            stringBuffer.append(",");
-            stringBuffer.append(altColor.getBlue());
-            attributes.put(IGVSessionReader.SessionAttribute.ALT_COLOR.getText(), stringBuffer.toString());
-        }
-
-        // renderer
-        Renderer renderer = getRenderer();
-        if (renderer != null) {
-            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
-            if (type != null) {
-                attributes.put(IGVSessionReader.SessionAttribute.RENDERER.getText(), type.name());
-            }
-        }
-
-        // window function
-        WindowFunction wf = getWindowFunction();
-        if (wf != null) {
-            attributes.put(IGVSessionReader.SessionAttribute.WINDOW_FUNCTION.getText(), wf.name());
-        }
-
-        attributes.put("fontSize", String.valueOf(fontSize));
-        attributes.put(IGVSessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
-        attributes.put(IGVSessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
-
-
-        List<RecursiveAttributes> children = null;
-        if (hasDataRange()) {
-            DataRange dr = getDataRange();
-            if (dr != null) {
-                RecursiveAttributes child = new RecursiveAttributes(IGVSessionReader.SessionElement.DATA_RANGE.getText(),
-                        dr.getPersistentState().getAttributes());
-                children = Arrays.asList(child);
-            }
-        }
-
-        RecursiveAttributes recursiveAttributes = new RecursiveAttributes(IGVSessionReader.SessionElement.TRACK.getText(),
-                attributes, children);
-
-        return recursiveAttributes;
+    public Map<String, String> getPersistentState() {
+        return new HashMap<String, String>();
     }
 
-    @Override
-    public void restorePersistentState(RecursiveAttributes recursiveAttributes) {
-        String name = recursiveAttributes.getName();
-        if(IGVSessionReader.SessionElement.TRACK.getText().equals(name)){
-            restorePersistentTrackAttributes(recursiveAttributes.getAttributes());
-        }else if(IGVSessionReader.SessionElement.DATA_RANGE.getText().equals(name)){
-            DataRange dr = getDataRange();
-            dr.restorePersistentState(recursiveAttributes);
-            setDataRange(dr);
-        }
-
-        List<RecursiveAttributes> children = recursiveAttributes.getChildren();
-        if(children != null){
-            for(RecursiveAttributes child: children){
-                restorePersistentState(child);
-            }
-        }
-
-
-    }
 
     /**
+     * Restore from XML node. Default implementation just turns attributes
+     * into a map
+     * @param node
+     */
+    public void restorePersistentState(Node node){
+        Map<String, String> attributes = Utilities.getAttributes(node);
+        restorePersistentState(attributes);
+    }
+    /**
      * Restore attributes from track tag, no children
+     * Only those attributes not unmarshalled (meaning not part of AbstractTrack)
+     * need to be restored
+     * @see #getPersistentState
      * @param attributes
      */
-    private void restorePersistentTrackAttributes(Map<String, String> attributes) {
+    public void restorePersistentState(Map<String, String> attributes) {
 
         String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
         String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
-
-        String isVisible = attributes.get(IGVSessionReader.SessionAttribute.VISIBLE.getText());
-        String height = attributes.get(IGVSessionReader.SessionAttribute.HEIGHT.getText());
-        String colorString = attributes.get(IGVSessionReader.SessionAttribute.COLOR.getText());
-        String altColorString = attributes.get(IGVSessionReader.SessionAttribute.ALT_COLOR.getText());
-        String rendererType = attributes.get(IGVSessionReader.SessionAttribute.RENDERER.getText());
-        String windowFunction = attributes.get(IGVSessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
-        String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
-
-        String colorScale = attributes.get(IGVSessionReader.SessionAttribute.COLOR_SCALE.getText());
-
-        if (colorScale != null) {
-            ColorScale cs = ColorScaleFactory.getScaleFromString(colorScale);
-            // This test should not be necessary, refactor to eliminate it
-            if (cs instanceof ContinuousColorScale) {
-                this.setColorScale((ContinuousColorScale) cs);
-            }
-        }
 
         if (name != null && name.length() > 0) {
             setName(name);
@@ -839,86 +758,8 @@ public abstract class AbstractTrack implements Track {
             setName(displayName);
         }
 
-        // Set visibility
-        if (isVisible != null) {
-            if (isVisible.equalsIgnoreCase("true")) {
-                setVisible(true);
-            } else {
-                setVisible(false);
-            }
-        }
-
-        String sortableString = attributes.get("sortable");
-        if (sortableString != null) {
-            sortable = Boolean.parseBoolean(sortableString);
-        }
-
-        String showDataRangeString = attributes.get("showDataRange");
-        if (showDataRangeString != null) {
-            try {
-                showDataRange = Boolean.parseBoolean(showDataRangeString);
-            } catch (Exception e) {
-                log.error("Error parsing data range: " + showDataRangeString);
-            }
-        }
-
-        // Set height
-        if (height != null) {
-            try {
-                setHeight(Integer.parseInt(height));
-            } catch (NumberFormatException e) {
-                log.error("Error restoring track height: " + height);
-            }
-        }
-
-        String fontSizeString = attributes.get("fontSize");
-        if (fontSizeString != null) {
-            try {
-                setFontSize(Integer.parseInt(fontSizeString));
-            } catch (NumberFormatException e) {
-                log.error("Error restoring font size: " + fontSizeString);
-            }
-        }
-
-        // Set color
-        if (colorString != null) {
-            try {
-                String[] rgb = colorString.split(",");
-                int red = Integer.parseInt(rgb[0]);
-                int green = Integer.parseInt(rgb[1]);
-                int blue = Integer.parseInt(rgb[2]);
-                posColor = new Color(red, green, blue);
-            } catch (NumberFormatException e) {
-                log.error("Error restoring color: " + colorString);
-            }
-        }
-
-        if (altColorString != null) {
-            try {
-                String[] rgb = altColorString.split(",");
-                int red = Integer.parseInt(rgb[0]);
-                int green = Integer.parseInt(rgb[1]);
-                int blue = Integer.parseInt(rgb[2]);
-                altColor = new Color(red, green, blue);
-            } catch (NumberFormatException e) {
-                log.error("Error restoring color: " + colorString);
-            }
-        }
-
-        // Set rendererClass
-        if (rendererType != null) {
-            Class rendererClass = RendererFactory.getRendererClass(rendererType);
-            if (rendererClass != null) {
-                setRendererClass(rendererClass);
-            }
-        }
-
-        // Set window function
-        if (windowFunction != null) {
-            setWindowFunction(WindowFunction.getWindowFunction(windowFunction));
-        }
-
         // Set DataRange -- legacy (pre V3 sessions)
+        String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
         if (scale != null) {
             String[] axis = scale.split(",");
             float minimum = Float.parseFloat(axis[0]);
@@ -927,37 +768,7 @@ public abstract class AbstractTrack implements Track {
             setDataRange(new DataRange(minimum, baseline, maximum));
         }
 
-
-        // set display mode
-        String displayModeText = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_MODE.getText());
-        if (displayModeText != null) {
-            try {
-                setDisplayMode(Track.DisplayMode.valueOf(displayModeText));
-            } catch (Exception e) {
-                log.error("Error interpreting display mode: " + displayModeText);
-            }
-        } else {
-            String isExpanded = attributes.get(IGVSessionReader.SessionAttribute.EXPAND.getText());
-            if (isExpanded != null) {
-                if (isExpanded.equalsIgnoreCase("true")) {
-                    setDisplayMode(DisplayMode.EXPANDED);
-                } else {
-                    setDisplayMode(DisplayMode.COLLAPSED);
-                }
-            }
-        }
-
-        String fvw = attributes.get(IGVSessionReader.SessionAttribute.FEATURE_WINDOW.getText());
-        if (fvw != null) {
-            try {
-                visibilityWindow = Integer.parseInt(fvw);
-            } catch (NumberFormatException e) {
-                log.error("Error restoring featureVisibilityWindow: " + fvw);
-            }
-        }
-
     }
-
 
     public boolean isItemRGB() {
         return itemRGB;
@@ -1095,8 +906,8 @@ public abstract class AbstractTrack implements Track {
         // Required method for track interface, ignore
     }
 
+    @XmlAttribute(name = "windowFunction")
     public WindowFunction getWindowFunction() {
-        // Required method for track interface, ignore
         return null;
     }
 
@@ -1148,6 +959,8 @@ public abstract class AbstractTrack implements Track {
         // Default is to do nothing
     }
 
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Renderer.class)
+    @XmlAttribute(name = "renderer")
     @Override
     public Renderer getRenderer() {
         return null;

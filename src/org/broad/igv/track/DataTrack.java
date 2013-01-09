@@ -30,12 +30,14 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.XYPlotRenderer;
-import org.broad.igv.session.RecursiveAttributes;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
+@XmlType(factoryMethod = "getNextTrack")
 public abstract class DataTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(DataTrack.class);
@@ -298,29 +301,6 @@ public abstract class DataTrack extends AbstractTrack {
         return interval;
     }
 
-    @Override
-    public RecursiveAttributes getPersistentState() {
-        RecursiveAttributes properties = super.getPersistentState();
-        properties.put("autoScale", String.valueOf(autoScale));
-        return properties;
-    }
-
-
-    @Override
-    public void restorePersistentState(RecursiveAttributes attributes) {
-        super.restorePersistentState(attributes);
-        String as = attributes.get("autoScale");
-        if (as != null) {
-            try {
-                autoScale = Boolean.parseBoolean(as);
-
-            } catch (Exception e) {
-                log.error("Error restoring session.  Invalid autoScale value: " + autoScale);
-
-            }
-        }
-    }
-
     /**
      * Get the score over the provided region for the given type. Different types
      * are processed differently. Results are cached according to the provided frameName,
@@ -450,6 +430,11 @@ public abstract class DataTrack extends AbstractTrack {
         int endIdx;
         float dataMax = 0;
         float dataMin = 0;
+    }
+
+    @SubtlyImportant
+    private static DataTrack getNextTrack(){
+        return (DataTrack) IGVSessionReader.getNextTrack();
     }
 
 }
