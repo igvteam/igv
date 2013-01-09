@@ -415,7 +415,7 @@ public class GenomeImpl implements Genome {
             long genomeLength = getTotalLength();
             for (String chrName : getAllChromosomeNames()) {
                 Chromosome chr = getChromosome(chrName);
-                if (chr.getLength() > (genomeLength / 1000)) {
+                if (chr.getLength() > (genomeLength / 3000)) {
                     longChromosomeNames.add(chrName);
                 }
             }
