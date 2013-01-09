@@ -45,8 +45,10 @@ public class GenomeImpl implements Genome {
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
+    private ArrayList longChromosomeNames;
     private LinkedHashMap<String, Chromosome> chromosomeMap;
-    private long length = -1;
+    private long totalLength = -1;
+    private long nominalLength = -1;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
     private Sequence sequence;
@@ -242,8 +244,8 @@ public class GenomeImpl implements Genome {
 
 
     public String getHomeChromosome() {
-        if (getChromosomeNames().size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
-            return getChromosomeNames().get(0);
+        if (getLongChromosomeNames().size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
+            return getLongChromosomeNames().get(0);
         } else {
             return Globals.CHR_ALL;
         }
@@ -255,7 +257,7 @@ public class GenomeImpl implements Genome {
     }
 
 
-    public List<String> getChromosomeNames() {
+    public List<String> getAllChromosomeNames() {
         return chromosomeNames;
     }
 
@@ -265,14 +267,14 @@ public class GenomeImpl implements Genome {
     }
 
 
-    public long getLength() {
-        if (length < 0) {
-            length = 0;
+    public long getTotalLength() {
+        if (totalLength < 0) {
+            totalLength = 0;
             for (Chromosome chr : chromosomeMap.values()) {
-                length += chr.getLength();
+                totalLength += chr.getLength();
             }
         }
-        return length;
+        return totalLength;
     }
 
 
@@ -281,7 +283,7 @@ public class GenomeImpl implements Genome {
         Long cumOffset = cumulativeOffsets.get(chr);
         if (cumOffset == null) {
             long offset = 0;
-            for (String c : getChromosomeNames()) {
+            for (String c : getLongChromosomeNames()) {
                 if (chr.equals(c)) {
                     break;
                 }
@@ -310,7 +312,8 @@ public class GenomeImpl implements Genome {
     public ChromosomeCoordinate getChromosomeCoordinate(int genomeKBP) {
 
         long cumOffset = 0;
-        for (String c : chromosomeNames) {
+        List<String> wgChrNames = getLongChromosomeNames();
+        for (String c : wgChrNames) {
             int chrLen = getChromosome(c).getLength();
             if ((cumOffset + chrLen) / 1000 > genomeKBP) {
                 int bp = (int) (genomeKBP * 1000 - cumOffset);
@@ -319,7 +322,8 @@ public class GenomeImpl implements Genome {
             cumOffset += chrLen;
         }
 
-        String c = chromosomeNames.get(chromosomeNames.size() - 1);
+
+        String c = wgChrNames.get(wgChrNames.size() - 1);
         int bp = (int) (genomeKBP - cumOffset) * 1000;
         return new ChromosomeCoordinate(c, bp);
     }
@@ -342,7 +346,7 @@ public class GenomeImpl implements Genome {
     }
 
     public String getNextChrName(String chr) {
-        List<String> chrList = getChromosomeNames();
+        List<String> chrList = getLongChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i + 1);
@@ -352,7 +356,7 @@ public class GenomeImpl implements Genome {
     }
 
     public String getPrevChrName(String chr) {
-        List<String> chrList = getChromosomeNames();
+        List<String> chrList = getLongChromosomeNames();
         for (int i = chrList.size() - 1; i > 0; i--) {
             if (chrList.get(i).equals(chr)) {
                 return chrList.get(i - 1);
@@ -408,6 +412,34 @@ public class GenomeImpl implements Genome {
     @Override
     public FeatureTrack getGeneTrack() {
         return geneTrack;
+    }
+
+    @Override
+    public List<String> getLongChromosomeNames() {
+        if (longChromosomeNames == null) {
+            longChromosomeNames = new ArrayList(getAllChromosomeNames().size());
+            long genomeLength = getTotalLength();
+            for (String chrName : getAllChromosomeNames()) {
+                Chromosome chr = getChromosome(chrName);
+                if (chr.getLength() > (genomeLength / 3000)) {
+                    longChromosomeNames.add(chrName);
+                }
+            }
+        }
+        return longChromosomeNames;
+    }
+
+
+    @Override
+    public long getNominalLength() {
+        if (nominalLength < 0) {
+            nominalLength = 0;
+            for (String chrName : getLongChromosomeNames()) {
+                Chromosome chr = getChromosome(chrName);
+                nominalLength += chr.getLength();
+            }
+        }
+        return nominalLength;
     }
 
 

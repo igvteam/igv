@@ -17,6 +17,8 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
@@ -25,9 +27,9 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author jrobinso
@@ -62,6 +64,57 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
             count++;
         }
         assertEquals(5, count);
+    }
+
+    private String genomeZipFile = TestUtils.TMP_OUTPUT_DIR + "tmp.genome";
+    private String fastaFileRelPath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+    private String genomeDisplayName = "Unit test genome";
+    private String genomeId = "gmt_001";
+
+    private void createDotGenomeForTest(String fastaFileName) throws IOException{
+        GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
+        GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
+                new File(genomeZipFile), null, null,
+                fastaFileName, null, genomeDisplayName,
+                genomeId, null);
+
+
+    }
+
+    /**
+     * Use a relative path for fasta file, test that we can load it
+     * @throws Exception
+     */
+    @Test
+    public void testLoadGenomeFastaRelative() throws Exception{
+        createDotGenomeForTest(fastaFileRelPath);
+        Genome relGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
+
+        checkGenome(relGenome);
+    }
+
+    /**
+     * Use an absolute path for fasta file, test that we can load it
+     * @throws Exception
+     */
+    @Test
+    public void testLoadGenomeFastaAbsolute() throws Exception{
+        File fastaFile = new File(fastaFileRelPath);
+        String fastaAbsPath = fastaFile.getAbsolutePath();
+
+        createDotGenomeForTest(fastaAbsPath);
+        Genome absGenome = GenomeManager.getInstance().loadGenome(genomeZipFile, null);
+
+        checkGenome(absGenome);
+    }
+
+    private void checkGenome(Genome genome) {
+        String chr = genome.getAllChromosomeNames().get(0);
+        int end = 10;
+
+        byte[] seq = genome.getSequence(chr, 0, end);
+        assertNotNull(seq);
+        assertEquals(end, seq.length);
     }
 
 }

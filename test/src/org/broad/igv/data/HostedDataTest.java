@@ -250,7 +250,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
     public void tstLoadGenome(String path) throws Exception {
         FeatureDB.clearFeatures();
         Genome genome = GenomeManager.getInstance().loadGenome(path, null);
-        assertTrue(genome.getChromosomeNames().size() > 0);
+        assertTrue(genome.getAllChromosomeNames().size() > 0);
     }
 
 }

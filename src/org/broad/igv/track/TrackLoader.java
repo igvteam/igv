@@ -288,7 +288,7 @@ public class TrackLoader {
         List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
         if (lists.size() == 1) {
             GeneList gl = lists.get(0);
-            IGV.getInstance().setGeneList(gl.getName(), true);
+            IGV.getInstance().setGeneList(gl, true);
         } else {
             MessageUtils.showMessage("Loaded " + lists.size() + " gene lists.");
         }
@@ -350,7 +350,6 @@ public class TrackLoader {
 
     }
 
-
     private void loadVCFListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         TribbleListFeatureSource src = new TribbleListFeatureSource(locator.getPath(), genome);
@@ -374,7 +373,6 @@ public class TrackLoader {
         // VCF tracks handle their own margin
         t.setMargin(0);
         newTracks.add(t);
-
     }
 
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -1011,7 +1009,7 @@ public class TrackLoader {
             }
             message.append("<br>Genome: ");
             n = 0;
-            for (String cn : genome.getChromosomeNames()) {
+            for (String cn : genome.getAllChromosomeNames()) {
                 message.append(cn + ", ");
                 n++;
                 if (n > 3) {

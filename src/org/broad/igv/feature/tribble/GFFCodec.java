@@ -290,19 +290,13 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         f.setParentIds(parentIds);
         f.setAttributes(attributes);
 
-        if (attributes.containsKey("color")) {
-            f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
+        String[] colorNames = new String[]{"color", "Color", "colour", "Colour"};
+        for(String colorName: colorNames){
+            if (attributes.containsKey(colorName)) {
+                f.setColor(ColorUtilities.stringToColor(attributes.get(colorName)));
+                break;
+            }
         }
-        if (attributes.containsKey("Color")) {
-            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
-        }
-        if (attributes.containsKey("colour")) {
-            f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
-        }
-        if (attributes.containsKey("Colour")) {
-            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
-        }
-
 
         if (featuresToHide.contains(featureType)) {
             if (IGV.hasInstance()) FeatureDB.addFeature(f);

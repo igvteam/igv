@@ -18,6 +18,7 @@ package org.broad.igv.tdf;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.CompressionUtils;
@@ -51,6 +52,7 @@ public class TDFReader {
     private String genomeId;
     LRUCache<String, TDFGroup> groupCache = new LRUCache(this, 20);
     LRUCache<String, TDFDataset> datasetCache = new LRUCache(this, 20);
+    TDFTile wgTile;
 
     Map<WindowFunction, Double> valueCache = new HashMap();
     private List<WindowFunction> windowFunctions;
@@ -246,6 +248,7 @@ public class TDFReader {
                 datasetCache.put(name, ds);
                 return ds;
             } else {
+                datasetCache.put(name, null);
                 return null;
             }
 
@@ -478,6 +481,71 @@ public class TDFReader {
 
             datasetCache.clear();
         }
+    }
 
+    public TDFTile getWholeGenomeTile(Genome genome, WindowFunction wf) {
+
+        if (wgTile == null) {
+
+            int binCount = 700;
+            int nTracks = this.getTrackNames().length; // TODO -- is there a more direct way to know this?
+            double binSize = (genome.getNominalLength() / 1000) / binCount;
+            Accumulator[][] accumulators = new Accumulator[nTracks][binCount];
+
+            for (String chrName : genome.getLongChromosomeNames()) {
+
+                TDFDataset chrDataset = getDataset(chrName, 0, wf);
+                if(chrDataset == null) continue;
+
+                List<TDFTile> chrTiles = chrDataset.getTiles();
+                chrDataset.clearCache(); // Don't cache these
+                for (TDFTile t : chrTiles) {
+                    int[] chrStart = t.getStart();
+                    int[] chrEnd = t.getEnd();
+
+                    for (int p = 0; p < chrStart.length; p++) {
+
+                        int gStart = genome.getGenomeCoordinate(chrName, chrStart[p]);
+                        int gEnd = genome.getGenomeCoordinate(chrName, chrEnd[p]);
+
+                        int binStart = (int) (gStart / binSize);
+                        int binEnd = Math.min(binCount - 1, (int) (gEnd / binSize));
+                        for (int b = binStart; b <= binEnd; b++) {
+
+                            for (int n = 0; n < nTracks; n++) {
+
+                                Accumulator acc = accumulators[n][b];
+                                if (acc == null) {
+                                    acc = new Accumulator(WindowFunction.mean);
+                                    accumulators[n][b] = acc;
+                                }
+
+                                int basesCovered = Math.min(gEnd, binEnd) - Math.max(gStart, binStart);
+                                acc.add(basesCovered, t.getData(n)[p], null);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fill data array for "wg tile"
+            float[][] data = new float[nTracks][binCount];
+            for (int n = 0; n < nTracks; n++) {
+                Accumulator[] accArray = accumulators[n];
+                for (int p = 0; p < accArray.length; p++) {
+                    Accumulator acc = accArray[p];
+                    if (acc != null) {
+                        acc.finish();
+                        data[n][p] = acc.getValue();
+
+                    }
+                }
+            }
+
+            //    public TDFFixedTile(int tileStart, int start, double span, float[][] data) {
+            wgTile = new TDFFixedTile(0, 0, binSize, data);
+
+        }
+        return wgTile;
     }
 }

@@ -1,15 +1,28 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
-import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tdf.*;
-import org.broad.igv.track.WindowFunction;
+import org.broad.igv.tdf.TDFDataSource;
+import org.broad.igv.tdf.TDFGroup;
+import org.broad.igv.tdf.TDFReader;
 
-import java.io.StreamCorruptedException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -77,11 +90,11 @@ public class AffectiveDataSource extends TDFDataSource {
         }
     }
 
-    List<LocusScore> getWholeGenomeScores() {
+    public List<LocusScore> getWholeGenomeScores() {
 
-        if (wholeGenomeScores == null && affectiveGenome.getChromosomeNames().size() > 1) {
+        if (wholeGenomeScores == null && affectiveGenome.getLongChromosomeNames().size() > 1) {
             wholeGenomeScores = new ArrayList<LocusScore>(1000);
-            for (String chr : affectiveGenome.getChromosomeNames()) {
+            for (String chr : affectiveGenome.getLongChromosomeNames()) {
                 wholeGenomeScores.addAll(getWholeGenomeScoresForChromosome(chr));
             }
 

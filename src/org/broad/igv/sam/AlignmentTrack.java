@@ -1134,7 +1134,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
-
+            super();
             Collection<Track> tracks = new ArrayList();
             tracks.add(AlignmentTrack.this);
 
@@ -1850,6 +1850,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final ReferenceFrame frame = te.getFrame();
             final double location = frame.getChromosomePosition(e.getX());
             final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
+            if(alignment == null) return;
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {

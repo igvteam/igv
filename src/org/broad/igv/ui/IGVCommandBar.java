@@ -299,8 +299,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) return;
 
-        List<String> tmp = new ArrayList<String>(genome.getChromosomeNames().size());
-        tmp.addAll(genome.getChromosomeNames());
+        List<String> tmp = new ArrayList<String>(genome.getAllChromosomeNames().size());
+        tmp.addAll(genome.getAllChromosomeNames());
         if (tmp.size() > 1) {
             String homeChr = genome.getHomeChromosome();
             if (homeChr.equals(Globals.CHR_ALL)) {

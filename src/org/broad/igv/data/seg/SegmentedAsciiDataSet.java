@@ -187,25 +187,23 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
 
         List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(heading);
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
-            int locationUnit = 1000;
 
             // Compute the smallest concievable feature that could be viewed on the
             // largest screen.  Be conservative.   The smallest feature is one at
             // the screen resolution scale in <chr units> / <pixel>
-            int maxScreenSize = 4000;
             double minFeatureSize = 0; // ((double) genome.getLength()) / (maxScreenSize * locationUnit);
 
             long offset = 0;
             wholeGenomeScores = new ArrayList(1000);
-            for (String chr : genome.getChromosomeNames()) {
+            for (String chr : genome.getLongChromosomeNames()) {
                 List<LocusScore> chrSegments = getSegments(heading, chr);
                 if (chrSegments != null) {
                     int lastgEnd = -1;
                     for (LocusScore score : chrSegments) {
                         Segment seg = (Segment) score;
-                        int gStart = (int) ((offset + score.getStart()) / locationUnit);
-                        int gEnd = (int) ((offset + score.getEnd()) / locationUnit);
-                        if ((gEnd - gStart) > minFeatureSize) {
+                        int gStart = genome.getGenomeCoordinate(chr, seg.getStart());
+                        int gEnd = genome.getGenomeCoordinate(chr, seg.getEnd());
+                         if ((gEnd - gStart) > minFeatureSize) {
                             wholeGenomeScores.add(new Segment(gStart, gStart, gEnd,
                                     gEnd, seg.getScore(), seg.getDescription()));
                         }

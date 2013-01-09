@@ -227,6 +227,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
     final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
+    public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
 
     IGVPreferences preferences;
     Map<String, String> defaultValues;
@@ -1126,25 +1127,65 @@ public class PreferenceManager implements PropertyManager {
      * @return
      */
     public String[] getGenomeIdDisplayList() {
-        String genomeIds = get(GENOME_ID_DISPLAY_LIST_KEY);
-        if (genomeIds == null) {
+        return getArray(GENOME_ID_DISPLAY_LIST_KEY);
+    }
+
+    /**
+     * Get a property which is a delimited list of entries
+     *
+     * @param key
+     * @return  The string array of tokens, or an empty array if not present
+     */
+    private String[] getArray(String key){
+        String stringProp = get(key);
+        if (stringProp == null) {
             return new String[0];
         } else {
-            return genomeIds.split(HISTORY_DELIMITER);
+            return stringProp.split(HISTORY_DELIMITER);
         }
-
     }
 
-    public String getPluginPath(String pluginId, String toolName) {
-        return get(genPluginKey(pluginId, toolName, "path"));
+    /**
+     * Get the path to the CLI plugin specified by the
+     * Id and tool name.
+     * @see #putCLIToolPath(String, String, String)
+     * @see #genCLITToolKey
+     *
+     * @param pluginId
+     * @param toolName
+     * @return
+     */
+    public String getToolPath(String pluginId, String toolName) {
+        return get(genToolKey(pluginId, toolName, "path"));
     }
 
-    public void putPluginPath(String pluginId, String toolName, String path) {
-        put(genPluginKey(pluginId, toolName, "path"), path);
+    /**
+     * Set the path to the CLI plugin
+     *
+     * @see #getToolPath(String, String)
+     * @see #genToolKey
+     * @param pluginId
+     * @param toolName
+     * @param path
+     */
+    public void putToolPath(String pluginId, String toolName, String path) {
+        put(genToolKey(pluginId, toolName, "path"), path);
     }
 
-    private String genPluginKey(String pluginId, String toolName, String key) {
+    /**
+     * Used to generate a unique string based on pluginId, toolName, and attribute
+     *
+     * @param pluginId
+     * @param toolName
+     * @param key
+     * @return
+     */
+    private String genToolKey(String pluginId, String toolName, String key) {
         return String.format("%s:%s:%s", pluginId, toolName, key);
+    }
+
+    public String[] getIGVPluginList(){
+        return getArray(IGV_PLUGIN_LIST_KEY);
     }
 
     /**

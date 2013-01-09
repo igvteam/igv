@@ -265,7 +265,7 @@ public class PluginSpecReader {
      */
     public String getToolPath(Tool tool) {
         //Check settings for path, use default if not there
-        String toolPath = PreferenceManager.getInstance().getPluginPath(getId(), tool.name);
+        String toolPath = PreferenceManager.getInstance().getToolPath(getId(), tool.name);
         if (toolPath == null) {
             toolPath = tool.defaultPath;
         }

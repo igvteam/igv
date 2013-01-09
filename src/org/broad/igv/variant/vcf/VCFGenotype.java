@@ -14,6 +14,7 @@ package org.broad.igv.variant.vcf;
 
 import org.broadinstitute.sting.utils.variantcontext.Allele;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
+import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +52,12 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
         return vcfGenotype.getGQ();
     }
 
-    public String getType() {
+    public String getTypeString() {
         return vcfGenotype.getType().toString();
+    }
+
+    public GenotypeType getType() {
+        return vcfGenotype.getType();
     }
 
     public boolean isHomVar() {

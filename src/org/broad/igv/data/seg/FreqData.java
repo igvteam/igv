@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.data.seg;
@@ -24,10 +17,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -76,12 +66,12 @@ public class FreqData {
         amp.clear();
         del.clear();
 
-        int sizeInKB = (int) (genome.getLength() / 1000);
+        int sizeInKB = (int) (genome.getNominalLength() / 1000);
         int wgBinSize = sizeInKB / 700;
         int wgBinCount = sizeInKB / wgBinSize + 1;
 
         //Chromosome bins
-        for (String chr : genome.getChromosomeNames()) {
+        for (String chr : genome.getAllChromosomeNames()) {
             Chromosome c = genome.getChromosome(chr);
             int len = c.getLength();
             int nBins = len / binSize + 1;
@@ -109,9 +99,12 @@ public class FreqData {
         amp.put(Globals.CHR_ALL, ampBins);
         del.put(Globals.CHR_ALL, delBins);
 
+        // Chromsomes visible in whole genome view
+        Set<String> wgChromosomes = new HashSet<String>(genome.getLongChromosomeNames());
+
         final boolean logNormalized = dataset.isLogNormalized();
         for (String sample : sampleNames) {
-            for (String chr : genome.getChromosomeNames()) {
+            for (String chr : genome.getLongChromosomeNames()) {
                 List<LocusScore> segments = dataset.getSegments(sample, chr);
                 if (segments != null) {
 
@@ -130,15 +123,17 @@ public class FreqData {
                                 binCounts(chr, seg.getStart(), seg.getEnd(), segScore, b, binSize);
                             }
 
-                            int gStart = genome.getGenomeCoordinate(chr, seg.getStart());
-                            int gEnd = genome.getGenomeCoordinate(chr, seg.getEnd());
-                            int wgStartBin = gStart / wgBinSize;
-                            int wgEndBin = gEnd / wgBinSize;
-                            for (int b = wgStartBin; b <= wgEndBin; b++) {
-                                if (b >= amp.get(Globals.CHR_ALL).size()) {
-                                    break;
+                            if (wgChromosomes.contains(chr)) {
+                                int gStart = genome.getGenomeCoordinate(chr, seg.getStart());
+                                int gEnd = genome.getGenomeCoordinate(chr, seg.getEnd());
+                                int wgStartBin = gStart / wgBinSize;
+                                int wgEndBin = gEnd / wgBinSize;
+                                for (int b = wgStartBin; b <= wgEndBin; b++) {
+                                    if (b >= amp.get(Globals.CHR_ALL).size()) {
+                                        break;
+                                    }
+                                    binCounts(Globals.CHR_ALL, gStart, gEnd, segScore, b, wgBinSize);
                                 }
-                                binCounts(Globals.CHR_ALL, gStart, gEnd, segScore, b, wgBinSize);
                             }
                         }
                     }

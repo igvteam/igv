@@ -1,13 +1,21 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.Cytoband;
 import org.broad.igv.track.FeatureTrack;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jim Robinson
@@ -25,28 +33,15 @@ public interface Genome {
 
     Collection<Chromosome> getChromosomes();
 
-    List<String> getChromosomeNames();
-
-    String getChromosomeAlias(String str);
-
-    long getLength();
-
-    long getCumulativeOffset(String chr);
-
-    int getGenomeCoordinate(String chr, int locationBP);
-
-    /**
-     * Translated a genome coordinate, in kilo-basepairs, to a chromosome & position in basepairs
-     *
-     * @param genomeKBP The "genome coordinate" in kilo-basepairs.  This is the distance in kbp from the start of the
-     *                  first chromosome.
-     * @return
-     */
-    ChromosomeCoordinate getChromosomeCoordinate(int genomeKBP);
+    List<String> getAllChromosomeNames();
 
     String getNextChrName(String chr);
 
     String getPrevChrName(String chr);
+
+    String getChromosomeAlias(String str);
+
+    long getTotalLength();
 
     /**
      * Return the nucleotide sequence on the + strand for the genomic interval.  This method can return null
@@ -63,6 +58,30 @@ public interface Genome {
 
     byte getReference(String chr, int pos);
 
-
     FeatureTrack getGeneTrack();
+
+
+    // Methods to support whole-genome view follow
+
+    /**
+     * Return "getChromosomeNames()" with small chromosomes removed.
+     *
+     * @return
+     */
+    List<String> getLongChromosomeNames();
+
+    long getNominalLength();
+
+    long getCumulativeOffset(String chr);
+
+    int getGenomeCoordinate(String chr, int locationBP);
+
+    /**
+     * Translated a genome coordinate, in kilo-basepairs, to a chromosome & position in basepairs.
+     *
+     * @param genomeKBP The "genome coordinate" in kilo-basepairs.  This is the distance in kbp from the start of the
+     *                  first chromosome.
+     * @return
+     */
+    ChromosomeCoordinate getChromosomeCoordinate(int genomeKBP);
 }

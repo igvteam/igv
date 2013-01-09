@@ -208,32 +208,40 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
     protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
-        List<LocusScore> scores;
-        boolean fileDataValid = !Globals.CHR_ALL.equals(querySeq) || isChrAllValid();
-        if (zoom <= this.maxPrecomputedZoom && fileDataValid) {
 
+        List<LocusScore> scores;
+
+        if (zoom <= this.maxPrecomputedZoom) {
             // Window function == none => no windowing, so its not clear what to do.  For now use mean
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
-            scores = new ArrayList(1000);
-            TDFDataset ds = reader.getDataset(querySeq, zoom, wf);
-            if (ds != null) {
-                List<TDFTile> tiles = ds.getTiles(startLocation, endLocation);
-                if (tiles.size() > 0) {
-                    for (TDFTile tile : tiles) {
+            List<TDFTile> tiles = null;
+            if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid()) {
+                TDFTile wgTile = reader.getWholeGenomeTile(genome, wf);
+                tiles = Arrays.asList(wgTile);
+            } else {
+                TDFDataset ds = reader.getDataset(querySeq, zoom, wf);
+                if (ds != null) {
+                    tiles = ds.getTiles(startLocation, endLocation);
+                }
+            }
 
-                        if (tile.getSize() > 0) {
-                            for (int i = 0; i < tile.getSize(); i++) {
-                                float v = tile.getValue(trackNumber, i);
-                                if (!Float.isNaN(v)) {
-                                    v *= normalizationFactor;
-                                    scores.add(new BasicScore(tile.getStartPosition(i), tile.getEndPosition(i), v));
-                                }
+            scores = new ArrayList(1000);
+            if (tiles != null && tiles.size() > 0) {
+                for (TDFTile tile : tiles) {
+
+                    if (tile.getSize() > 0) {
+                        for (int i = 0; i < tile.getSize(); i++) {
+                            float v = tile.getValue(trackNumber, i);
+                            if (!Float.isNaN(v)) {
+                                v *= normalizationFactor;
+                                scores.add(new BasicScore(tile.getStartPosition(i), tile.getEndPosition(i), v));
                             }
                         }
                     }
                 }
             }
+
         } else {
 
             int chrLength = getChrLength(querySeq);
@@ -256,7 +264,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     public int getChrLength(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
-            return (int) (genome.getLength() / 1000);
+            return (int) (genome.getNominalLength() / 1000);
         } else {
             Chromosome c = genome.getChromosome(chr);
             return c == null ? 0 : c.getLength();
@@ -402,7 +410,7 @@ public class TDFDataSource implements CoverageDataSource {
             // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
             double tileWidth = 0;
             if (chr.equals(Globals.CHR_ALL)) {
-                tileWidth = (genome.getLength() / 1000.0);
+                tileWidth = (genome.getNominalLength() / 1000.0);
             } else {
                 if (chromosome != null) {
                     tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
@@ -460,51 +468,20 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
     /**
-     * Check the sort. {@code fileChromos} is allowed to be missing entries
-     * which are in {@code genomeChromos}, but the ordinality of the entries
-     * contained must be the same
-     * @see #isChrAllValid()
-     * @param fileChromos
-     * @param genomeChromos
-     * @return
-     */
-    static boolean checkChromoNameOrder(List<String> fileChromos, List<String> genomeChromos){
-        Set<String> skippedChromos = new HashSet<String>();
-        int fiChrInd = 0;
-        for (String genChromo : genomeChromos) {
-            if (fiChrInd >= fileChromos.size()) return false;
-
-            String curFiChr = fileChromos.get(fiChrInd);
-            //We found a chromosome out of order
-            if (skippedChromos.contains(curFiChr)) {
-                return false;
-            }
-
-            if (genChromo.equals(curFiChr)) {
-                fiChrInd++;
-            } else {
-                skippedChromos.add(genChromo);
-            }
-
-        }
-        //If we get this far, the chromo order is good as far as we know
-        return true;
-    }
-
-    /**
      * We changed how chromosomes were sorted in v2.2
      * This had the unintended side effect of introducing
      * backwards incompatibility in CHR_ALL. Version 4+ should include
      * the chromosome names in Genome order (rather than file order); which we check against
+     *
      * @return Whether we believe the data stored for whole genome view is valid or not
      */
-    boolean isChrAllValid(){
+    boolean isChrOrderValid() {
 
         String chromosomeNames;
         List<String> fileChromos = null;
         //Extract the chromosome names. Not sure when that attribute was put in
         //If it's not in the file, give up
-        try{
+        try {
             TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
             chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
             fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
@@ -513,15 +490,35 @@ public class TDFDataSource implements CoverageDataSource {
         }
 
         if (reader.getVersion() < 4) {
-            log.info("This file was created with an old version of IGV, from which we cannot read whole chromosome view");
-            //We run the old comparator against the list; that's the order in which
-            //they were calculated
             Pre3Sort(fileChromos);
         }
-        return checkChromoNameOrder(fileChromos, genome.getChromosomeNames());
+        return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
+
     }
 
-    static void Pre3Sort(List<String> chromoNames){
+
+    /**
+     * Check the sort.  It is acceptable to have different #s of chromosomes in the two lists, but they must
+     * start with the same value and be in the same order to the extent they overlap.   Less genome chrs than file
+     * chrs => extra data at the end.  Less file chrs than genome chrs => we'll have white space on the end.  In
+     * both cases the data that is shown will be valid.
+     *
+     * @param fileChromos
+     * @param genomeChromos
+     * @return
+     * @see #isChrOrderValid()
+     */
+    static boolean checkChromoNameOrder(List<String> fileChromos, List<String> genomeChromos) {
+
+        int chrCount = Math.min(fileChromos.size(), genomeChromos.size());
+        for(int i=0; i<chrCount; i++) {
+            if(!fileChromos.get(i).equals(genomeChromos.get(i))) return false;
+        }
+        //If we get this far, the chromo order is good as far as we know
+        return true;
+    }
+
+    static void Pre3Sort(List<String> chromoNames) {
         Collections.sort(chromoNames, new Pre3Comparator());
     }
 
@@ -591,4 +588,3 @@ public class TDFDataSource implements CoverageDataSource {
         }
     }
 }
-
