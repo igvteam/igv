@@ -15,45 +15,21 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
-import org.broad.igv.feature.genome.ChromosomeNameComparator;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * User: jacob
  * Date: 2012-Dec-28
  */
 public class TDFDataSourceTest extends AbstractHeadlessTest {
-
-    /**
-     * If the old and the new comparator would perform the same,
-     * we can still use CHR_ALL.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testChrAllSameSortValid() throws Exception {
-        String[] chromoArray = new String[]{"chr1", "chr10", "chrM", "chr2", "chr20", "chr3", "chr4"};
-        List<String> fileChromos = new ArrayList<String>(Arrays.asList(chromoArray));
-        List<String> oldSort = new ArrayList<String>(fileChromos);
-        List<String> newSort = new ArrayList<String>(fileChromos);
-
-        TDFDataSource.Pre3Sort(oldSort);
-        Collections.sort(newSort, ChromosomeNameComparator.get());
-
-        Assert.assertEquals(oldSort, newSort);
-
-        boolean chrAllGood = TDFDataSource.checkChromoNameOrder(oldSort, genome.getAllChromosomeNames());
-        assertTrue(chrAllGood);
-    }
-
 
     @Test
     public void testWholeGenomeScores() throws Exception {

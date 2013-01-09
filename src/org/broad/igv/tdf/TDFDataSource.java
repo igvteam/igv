@@ -476,23 +476,24 @@ public class TDFDataSource implements CoverageDataSource {
      * @return Whether we believe the data stored for whole genome view is valid or not
      */
     boolean isChrOrderValid() {
+        return reader.getVersion() >= 4;
 
-        String chromosomeNames;
-        List<String> fileChromos = null;
-        //Extract the chromosome names. Not sure when that attribute was put in
-        //If it's not in the file, give up
-        try {
-            TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
-            chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
-            fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
-        } catch (Exception e) {
-            return false;
-        }
-
-        if (reader.getVersion() < 4) {
-            Pre3Sort(fileChromos);
-        }
-        return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
+//        String chromosomeNames;
+//        List<String> fileChromos = null;
+//        //Extract the chromosome names. Not sure when that attribute was put in
+//        //If it's not in the file, give up
+//        try {
+//            TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
+//            chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
+//            fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
+//        } catch (Exception e) {
+//            return false;
+//        }
+//
+//        if (reader.getVersion() < 4) {
+//            Pre3Sort(fileChromos);
+//        }
+//        return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
 
     }
 
