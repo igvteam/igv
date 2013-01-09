@@ -109,8 +109,13 @@ public class IGVTestHeaded extends AbstractHeadedTest {
         //Make sure frame has focus, or else homeButton won't work
         JButtonFixture homeButton = frameFixture.button("homeButton");
         homeButton.focus();
-        homeButton.requireFocused();
         homeButton.click();
+
+        homeButton.focus();
+        homeButton.click();
+//
+//        homeButton.requireFocused();
+//        homeButton.click();
 
         igv.waitForNotify(500);
 
