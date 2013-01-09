@@ -652,12 +652,11 @@ public class CommandExecutor {
         }
 
         try {
-            IGV.getInstance().createSnapshotNonInteractive(target, file);
+            return IGV.getInstance().createSnapshotNonInteractive(target, file, true);
         } catch (IOException e) {
             log.error(e);
             return e.getMessage();
         }
-        return "OK";
     }
 
     private static RegionScoreType getRegionSortOption(String str) {

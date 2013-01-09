@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 /**
  * SnapshotUtilities.java
@@ -28,15 +21,12 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
-import org.broad.igv.ui.svg.SVGGraphics;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -84,73 +74,75 @@ public class SnapshotUtilities {
     }
 
 
-    public static void doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type) throws IOException{
+    public static String doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type, boolean paintOffscreen) throws IOException{
+
+        //TODO Should really make this work for more components
+        if (paintOffscreen && !(component instanceof Paintable)) {
+            log.error("Component cannot be painted offscreen. Performing onscreen paint");
+            paintOffscreen = false;
+        }
+
+        if(paintOffscreen){
+
+            Rectangle rect = component.getBounds();
+
+            if(component instanceof MainPanel){
+                rect.height = ((MainPanel) component).getOffscreenImageHeight();
+            }else{
+                rect.height = Math.min(component.getHeight(), getMaxPanelHeight());
+            }
+
+            // translate to (0, 0) if necessary
+            int dx = rect.x;
+            int dy = rect.y;
+            rect.x = 0;
+            rect.y = 0;
+            rect.width -= dx;
+            rect.height -= dy;
+
+            component.setBounds(rect);
+        }
 
         int width = component.getWidth();
         int height = component.getHeight();
 
         // Call appropriate converter
+        String format = null;
+        String[] exts = null;
         switch (type) {
-            case JPEG:
-                exportScreenShotJPEG(component, file, width, height);
-                break;
-            //case EPS:
-            //    exportScreenShotEPS(component, file, width, height);
-            //    break;
-            case PNG:
-                exportScreenShotPNG(component, file, width, height);
-                break;
             case SVG:
-                log.debug("Exporting svg screenshot");
-                exportScreenshotSVG(component, file);
+                //log.debug("Exporting svg screenshot");
+                exportScreenshotSVG(component, file, paintOffscreen);
+                break;
+            case JPEG:
+                format = "jpeg";
+                exts = new String[]{".jpg", ".jpeg"};
+                break;
+            case PNG:
+                format = "png";
+                exts = new String[]{"." + format};
                 break;
         }
-    }
-
-    private static void exportScreenshotSVG2(Component target, File selecteddFile) {
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new FileWriter(selecteddFile));
-
-            pw.println("<?xml version=\"1.0\" standalone=\"no\"?>\n" +
-                    "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \n" +
-                    "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n" +
-                    "\n" +
-                    "<svg width=\"100%\" height=\"100%\" version=\"1.1\"\n" +
-                    "xmlns=\"http://www.w3.org/2000/svg\">");
-
-
-            // TODO -- rectangle
-            Rectangle rectangle = target.getBounds();
-            SVGGraphics g2d = new SVGGraphics(pw, rectangle);
-
-            target.paint(g2d);
-            pw.print("</svg>");
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        if(format != null && exts != null){
+            exportScreenShotBufferedImage(component, file, width, height, exts, format, paintOffscreen);
         }
-
-
+        return "OK";
     }
 
+    private static void exportScreenshotSVG(Component target, File selectedFile, boolean paintOffscreen) throws IOException {
 
-    private static void exportScreenshotSVG(Component target, File selectedFile) throws IOException {
-
-        // Disable extending panel height beyond visible area
-        //SnapshotUtilities.setMaxPanelHeight(-1);
-        log.debug("Getting dom");
-        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-
+        String format = "svg";
+        selectedFile = fixFileExt(selectedFile, new String[]{format}, format);
 
         // Create an instance of org.w3c.dom.Document.
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
         String svgNS = "http://www.w3.org/2000/svg";
-        Document document = domImpl.createDocument(svgNS, "svg", null);
+        Document document = domImpl.createDocument(svgNS, format, null);
 
-        // Create an instance of the SVG Generator.
+        // Write image data into document
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-        //logger.info("Painting");
-        target.paint(svgGenerator);
+
+        choosePaint(target, svgGenerator, paintOffscreen);
 
         Writer out = null;
         try {
@@ -158,7 +150,6 @@ public class SnapshotUtilities {
             // UTF-8 encoding.
             boolean useCSS = true; // we want to use CSS style attributes
             out = new BufferedWriter(new FileWriter(selectedFile));
-            //logger.info("Writing output");
             svgGenerator.stream(out, useCSS);
         } finally {
             if (out != null) try {
@@ -170,55 +161,73 @@ public class SnapshotUtilities {
 
     }
 
-    private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) throws IOException{
+    private static void choosePaint(Component target, Graphics2D g, boolean paintOffscreen){
+        if(paintOffscreen){
+            ((Paintable) target).paintOffscreen(g, target.getBounds());
+        }else{
+            target.paintAll(g);
+        }
+    }
 
+    /**
+     *
+     * Export the specified {@code target} component as a {@code BufferedImage} to the given file.
+     * @param target
+     * @param selectedFile
+     * @param width
+     * @param height
+     * @param allowedExts
+     * @param format Format, also appended as an extension if the file doesn't end with anything in {@code allowedExts}
+     * @param paintOffscreen
+     * @throws IOException
+     */
+    private static void exportScreenShotBufferedImage(Component target, File selectedFile, int width, int height,
+                                                      String[] allowedExts, String format, boolean paintOffscreen) throws IOException{
         BufferedImage image = getDeviceCompatibleImage(width, height);
-        Graphics g = image.createGraphics();
-        target.paintAll(g);
+        Graphics2D g = image.createGraphics();
 
-        String[] exts = new String[]{".jpg", ".jpeg"};
+        choosePaint(target, g, paintOffscreen);
+
+        selectedFile = fixFileExt(selectedFile, allowedExts, format);
+        if (selectedFile != null) {
+            ImageIO.write(image, format, selectedFile);
+        }
+    }
+
+    /**
+     * Add a file extension to the file if it doesn't already
+     * have an acceptable one
+     * @param selectedFile
+     * @param allowedExts  Strings which qualify as extensions
+     * @param defExtension Default extension. A period be inserted in between the file path iff {@code defExtension}
+     *                     does not already have it
+     * @return Either the input File, if it had an extension contained in {@code allowedExts},
+     *         or a new with with {@code defExtension} appended
+     */
+    private static File fixFileExt(File selectedFile, String[] allowedExts, String defExtension){
         boolean hasExt = false;
         if (selectedFile != null) {
-
-            for(String ext: exts){
+            for(String ext: allowedExts){
                 if (selectedFile.getName().toLowerCase().endsWith(ext)) {
                     hasExt = true;
                     break;
                 }
             }
             if(!hasExt){
-                String correctedFilename = selectedFile.getAbsolutePath() + ".jpeg";
+                String addExt = defExtension.startsWith(".") ? defExtension : "." + defExtension;
+                String correctedFilename = selectedFile.getAbsolutePath() + addExt;
                 selectedFile = new File(correctedFilename);
             }
-            ImageIO.write(image, "jpeg", selectedFile);
-
         }
-    }
-
-    private static void exportScreenShotPNG(Component target, File selectedFile, int width, int height) throws IOException{
-
-        BufferedImage image = getDeviceCompatibleImage(width, height);
-        Graphics g = image.createGraphics();
-        target.paintAll(g);
-
-        if (selectedFile != null) {
-
-            if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
-                String correctedFilename = selectedFile.getAbsolutePath() + ".png";
-                selectedFile = new File(correctedFilename);
-            }
-            ImageIO.write(image, "png", selectedFile);
-
-
-        }
+        return selectedFile;
     }
 
 
     /**
-     * Creates a device compatible buffered svg.
+     * Creates a device compatible BufferedImage
      *
-     * @param width  the svg width in pixels
-     * @param height the svg height in pixels
+     * @param width  the width in pixels
+     * @param height the height in pixels
      */
     public static BufferedImage getDeviceCompatibleImage(int width, int height) {
 

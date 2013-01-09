@@ -887,7 +887,7 @@ public class IGV {
         try {
             token = WaitCursorManager.showWaitCursor();
             contentPane.getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
-            createSnapshotNonInteractive(target, file);
+            createSnapshotNonInteractive(target, file, false);
         } catch (IOException e) {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
@@ -899,11 +899,6 @@ public class IGV {
 
     }
 
-
-    public void createSnapshotNonInteractive(File file) throws IOException {
-        createSnapshotNonInteractive(contentPane.getMainPanel(), file);
-    }
-
     /**
      * Create a snapshot image of {@code target} and save it to {@code file}. The file type of the exported
      * snapshot will be chosen by the extension of {@code file}, which must be a supported type.
@@ -911,10 +906,12 @@ public class IGV {
      * @see SnapshotFileChooser.SnapshotFileType
      * @param target
      * @param file
+     * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
+     *                       the {@link Paintable} interface for this to work
      * @throws IOException
      */
     @api
-    public void createSnapshotNonInteractive(Component target, File file) throws IOException {
+    public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
 
         log.debug("Creating snapshot: " + file.getName());
 
@@ -922,22 +919,30 @@ public class IGV {
 
         SnapshotFileChooser.SnapshotFileType type = SnapshotFileChooser.getSnapshotFileType(extension);
 
-        // If valid extension
+        String message;
         IOException exc = null;
-        if (type != SnapshotFileChooser.SnapshotFileType.NULL) {
-
-            //boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
-            try {
-                setExportingSnapshot(true);
-                SnapshotUtilities.doComponentSnapshot(target, file, type);
-            } finally {
-                setExportingSnapshot(false);
-            }
-            log.debug("Finished creating snapshot: " + file.getName());
-            if (exc != null) throw exc;
-        } else {
-            log.error("Unknown file extension " + extension);
+        // If valid extension
+        if (type == SnapshotFileChooser.SnapshotFileType.NULL) {
+            message = "ERROR: Unknown file extension " + extension;
+            log.error(message);
+            return message;
         }
+
+        //boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
+        try {
+            setExportingSnapshot(true);
+            message = SnapshotUtilities.doComponentSnapshot(target, file, type, paintOffscreen);
+        } catch (IOException e) {
+            exc = e;
+            message = e.getMessage();
+        } finally {
+            setExportingSnapshot(false);
+        }
+        log.debug("Finished creating snapshot: " + file.getName());
+        if (exc != null) throw exc;
+
+
+        return message;
     }
 
     public File selectSnapshotFile(File defaultFile) {

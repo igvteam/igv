@@ -23,6 +23,7 @@ import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +32,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -263,6 +266,38 @@ public class CommandExecutorTest extends AbstractHeadedTest {
             assertTrue(result.toLowerCase().startsWith(("error")));
             assertEquals(startId, GenomeManager.getInstance().getCurrentGenome().getId());
         }
+    }
+
+    @Test
+    public void testMaxPanelHeight() throws Exception{
+        String filePath = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
+        exec.execute("load " + filePath);
+        exec.execute("goto chr12:56,807,802-56,829,975");
+        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 500;
+        String outFileName = mpHeight + ".png";
+        exec.execute("maxpanelheight " + mpHeight);
+        exec.execute("snapshot " + outFileName);
+
+        File outputFile = new File(snapshotDir, outFileName);
+        BufferedImage image = ImageIO.read(outputFile);
+
+        assertTrue("Output image height not at least maxpanelheight", image.getHeight() > mpHeight + 50);
+
+        int remAlphaMask = 0x00ffffff;
+
+        int numBlackPix = 0;
+        for(int yy = image.getMinY(); yy < image.getHeight(); yy++){
+            for(int xx = image.getMinX(); xx < image.getWidth(); xx++){
+                int color = image.getRGB(xx, yy) & remAlphaMask;
+                numBlackPix += color == 0 ? 1 : 0;
+            }
+        }
+
+        //Just making sure we don't trivially satisfy the problem
+        assertTrue(numBlackPix > 100);
+
+        int totalPix = image.getHeight()*image.getWidth();
+        assertTrue("Too much of the snapshot is black", numBlackPix < totalPix * 0.05);
     }
 
     @Test
