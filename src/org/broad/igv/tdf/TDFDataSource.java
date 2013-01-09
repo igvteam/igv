@@ -207,12 +207,12 @@ public class TDFDataSource implements CoverageDataSource {
 
         List<LocusScore> scores;
 
-        if (zoom <= this.maxPrecomputedZoom || querySeq.equals(Globals.CHR_ALL)) {
+        if (zoom <= this.maxPrecomputedZoom) {
             // Window function == none => no windowing, so its not clear what to do.  For now use mean
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             List<TDFTile> tiles = null;
-            if (querySeq.equals(Globals.CHR_ALL)) {
+            if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid()) {
                 TDFTile wgTile = reader.getWholeGenomeTile(genome, wf);
                 tiles = Arrays.asList(wgTile);
             } else {
@@ -223,7 +223,7 @@ public class TDFDataSource implements CoverageDataSource {
             }
 
             scores = new ArrayList(1000);
-            if (tiles.size() > 0) {
+            if (tiles != null && tiles.size() > 0) {
                 for (TDFTile tile : tiles) {
 
                     if (tile.getSize() > 0) {
@@ -462,5 +462,125 @@ public class TDFDataSource implements CoverageDataSource {
         return availableFunctions;
     }
 
+    /**
+     * We changed how chromosomes were sorted in v2.2
+     * This had the unintended side effect of introducing
+     * backwards incompatibility in CHR_ALL. Version 4+ should include
+     * the chromosome names in Genome order (rather than file order); which we check against
+     *
+     * @return Whether we believe the data stored for whole genome view is valid or not
+     */
+    boolean isChrOrderValid() {
+
+        String chromosomeNames;
+        List<String> fileChromos = null;
+        //Extract the chromosome names. Not sure when that attribute was put in
+        //If it's not in the file, give up
+        try {
+            TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
+            chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
+            fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
+        } catch (Exception e) {
+            return false;
+        }
+
+        if (reader.getVersion() < 4) {
+            Pre3Sort(fileChromos);
+        }
+        return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
+
+    }
+
+
+    /**
+     * Check the sort.  It is acceptable to have different #s of chromosomes in the two lists, but they must
+     * start with the same value and be in the same order to the extent they overlap.   Less genome chrs than file
+     * chrs => extra data at the end.  Less file chrs than genome chrs => we'll have white space on the end.  In
+     * both cases the data that is shown will be valid.
+     *
+     * @param fileChromos
+     * @param genomeChromos
+     * @return
+     * @see #isChrOrderValid()
+     */
+    static boolean checkChromoNameOrder(List<String> fileChromos, List<String> genomeChromos) {
+
+        int chrCount = Math.min(fileChromos.size(), genomeChromos.size());
+        for(int i=0; i<chrCount; i++) {
+            if(!fileChromos.get(i).equals(genomeChromos.get(i))) return false;
+        }
+        //If we get this far, the chromo order is good as far as we know
+        return true;
+    }
+
+    static void Pre3Sort(List<String> chromoNames) {
+        Collections.sort(chromoNames, new Pre3Comparator());
+    }
+
+    /**
+     * DO NOT CHANGE THIS CLASS
+     * DO NOT USE THIS CLASS ANYWHERE ELSE
+     * IT IS HERE TO CHECK FOR BACKWARDS COMPATIBILITY
+     */
+    private static class Pre3Comparator implements Comparator<String> {
+
+        /**
+         * @param chr1
+         * @param chr2
+         * @return
+         */
+        public int compare(String chr1, String chr2) {
+
+            try {
+
+                // Special rule -- put the mitochondria at the end
+                if (chr1.equals("chrM") || chr1.equals("MT")) {
+                    return 1;
+                } else if (chr2.equals("chrM") || chr2.equals("MT")) {
+                    return -1;
+                }
+
+                // Find the first digit
+                int idx1 = findDigitIndex(chr1);
+                int idx2 = findDigitIndex(chr2);
+                if (idx1 == idx2) {
+                    String alpha1 = idx1 == -1 ? chr1 : chr1.substring(0, idx1);
+                    String alpha2 = idx2 == -1 ? chr2 : chr2.substring(0, idx2);
+                    int alphaCmp = alpha1.compareTo(alpha2);
+                    if (alphaCmp != 0) {
+                        return alphaCmp;
+                    } else {
+                        int dig1 = Integer.parseInt(chr1.substring(idx1));
+                        int dig2 = Integer.parseInt(chr2.substring(idx2));
+                        return dig1 - dig2;
+                    }
+                } else if (idx1 == -1) {
+                    return 1;
+
+                } else if (idx2 == -1) {
+                    return -1;
+                }
+                return idx1 - idx2;
+            } catch (Exception numberFormatException) {
+                return 0;
+            }
+
+        }
+
+        int findDigitIndex(String chr) {
+
+            int n = chr.length() - 1;
+            if (!Character.isDigit(chr.charAt(n))) {
+                return -1;
+            }
+
+            for (int i = n - 1; i > 0; i--) {
+                if (!Character.isDigit(chr.charAt(i))) {
+                    return i + 1;
+                }
+            }
+            return 0;
+        }
+    }
 }
 
