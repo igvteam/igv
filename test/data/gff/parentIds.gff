@@ -1,0 +1,19 @@
+##We include a variety of parentIds, test they all get included in the big feature
+scaffold_7	Mguttatus_v1_1	mRNA	3801284	3807345	.	+	.	mRNA mgv1a003928m;Name mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3801284	3801357	.	+	0	id mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3802136	3802241	.	+	1	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3802352	3802492	.	+	0	systematic_id mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3802738	3802908	.	+	0	transcript_id mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3803904	3804056	.	+	0	gene mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3804141	3804209	.	+	0	transcriptId mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3804324	3804440	.	+	0	Parent mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3804539	3804613	.	+	0	proteinId mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3804728	3804805	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3804921	3805016	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3805138	3805187	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3805313	3805367	.	+	1	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3805618	3805749	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3806030	3806077	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3806183	3806341	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	CDS	3806889	3807029	.	+	0	mRNA mgv1a003928m;PACid 17687659
+scaffold_7	Mguttatus_v1_1	3'-UTR	3807030	3807345	.	+	.	mRNA mgv1a003928m;PACid 17687659

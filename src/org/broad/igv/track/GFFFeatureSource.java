@@ -335,22 +335,26 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
             // If 5'UTR is represented by an exon, adjust its start, else add an exon to represent 5'utr
             if (fivePrimeUTR != null) {
-                adjustBoundariesByUTR(fivePrimeUTR);
+                adjustBoundariesByUTR(fivePrimeUTR, false);
             }
 
             if (threePrimeUTR != null) {
-                adjustBoundariesByUTR(threePrimeUTR);
+                adjustBoundariesByUTR(threePrimeUTR, true);
             }
 
             return transcript;
         }
 
-        private void adjustBoundariesByUTR(Exon UTR) {
+        private void adjustBoundariesByUTR(Exon UTR, boolean threePrime) {
             UTR.setUTR(true);
             transcript.addExon(UTR);
             Exon exon = findMatchingExon(UTR);
             if (exon != null) {
-                if (exon.getStrand() == Strand.POSITIVE) {
+                //This UTR either truncates the end or the beginning.
+                //Being on the negative strand or 3'-UTR would truncate the end
+                //both is a double negative
+                boolean truncStart = (exon.getStrand() == Strand.POSITIVE) ^ threePrime;
+                if (truncStart) {
                     exon.setStart(UTR.getEnd());
                 } else {
                     exon.setEnd(UTR.getStart());
