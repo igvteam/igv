@@ -35,7 +35,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
     @Test
     public void testLoadCoverageTrackSession() throws Exception{
         String path = TestUtils.DATA_DIR + "sessions/coverage_snpThreshold.xml";
-        IGV.getInstance().doRestoreSession(path, null, false);
+        rewriteRestoreSession(path);
 
         //We should have 1 coverage track
         CoverageTrack track = (CoverageTrack) IGV.getInstance().getAllTracks().get(0);
@@ -48,7 +48,7 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
     @Test
     public void testLoadDataSourceTrack() throws Exception{
         String path = TestUtils.DATA_DIR + "sessions/tdf_session.xml";
-        IGV.getInstance().doRestoreSession(path, null, false);
+        rewriteRestoreSession(path);
 
         DataSourceTrack track = (DataSourceTrack) IGV.getInstance().getAllTracks().get(0);
         assertEquals(true, TestUtils.runMethod(track, "getNormalize"));
@@ -57,11 +57,11 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
 
     /**
      * Loads path, returns first alignment track
-     * @param path
+     * @param sessionPath
      * @return
      */
-    private AlignmentTrack getAlignmentTrack(String path){
-        IGV.getInstance().doRestoreSession(path, null, false);
+    private AlignmentTrack getAlignmentTrack(String sessionPath) throws Exception{
+        rewriteRestoreSession(sessionPath);
 
         AlignmentTrack alTrack = null;
         for(Track tk: IGV.getInstance().getAllTracks()){
@@ -98,8 +98,9 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         tstLoadVCF(path);
     }
 
-    private void tstLoadVCF(String path) throws Exception{
-        IGV.getInstance().doRestoreSession(path, null, false);
+    private void tstLoadVCF(String sessionPath) throws Exception{
+        rewriteRestoreSession(sessionPath);
+
         VariantTrack vTrack = (VariantTrack) IGV.getInstance().getAllTracks().get(0);
 
         assertEquals(3, vTrack.getAllSamples().size());

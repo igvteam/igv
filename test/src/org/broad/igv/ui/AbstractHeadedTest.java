@@ -21,6 +21,7 @@ import org.junit.rules.Timeout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
@@ -150,5 +151,11 @@ public class AbstractHeadedTest {
 
         java.util.List<Track> featureTracks = IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).getTracks();
         System.out.println(featureTracks.size());
+    }
+
+    protected static String rewriteRestoreSession(String sessionPath) throws Exception{
+        sessionPath = (TestUtils.replaceTestPaths(new File(sessionPath))).getAbsolutePath();
+        IGV.getInstance().doRestoreSession(sessionPath, null, false);
+        return sessionPath;
     }
 }

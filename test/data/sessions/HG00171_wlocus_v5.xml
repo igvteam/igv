@@ -12,13 +12,13 @@
 
 <Session genome="hg18" locus="chr1:151766945-151791197" version="5">
     <Resources>
-        <Resource path="../../largedata/HG00171.hg18.bam"/>
+        <Resource path="${LARGE_DATA_DIR}HG00171.hg18.bam"/>
     </Resources>
     <Panel height="393" name="Panel1357585591745" width="1154">
-        <Track altColor="0,0,178" autoScale="true" color="175,175,175" colorScale="ContinuousColorScale;0.0;13.0;255,255,255;175,175,175" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../../largedata/HG00171.hg18.bam_coverage" name="HG00171.hg18.bam Coverage" showReference="false" snpThreshold="0.1337" sortable="true" visible="true">
+        <Track altColor="0,0,178" autoScale="true" color="175,175,175" colorScale="ContinuousColorScale;0.0;13.0;255,255,255;175,175,175" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="${LARGE_DATA_DIR}HG00171.hg18.bam_coverage" name="HG00171.hg18.bam Coverage" showReference="false" snpThreshold="0.1337" sortable="true" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="13.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="../../largedata/HG00171.hg18.bam" name="HG00171.hg18.bam" showSpliceJunctions="true" sortable="true" visible="true">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="${LARGE_DATA_DIR}HG00171.hg18.bam" name="HG00171.hg18.bam" showSpliceJunctions="true" sortable="true" visible="true">
             <RenderOptions colorByTag="" colorOption="INSERT_SIZE" flagUnmappedPairs="false" groupByOption="FIRST_OF_PAIR_STRAND" groupByTag="" maxInsertSize="1001" minInsertSize="55" shadeBasesOption="QUALITY" shadeCenters="true" showAllBases="false" sortByTag=""/>
         </Track>
     </Panel>

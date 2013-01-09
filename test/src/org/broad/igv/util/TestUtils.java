@@ -32,10 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -422,5 +419,37 @@ public class TestUtils {
         return runMethod(object, object.getClass(), methodName, args);
     }
 
-  
+
+    private static Map<String, String> replaceMap = new HashMap<String, String>(2);
+    static{
+        replaceMap.put("${DATA_DIR}", TestUtils.DATA_DIR);
+        replaceMap.put("${LARGE_DATA_DIR}", TestUtils.LARGE_DATA_DIR);
+    }
+    /**
+     * Mainly for session files, we want use some test paths stored in otherwise hardcoded
+     * test data files. This re-writes the input text file
+     * @param inputPath
+     * @return File of the output location
+     */
+    public static File replaceTestPaths(File inputPath) throws Exception{
+
+        BufferedReader reader = new BufferedReader(new FileReader(inputPath));
+
+        File outputFile = new File("tmpsession.xml");
+        outputFile.delete();
+        outputFile.deleteOnExit();
+        PrintWriter writer = new PrintWriter(new FileWriter(outputFile));
+
+        String line;
+        while((line = reader.readLine()) != null){
+            for(Map.Entry<String, String> entry: replaceMap.entrySet()){
+                line = line.replace(entry.getKey(), entry.getValue());
+            }
+            writer.println(line);
+        }
+        writer.flush();
+        writer.close();
+        return outputFile;
+    }
+
 }

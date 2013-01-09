@@ -12,10 +12,10 @@
 
 <Session genome="hg18" locus="chr7:55052219-55244525" version="5">
     <Resources>
-        <Resource path="../tdf/NA12878.SLX.egfr.sam.tdf"/>
+        <Resource path="${DATA_DIR}tdf/NA12878.SLX.egfr.sam.tdf"/>
     </Resources>
     <Panel height="222" name="DataPanel" width="1154">
-        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="../tdf/NA12878.SLX.egfr.sam.tdf" name="NA12878.SLX.egfr.sam.tdf" normalize="true" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+        <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="${DATA_DIR}tdf/NA12878.SLX.egfr.sam.tdf" name="NA12878.SLX.egfr.sam.tdf" normalize="true" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="50.99932" minimum="0.0" type="LINEAR"/>
         </Track>
     </Panel>
