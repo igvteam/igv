@@ -144,7 +144,7 @@ public class TDFRegressionTests extends AbstractHeadlessTest{
         List<LocusScore> wigScores = wigSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
         List<LocusScore> tdfScores = tdfSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
 
-        assertEquals(expHaveChrAll, tdfSource.isChrAllValid());
+        assertEquals(expHaveChrAll, tdfSource.isChrOrderValid());
 
         if(!expHaveChrAll){
             //Ideally we would recalculate the data, but returning nothing

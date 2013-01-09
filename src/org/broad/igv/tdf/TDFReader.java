@@ -52,6 +52,7 @@ public class TDFReader {
     private String genomeId;
     LRUCache<String, TDFGroup> groupCache = new LRUCache(this, 20);
     LRUCache<String, TDFDataset> datasetCache = new LRUCache(this, 20);
+    TDFTile wgTile;
 
     Map<WindowFunction, Double> valueCache = new HashMap();
     private List<WindowFunction> windowFunctions;
@@ -480,11 +481,7 @@ public class TDFReader {
 
             datasetCache.clear();
         }
-
     }
-
-
-    TDFTile wgTile;
 
     public TDFTile getWholeGenomeTile(Genome genome, WindowFunction wf) {
 
