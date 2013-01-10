@@ -466,30 +466,37 @@ public class TDFDataSource implements CoverageDataSource {
      * We changed how chromosomes were sorted in v2.2
      * This had the unintended side effect of introducing
      * backwards incompatibility in CHR_ALL. Version 4+ should include
-     * the chromosome names in Genome order (rather than file order); which we check against
+     * the chromosome names in Genome order (rather than file order); which we check against.
      *
      * @return Whether we believe the data stored for whole genome view is valid or not
      */
     boolean isChrOrderValid() {
 
-        String chromosomeNames;
-        List<String> fileChromos = null;
-        //Extract the chromosome names. Not sure when that attribute was put in
-        //If it's not in the file, give up
-        try {
-            TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
-            chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
-            fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
-        } catch (Exception e) {
+        if (reader.getVersion() >= 4) {
+
+            String chromosomeNames;
+            List<String> fileChromos = null;
+            //Extract the chromosome names. Not sure when that attribute was put in
+            //If it's not in the file, give up
+            try {
+                TDFGroup rootGroup = reader.getGroup(TDFWriter.ROOT_GROUP);
+                chromosomeNames = rootGroup.getAttribute(TDFWriter.CHROMOSOMES);
+                fileChromos = new ArrayList<String>(Arrays.asList(chromosomeNames.split(",")));
+            } catch (Exception e) {
+                return false;
+            }
+            return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
+        } else if (genome != null) {
+            // The WELL_KNOWN_GENOMES have had stable chromosome order since initial release
+            String genomeId = genome.getId();
+            return WELL_KNOWN_GENOMES.contains(genomeId);
+        } else {
+            // Can't be sure
             return false;
         }
 
-        if (reader.getVersion() < 4) {
-            Pre3Sort(fileChromos);
-        }
-        return checkChromoNameOrder(fileChromos, genome.getLongChromosomeNames());
-
     }
+
 
 
     /**
@@ -513,74 +520,7 @@ public class TDFDataSource implements CoverageDataSource {
         return true;
     }
 
-    static void Pre3Sort(List<String> chromoNames) {
-        Collections.sort(chromoNames, new Pre3Comparator());
-    }
+    private static HashSet<String> WELL_KNOWN_GENOMES = new HashSet<String>(Arrays.asList("hg18", "hg19", "mm8", "mm9"));
 
-    /**
-     * DO NOT CHANGE THIS CLASS
-     * DO NOT USE THIS CLASS ANYWHERE ELSE
-     * IT IS HERE TO CHECK FOR BACKWARDS COMPATIBILITY
-     */
-    private static class Pre3Comparator implements Comparator<String> {
-
-        /**
-         * @param chr1
-         * @param chr2
-         * @return
-         */
-        public int compare(String chr1, String chr2) {
-
-            try {
-
-                // Special rule -- put the mitochondria at the end
-                if (chr1.equals("chrM") || chr1.equals("MT")) {
-                    return 1;
-                } else if (chr2.equals("chrM") || chr2.equals("MT")) {
-                    return -1;
-                }
-
-                // Find the first digit
-                int idx1 = findDigitIndex(chr1);
-                int idx2 = findDigitIndex(chr2);
-                if (idx1 == idx2) {
-                    String alpha1 = idx1 == -1 ? chr1 : chr1.substring(0, idx1);
-                    String alpha2 = idx2 == -1 ? chr2 : chr2.substring(0, idx2);
-                    int alphaCmp = alpha1.compareTo(alpha2);
-                    if (alphaCmp != 0) {
-                        return alphaCmp;
-                    } else {
-                        int dig1 = Integer.parseInt(chr1.substring(idx1));
-                        int dig2 = Integer.parseInt(chr2.substring(idx2));
-                        return dig1 - dig2;
-                    }
-                } else if (idx1 == -1) {
-                    return 1;
-
-                } else if (idx2 == -1) {
-                    return -1;
-                }
-                return idx1 - idx2;
-            } catch (Exception numberFormatException) {
-                return 0;
-            }
-
-        }
-
-        int findDigitIndex(String chr) {
-
-            int n = chr.length() - 1;
-            if (!Character.isDigit(chr.charAt(n))) {
-                return -1;
-            }
-
-            for (int i = n - 1; i > 0; i--) {
-                if (!Character.isDigit(chr.charAt(i))) {
-                    return i + 1;
-                }
-            }
-            return 0;
-        }
-    }
 }
 
