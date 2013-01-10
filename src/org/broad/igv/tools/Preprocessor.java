@@ -284,7 +284,7 @@ public class Preprocessor implements DataConsumer {
         /**
          * We output the chromosomes in the order specified by the Genome,
          * since that was how the overall genome data was calculated.
-         * However we only include those genomes which were actually found
+         * However we only include those chromosomes which were actually found
          * in the file
          */
         StringBuffer chrString = new StringBuffer();
