@@ -67,7 +67,7 @@ public class GFFTest{//} extends AbstractHeadlessTest{
         String gffFile = TestUtils.DATA_DIR + "gff/color_sps.gff";
         List<Feature> features = getFeatures(gffFile);
 
-        assertEquals("Error parsing certain features", 5, features.size());
+        assertEquals("Error parsing certain features", 6, features.size());
 
         for(Feature f: features){
             BasicFeature bf = (BasicFeature) f;
