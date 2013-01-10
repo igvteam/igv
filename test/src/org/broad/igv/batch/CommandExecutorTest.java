@@ -24,6 +24,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVTestHeadless;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -35,10 +36,7 @@ import org.junit.rules.Timeout;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Timer;
+import java.util.*;
 
 import static junit.framework.Assert.*;
 
@@ -270,10 +268,16 @@ public class CommandExecutorTest extends AbstractHeadedTest {
 
     @Test
     public void testMaxPanelHeight() throws Exception{
-        String filePath = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
-        exec.execute("load " + filePath);
-        exec.execute("goto chr12:56,807,802-56,829,975");
-        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 500;
+        String filePath = TestUtils.DATA_DIR + "bam/NA12878.SLX.sample.bam";
+        int numLoads = 1;
+
+        for(int ii = 0; ii < numLoads; ii++){
+            IGV.getInstance().loadResources(Arrays.asList(new ResourceLocator(filePath)));
+        }
+        exec.execute("goto chr1:9,713,386-9,733,865");
+
+
+        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 200;
         String outFileName = mpHeight + ".png";
         exec.execute("maxpanelheight " + mpHeight);
         exec.execute("snapshot " + outFileName);
@@ -281,7 +285,8 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         File outputFile = new File(snapshotDir, outFileName);
         BufferedImage image = ImageIO.read(outputFile);
 
-        assertTrue("Output image height not at least maxpanelheight", image.getHeight() > mpHeight + 50);
+        int minHeight = mpHeight + 50;
+        assertTrue("Output image height " + image.getHeight() + " is not at least maxpanelheight " + minHeight, image.getHeight() > minHeight);
 
         int remAlphaMask = 0x00ffffff;
 

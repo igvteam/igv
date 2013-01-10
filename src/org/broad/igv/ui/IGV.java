@@ -1478,6 +1478,10 @@ public class IGV {
     }
 
 
+    /**
+     * Load resources into IGV. Tracks are added to the appropriate panel
+     * @param locators
+     */
     public void loadResources(Collection<ResourceLocator> locators) {
 
         //Set<TrackPanel> changedPanels = new HashSet();
@@ -1567,9 +1571,12 @@ public class IGV {
 
 
     /**
-     * Load a resource (track or sample attribute file)
+     *
+     * Load a resource and return the tracks.
+     * Does not automatically add anything
+     * @param locator
+     * @return A list of loaded tracks
      */
-
     public List<Track> load(ResourceLocator locator) {
 
         TrackLoader loader = new TrackLoader();
