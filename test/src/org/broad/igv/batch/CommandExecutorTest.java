@@ -277,7 +277,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         exec.execute("goto chr1:9,713,386-9,733,865");
 
 
-        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 200;
+        int mpHeight = SnapshotUtilities.DEFAULT_MAX_PANEL_HEIGHT + 100;
         String outFileName = mpHeight + ".png";
         exec.execute("maxpanelheight " + mpHeight);
         exec.execute("snapshot " + outFileName);
@@ -285,7 +285,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         File outputFile = new File(snapshotDir, outFileName);
         BufferedImage image = ImageIO.read(outputFile);
 
-        int minHeight = mpHeight + 50;
+        int minHeight = mpHeight;
         assertTrue("Output image height " + image.getHeight() + " is not at least maxpanelheight " + minHeight, image.getHeight() > minHeight);
 
         int remAlphaMask = 0x00ffffff;
