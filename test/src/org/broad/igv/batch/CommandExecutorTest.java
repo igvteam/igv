@@ -302,7 +302,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         assertTrue(numBlackPix > 100);
 
         int totalPix = image.getHeight()*image.getWidth();
-        assertTrue("Too much of the snapshot is black", numBlackPix < totalPix * 0.05);
+        assertTrue("Too much of the snapshot is black", numBlackPix < totalPix * 0.1);
     }
 
     @Test
