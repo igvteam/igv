@@ -13,6 +13,7 @@ package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
@@ -33,6 +34,8 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
 
     private static Logger log = Logger.getLogger(PluginFeatureSource.class);
 
+    @SubtlyImportant
+    private PluginFeatureSource(){}
 
     public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
         super(commands, arguments, parsingAttrs, specPath);

@@ -82,6 +82,12 @@ public class Argument{
         ALIGNMENT_TRACK
     }
 
+    /**
+     * Used reading/writing to session files
+     */
+    @XmlElement
+    List<String> value;
+
     boolean isValidValue(Object value) {
         switch (this.type) {
             case TEXT:

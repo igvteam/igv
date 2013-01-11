@@ -37,6 +37,7 @@ import org.broad.igv.util.Utilities;
 import org.broad.tribble.Feature;
 import org.w3c.dom.Node;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
@@ -736,7 +737,7 @@ public abstract class AbstractTrack implements Track {
      * into a map
      * @param node
      */
-    public void restorePersistentState(Node node){
+    public void restorePersistentState(Node node) throws JAXBException{
         Map<String, String> attributes = Utilities.getAttributes(node);
         restorePersistentState(attributes);
     }

@@ -12,6 +12,8 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.cli_plugin.PluginFeatureSource;
+import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
@@ -29,9 +31,17 @@ import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -42,10 +52,15 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-@XmlSeeAlso({VariantTrack.class})
+@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class})
 public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
+
+    //All tracks have label "Track", we need to specify the type sometimes
+    //but still preserve backwards compatibility
+    @XmlAttribute
+    private Class clazz = FeatureTrack.class;
 
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
@@ -94,6 +109,7 @@ public class FeatureTrack extends AbstractTrack {
     private static boolean drawBorder = true;
 
     private boolean alternateExonColor = false;
+    private static final String PLUGIN_SOURCE = "PluginSource";
 
     /**
      * Construct with no feature source.  Currently this is only used for the SpliceJunctionFinderTrack subclass.
@@ -965,10 +981,37 @@ public class FeatureTrack extends AbstractTrack {
 
     @SubtlyImportant
     private static FeatureTrack getNextTrack(){
-        return (FeatureTrack) IGVSessionReader.getNextTrack();
+        FeatureTrack out = (FeatureTrack) IGVSessionReader.getNextTrack();
+        if (out == null) out = new FeatureTrack((String) null, null);
+        return out;
     }
 
+    @Override
+    public void restorePersistentState(Node node) throws JAXBException{
+        super.restorePersistentState(node);
+        if(node.hasChildNodes()){
+            NodeList childNodes = node.getChildNodes();
+            for(int ii= 0; ii < childNodes.getLength(); ii++){
+                Node child = childNodes.item(ii);
+                if(child.getNodeName().equalsIgnoreCase(PLUGIN_SOURCE)){
+                    source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
+                }
+            }
+        }
+    }
 
-
+    /**
+     *
+     * @param m
+     * @param trackElement
+     * @throws JAXBException
+     */
+    public void marshalSource(Marshaller m, Element trackElement) throws JAXBException{
+        if(source instanceof PluginSource){
+            JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
+                    (PluginSource) source);
+            m.marshal(element, trackElement);
+        }
+    }
 }
 

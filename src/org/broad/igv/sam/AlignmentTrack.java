@@ -884,7 +884,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     }
 
     @Override
-    public void restorePersistentState(Node node) {
+    public void restorePersistentState(Node node) throws JAXBException{
         super.restorePersistentState(node);
 
         //For legacy sessions (<= v4. RenderOptions used to be stuffed in

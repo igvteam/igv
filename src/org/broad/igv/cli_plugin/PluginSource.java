@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.FileUtils;
@@ -22,7 +24,11 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.tribble.AsciiFeatureCodec;
 import org.broad.tribble.Feature;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,7 +41,8 @@ import java.util.*;
  * User: jacob
  * Date: 2012/05/01
  */
-abstract class PluginSource<E extends Feature, D extends Feature>{
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class PluginSource<E extends Feature, D extends Feature>{
 
     private static Logger log = Logger.getLogger(PluginSource.class);
 
@@ -43,14 +50,19 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
      * Initial command tokens. This will typically include both
      * the executable and command, e.g. {"/usr/bin/bedtools", "intersect"}
      */
-    protected final List<String> commands;
-    protected final LinkedHashMap<Argument, Object> arguments;
+    @XmlList
+    @XmlAttribute
+    protected List<String> commands;
 
-    protected boolean strictParsing = true;
-    protected String decodingCodec = null;
+    @XmlJavaTypeAdapter(MyMapAdapter.class)
+    protected LinkedHashMap<Argument, Object> arguments;
+
+    @XmlElement
+    protected PluginSpecReader.Parser parser;
+
     protected URL[] decodingLibURLs = new URL[0];
-    protected String format = "bed";
 
+    @XmlAttribute
     protected String specPath = null;
 
     /**
@@ -66,18 +78,13 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
     private static final String STRICT = "strict";
     private static final String VALUE = "value";
 
+    @SubtlyImportant
+    protected PluginSource(){}
 
     public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
         this.commands = commands;
         this.arguments = arguments;
-
-        setParsingAttributes(parsingAttrs, specPath);
-    }
-
-    private void setParsingAttributes(PluginSpecReader.Parser parsingAttrs, String specPath) {
-        this.decodingCodec = parsingAttrs.decodingCodec;
-        this.strictParsing = parsingAttrs.strict;
-        this.format = parsingAttrs.format;
+        this.parser = parsingAttrs;
         this.specPath = specPath;
 
         String[] libs = parsingAttrs.libs;
@@ -89,7 +96,6 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Encode features into strings using {@link #getEncodingCodec(Argument)} and write them to the provided stream.
@@ -234,7 +240,7 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
 
         //Read back in the data which cli_plugin output
         FeatureDecoder<D> codec = getDecodingCodec();
-        return codec.decodeAll(pr.getInputStream(), strictParsing);
+        return codec.decodeAll(pr.getInputStream(), parser.strict);
     }
 
     /**
@@ -299,7 +305,7 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
      * @return
      */
     protected final FeatureDecoder<D> getDecodingCodec() {
-        FeatureDecoder<D> codec = instantiateDecodingCodec(decodingCodec, decodingLibURLs);
+        FeatureDecoder<D> codec = instantiateDecodingCodec(parser.decodingCodec, decodingLibURLs);
         codec.setInputs(Collections.unmodifiableList(commands), Collections.unmodifiableMap(arguments));
         codec.setAttributes(Collections.unmodifiableList(attributes));
         return codec;
@@ -315,9 +321,9 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
      */
     protected final FeatureDecoder<D> instantiateDecodingCodec(String decodingCodec, URL[] libURLs) {
         if (decodingCodec == null) {
-            AsciiFeatureCodec<D> asciiCodec = CodecFactory.getCodec("." + format, GenomeManager.getInstance().getCurrentGenome());
+            AsciiFeatureCodec<D> asciiCodec = CodecFactory.getCodec("." + parser.format, GenomeManager.getInstance().getCurrentGenome());
             if (asciiCodec == null) {
-                throw new IllegalArgumentException("Unable to find codec for format " + format);
+                throw new IllegalArgumentException("Unable to find codec for format " + parser.format);
             }
             return new AsciiDecoder.DecoderWrapper<D>(asciiCodec);
         }
@@ -356,10 +362,11 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
          */
 
 //        Map<String, String> parentProps = new HashMap<String, String>(5);
-//        parentProps.put(DECODING_CODEC, decodingCodec);
+
+//        parentProps.put(DECODING_CODEC, parser.format);
 //        //TODO Less ambiguous name to not clash with argument
 //        parentProps.put(DECODING_LIBS, StringUtils.join(decodingLibURLs, ","));
-//        parentProps.put(FORMAT, format);
+//        parentProps.put(FORMAT, parser.format);
 //        parentProps.put("specPath", specPath);
 //
 //        List<RecursiveAttributes> allChildren = new ArrayList<RecursiveAttributes>(4);
@@ -380,8 +387,8 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
 //
 //        allChildren.add(persCommandParent);
 //
-//        for(Map.Entry<Argument, Object> entry: arguments.entrySet()){
-//            Argument argument = entry.getKey();
+//        for(Map.Entry<Object, Object> entry: arguments.entrySet()){
+//            Argument argument = (Argument) entry.getKey();
 //            List<String> values = null;
 //            String sval;
 //            switch (argument.getType()) {
@@ -427,5 +434,101 @@ abstract class PluginSource<E extends Feature, D extends Feature>{
 //        return overall;
     }
 
+    static class XmlMap{
+        public List<Argument> arg =
+                new ArrayList<Argument>();
+    }
+
+    public final static class MyMapAdapter extends XmlAdapter<XmlMap, LinkedHashMap<Argument, Object>> {
+
+        public static WeakReference<IGVSessionReader> sessionReader;
+
+        public static void setSessionReader(IGVSessionReader igvSessionReader) {
+            sessionReader = new WeakReference<IGVSessionReader>(igvSessionReader);
+        }
+
+        private IGVSessionReader getSessionReader() {
+            IGVSessionReader reader = sessionReader.get();
+            if(reader == null) throw new IllegalStateException("Have not declared a session reader before unmarshalling tracks");
+            return reader;
+        }
+
+        @Override
+        public LinkedHashMap<Argument, Object> unmarshal(XmlMap v) throws Exception {
+            LinkedHashMap<Argument, Object> argumentMap = new LinkedHashMap(v.arg.size());
+            for(Argument argument: v.arg){
+                Object oVal = null;
+                switch (argument.getType()){
+                    case MULTI_FEATURE_TRACK:
+                        List<FeatureTrack> inputTracks = new ArrayList<FeatureTrack>(argument.value.size());
+
+                        for(String trackId: argument.value){
+                            inputTracks.add((FeatureTrack) getMatchingTrack(trackId));
+                        }
+
+                        break;
+                    case LONGTEXT:
+                    case TEXT:
+                        oVal = argument.value.get(0);
+                        break;
+                    case FEATURE_TRACK:
+                    case DATA_TRACK:
+                    case ALIGNMENT_TRACK:
+                        String trackId = argument.value.get(0);
+                        oVal = getMatchingTrack(trackId);
+                        break;
+                }
+                argumentMap.put(argument, oVal);
+            }
+            return argumentMap;
+        }
+
+        private Track getMatchingTrack(String trackId){
+            List<Track> matchingTracks = getSessionReader().getTracksById(trackId);
+            if (matchingTracks.size() >= 2) {
+                log.debug("Found multiple tracks with id  " + trackId + ", using the first");
+            } else if (matchingTracks.size() == 0) {
+                //Either the session file is corrupted, or we just haven't loaded the relevant track yet
+                //TODO Need to save this track to unmarshall later in that case
+
+            }
+            return matchingTracks.get(0);
+        }
+
+        @Override
+        public XmlMap marshal(LinkedHashMap<Argument, Object> v) throws Exception {
+            XmlMap outMap = new XmlMap();
+            for(Map.Entry<Argument, Object> loopEntry: v.entrySet()){
+                Argument argument = loopEntry.getKey();
+                List<String> values = null;
+                String sval;
+                switch (argument.getType()) {
+                    case MULTI_FEATURE_TRACK:
+                        List<FeatureTrack> lVal = (List<FeatureTrack>) loopEntry.getValue();
+                        values = new ArrayList<String>(lVal.size());
+                        for(FeatureTrack fTrack: lVal){
+                            values.add(fTrack.getId());
+                        }
+                        break;
+                    case LONGTEXT:
+                    case TEXT:
+                        sval = (String) loopEntry.getValue();
+                        values = Arrays.asList(sval);
+                        break;
+                    case FEATURE_TRACK:
+                    case DATA_TRACK:
+                    case ALIGNMENT_TRACK:
+                        sval = ((Track) loopEntry.getValue()).getId();
+                        values = Arrays.asList(sval);
+                        break;
+                }
+
+                argument.value = values;
+                outMap.arg.add(argument);
+            }
+            return outMap;
+        }
+
+    }
 
 }

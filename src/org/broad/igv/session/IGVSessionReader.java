@@ -12,6 +12,7 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
@@ -72,10 +73,14 @@ public class IGVSessionReader implements SessionReader {
 
 
     /**
-     * Map of track id -> track.  It is important to maintin the order in which tracks are added, thus
+     * Map of track id -> track.  It is important to maintain the order in which tracks are added, thus
      * the use of LinkedHashMap.
      */
-    Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
+    private final Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
+
+    public List<Track> getTracksById(String trackId){
+        return trackDictionary.get(trackId);
+    }
 
 
     /**
@@ -243,9 +248,9 @@ public class IGVSessionReader implements SessionReader {
 
     }
 
-
     public IGVSessionReader(IGV igv) {
         this.igv = igv;
+        PluginSource.MyMapAdapter.setSessionReader(this);
     }
 
 
@@ -926,6 +931,24 @@ public class IGVSessionReader implements SessionReader {
 
         if (matchedTracks == null) {
             log.info("Warning.  No tracks were found with id: " + id + " in session file");
+            String className = getAttribute(element, "clazz");
+
+            //We try anyway, some tracks can be reconstructed without a resource element
+            //They must have a source, though
+            try{
+                if(className != null && className.contains("FeatureTrack") && element.hasChildNodes()){
+                    Class clazz = Class.forName(className);
+                    Unmarshaller u = getJAXBContext().createUnmarshaller();
+                    Track track = unmarshalTrackElement(u, element, null, clazz);
+                    if(track != null) igv.addTracks(Arrays.asList(track), new ResourceLocator(id));
+                }
+
+            } catch (JAXBException e) {
+                //pass
+            } catch (ClassNotFoundException e) {
+                //pass
+            }
+
         } else {
 
             try {
@@ -936,14 +959,13 @@ public class IGVSessionReader implements SessionReader {
                     if (igv != null && version >= 4 && (track == geneTrack || track == seqTrack)) {
                         igv.removeTracks(Arrays.asList(track));
                     }
-
                     unmarshalTrackElement(u, element, (AbstractTrack) track);
                 }
 
             } catch (JAXBException e) {
                 throw new RuntimeException(e);
             }
-            trackDictionary.remove(id);
+            //trackDictionary.remove(id);
         }
 
         NodeList elements = element.getChildNodes();
@@ -964,12 +986,34 @@ public class IGVSessionReader implements SessionReader {
         return nextTrack;
     }
 
-    protected Track unmarshalTrackElement(Unmarshaller u, Element element, AbstractTrack track) throws JAXBException{
+    /**
+     * Unmarshal element into specified class
+     * @param u
+     * @param e
+     * @param track
+     * @return
+     * @throws JAXBException
+     */
+    protected Track unmarshalTrackElement(Unmarshaller u, Element e, AbstractTrack track) throws JAXBException{
+        return unmarshalTrackElement(u, e, track, track.getClass());
+    }
+
+    /**
+     *
+     * @param u
+     * @param element
+     * @param track The track into which to unmarshal. Can be null if the relevant static factory method can handle
+     *              creating a new instance
+     * @param trackClass Class of track to use for unmarshalling
+     * @return The unmarshalled track
+     * @throws JAXBException
+     */
+    protected Track unmarshalTrackElement(Unmarshaller u, Element element, AbstractTrack track, Class trackClass) throws JAXBException{
         AbstractTrack ut;
 
         synchronized (IGVSessionReader.class){
             setNextTrack(track);
-            ut = unmarshalTrack(u, element, track.getClass(), track.getClass());
+            ut = unmarshalTrack(u, element, trackClass, trackClass);
         }
         ut.restorePersistentState(element);
         return ut;

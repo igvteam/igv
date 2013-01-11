@@ -20,6 +20,7 @@ import org.broad.igv.session.IGVSessionReader.SessionAttribute;
 import org.broad.igv.session.IGVSessionReader.SessionElement;
 import org.broad.igv.track.AbstractTrack;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
@@ -360,10 +361,11 @@ public class SessionWriter {
 
                         Element trackElement = (Element) tmpTrackParent.getChildNodes().item(0);
 
-
                         for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
                             trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
                         }
+
+                        marshalTrackChildren(m, track, trackElement);
 
                         panelElement.appendChild(trackElement);
                     }
@@ -403,6 +405,22 @@ public class SessionWriter {
             marshalTrack(m, track, trackParent, marshalClass.getSuperclass());
         }
     }
+
+
+    /**
+     * Because we are using JAXB piecewise, and also because JAXB can't handle
+     * interfaces, we marshal certain track children here
+     * @param m
+     * @param track
+     * @param trackElement
+     */
+    private void marshalTrackChildren(Marshaller m, Track track, Element trackElement) throws JAXBException{
+        if(track instanceof FeatureTrack){
+            FeatureTrack featureTrack = (FeatureTrack) track;
+            featureTrack.marshalSource(m, trackElement);
+        }
+    }
+
 
     private void writePanelLayout(Element globalElement, Document document) {
 
