@@ -296,7 +296,7 @@ public class AlignmentTileLoader {
 
 
         AlignmentTile(int start, int end,
-                      boolean showSpliceJunctions,
+                      boolean calculateSpliceJunctions,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.start = start;
@@ -320,7 +320,7 @@ public class AlignmentTileLoader {
             this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
             this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
-            if (showSpliceJunctions) {
+            if (calculateSpliceJunctions) {
                 spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
                 spliceJunctionHelper = new SpliceJunctionHelper();
             }

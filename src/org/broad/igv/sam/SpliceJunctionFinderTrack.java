@@ -27,17 +27,19 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +58,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     RenderContext context;
     Genome genome;
 
-    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
+    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track relationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
@@ -71,6 +73,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         prefs = PreferenceManager.getInstance();
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
+
+        //TODO DELETE THIS, testing only
+        //setRendererClass(SashimiJunctionRenderer.class);
     }
 
 
@@ -106,7 +111,31 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
+
+        JMenu setRenderingStyle = new JMenu("Set Render Style");
+        JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
+        setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class));
+        JCheckBoxMenuItem setSashimi = new JCheckBoxMenuItem("Sashimi");
+        setSashimi.addActionListener(getChangeClassListener(setSashimi, SashimiJunctionRenderer.class));
+
+        setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
+        setSashimi.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SashimiJunctionRenderer.class));
+
+        setRenderingStyle.add(setSplice);
+        setRenderingStyle.add(setSashimi);
+
+        popupMenu.add(setRenderingStyle);
+
         return popupMenu;
+    }
+
+    private ActionListener getChangeClassListener(final JCheckBoxMenuItem menuItem, final Class rendererClass){
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SpliceJunctionFinderTrack.this.setRendererClass(rendererClass);
+            }
+        };
     }
 
 
