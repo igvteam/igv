@@ -940,7 +940,7 @@ public class IGVSessionReader implements SessionReader {
                     Class clazz = Class.forName(className);
                     Unmarshaller u = getJAXBContext().createUnmarshaller();
                     Track track = unmarshalTrackElement(u, element, null, clazz);
-                    if(track != null) igv.addTracks(Arrays.asList(track), new ResourceLocator(id));
+                    matchedTracks = new ArrayList<Track>(Arrays.asList(track));
                 }
 
             } catch (JAXBException e) {

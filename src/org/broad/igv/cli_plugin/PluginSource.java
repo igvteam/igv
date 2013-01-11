@@ -71,13 +71,6 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      */
     protected List<Map<String, Object>> attributes = new ArrayList<Map<String, Object>>(2);
 
-
-    static final String DECODING_CODEC = "decodingCodec";
-    private static final String FORMAT = "format";
-    private static final String DECODING_LIBS = "libs";
-    private static final String STRICT = "strict";
-    private static final String VALUE = "value";
-
     @SubtlyImportant
     protected PluginSource(){}
 
