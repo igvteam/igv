@@ -31,8 +31,10 @@ import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
@@ -73,9 +75,11 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         prefs = PreferenceManager.getInstance();
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
+    }
 
-        //TODO DELETE THIS, testing only
-        //setRendererClass(SashimiJunctionRenderer.class);
+    private void showSashimiPlot() {
+        setRendererClass(SashimiJunctionRenderer.class);
+        (new SashimiPlot(FrameManager.getDefaultFrame(), this)).setVisible(true);
     }
 
 
@@ -112,17 +116,23 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
 
-        JMenu setRenderingStyle = new JMenu("Set Render Style");
-        JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
-        setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class));
-        JCheckBoxMenuItem setSashimi = new JCheckBoxMenuItem("Sashimi");
-        setSashimi.addActionListener(getChangeClassListener(setSashimi, SashimiJunctionRenderer.class));
-
-        setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
-        setSashimi.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SashimiJunctionRenderer.class));
-
-        setRenderingStyle.add(setSplice);
-        setRenderingStyle.add(setSashimi);
+        JMenuItem setRenderingStyle = new JMenuItem("Show Sashimi Plot");
+        setRenderingStyle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSashimiPlot();
+            }
+        });
+//        JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
+//        setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class));
+//        JCheckBoxMenuItem setSashimi = new JCheckBoxMenuItem("Sashimi");
+//        setSashimi.addActionListener(getChangeClassListener(setSashimi, SashimiJunctionRenderer.class));
+//
+//        setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
+//        setSashimi.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SashimiJunctionRenderer.class));
+//
+//        setRenderingStyle.add(setSplice);
+//        setRenderingStyle.add(setSashimi);
 
         popupMenu.add(setRenderingStyle);
 

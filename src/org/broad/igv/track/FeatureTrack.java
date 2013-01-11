@@ -635,7 +635,7 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
-
+    @Override
     public void render(RenderContext context, Rectangle rect) {
         Rectangle renderRect = new Rectangle(rect);
         renderRect.y = renderRect.y + margin;
