@@ -123,6 +123,26 @@ public class DBProfile {
         }
     }
 
+    public String getHost() {
+        return host;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public String getSubprotocol() {
+        return subprotocol;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     /**
      * Object representation of a single {@code table} element of
      * a database profile. Contains static method for parsing dbXML files

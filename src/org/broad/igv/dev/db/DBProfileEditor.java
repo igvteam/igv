@@ -16,21 +16,10 @@
 package org.broad.igv.dev.db;
 
 import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.util.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author User #2
@@ -55,47 +44,31 @@ public class DBProfileEditor extends JDialog {
         dataType.setModel(model);
 
         if (initProfilePath != null) {
-            InputStream profileStream;
-            try {
-                profileStream = new FileInputStream(initProfilePath);
-                Document document = Utilities.createDOMDocumentFromXmlStream(profileStream);
-                NamedNodeMap dbAttrs = document.getAttributes();
+            DBProfile profile = DBProfile.parseProfile(initProfilePath);
 
-                String fullHost = "";
-                String subprotocol = Utilities.getNullSafe(dbAttrs, "subprotocol");
-                String host = Utilities.getNullSafe(dbAttrs, "host");
-                if (subprotocol != null && host != null) {
-                    fullHost = subprotocol + "://" + host;
-                }
-                DBPath.setText(fullHost);
-                port.setText(Utilities.getNullSafe(dbAttrs, "port"));
-                username.setText(Utilities.getNullSafe(dbAttrs, "username"));
-                password.setText(Utilities.getNullSafe(dbAttrs, "password"));
-
-                //TODO Can have more than 1 table, for now just take first
-                NodeList tables = document.getElementsByTagName("table");
-                Node table = tables.item(0);
-                NamedNodeMap tableAttrs = table.getAttributes();
-                tableName.setText(Utilities.getNullSafe(tableAttrs, "name"));
-                chromField.setText(Utilities.getNullSafe(tableAttrs, "chromoColName"));
-
-                posStartField.setText(Utilities.getNullSafe(tableAttrs, "posStartColName"));
-                posEndField.setText(Utilities.getNullSafe(tableAttrs, "posEndColName"));
-
-                startColField.setText(Utilities.getNullSafe(tableAttrs, "startColIndex"));
-                endColField.setText(Utilities.getNullSafe(tableAttrs, "endColIndex"));
-                binColField.setText(Utilities.getNullSafe(tableAttrs, "binColName"));
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (ParserConfigurationException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            String fullHost = "";
+            String subprotocol = profile.getSubprotocol();
+            String host = profile.getHost();
+            if (subprotocol != null && host != null) {
+                fullHost = subprotocol + "://" + host;
             }
 
+            DBPath.setText(fullHost);
+            port.setText(profile.getPort());
+            username.setText(profile.getUsername());
+            password.setText(profile.getPassword());
+
+            //TODO Can have more than 1 table, for now just take first
+            DBProfile.DBTable table = profile.getTableList().get(0);
+            tableName.setText(table.getName());
+            chromField.setText(table.getChromoColName());
+
+            posStartField.setText(table.getPosStartColName());
+            posEndField.setText(table.getPosEndColName());
+
+            startColField.setText("" + table.getStartColIndex());
+            endColField.setText("" + table.getEndColIndex());
+            binColField.setText(table.getBinColName());
         }
     }
 
