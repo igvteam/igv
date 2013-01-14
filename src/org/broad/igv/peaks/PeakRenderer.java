@@ -97,7 +97,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
 //                    float[] timeScores = peak.getTimeScores();
 //                    if (dX > 10 && timeScores.length > 1) {
 //                        Graphics2D gLine = context.getGraphic2DForColor(Color.black);
-//                        gLine.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+//                        gLine.setRenderingHint(RenderingHints.KEY_ANTIALIASING,PreferenceManager.getInstance().getAntiAliasingHint());
 //                        double deltaX = ((double) dX / (timeScores.length - 1));
 //                        double scaleY = peakHeight / 200.0;
 //                        int bottomY = top + peakHeight;

@@ -12,6 +12,7 @@
 package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
@@ -111,7 +112,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
             if (c instanceof DataPanel) {
                 Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
                 Rectangle clipRect = new Rectangle(c.getBounds());
                 clipRect.height = rect.height;
                 g2d.setClip(clipRect);

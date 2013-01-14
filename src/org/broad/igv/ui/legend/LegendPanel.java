@@ -25,6 +25,7 @@ package org.broad.igv.ui.legend;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -108,7 +109,7 @@ abstract public class LegendPanel extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         paintLegend(g);
     }
 

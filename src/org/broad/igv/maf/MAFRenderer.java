@@ -17,6 +17,7 @@
  */
 package org.broad.igv.maf;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.maf.MAFTile.Gap;
 import org.broad.igv.maf.MAFTile.MASequence;
 import org.broad.igv.renderer.GraphicUtils;
@@ -148,7 +149,7 @@ public class MAFRenderer {
 
             // Create a graphics to use
             Graphics2D g = (Graphics2D) context.getGraphics().create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
             if (dX >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));

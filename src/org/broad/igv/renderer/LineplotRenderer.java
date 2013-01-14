@@ -26,6 +26,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -61,11 +62,9 @@ public class LineplotRenderer extends XYPlotRenderer {
         Color negColor = track.getAltColor();
 
         Graphics2D gPos = context.getGraphic2DForColor(posColor);
-        gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, // Anti-alias!
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
         Graphics2D gNeg = context.getGraphic2DForColor(negColor);
-        gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, // Anti-alias!
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
 
 
         // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
