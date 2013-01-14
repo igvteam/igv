@@ -23,6 +23,7 @@ package org.broad.igv.ui.legend;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.util.ChromosomeColors;
@@ -55,7 +56,7 @@ public class ChromosomeColorLegend extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         paintLegend(g);
     }
 
@@ -63,7 +64,7 @@ public class ChromosomeColorLegend extends JPanel {
     public void paintLegend(Graphics g) {
 
         Graphics textGraphics = g.create();
-        ((Graphics2D) textGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) textGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         textGraphics.setColor(Color.black);
         textGraphics.setFont(FontManager.getFont(10));
 

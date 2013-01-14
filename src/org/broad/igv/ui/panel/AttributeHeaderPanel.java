@@ -31,6 +31,7 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -81,14 +82,14 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
-        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
         if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
-            graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
             // Divide the remaining space to get column widths
             int columnWidth = getAttributeColumnWidth();

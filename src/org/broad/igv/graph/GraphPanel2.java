@@ -18,6 +18,8 @@
 
 package org.broad.igv.graph;
 
+import org.broad.igv.PreferenceManager;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -45,7 +47,7 @@ public class GraphPanel2 extends JPanel {
 
         Graphics2D g = (Graphics2D) graphics;
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         // Just paint nodes (no edges)
         if (graph != null) {

@@ -103,7 +103,7 @@ public class RulerPanel extends JPanel {
 
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         render(g);
 
@@ -358,7 +358,7 @@ public class RulerPanel extends JPanel {
 
 
                 Graphics2D exomeGraphics = (Graphics2D) g.create();
-                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
 //Shape clip = exomeGraphics.getClip();
 
@@ -417,7 +417,7 @@ public class RulerPanel extends JPanel {
 
 
                 Graphics2D exomeGraphics = (Graphics2D) g.create();
-                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                exomeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 //Shape clip = exomeGraphics.getClip();
 
                 Color c = idx % 2 == 0 ? gene1 : gene2;

@@ -185,7 +185,7 @@ public class ChartPanel extends JPanel implements Serializable {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
             if (scatterPlot != null) {
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
@@ -339,7 +339,7 @@ public class ChartPanel extends JPanel implements Serializable {
 //            if (scatterPlot != null) {
 //
 //                g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//                        RenderingHints.VALUE_ANTIALIAS_ON);
+//                        PreferenceManager.getInstance().getAntiAliasingHint());
 //
 //                Color color = g.getColor();
 //                Font font = g.getFont();

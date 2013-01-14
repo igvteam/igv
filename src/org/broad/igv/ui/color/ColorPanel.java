@@ -1,5 +1,7 @@
 package org.broad.igv.ui.color;
 
+import org.broad.igv.PreferenceManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -81,7 +83,7 @@ public class ColorPanel extends JPanel implements Serializable {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         for (Palette palette : paletteList) {
             g.setColor(Color.black);

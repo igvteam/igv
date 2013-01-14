@@ -26,6 +26,7 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -85,7 +86,7 @@ public class ZoomSliderPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         updateTickCount();
         //if (this.isEnabled()) {
         paintHorizontal(g);
@@ -96,7 +97,7 @@ public class ZoomSliderPanel extends JPanel {
     protected void paintHorizontal(Graphics g) {
 
         Graphics2D transGraphics = (Graphics2D) g.create();
-        transGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        transGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         transGraphics.setColor(TRANSPARENT_GRAY);
 
         int buttonWidth = zoomPlus.getWidth(null);

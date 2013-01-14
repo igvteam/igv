@@ -201,6 +201,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
     public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
     public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
+    public static final String ENABLE_ANTIALISING = "ENABLE_ANTIALIASING";
 
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
@@ -915,6 +916,19 @@ public class PreferenceManager implements PropertyManager {
     }
 
 
+    public Object getAntiAliasingHint() {
+
+        String pref = get(ENABLE_ANTIALISING);
+        if(pref == null || !pref.equals("false")) {
+             return RenderingHints.VALUE_ANTIALIAS_ON;
+        }
+        else {
+            return RenderingHints.VALUE_ANTIALIAS_OFF;
+        }
+
+    }
+
+
     private void initDefaultValues() {
 
         defaultValues = new HashMap();
@@ -1043,6 +1057,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
         defaultValues.put(DEFAULT_FONT_FAMILY, "Arial");
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
+        defaultValues.put(ENABLE_ANTIALISING, "true");
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");

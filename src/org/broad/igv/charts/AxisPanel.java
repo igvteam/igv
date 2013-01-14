@@ -1,5 +1,7 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.PreferenceManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -47,7 +49,7 @@ class AxisPanel extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         if (axis == null) return;
 

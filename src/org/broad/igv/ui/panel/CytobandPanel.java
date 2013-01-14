@@ -30,6 +30,7 @@ package org.broad.igv.ui.panel;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.renderer.CytobandRenderer;
@@ -87,7 +88,7 @@ public class CytobandPanel extends JPanel {
 
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
             //Graphics g2 = g.create();

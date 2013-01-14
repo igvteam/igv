@@ -16,6 +16,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -57,7 +58,7 @@ public class RegionOfInterestPanel extends JPanel {
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         // Draw regions of interest?
         drawRegionsOfInterest((Graphics2D) g, getHeight());

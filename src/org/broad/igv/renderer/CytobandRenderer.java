@@ -26,6 +26,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -58,7 +59,7 @@ public class CytobandRenderer {
                 String locus = frame.getChrName();
                 if (locus != null) {
                     Graphics g2 = g2D.create();
-                    ((Graphics2D) g2).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    ((Graphics2D) g2).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
                     //Color c = ChromosomeColors.getColor(locus);
                     //g2.setColor(c);
