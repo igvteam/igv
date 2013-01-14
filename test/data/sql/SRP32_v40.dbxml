@@ -18,7 +18,7 @@
     <table name="SRP32_v40" format="vcf4"
            chromoColName="CHROM" posStartColName="POS">
 
-        <headerLine>##fileformat=VCFv4.0</headerLine>
+        <header>##fileformat=VCFv4.0</header>
     </table>
 </database>
 	

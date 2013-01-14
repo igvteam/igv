@@ -29,7 +29,7 @@ public class SampleInfoSQLReader extends WholeTableDBReader<Void> {
 
     String sampleColumn; // = "SAMPLE_ID_ARRAY";
 
-    public SampleInfoSQLReader(DBTable table, String sampleColumn) {
+    public SampleInfoSQLReader(DBProfile.DBTable table, String sampleColumn) {
         super(table);
         this.sampleColumn = sampleColumn;
     }

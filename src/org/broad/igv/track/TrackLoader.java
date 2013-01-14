@@ -29,7 +29,7 @@ import org.broad.igv.dev.affective.AffectiveAnnotationParser;
 import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
 import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.dev.affective.Annotation;
-import org.broad.igv.dev.db.DBTable;
+import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.SQLCodecSource;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
@@ -1041,8 +1041,10 @@ public class TrackLoader {
     }
 
     private void loadFromDBProfile(ResourceLocator profileLocator, List<Track> newTracks) throws IOException {
-        List<DBTable> tableList = DBTable.parseProfile(profileLocator.getPath());
-        for (DBTable table : tableList) {
+
+        DBProfile dbProfile = DBProfile.parseProfile(profileLocator.getPath());
+
+        for (DBProfile.DBTable table : dbProfile.getTableList()) {
             SQLCodecSource source = SQLCodecSource.getFromTable(table);
             if (source != null) {
                 CachingFeatureSource cachingReader = new CachingFeatureSource(source);

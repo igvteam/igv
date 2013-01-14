@@ -221,7 +221,7 @@ public class DBManager {
      * @throws SQLException
      */
     public static String[] lineToArray(ResultSet rs, Map<Integer, String> columnIndexMap) throws SQLException {
-        String[] colNames = DBTable.columnMapToArray(columnIndexMap);
+        String[] colNames = DBProfile.DBTable.columnMapToArray(columnIndexMap);
         String[] tokens = new String[colNames.length];
 
         for (int cc = 0; cc < colNames.length; cc++) {

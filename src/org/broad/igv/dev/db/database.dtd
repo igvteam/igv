@@ -88,7 +88,7 @@ endColIndex
     Default 2147483646 (Integer.MAX_VALUE - 1, ie all)
 
 -->
-<!ELEMENT table (column*,headerLine*)>
+<!ELEMENT table (column*,header*)>
 <!ATTLIST table
       baseQuery CDATA #IMPLIED
       name CDATA #REQUIRED
@@ -141,7 +141,7 @@ Possible example for BED file:
 <!--
     Header lines which are fed to the reading codec
 -->
-<!ELEMENT headerLine (#PCDATA)>
+<!ELEMENT header (#PCDATA)>
 
 
 

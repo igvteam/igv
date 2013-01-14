@@ -95,7 +95,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
 
     private static final int MAX_BINS = 20;
 
-    SQLCodecSource(DBTable table, AsciiFeatureCodec codec) {
+    SQLCodecSource(DBProfile.DBTable table, AsciiFeatureCodec codec) {
         super(table);
         this.codec = codec;
         this.binColName = table.getBinColName();
@@ -119,7 +119,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         //Otherwise, check the db
         String[] columnLabels;
         if (table.getColumnLabelMap() != null) {
-            columnLabels = DBTable.columnMapToArray(table.getColumnLabelMap());
+            columnLabels = DBProfile.DBTable.columnMapToArray(table.getColumnLabelMap());
         } else {
 
             //Preferred method
@@ -141,7 +141,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
             //SQLite doesn't seem to have the information_schema table,
             //and the relevant pragma doesn't have any backwards compatibility guarantees
             //We just query for nothing and read off the column names
-            String queryString = String.format("SELECT * FROM %s WHERE 0 = 1", table.getTableName());
+            String queryString = String.format("SELECT * FROM %s WHERE 0 = 1", table.getName());
             ResultSet rs = executeQuery(queryString);
             try {
                 columnLabels = DBManager.lineToArray(rs, table.getStartColIndex(), table.getEndColIndex(), true);
@@ -174,7 +174,7 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
      * @param table
      * @return a SQLCodecSource, or null if no appropriate codec found
      */
-    public static SQLCodecSource getFromTable(DBTable table) {
+    public static SQLCodecSource getFromTable(DBProfile.DBTable table) {
         AsciiFeatureCodec codec = CodecFactory.getCodec("." + table.getFormat(), GenomeManager.getInstance().getCurrentGenome());
         if (codec != null) {
             SQLCodecSource source = new SQLCodecSource(table, codec);
@@ -184,11 +184,11 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
     }
 
     public static SQLCodecSource getFromProfile(String profilePath, String tableName) {
-        List<DBTable> tableList = DBTable.parseProfile(profilePath);
+        DBProfile dbProfile = DBProfile.parseProfile(profilePath);
 
         SQLCodecSource source = null;
-        for (DBTable table : tableList) {
-            if (table.getTableName().equals(tableName)) {
+        for (DBProfile.DBTable table : dbProfile.getTableList()) {
+            if (table.getName().equals(tableName)) {
                 source = SQLCodecSource.getFromTable(table);
                 break;
             }

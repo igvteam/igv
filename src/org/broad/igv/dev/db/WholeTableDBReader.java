@@ -29,9 +29,9 @@ public abstract class WholeTableDBReader<T> extends DBReader {
     private static Logger log = Logger.getLogger(WholeTableDBReader.class);
 
     /**
-     * See {@link DBReader#DBReader(DBTable)}
+     * See {@link DBReader#DBReader(DBProfile.DBTable)}
      */
-    public WholeTableDBReader(DBTable table) {
+    public WholeTableDBReader(DBProfile.DBTable table) {
         super(table);
     }
 

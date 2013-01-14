@@ -27,9 +27,9 @@ import java.util.Iterator;
 public abstract class DBQueryReader<T> extends DBReader {
 
     private static Logger log = Logger.getLogger(DBQueryReader.class);
-    protected DBTable table;
+    protected DBProfile.DBTable table;
 
-    public DBQueryReader(DBTable table) {
+    public DBQueryReader(DBProfile.DBTable table) {
         super(table);
         this.table = table;
     }

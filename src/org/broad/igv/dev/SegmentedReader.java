@@ -14,7 +14,7 @@ package org.broad.igv.dev;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
-import org.broad.igv.dev.db.DBTable;
+import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.dev.db.WholeTableDBReader;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
@@ -56,7 +56,7 @@ public class SegmentedReader {
 
     private class SegmentedDBReader extends WholeTableDBReader<SegmentedAsciiDataSet> {
 
-        private SegmentedDBReader(DBTable table) {
+        private SegmentedDBReader(DBProfile.DBTable table) {
             super(table);
         }
 
@@ -152,7 +152,7 @@ public class SegmentedReader {
     }
 
 
-    public SegmentedAsciiDataSet loadFromDB(DBTable table) {
+    public SegmentedAsciiDataSet loadFromDB(DBProfile.DBTable table) {
         SegmentedDBReader reader = new SegmentedDBReader(table);
         return reader.load();
     }

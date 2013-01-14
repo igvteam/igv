@@ -49,8 +49,8 @@ public class DBReader {
         return String.format("SELECT %s FROM %s", colListing, tableName);
     }
 
-    public DBReader(DBTable table) {
-        this(table.getDbLocator(), table.getTableName(), table.getBaseQuery());
+    public DBReader(DBProfile.DBTable table) {
+        this(table.getDbLocator(), table.getName(), table.getBaseQuery());
     }
 
     /**

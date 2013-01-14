@@ -14,7 +14,7 @@ package org.broad.igv.dev;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.data.seg.SegmentedAsciiDataSet;
 import org.broad.igv.dev.db.DBManager;
-import org.broad.igv.dev.db.DBTable;
+import org.broad.igv.dev.db.DBProfile;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
         String tableName = "canFam2";
 
         SegmentedReader reader = new SegmentedReader(locator);
-        DBTable table = DBTable.build(locator, tableName);
+        DBProfile.DBTable table = DBProfile.DBTable.build(locator, tableName);
         SegmentedAsciiDataSet ds = reader.loadFromDB(table);
 
         return ds;
@@ -86,7 +86,7 @@ public class SegmentedReaderTest extends AbstractHeadlessTest {
         locator.setUsername("igv_nobel_dev");
         locator.setPassword("nottherealpassword");
         String tableName = "CNV";
-        DBTable table = DBTable.build(locator, tableName);
+        DBProfile.DBTable table = DBProfile.DBTable.build(locator, tableName);
 
         SegmentedReader reader = new SegmentedReader(locator);
         SegmentedAsciiDataSet ds = reader.loadFromDB(table);

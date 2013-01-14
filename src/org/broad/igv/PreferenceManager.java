@@ -1163,8 +1163,8 @@ public class PreferenceManager implements PropertyManager {
     /**
      * Get the path to the CLI plugin specified by the
      * Id and tool name.
-     * @see #putCLIToolPath(String, String, String)
-     * @see #genCLITToolKey
+     * @see #putToolPath(String, String, String)
+     * @see #genToolKey
      *
      * @param pluginId
      * @param toolName
