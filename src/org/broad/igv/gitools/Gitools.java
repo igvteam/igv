@@ -11,6 +11,7 @@
 
 package org.broad.igv.gitools;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -114,7 +115,7 @@ public class Gitools{
     public static List<String> gitoolsLoad(String name, List<String> lociStrings) throws IOException{
         String prefix = name + "-igv";
         prefix = prefix.replace(" ", "_");
-        File tmpFile = File.createTempFile(prefix, "tdm");
+        File tmpFile = File.createTempFile(prefix, ".tdm");
 
         exportTDM(lociStrings, tmpFile);
 
@@ -282,6 +283,13 @@ public class Gitools{
         @Override
         public void actionPerformed(JDialog dialog, GeneList geneList) {
             File file = FileDialogUtils.chooseFile("Export TDM file", null, FileDialogUtils.SAVE);
+
+            // Check file TDM extension
+            String currentExtension = FilenameUtils.getExtension(file.getName());
+            if (!currentExtension.equalsIgnoreCase("TDM")) {
+                file = new File(file.getAbsolutePath() + ".tdm");
+            }
+
             if (file != null) {
                 try {
                     Gitools.exportTDM(geneList.getLoci(), file);
