@@ -478,8 +478,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     protected void drawStrandArrows(Strand strand, int startX, int endX, int startY, double angle, Track.DisplayMode mode,
                                     Graphics2D g2D) {
 
-        // Don't draw strand arrows for very small regions
+        //Don't draw arrows if we don't have a strand
+        if(!strand.equals(Strand.POSITIVE) && !strand.equals(Strand.NEGATIVE)){
+            return;
+        }
 
+        // Don't draw strand arrows for very small regions
         int distance = endX - startX;
         if ((distance < 6)) {
             return;
