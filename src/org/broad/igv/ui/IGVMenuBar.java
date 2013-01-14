@@ -157,7 +157,26 @@ public class IGVMenuBar extends JMenuBar {
         //TODO Add api hook to insert things in tool menu
         boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "false"));
         if(showTDMButton){
-            JMenuItem gitoolsItem = new JMenuItem("Export TDM...");
+            JMenu gitoolsMenu = new JMenu("Gitools heatmaps");
+
+            JMenuItem directLoadItem = new JMenuItem("Load gene matrix in Gitools");
+            directLoadItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    if (Gitools.canConnect() ) {
+                        GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
+                                "Gitools Load", new Gitools.DirectLoadListener());
+                        dialog.setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(IGV.getMainFrame(), "To be able to browse the gene matrix you need to install and open Gitools.\n Download it from http://www.gitools.org.");
+                    }
+
+                }
+            });
+            gitoolsMenu.add(directLoadItem);
+
+            JMenuItem gitoolsItem = new JMenuItem("Export gene matrix (TDM)");
             gitoolsItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -166,20 +185,11 @@ public class IGVMenuBar extends JMenuBar {
                     dialog.setVisible(true);
                 }
             });
-            menuItems.add(gitoolsItem);
+            gitoolsMenu.add(gitoolsItem);
 
-            JMenuItem directLoadItem = new JMenuItem("Load with Gitools...");
-            directLoadItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
-                            "Gitools Load", new Gitools.DirectLoadListener());
-                    dialog.setVisible(true);
-                }
-            });
-            //Test communication
-            directLoadItem.setEnabled(Gitools.canConnect());
-            menuItems.add(directLoadItem);
+
+
+            menuItems.add(gitoolsMenu);
         }
 
         menuItems.add(new JSeparator());
