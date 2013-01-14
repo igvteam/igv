@@ -18,10 +18,7 @@ import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assume;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -36,9 +33,6 @@ import java.util.List;
  * Date: 2013-Jan-03
  */
 public class PluginSourceTest extends AbstractHeadlessTest {
-
-    @Rule
-    public TestRule testTimeout = new Timeout((int) 30e6);
 
     @Test
     public void testMarshall() throws Exception{

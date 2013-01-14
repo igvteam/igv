@@ -14,15 +14,18 @@ package org.broad.igv.session;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.DataSourceTrack;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.AbstractHeadedTest;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
+import org.broad.tribble.Feature;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import java.util.List;
+
+import static junit.framework.Assert.*;
 
 /** Test reading sessions, make sure attributes get parsed properly
  *
@@ -131,6 +134,66 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assertEquals(55, ro.getMinInsertSize());
         assertEquals(1001, ro.getMaxInsertSize());
         assertEquals("", ro.getColorByTag());
+    }
+
+
+
+    /**
+     * Test loading a session with an analysis track
+     * @throws Exception
+     */
+    @Test
+    public void testLoadPluginSession() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_subtract.xml";
+        rewriteRestoreSession(sessionPath);
+
+        String trackAname = "GSM1004654_100k.bed";
+        String trackBname = "GSM1004654_10k.bed";
+        String analId = "BEDTools Remove/Subtract";
+
+        FeatureTrack analTrack = null, trackA = null, trackB = null;
+        for(Track track: IGV.getInstance().getAllTracks()){
+            if(track.getId().equals(analId)){
+                analTrack = (FeatureTrack) track;
+            }else if(track.getName().equals(trackAname)){
+                trackA = (FeatureTrack) track;
+            }else if(track.getName().equals(trackBname)){
+                trackB = (FeatureTrack) track;
+            }
+        }
+
+        String chr = "chr2";
+        int start = 177932002;
+        int end = 180561093;
+
+        List<Feature> aFeatures = trackA.getFeatures(chr, start, end);
+        List<Feature> bFeatures = trackB.getFeatures(chr, start, end);
+        List<Feature> analFeatures = analTrack.getFeatures(chr, start, end);
+
+        //Fairly coarse check, these actually might not exactly be true
+        //due to splitting of exons
+        int checked = 0;
+        for (Feature afeat : analFeatures) {
+            if(afeat.getStart() < start || afeat.getStart() > end) continue;
+            //This particular feature splits funny, it's not a bug, at least not with IGV
+            if(afeat.getStart() == 178625608) continue;
+
+            assertTrue(listContainsFeature(aFeatures, afeat));
+            assertFalse(listContainsFeature(bFeatures, afeat));
+            checked++;
+        }
+        assert checked > 0;
+    }
+
+    private boolean listContainsFeature(List<Feature> featureList, Feature feature){
+        for (Feature listFeature : featureList) {
+            if ((feature.getChr().equals(listFeature.getChr())) &&
+                    (feature.getStart() == listFeature.getStart()) &&
+                    (feature.getEnd() == listFeature.getEnd())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
