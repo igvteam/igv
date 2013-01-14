@@ -1013,5 +1013,17 @@ public class FeatureTrack extends AbstractTrack {
             m.marshal(element, trackElement);
         }
     }
+
+    /**
+     * This method exists for Plugin tracks. When restoring a session there is no guarantee of track
+     * order, so arguments referring to other tracks may fail to resolve. We update those references
+     * here after all tracks have been processed
+     * @param allTracks
+     */
+    public void updateTrackReferences(List<Track> allTracks) {
+        if(source instanceof PluginSource){
+            ((PluginSource) source).updateTrackReferences(allTracks);
+        }
+    }
 }
 

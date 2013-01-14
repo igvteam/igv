@@ -427,6 +427,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 //        return overall;
     }
 
+    public void updateTrackReferences(List<Track> allTracks){
+        MyMapAdapter.updateTrackReferences(arguments, allTracks);
+    }
+
     static class XmlMap{
         public List<Argument> arg =
                 new ArrayList<Argument>();
@@ -440,35 +444,21 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             sessionReader = new WeakReference<IGVSessionReader>(igvSessionReader);
         }
 
-        private IGVSessionReader getSessionReader() {
-            IGVSessionReader reader = sessionReader.get();
-            if(reader == null) throw new IllegalStateException("Have not declared a session reader before unmarshalling tracks");
-            return reader;
-        }
-
         @Override
         public LinkedHashMap<Argument, Object> unmarshal(XmlMap v) throws Exception {
             LinkedHashMap<Argument, Object> argumentMap = new LinkedHashMap(v.arg.size());
             for(Argument argument: v.arg){
                 Object oVal = null;
                 switch (argument.getType()){
-                    case MULTI_FEATURE_TRACK:
-                        List<FeatureTrack> inputTracks = new ArrayList<FeatureTrack>(argument.value.size());
-
-                        for(String trackId: argument.value){
-                            inputTracks.add((FeatureTrack) getMatchingTrack(trackId));
-                        }
-
-                        break;
                     case LONGTEXT:
                     case TEXT:
                         oVal = argument.value.get(0);
                         break;
+                    case MULTI_FEATURE_TRACK:
                     case FEATURE_TRACK:
                     case DATA_TRACK:
                     case ALIGNMENT_TRACK:
-                        String trackId = argument.value.get(0);
-                        oVal = getMatchingTrack(trackId);
+                        oVal = findTrackReference(argument, null);
                         break;
                 }
                 argumentMap.put(argument, oVal);
@@ -476,16 +466,65 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             return argumentMap;
         }
 
-        private Track getMatchingTrack(String trackId){
-            List<Track> matchingTracks = getSessionReader().getTracksById(trackId);
-            if (matchingTracks.size() >= 2) {
-                log.debug("Found multiple tracks with id  " + trackId + ", using the first");
-            } else if (matchingTracks.size() == 0) {
+        /**
+         * Uses #sessionReader to lookup matching tracks by id, or
+         * searches allTracks if sessionReader is null
+         * @param trackId
+         * @param allTracks
+         * @return
+         */
+        private static Track getMatchingTrack(String trackId, List<Track> allTracks){
+            IGVSessionReader reader = sessionReader.get();
+            List<Track> matchingTracks;
+            if(reader != null){
+                matchingTracks = reader.getTracksById(trackId);
+            }else{
+                if(allTracks == null) throw new IllegalStateException("No session reader and no tracks to search to resolve Track references");
+                matchingTracks = new ArrayList<Track>();
+                for(Track track: allTracks){
+                    if(trackId.equals(track.getId())){
+                        matchingTracks.add(track);
+                        break;
+                    }
+                }
+            }
+            if (matchingTracks == null || matchingTracks.size() == 0) {
                 //Either the session file is corrupted, or we just haven't loaded the relevant track yet
-                //TODO Need to save this track to unmarshall later in that case
-
+                return null;
+            }else if (matchingTracks.size() >= 2) {
+                log.debug("Found multiple tracks with id  " + trackId + ", using the first");
             }
             return matchingTracks.get(0);
+        }
+
+        private static Object findTrackReference(Argument argument, List<Track> allTracks){
+            Object oVal = null;
+            switch (argument.getType()){
+                case MULTI_FEATURE_TRACK:
+                    List<FeatureTrack> inputTracks = new ArrayList<FeatureTrack>(argument.value.size());
+
+                    for(String trackId: argument.value){
+                        inputTracks.add((FeatureTrack) getMatchingTrack(trackId, allTracks));
+                    }
+                    oVal = inputTracks;
+                    break;
+                case FEATURE_TRACK:
+                case DATA_TRACK:
+                case ALIGNMENT_TRACK:
+                    String trackId = argument.value.get(0);
+                    oVal = getMatchingTrack(trackId, allTracks);
+                    break;
+            }
+            return oVal;
+        }
+
+        public static void updateTrackReferences(Map<Argument, Object> argumentMap, List<Track> allTracks) {
+            for(Argument argument: argumentMap.keySet()){
+                //Reference already resolved
+                if(argumentMap.get(argument) != null) continue;
+                Object oVal = findTrackReference(argument, allTracks);
+                argumentMap.put(argument, oVal);
+            }
         }
 
         @Override

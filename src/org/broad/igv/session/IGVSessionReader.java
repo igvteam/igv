@@ -22,10 +22,7 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackType;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
@@ -74,12 +71,17 @@ public class IGVSessionReader implements SessionReader {
 
     /**
      * Map of track id -> track.  It is important to maintain the order in which tracks are added, thus
-     * the use of LinkedHashMap.
+     * the use of LinkedHashMap. We add tracks here when loaded and remove them when attributes are specified.
      */
-    private final Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
+    private final Map<String, List<Track>> leftoverTrackDictionary = Collections.synchronizedMap(new LinkedHashMap());
+
+    /**
+     * Map of id -> track, for second pass through when tracks reference each other
+     */
+    private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<String, List<Track>>());
 
     public List<Track> getTracksById(String trackId){
-        return trackDictionary.get(trackId);
+        return allTracks.get(trackId);
     }
 
 
@@ -290,7 +292,7 @@ public class IGVSessionReader implements SessionReader {
 
         // Add tracks not explicitly allocated to panels.  It is legal to define sessions with the Resources
         // section only (no Panel or Track elements).
-        addLeftoverTracks(trackDictionary.values());
+        addLeftoverTracks(leftoverTrackDictionary.values());
 
         if (igv != null) {
             if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
@@ -385,7 +387,6 @@ public class IGVSessionReader implements SessionReader {
 
     //TODO Check to make sure tracks are not being created twice
     //TODO -- DONT DO THIS FOR NEW SESSIONS
-
     private void addLeftoverTracks(Collection<List<Track>> tmp) {
         Map<String, TrackPanel> trackPanelCache = new HashMap();
         if (version < 3 || !panelElementPresent) {
@@ -522,10 +523,11 @@ public class IGVSessionReader implements SessionReader {
                                     id = id.replace(suppliedPath, relPath);
                                 }
 
-                                List<Track> trackList = trackDictionary.get(id);
+                                List<Track> trackList = leftoverTrackDictionary.get(id);
                                 if (trackList == null) {
                                     trackList = new ArrayList();
-                                    trackDictionary.put(id, trackList);
+                                    leftoverTrackDictionary.put(id, trackList);
+                                    allTracks.put(id, trackList);
                                 }
                                 trackList.add(track);
                             }
@@ -882,6 +884,16 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
+        //We make a second pass through, resolving references to tracks which may have been processed afterwards.
+        //For instance if Track 2 referenced Track 4
+        //TODO Make this less hacky
+        for (Track track: panelTracks){
+            if(track instanceof FeatureTrack){
+                FeatureTrack featureTrack = (FeatureTrack) track;
+                featureTrack.updateTrackReferences(panelTracks);
+            }
+        }
+
         TrackPanel panel = IGV.getInstance().getTrackPanel(panelName);
         panel.addTracks(panelTracks);
     }
@@ -927,7 +939,7 @@ public class IGVSessionReader implements SessionReader {
         String id = getAttribute(element, SessionAttribute.ID.getText());
 
         // Get matching tracks.
-        List<Track> matchedTracks = trackDictionary.get(id);
+        List<Track> matchedTracks = allTracks.get(id);
 
         if (matchedTracks == null) {
             log.info("Warning.  No tracks were found with id: " + id + " in session file");
@@ -965,7 +977,7 @@ public class IGVSessionReader implements SessionReader {
             } catch (JAXBException e) {
                 throw new RuntimeException(e);
             }
-            //trackDictionary.remove(id);
+            leftoverTrackDictionary.remove(id);
         }
 
         NodeList elements = element.getChildNodes();
