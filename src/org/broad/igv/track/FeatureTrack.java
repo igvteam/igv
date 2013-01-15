@@ -107,6 +107,7 @@ public class FeatureTrack extends AbstractTrack {
 
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
     protected IGVFeature selectedFeature = null;
+    protected Exon selectedExon = null;
 
 
     int margin = DEFAULT_MARGIN;
@@ -555,22 +556,32 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
 
-
-        //dhmay adding for feature selection
+        //For feature selection
         selectedFeature = null;
 
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
-            //if nothing already selected, select this feature
-            if (selectedFeature == null)
-                selectedFeature = igvFeature;
+            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
                 //If something already selected, then if it's the same as this feature, deselect, otherwise, select
                 //this feature.
                 //todo: contains() might not do everything I want it to.
-            else if (igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
                 selectedFeature = null;
-            else selectedFeature = igvFeature;
+            else{
+                //if nothing already selected, or something else selected,
+                // select this feature
+                selectedFeature = igvFeature;
+
+                //Select the appropriate exon
+                selectedExon = null;
+                double location = te.getFrame().getChromosomePosition(e.getX());
+                for(Exon exon: selectedFeature.getExons()){
+                    if(location >= exon.getStart() && location < exon.getEnd()){
+                        selectedExon = exon;
+                        break;
+                    }
+                }
+            }
 
             if (IGV.getInstance().isShowDetailsOnClick()) {
                 openTooltipWindow(te);
@@ -586,7 +597,6 @@ public class FeatureTrack extends AbstractTrack {
                     return true;
                 }
             }
-
         }
 
         return false;
@@ -932,6 +942,10 @@ public class FeatureTrack extends AbstractTrack {
 
     public IGVFeature getSelectedFeature() {
         return selectedFeature;
+    }
+
+    public Exon getSelectedExon(){
+        return selectedExon;
     }
 
     public static boolean isDrawBorder() {

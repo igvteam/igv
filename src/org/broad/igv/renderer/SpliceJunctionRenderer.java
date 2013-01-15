@@ -22,7 +22,9 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -64,10 +66,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param featureList
      * @param context
      * @param trackRectangle
-     * @param track          public void render(List<IGVFeature> featureList,
-     *                       RenderContext context,
-     *                       Rectangle trackRectangle,
-     *                       Track track) {
+     * @param track
      */
     @Override
     public void render(List<IGVFeature> featureList,

@@ -24,6 +24,7 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
@@ -31,10 +32,9 @@ import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.FeatureTrackSelectionDialog;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
@@ -65,6 +65,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     JComponent parent;
 
 
+    protected FeatureTrack geneTrack;
+
+
     public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, Genome genome) {
         super(locator, locator.getPath() + "_junctions", name);
 
@@ -78,17 +81,29 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     }
 
     private void showSashimiPlot() {
+        FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
+        dlg.setVisible(true);
+        if (dlg.getIsCancelled()) return;
+        geneTrack = dlg.getSelectedTrack();
+
         setRendererClass(SashimiJunctionRenderer.class);
-        (new SashimiPlot(FrameManager.getDefaultFrame(), this)).setVisible(true);
+
+        //(new SashimiPlot(FrameManager.getDefaultFrame(), this)).setVisible(true);
     }
 
+    @Override
+    public Exon getSelectedExon() {
+        if(getRenderer() instanceof SashimiJunctionRenderer){
+            return geneTrack.getSelectedExon();
+        }
+        return super.getSelectedExon();
+    }
 
     @Override
     protected boolean isShowFeatures(RenderContext context) {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         return context.getScale() < minVisibleScale;
-
     }
 
 

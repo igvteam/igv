@@ -24,11 +24,11 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -67,10 +67,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * @param featureList
      * @param context
      * @param trackRectangle
-     * @param track          public void render(List<IGVFeature> featureList,
-     *                       RenderContext context,
-     *                       Rectangle trackRectangle,
-     *                       Track track) {
+     * @param track
      */
     @Override
     public void render(List<IGVFeature> featureList,
@@ -105,17 +102,11 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
-            SpliceJunctionFeature selectedFeature =
-                    (SpliceJunctionFeature) ((FeatureTrack) track).getSelectedFeature();
+            Feature selectedFeature = ((FeatureTrack) track).getSelectedExon();
 
+            boolean drawAbove = true;
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
-                //if same junction as selected feature, highlight
-                boolean shouldHighlight = false;
-                if (selectedFeature != null && selectedFeature.isSameJunction(junctionFeature)) {
-                    setHighlightFeature(junctionFeature);
-                    shouldHighlight = true;
-                }
 
                 // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
@@ -126,6 +117,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
                 int junctionStart = junctionFeature.getJunctionStart();
                 int junctionEnd = junctionFeature.getJunctionEnd();
+
+                //Only show arcs for the selected feature, if applicable
+                if (selectedFeature != null) {
+                    if((junctionStart >= selectedFeature.getStart() && junctionStart <= selectedFeature.getEnd())
+                            || (junctionEnd >= selectedFeature.getStart() && junctionEnd <= selectedFeature.getEnd())){
+
+                    }else{
+                        continue;
+                    }
+                }
 
                 double virtualPixelStart = Math.round((flankingStart - origin) / locScale);
                 double virtualPixelEnd = Math.round((flankingEnd - origin) / locScale);
@@ -146,8 +147,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight, color,
+                            trackRectangle, context, drawAbove, junctionFeature, color,
                             shouldShowFlankingRegions);
+                    drawAbove = !drawAbove;
                 }
             }
 
@@ -170,22 +172,15 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * @param depth              coverage depth
      * @param trackRectangle
      * @param context
-     * @param strand
+     * @param drawAbove Whether to draw arc above or below midline
      * @param junctionFeature
-     * @param shouldHighlight
      * @param featureColor       the color specified for this feature.  May be null.
      */
     protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                int pixelJunctionStart, int pixelJunctionEnd, int depth,
-                               Rectangle trackRectangle, RenderContext context, Strand strand,
-                               SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor,
+                               Rectangle trackRectangle, RenderContext context, boolean drawAbove,
+                               SpliceJunctionFeature junctionFeature, Color featureColor,
                                boolean shouldShowFlankingRegions) {
-
-
-        boolean isPositiveStrand = true;
-        // Get the feature's direction, color appropriately
-        if (strand != null && strand.equals(Strand.NEGATIVE))
-            isPositiveStrand = false;
 
         //If the feature color is specified, use it, except that we set our own alpha depending on whether
         //the feature is highlighted.  Otherwise default based on strand and highlight.
@@ -194,13 +189,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             int r = featureColor.getRed();
             int g = featureColor.getGreen();
             int b = featureColor.getBlue();
-            int alpha = shouldHighlight ? 255 : 140;
+            int alpha = 140;
             color = new Color(r, g, b, alpha);
         } else {
-            if (isPositiveStrand)
-                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
-            else
-                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+            color = drawAbove ? ARC_COLOR_POS : ARC_COLOR_NEG;
         }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
@@ -215,7 +207,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         int arcHeight = Math.max(5, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
 
         //We adjust up or down depending on the strand
-        int yStrandModifier = isPositiveStrand ? -1 : 1;
+        int yStrandModifier = drawAbove ? -1 : 1;
 
         int arcBeginY = (int) trackRectangle.getCenterY() + yStrandModifier;
 
