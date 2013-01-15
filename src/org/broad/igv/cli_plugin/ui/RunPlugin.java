@@ -27,10 +27,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author User #2
@@ -115,7 +113,7 @@ public class RunPlugin extends JDialog {
 
         //TODO PluginDataSource is already written, just need to know when to use it
         PluginFeatureSource source = new PluginFeatureSource(cmd, argumentValues, parsingAttrs, specPath);
-        FeatureTrack newTrack = new FeatureTrack(name, name, source);
+        FeatureTrack newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, source);
         return newTrack;
     }
 

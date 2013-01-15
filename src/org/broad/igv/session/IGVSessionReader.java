@@ -356,6 +356,9 @@ public class IGVSessionReader implements SessionReader {
             }
 
         }
+        //For later lookup, we keep a reference to the gene track
+        Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+        allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
 
 
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
@@ -953,6 +956,7 @@ public class IGVSessionReader implements SessionReader {
                     Unmarshaller u = getJAXBContext().createUnmarshaller();
                     Track track = unmarshalTrackElement(u, element, null, clazz);
                     matchedTracks = new ArrayList<Track>(Arrays.asList(track));
+                    allTracks.put(track.getId(), matchedTracks);
                 }
 
             } catch (JAXBException e) {
