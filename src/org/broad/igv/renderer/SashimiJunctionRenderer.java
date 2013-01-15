@@ -61,6 +61,22 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     //this depth and deeper will all look the same
     protected int MAX_DEPTH = 50;
 
+    private ShapeType shapeType = ShapeType.ELLIPSE;
+
+    public enum ShapeType{
+        CIRCLE,
+        ELLIPSE,
+        TEXT
+    }
+
+    public void setShapeType(ShapeType shapeType){
+        this.shapeType = shapeType;
+    }
+
+    public ShapeType getShapeType() {
+        return shapeType;
+    }
+
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
      *
@@ -232,20 +248,49 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         double actArcPeakY = arcBeginY + yStrandModifier * Math.pow(0.5, 3) * (6) * arcHeight;
 
-        //Draw circle to indicate depth
-        float w = 5f;
-        float x = midX - w/2;
-
+        //Draw shape to indicate depth
         float maxPossibleShapeHeight = maxPossibleArcHeight / 2;
-        float h = maxPossibleShapeHeight * depthProportionOfMax;
 
-        //we don't modify because the ellipse is always specified from the top left corner
-        float y = (float) actArcPeakY - h / 2;
+        Shape shape = null;
+        switch(shapeType){
+            case CIRCLE:
+                shape = createDepthCircle(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+                break;
+            case ELLIPSE:
+                shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+                break;
+            case TEXT:
+                g2D.drawString("" + depth, midX, arcControlPeakY);
+        }
 
-        Shape shape = new Ellipse2D.Float(x, y, w, h);
-        g2D.draw(shape);
-        g2D.fill(shape);
+        if(shape != null){
+            g2D.draw(shape);
+            g2D.fill(shape);
+        }
+    }
 
+    private Shape createDepthEllipse(double maxPossibleShapeHeight, double depthProportionOfMax, double arcMidX, double actArcPeakY){
+        double w = 5f;
+        double x = arcMidX - w/2;
+
+        double h = maxPossibleShapeHeight * depthProportionOfMax;
+
+        //The ellipse is always specified from the top left corner
+        double y = actArcPeakY - h / 2;
+
+        return new Ellipse2D.Double(x, y, w, h);
+    }
+
+    private Shape createDepthCircle(double maxPossibleShapeHeight, double depthProportionOfMax, double arcMidX, double actArcPeakY){
+
+        double h = maxPossibleShapeHeight * Math.sqrt(depthProportionOfMax);
+        double w = h;
+        double x = arcMidX - w/2;
+
+        //The ellipse is always specified from the top left corner
+        double y = actArcPeakY - h / 2;
+
+        return new Ellipse2D.Double(x, y, w, h);
     }
 
 
