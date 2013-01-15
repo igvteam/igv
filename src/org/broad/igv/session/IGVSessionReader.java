@@ -356,10 +356,11 @@ public class IGVSessionReader implements SessionReader {
             }
 
         }
-        //For later lookup, we keep a reference to the gene track
-        Track geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
-
+        //For later lookup and to prevent dual adding, we keep a reference to the gene track
+        geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
+        if(geneTrack != null){
+            allTracks.put(geneTrack.getId(), Arrays.asList(geneTrack));
+        }
 
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
