@@ -120,7 +120,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
             Feature selectedFeature = ((FeatureTrack) track).getSelectedExon();
 
-            boolean drawAbove = true;
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
@@ -163,9 +162,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, drawAbove, junctionFeature, color,
+                            trackRectangle, context, junctionFeature, color,
                             shouldShowFlankingRegions);
-                    drawAbove = !drawAbove;
                 }
             }
 
@@ -188,16 +186,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * @param depth              coverage depth
      * @param trackRectangle
      * @param context
-     * @param drawAbove Whether to draw arc above or below midline
      * @param junctionFeature
      * @param featureColor       the color specified for this feature.  May be null.
      */
     protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                int pixelJunctionStart, int pixelJunctionEnd, int depth,
-                               Rectangle trackRectangle, RenderContext context, boolean drawAbove,
+                               Rectangle trackRectangle, RenderContext context,
                                SpliceJunctionFeature junctionFeature, Color featureColor,
                                boolean shouldShowFlankingRegions) {
 
+        boolean drawAbove = junctionFeature.getJunctionEnd() % 2 == 0;
         //If the feature color is specified, use it, except that we set our own alpha depending on whether
         //the feature is highlighted.  Otherwise default based on strand and highlight.
         Color color;

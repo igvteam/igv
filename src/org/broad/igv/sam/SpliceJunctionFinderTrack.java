@@ -24,18 +24,18 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.FeatureRenderer;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.FeatureTrackSelectionDialog;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
@@ -53,6 +53,7 @@ import java.util.List;
 public class SpliceJunctionFinderTrack extends FeatureTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
+
 
     AlignmentDataManager dataManager;
     PreferenceManager prefs;
@@ -85,20 +86,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         if (dlg.getIsCancelled()) return;
         geneTrack = dlg.getSelectedTrack();
 
-        setRendererClass(SashimiJunctionRenderer.class);
-        if(shapeType != null){
-            ((SashimiJunctionRenderer) getRenderer()).setShapeType(shapeType);
-        }
-
-        //(new SashimiPlot(FrameManager.getDefaultFrame(), this)).setVisible(true);
-    }
-
-    @Override
-    public Exon getSelectedExon() {
-        if(getRenderer() instanceof SashimiJunctionRenderer && geneTrack != null){
-            return geneTrack.getSelectedExon();
-        }
-        return super.getSelectedExon();
+        SashimiPlot sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), this);
+        sashimiPlot.setShapeType(shapeType);
+        sashimiPlot.setVisible(true);
     }
 
     @Override
@@ -133,7 +123,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
 
-        JMenu setRenderingStyle = new JMenu("Render Type");
+        JMenu setRenderingStyle = new JMenu("Show Sashimi Window");
 
         setRenderingStyle.addActionListener(new ActionListener() {
             @Override
@@ -141,24 +131,24 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
                 showSashimiPlot(null);
             }
         });
-        JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
-        setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class, null));
-        setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
+        //JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
+        //setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class, null));
+        //setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
 
-        setRenderingStyle.add(setSplice);
+        //setRenderingStyle.add(setSplice);
 
         Map<String, SashimiJunctionRenderer.ShapeType> renderTypes = new LinkedHashMap<String, SashimiJunctionRenderer.ShapeType>(3);
         renderTypes.put("Sashimi Ellipse", SashimiJunctionRenderer.ShapeType.ELLIPSE);
         renderTypes.put("Sashimi Circle", SashimiJunctionRenderer.ShapeType.CIRCLE);
         renderTypes.put("Sashimi Text", SashimiJunctionRenderer.ShapeType.TEXT);
-        for(Map.Entry<String, SashimiJunctionRenderer.ShapeType> entry: renderTypes.entrySet()){
-            JCheckBoxMenuItem tmpSashimi = new JCheckBoxMenuItem(entry.getKey());
-            tmpSashimi.addActionListener(getChangeClassListener(tmpSashimi, SashimiJunctionRenderer.class, entry.getValue()));
-            FeatureRenderer renderer = SpliceJunctionFinderTrack.this.getRenderer();
-            tmpSashimi.setSelected(renderer.getClass().equals(SashimiJunctionRenderer.class) &&
-                ((SashimiJunctionRenderer) renderer).getShapeType().equals(entry.getValue()));
-
-
+        for(final Map.Entry<String, SashimiJunctionRenderer.ShapeType> entry: renderTypes.entrySet()){
+            JMenuItem tmpSashimi = new JCheckBoxMenuItem(entry.getKey());
+            tmpSashimi.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showSashimiPlot(entry.getValue());
+                }
+            });
             setRenderingStyle.add(tmpSashimi);
         }
 
@@ -233,5 +223,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
                 packedFeaturesMap.clear();
         }
 
+    }
+
+
+    public AlignmentDataManager getDataManager() {
+        return dataManager;
+    }
+
+    public Genome getGenome() {
+        return genome;
     }
 }

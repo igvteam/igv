@@ -12,6 +12,8 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.renderer.SashimiJunctionRenderer;
+import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.RenderContextImpl;
@@ -29,15 +31,22 @@ import java.awt.*;
  */
 public class SashimiPlot extends JFrame{
 
-    public SashimiPlot(ReferenceFrame frame, Track track){
+    private SpliceJunctionFinderTrack spliceJunctionTrack;
+
+    public SashimiPlot(ReferenceFrame frame, SpliceJunctionFinderTrack track){
         initSize(frame.getWidthInPixels());
         BoxLayout boxLayout = new BoxLayout(getContentPane(), BoxLayout.Y_AXIS);
         getContentPane().setLayout(boxLayout);
 
-        TrackComponent trackComponent = new TrackComponent(frame, track);
+        spliceJunctionTrack = new SpliceJunctionFinderTrack(track.getResourceLocator(), track.getName(),
+               track.getDataManager(), track.getGenome());
+
+        spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
+        TrackComponent trackComponent = new TrackComponent(frame, spliceJunctionTrack);
 
         FeatureTrack geneTrack = GenomeManager.getInstance().getCurrentGenome().getGeneTrack();
-        TrackComponent geneComponent = new TrackComponent(frame, geneTrack);
+        FeatureTrack geneTrackClone = new FeatureTrack(geneTrack);
+        TrackComponent geneComponent = new TrackComponent(frame, geneTrackClone);
 
         getContentPane().add(trackComponent);
         getContentPane().add(geneComponent);
@@ -47,6 +56,10 @@ public class SashimiPlot extends JFrame{
 
     private void initSize(int width) {
         setSize(width, 500);
+    }
+
+    public void setShapeType(SashimiJunctionRenderer.ShapeType shapeType) {
+        ((SashimiJunctionRenderer) spliceJunctionTrack.getRenderer()).setShapeType(shapeType);
     }
 
 

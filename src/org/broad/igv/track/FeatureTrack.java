@@ -182,6 +182,14 @@ public class FeatureTrack extends AbstractTrack {
         init(source);
     }
 
+    /**
+     * Create a new track which is a shallow copy of this one
+     * @param featureTrack
+     */
+    public FeatureTrack(FeatureTrack featureTrack) {
+        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
+    }
+
     protected void init(FeatureSource source) {
 
         this.source = source;
@@ -575,10 +583,12 @@ public class FeatureTrack extends AbstractTrack {
                 //Select the appropriate exon
                 selectedExon = null;
                 double location = te.getFrame().getChromosomePosition(e.getX());
-                for(Exon exon: selectedFeature.getExons()){
-                    if(location >= exon.getStart() && location < exon.getEnd()){
-                        selectedExon = exon;
-                        break;
+                if(selectedFeature.getExons() != null){
+                    for(Exon exon: selectedFeature.getExons()){
+                        if(location >= exon.getStart() && location < exon.getEnd()){
+                            selectedExon = exon;
+                            break;
+                        }
                     }
                 }
             }
