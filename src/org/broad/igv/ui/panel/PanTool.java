@@ -39,19 +39,22 @@ public class PanTool extends AbstractDataPanelTool {
     private boolean isDragging = false;
     private Cursor dragCursor;
 
+    private ReferenceFrame referenceFrame;
 
     public PanTool(DataPanel owner) {
         super(owner, Cursor.getDefaultCursor());
         this.dragCursor = IGV.fistCursor;
         setName("Pan");
-        verticalScrollBar = owner.getVerticalScrollbar();
-        Container parentContainer = owner.getParent();
+        if (owner != null) {
+            verticalScrollBar = owner.getVerticalScrollbar();
+            Container parentContainer = owner.getParent();
             if (parentContainer != null) {
                 Container parentOfParent = parentContainer.getParent();
                 if ((parentOfParent != null) && (parentOfParent instanceof JViewport)) {
                     //viewport = (JViewport) parentOfParent;
                 }
             }
+        }
     }
 
 
@@ -74,6 +77,16 @@ public class PanTool extends AbstractDataPanelTool {
 
     }
 
+    public void setReferenceFrame(ReferenceFrame frame){
+        this.referenceFrame = frame;
+    }
+
+
+    @Override
+    public ReferenceFrame getReferenceFame() {
+        if(referenceFrame != null) return referenceFrame;
+        return super.getReferenceFame();
+    }
 
     public void mouseReleased(final MouseEvent e) {
 

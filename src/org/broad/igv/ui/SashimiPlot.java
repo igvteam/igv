@@ -90,8 +90,13 @@ public class SashimiPlot extends JFrame{
     }
 
     private void initMouseAdapters(TrackComponent<SpliceJunctionFinderTrack> trackComponent, TrackComponent<FeatureTrack> geneComponent) {
-        trackComponent.addMouseListener(new JunctionTrackMouseAdapter(trackComponent));
-        geneComponent.addMouseListener(new GeneTrackMouseAdapter(geneComponent));
+        JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
+        trackComponent.addMouseListener(ad1);
+        trackComponent.addMouseMotionListener(ad1);
+
+        GeneTrackMouseAdapter ad2 = new GeneTrackMouseAdapter(geneComponent);
+        geneComponent.addMouseListener(ad2);
+        geneComponent.addMouseMotionListener(ad2);
     }
 
     private SashimiJunctionRenderer getRenderer(){
@@ -202,20 +207,35 @@ public class SashimiPlot extends JFrame{
         }
     }
 
-    private abstract static class TrackComponentMouseAdapter<T extends Track> extends MouseAdapter{
+    private abstract class TrackComponentMouseAdapter<T extends Track> extends MouseAdapter{
 
         protected TrackComponent<T> trackComponent;
+        protected PanTool currentTool;
 
         TrackComponentMouseAdapter(TrackComponent<T> trackComponent){
             this.trackComponent = trackComponent;
+            currentTool = new PanTool(null);
+            currentTool.setReferenceFrame(this.trackComponent.frame);
         }
 
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            currentTool.mouseDragged(e);
+            repaint();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            currentTool.mouseReleased(e);
+        }
 
         @Override
         public void mousePressed(MouseEvent e) {
             if(e.isPopupTrigger()){
                 doPopupMenu(e);
             }else{
+                currentTool.mousePressed(e);
                 super.mousePressed(e);
             }
 
@@ -237,6 +257,7 @@ public class SashimiPlot extends JFrame{
                 return;
             }
 
+            currentTool.mouseClicked(e);
             handleDataClick(e);
         }
 
