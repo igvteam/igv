@@ -58,11 +58,17 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
-    protected int MAX_DEPTH = 50;
-
+    protected int DEFAULT_MAX_DEPTH = 50;
+    protected int maxDepth = DEFAULT_MAX_DEPTH;
     private ShapeType shapeType = ShapeType.ELLIPSE;
-
     private Feature selectedExon;
+
+    public enum ShapeType{
+        CIRCLE,
+        ELLIPSE,
+        TEXT
+    }
+
 
     public void setSelectedExon(Feature selectedExon) {
         this.selectedExon = selectedExon;
@@ -72,10 +78,13 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return selectedExon;
     }
 
-    public enum ShapeType{
-        CIRCLE,
-        ELLIPSE,
-        TEXT
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
     }
 
     public void setShapeType(ShapeType shapeType){
@@ -226,7 +235,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         //proportion of the maximum arc height used by a minimum-height arc
         double minArcHeightProportion = 0.1;
 
-        float depthProportionOfMax = Math.min(1, depth / MAX_DEPTH);
+        float depthProportionOfMax = Math.min(1, depth / maxDepth);
         int arcHeight = Math.max(5, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
 
         //We adjust up or down depending on the strand

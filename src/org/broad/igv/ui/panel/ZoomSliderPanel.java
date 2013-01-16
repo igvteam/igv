@@ -36,7 +36,6 @@ public class ZoomSliderPanel extends JPanel {
     static Color TICK_GRAY = new Color(90, 90, 90);
     static Color TICK_BLUE = new Color(25, 50, 200);
 
-    public static ZoomSliderPanel theInstance;
     //double imageScaleFactor = 0.8;
     Image slider;
     Image zoomPlus;
@@ -49,16 +48,12 @@ public class ZoomSliderPanel extends JPanel {
      */
     int numZoomLevels = 25;
     private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
-
     private ReferenceFrame referenceFrame;
 
     public ZoomSliderPanel(){
         this(null);
     }
 
-    /**
-     * Creates a new instance of ZoomSliderPanel
-     */
     public ZoomSliderPanel(ReferenceFrame referenceFrame) {
         this.referenceFrame = referenceFrame;
         slider = IconFactory.getInstance().getIcon(IconFactory.IconID.SLIDER).getImage();

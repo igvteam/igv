@@ -14,10 +14,7 @@ package org.broad.igv.ui;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.panel.FeatureTrackSelectionDialog;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.*;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
@@ -40,9 +37,13 @@ import java.util.Map;
 public class SashimiPlot extends JFrame{
 
     private SpliceJunctionFinderTrack spliceJunctionTrack;
+    private ReferenceFrame frame;
 
-    public SashimiPlot(ReferenceFrame frame, SpliceJunctionFinderTrack track, FeatureTrack geneTrack){
+    public SashimiPlot(ReferenceFrame iframe, SpliceJunctionFinderTrack track, FeatureTrack geneTrack){
+        this.frame = new ReferenceFrame(iframe);
+
         initSize(frame.getWidthInPixels());
+
         BoxLayout boxLayout = new BoxLayout(getContentPane(), BoxLayout.Y_AXIS);
         getContentPane().setLayout(boxLayout);
 
@@ -54,6 +55,19 @@ public class SashimiPlot extends JFrame{
 
         FeatureTrack geneTrackClone = new FeatureTrack(geneTrack);
         TrackComponent<FeatureTrack> geneComponent = new TrackComponent<FeatureTrack>(frame, geneTrackClone);
+
+
+        //Add control elements to the top
+        JPanel controlPanel = new ZoomSliderPanel(this.frame);
+        controlPanel.setSize(this.frame.getWidthInPixels(), 20);
+        getContentPane().add(controlPanel);
+        controlPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                repaint();
+            }
+        });
+
 
         getContentPane().add(trackComponent);
         getContentPane().add(geneComponent);
@@ -77,7 +91,9 @@ public class SashimiPlot extends JFrame{
         geneComponent.addMouseListener(new GeneTrackMouseAdapter(geneComponent));
     }
 
-
+    private SashimiJunctionRenderer getRenderer(){
+        return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
+    }
     /**
      * Should consider using this elsewhere. Single component
      * which contains a single track
@@ -116,6 +132,24 @@ public class SashimiPlot extends JFrame{
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
+
+            JMenuItem maxDepthItem = new JMenuItem("Set Max Depth");
+            maxDepthItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String input = JOptionPane.showInputDialog("Set Maximum Depth", getRenderer().getMaxDepth());
+                    try {
+                        int newMaxDepth = Integer.parseInt(input);
+                        getRenderer().setMaxDepth(newMaxDepth);
+                        repaint();
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
+                    }
+                }
+            });
+
+            menu.add(maxDepthItem);
+
             for(JMenuItem item: getRenderMenuItems(null, SashimiPlot.this)){
                 menu.add(item);
             }
@@ -133,13 +167,35 @@ public class SashimiPlot extends JFrame{
         protected void handleDataClick(MouseEvent e) {
             trackComponent.track.handleDataClick(createTrackClickEvent(e));
             Feature selectedExon = trackComponent.track.getSelectedExon();
-            ((SashimiJunctionRenderer) spliceJunctionTrack.getRenderer()).setSelectedExon(selectedExon);
+            getRenderer().setSelectedExon(selectedExon);
             repaint();
         }
 
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
-            return null; //TODO
+            return null;
+//
+//            IGVPopupMenu menu = new IGVPopupMenu();
+//            JMenuItem item = new JMenuItem("Zoom in");
+//            item.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    frame.zoomAndCenterAdjusted(frame.getZoom() + 1);
+//                    repaint();
+//                }
+//            });
+//            menu.add(item);
+//
+//            item = new JMenuItem("Zoom Out");
+//            item.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    frame.zoomAndCenterAdjusted(frame.getZoom() - 1);
+//                    repaint();
+//                }
+//            });
+//            menu.add(item);
+//            return menu;
         }
     }
 
