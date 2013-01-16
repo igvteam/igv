@@ -56,10 +56,13 @@ public class SashimiPlot extends JFrame{
         FeatureTrack geneTrackClone = new FeatureTrack(geneTrack);
         TrackComponent<FeatureTrack> geneComponent = new TrackComponent<FeatureTrack>(frame, geneTrackClone);
 
-
         //Add control elements to the top
         JPanel controlPanel = new ZoomSliderPanel(this.frame);
-        controlPanel.setSize(this.frame.getWidthInPixels(), 20);
+        Dimension dimSize = new Dimension(200, 30);
+        controlPanel.setPreferredSize(dimSize);
+        controlPanel.setMinimumSize(dimSize);
+        controlPanel.setMaximumSize(dimSize);
+
         getContentPane().add(controlPanel);
         controlPanel.addMouseListener(new MouseAdapter() {
             @Override
