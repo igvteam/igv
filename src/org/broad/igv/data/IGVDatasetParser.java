@@ -411,6 +411,7 @@ public class IGVDatasetParser {
                 if (!nextLine.startsWith("#")) {
                     try {
                         String[] tokens = Globals.tabPattern.split(nextLine, -1);
+
                         String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
                         if (thisChromosome.equals(chromosome)) {
                             chromosomeStarted = true;
@@ -427,6 +428,12 @@ public class IGVDatasetParser {
                             }
 
                             startLocations.add(start);
+
+                            if(tokens.length <= firstDataColumn + (dataHeaders.length - 1)*skipColumns){
+                                String msg = "Line has too few data columns: " + nextLine;
+                                log.error(msg);
+                                throw new RuntimeException(msg);
+                            }
 
                             for (int idx = 0; idx < dataHeaders.length; idx++) {
                                 int i = firstDataColumn + idx * skipColumns;
