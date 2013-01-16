@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -62,6 +61,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     protected int MAX_DEPTH = 50;
 
     private ShapeType shapeType = ShapeType.ELLIPSE;
+
+    private Feature selectedExon;
+
+    public void setSelectedExon(Feature selectedExon) {
+        this.selectedExon = selectedExon;
+    }
+
+    public Feature getSelectedExon() {
+        return selectedExon;
+    }
 
     public enum ShapeType{
         CIRCLE,
@@ -118,7 +127,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
-            Feature selectedFeature = ((FeatureTrack) track).getSelectedExon();
+            Feature selectedFeature = getSelectedExon();
 
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
