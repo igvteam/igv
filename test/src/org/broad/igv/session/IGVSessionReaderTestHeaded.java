@@ -11,6 +11,7 @@
 
 package org.broad.igv.session;
 
+import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.DataSourceTrack;
@@ -21,6 +22,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
+import org.junit.Assume;
 import org.junit.Test;
 
 import java.util.List;
@@ -144,6 +146,10 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
      */
     @Test
     public void testLoadPluginSession() throws Exception{
+        String toolPath = "/usr/local/bin/bedtools";
+        boolean haveTool = PluginSpecReader.isToolPathValid(toolPath);
+        Assume.assumeTrue(haveTool);
+
         String sessionPath = TestUtils.DATA_DIR + "sessions/GSM_bedtools_subtract.xml";
         rewriteRestoreSession(sessionPath);
 

@@ -55,6 +55,7 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         long[] times = TestUtils.timeMethod(supplier, decodePredicate, nTrials);
         //Calculate average (in nanoseconds)
         double average = TestUtils.average(times);
+        long median = times[times.length / 2];
 
         int maxMultiplier = 200000;
         if (jVersion.contains("1.7")) {
@@ -62,7 +63,7 @@ public class IGVBEDCodecTest extends AbstractHeadlessTest {
         }
         //we are somewhat forgiving, for the sake of portability. Less than 2 uSec okay, even if it
         //breaks benchmark
-        assertTrue("Decoding median speed too slow", average < benchTime / maxMultiplier || average < 2000);
+        assertTrue("Decoding median speed too slow", median < benchTime / maxMultiplier || median < 2000);
     }
 
 
