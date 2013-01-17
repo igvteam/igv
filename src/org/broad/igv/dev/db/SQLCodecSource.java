@@ -196,9 +196,14 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         return source;
     }
 
+    private String rowToStringLine(ResultSet rs) throws SQLException {
+        String[] tokens = rowToStringArray(rs);
+        return StringUtils.join(tokens, "\t");
+    }
+
     //TODO We already know how to parse strings, so just turn everything to strings
     //TODO See IParser for better, type-safe way of handling different data sources
-    private String rowToStringLine(ResultSet rs) throws SQLException {
+    private String[] rowToStringArray(ResultSet rs) throws SQLException {
 
         String[] tokens;
         if (table.getColumnLabelMap() != null) {
@@ -206,13 +211,13 @@ public class SQLCodecSource extends DBQueryReader<Feature> implements FeatureSou
         } else {
             tokens = DBManager.lineToArray(rs, startColIndex, endColIndex, false);
         }
-        return StringUtils.join(tokens, "\t");
+        return tokens;
     }
 
     @Override
     protected Feature processResult(ResultSet rs) throws SQLException {
-        String line = rowToStringLine(rs);
-        return codec.decode(line);
+        String[] tokens = rowToStringArray(rs);
+        return codec.decode(tokens);
     }
 
     /**
