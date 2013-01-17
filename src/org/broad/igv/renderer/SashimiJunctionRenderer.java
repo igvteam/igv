@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -64,6 +65,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     private ShapeType shapeType = ShapeType.TEXT;
     private Feature selectedExon;
 
+    private CoverageTrack coverageTrack = null;
+
     public enum ShapeType{
         CIRCLE,
         ELLIPSE,
@@ -96,6 +99,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return shapeType;
     }
 
+    public void setCoverageTrack(CoverageTrack coverageTrack) {
+        this.coverageTrack = coverageTrack;
+    }
+
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
      *
@@ -109,6 +116,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                        RenderContext context,
                        Rectangle trackRectangle,
                        Track track) {
+
+        if(coverageTrack != null){
+            coverageTrack.render(context, trackRectangle);
+        }
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

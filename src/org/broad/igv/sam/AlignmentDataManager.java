@@ -138,6 +138,10 @@ public class AlignmentDataManager {
         this.coverageTrack = coverageTrack;
     }
 
+    public CoverageTrack getCoverageTrack() {
+        return coverageTrack;
+    }
+
     /**
      * The set of sequences found in the file.
      * May be null
@@ -532,7 +536,6 @@ public class AlignmentDataManager {
     public EventBus getEventBus() {
         return eventBus;
     }
-
 
     public static class DownsampleOptions {
         private boolean downsample;
