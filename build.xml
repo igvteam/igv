@@ -122,7 +122,7 @@
     </target>
 
 
-    <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory">
+    <target name="compileTests" depends="compile" if="compile.tests" description="Compile test files to testtmp directory">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
                target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
             <classpath refid="test.classpath"/>
