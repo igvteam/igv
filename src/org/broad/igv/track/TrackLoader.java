@@ -1076,15 +1076,18 @@ public class TrackLoader {
      * @param genome
      * @deprecated See loadFromDBProfile, which loads from an xml file specifying table characteristics
      */
+    @Deprecated
     private void loadFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
+        //For backwards/forwards compatibility
+        //We used to put path in the serverURL field
+        ResourceLocator dbLocator = new ResourceLocator(locator.getServerURL());
         if (".seg".equals(locator.getType())) {
-
             //TODO Don't hardcode table name, this might note even be right for our target case
-            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(locator, "CNV", genome)).load();
+            SegmentedAsciiDataSet ds = (new SegmentedSQLReader(dbLocator, "CNV", genome)).load();
             loadSegTrack(locator, newTracks, genome, ds);
         } else {
-            (new SampleInfoSQLReader(locator, "SAMPLE_INFO", "SAMPLE_ID_ARRAY")).load();
+            (new SampleInfoSQLReader(dbLocator, "SAMPLE_INFO", "SAMPLE_ID_ARRAY")).load();
         }
     }
 
