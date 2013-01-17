@@ -109,7 +109,7 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
     }
 
     private void checkGenome(Genome genome) {
-        String chr = genome.getChromosomeNames().get(0);
+        String chr = genome.getAllChromosomeNames().get(0);
         int end = 10;
 
         byte[] seq = genome.getSequence(chr, 0, end);
