@@ -18,15 +18,15 @@ import org.broad.igv.ui.panel.*;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /** Window for displaying sashimi style junction plot
  * See http://genes.mit.edu/burgelab/miso/docs/sashimi.html
@@ -181,29 +181,10 @@ public class SashimiPlot extends JFrame{
 
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
-            return null;
-//
-//            IGVPopupMenu menu = new IGVPopupMenu();
-//            JMenuItem item = new JMenuItem("Zoom in");
-//            item.addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    frame.zoomAndCenterAdjusted(frame.getZoom() + 1);
-//                    repaint();
-//                }
-//            });
-//            menu.add(item);
-//
-//            item = new JMenuItem("Zoom Out");
-//            item.addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    frame.zoomAndCenterAdjusted(frame.getZoom() - 1);
-//                    repaint();
-//                }
-//            });
-//            menu.add(item);
-//            return menu;
+            IGVPopupMenu menu = new IGVPopupMenu();
+            TrackMenuUtils.addDisplayModeItems(Arrays.<Track>asList(trackComponent.track), menu);
+            menu.addPopupMenuListener(new RepaintPopupMenuListener(SashimiPlot.this));
+            return menu;
         }
     }
 
@@ -323,5 +304,29 @@ public class SashimiPlot extends JFrame{
         }
 
 
+    }
+
+    private static class RepaintPopupMenuListener implements PopupMenuListener{
+
+        Component component;
+
+        RepaintPopupMenuListener(Component component){
+            this.component = component;
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            component.repaint();
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            component.repaint();
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+            component.repaint();
+        }
     }
 }

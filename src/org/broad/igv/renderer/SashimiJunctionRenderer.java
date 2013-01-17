@@ -32,6 +32,7 @@ import org.broad.tribble.Feature;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 /**
@@ -60,7 +61,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     //this depth and deeper will all look the same
     protected int DEFAULT_MAX_DEPTH = 50;
     protected int maxDepth = DEFAULT_MAX_DEPTH;
-    private ShapeType shapeType = ShapeType.ELLIPSE;
+    private ShapeType shapeType = ShapeType.TEXT;
     private Feature selectedExon;
 
     public enum ShapeType{
@@ -227,8 +228,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             color = drawAbove ? ARC_COLOR_POS : ARC_COLOR_NEG;
         }
 
-        Graphics2D g2D = context.getGraphic2DForColor(color);
-
         //Height of top of an arc of maximum depth
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 
@@ -236,7 +235,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         double minArcHeightProportion = 0.1;
 
         float depthProportionOfMax = Math.min(1, depth / maxDepth);
-        int arcHeight = Math.max(5, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
+        int arcHeight = maxPossibleArcHeight; //Math.max(5, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
 
         //We adjust up or down depending on the strand
         int yStrandModifier = drawAbove ? -1 : 1;
@@ -254,7 +253,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                         pixelJunctionEnd, arcControlPeakY,
                 pixelJunctionEnd, arcBeginY);
 
+        Graphics2D g2D = context.getGraphic2DForColor(color);
+        Stroke stroke = new BasicStroke(2.0f);
+        g2D.setStroke(stroke);
         g2D.draw(arcPath);
+
+        g2D = context.getGraphic2DForColor(color);
 
         float midX = ((float) pixelJunctionStart + (float) pixelJunctionEnd) / 2;
 
@@ -276,7 +280,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                 shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
                 break;
             case TEXT:
-                g2D.drawString("" + depth, midX, arcControlPeakY);
+                String text = "" + depth;
+                Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
+                g2D.drawString(text, (float) (midX - textBounds.getWidth() / 2), (float) (actArcPeakY + textBounds.getHeight() / 4));
+                break;
         }
 
         if(shape != null){
