@@ -116,7 +116,6 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         assertTrue(ParsingUtils.getContentLength(TestUtils.UNAVAILABLE_FTP_URL) == -1);
         long end_time = System.currentTimeMillis();
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
-        assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
     }
 
 

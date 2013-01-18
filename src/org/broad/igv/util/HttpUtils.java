@@ -29,7 +29,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -225,6 +224,12 @@ public class HttpUtils {
         HttpURLConnection conn = openConnection(url, null, "HEAD");
         if (conn == null) return null;
         return conn.getHeaderField(key);
+    }
+
+    public long getLastModified(URL url) throws IOException{
+        HttpURLConnection conn = openConnection(url, null, "HEAD");
+        if (conn == null) return 0;
+        return conn.getLastModified();
     }
 
     public long getContentLength(URL url) throws IOException {

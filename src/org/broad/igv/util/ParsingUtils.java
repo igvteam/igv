@@ -13,7 +13,6 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.util.DateUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
@@ -160,8 +159,7 @@ public class ParsingUtils {
                     resp = reply.getReplyString();
                     return ftpDateFormat.parse(resp).getTime();
                 }else{
-                    resp = HttpUtils.getInstance().getHeaderField(url, "Last-Modified");
-                    return DateUtils.parseDateFromHeader(resp).getTime();
+                    return HttpUtils.getInstance().getLastModified(url);
                 }
 
             } catch (MalformedURLException e) {
