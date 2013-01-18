@@ -280,7 +280,7 @@ public class DBProfile {
             int colCount = maxArrayIndex + 1;
             String[] tokens = new String[colCount];
 
-            for (int cc = minArrayIndex; cc < maxArrayIndex; cc++) {
+            for (int cc = minArrayIndex; cc <= maxArrayIndex; cc++) {
                 tokens[cc] = columnLabelMap.get(cc);
             }
             return tokens;
