@@ -13,6 +13,7 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.util.DateUtils;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
@@ -21,12 +22,18 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.util.ftp.FTPClient;
+import org.broad.tribble.util.ftp.FTPReply;
+import org.broad.tribble.util.ftp.FTPUtils;
 
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -131,6 +138,48 @@ public class ParsingUtils {
         return (int) Double.parseDouble(string);
     }
 
+
+    private static final DateFormat ftpDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+
+    /**
+     * Returns the number of milliseconds since January 1, 1970, 00:00:00 GMT
+     * since the specified resource was modified, or 0 if not known/error
+     * @param path
+     * @return
+     */
+    public static long getLastModified(String path) {
+        if (HttpUtils.isRemoteURL(path)) {
+            String resp = null;
+            try {
+                URL url = new URL(path);
+                if(path.startsWith("ftp:")){
+                    String host = url.getHost();
+                    FTPClient ftp = FTPUtils.connect(host, url.getUserInfo(), new UserPasswordInputImpl());
+                    ftp.pasv();
+                    FTPReply reply = ftp.executeCommand("MDTM " + url.getPath());
+                    resp = reply.getReplyString();
+                    return ftpDateFormat.parse(resp).getTime();
+                }else{
+                    resp = HttpUtils.getInstance().getHeaderField(url, "Last-Modified");
+                    return DateUtils.parseDateFromHeader(resp).getTime();
+                }
+
+            } catch (MalformedURLException e) {
+                log.error("Malformed url " + path, e);
+            } catch (IOException e) {
+                log.error("Error getting modified date for " + path, e);
+            }catch(ParseException e){
+                log.error("Error parsing Last-Modified " + resp, e);
+            }catch(NumberFormatException e){
+                log.error("Error parsing Last-Modified " + resp, e);
+            }
+            return 0;
+
+        }else {
+            File f = new File(path);
+            return f.exists() ? f.lastModified() : 0;
+        }
+    }
 
     public static long getContentLength(String path) {
         try {

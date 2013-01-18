@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
@@ -28,6 +29,8 @@ import java.util.List;
  */
 public class FastaIndexedSequence implements Sequence {
 
+    static Logger log = Logger.getLogger(FastaIndexedSequence.class);
+
     final FastaIndex index;
     final String path;
     final long contentLength;
@@ -37,11 +40,14 @@ public class FastaIndexedSequence implements Sequence {
     public FastaIndexedSequence(String path) throws IOException {
 
         this.path = path;
-
         contentLength = ParsingUtils.getContentLength(path);
 
-        // TODO -- check for existence path & index
         String indexPath = path + ".fai";
+
+        if(ParsingUtils.getLastModified(path) > ParsingUtils.getLastModified(indexPath)){
+            log.warn("Index file for " + path + " is older than the file it indexes");
+        }
+
         index = new FastaIndex(indexPath);
         chromoNamesList = new ArrayList<String>(index.getSequenceNames());
     }

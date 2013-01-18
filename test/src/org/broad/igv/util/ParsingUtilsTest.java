@@ -26,6 +26,7 @@ import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.awt.*;
+import java.util.Calendar;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -116,6 +117,30 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         long end_time = System.currentTimeMillis();
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
+    }
+
+
+    @Test
+    public void testGetLastModified_HTTP() throws Exception{
+        tstGetLastModified(HttpUtilsTest.broadURLString);
+    }
+
+    @Test
+    public void testGetLastModified_FTP() throws Exception{
+        tstGetLastModified(TestUtils.AVAILABLE_FTP_URL);
+    }
+
+    @Test
+    public void testGetLastModified_File() throws Exception{
+        tstGetLastModified(TestUtils.DATA_DIR + "bed/test.bed");
+    }
+
+    private void tstGetLastModified(String path) {
+        long modD = ParsingUtils.getLastModified(path);
+        assertTrue(modD > 0);
+
+        //Assuming causality is still intact
+        assertTrue(modD < Calendar.getInstance().getTime().getTime());
     }
 
     @Test
