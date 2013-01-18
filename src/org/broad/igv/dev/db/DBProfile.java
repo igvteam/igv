@@ -162,8 +162,8 @@ public class DBProfile {
         @XmlAttribute private String chromoColName;
         @XmlAttribute private String posStartColName;
         @XmlAttribute private String posEndColName;
-        @XmlAttribute private int startColIndex;
-        @XmlAttribute private int endColIndex;
+        @XmlAttribute private int startColIndex = 1;
+        @XmlAttribute private int endColIndex = Integer.MAX_VALUE;
         @XmlAttribute private String baseQuery;
 
         @XmlElement(name = "column")
