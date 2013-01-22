@@ -33,6 +33,10 @@ public abstract class Sorter {
     File inputFile;
     File outputFile;
     private int maxRecords = MAX_RECORDS_IN_RAM;
+
+    /**
+     * Directory used for storing temporary data files
+     */
     private File tmpDir;
     static final String usageString = "igvtools sort <inputFile> [outputFile]";
     protected Comparator<SortableRecord> comparator = getDefaultComparator();
@@ -124,7 +128,7 @@ public abstract class Sorter {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
         this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
-        // Disable "Snappy"
+
         System.setProperty("snappy.disable", "true");
         if (!tmpDir.exists()) {
             tmpDir.mkdir();
@@ -166,11 +170,8 @@ public abstract class Sorter {
             }
             iter.close();
         } finally {
-            try {
-                fis.close();
-                writer.close();
-            } catch (IOException ex) {
-            }
+            if (fis != null) fis.close();
+            if (writer != null) writer.close();
         }
     }
 
@@ -199,9 +200,6 @@ public abstract class Sorter {
 
     abstract String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException;
 
-    /**
-     * @param tmpDir the tmpDir to set
-     */
     public void setTmpDir(File tmpDir) {
         this.tmpDir = tmpDir;
     }
