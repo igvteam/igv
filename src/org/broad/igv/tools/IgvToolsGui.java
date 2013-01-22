@@ -32,12 +32,24 @@ public class IgvToolsGui extends JDialog {
 
     static JFileChooser fileDialog;
 
-    static final String COUNT = "Count";
-    static final String SORT = "Sort";
-    static final String INDEX = "Index";
-    static final String TILE = "Tile";
+    public enum Tool{
+        COUNT("Count"),
+        SORT("Sort"),
+        INDEX("Index"),
+        TILE("Tile");
 
-    String[] tools = {TILE, COUNT, SORT, INDEX};
+        private String displayName;
+
+        Tool(String displayName){
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return this.displayName;
+        }
+    }
+
     String[] zoomLevels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
 
     PrintStream systemOutStream;
@@ -134,7 +146,7 @@ public class IgvToolsGui extends JDialog {
         for (String item : zoomLevels) {
             zoomCombo.addItem(item);
         }
-        for (String tool : tools) {
+        for (Tool tool : Tool.values()) {
             toolCombo.addItem(tool);
         }
 
@@ -185,9 +197,9 @@ public class IgvToolsGui extends JDialog {
 
 
     private void updateUI() {
-        String tool = (String) toolCombo.getSelectedItem();
+        Tool tool = (Tool) toolCombo.getSelectedItem();
 
-        if (tool.equals(COUNT)) {
+        if (tool.equals(Tool.COUNT)) {
             inputField.setEnabled(true);
             inputButton.setEnabled(true);
             outputField.setEnabled(true);
@@ -214,7 +226,7 @@ public class IgvToolsGui extends JDialog {
             windowSizeField.setEnabled(true);
             enableWindowFunctions();
 
-        } else if (tool.equals(SORT)) {
+        } else if (tool.equals(Tool.SORT)) {
             inputField.setEnabled(true);
             inputButton.setEnabled(true);
             outputField.setEnabled(true);
@@ -237,7 +249,7 @@ public class IgvToolsGui extends JDialog {
             windowSizeField.setEnabled(false);
             disableWindowFunctions();
 
-        } else if (tool.equals(INDEX)) {
+        } else if (tool.equals(Tool.INDEX)) {
             inputField.setEnabled(true);
             inputButton.setEnabled(true);
             outputField.setEnabled(false);
@@ -260,7 +272,7 @@ public class IgvToolsGui extends JDialog {
             windowSizeField.setEnabled(false);
             disableWindowFunctions();
 
-        } else if (tool.equals(TILE)) {
+        } else if (tool.equals(Tool.TILE)) {
             inputField.setEnabled(true);
             inputButton.setEnabled(true);
             outputField.setEnabled(true);
@@ -307,7 +319,7 @@ public class IgvToolsGui extends JDialog {
 
 
     private boolean validateFields() {
-        String tool = (String) toolCombo.getSelectedItem();
+        Tool tool = (Tool) toolCombo.getSelectedItem();
 
         // All commands require in input file
         if (inputField.getText().trim().length() == 0) {
@@ -315,7 +327,7 @@ public class IgvToolsGui extends JDialog {
             return false;
         }
 
-        if (tool.equals(INDEX)) {
+        if (tool.equals(Tool.INDEX)) {
             return true;
         }
 
@@ -326,14 +338,21 @@ public class IgvToolsGui extends JDialog {
         }
 
         // See if file exists
-        if ((new File(outputField.getText().trim()).exists())) {
+        File outputFile = new File(outputField.getText().trim());
+        if (outputFile.exists()) {
             int opt = JOptionPane.showConfirmDialog(this, "Output file: " + outputField.getText() + " exists.  Overwite?");
             if (opt != JOptionPane.YES_OPTION) {
                 return false;
             }
         }
 
-        if (tool.equals(SORT)) {
+        //Check that parent directory exists
+        if(!outputFile.getParentFile().exists()){
+            showMessage("Directory " + outputFile.getParent() + " does not exist. Output must use an existing directory");
+            return false;
+        }
+
+        if (tool.equals(Tool.SORT)) {
             return true;
         }
 
@@ -346,19 +365,24 @@ public class IgvToolsGui extends JDialog {
     }
 
     private void run() {
-        String tool = (String) toolCombo.getSelectedItem();
+        Tool tool = (Tool) toolCombo.getSelectedItem();
         if (!validateFields()) {
             return;
         }
         try {
-            if (tool.equals(COUNT)) {
-                doCount();
-            } else if (tool.equals(SORT)) {
-                doSort();
-            } else if (tool.equals(INDEX)) {
-                doIndex();
-            } else if (tool.equals(TILE)) {
-                doTile();
+            switch (tool){
+                case COUNT:
+                    doCount();
+                    break;
+                case SORT:
+                    doSort();
+                    break;
+                case INDEX:
+                    doIndex();
+                    break;
+                case TILE:
+                    doTile();
+                    break;
             }
         } catch (PreprocessingException e) {
             showMessage("Error performing " + tool + ": " + e.getMessage());
@@ -619,38 +643,38 @@ public class IgvToolsGui extends JDialog {
         setDefaultOutputText();
     }
 
-
-
-    void setInputFieldText(String inputFieldText) {
-        this.inputField.setText(inputFieldText);
-        setDefaultOutputText();
-    }
-
-    String getOutputFieldText() {
-        return outputField.getText();
-    }
-
-    void setTool(String tool){
-        toolCombo.setSelectedItem(tool);
+    /**
+     * Return what the defaultOutputText should be. {@code null} implies
+     * there should be no change
+     * @param inputFieldText
+     * @param tool
+     * @return
+     */
+    static String getDefaultOutputText(String inputFieldText, Tool tool){
+        String defaultOutputText = null;
+        if (inputFieldText.length() > 0) {
+            switch(tool){
+                case COUNT:
+                case TILE:
+                    defaultOutputText = inputFieldText + ".tdf";
+                    break;
+                case SORT:
+                    int ext = inputFieldText.lastIndexOf(".");
+                    if (ext > 0) {
+                        defaultOutputText = inputFieldText.substring(0, ext) + ".sorted" + inputFieldText.substring(ext);
+                    }
+                    break;
+                case INDEX:
+                    defaultOutputText = "";
+                    break;
+            }
+        }
+        return defaultOutputText;
     }
 
     private void setDefaultOutputText() {
-        if (inputField.getText().length() > 0) {
-            String cmd = toolCombo.getSelectedItem().toString().toLowerCase();
-            if (cmd.equals("count") || cmd.equals("tile")) {
-                outputField.setText(inputField.getText() + ".tdf");
-            } else if (cmd.equals("sort")) {
-                String input = inputField.getText();
-                int ext = input.lastIndexOf(".");
-                if (ext > 0) {
-                    String output = input.substring(0, ext) + ".sorted" + input.substring(ext);
-                    outputField.setText(output);
-                }
-            } else if (cmd.equals("index")) {
-                outputField.setText("");
-            }
-
-        }
+        String defaultOutputText = getDefaultOutputText(inputField.getText(), (Tool) toolCombo.getSelectedItem());
+        if(defaultOutputText != null) outputField.setText(defaultOutputText);
     }
 
     private void toolComboActionPerformed(ActionEvent e) {

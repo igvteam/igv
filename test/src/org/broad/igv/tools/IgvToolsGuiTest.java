@@ -11,7 +11,7 @@
 
 package org.broad.igv.tools;
 
-import org.broad.igv.ui.AbstractHeadedTest;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -23,13 +23,12 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 
 /**
- * Test of the IGVToolsGui. Technically don't need to extend
- * AbstractHeadedTest, since we don't need an IGV instance, but
- * it doesn't hurt
+ * Test of the IGVToolsGui. As of this writing the tests
+ * are actually headless.
  * User: jacob
  * Date: 2013-Jan-22
  */
-public class IgvToolsGuiTest extends AbstractHeadedTest{
+public class IgvToolsGuiTest extends AbstractHeadlessTest{
 
     /**
      * Copy a file into a folder with periods in the name,
@@ -46,19 +45,13 @@ public class IgvToolsGuiTest extends AbstractHeadedTest{
         inputFile.deleteOnExit();
         FileUtils.copyFile(baseInputFile, inputFile);
 
-        //Create IGVTools window, initialize params for this test
-        IgvToolsGui mainWindow = new IgvToolsGui();
-        mainWindow.setModal(false);
-        mainWindow.setVisible(true);
-        mainWindow.setTool(IgvToolsGui.SORT);
 
-        mainWindow.setInputFieldText(inputFile.getAbsolutePath());
-        String output = mainWindow.getOutputFieldText();
+        String output = IgvToolsGui.getDefaultOutputText(inputFile.getAbsolutePath(), IgvToolsGui.Tool.SORT);
         File outputFile = new File(output);
+        outputFile.deleteOnExit();
 
         //The file doesn't actually exist, but we should
         //be able to write to the path
-        System.out.println(outputFile);
         assertFalse(outputFile.exists());
         FileWriter writer = new FileWriter(outputFile);
         assertNotNull(writer);
