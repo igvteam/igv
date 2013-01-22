@@ -32,10 +32,10 @@ public class IgvToolsGui extends JDialog {
 
     static JFileChooser fileDialog;
 
-    private static final String COUNT = "Count";
-    private static final String SORT = "Sort";
-    private static final String INDEX = "Index";
-    private static final String TILE = "Tile";
+    static final String COUNT = "Count";
+    static final String SORT = "Sort";
+    static final String INDEX = "Index";
+    static final String TILE = "Tile";
 
     String[] tools = {TILE, COUNT, SORT, INDEX};
     String[] zoomLevels = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
@@ -619,6 +619,21 @@ public class IgvToolsGui extends JDialog {
         setDefaultOutputText();
     }
 
+
+
+    void setInputFieldText(String inputFieldText) {
+        this.inputField.setText(inputFieldText);
+        setDefaultOutputText();
+    }
+
+    String getOutputFieldText() {
+        return outputField.getText();
+    }
+
+    void setTool(String tool){
+        toolCombo.setSelectedItem(tool);
+    }
+
     private void setDefaultOutputText() {
         if (inputField.getText().length() > 0) {
             String cmd = toolCombo.getSelectedItem().toString().toLowerCase();
@@ -626,7 +641,7 @@ public class IgvToolsGui extends JDialog {
                 outputField.setText(inputField.getText() + ".tdf");
             } else if (cmd.equals("sort")) {
                 String input = inputField.getText();
-                int ext = input.indexOf(".");
+                int ext = input.lastIndexOf(".");
                 if (ext > 0) {
                     String output = input.substring(0, ext) + ".sorted" + input.substring(ext);
                     outputField.setText(output);
@@ -1031,4 +1046,5 @@ public class IgvToolsGui extends JDialog {
     private JTextArea outputText;
     private JProgressBar progressBar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
 }
