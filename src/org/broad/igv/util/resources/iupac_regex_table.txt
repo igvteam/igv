@@ -1,0 +1,17 @@
+#IUPAC Ambiguity codes translated into regex, using java syntax
+#Source: http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html
+G=G
+A=A
+T=T
+C=C
+R=[R,G,A]
+Y=[Y,T,C]
+M=[M,A,C]
+K=[K,G,T]
+S=[S,G,C]
+W=[W,A,T]
+H=[H,A,C,T]
+B=[B,G,T,C]
+V=[V,G,C,A]
+D=[D,G,A,T]
+N=.
