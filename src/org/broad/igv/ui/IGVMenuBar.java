@@ -155,7 +155,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         //TODO Add api hook to insert things in tool menu
-        boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "false"));
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "true"));
         if(showTDMButton){
             JMenu gitoolsMenu = new JMenu("Gitools heatmaps");
 

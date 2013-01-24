@@ -110,6 +110,10 @@ public class GeneListManagerUI extends JDialog {
         instance.actionButton.setText(actionText);
         instance.listener = listener;
 
+        if(listener != DEFAULT_ACTION_LISTENER){
+            instance.viewNetworkButton.setVisible(false);
+        }
+
         return instance;
     }
 
