@@ -130,7 +130,7 @@ public class DataPanelPainter {
                         exomeGraphics.translate(pStart, 0);
 
                         ReferenceFrame tmpFrame = new ReferenceFrame(frame);
-                        tmpFrame.setOrigin(b.getGenomeStart(), false);
+                        tmpFrame.setOrigin(b.getGenomeStart());
 
 
                         RenderContext tmpContext = new RenderContextImpl(null, exomeGraphics, tmpFrame, rect);
