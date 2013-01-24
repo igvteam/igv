@@ -12,7 +12,6 @@
 package org.broad.igv.feature.exome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
@@ -117,7 +116,8 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         // Find genomePosition
         double genomePosition = b.getGenomeStart() + (exomeOrigin - b.getExomeStart());
 
-        setOrigin(genomePosition, true);
+        setOrigin(genomePosition);
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     /**
@@ -135,15 +135,9 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
 
     @Override
-    public void setOrigin(double genomePosition, boolean repaint) {
-        super.setOrigin(genomePosition, false);
-
+    public void setOrigin(double genomePosition) {
+        super.setOrigin(genomePosition);
         calcExomeOrigin();
-
-        if (repaint) {
-            IGV.repaintPanelsHeadlessSafe();
-        }
-
     }
 
     @Override
