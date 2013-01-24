@@ -48,6 +48,7 @@ public class IgvToolsGuiTest extends AbstractHeadlessTest{
 
         String output = IgvToolsGui.getDefaultOutputText(inputFile.getAbsolutePath(), IgvToolsGui.Tool.SORT);
         File outputFile = new File(output);
+        outputFile.delete();
         outputFile.deleteOnExit();
 
         //The file doesn't actually exist, but we should

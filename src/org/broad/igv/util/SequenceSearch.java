@@ -45,7 +45,7 @@ public class SequenceSearch {
     private static final String codeFilePath = "resources/iupac_regex_table.txt";
     private static void initLetterToRegex() {
         URL url = SequenceSearch.class.getResource(codeFilePath);
-        letterToRegex = loadMap(url.getPath());
+        letterToRegex = loadMap(StringUtils.decodeURL(url.getPath()));
     }
 
     /**
