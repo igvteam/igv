@@ -60,6 +60,8 @@ public class VariantReviewPlugin implements IGVPlugin{
                     public void actionPerformed(ActionEvent e) {
                         java.util.List<Track> newTracks = new ArrayList<Track>(1);
                         ResourceLocator locator = new ResourceLocator(VariantReviewPlugin.getDbSpecPath());
+                        //TODO Put the track name in the dbSpec
+                        locator.setName("NA12878 KB");
                         VariantReviewSource.loadVariantReview(locator, newTracks);
                         IGV.getInstance().addTracks(newTracks, locator);
                         hasReviewTrack = true;
