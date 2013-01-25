@@ -15,6 +15,7 @@ package org.broad.igv.sam;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -576,7 +577,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return cigarString;
     }
 
-    //For testing
+    @ForTesting
     String getReadSequenceField() {
         return readSequence;
     }
@@ -585,6 +586,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         String readSequence = this.readSequence != null ? this.readSequence : softReadSequence.get();
         if (readSequence == null) {
             readSequence = getRecord().getReadString();
+            this.softReadSequence = new SoftReference<String>(readSequence);
         }
         return readSequence;
     }
@@ -656,6 +658,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 log.error("Found multiple records during query of file span:" + span);
             }
             iter.close();
+            this.softRecord = new SoftReference<SAMRecord>(record);
         }
         return record;
     }
