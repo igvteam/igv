@@ -379,7 +379,7 @@ public class PluginSpecReader {
 
             if(HttpUtils.isRemoteURL(urlPath) || urlPath.startsWith("file://")){
                 //do nothing
-            }else if(org.apache.tools.ant.util.FileUtils.isAbsolutePath(urlPath)){
+            }else if((new File(urlPath)).isAbsolute()){
                 urlPath = "file://" + urlPath;
             }else{
                 //Relative path
