@@ -75,12 +75,12 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
         criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
-        SiteIterator<MongoVariantContext> iterator  = kb.getConsensusSites(criteria);
+        //TODO DON'T COMMIT THIS
+        SiteIterator<MongoVariantContext> iterator  = kb.getCalls(criteria);//kb.getConsensusSites(criteria);
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
             MongoVariantContext mvc = iterator.next();
-            VariantContext vc = mvc.getVariantContext();
-            VCFVariant vcf = new VCFVariant(vc, mvc.getChr());
+            MongoVCFVariant vcf = new MongoVCFVariant(mvc, mvc.getChr());
             variants.add(vcf);
         }
         return variants.iterator();
@@ -136,6 +136,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         List<String> allSamples = Collections.emptyList();
         VariantReviewSource source = new VariantReviewSource(locator);
         VariantTrack track = new VariantTrack(locator, source, allSamples, false);
+        track.setRenderer(new VariantReviewRenderer(track));
         newTracks.add(track);
         track.setMargin(0);
         return track;

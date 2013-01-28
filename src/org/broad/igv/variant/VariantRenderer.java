@@ -79,13 +79,13 @@ public class VariantRenderer { //extends FeatureRenderer {
      *
      * @param variant
      * @param bandRectangle
-     * @param pX0
-     * @param dX
+     * @param pixelX Location of the variant in pixels
+     * @param xWidth Width of the variant in pixels
      * @param context
      */
     public void renderSiteBand(Variant variant,
                                Rectangle bandRectangle,
-                               int pX0, int dX,
+                               int pixelX, int xWidth,
                                RenderContext context) {
 
 
@@ -116,22 +116,29 @@ public class VariantRenderer { //extends FeatureRenderer {
 
         }
 
-        final int bottomY = bandRectangle.y + bandRectangle.height - BOTTOM_MARGIN;
-        final int barHeight = bandRectangle.height - TOP_MARGIN - BOTTOM_MARGIN;
+        final int bottomY = calculateBottomYSiteBand(bandRectangle);
+        final int barHeight = calculateBarHeightSiteBand(bandRectangle);
+
         final int alleleBarHeight = (int) (percent * barHeight);
         final int remainderHeight = barHeight - alleleBarHeight;
 
         if (remainderHeight > 0) {
             Graphics2D g = context.getGraphic2DForColor(refColor);
-            g.fillRect(pX0, bottomY - alleleBarHeight - remainderHeight, dX, remainderHeight);
+            g.fillRect(pixelX, bottomY - alleleBarHeight - remainderHeight, xWidth, remainderHeight);
         }
 
         if (alleleBarHeight > 0) {
             Graphics2D g = context.getGraphic2DForColor(alleleColor);
-            g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+            g.fillRect(pixelX, bottomY - alleleBarHeight, xWidth, alleleBarHeight);
         }
+    }
 
+    protected int calculateBottomYSiteBand(Rectangle bandRectangle){
+        return bandRectangle.y + bandRectangle.height - BOTTOM_MARGIN;
+    }
 
+    protected int calculateBarHeightSiteBand(Rectangle bandRectangle){
+        return bandRectangle.height - TOP_MARGIN - BOTTOM_MARGIN;
     }
 
 

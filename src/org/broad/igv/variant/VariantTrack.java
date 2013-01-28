@@ -73,10 +73,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
 
-    /**
-     * The renderer.
-     */
-    private VariantRenderer renderer = new VariantRenderer(this);
+    private VariantRenderer renderer;
 
     /**
      * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
@@ -160,9 +157,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      */
     Map<String, String> alignmentFiles;
 
+    public void setRenderer(VariantRenderer renderer) {
+        this.renderer = renderer;
+    }
+
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
                         boolean enableMethylationRateSupport) {
         super(locator, source);
+        this.renderer = new VariantRenderer(this);
 
         this.enableMethylationRateSupport = enableMethylationRateSupport;
         if (enableMethylationRateSupport) {
