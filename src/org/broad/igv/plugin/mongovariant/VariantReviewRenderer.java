@@ -40,8 +40,8 @@ public class VariantReviewRenderer extends VariantRenderer {
         symbolMap = new HashMap<TruthStatus, String>(4);
         symbolMap.put(TruthStatus.TRUE_POSITIVE, "TP");
         symbolMap.put(TruthStatus.FALSE_POSITIVE, "FP");
-        symbolMap.put(TruthStatus.UNKNOWN, "U");
-        symbolMap.put(TruthStatus.SUSPECT, "?");
+        symbolMap.put(TruthStatus.UNKNOWN, "?");
+        symbolMap.put(TruthStatus.SUSPECT, "S");
     }
 
     public VariantReviewRenderer(VariantTrack track) {
@@ -60,7 +60,7 @@ public class VariantReviewRenderer extends VariantRenderer {
             int bandHeight = calculateBarHeightSiteBand(bandRectangle);
 
             Graphics2D g = context.getGraphic2DForColor(Color.black);
-            g.setFont( FontManager.getFont(FONT_SIZE));
+            g.setFont(FontManager.getFont(FONT_SIZE).deriveFont(Font.BOLD));
 
             String symbol = symbolMap.get(truthStatus);
             symbol = symbol != null ? symbol : "";
@@ -68,19 +68,13 @@ public class VariantReviewRenderer extends VariantRenderer {
             //g.drawString(symbol, pixelX + xWidth/2, bandY);
 
             if(mvc.isReviewed()){
+                g = context.getGraphic2DForColor(Color.red);
+                g.setFont(FontManager.getFont(FONT_SIZE + 4).deriveFont(Font.BOLD));
                 FontMetrics fontMetrics = g.getFontMetrics();
-                String text = REVIEWED_STRING;
-                Rectangle2D textBounds = fontMetrics.getStringBounds(text, g);
-                g.drawString(text, pixelX - (int) (textBounds.getWidth() / 2), bandY - bandHeight + (int) (textBounds.getHeight() / 2));
+                Rectangle2D textBounds = fontMetrics.getStringBounds(REVIEWED_STRING, g);
+                g.drawString(REVIEWED_STRING, pixelX - (int) (textBounds.getWidth() / 2), bandY - bandHeight + (int) (textBounds.getHeight() / 2));
             }
         }
     }
 
-    private Graphics2D getStringGraphics(RenderContext context){
-        if(stringGraphics == null){
-            stringGraphics = context.getGraphic2DForColor(Color.black);
-            stringGraphics.setFont(FontManager.getFont(FONT_SIZE));
-        }
-        return stringGraphics;
-    }
 }
