@@ -179,7 +179,7 @@ public class TrackMenuUtils {
         zoomOutItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                frame.incrementZoom(-1);
+                frame.doZoomIncrement(-1);
             }
         });
         menu.add(zoomOutItem);
@@ -188,7 +188,7 @@ public class TrackMenuUtils {
         zoomInItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                frame.incrementZoom(1);
+                frame.doZoomIncrement(1);
             }
         });
         menu.add(zoomInItem);

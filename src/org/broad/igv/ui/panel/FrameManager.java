@@ -11,7 +11,6 @@
 
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
@@ -233,7 +232,6 @@ public class FrameManager {
     public static void reset(String chr) {
         setToDefaultFrame(null);
         getDefaultFrame().setChromosomeName(chr);
-        getDefaultFrame().computeMaxZoom();
         getDefaultFrame().invalidateLocationScale();
     }
 

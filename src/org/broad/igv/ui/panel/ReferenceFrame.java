@@ -43,11 +43,6 @@ public class ReferenceFrame {
 
     private String name;
 
-    int pixelX;
-
-    protected int widthInPixels;
-
-
     /**
      * The chromosome currently in view
      */
@@ -59,40 +54,60 @@ public class ReferenceFrame {
     private int minZoom = 0;
 
     /**
+     * The maximum zoom level.  Set to prevent integer overflow.  This is a function
+     * of chromosome length.
+     */
+    public int maxZoom = 23;
+
+    /**
+     * Minimum allowed scale in base pairs / pixel
+     * TODO Does this ever change, couldn't it be static and/or final?
+     */
+    private double minScale = 1.0 / 14;
+
+    /**
      * The current zoom level.  Zoom level -1 corresponds to the whole
      * genome view (chromosome "all")
      */
     protected int zoom = minZoom;
+
+
     /**
-     * The maximum zoom level.  Set to prevent integer overflow.  This is a function
-     * of chromosom length.
+     * X location of the frame in pixels
      */
-    public static int maxZoom = 23;
+    volatile int pixelX;
+
+    /**
+     * Width of the frame in pixels
+     */
+    protected int widthInPixels;
+
     /**
      * The number of tiles for this zoom level, = 2^zoom
      */
-    private int nTiles = 1;
+    private double nTiles = 1;
+
     /**
      * The maximum virtual pixel value.
      */
-    private double maxPixel;
+    //private double maxPixel;
+
     /**
      * The origin in bp
      */
-    protected double origin = 0;
+    protected volatile double origin = 0;
 
     /**
      * The location (x axis) locationScale in base pairs / virtual pixel
      */
-    protected double locationScale;
+    protected volatile double locationScale;
+
+    protected Locus initialLocus;
 
     /**
-     * Minimum allowed scale in base pairs / pixel
+     * A temporary holder. We set the end location and then
+     * later zoom/origin/etc. calculations are made
      */
-    private double minScale = 1.0 / 14;
-
-    protected boolean locationScaleValid = false;
-    protected Locus initialLocus;
     protected int setEnd = 0;
 
     protected ObservableForObject<String> chromoObservable;
@@ -110,8 +125,6 @@ public class ReferenceFrame {
         this.chrName = otherFrame.chrName;
         this.initialLocus = otherFrame.initialLocus;
         this.locationScale = otherFrame.locationScale;
-        this.locationScaleValid = otherFrame.locationScaleValid;
-        this.maxPixel = otherFrame.maxPixel;
         this.minScale = otherFrame.minScale;
         this.minZoom = otherFrame.minZoom;
         this.name = otherFrame.name;
@@ -124,104 +137,92 @@ public class ReferenceFrame {
         chromoObservable = new ObservableForObject<String>(chrName);
     }
 
-
-    public synchronized void setBounds(int x, int w) {
-        this.pixelX = x;
-        if (w != widthInPixels) {
-            widthInPixels = w;
-            computeLocationScale();
-        }
-    }
-
-    public int getMidpoint() {
-        return pixelX + widthInPixels / 2;
-    }
-
     /**
-     * Compute the maximum zoom level, which is a function of chromosome length.
+     * Set the position and width of the frame, in pixels
+     * @param pixelX
+     * @param widthInPixels
      */
-    public void computeMaxZoom() {
-        Genome genome = getGenome();
-        // Compute max zoom.  Assume window size @ max zoom of ~ 50 bp
-        if (genome != null && chrName != null && genome.getChromosome(chrName) != null) {
-            if (chrName.equals(Globals.CHR_ALL)) {
-                maxZoom = 0;
-            } else {
-                int chrLength = genome.getChromosome(chrName).getLength();
-
-                maxZoom = (int) (Math.log(chrLength / 50.0) / Globals.log2) + 1;
-
-            }
-
-            if (zoom > maxZoom) {
-                zoomTo(maxZoom);
-            }
+    public synchronized void setBounds(int pixelX, int widthInPixels) {
+        this.pixelX = pixelX;
+        if (this.widthInPixels != widthInPixels) {
+            this.widthInPixels = widthInPixels;
+            computeLocationScale();
+            computeZoom();
         }
-
     }
 
-
-    private void computeZoomTiles(int newZoom){
-        zoom = Math.min(maxZoom, newZoom);
-        nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
-        maxPixel = getTilesTimesBinsPerTile();
-    }
     /**
-     * Change the zoom level, keeping the center the same
-     * zoom events "release" the frame, enabling pan and zoom
-     *
+     * Sets zoom level and recomputes scale, iff newZoom != oldZoom
+     * min/maxZoom are recalculated and respected,
+     * and the locationScale is recomputed
      * @param newZoom
      */
-    private void zoomTo(int newZoom) {
-        computeZoomTiles(newZoom);
-        invalidateLocationScale();
-        this.setEnd = -1;
-    }
-
-    /**
-     * This setter is provided to restore state, it does not do a "zoom" action
-     *
-     * @param z
-     */
-    public void setZoom(int z) {
-        if (z > 0)
-            this.zoom = z;
-    }
-
-    public void incrementZoom(int increment) {
-        double currentCenter = getGenomeCenterPosition();
-        zoomBy(increment, currentCenter);
-    }
-
-    public void zoomAndCenterAdjusted(int newZoom) {
-        double currentCenter = getGenomeCenterPosition();
-        zoomTo(newZoom, currentCenter);
-    }
-
-    protected double getGenomeCenterPosition() {
-        return origin + ((widthInPixels / 2) * getScale());
-    }
-
-    public void zoomBy(final int zoomFactor, final double newCenter) {
-
-        if (FrameManager.isGeneListMode()) {
+    protected void setZoom(int newZoom){
+        if(zoom != newZoom){
             synchronized (this){
-                double f = Math.pow(2.0, zoomFactor);
-                setLocationScale(Math.max(minScale, getScale() / f));
-                double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * getScale()));
-                setOrigin(newOrigin);
-                double end = setEnd > 0 ? setEnd : getEnd();
-                imputeZoom(origin, end);
-                setEnd = -1;
+                setZoomWithinLimits(newZoom);
+                computeLocationScale();
             }
-            IGV.repaintPanelsHeadlessSafe();
-        } else {
-            int newZoom = Math.max(0, zoom + zoomFactor);
-            zoomTo(newZoom, newCenter);
         }
     }
 
-    public void zoomTo(final int newZoom, final double newCenter) {
+
+    /**
+     * Set the origin of the frame, guarding against chromosome boundaries
+     *
+     * @param position
+     */
+    public void setOrigin(double position) {
+        int windowLengthBP = (int) (widthInPixels * getScale());
+        double newOrigin;
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
+            newOrigin = Math.max(-1000, Math.min(position, getChromosomeLength() + 1000 - windowLengthBP));
+        } else {
+            newOrigin = Math.max(0, Math.min(position, getChromosomeLength() - windowLengthBP));
+        }
+        origin = newOrigin;
+    }
+
+
+    private synchronized void setZoomWithinLimits(int newZoom){
+        computeMinZoom();
+        computeMaxZoom();
+        zoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+        nTiles = Math.pow(2, zoom);
+    }
+
+    /**
+     * Increment the zoom level by {@code zoomIncrement}, leaving
+     * the center the same
+     * @param zoomIncrement
+     */
+    public void doZoomIncrement(int zoomIncrement) {
+        double currentCenter = getGenomeCenterPosition();
+        doIncrementZoom(zoomIncrement, currentCenter);
+    }
+
+    /**
+     * Set the zoom level to {@code newZoom}, leaving
+     * the center the same
+     * @param newZoom
+     */
+    public void doSetZoom(int newZoom) {
+        double currentCenter = getGenomeCenterPosition();
+        doSetZoomCenter(newZoom, currentCenter);
+    }
+
+    public void doIncrementZoom(final int zoomIncrement, final double newCenter) {
+          doSetZoomCenter(getZoom() + zoomIncrement, newCenter);
+    }
+
+    /**
+     * Intended to be called by UI elements, this method
+     * performs all actions necessary to set a new zoom
+     * and center location
+     * @param newZoom
+     * @param newCenter
+     */
+    public void doSetZoomCenter(final int newZoom, final double newCenter) {
 
         if (chrName.equals(Globals.CHR_ALL)) {
             chrName = getGenome().getHomeChromosome();
@@ -234,25 +235,110 @@ public class ReferenceFrame {
             }
             IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
-            if (zoom != newZoom) {
-                synchronized (this){
-                    zoomTo(newZoom);
-                    double newLocationScale = getScale();
-                    // Adjust origin so newCenter is centered
-                    double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * newLocationScale));
-                    setOrigin(newOrigin);
-                }
-                IGV.repaintPanelsHeadlessSafe();
-            }
+            setZoom(newZoom);
+            // Adjust origin so newCenter is centered
+            centerOnLocation(newCenter);
         }
+
+        IGV.repaintPanelsHeadlessSafe();
 
         recordHistory();
 
         // This is a hack,  this is not a drag event but is a "jump"
         DragEventManager.getInstance().dragStopped();
-
     }
 
+    protected double getGenomeCenterPosition() {
+        return origin + ((widthInPixels / 2) * getScale());
+    }
+
+    /**
+     * Return the current locationScale in base pairs / pixel
+     *
+     * @return
+     */
+    public double getScale() {
+        if (locationScale <= 0) {
+            computeLocationScale();
+        }
+        return locationScale;
+    }
+
+    public void invalidateLocationScale() {
+        this.locationScale = -1;
+    }
+
+    /**
+     * Change the frame to the specified chromosome.
+     *
+     * @param name
+     * @param force
+     */
+    public synchronized void setChromosomeName(String name, boolean force) {
+
+        if ((chrName == null) || !name.equals(chrName) || force) {
+            chrName = name;
+            origin = 0;
+            setEnd = -1;
+            setZoom(0);
+
+            chromoObservable.setChangedAndNotify();
+        }
+    }
+
+    /**
+     * Recalculate the locationScale, based on {@link #setEnd}, {@link #origin}, and
+     * {@link #widthInPixels}
+     * DOES NOT alter zoom value
+     */
+    private synchronized void computeLocationScale() {
+        Genome genome = getGenome();
+
+        //Should consider getting rid of this. We don't have
+        //a chromosome length without a genome, not always a problem
+        if (genome != null) {
+            if (setEnd > 0 && widthInPixels > 0) {
+                this.locationScale = ((setEnd - origin) / widthInPixels);
+                setEnd = -1;
+            } else {
+                double virtualPixelSize = getTilesTimesBinsPerTile();
+                double nPixel = Math.max(virtualPixelSize, widthInPixels);
+                this.locationScale = (((double) getChromosomeLength()) / nPixel);
+            }
+        }
+    }
+
+    /**
+     * Recalculate the zoom value based on current start/end
+     * locationScale is not altered
+     *
+     */
+    private void computeZoom() {
+        int newZoom = calculateZoom(getOrigin(), getEnd());
+        setZoomWithinLimits(newZoom);
+    }
+
+    /**
+     * Compute the minimum zoom level for the data panel width.  This is defined as the maximum
+     * zoom level for which all data bins will fit in the window without loss of
+     * data,  i.e. the maximum zoom level for which nBins < nPixels.  The number
+     * of bins is defined as
+     * nBins =  2^z
+     * so minZoom is the value z such that nBins < dataPanelWidth
+     */
+    protected void computeMinZoom() {
+        if (this.chrName.equals(Globals.CHR_ALL)) {
+            minZoom = 0;
+        } else {
+            minZoom = Math.max(0, (int) (Math.log((widthInPixels / binsPerTile)) / Globals.log2));
+        }
+    }
+
+    /**
+     * Record the current state of the frame in history.
+     * It is recommended that this NOT be called from within ReferenceFrame,
+     * and callers use it after making all changes
+     */
     public void recordHistory() {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
@@ -285,11 +371,7 @@ public class ReferenceFrame {
 
     public void centerOnLocation(String chr, double chrLocation) {
         if (!chrName.equals(chr)) {
-            chrName = chr;
-            computeMaxZoom();
-            if (zoom > maxZoom) {
-                zoomTo(maxZoom);
-            }
+            setChromosomeName(chr);
         }
         centerOnLocation(chrLocation);
     }
@@ -297,32 +379,11 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        IGV.repaintPanelsHeadlessSafe();
-        recordHistory();
     }
 
     public boolean windowAtEnd() {
         double windowLengthBP = widthInPixels * getScale();
         return origin + windowLengthBP + 1 > getChromosomeLength();
-
-    }
-
-    /**
-     * Set the origin of the frame, guarding against chromosome boundaries
-     *
-     * @param position
-     */
-    public synchronized void setOrigin(double position) {
-
-        int windowLengthBP = (int) (widthInPixels * getScale());
-        double newOrigin;
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
-            newOrigin = Math.max(-1000, Math.min(position, getChromosomeLength() + 1000 - windowLengthBP));
-        } else {
-            newOrigin = Math.max(0, Math.min(position, getChromosomeLength() - windowLengthBP));
-        }
-        //double delta = newOrigin - origin;
-        origin = newOrigin;
     }
 
     /**
@@ -359,13 +420,11 @@ public class ReferenceFrame {
 
         synchronized (this) {
             this.chrName = chr;
-            if (start >= 0) {
-                imputeZoom(start, end);
-                if (widthInPixels > 0) {
-                    setLocationScale(((double) (end - start)) / widthInPixels);
-                }
-                this.setEnd = locus.getEnd();
-                origin = start;
+            if (start >= 0 && end >= 0) {
+                this.setOrigin(start);
+                this.setEnd = end;
+                computeLocationScale();
+                setZoomWithinLimits(calculateZoom(this.getOrigin(), this.getEnd()));
             }
         }
 
@@ -381,11 +440,32 @@ public class ReferenceFrame {
         IGV.repaintPanelsHeadlessSafe();
     }
 
-    protected void imputeZoom(double start, double end) {
-        int z = (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
-        if (z != this.zoom) {
-            computeZoomTiles(Math.max(minZoom, z));
+
+    /**
+     * Compute the maximum zoom level, which is a function of chromosome length.
+     */
+    private void computeMaxZoom() {
+        Genome genome = getGenome();
+        // Compute max zoom.  Assume window size @ max zoom of ~ 50 bp
+        if (genome != null && chrName != null && genome.getChromosome(chrName) != null) {
+            if (chrName.equals(Globals.CHR_ALL)) {
+                maxZoom = 0;
+            } else {
+                int chrLength = genome.getChromosome(chrName).getLength();
+                maxZoom = (int) (Math.log(chrLength / 50.0) / Globals.log2) + 1;
+            }
         }
+    }
+
+    /**
+     * Calculate the zoom level given start/end in bp.
+     * Doesn't change anything
+     * @param start
+     * @param end
+     * @return
+     */
+    protected int calculateZoom(double start, double end) {
+        return (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
     }
 
     protected Genome getGenome() {
@@ -422,27 +502,9 @@ public class ReferenceFrame {
     }
 
     public double getMaxPixel() {
-        return maxPixel;
+        return getTilesTimesBinsPerTile();
     }
 
-    /**
-     * Change the frame to the specified chromosome.
-     *
-     * @param name
-     * @param force
-     */
-    public void setChromosomeName(String name, boolean force) {
-
-        if ((chrName == null) || !name.equals(chrName) || force) {
-            chrName = name;
-            origin = 0;
-            setEnd = -1;
-            zoomTo(0);
-            computeMaxZoom();
-
-            chromoObservable.setChangedAndNotify();
-        }
-    }
 
     public void addObserver(Observer observer) {
         chromoObservable.addObserver(observer);
@@ -471,72 +533,8 @@ public class ReferenceFrame {
 
     // TODO -- this parameter shouldn't be stored here.  Maybe in a specialized
     // layout manager?
-
-    /**
-     * Width in pixels
-     */
-
     public int getWidthInPixels() {
         return widthInPixels;
-    }
-
-    /**
-     * Return the current locationScale in base pairs / pixel
-     *
-     * @return
-     */
-    public synchronized double getScale() {
-        if ((locationScale <= 0) || !locationScaleValid) {
-            computeLocationScale();
-        }
-
-        return locationScale;
-    }
-
-
-    public void invalidateLocationScale() {
-        locationScaleValid = false;
-    }
-
-    private synchronized void computeLocationScale() {
-        Genome genome = getGenome();
-
-        if (genome != null) {
-
-            if (setEnd > 0 && widthInPixels > 0) {
-                setLocationScale((setEnd - origin) / widthInPixels);
-                imputeZoom(origin, setEnd);
-                setEnd = -1;
-            } else {
-                computeMinZoom();
-                double virtualPixelSize = getTilesTimesBinsPerTile();
-                double nPixel = Math.max(virtualPixelSize, widthInPixels);
-                setLocationScale(((double) getChromosomeLength()) / nPixel);
-            }
-        }
-    }
-
-    /**
-     * Compute the minimum zoom level for the data panel width.  This is defined as the maximum
-     * zoom level for which all data bins will fit in the window without loss of
-     * data,  i.e. the maximum zoom level for which nBins < nPixels.  The number
-     * of bins is defined as
-     * nBins =  2^z
-     * so minZoom is the value z such that nBins < dataPanelWidth
-     */
-    protected void computeMinZoom() {
-        if (this.chrName.equals(Globals.CHR_ALL)) {
-            minZoom = 0;
-        } else {
-            minZoom = Math.max(0, (int) (Math.log((widthInPixels / binsPerTile)) / Globals.log2));
-
-            if (zoom < minZoom) {
-                zoom = minZoom;
-                nTiles = (int) Math.pow(2, zoom);
-                maxPixel = getTilesTimesBinsPerTile();
-            }
-        }
-
     }
 
     /**
@@ -600,8 +598,13 @@ public class ReferenceFrame {
 
 
     public double getTilesTimesBinsPerTile() {
-        return (double) nTiles * (double) binsPerTile;
+        return nTiles * (double) binsPerTile;
     }
+
+    public int getMidpoint() {
+        return pixelX + widthInPixels / 2;
+    }
+
 
     /**
      * Get the UCSC style locus string corresponding to the current view.  THe UCSC
@@ -630,15 +633,6 @@ public class ReferenceFrame {
         int endLoc = (int) getChromosomePosition(end);
         Range range = new Range(getChrName(), startLoc, endLoc);
         return range;
-    }
-
-    protected synchronized void setLocationScale(double locationScale) {
-        if (log.isDebugEnabled()) {
-            log.debug("Set location scale: " + locationScale + "  origin=" + origin);
-        }
-        this.locationScale = locationScale;
-        locationScaleValid = true;
-
     }
 
     public void reset() {

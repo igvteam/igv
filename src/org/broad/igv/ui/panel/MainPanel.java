@@ -15,7 +15,6 @@ import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
@@ -301,7 +300,7 @@ public class MainPanel extends JPanel implements Paintable {
      * @return
      */
     public java.util.List<TrackPanel> getTrackPanels() {
-        ArrayList panels = new ArrayList();
+        ArrayList<TrackPanel> panels = new ArrayList<TrackPanel>();
         for (Component c : centerSplitPane.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 panels.add(((TrackPanelScrollPane) c).getTrackPanel());

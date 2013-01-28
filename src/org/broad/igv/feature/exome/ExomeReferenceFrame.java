@@ -115,9 +115,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
         // Find genomePosition
         double genomePosition = b.getGenomeStart() + (exomeOrigin - b.getExomeStart());
-
         setOrigin(genomePosition);
-        IGV.repaintPanelsHeadlessSafe();
     }
 
     /**
@@ -166,14 +164,13 @@ public class ExomeReferenceFrame extends ReferenceFrame {
 
         int bp = exomeEnd - exomeOrigin;
         int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
-        setLocationScale(((double) bp) / pw);
-        locationScaleValid = true;
+        this.locationScale = (((double) bp) / pw);
 
-        imputeZoom(exomeOrigin, exomeEnd);
+        setZoom(calculateZoom(exomeOrigin, exomeEnd));
     }
 
     @Override
-    public synchronized void zoomTo(int newZoom, double newCenter) {
+    public synchronized void doSetZoomCenter(int newZoom, double newCenter) {
 
         newZoom = Math.max(0, Math.min(newZoom, maxZoom));
         double zoomFactor = Math.pow(2, newZoom - zoom);

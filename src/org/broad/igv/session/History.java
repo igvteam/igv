@@ -106,7 +106,8 @@ public class History {
                     IGV.getInstance().setGeneList(null, false);
                 }
                 (new SearchCommand(FrameManager.getDefaultFrame(), locus, false)).execute();
-                FrameManager.getDefaultFrame().setZoom(entry.getZoom());
+                //Zoom should be implicit in the locus
+                //FrameManager.getDefaultFrame().setZoom(entry.getZoom());
             }
         }
     }

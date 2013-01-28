@@ -460,14 +460,14 @@ public class DataPanel extends JComponent implements Paintable {
                 if (e.getKeyChar() == '+' || e.getKeyCode() == KeyEvent.VK_PLUS) {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     try {
-                        frame.incrementZoom(1);
+                        frame.doZoomIncrement(1);
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }
                 } else if (e.getKeyChar() == '-' || e.getKeyCode() == KeyEvent.VK_PLUS) {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     try {
-                        frame.incrementZoom(-1);
+                        frame.doZoomIncrement(-1);
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }
@@ -656,10 +656,10 @@ public class DataPanel extends JComponent implements Paintable {
 
                 if (e.isShiftDown()) {
                     final double locationClicked = frame.getChromosomePosition(e.getX());
-                    frame.zoomBy(3, locationClicked);
+                    frame.doIncrementZoom(3, locationClicked);
                 } else if (e.isAltDown()) {
                     final double locationClicked = frame.getChromosomePosition(e.getX());
-                    frame.zoomBy(-1, locationClicked);
+                    frame.doIncrementZoom(-1, locationClicked);
                 } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
                     TrackClickEvent te = new TrackClickEvent(e, frame);
 
@@ -673,7 +673,7 @@ public class DataPanel extends JComponent implements Paintable {
                     if (e.getClickCount() > 1) {
                         clickScheduler.cancelClickTask();
                         final double locationClicked = frame.getChromosomePosition(e.getX());
-                        frame.zoomBy(1, locationClicked);
+                        frame.doIncrementZoom(1, locationClicked);
 
                     } else {
 
@@ -732,7 +732,7 @@ public class DataPanel extends JComponent implements Paintable {
                 int wheelRotation = e.getWheelRotation();
                 //Mouse move up is negative, that should zoom in
                 int zoomIncr = -wheelRotation / 2;
-                getFrame().incrementZoom(zoomIncr);
+                getFrame().doZoomIncrement(zoomIncr);
             }
             //TODO Use this to pan. Seems weird, but it's how side scrolling on my mouse gets interpreted,
             //so could be handy for people with 2D wheels
