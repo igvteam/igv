@@ -22,19 +22,20 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
@@ -63,25 +64,19 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     protected int DEFAULT_MAX_DEPTH = 50;
     protected int maxDepth = DEFAULT_MAX_DEPTH;
     private ShapeType shapeType = ShapeType.TEXT;
-    private Feature selectedExon;
+    private Set<IExon> selectedExons;
 
     private CoverageTrack coverageTrack = null;
+
+    public void setSelectedExons(Set<IExon> selectedExons) {
+        this.selectedExons = selectedExons;
+    }
 
     public enum ShapeType{
         CIRCLE,
         ELLIPSE,
         TEXT
     }
-
-
-    public void setSelectedExon(Feature selectedExon) {
-        this.selectedExon = selectedExon;
-    }
-
-    public Feature getSelectedExon() {
-        return selectedExon;
-    }
-
 
     public int getMaxDepth() {
         return maxDepth;
@@ -148,7 +143,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
-            Feature selectedFeature = getSelectedExon();
+            Set<IExon> locselectedExons = selectedExons;
 
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
@@ -164,13 +159,17 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                 int junctionEnd = junctionFeature.getJunctionEnd();
 
                 //Only show arcs for the selected feature, if applicable
-                if (selectedFeature != null) {
-                    if((junctionStart >= selectedFeature.getStart() && junctionStart <= selectedFeature.getEnd())
-                            || (junctionEnd >= selectedFeature.getStart() && junctionEnd <= selectedFeature.getEnd())){
-
-                    }else{
-                        continue;
+                if (locselectedExons != null) {
+                    boolean inSelected = false;
+                    for(IExon selectedExon: locselectedExons){
+                        if((junctionStart >= selectedExon.getStart() && junctionStart <= selectedExon.getEnd())
+                                || (junctionEnd >= selectedExon.getStart() && junctionEnd <= selectedExon.getEnd())){
+                            inSelected = true;
+                            break;
+                        }
                     }
+
+                    if(!inSelected) continue;
                 }
 
                 double virtualPixelStart = Math.round((flankingStart - origin) / locScale);

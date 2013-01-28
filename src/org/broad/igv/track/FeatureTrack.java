@@ -16,6 +16,10 @@ import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
@@ -107,8 +111,6 @@ public class FeatureTrack extends AbstractTrack {
 
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
     protected IGVFeature selectedFeature = null;
-    protected Exon selectedExon = null;
-
 
     int margin = DEFAULT_MARGIN;
 
@@ -543,7 +545,7 @@ public class FeatureTrack extends AbstractTrack {
 
         MouseEvent e = te.getMouseEvent();
 
-        //dhmay adding selection of an expanded feature row
+        //Selection of an expanded feature row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             if (levelRects != null) {
                 for (int i = 0; i < levelRects.size(); i++) {
@@ -570,27 +572,15 @@ public class FeatureTrack extends AbstractTrack {
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
-            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
+            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature))){
                 //If something already selected, then if it's the same as this feature, deselect, otherwise, select
                 //this feature.
                 //todo: contains() might not do everything I want it to.
                 selectedFeature = null;
-            else{
+            }else{
                 //if nothing already selected, or something else selected,
                 // select this feature
                 selectedFeature = igvFeature;
-
-                //Select the appropriate exon
-                selectedExon = null;
-                double location = te.getFrame().getChromosomePosition(e.getX());
-                if(selectedFeature.getExons() != null){
-                    for(Exon exon: selectedFeature.getExons()){
-                        if(location >= exon.getStart() && location < exon.getEnd()){
-                            selectedExon = exon;
-                            break;
-                        }
-                    }
-                }
             }
 
             if (IGV.getInstance().isShowDetailsOnClick()) {
@@ -952,10 +942,6 @@ public class FeatureTrack extends AbstractTrack {
 
     public IGVFeature getSelectedFeature() {
         return selectedFeature;
-    }
-
-    public Exon getSelectedExon(){
-        return selectedExon;
     }
 
     public static boolean isDrawBorder() {

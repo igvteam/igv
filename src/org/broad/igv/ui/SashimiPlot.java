@@ -11,11 +11,11 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.panel.*;
-import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -54,8 +54,9 @@ public class SashimiPlot extends JFrame{
         TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
         getRenderer().setCoverageTrack(track.getDataManager().getCoverageTrack());
 
-        FeatureTrack geneTrackClone = new FeatureTrack(geneTrack);
-        TrackComponent<FeatureTrack> geneComponent = new TrackComponent<FeatureTrack>(frame, geneTrackClone);
+        SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
+        geneTrackClone.setDisplayMode(Track.DisplayMode.EXPANDED);
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
 
         //Add control elements to the top
         JPanel controlPanel = new ZoomSliderPanel(this.frame);
@@ -90,7 +91,7 @@ public class SashimiPlot extends JFrame{
         repaint();
     }
 
-    private void initMouseAdapters(TrackComponent<SpliceJunctionFinderTrack> trackComponent, TrackComponent<FeatureTrack> geneComponent) {
+    private void initMouseAdapters(TrackComponent<SpliceJunctionFinderTrack> trackComponent, TrackComponent<SelectableFeatureTrack> geneComponent) {
         JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
@@ -166,17 +167,17 @@ public class SashimiPlot extends JFrame{
         }
     }
 
-    private class GeneTrackMouseAdapter extends TrackComponentMouseAdapter<FeatureTrack>{
+    private class GeneTrackMouseAdapter extends TrackComponentMouseAdapter<SelectableFeatureTrack>{
 
-        GeneTrackMouseAdapter(TrackComponent<FeatureTrack> trackComponent){
+        GeneTrackMouseAdapter(TrackComponent<SelectableFeatureTrack> trackComponent){
             super(trackComponent);
         }
 
         @Override
         protected void handleDataClick(MouseEvent e) {
             trackComponent.track.handleDataClick(createTrackClickEvent(e));
-            Feature selectedExon = trackComponent.track.getSelectedExon();
-            getRenderer().setSelectedExon(selectedExon);
+            Set<IExon> selectedExon = trackComponent.track.getSelectedExons();
+            getRenderer().setSelectedExons(selectedExon);
             repaint();
         }
 
