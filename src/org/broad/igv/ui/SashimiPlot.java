@@ -69,7 +69,7 @@ public class SashimiPlot extends JFrame{
         controlPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                repaint();
+                SashimiPlot.this.repaint();
             }
         });
 

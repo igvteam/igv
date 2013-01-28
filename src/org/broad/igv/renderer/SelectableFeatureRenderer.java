@@ -28,9 +28,16 @@ public class SelectableFeatureRenderer extends IGVFeatureRenderer {
     private static final Color selectedBorderColor;
     private Set<IExon> selectedExons = Collections.emptySet();
 
+
+
     static{
         lineStroke = new BasicStroke(2.0f);
         selectedBorderColor = Color.blue;
+    }
+
+    public SelectableFeatureRenderer(){
+        AA_COLOR_1 = new Color(AA_COLOR_1.getRed(), AA_COLOR_1.getGreen(), AA_COLOR_1.getBlue(), 120);
+        AA_COLOR_2 = new Color(AA_COLOR_2.getRed(), AA_COLOR_2.getGreen(), AA_COLOR_2.getBlue(), 120);
     }
 
     @Override

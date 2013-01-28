@@ -47,8 +47,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     static protected final int REGION_STRAND_THICKNESS = 4;
     static final int BLOCK_HEIGHT = 14;
     static final int THIN_BLOCK_HEIGHT = 6;
-    static final Color AA_COLOR_1 = new Color(92, 92, 164);
-    static final Color AA_COLOR_2 = new Color(12, 12, 120);
+    protected Color AA_COLOR_1 = new Color(92, 92, 164);
+    protected Color AA_COLOR_2 = new Color(12, 12, 120);
     static final Color DULL_BLUE = new Color(0, 0, 200);
     static final Color DULL_RED = new Color(200, 0, 0);
     static final int NON_CODING_HEIGHT = 8;
