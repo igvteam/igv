@@ -280,6 +280,8 @@ public class ReferenceFrame {
             chrName = name;
             origin = 0;
             setEnd = -1;
+
+            this.zoom = -1;
             setZoom(0);
 
             chromoObservable.setChangedAndNotify();
