@@ -1,0 +1,143 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
+package org.broad.igv.util;
+
+import org.broad.igv.AbstractHeadlessTest;
+import org.broad.tribble.Feature;
+import org.junit.Test;
+
+import java.util.Iterator;
+
+import static junit.framework.Assert.*;
+
+/**
+ * User: jacob
+ * Date: 2013-Jan-22
+ */
+public class SequenceMatchSourceTest extends AbstractHeadlessTest{
+
+
+    String shortSeq = "GACTCTGACTGGACTCTGATCAG";
+
+    @Test
+    public void testBasicSearch() throws Exception{
+        String motif = "TCTG";
+        int posStart = 19389;
+        Iterator<Feature> matchIter = SequenceMatchSource.search(null, motif, posStart, shortSeq.getBytes());
+        assertTrue(matchIter.hasNext());
+        Feature feat = matchIter.next();
+
+        assertEquals(posStart + 3, feat.getStart());
+        assertEquals(posStart + 7, feat.getEnd());
+
+        feat = matchIter.next();
+        assertEquals(posStart + 14, feat.getStart());
+        assertEquals(posStart + 18, feat.getEnd());
+
+        assertFalse(matchIter.hasNext());
+    }
+
+    @Test
+    public void testConvertMotifToRegex_Basic() throws Exception{
+        String motif = "ACTGACTGACTG";
+        String regex = SequenceMatchSource.convertMotifToRegex(motif);
+        assertEquals(motif, regex);
+    }
+
+    @Test
+    public void testConvertMotifToRegex_02() throws Exception{
+        String motif = "ACTGMACTGNACTSG";
+        String regex = SequenceMatchSource.convertMotifToRegex(motif);
+
+        assertTrue(regex.length() >= motif.length());
+        assertEquals("ACTG[M,A,C]ACTG.ACT[S,G,C]G", regex);
+    }
+
+    @Test
+    public void testExactSearch_EGFR() throws Exception{
+        String motif = "CTTCGGGGAGCAGCGATGCGACCCTCCGGGACGGCCGGGGCAGCGCTCCTGGCGCTGCTGGCTGCGCTCTGCCCGGCGAGTCGGGCTCTGGAGGAAAAGAAAGGTAAGGGCGTGTCTCGCCGGCTCCCGCGCCGCCCCCGGATCGCGCCCCGGACCCCGCAGCCCGCCCAACCGCG";
+
+        int expStart = 55054449;
+        tstSearchGenome_EGFR(motif, expStart);
+    }
+
+    @Test
+    public void testAmbiguousSearch_EGFR() throws Exception{
+        String motif = "CTTYKSVDAGCAGNGATGCRRCCCYCCGGGACGGCCGGGNCAGCGCKCCBGGCGCDGCTGGCTGCGCTCTGCCCGGCGAGTCGGGCTCTGGAGGRMWHGAAAGGNNVGGGCGTGTCTCGCCGGCTCCCGCGCCGCCCCCGGATCGCGCCCCGGACCCCGCAGCCCGCCCAACCGCG";
+
+        int expStart = 55054449;
+        tstSearchGenome_EGFR(motif, expStart);
+    }
+
+    @Test
+    public void testSearchNoResult() throws Exception{
+        tstSearchGenomeSingResult("GATCRYMKSWHBVDNGATCGATCGATCGATCGATCGATCGATCGATCGATC", "chr7",
+                0, 100000, -1);
+    }
+
+    /**
+     * Test searching chromosome 1 for nonexistent motif. Test is timed at 30 seconds,
+     * this is a loose performance test. Takes ~13 seconds on my machine
+     * @throws Exception
+     */
+    @Test
+    public void testSearchWholeChromo() throws Exception{
+        String chromo = "chr1";
+        String umotif = "GATCRYMKSWHBVDNGATCGATCGATCGATCGATCGATCGATCGATCGATC";
+        int reps = 20;
+
+        //Really long string, probably no matches
+        String motif = umotif;
+        for(int ii=0; ii < reps; ii++) motif += umotif;
+
+        tstSearchGenomeSingResult(motif, chromo,
+                0, genome.getChromosome(chromo).getLength(), -1);
+    }
+
+    public void tstSearchGenome_EGFR(String motif, int expStart) throws Exception {
+        //Our favorite, EGFR
+        String chr = "chr7";
+        int start = 55052219;
+        int end = 55244525;
+
+        tstSearchGenomeSingResult(motif, chr, start, end, expStart);
+    }
+
+    /**
+     * Test searching for motif in the specified region, asserting that at most 1 feature
+     * is found and starts at {@code expFeatureStart}. If expFeatureStart < 0, it is assumed
+     * no features should be found
+     * @param motif
+     * @param chr
+     * @param start
+     * @param end
+     * @param expFeatStart
+     * @throws Exception
+     */
+    public void tstSearchGenomeSingResult(String motif, String chr, int start, int end, int expFeatStart) throws Exception {
+        SequenceMatchSource source = new SequenceMatchSource(motif, genome);
+
+        Iterator<Feature> iter = source.getFeatures(chr, start, end);
+        Feature feat = iter.next();
+
+        if(expFeatStart >= 0){
+            assertNotNull(feat);
+
+            assertEquals(expFeatStart, feat.getStart());
+            assertEquals(expFeatStart + motif.length(), feat.getEnd());
+        }else{
+            assertNull(feat);
+        }
+
+        assertFalse(iter.hasNext());
+    }
+}
