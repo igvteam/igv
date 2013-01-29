@@ -23,6 +23,7 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -1117,6 +1118,7 @@ public class GenomeManager {
         return currentGenome == null ? null : currentGenome.getId();
     }
 
+    @api
     public Genome getCurrentGenome() {
         return currentGenome;
     }

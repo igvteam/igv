@@ -133,6 +133,23 @@ public class IGV {
     Collection<SoftReference<AlignmentTrackEventListener>> alignmentTrackListeners =
             Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
 
+    private List<JComponent> otherToolMenus = new ArrayList<JComponent>();
+    /**
+     * Add an entry to the "Tools" menu
+     * @param menu
+     */
+    @api
+    public void addOtherToolMenu(JComponent menu){
+        otherToolMenus.add(menu);
+        if(menuBar != null) menuBar.refreshToolsMenu();
+    }
+
+
+    List<JComponent> getOtherToolMenus() {
+        return otherToolMenus;
+    }
+
+
 
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
@@ -162,6 +179,7 @@ public class IGV {
         return getInstance().rootPane;
     }
 
+    @api
     public static Frame getMainFrame() {
         return getInstance().mainFrame;
     }
@@ -2396,9 +2414,19 @@ public class IGV {
 
 
         private void initIGVPlugins(){
-            List<String> pluginClassNames = new ArrayList<String>(1);
-            //TODO Manually added for now
-            pluginClassNames.add("org.broad.igv.plugin.mongovariant.VariantReviewPlugin");
+            List<String> pluginClassNames = new ArrayList<String>(2);
+            InputStream is = IGV.class.getResourceAsStream("resources/builtin_plugin_list.txt");
+            if(is != null){
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                String line = null;
+                try {
+                    while((line = br.readLine()) != null){
+                        pluginClassNames.add(line);
+                    }
+                } catch (IOException e) {
+                    log.error("Error reading builtin plugin list", e);
+                }
+            }
             pluginClassNames.addAll(Arrays.asList(PreferenceManager.getInstance().getIGVPluginList()));
             for(String classname: pluginClassNames){
                 try {

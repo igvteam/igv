@@ -9,21 +9,29 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.util;
+package org.broad.igv.track;
 
-import org.broad.igv.feature.Locus;
+import org.broad.igv.dev.api.IGVPlugin;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.CachingFeatureSource;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.FeatureSource;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.tools.ui.SequenceMatchDialog;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +48,7 @@ import java.util.regex.Pattern;
 public class SequenceMatchSource implements FeatureSource<Feature>{
 
     private static Map<String, String> letterToRegex;
+    private static Set<String> validInputStrings;
 
     static{
         initLetterToRegex();
@@ -49,6 +58,10 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
     private static void initLetterToRegex() {
         URL url = SequenceMatchSource.class.getResource(codeFilePath);
         letterToRegex = loadMap(StringUtils.decodeURL(url.getPath()));
+        validInputStrings = new HashSet<String>(letterToRegex.size());
+        for(String key: letterToRegex.keySet()){
+            validInputStrings.add(key.toUpperCase());
+        }
     }
 
     private String motif;
@@ -159,6 +172,41 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
         this.featureWindowSize = size;
     }
 
+    public static boolean isValidString(String c) {
+        return validInputStrings.contains(c);
+    }
+
+    public static class SequenceMatchPlugin implements IGVPlugin {
+
+        /**
+         * Add menu entry for activating SequenceMatchDialog
+         */
+        @Override
+        public void init() {
+            JMenuItem menuItem = new JMenuItem("Match Sequence");
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SequenceMatchDialog dialog = new SequenceMatchDialog(IGV.getMainFrame());
+                    dialog.setVisible(true);
+
+                    String trackName = dialog.getTrackName();
+                    String pattern = dialog.getInputPattern();
+                    if (pattern != null) {
+                        SequenceMatchSource source = new SequenceMatchSource(pattern, GenomeManager.getInstance().getCurrentGenome());
+                        CachingFeatureSource cachingFeatureSource = new CachingFeatureSource(source);
+                        //TODO Hacky, we set a filename so the panel will be chosen to be the feature panel
+                        ResourceLocator locator = new ResourceLocator(".bed");
+                        FeatureTrack track = new FeatureTrack(trackName, trackName, cachingFeatureSource);
+                        IGV.getInstance().addTracks(Arrays.<Track>asList(track), locator);
+                    }
+                }
+            });
+
+            IGV.getInstance().addOtherToolMenu(menuItem);
+        }
+    }
+
     /**
      * Iterator which turns regex Matcher results into Features
      * Implementation note: We don't want to have the constructor run the query,
@@ -171,7 +219,7 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
         
         private Matcher matcher;
 
-        private Locus nextFeat;
+        private IGVFeature nextFeat;
 
         /**
          * 
@@ -191,7 +239,7 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
             if(matcher.find()){
                 int start = posOffset + matcher.start();
                 int end = posOffset + matcher.end();
-                nextFeat = new Locus(chr, start, end);
+                nextFeat = new BasicFeature(chr, start, end);
             }else{
                 nextFeat = null;
             }
@@ -203,8 +251,8 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
         }
 
         @Override
-        public Locus next() {
-            Locus nF = nextFeat;
+        public IGVFeature next() {
+            IGVFeature nF = nextFeat;
             findNext();
             return nF;
         }

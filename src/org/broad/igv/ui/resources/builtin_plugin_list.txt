@@ -1,0 +1,3 @@
+org.broad.igv.plugin.mongovariant.VariantReviewPlugin
+org.broad.igv.gitools.Gitools
+org.broad.igv.track.SequenceMatchSource$SequenceMatchPlugin

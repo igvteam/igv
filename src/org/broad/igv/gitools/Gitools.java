@@ -15,6 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
@@ -32,6 +33,8 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.DoubleArrayList;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
@@ -44,7 +47,7 @@ import java.util.*;
  *         Date: 11/13/12
  *         Time: 9:26 PM
  */
-public class Gitools{
+public class Gitools implements IGVPlugin{
 
     private static Logger log = Logger.getLogger(Gitools.class);
 
@@ -52,6 +55,48 @@ public class Gitools{
 
     private static int port = 50151;
     private static String host = "localhost";
+
+    @Override
+    public void init() {
+        addMenuItems();
+    }
+
+    private static void addMenuItems(){
+        //TODO Add api hook to insert things in tool menu
+        boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "true"));
+        if(showTDMButton){
+            JMenu gitoolsMenu = new JMenu("Gitools heatmaps");
+
+            JMenuItem directLoadItem = new JMenuItem("Load gene matrix in Gitools");
+            directLoadItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    if (Gitools.canConnect() ) {
+                        GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
+                                "Gitools Load", new Gitools.DirectLoadListener());
+                        dialog.setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(IGV.getMainFrame(), "To be able to browse the gene matrix you need to install and open Gitools.\n Download it from http://www.gitools.org.");
+                    }
+
+                }
+            });
+            gitoolsMenu.add(directLoadItem);
+
+            JMenuItem gitoolsItem = new JMenuItem("Export gene matrix (TDM)");
+            gitoolsItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    GeneListManagerUI dialog = GeneListManagerUI.getInstance(IGV.getMainFrame(),
+                            "Export TDM", new Gitools.ExportFileListener());
+                    dialog.setVisible(true);
+                }
+            });
+            gitoolsMenu.add(gitoolsItem);
+            IGV.getInstance().addOtherToolMenu(gitoolsMenu);
+        }
+    }
 
     public static void main(String[] args){
         try {
