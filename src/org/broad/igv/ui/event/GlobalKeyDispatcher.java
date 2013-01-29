@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -22,20 +15,19 @@
  */
 package org.broad.igv.ui.event;
 
-import org.broad.igv.charts.ScatterPlot;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.variant.VariantTrack;
+import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -370,7 +362,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             return;
         }
 
-        ReferenceFrame vc = FrameManager.getDefaultFrame();
+        ReferenceFrame frame = FrameManager.getDefaultFrame();
         Collection<Track> tracks = IGV.getInstance().getSelectedTracks();
         if (tracks.size() == 1) {
             try {
@@ -382,24 +374,23 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 Feature f = null;
-                ReferenceFrame frame = FrameManager.getDefaultFrame();
                 if (t instanceof FeatureTrack) {
-                    f = ((FeatureTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
+                    f = ((FeatureTrack) t).nextFeature(frame.getChrName(), frame.getCenter(), forward, frame);
                 } else if (t instanceof VariantTrack) {
-                    f = ((VariantTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
+                    f = ((VariantTrack) t).nextFeature(frame.getChrName(), frame.getCenter(), forward, frame);
                 }
 
                 if (f != null) {
                     String chr = GenomeManager.getInstance().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
-                    if (!chr.equals(vc.getChrName())) {
+                    if (!chr.equals(frame.getChrName())) {
                         // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
-                        double range = vc.getEnd() - vc.getOrigin();
+                        double range = frame.getEnd() - frame.getOrigin();
                         int newOrigin = (int) Math.max(newCenter - range / 2, 0);
                         int newEnd = (int) (newOrigin + range);
-                        vc.jumpTo(chr, newOrigin, newEnd);
+                        frame.jumpTo(chr, newOrigin, newEnd);
                     } else {
-                        vc.centerOnLocation(newCenter);
+                        frame.centerOnLocation(newCenter);
                     }
                 }
             } catch (IOException e) {

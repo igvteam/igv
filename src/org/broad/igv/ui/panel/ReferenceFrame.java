@@ -241,7 +241,6 @@ public class ReferenceFrame {
         }
 
         IGV.repaintPanelsHeadlessSafe();
-
         recordHistory();
 
         // This is a hack,  this is not a drag event but is a "jump"
@@ -381,6 +380,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
+        IGV.repaintPanelsHeadlessSafe();
     }
 
     public boolean windowAtEnd() {
