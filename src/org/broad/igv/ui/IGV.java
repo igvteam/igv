@@ -1995,9 +1995,6 @@ public class IGV {
         }
 
         for (Track t : tracksToRemove) {
-            if (t instanceof DragListener) {
-                DragEventManager.getInstance().removeDragListener((DragListener) t);
-            }
             if (t instanceof TrackGroupEventListener) {
                 removeGroupEventListener((TrackGroupEventListener) t);
             }

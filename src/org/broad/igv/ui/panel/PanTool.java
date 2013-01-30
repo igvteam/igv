@@ -76,11 +76,9 @@ public class PanTool extends AbstractDataPanelTool {
 
     public void mouseReleased(final MouseEvent e) {
 
-        // viewport = null;
         if (isDragging) {
-            getReferenceFame().snapToGrid();
             isDragging = false;
-            DragEventManager.getInstance().dragStopped();
+            getReferenceFame().snapToGrid();
             getReferenceFame().recordHistory();
         }
         Component panel = (Component) e.getSource();

@@ -242,9 +242,6 @@ public class ReferenceFrame {
 
         IGV.repaintPanelsHeadlessSafe();
         recordHistory();
-
-        // This is a hack,  this is not a drag event but is a "jump"
-        DragEventManager.getInstance().dragStopped();
     }
 
     protected double getGenomeCenterPosition() {
