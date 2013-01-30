@@ -83,6 +83,7 @@ public class CoverageTrackTest extends AbstractHeadedTest {
 
         igv.removeTracks(Arrays.<Track>asList(alTrack));
         igv.goToLocus(destLocString);
+        Thread.sleep(3000);
 
         checkLocus(dataManager, destLocus, true);
 
