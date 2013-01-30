@@ -11,10 +11,12 @@
 
 package org.broad.igv.ui;
 
+import com.google.common.eventbus.Subscribe;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.event.ZoomChange;
 import org.broad.igv.ui.panel.*;
 
 import javax.swing.*;
@@ -124,6 +126,12 @@ public class SashimiPlot extends JFrame{
     private SashimiJunctionRenderer getRenderer(){
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
     }
+
+    @Subscribe
+    public void respondZoomChange(ZoomChange.Result e) {
+        repaint();
+    }
+
     /**
      * Should consider using this elsewhere. Single component
      * which contains a single track

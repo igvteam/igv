@@ -246,6 +246,7 @@ public class ZoomSliderPanel extends JPanel {
                     toolZoom = -1;
                     return;
                 }
+
                 repaint();
 
                 int effectiveZoom = toolZoom + getViewContext().getMinZoom();
