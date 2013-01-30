@@ -20,7 +20,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.event.ZoomChange;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
@@ -234,7 +234,7 @@ public class ZoomSliderPanel extends JPanel {
 
                 int effectiveZoom = toolZoom + getViewContext().getMinZoom();
 
-                ZoomChange.Cause event = new ZoomChange.Cause(effectiveZoom);
+                ViewChange.ZoomCause event = new ViewChange.ZoomCause(effectiveZoom);
                 getViewContext().getEventBus().post(event);
                 toolZoom = -1;
 

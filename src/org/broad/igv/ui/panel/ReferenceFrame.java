@@ -26,7 +26,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.event.ZoomChange;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ObservableForObject;
@@ -226,7 +226,7 @@ public class ReferenceFrame {
     }
 
     @Subscribe
-    public void receiveZoomChange(ZoomChange.Cause e) {
+    public void receiveZoomChange(ViewChange.ZoomCause e) {
         doSetZoom(e.newZoom);
     }
 
@@ -260,7 +260,7 @@ public class ReferenceFrame {
             centerOnLocation(newCenter);
         }
 
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
         recordHistory();
     }
 
@@ -379,12 +379,12 @@ public class ReferenceFrame {
     public void shiftOriginPixels(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public void snapToGrid() {
         setOrigin(Math.round(origin));
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -397,7 +397,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public boolean windowAtEnd() {

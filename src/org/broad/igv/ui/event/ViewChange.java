@@ -12,24 +12,31 @@
 package org.broad.igv.ui.event;
 
 /**
- * Events which either cause or are the result of changes in the zoom level
+ * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).
+ *
+ * {@code Cause} derived events
+ * should cause the data model (e.g. ReferenceFrame) to change their position, this will
+ * typically be dispatched by a UI Component.
+ *
+ * {@code Result} derived events should be dispatched after objects have changed
+ * their position, typically to tell UI elements they should repaint
  * User: jacob
  * Date: 2013-Jan-30
  */
-public class ZoomChange {
+public abstract class ViewChange {
 
+    public static class Cause{}
+    public static class Result{}
 
     /**
-     * Event indicating that the zoom should change. This event
-     * will generally be sent by UI components which want to change
-     * the zoom
+     * Event indicating that the zoom should change.
      */
-    public static class Cause{
+    public static class ZoomCause extends Cause{
         //public final int oldZoom;
         public final int newZoom;
         //public final Object source;
 
-        public Cause(int newZoom){
+        public ZoomCause(int newZoom){
             //this.oldZoom = oldZoom;
             this.newZoom = newZoom;
             //this.source = source;
@@ -37,14 +44,14 @@ public class ZoomChange {
     }
 
     /**
-     * Event dispatched after objects have changed their zoom level,
-     * generally so UI components can repaint
+     * Event dispatched after objects have changed their zoom level.
      */
-    public static class Result{
+    public static class ZoomResult extends Result{
         public final int currentZoom;
 
-        public Result(int currentZoom){
+        public ZoomResult(int currentZoom){
             this.currentZoom = currentZoom;
         }
     }
+
 }

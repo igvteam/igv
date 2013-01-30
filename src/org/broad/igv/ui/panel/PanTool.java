@@ -114,7 +114,6 @@ public class PanTool extends AbstractDataPanelTool {
 
                     // Horizontal scrolling
                     getReferenceFame().shiftOriginPixels(deltaX);
-                    IGV.getInstance().repaintDataAndHeaderPanels();
                 } else {
                     // Vertical Scrolling 
                     int totalYChange = (int) (lastMousePoint.getY() - e.getY());
