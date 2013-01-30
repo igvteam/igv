@@ -26,6 +26,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.DragStoppedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -228,6 +229,12 @@ public class ReferenceFrame {
     @Subscribe
     public void receiveZoomChange(ViewChange.ZoomCause e) {
         doSetZoom(e.newZoom);
+    }
+
+    @Subscribe
+    public void receiveDragStopped(DragStoppedEvent e){
+        this.snapToGrid();
+        this.recordHistory();
     }
 
 
