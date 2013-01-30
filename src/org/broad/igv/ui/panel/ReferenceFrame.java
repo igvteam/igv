@@ -14,6 +14,9 @@
  */
 package org.broad.igv.ui.panel;
 
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -23,7 +26,9 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.ZoomChange;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ObservableForObject;
 
 import java.util.Observer;
@@ -137,6 +142,15 @@ public class ReferenceFrame {
         chromoObservable = new ObservableForObject<String>(chrName);
     }
 
+    private EventBus eventBus;
+    public EventBus getEventBus(){
+        if(eventBus == null){
+            eventBus = new AsyncEventBus(LongRunningTask.getThreadExecutor());
+            eventBus.register(this);
+        }
+        //if(eventBus == null) eventBus = new EventBus("IGV");
+        return eventBus;
+    }
     /**
      * Set the position and width of the frame, in pixels
      * @param pixelX
@@ -210,6 +224,12 @@ public class ReferenceFrame {
         double currentCenter = getGenomeCenterPosition();
         doSetZoomCenter(newZoom, currentCenter);
     }
+
+    @Subscribe
+    public void receiveZoomChange(ZoomChange.Cause e) {
+        doSetZoom(e.newZoom);
+    }
+
 
     public void doIncrementZoom(final int zoomIncrement, final double newCenter) {
           doSetZoomCenter(getZoom() + zoomIncrement, newCenter);
