@@ -63,6 +63,9 @@ public class PanTool extends AbstractDataPanelTool {
         return isDragging ? dragCursor : Cursor.getDefaultCursor();
     }
 
+    public Point getLastMousePoint() {
+        return lastMousePoint;
+    }
 
     @Override
     public void mousePressed(final MouseEvent e) {

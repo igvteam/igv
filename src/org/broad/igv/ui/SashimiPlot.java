@@ -39,8 +39,23 @@ public class SashimiPlot extends JFrame{
     private SpliceJunctionFinderTrack spliceJunctionTrack;
     private ReferenceFrame frame;
 
+    /**
+     * The minimum allowed origin of the frame. We set scrolling
+     * limits based on initialization
+     */
+    private final double minOrigin;
+
+    /**
+     * The maximum allow end of the frame. We set scrolling
+     * limits based on initialization
+     */
+    private final double maxEnd;
+
     public SashimiPlot(ReferenceFrame iframe, SpliceJunctionFinderTrack track, FeatureTrack geneTrack){
         this.frame = new ReferenceFrame(iframe);
+
+        minOrigin = this.frame.getOrigin();
+        maxEnd = this.frame.getEnd();
 
         initSize(frame.getWidthInPixels());
 
@@ -204,8 +219,14 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            currentTool.mouseDragged(e);
-            repaint();
+            double diff = e.getX() - currentTool.getLastMousePoint().getX();
+            // diff > 0 means moving mouse to the right, which drags the frame towards the negative direction
+            boolean hitBounds = SashimiPlot.this.frame.getOrigin() <= minOrigin && diff > 0;
+            hitBounds |= SashimiPlot.this.frame.getEnd() >= maxEnd && diff < 0;
+            if(!hitBounds){
+                currentTool.mouseDragged(e);
+                repaint();
+            }
         }
 
         @Override
