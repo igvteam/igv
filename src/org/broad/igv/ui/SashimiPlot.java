@@ -51,11 +51,14 @@ public class SashimiPlot extends JFrame{
      */
     private final double maxEnd;
 
+
     public SashimiPlot(ReferenceFrame iframe, SpliceJunctionFinderTrack track, FeatureTrack geneTrack){
         this.frame = new ReferenceFrame(iframe);
+        this.frame.getEventBus().register(this);
 
         minOrigin = this.frame.getOrigin();
         maxEnd = this.frame.getEnd();
+        int minZoom = this.frame.getZoom();
 
         initSize(frame.getWidthInPixels());
 
@@ -74,7 +77,9 @@ public class SashimiPlot extends JFrame{
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
 
         //Add control elements to the top
-        JPanel controlPanel = new ZoomSliderPanel(this.frame);
+        ZoomSliderPanel controlPanel = new ZoomSliderPanel(this.frame);
+        controlPanel.setMinZoomLevel(minZoom);
+
         Dimension dimSize = new Dimension(200, 30);
         controlPanel.setPreferredSize(dimSize);
         controlPanel.setMinimumSize(dimSize);

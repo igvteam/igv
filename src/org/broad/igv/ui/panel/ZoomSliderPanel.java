@@ -47,6 +47,19 @@ public class ZoomSliderPanel extends JPanel {
      * Should correspond to "maxZoomLevel" in class referenceFrame.
      */
     int numZoomLevels = 25;
+
+
+    private int minZoomLevel = 0;
+
+    /**
+     * Set the allowed zoom level, user cannot zoom out past this level
+     *
+     * @param minZoomLevel
+     */
+    public void setMinZoomLevel(int minZoomLevel){
+        this.minZoomLevel = minZoomLevel;
+    }
+
     private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
     private ReferenceFrame referenceFrame;
 
@@ -54,6 +67,9 @@ public class ZoomSliderPanel extends JPanel {
         this(null);
     }
 
+    /**
+     * @param referenceFrame The ReferenceFrame whose zoom level this panel will control
+     */
     public ZoomSliderPanel(ReferenceFrame referenceFrame) {
         this.referenceFrame = referenceFrame;
         slider = IconFactory.getInstance().getIcon(IconFactory.IconID.SLIDER).getImage();
@@ -165,20 +181,21 @@ public class ZoomSliderPanel extends JPanel {
         transGraphics.dispose();
     }
 
-    void setZoom(MouseEvent e) {
+    int setZoom(MouseEvent e) {
 
         if (zoomPlusRect.contains(e.getX(), e.getY())) {
             toolZoom++;
-        } else if (zoomMinusRect.contains(e.getX(), e.getY())) {
+        } else if (zoomMinusRect.contains(e.getX(), e.getY()) && toolZoom > minZoomLevel) {
             toolZoom--;
         } else {
             for (int i = 0; i < zoomLevelRects.length; i++) {
                 Rectangle rect = zoomLevelRects[i];
-                if (rect.contains(e.getX(), e.getY())) {
+                if (rect.contains(e.getX(), e.getY()) && i >= minZoomLevel) {
                     toolZoom = i;
                 }
             }
         }
+        return toolZoom;
     }
 
 
@@ -222,7 +239,13 @@ public class ZoomSliderPanel extends JPanel {
                 if (!isEnabled()) {
                     return;
                 }
-                setZoom(e);
+                //Sometimes the zoom doesn't change, don't need to do anything in that case
+                int oldToolZoom = toolZoom;
+                int diff = setZoom(e) - oldToolZoom;
+                if(diff == 0) {
+                    toolZoom = -1;
+                    return;
+                }
                 repaint();
 
                 int effectiveZoom = toolZoom + getViewContext().getMinZoom();
