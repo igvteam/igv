@@ -457,47 +457,49 @@ public class DataPanel extends JComponent implements Paintable {
 
             @Override
             public void keyPressed(KeyEvent e) {
+                int shiftOriginPixels = Integer.MIN_VALUE;
+                int zoomIncr = Integer.MIN_VALUE;
+                boolean showWaitCursor = false;
+
                 if (e.getKeyChar() == '+' || e.getKeyCode() == KeyEvent.VK_PLUS) {
-                    WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                    try {
-                        frame.doZoomIncrement(1);
-                    } finally {
-                        WaitCursorManager.removeWaitCursor(token);
-                    }
+                    zoomIncr = +1;
+                    showWaitCursor = true;
                 } else if (e.getKeyChar() == '-' || e.getKeyCode() == KeyEvent.VK_PLUS) {
-                    WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                    try {
-                        frame.doZoomIncrement(-1);
-                    } finally {
-                        WaitCursorManager.removeWaitCursor(token);
-                    }
-
+                    zoomIncr = -1;
+                    showWaitCursor = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    frame.shiftOriginPixels(5);
+                    shiftOriginPixels = 5;
                 } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    frame.shiftOriginPixels(-5);
+                    shiftOriginPixels = -5;
                 } else if (e.getKeyCode() == KeyEvent.VK_HOME) {
-                    WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                    try {
-                        frame.shiftOriginPixels(-getWidth());
-                        frame.recordHistory();
-                    } finally {
-                        WaitCursorManager.removeWaitCursor(token);
-                    }
-
-
+                    shiftOriginPixels = -getWidth();
+                    showWaitCursor = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_END) {
-                    WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                    try {
-                        frame.shiftOriginPixels(getWidth());
-                        frame.recordHistory();
-                    } finally {
-                        WaitCursorManager.removeWaitCursor(token);
-                    }
+                    shiftOriginPixels = getWidth();
+                    showWaitCursor = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_PLUS) {
                 } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
                 }
 
+                WaitCursorManager.CursorToken token = null;
+                if(showWaitCursor) token = WaitCursorManager.showWaitCursor();
+                try {
+                    if(zoomIncr > Integer.MIN_VALUE){
+                        frame.doZoomIncrement(zoomIncr);
+                    }else if(shiftOriginPixels > Integer.MIN_VALUE){
+                        frame.shiftOriginPixels(shiftOriginPixels);
+                    }else{
+                        return;
+                    }
+
+                    //Assume that anything special enough to warrant a wait cursor
+                    //should be in history
+                    if(showWaitCursor){
+                        frame.recordHistory();
+                    }
+                } finally {
+                    if(token != null) WaitCursorManager.removeWaitCursor(token);
+                }
 
             }
         };
