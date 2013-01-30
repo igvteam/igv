@@ -423,7 +423,7 @@ public class ReferenceFrame {
         synchronized (this) {
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
-                this.setOrigin(start);
+                this.origin = start;
                 this.setEnd = end;
                 computeLocationScale();
                 setZoomWithinLimits(calculateZoom(this.getOrigin(), this.getEnd()));
