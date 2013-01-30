@@ -229,12 +229,14 @@ public class ReferenceFrame {
     @Subscribe
     public void receiveZoomChange(ViewChange.ZoomCause e) {
         doSetZoom(e.newZoom);
+        ViewChange.Result result = new ViewChange.Result(true);
+        getEventBus().post(result);
     }
 
     @Subscribe
     public void receiveDragStopped(DragStoppedEvent e){
         this.snapToGrid();
-        this.recordHistory();
+        getEventBus().post(new ViewChange.Result());
     }
 
 
@@ -266,9 +268,6 @@ public class ReferenceFrame {
             // Adjust origin so newCenter is centered
             centerOnLocation(newCenter);
         }
-
-        getEventBus().post(new ViewChange.Result());
-        recordHistory();
     }
 
     protected double getGenomeCenterPosition() {
@@ -363,6 +362,8 @@ public class ReferenceFrame {
      * Record the current state of the frame in history.
      * It is recommended that this NOT be called from within ReferenceFrame,
      * and callers use it after making all changes
+     *
+     //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
@@ -462,8 +463,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + locationScale);
         }
 
-        //Mostly for testing
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
 
@@ -544,6 +544,14 @@ public class ReferenceFrame {
         chromoObservable.deleteObservers();
     }
 
+
+    @Subscribe
+    public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause){
+        if(!chromoChangeCause.chrName.equals(chrName)){
+            setChromosomeName(chromoChangeCause.chrName, false);
+            getEventBus().post(new ViewChange.ChromosomeChangeResult(chromoChangeCause.source, chrName));
+        }
+    }
     /**
      * @param name
      */

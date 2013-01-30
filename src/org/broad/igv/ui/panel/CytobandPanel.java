@@ -29,6 +29,7 @@ import org.broad.igv.feature.Cytoband;
 import org.broad.igv.renderer.CytobandRenderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.event.ViewChange;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -159,6 +160,9 @@ public class CytobandPanel extends JPanel {
                         getReferenceFrame().centerOnLocation(newLocation);
                     }
 
+                    ViewChange.Result result = new ViewChange.Result(true);
+                    getReferenceFrame().getEventBus().post(result);
+
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }
@@ -221,8 +225,6 @@ public class CytobandPanel extends JPanel {
         addMouseMotionListener(mouseAdapter);
         addMouseListener(mouseAdapter);
     }
-
-    // TODO remove reference to IGV.theInstance
 
     private ReferenceFrame getReferenceFrame() {
         return frame;

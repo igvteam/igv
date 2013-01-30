@@ -22,6 +22,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
@@ -174,8 +175,7 @@ public class SearchCommand {
                     referenceFrame.jumpTo(result.chr, result.start, result.end);
                     break;
                 case CHROMOSOME:
-                    referenceFrame.setChromosomeName(result.chr, true);
-                    IGV.repaintPanelsHeadlessSafe();
+                    referenceFrame.getEventBus().post(new ViewChange.ChromosomeChangeCause(this, result.chr));
                     break;
                 case ERROR:
                 default: {

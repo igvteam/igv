@@ -26,7 +26,22 @@ package org.broad.igv.ui.event;
 public abstract class ViewChange {
 
     public static class Cause{}
-    public static class Result{}
+
+    public static class Result{
+        protected boolean recordHistory = false;
+
+        public boolean recordHistory(){
+            return this.recordHistory;
+        }
+
+        public Result(){
+            this(false);
+        }
+
+        public Result(boolean recordHistory){
+            this.recordHistory = recordHistory;
+        }
+    }
 
     /**
      * Event indicating that the zoom should change.
@@ -43,14 +58,30 @@ public abstract class ViewChange {
         }
     }
 
-    /**
-     * Event dispatched after objects have changed their zoom level.
-     */
-    public static class ZoomResult extends Result{
-        public final int currentZoom;
+    public static class ChromosomeChangeCause extends Cause{
 
-        public ZoomResult(int currentZoom){
-            this.currentZoom = currentZoom;
+        public final Object source;
+        public final String chrName;
+
+        /**
+         *
+         * @param source The object which originated the chromosome change
+         * @param chrName
+         */
+        public ChromosomeChangeCause(Object source, String chrName){
+            this.source = source;
+            this.chrName = chrName;
+        }
+    }
+
+    public static class ChromosomeChangeResult extends Result{
+
+        public final Object source;
+        public final String chrName;
+
+        public ChromosomeChangeResult(Object source, String chrName){
+            this.source = source;
+            this.chrName = chrName;
         }
     }
 
