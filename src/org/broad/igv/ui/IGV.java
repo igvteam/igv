@@ -153,6 +153,11 @@ public class IGV {
         repaintStatusAndZoomSlider();
     }
 
+    @Subscribe
+    public void receiveViewChange(ViewChange.ChromosomeChangeResult e) {
+        chromosomeChangeEvent(e.chrName, false);
+    }
+
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
@@ -349,12 +354,7 @@ public class IGV {
 
     }
 
-
-    public void chromosomeChangeEvent(String chrName) {
-        chromosomeChangeEvent(chrName, true);
-    }
-
-    public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
+    private void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
         contentPane.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
         contentPane.getCommandBar().updateComponentStates();

@@ -30,9 +30,6 @@ import org.broad.igv.ui.event.DragStoppedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ObservableForObject;
-
-import java.util.Observer;
 
 
 /**
@@ -116,14 +113,10 @@ public class ReferenceFrame {
      */
     protected int setEnd = 0;
 
-    protected ObservableForObject<String> chromoObservable;
-
-
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
-        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
 
@@ -140,7 +133,6 @@ public class ReferenceFrame {
         this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
-        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
     private EventBus eventBus;
@@ -262,7 +254,7 @@ public class ReferenceFrame {
             synchronized (this){
                 jumpToChromosomeForGenomeLocation(newCenter);
             }
-            IGV.getInstance().chromosomeChangeEvent(chrName);
+            //IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
             setZoom(newZoom);
             // Adjust origin so newCenter is centered
@@ -291,12 +283,22 @@ public class ReferenceFrame {
     }
 
     /**
+     * Calls {@link #setChromosomeName(String, boolean)} with force = false
+     * It is preferred that you post an event to the EventBus instead, this is public
+     * as an implementation side effect
+     * @param name
+     */
+    public void setChromosomeName(String name) {
+        setChromosomeName(name, false);
+    }
+
+    /**
      * Change the frame to the specified chromosome.
      *
      * @param name
      * @param force
      */
-    public synchronized void setChromosomeName(String name, boolean force) {
+    synchronized void setChromosomeName(String name, boolean force) {
 
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
@@ -306,7 +308,7 @@ public class ReferenceFrame {
             this.zoom = -1;
             setZoom(0);
 
-            chromoObservable.setChangedAndNotify();
+            //chromoObservable.setChangedAndNotify();
         }
     }
 
@@ -531,34 +533,14 @@ public class ReferenceFrame {
         return getTilesTimesBinsPerTile();
     }
 
-
-    public void addObserver(Observer observer) {
-        chromoObservable.addObserver(observer);
-    }
-
-    public void deleteObserver(Observer observer) {
-        chromoObservable.deleteObserver(observer);
-    }
-
-    public void deleteObservers() {
-        chromoObservable.deleteObservers();
-    }
-
-
     @Subscribe
     public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause){
         if(!chromoChangeCause.chrName.equals(chrName)){
             setChromosomeName(chromoChangeCause.chrName, false);
+            recordHistory();
             getEventBus().post(new ViewChange.ChromosomeChangeResult(chromoChangeCause.source, chrName));
         }
     }
-    /**
-     * @param name
-     */
-    public void setChromosomeName(String name) {
-        setChromosomeName(name, false);
-    }
-
 
     public String getChrName() {
         return chrName;
