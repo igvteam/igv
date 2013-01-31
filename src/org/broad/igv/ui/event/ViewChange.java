@@ -24,24 +24,19 @@ package org.broad.igv.ui.event;
  * Date: 2013-Jan-30
  */
 public abstract class ViewChange {
+    protected boolean recordHistory = false;
 
-    public static class Cause{}
-
-    public static class Result{
-        protected boolean recordHistory = false;
-
-        public boolean recordHistory(){
-            return this.recordHistory;
-        }
-
-        public Result(){
-            this(false);
-        }
-
-        public Result(boolean recordHistory){
-            this.recordHistory = recordHistory;
-        }
+    public boolean recordHistory(){
+        return this.recordHistory;
     }
+
+    public void setRecordHistory(boolean recordHistory){
+        this.recordHistory = recordHistory;
+    }
+
+    public static class Cause extends ViewChange{}
+
+    public static class Result extends ViewChange{}
 
     /**
      * Event indicating that the zoom should change.

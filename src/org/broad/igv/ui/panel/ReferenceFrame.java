@@ -221,7 +221,8 @@ public class ReferenceFrame {
     @Subscribe
     public void receiveZoomChange(ViewChange.ZoomCause e) {
         doSetZoom(e.newZoom);
-        ViewChange.Result result = new ViewChange.Result(true);
+        ViewChange.Result result = new ViewChange.Result();
+        result.setRecordHistory(false);
         getEventBus().post(result);
     }
 
@@ -537,8 +538,10 @@ public class ReferenceFrame {
     public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause){
         if(!chromoChangeCause.chrName.equals(chrName)){
             setChromosomeName(chromoChangeCause.chrName, false);
-            recordHistory();
-            getEventBus().post(new ViewChange.ChromosomeChangeResult(chromoChangeCause.source, chrName));
+            ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
+                    chrName);
+            resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
+            getEventBus().post(resultEvent);
         }
     }
 
