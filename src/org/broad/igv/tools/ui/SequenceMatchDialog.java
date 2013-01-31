@@ -88,7 +88,7 @@ public class SequenceMatchDialog extends JDialog {
         nameField = new JTextField();
         label2 = new JLabel();
         label4 = new JLabel();
-        patternField = new JTextArea();
+        patternField = new JTextField();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -125,9 +125,6 @@ public class SequenceMatchDialog extends JDialog {
                 label2.setLabelFor(patternField);
                 contentPanel.add(label2);
                 contentPanel.add(label4);
-
-                //---- patternField ----
-                patternField.setRows(2);
                 contentPanel.add(patternField);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
@@ -166,7 +163,7 @@ public class SequenceMatchDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        pack();
+        setSize(400, 300);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -180,7 +177,7 @@ public class SequenceMatchDialog extends JDialog {
     private JTextField nameField;
     private JLabel label2;
     private JLabel label4;
-    private JTextArea patternField;
+    private JTextField patternField;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

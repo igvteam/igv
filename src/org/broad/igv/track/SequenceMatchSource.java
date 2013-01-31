@@ -20,8 +20,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.ui.SequenceMatchDialog;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
@@ -195,10 +195,8 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
                     if (pattern != null) {
                         SequenceMatchSource source = new SequenceMatchSource(pattern, GenomeManager.getInstance().getCurrentGenome());
                         CachingFeatureSource cachingFeatureSource = new CachingFeatureSource(source);
-                        //TODO Hacky, we set a filename so the panel will be chosen to be the feature panel
-                        ResourceLocator locator = new ResourceLocator(".bed");
                         FeatureTrack track = new FeatureTrack(trackName, trackName, cachingFeatureSource);
-                        IGV.getInstance().addTracks(Arrays.<Track>asList(track), locator);
+                        IGV.getInstance().addTracks(Arrays.<Track>asList(track), PanelName.FEATURE_PANEL);
                     }
                 }
             });

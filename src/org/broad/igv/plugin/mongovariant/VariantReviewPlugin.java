@@ -17,6 +17,7 @@ import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuItemBuilder;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.PanelName;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
@@ -63,7 +64,7 @@ public class VariantReviewPlugin implements IGVPlugin{
                         //TODO Put the track name in the dbSpec
                         locator.setName("NA12878 KB");
                         VariantReviewSource.loadVariantReview(locator, newTracks);
-                        IGV.getInstance().addTracks(newTracks, locator);
+                        IGV.getInstance().addTracks(newTracks, PanelName.DATA_PANEL);
                         hasReviewTrack = true;
                     }
                 });

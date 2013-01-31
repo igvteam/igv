@@ -1558,6 +1558,15 @@ public class IGV {
         }
     }
 
+    /**
+     * Add tracks to the specified panel
+     * @param tracks
+     * @param panelName
+     */
+    public void addTracks(List<Track> tracks, PanelName panelName){
+        TrackPanel panel = getTrackPanel(panelName.getName());
+        panel.addTracks(tracks);
+    }
 
     /**
      *
@@ -1567,8 +1576,7 @@ public class IGV {
      * @param tracks
      * @param locator
      */
-    @api
-    public void addTracks(List<Track> tracks, ResourceLocator locator){
+    void addTracks(List<Track> tracks, ResourceLocator locator){
         if (tracks.size() > 0) {
             String path = locator.getPath();
 
