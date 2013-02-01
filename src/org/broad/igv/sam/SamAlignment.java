@@ -23,7 +23,9 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,17 +64,17 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     /**
      * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS.
-     * USE {@link #getRecord}. We use a soft reference
+     * USE {@link #getRecord}.
      */
     private SAMRecord record;
-    private SoftReference<SAMRecord> softRecord;
+    private Reference<SAMRecord> softRecord;
 
     /**
      * DO NOT ACCESS THIS FIELD DIRECTLY, EVEN WITHIN THIS CLASS
      * USE {@link #getReadSequence}
      */
     private String readSequence;
-    private SoftReference<String> softReadSequence;
+    private Reference<String> softReadSequence;
 
 
     private String cigarString;
@@ -132,7 +134,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         String keySequence = null;
 
         this.record = record;
-        this.softRecord = new SoftReference<SAMRecord>(record);
+        this.softRecord = new WeakReference<SAMRecord>(record);
         this.fileSource = record.getFileSource();
 
         String refName = record.getReferenceName();
@@ -658,7 +660,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 log.error("Found multiple records during query of file span:" + span);
             }
             iter.close();
-            this.softRecord = new SoftReference<SAMRecord>(record);
+            this.softRecord = new WeakReference<SAMRecord>(record);
         }
         return record;
     }
@@ -791,7 +793,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         super.finish();
         if (DEFAULT_LAZY_LOAD && this.getFileSource() != null) {
             this.record = null;
-            this.readSequence = null;
+            //this.readSequence = null;
         }
     }
 
