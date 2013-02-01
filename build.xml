@@ -155,7 +155,7 @@
         </sequential>
     </macrodef>
 
-    <target name="build-small" depends="compile" unless="act.include.libs"
+    <target name="build-small" depends="compile,compileTests" unless="act.include.libs"
             description="Build the IGV JAR, without including libraries">
         <fileset dir="${tmp.dir}" id="files"/>
 
@@ -166,7 +166,7 @@
         <build includedFileset="files"/>
     </target>
 
-    <target name="build-all" depends="compile" if="act.include.libs"
+    <target name="build-all" depends="compile,compileTests" if="act.include.libs"
             description="Build the IGV JAR, including libraries, using BCEL to take only required classes">
 
         <classfileset dir="${tmp.dir}" id="files">
@@ -200,7 +200,8 @@
         <copy file="scripts/igv.command" todir="${dist.dir}" overwrite="false"/>
         <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
         <copy file="scripts/igvtools_gui.command" todir="${dist.dir}" overwrite="false"/>
-    </target><target name="copy-launch-scripts-linux" if="isLinux">
+    </target>
+    <target name="copy-launch-scripts-linux" if="isLinux">
         <copy file="scripts/igv.sh" todir="${dist.dir}" overwrite="false"/>
         <copy file="scripts/igvtools" todir="${dist.dir}" overwrite="false"/>
         <copy file="scripts/igvtools_gui" todir="${dist.dir}" overwrite="false"/>
