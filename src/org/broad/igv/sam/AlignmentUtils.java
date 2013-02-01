@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
 import org.broad.igv.sam.reader.GeraldParser;
@@ -8,7 +19,7 @@ import org.broad.igv.sam.reader.GeraldParser;
  */
 public class AlignmentUtils {
     /**
-     * Return true if the two bases can be considered a match.  The comparison is case-insentive, and
+     * Return true if the two bases can be considered a match.  The comparison is case-insensitive, and
      * considers ambiguity codes in the reference.
      *
      * @param refbase
@@ -55,9 +66,8 @@ public class AlignmentUtils {
                 return readbase == 'A' || readbase == 'G' || readbase == 'T';
             case 'B':
                 return readbase == 'C' || readbase == 'G' || readbase == 'T';
-
             default:
-                return refbase == readbase;
+                return false;
         }
     }
 

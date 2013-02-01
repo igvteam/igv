@@ -15,7 +15,11 @@
  */
 package org.broad.igv.sam;
 
+import org.apache.commons.lang.ArrayUtils;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AlignmentBlock {
 
@@ -134,5 +138,40 @@ public class AlignmentBlock {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    protected static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
+        List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
+        List<Byte> mismatches = null;
+        assert readBases.length == refBases.length;
+        for(int ii = 0; ii < readBases.length; ii++){
+            byte readBase = readBases[ii];
+            if(AlignmentUtils.compareBases(refBases[ii], readBase) || ii == readBases.length - 1){
+                //Finish off last mismatch
+                if(mismatches != null){
+                    MismatchBlock curMMBlock = new MismatchBlock(start + ii, ArrayUtils.toPrimitive(mismatches.toArray(new Byte[0])));
+                    mismatchBlocks.add(curMMBlock);
+                    mismatches = null;
+                }
+            }else{
+                if(mismatches == null){
+                    mismatches = new ArrayList<Byte>();
+                }
+                mismatches.add(readBase);
+            }
+        }
+
+        return mismatchBlocks;
+    }
+
+    private static class MismatchBlock {
+        private final int start;
+        private final byte[] seq;
+
+        private MismatchBlock(int start, byte[] seq){
+            this.start = start;
+            this.seq = seq;
+        }
+
     }
 }
