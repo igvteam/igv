@@ -686,6 +686,19 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Color alignmentColor,
                            RenderOptions renderOptions) {
 
+        byte[] read = block.getBases();
+        boolean isSoftClipped = block.isSoftClipped();
+
+        String chr = context.getChr();
+        final int start = block.getStart();
+        final int end = block.getEnd();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
+        final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
+
+        if (read.length <= 0 || reference == null) {
+            return;
+        }
 
         ShadeBasesOption shadeBasesOption = renderOptions.shadeBasesOption;
         ColorOption colorOption = renderOptions.getColorOption();
@@ -696,184 +709,222 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         double locScale = context.getScale();
         double origin = context.getOrigin();
-        String chr = context.getChr();
-        //String genomeId = context.getGenomeId();
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
-        byte[] read = block.getBases();
-        boolean isSoftClipped = block.isSoftClipped();
+        // Compute bounds, get a graphics to use,  and compute a font
+        int pY = (int) rect.getY();
+        int dY = (int) rect.getHeight();
+        int dX = (int) Math.max(1, (1.0 / locScale));
+        Graphics2D g = (Graphics2D) context.getGraphics().create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+        if (dX >= 8) {
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            g.setFont(f);
+        }
 
-        final int start = block.getStart();
-        final int end = start + read.length;
-        final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
+        // Get the base qualities, start/end,  and reference sequence
 
-        if (read != null && read.length > 0 && reference != null) {
+        BisulfiteBaseInfo bisinfo = null;
+        boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
+        boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
+        if (nomeseqMode) {
+            bisinfo = new BisulfiteBaseInfoNOMeseq(reference, block, renderOptions.bisulfiteContext);
+        } else if (bisulfiteMode) {
+            bisinfo = new BisulfiteBaseInfo(reference, block, renderOptions.bisulfiteContext);
+        }
 
-            // Compute bounds, get a graphics to use,  and compute a font
-            int pY = (int) rect.getY();
-            int dY = (int) rect.getHeight();
-            int dX = (int) Math.max(1, (1.0 / locScale));
-            Graphics2D g = (Graphics2D) context.getGraphics().create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-            if (dX >= 8) {
-                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
-                g.setFont(f);
+        // Loop through base pair coordinates
+        for (int loc = start; loc < end; loc++) {
+
+            // Index into read array,  just the genomic location offset by
+            // the start of this block
+            int idx = loc - start;
+
+            // Is this base a mismatch?
+            boolean misMatch = isMisMatch(reference, read, isSoftClipped, idx);
+
+            if (showAllBases || (!bisulfiteMode && misMatch) ||
+                    (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
+                char c = (char) read[idx];
+
+                Color color = Globals.nucleotideColors.get(c);
+                if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
+                if (color == null) {
+                    color = Color.black;
+                }
+
+                if (ShadeBasesOption.QUALITY == shadeBasesOption) {
+                    byte qual = block.qualities[loc - start];
+                    color = getShadedColor(qual, color, alignmentColor, prefs);
+                } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
+                    if (block.hasFlowSignals()) {
+                        color = getFlowSignalColor(reference, read, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
+                    }
+                }
+
+                double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+
+                // If there is room for text draw the character, otherwise
+                // just draw a rectangle to represent the
+                int pX = (int) (((double) loc + bisulfiteXaxisShift - origin) / locScale);
+
+                // Don't draw out of clipping rect
+                if (pX > rect.getMaxX()) {
+                    break;
+                } else if (pX + dX < rect.getX()) {
+                    continue;
+                }
+
+                BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+                drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
             }
 
-            // Get the base qualities, start/end,  and reference sequence
+        }
+    }
 
-            BisulfiteBaseInfo bisinfo = null;
-            boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
-            boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
-            if (nomeseqMode) {
-                bisinfo = new BisulfiteBaseInfoNOMeseq(reference, block, renderOptions.bisulfiteContext);
-            } else if (bisulfiteMode) {
-                bisinfo = new BisulfiteBaseInfo(reference, block, renderOptions.bisulfiteContext);
+    /**
+     * Note '=' means indicates a match by definition
+     * If we do not have a valid reference we assume a match.
+     * @param reference
+     * @param read
+     * @param isSoftClipped
+     * @param idx
+     * @return
+     */
+    private boolean isMisMatch(byte[] reference, byte[] read, boolean isSoftClipped, int idx ){
+        boolean misMatch = false;
+        if (isSoftClipped) {
+            // Goby will return '=' characters when the soft-clip happens to match the reference.
+            // It could actually be useful to see which part of the soft clipped bases match, to help detect
+            // cases when an aligner clipped too much.
+            final byte readbase = read[idx];
+            misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
+        } else {
+            final int referenceLength = reference.length;
+            final byte refbase = idx < referenceLength ? reference[idx] : 0;
+            final byte readbase = read[idx];
+            misMatch = readbase != '=' &&
+                    idx < referenceLength &&
+                    refbase != 0 &&
+                    !AlignmentUtils.compareBases(refbase, readbase);
+        }
+        return misMatch;
+    }
+
+    /**
+     * NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
+       an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
+       length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
+     * @param reference
+     * @param read
+     * @param misMatch
+     * @param genome
+     * @param block
+     * @param chr
+     * @param start
+     * @param loc
+     * @param idx
+     * @param shadeBasesOption
+     * @param alignmentColor
+     * @param color
+     * @return
+     */
+    private Color getFlowSignalColor(byte[] reference, byte[] read, boolean misMatch, Genome genome,
+                                     AlignmentBlock block, String chr, int start, int loc, int idx,
+                                     ShadeBasesOption shadeBasesOption,
+                                     Color alignmentColor, Color color){
+        int flowSignal = (int) block.getFlowSignalSubContext(loc - start).getCurrentSignal();
+        int expectedFlowSignal;
+        if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
+            expectedFlowSignal = 100 * (short) ((flowSignal + 50.0) / 100.0);
+        } else {
+            // NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
+            // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
+            // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
+            if (!misMatch) {
+                final byte readbase = read[idx];
+                byte refbase = reference[idx];
+                int pos; // zero based
+                expectedFlowSignal = 100;
+
+                // Count HP length
+                pos = start + idx - 1;
+                while (0 <= pos && genome.getReference(chr, pos) == refbase) {
+                    pos--;
+                    expectedFlowSignal += 100;
+                }
+                pos = start + idx + 1;
+                while (pos < genome.getChromosome(chr).getLength() && genome.getReference(chr, pos) == refbase) {
+                    pos++;
+                    expectedFlowSignal += 100;
+                }
+            } else {
+                expectedFlowSignal = 0;
+            }
+        }
+        int flowSignalDiff = (expectedFlowSignal < flowSignal) ? (flowSignal - expectedFlowSignal) : (expectedFlowSignal - flowSignal);
+        // NB: this next section is some mangling to use the base quality color preferences...
+        if (flowSignalDiff <= 0) {
+            flowSignalDiff = 0;
+        } else if (50 < flowSignalDiff) {
+            flowSignalDiff = 50;
+        }
+        flowSignalDiff = 50 - flowSignalDiff; // higher is better
+        int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
+        int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
+        flowSignalDiff = flowSignalDiff * (maxQ - minQ) / 50;
+        byte qual;
+        int pos = start + idx;
+        if (Byte.MAX_VALUE < flowSignalDiff) {
+            qual = Byte.MAX_VALUE;
+        } else if (flowSignalDiff < Byte.MIN_VALUE) {
+            qual = Byte.MIN_VALUE;
+        } else {
+            qual = (byte) flowSignalDiff;
+        }
+        // Finally, get the color
+        return getShadedColor(qual, color, alignmentColor, prefs);
+    }
+
+    /**
+     * Draw the base using either a letter or character, using the given color,
+     * depending on size and bisulfite status
+     * @param g
+     * @param color
+     * @param c
+     * @param pX
+     * @param pY
+     * @param dX
+     * @param dY
+     * @param bisulfiteMode
+     * @param bisstatus
+     */
+    private void drawBase(Graphics2D g, Color color, char c, int pX, int pY, int dX, int dY, boolean bisulfiteMode,
+                          DisplayStatus bisstatus){
+        if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
+            g.setColor(color);
+            GraphicUtils.drawCenteredText(g, new char[]{c}, pX, pY + 1, dX, dY - 2);
+        } else {
+
+            int pX0i = pX, dXi = dX;
+
+            // If bisulfite mode, we expand the rectangle to make it more visible
+            if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR)) {
+                if (dXi < 3) {
+                    int expansion = dXi;
+                    pX0i -= expansion;
+                    dXi += (2 * expansion);
+                }
             }
 
-            // Loop through base pair coordinates
-            for (int loc = start; loc < end; loc++) {
+            int dW = (dXi > 4 ? dXi - 1 : dXi);
 
-                // Index into read array,  just the genomic location offset by
-                // the start of this block
-                int idx = loc - start;
-
-                // Is this base a mismatch?  Note '=' means indicates a match by definition
-                // If we do not have a valid reference we assume a match.
-                boolean misMatch = false;
-                if (isSoftClipped) {
-                    // Goby will return '=' characters when the soft-clip happens to match the reference.
-                    // It could actually be useful to see which part of the soft clipped bases match, to help detect
-                    // cases when an aligner clipped too much.
-                    final byte readbase = read[idx];
-                    misMatch = readbase != '=';  // mismatch, except when the soft-clip has an '=' base.
+            if (color != null) {
+                g.setColor(color);
+                if (dY < 10) {
+                    g.fillRect(pX0i, pY, dXi, dY);
                 } else {
-                    if (reference != null) {
-                        final int referenceLength = reference.length;
-                        final byte refbase = idx < referenceLength ? reference[idx] : 0;
-                        final byte readbase = read[idx];
-                        misMatch = readbase != '=' &&
-                                reference != null &&
-                                idx < referenceLength &&
-                                refbase != 0 &&
-                                !AlignmentUtils.compareBases(refbase, readbase);
-                    }
+                    g.fillRect(pX0i, pY + 1, dW, dY - 3);
                 }
-
-                if (showAllBases || (!bisulfiteMode && misMatch) ||
-                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
-                    char c = (char) read[idx];
-
-                    Color color = Globals.nucleotideColors.get(c);
-                    if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
-                    if (color == null) {
-                        color = Color.black;
-                    }
-
-                    if (ShadeBasesOption.QUALITY == shadeBasesOption) {
-                        byte qual = block.qualities[loc - start];
-                        color = getShadedColor(qual, color, alignmentColor, prefs);
-                    } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
-                        if (block.hasFlowSignals()) {
-                            int flowSignal = (int) block.getFlowSignalSubContext(loc - start).getCurrentSignal();
-                            int expectedFlowSignal;
-                            if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption) {
-                                expectedFlowSignal = 100 * (short) ((flowSignal + 50.0) / 100.0);
-                            } else {
-                                // NB: this may estimate the reference homopolymer length incorrect in some cases, especially when we have
-                                // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
-                                // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
-                                if (!misMatch) {
-                                    final byte readbase = read[idx];
-                                    byte refbase = reference[idx];
-                                    int pos; // zero based
-                                    expectedFlowSignal = 100;
-
-                                    // Count HP length
-                                    pos = start + idx - 1;
-                                    while (0 <= pos && genome.getReference(chr, pos) == refbase) {
-                                        pos--;
-                                        expectedFlowSignal += 100;
-                                    }
-                                    pos = start + idx + 1;
-                                    while (pos < genome.getChromosome(chr).getLength() && genome.getReference(chr, pos) == refbase) {
-                                        pos++;
-                                        expectedFlowSignal += 100;
-                                    }
-                                } else {
-                                    expectedFlowSignal = 0;
-                                }
-                            }
-                            int flowSignalDiff = (expectedFlowSignal < flowSignal) ? (flowSignal - expectedFlowSignal) : (expectedFlowSignal - flowSignal);
-                            // NB: this next section is some mangling to use the base quality color preferences...
-                            if (flowSignalDiff <= 0) {
-                                flowSignalDiff = 0;
-                            } else if (50 < flowSignalDiff) {
-                                flowSignalDiff = 50;
-                            }
-                            flowSignalDiff = 50 - flowSignalDiff; // higher is better
-                            int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
-                            int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
-                            flowSignalDiff = flowSignalDiff * (maxQ - minQ) / 50;
-                            byte qual;
-                            int pos = start + idx;
-                            if (Byte.MAX_VALUE < flowSignalDiff) {
-                                qual = Byte.MAX_VALUE;
-                            } else if (flowSignalDiff < Byte.MIN_VALUE) {
-                                qual = Byte.MIN_VALUE;
-                            } else {
-                                qual = (byte) flowSignalDiff;
-                            }
-                            // Finally, get the color
-                            color = getShadedColor(qual, color, alignmentColor, prefs);
-                        }
-                    }
-
-                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
-
-                    // If there is room for text draw the character, otherwise
-                    // just draw a rectangle to represent the
-                    int pX0 = (int) (((double) loc + bisulfiteXaxisShift - (double) origin) / (double) locScale);
-
-                    // Don't draw out of clipping rect
-                    if (pX0 > rect.getMaxX()) {
-                        break;
-                    } else if (pX0 + dX < rect.getX()) {
-                        continue;
-                    }
-
-
-                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
-                    // System.err.printf("Draw text?  dY=%d, dX=%d, bismode=%s, dispStatus=%s\n",dY,dX,!bisulfiteMode || bisulfiteMode,bisstatus);
-                    if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
-                        g.setColor(color);
-                        GraphicUtils.drawCenteredText(g, new char[]{c}, pX0, pY + 1, dX, dY - 2);
-                    } else {
-
-                        int pX0i = pX0, dXi = dX;
-
-                        // If bisulfite mode, we expand the rectangle to make it more visible
-                        if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR)) {
-                            if (dXi < 3) {
-                                int expansion = dXi;
-                                pX0i -= expansion;
-                                dXi += (2 * expansion);
-                            }
-                        }
-
-                        int dW = (dXi > 4 ? dXi - 1 : dXi);
-
-                        if (color != null) {
-                            g.setColor(color);
-                            if (dY < 10) {
-                                g.fillRect(pX0i, pY, dXi, dY);
-                            } else {
-                                g.fillRect(pX0i, pY + 1, dW, dY - 3);
-                            }
-                        }
-                    }
-                }
-
             }
         }
     }
