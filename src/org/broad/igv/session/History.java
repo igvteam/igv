@@ -12,9 +12,11 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 
 import java.util.ArrayList;
@@ -97,10 +99,13 @@ public class History {
 
         if (entry != null) {
             String locus = entry.getLocus();
-            if (locus.startsWith("List: ")) {
+            if (locus.equals(Globals.CHR_ALL)){
+                ViewChange.Cause event = new ViewChange.ChromosomeChangeCause(this, Globals.CHR_ALL);
+                event.setRecordHistory(false);
+                FrameManager.getDefaultFrame().getEventBus().post(event);
+            }else if(locus.startsWith("List: ")) {
                 String listName = locus.substring(6);
                 IGV.getInstance().setGeneList(GeneListManager.getInstance().getGeneList(listName), false);
-
             } else {
                 if (FrameManager.isGeneListMode()) {
                     IGV.getInstance().setGeneList(null, false);
@@ -109,6 +114,7 @@ public class History {
                 //Zoom should be implicit in the locus
                 //FrameManager.getDefaultFrame().setZoom(entry.getZoom());
             }
+
         }
     }
 

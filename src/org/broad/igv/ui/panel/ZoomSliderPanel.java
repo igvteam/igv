@@ -20,9 +20,8 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -51,11 +50,17 @@ public class ZoomSliderPanel extends JPanel {
     int numZoomLevels = 25;
     private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
 
+    private ReferenceFrame referenceFrame;
+
+    public ZoomSliderPanel(){
+        this(null);
+    }
+
     /**
      * Creates a new instance of ZoomSliderPanel
      */
-    public ZoomSliderPanel() {
-        theInstance = this;
+    public ZoomSliderPanel(ReferenceFrame referenceFrame) {
+        this.referenceFrame = referenceFrame;
         slider = IconFactory.getInstance().getIcon(IconFactory.IconID.SLIDER).getImage();
         zoomPlus = IconFactory.getInstance().getIcon(IconFactory.IconID.ZOOM_PLUS).getImage();
         zoomMinus = IconFactory.getInstance().getIcon(IconFactory.IconID.ZOOM_MINUS).getImage();
@@ -183,10 +188,10 @@ public class ZoomSliderPanel extends JPanel {
         }
     }
 
-    // TODO implement without reference to the frame singleton
 
     private ReferenceFrame getViewContext() {
-        return FrameManager.getDefaultFrame();
+        if(referenceFrame == null) return FrameManager.getDefaultFrame();
+        return referenceFrame;
     }
 
     int toolZoom = -1;
@@ -227,19 +232,25 @@ public class ZoomSliderPanel extends JPanel {
                 setZoom(e);
                 repaint();
 
-                NamedRunnable runnable = new NamedRunnable() {
-                    public void run() {
-                        int effectiveZoom = toolZoom + getViewContext().getMinZoom();
-                        getViewContext().doSetZoom(effectiveZoom);
-                        toolZoom = -1;
-                    }
+                int effectiveZoom = toolZoom + getViewContext().getMinZoom();
 
-                    public String getName() {
-                        return "Zoom to: " + toolZoom;
-                    }
-                };
+                ViewChange.ZoomCause event = new ViewChange.ZoomCause(effectiveZoom);
+                getViewContext().getEventBus().post(event);
+                toolZoom = -1;
 
-                LongRunningTask.submit(runnable);
+//                NamedRunnable runnable = new NamedRunnable() {
+//                    public void run() {
+//                        int effectiveZoom = toolZoom + getViewContext().getMinZoom();
+//                        getViewContext().doSetZoom(effectiveZoom);
+//                        toolZoom = -1;
+//                    }
+//
+//                    public String getName() {
+//                        return "Zoom to: " + toolZoom;
+//                    }
+//                };
+//
+//                LongRunningTask.submit(runnable);
             }
 
 

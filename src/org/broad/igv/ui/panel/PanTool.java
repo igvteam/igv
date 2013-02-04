@@ -18,6 +18,7 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.DragStoppedEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,8 +79,7 @@ public class PanTool extends AbstractDataPanelTool {
 
         if (isDragging) {
             isDragging = false;
-            getReferenceFame().snapToGrid();
-            getReferenceFame().recordHistory();
+            getReferenceFame().getEventBus().post(new DragStoppedEvent());
         }
         Component panel = (Component) e.getSource();
         panel.setCursor(getCursor());
@@ -114,7 +114,6 @@ public class PanTool extends AbstractDataPanelTool {
 
                     // Horizontal scrolling
                     getReferenceFame().shiftOriginPixels(deltaX);
-                    IGV.getInstance().repaintDataAndHeaderPanels();
                 } else {
                     // Vertical Scrolling 
                     int totalYChange = (int) (lastMousePoint.getY() - e.getY());

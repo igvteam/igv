@@ -22,6 +22,7 @@ package org.broad.igv.ui;
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.eventbus.Subscribe;
 import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
@@ -47,10 +48,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.UCSCSessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.event.AlignmentTrackEvent;
-import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.event.TrackGroupEvent;
-import org.broad.igv.ui.event.TrackGroupEventListener;
+import org.broad.igv.ui.event.*;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -149,7 +147,16 @@ public class IGV {
         return otherToolMenus;
     }
 
+    @Subscribe
+    public void receiveViewChange(ViewChange.Result e) {
+        repaintDataAndHeaderPanels();
+        repaintStatusAndZoomSlider();
+    }
 
+    @Subscribe
+    public void receiveViewChange(ViewChange.ChromosomeChangeResult e) {
+        chromosomeChangeEvent(e.chrName, false);
+    }
 
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
@@ -347,12 +354,7 @@ public class IGV {
 
     }
 
-
-    public void chromosomeChangeEvent(String chrName) {
-        chromosomeChangeEvent(chrName, true);
-    }
-
-    public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
+    private void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
         contentPane.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
         contentPane.getCommandBar().updateComponentStates();

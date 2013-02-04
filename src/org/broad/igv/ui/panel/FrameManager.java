@@ -41,6 +41,7 @@ public class FrameManager {
     public synchronized static ReferenceFrame getDefaultFrame() {
         if (defaultFrame == null) {
             defaultFrame = new ReferenceFrame("genome");
+            defaultFrame.getEventBus().register(IGV.getInstance());
         }
         return defaultFrame;
     }
