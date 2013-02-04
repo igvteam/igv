@@ -134,6 +134,10 @@ public class CoverageTrack extends AbstractTrack {
         super.setDataRange(axisDefinition);
     }
 
+    public void setSnpThreshold(float snpThreshold){
+        this.snpThreshold = snpThreshold;
+    }
+
     public float getSnpThreshold() {
         return snpThreshold;
     }
