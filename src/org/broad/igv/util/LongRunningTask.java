@@ -29,10 +29,14 @@ public class LongRunningTask implements Callable {
 
     private static Logger log = Logger.getLogger(LongRunningTask.class);
 
-    private static ExecutorService threadExecutor = Executors.newFixedThreadPool(10);
-    private static ScheduledExecutorService schedule = Executors.newScheduledThreadPool(1);
+    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(10);
+   // private static ScheduledExecutorService schedule = Executors.newScheduledThreadPool(1);
 
     Runnable runnable;
+
+    public static Executor getThreadExecutor(){
+        return threadExecutor;
+    }
 
     public static Future submit(Runnable runnable) {
         if (Globals.isBatch() || !SwingUtilities.isEventDispatchThread()) {

@@ -18,11 +18,13 @@
  */
 package org.broad.igv.ui.panel;
 
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
@@ -45,9 +47,8 @@ import java.util.List;
  *         <p/>
  *         This dialog is not intended to be persistent.  To view one of these, create it.
  *         <p/>
- *         todo: tell the regions observable that this object is toast, when it goes away
  */
-public class RegionNavigatorDialog extends JDialog implements Observer {
+public class RegionNavigatorDialog extends JDialog implements Observer{
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
@@ -120,6 +121,11 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         synchRegions();
     }
 
+    @Subscribe
+    public void receiveChromosomeChanged(ViewChange.ChromosomeChangeResult e){
+        synchRegions();
+    }
+
     /**
      * Synchronize the regions ArrayList with the passed-in regionsCollection, and update UI
      */
@@ -128,8 +134,9 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         synchingRegions = true;
         List<RegionOfInterest> regions = retrieveRegionsAsList();
         regionTableModel = (DefaultTableModel) regionTable.getModel();
-        while (regionTableModel.getRowCount() > 0)
+        while (regionTableModel.getRowCount() > 0){
             regionTableModel.removeRow(0);
+        }
         regionTableModel.setRowCount(regions.size());
         for (int i = 0; i < regions.size(); i++) {
             RegionOfInterest region = regions.get(i);
@@ -170,7 +177,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         synchRegions();
 
         ReferenceFrame defFrame = FrameManager.getDefaultFrame();
-        defFrame.addObserver(this);
+        defFrame.getEventBus().register(this);
         IGV.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20
@@ -427,7 +434,6 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     }
 
     private void thisWindowClosed(WindowEvent e) {
-        FrameManager.getDefaultFrame().deleteObserver(this);
         IGV.getInstance().getSession().getRegionsOfInterestObservable().deleteObserver(this);
         destroyInstance();
     }

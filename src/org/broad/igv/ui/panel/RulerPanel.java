@@ -33,9 +33,9 @@ import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
@@ -518,25 +518,23 @@ public class RulerPanel extends JPanel {
                     } else {
                         for (final ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
-                                NamedRunnable runnable = new NamedRunnable() {
-                                    final String chrName = link.value;
+                                final String chrName = link.value;
+                                frame.getEventBus().post(new ViewChange.ChromosomeChangeCause(RulerPanel.this, chrName));
 
-                                    public void run() {
-
-                                        frame.setChromosomeName(chrName);
-                                        frame.recordHistory();
-                                        // TODO -- get rid of this ugly reference to IGV.theInstance
-                                        IGV.getInstance().chromosomeChangeEvent(chrName);
-                                    }
-
-                                    public String getName() {
-                                        return "Select chromosome: " + chrName;
-                                    }
-                                };
-
-                                LongRunningTask.submit(runnable);
-
-                                return;
+//                                NamedRunnable runnable = new NamedRunnable() {
+//
+//                                    public void run() {
+//                                        final String chrName = link.value;
+//                                        frame.getEventBus().post(new ViewChange.ChromosomeChangeCause(RulerPanel.this, chrName));
+//                                        frame.recordHistory();
+//                                    }
+//
+//                                    public String getName() {
+//                                        return "Select chromosome: " + chrName;
+//                                    }
+//                                };
+//
+//                                LongRunningTask.submit(runnable);
                             }
                         }
                     }

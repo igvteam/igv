@@ -16,6 +16,7 @@
 package org.broad.igv.ui;
 
 
+import com.google.common.eventbus.Subscribe;
 import com.jidesoft.hints.ListDataIntelliHints;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
@@ -35,6 +36,7 @@ import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -42,7 +44,6 @@ import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -110,9 +111,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         return detailsBehavior;
     }
 
-    /**
-     * Creates new form IGVCommandBar
-     */
     public IGVCommandBar() {
         initComponents();
 
@@ -131,6 +129,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 getPopupMenuToolTipBehavior().show(e.getComponent(), e.getX(), e.getY());
             }
         });
+
+        getDefaultReferenceFrame().getEventBus().register(this);
     }
 
     private JPopupMenu getPopupMenuToolTipBehavior() {
@@ -356,14 +356,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
     public void updateCurrentCoordinates() {
-        final String chrName = getDefaultReferenceFrame().getChrName();
-
-        if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
-            IGV.getInstance().chromosomeChangeEvent(chrName, false);
-        }
 
         String p = "";
 
+        final String chrName = getDefaultReferenceFrame().getChrName();
         if (!chrName.equals(Globals.CHR_ALL) && !FrameManager.isGeneListMode()) {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
@@ -840,27 +836,36 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
         final String chrName = (String) combobox.getSelectedItem();
-        if (chrName != null) {
-
-            if (!chrName.equals(getDefaultReferenceFrame().getChrName())) {
-                NamedRunnable runnable = new NamedRunnable() {
-                    public void run() {
-                        getDefaultReferenceFrame().setChromosomeName(chrName);
-                        getDefaultReferenceFrame().recordHistory();
-                        updateCurrentCoordinates();
-                        IGV.getInstance().chromosomeChangeEvent(chrName);
-                        IGV.getMainFrame().repaint();
-                        PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
-                    }
-
-                    public String getName() {
-                        return "Changed chromosome to: " + chrName;
-                    }
-                };
-
-                LongRunningTask.submit(runnable);
-            }
+        if(chrName != null){
+            getDefaultReferenceFrame().getEventBus().post(new ViewChange.ChromosomeChangeCause(combobox, chrName));
         }
+//        if (chrName != null) {
+//            if (!chrName.equals(getDefaultReferenceFrame().getChrName())) {
+//                NamedRunnable runnable = new NamedRunnable() {
+//                    public void run() {
+//                        getDefaultReferenceFrame().setChromosomeName(chrName);
+//                        getDefaultReferenceFrame().recordHistory();
+//                        updateCurrentCoordinates();
+//                        IGV.getInstance().chromosomeChangeEvent(chrName);
+//                        IGV.getMainFrame().repaint();
+//                        PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
+//                    }
+//
+//                    public String getName() {
+//                        return "Changed chromosome to: " + chrName;
+//                    }
+//                };
+//
+//                LongRunningTask.submit(runnable);
+//            }
+//        }
+    }
+
+    @Subscribe
+    public void receiveViewChangeResult(ViewChange.Result e){
+        String chrName = getDefaultReferenceFrame().getChrName();
+        chromosomeComboBox.setSelectedItem(chrName);
+        updateCurrentCoordinates();
     }
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_goButtonActionPerformed

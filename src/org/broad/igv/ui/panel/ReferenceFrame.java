@@ -14,6 +14,9 @@
  */
 package org.broad.igv.ui.panel;
 
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -23,10 +26,10 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.DragStoppedEvent;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.ObservableForObject;
-
-import java.util.Observer;
+import org.broad.igv.util.LongRunningTask;
 
 
 /**
@@ -110,14 +113,10 @@ public class ReferenceFrame {
      */
     protected int setEnd = 0;
 
-    protected ObservableForObject<String> chromoObservable;
-
-
     public ReferenceFrame(String name) {
         this.name = name;
         Genome genome = getGenome();
         this.chrName = genome == null ? "" : genome.getHomeChromosome();
-        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
 
@@ -134,9 +133,17 @@ public class ReferenceFrame {
         this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
-        chromoObservable = new ObservableForObject<String>(chrName);
     }
 
+    private EventBus eventBus;
+    public EventBus getEventBus(){
+        if(eventBus == null){
+            eventBus = new AsyncEventBus(LongRunningTask.getThreadExecutor());
+            eventBus.register(this);
+        }
+        //if(eventBus == null) eventBus = new EventBus("IGV");
+        return eventBus;
+    }
     /**
      * Set the position and width of the frame, in pixels
      * @param pixelX
@@ -211,6 +218,21 @@ public class ReferenceFrame {
         doSetZoomCenter(newZoom, currentCenter);
     }
 
+    @Subscribe
+    public void receiveZoomChange(ViewChange.ZoomCause e) {
+        doSetZoom(e.newZoom);
+        ViewChange.Result result = new ViewChange.Result();
+        result.setRecordHistory(false);
+        getEventBus().post(result);
+    }
+
+    @Subscribe
+    public void receiveDragStopped(DragStoppedEvent e){
+        this.snapToGrid();
+        getEventBus().post(new ViewChange.Result());
+    }
+
+
     public void doIncrementZoom(final int zoomIncrement, final double newCenter) {
           doSetZoomCenter(getZoom() + zoomIncrement, newCenter);
     }
@@ -233,15 +255,12 @@ public class ReferenceFrame {
             synchronized (this){
                 jumpToChromosomeForGenomeLocation(newCenter);
             }
-            IGV.getInstance().chromosomeChangeEvent(chrName);
+            //IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
             setZoom(newZoom);
             // Adjust origin so newCenter is centered
             centerOnLocation(newCenter);
         }
-
-        IGV.repaintPanelsHeadlessSafe();
-        recordHistory();
     }
 
     protected double getGenomeCenterPosition() {
@@ -265,12 +284,22 @@ public class ReferenceFrame {
     }
 
     /**
+     * Calls {@link #setChromosomeName(String, boolean)} with force = false
+     * It is preferred that you post an event to the EventBus instead, this is public
+     * as an implementation side effect
+     * @param name
+     */
+    public void setChromosomeName(String name) {
+        setChromosomeName(name, false);
+    }
+
+    /**
      * Change the frame to the specified chromosome.
      *
      * @param name
      * @param force
      */
-    public synchronized void setChromosomeName(String name, boolean force) {
+    synchronized void setChromosomeName(String name, boolean force) {
 
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
@@ -280,7 +309,7 @@ public class ReferenceFrame {
             this.zoom = -1;
             setZoom(0);
 
-            chromoObservable.setChangedAndNotify();
+            //chromoObservable.setChangedAndNotify();
         }
     }
 
@@ -336,6 +365,8 @@ public class ReferenceFrame {
      * Record the current state of the frame in history.
      * It is recommended that this NOT be called from within ReferenceFrame,
      * and callers use it after making all changes
+     *
+     //TODO Should we save history by receiving events in History?
      */
     public void recordHistory() {
         IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
@@ -359,12 +390,12 @@ public class ReferenceFrame {
     public void shiftOriginPixels(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(origin + shiftBP);
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public void snapToGrid() {
         setOrigin(Math.round(origin));
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -377,7 +408,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
     public boolean windowAtEnd() {
@@ -435,8 +466,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + locationScale);
         }
 
-        //Mostly for testing
-        IGV.repaintPanelsHeadlessSafe();
+        getEventBus().post(new ViewChange.Result());
     }
 
 
@@ -504,26 +534,16 @@ public class ReferenceFrame {
         return getTilesTimesBinsPerTile();
     }
 
-
-    public void addObserver(Observer observer) {
-        chromoObservable.addObserver(observer);
+    @Subscribe
+    public void receiveChromosomeChange(ViewChange.ChromosomeChangeCause chromoChangeCause){
+        if(!chromoChangeCause.chrName.equals(chrName)){
+            setChromosomeName(chromoChangeCause.chrName, false);
+            ViewChange.ChromosomeChangeResult resultEvent = new ViewChange.ChromosomeChangeResult(chromoChangeCause.source,
+                    chrName);
+            resultEvent.setRecordHistory(chromoChangeCause.recordHistory());
+            getEventBus().post(resultEvent);
+        }
     }
-
-    public void deleteObserver(Observer observer) {
-        chromoObservable.deleteObserver(observer);
-    }
-
-    public void deleteObservers() {
-        chromoObservable.deleteObservers();
-    }
-
-    /**
-     * @param name
-     */
-    public void setChromosomeName(String name) {
-        setChromosomeName(name, false);
-    }
-
 
     public String getChrName() {
         return chrName;

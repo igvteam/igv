@@ -11,6 +11,7 @@
 package org.broad.igv.session;
 
 
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -20,6 +21,7 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ObservableForObject;
@@ -60,7 +62,6 @@ public class Session {
     public Session(String path) {
         log.debug("New session");
         reset(path);
-
     }
 
     public void reset(String path) {
@@ -79,6 +80,7 @@ public class Session {
         if (resetRequired) {
             IGV.getInstance().resetFrames();
         }
+        FrameManager.getDefaultFrame().getEventBus().register(this);
     }
 
     public void clearDividerLocations() {
@@ -319,6 +321,13 @@ public class Session {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Subscribe
+    public void receiveViewChange(ViewChange.Result e){
+        if(e.recordHistory()){
+            recordHistory();
+        }
     }
 
     public History getHistory() {
