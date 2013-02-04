@@ -383,7 +383,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
     /**
-     * Get all features this track contains.
+     * Get all features which overlap the specified locus
      *
      * @return
      */
@@ -816,8 +816,6 @@ public class FeatureTrack extends AbstractTrack {
                     int expandedStart = start - delta;
                     int expandedEnd = end + delta;
 
-
-                    // TODO -- implement source to return iterators
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     if (iter == null) {
                         PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
