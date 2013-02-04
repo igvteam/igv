@@ -43,12 +43,12 @@ public class SelectableFeatureRenderer extends IGVFeatureRenderer {
     @Override
     protected void drawExonRect(Graphics blockGraphics, Exon exon, int x, int y, int width, int height) {
         boolean isSelected = selectedExons.contains(exon);
-//        for(IExon selEx: selectedExons){
-//            if(selEx.contains(exon.getStart()) || selEx.contains(exon.getEnd())){
-//                isSelected = true;
-//                break;
-//            }
-//        }
+        for(IExon selEx: selectedExons){
+            if(selEx.contains(exon.getStart()) || selEx.contains(exon.getEnd())){
+                isSelected = true;
+                break;
+            }
+        }
 
         if(isSelected){
             blockGraphics.clearRect(x, y, width, height);

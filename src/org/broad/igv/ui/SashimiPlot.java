@@ -77,6 +77,8 @@ public class SashimiPlot extends JFrame{
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         geneTrackClone.setDisplayMode(Track.DisplayMode.EXPANDED);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
+        //Hacky way of clearing packed features
+        geneTrackClone.setVisibilityWindow(geneTrackClone.getVisibilityWindow());
 
         //Add control elements to the top
         ZoomSliderPanel controlPanel = new ZoomSliderPanel(this.frame);
