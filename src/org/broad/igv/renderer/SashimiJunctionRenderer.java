@@ -119,7 +119,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        // TODO -- use enum instead of string "Color"
         if ((featureList != null) && !featureList.isEmpty()) {
 
             // Create a graphics object to draw font names.  Graphics are not cached
@@ -132,8 +131,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
             //determine whether to show flanking regions
             PreferenceManager prefs = PreferenceManager.getInstance();
-            boolean shouldShowFlankingRegions = prefs.getAsBoolean(
-            PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
+            boolean shouldShowFlankingRegions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
@@ -292,7 +290,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             case TEXT:
                 String text = "" + depth;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
-                g2D.drawString(text, (float) (midX - textBounds.getWidth() / 2), (float) (actArcPeakY + textBounds.getHeight() / 4));
+                float yPos = (float) actArcPeakY;
+                yPos += drawAbove ? 0 : textBounds.getHeight();
+                g2D.drawString(text, (float) (midX - textBounds.getWidth() / 2), yPos);
                 break;
         }
 
