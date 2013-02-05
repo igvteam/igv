@@ -106,6 +106,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
+        //Don't want to color SNPs
+        coverageTrack.setSnpThreshold(2.0f);
+        coverageTrack.setAutoScale(true);
+        coverageTrack.rescale();
     }
 
     /**
@@ -124,13 +128,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         if(coverageTrack != null){
             Rectangle coverageRectangle = new Rectangle(trackRectangle);
-            coverageRectangle.setBounds(coverageRectangle.x, coverageRectangle.y, coverageRectangle.width, coverageRectangle.height / 2);
+            //Only want the coverage track to go so high so that the arcs still have room
+            int newHeight = coverageRectangle.height / 4;
+            int newY = coverageRectangle.y + coverageRectangle.height / 2 - newHeight;
+            coverageRectangle.setBounds(coverageRectangle.x, newY, coverageRectangle.width, newHeight);
 
-            //Don't want to color SNPs
-            coverageTrack.setSnpThreshold(2.0f);
-            //TODO Need to autoscale so coverage doesn't go too high
             coverageTrack.render(context, coverageRectangle);
-
         }
 
         double origin = context.getOrigin();
