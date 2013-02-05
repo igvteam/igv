@@ -742,7 +742,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             int idx = loc - start;
 
             // Is this base a mismatch?
-            boolean misMatch = isMisMatch(reference, read, isSoftClipped, idx);
+            boolean misMatch = AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
 
             if (showAllBases || (!bisulfiteMode && misMatch) ||
                     (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {

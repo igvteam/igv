@@ -119,7 +119,7 @@ public class AlignmentBlock {
         return counts != null;
     }
 
-    // Default implementation -- to be overriden
+    // Default implementation -- to be overridden
     public FlowSignalSubContext getFlowSignalSubContext(int offset) {
         return null;
     }
@@ -140,21 +140,35 @@ public class AlignmentBlock {
         return sb.toString();
     }
 
-    protected static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
+    static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
         List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
         List<Byte> mismatches = null;
         assert readBases.length == refBases.length;
-        for(int ii = 0; ii < readBases.length; ii++){
-            byte readBase = readBases[ii];
-            if(AlignmentUtils.compareBases(refBases[ii], readBase) || ii == readBases.length - 1){
+        int lastMMBlockStart = -1;
+        for(int ii = 0; ii <= readBases.length; ii++){
+
+            byte readBase = -1;
+            byte refBase = -1;
+            boolean atEnd = false;
+            if(ii < readBases.length){
+                readBase = readBases[ii];
+                refBase = refBases[ii];
+            }else{
+                atEnd = true;
+            }
+
+            if(atEnd || AlignmentUtils.compareBases(refBase, readBase)){
                 //Finish off last mismatch
                 if(mismatches != null){
-                    MismatchBlock curMMBlock = new MismatchBlock(start + ii, ArrayUtils.toPrimitive(mismatches.toArray(new Byte[0])));
+                    byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[0]));
+                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq);
                     mismatchBlocks.add(curMMBlock);
                     mismatches = null;
+                    lastMMBlockStart = -1;
                 }
             }else{
                 if(mismatches == null){
+                    lastMMBlockStart = start + ii;
                     mismatches = new ArrayList<Byte>();
                 }
                 mismatches.add(readBase);
@@ -164,9 +178,9 @@ public class AlignmentBlock {
         return mismatchBlocks;
     }
 
-    private static class MismatchBlock {
-        private final int start;
-        private final byte[] seq;
+    public static class MismatchBlock {
+        public final int start;
+        public final byte[] seq;
 
         private MismatchBlock(int start, byte[] seq){
             this.start = start;
