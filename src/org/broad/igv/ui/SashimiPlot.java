@@ -14,9 +14,10 @@ package org.broad.igv.ui;
 import com.google.common.eventbus.Subscribe;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
+import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.event.ZoomChange;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 
 import javax.swing.*;
@@ -73,7 +74,7 @@ public class SashimiPlot extends JFrame{
         spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
         TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
-        getRenderer().setDataManager(track.getDataManager());
+        setDataManager(track.getDataManager());
 
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         geneTrackClone.setDisplayMode(Track.DisplayMode.EXPANDED);
@@ -107,6 +108,14 @@ public class SashimiPlot extends JFrame{
         validate();
     }
 
+    private void setDataManager(AlignmentDataManager dataManager) {
+        if(!dataManager.isShowSpliceJunctions()){
+            dataManager.setShowSpliceJunctions(true);
+            dataManager.clear();
+        }
+        getRenderer().setDataManager(dataManager);
+    }
+
     private void initSize(int width) {
         setSize(width, 500);
     }
@@ -131,7 +140,7 @@ public class SashimiPlot extends JFrame{
     }
 
     @Subscribe
-    public void respondZoomChange(ZoomChange.Result e) {
+    public void respondViewResult(ViewChange.Result e) {
         repaint();
     }
 
