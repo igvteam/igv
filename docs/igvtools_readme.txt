@@ -64,7 +64,7 @@ COMMANDS
 
 The recognized commands are tile, count, sort, and index.  Note that these
 utilities are for working with ascii file formats, including SAM, but
-do not work with BAM files.  For manipulating BAM files use samtools.
+do not work with BAM files.  For manipulating BAM files use samtools (http://samtools.sourceforge.net/).
 
 ---------------------------------------------------------------------------
 Command "tile"
@@ -144,7 +144,7 @@ Example:
 Notes:
 
 Data file formats, with the exception of .gct files, must be sorted by
-start position.  If neccessary files can be sorted with the "sort" command
+start position.  If necessary files can be sorted with the "sort" command
 described below.  Attempting to preprocess an unsorted file will result
 in an  error.
 
@@ -201,7 +201,7 @@ Options:
   --strands [arg] By default, counting is combined among both strands.
                 This setting outputs the count for each strand separately.
                 Legal argument values are 'read' or 'first'.
-                'read' Separates count by 'read' strand, 'first' uses the first in pair strand".
+                'read' Separates count by 'read' strand, 'first' uses the first in pair strand.
                 Results are saved in a separate column for .wig output, and a separate track
                 for TDF output.
 
