@@ -92,7 +92,7 @@ public class BisulfiteBaseInfo {
             // what to do in this case,  just skip?
             if (idx < 0 || idx > reference.length) continue;
 
-            // The read base can be an equals sign, so change thet to the actual ref base
+            // The read base can be an equals sign, so change that to the actual ref base
             byte refbase = reference[idx];
             byte readbase = read[idx];
             if (readbase == '=') readbase = refbase;

@@ -17,6 +17,7 @@ package org.broad.igv.sam;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,10 +26,19 @@ public class AlignmentBlock {
 
     protected int start;
     protected byte[] bases;
-    public final byte[] qualities;
+    public byte[] qualities;
     protected short[] counts;
 
     private boolean softClipped = false;
+
+    private SoftReference<byte[]> softBases;
+    private SoftReference<byte[]> softQualities;
+    private byte[] reference;
+
+    /**
+     * We save space by only storing the mismatches to the reference
+     */
+    private List<MismatchBlock> mismatches;
 
     public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities) {
 
@@ -53,15 +63,34 @@ public class AlignmentBlock {
 
     public boolean contains(int position) {
         int offset = position - start;
-        return offset >= 0 && offset < bases.length;
+        return offset >= 0 && offset < getLength();
     }
 
     public byte[] getBases() {
-        return bases;
+        if(bases != null) return bases;
+        byte[] sbases = softBases.get();
+        if(sbases == null){
+            sbases = Arrays.copyOf(reference, reference.length);
+            for(MismatchBlock mismatchBlock: this.mismatches){
+                System.arraycopy(mismatchBlock.bases, 0, sbases, mismatchBlock.start - start, mismatchBlock.bases.length);
+            }
+            softBases = new SoftReference<byte[]>(sbases);
+        }
+        return sbases;
+    }
+
+    public int getLength() {
+        if(bases != null) {
+            return bases.length;
+        }else if(reference != null) {
+            return reference.length;
+        }else{
+            throw new IllegalStateException("Have no bases or reference");
+        }
     }
 
     public byte getBase(int offset) {
-        return bases[offset];
+        return getBases()[offset];
     }
 
     public int getStart() {
@@ -69,12 +98,22 @@ public class AlignmentBlock {
     }
 
     public byte getQuality(int offset) {
-        return qualities[offset];
+        return getQualities()[offset];
 
     }
 
     public byte[] getQualities() {
-        return qualities;
+        if(qualities != null) return qualities;
+        byte[] squals = softQualities.get();
+        if(squals == null){
+            squals = new byte[getLength()];
+            Arrays.fill(squals, (byte) 126);
+            for(MismatchBlock mismatchBlock: this.mismatches){
+                System.arraycopy(mismatchBlock.qualities, 0, squals, mismatchBlock.start - start, mismatchBlock.qualities.length);
+            }
+            softQualities = new SoftReference<byte[]>(squals);
+        }
+        return squals;
     }
 
     public short[] getCounts() {
@@ -89,11 +128,8 @@ public class AlignmentBlock {
         this.counts = counts;
     }
 
-    /**
-     * Convenience method
-     */
     public int getEnd() {
-        return start + bases.length;
+        return start + getBases().length;
     }
 
     public boolean isSoftClipped() {
@@ -176,10 +212,35 @@ public class AlignmentBlock {
         return mismatchBlocks;
     }
 
-    public static class MismatchBlock extends AlignmentBlock{
+    public List<MismatchBlock> getMismatches() {
+        return mismatches;
+    }
 
-        private MismatchBlock(int start, byte[] bases, byte[] qualities){
-            super(start, bases, qualities);
+    /**
+     * Reduce so that we only store the mismatches between this block and reference
+     * @param refBases
+     */
+    public void reduce(byte[] refBases){
+        mismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
+        this.reference = refBases;
+        this.softBases = new SoftReference<byte[]>(this.bases);
+        this.softQualities = new SoftReference<byte[]>(this.qualities);
+        this.bases = null;
+        qualities = null;
+        counts = null;
+    }
+
+
+    public static class MismatchBlock{
+
+        public final int start;
+        public final byte[] bases;
+        public final byte[] qualities;
+
+        public MismatchBlock(int start, byte[] bases, byte[] qualities){
+            this.start = start;
+            this.bases = bases;
+            this.qualities = qualities;
         }
 
     }

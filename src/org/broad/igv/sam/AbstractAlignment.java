@@ -117,20 +117,6 @@ public abstract class AbstractAlignment implements Alignment {
         return 0;
     }
 
-    private byte[] getQualityArray() {
-        int totLen = 0;
-        for (AlignmentBlock block : this.alignmentBlocks) {
-            totLen += block.getQualities().length;
-        }
-        byte[] allQualities = new byte[totLen];
-        int start = 0;
-        for (AlignmentBlock block : this.alignmentBlocks) {
-            System.arraycopy(block.getQualities(), 0, allQualities, start, block.getQualities().length);
-            start += block.getQualities().length;
-        }
-        return allQualities;
-    }
-
     private void bufAppendFlowSignals(AlignmentBlock block, StringBuffer buf, int offset) {
         if (block.hasFlowSignals()) {
             // flow signals
@@ -353,6 +339,5 @@ public abstract class AbstractAlignment implements Alignment {
     public boolean isPrimary() {
         return true;
     }
-
 
 }

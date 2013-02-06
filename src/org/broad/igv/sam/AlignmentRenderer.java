@@ -522,7 +522,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         for (AlignmentBlock aBlock : alignment.getAlignmentBlocks()) {
             blockNumber++;
             int blockPixelStart = (int) ((aBlock.getStart() - origin) / locScale);
-            int blockPixelWidth = (int) Math.ceil(aBlock.getBases().length / locScale);
+            int blockPixelWidth = (int) Math.ceil(aBlock.getLength() / locScale);
 
             // If we're zoomed in and this is a large block clip a pixel off each end.  TODO - why?
             if (highZoom && blockPixelWidth > 10) {
@@ -669,7 +669,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     }
 
-
     /**
      * Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
      * that is proportional to the base quality score, or flow signal deviation, whichever is selected.
@@ -688,9 +687,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Color alignmentColor,
                            RenderOptions renderOptions) {
 
-        byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();
 
+
+
+        // Get the base qualities, start/end,  and reference sequence
         String chr = context.getChr();
         final int start = block.getStart();
         final int end = block.getEnd();
@@ -698,7 +699,13 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
-        if (read.length <= 0 || reference == null) {
+        byte[] read = block.getBases();
+        List<AlignmentBlock.MismatchBlock> mismatchBlocks = block.getMismatches();
+
+        boolean haveMismatches = (mismatchBlocks != null);
+        boolean haveBases = (read != null && read.length > 0) || haveMismatches;
+
+        if (!haveBases || reference == null) {
             return;
         }
 
@@ -725,8 +732,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             g.setFont(f);
         }
 
-        // Get the base qualities, start/end,  and reference sequence
-
         BisulfiteBaseInfo bisinfo = null;
         boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
         boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
@@ -736,50 +741,66 @@ public class AlignmentRenderer implements FeatureRenderer {
             bisinfo = new BisulfiteBaseInfo(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         }
 
-        // Loop through base pair coordinates
-        for (int loc = start; loc < end; loc++) {
+        //Reduce so we don't need to store all bases, just mismatches
+        if(!showAllBases && !haveMismatches){
+            block.reduce(reference);
+        }
 
-            // Index into read array,  just the genomic location offset by
-            // the start of this block
-            int idx = loc - start;
+        if(!haveMismatches){
+            //If we don't have the mismatches, we create a dummy mismatch block to loop over.
+            //Same as looping over overall block
+            mismatchBlocks = new ArrayList<AlignmentBlock.MismatchBlock>();
+            mismatchBlocks.add(new AlignmentBlock.MismatchBlock(start, read, block.getQualities()));
+        }
 
-            // Is this base a mismatch?
-            boolean misMatch = AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
+        for(AlignmentBlock.MismatchBlock mismatchBlock: mismatchBlocks){
+            int curStart = mismatchBlock.start;
+            int curEnd = curStart + mismatchBlock.bases.length;
 
-            if (showAllBases || (!bisulfiteMode && misMatch) ||
-                    (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
-                char c = (char) read[idx];
+            for (int loc = curStart; loc < curEnd; loc++) {
 
-                Color color = Globals.nucleotideColors.get(c);
-                if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
-                if (color == null) {
-                    color = Color.black;
-                }
+                // Index into read array,  just the genomic location offset by
+                // the start of this block
+                int idx = loc - start;
 
-                if (ShadeBasesOption.QUALITY == shadeBasesOption) {
-                    byte qual = block.qualities[loc - start];
-                    color = getShadedColor(qual, color, alignmentColor, prefs);
-                } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
-                    if (block.hasFlowSignals()) {
-                        color = getFlowSignalColor(reference, read, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
+                // Is this base a mismatch?
+                boolean misMatch = haveMismatches || AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
+
+                if (showAllBases || (!bisulfiteMode && misMatch) ||
+                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
+                    char c = (char) read[idx];
+
+                    Color color = Globals.nucleotideColors.get(c);
+                    if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
+                    if (color == null) {
+                        color = Color.black;
                     }
+
+                    if (ShadeBasesOption.QUALITY == shadeBasesOption) {
+                        byte qual = block.getQuality(loc - start);
+                        color = getShadedColor(qual, color, alignmentColor, prefs);
+                    } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
+                        if (block.hasFlowSignals()) {
+                            color = getFlowSignalColor(reference, read, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
+                        }
+                    }
+
+                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+
+                    // If there is room for text draw the character, otherwise
+                    // just draw a rectangle to represent the
+                    int pX = (int) (((double) loc + bisulfiteXaxisShift - origin) / locScale);
+
+                    // Don't draw out of clipping rect
+                    if (pX > rect.getMaxX()) {
+                        break;
+                    } else if (pX + dX < rect.getX()) {
+                        continue;
+                    }
+
+                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+                    drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
                 }
-
-                double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
-
-                // If there is room for text draw the character, otherwise
-                // just draw a rectangle to represent the
-                int pX = (int) (((double) loc + bisulfiteXaxisShift - origin) / locScale);
-
-                // Don't draw out of clipping rect
-                if (pX > rect.getMaxX()) {
-                    break;
-                } else if (pX + dX < rect.getX()) {
-                    continue;
-                }
-
-                BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
-                drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
             }
 
         }
