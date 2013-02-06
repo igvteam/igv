@@ -1118,6 +1118,11 @@ public class GenomeManager {
         return currentGenome == null ? null : currentGenome.getId();
     }
 
+    /**
+     * IGV always has exactly 1 genome loaded at a time.
+     * This returns the currently loaded genome
+     * @return
+     */
     @api
     public Genome getCurrentGenome() {
         return currentGenome;

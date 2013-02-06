@@ -19,13 +19,15 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * A FeatureSource wrapper which provides caching.
+ *
  * User: jacob
  * Date: 2012/05/15
  */
 public class CachingFeatureSource extends AbstractCacher implements FeatureSource {
 
-    private static int maxBinCount = 1000;
-    private static int defaultBinSize = 16000; // <= 16 kb
+    private static final int maxBinCount = 1000;
+    private static final int defaultBinSize = 16000; // <= 16 kb
 
     private FeatureSource source;
 
@@ -63,5 +65,13 @@ public class CachingFeatureSource extends AbstractCacher implements FeatureSourc
     @Override
     public void setFeatureWindowSize(int size) {
         source.setFeatureWindowSize(size);
+    }
+
+    /**
+     * Return the source which backs this CachingFeatureSource
+     * @return
+     */
+    public FeatureSource getSource(){
+        return this.source;
     }
 }

@@ -18,6 +18,8 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.session.SessionXmlAdapters;
+import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.ui.SequenceMatchDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
@@ -26,6 +28,10 @@ import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -45,6 +51,7 @@ import java.util.regex.Pattern;
  * User: jacob
  * Date: 2013-Jan-22
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class SequenceMatchSource implements FeatureSource<Feature>{
 
     private static Map<String, String> letterToRegex;
@@ -64,10 +71,15 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
         }
     }
 
-    private String motif;
-    private Genome genome;
+    @XmlAttribute private String motif;
 
-    private int featureWindowSize = (int) 100e3;
+    @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
+    @XmlAttribute private Genome genome;
+
+    @XmlAttribute private int featureWindowSize = (int) 100e3;
+
+    @SubtlyImportant
+    private SequenceMatchSource(){}
 
     /**
      *
@@ -207,13 +219,19 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
 
     /**
      * Iterator which turns regex Matcher results into Features
-     * Implementation note: We don't want to have the constructor run the query,
      *
      */
     private static class MatchFeatureIterator implements Iterator<Feature>{
 
         private String chr;
         private int posOffset;
+
+        /**
+         * We want to find overlapping matches. By default, matcher.find()
+         * starts from the end of the previous match, which would preclude overlapping matches.
+         * By storing the last start position we reset each time
+         */
+        private int lastMatchStart = -1;
         
         private Matcher matcher;
 
@@ -223,19 +241,19 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
          * 
          * @param chr The chromosome we are searching
          * @param posOffset The position within the chromosome that we started searching
-         * @param matcher Matcher over sequence. Will be reset
+         * @param matcher Matcher over sequence.
          */
         private MatchFeatureIterator(String chr, int posOffset, Matcher matcher){
             this.chr = chr;
             this.posOffset = posOffset;
             this.matcher = matcher;
-            this.matcher.reset();
             findNext();
         }
 
         private void findNext(){
-            if(matcher.find()){
-                int start = posOffset + matcher.start();
+            if(matcher.find(lastMatchStart + 1)){
+                lastMatchStart = matcher.start();
+                int start = posOffset + lastMatchStart;
                 int end = posOffset + matcher.end();
                 nextFeat = new BasicFeature(chr, start, end);
             }else{

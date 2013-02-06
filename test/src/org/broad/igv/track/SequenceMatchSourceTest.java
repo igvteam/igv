@@ -85,6 +85,33 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
     }
 
     /**
+     * Test searching for a motif which has 2 overlapping hits
+     * @throws Exception
+     */
+    @Test
+    public void testSearchOverlapping() throws Exception{
+        String motif = "ATGCATGCATGC";
+        SequenceMatchSource source = new SequenceMatchSource(motif, genome);
+
+        String queryChr = "chr8";
+        int queryStart = 40823007;
+        int queryEnd = 40863995;
+
+        Iterator<Feature> iter = source.getFeatures(queryChr, queryStart, queryEnd);
+        Feature feat = iter.next();
+
+        int expFeatureStart = 40843500;
+        int exFeatureEnd = 40843512;
+
+        assertEquals(expFeatureStart, feat.getStart());
+        assertEquals(exFeatureEnd, feat.getEnd());
+
+        feat = iter.next();
+        assertEquals(expFeatureStart + 4, feat.getStart());
+        assertEquals(exFeatureEnd + 4, feat.getEnd());
+    }
+
+    /**
      * Test searching chromosome 1 for nonexistent motif. Test is timed at 30 seconds,
      * this is a loose performance test. Takes ~13 seconds on my machine
      * @throws Exception

@@ -11,6 +11,7 @@
 
 package org.broad.igv.session;
 
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -105,5 +106,23 @@ public class SessionXmlAdapters{
             }
             return null;
         }
+    }
+
+    public static class Genome extends XmlAdapter<String, org.broad.igv.feature.genome.Genome>{
+
+        @Override
+        public String marshal(org.broad.igv.feature.genome.Genome v) throws Exception {
+            return v.getId();
+        }
+
+        @Override
+        public org.broad.igv.feature.genome.Genome unmarshal(String v) throws Exception {
+            org.broad.igv.feature.genome.Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            if(genome != null && !genome.getId().equals(v)){
+                throw new IllegalStateException("Must load the proper genome before unmarshalling");
+            }
+            return genome;
+        }
+
     }
 }

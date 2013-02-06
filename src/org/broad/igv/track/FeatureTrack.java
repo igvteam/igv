@@ -14,10 +14,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
@@ -52,7 +49,7 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class})
+@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, SequenceMatchSource.class})
 public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
@@ -109,7 +106,9 @@ public class FeatureTrack extends AbstractTrack {
     private static boolean drawBorder = true;
 
     private boolean alternateExonColor = false;
+
     private static final String PLUGIN_SOURCE = "PluginSource";
+    private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
 
     /**
      * Construct with no feature source.  Currently this is only used for the SpliceJunctionFinderTrack subclass.
@@ -993,6 +992,9 @@ public class FeatureTrack extends AbstractTrack {
                 Node child = childNodes.item(ii);
                 if(child.getNodeName().equalsIgnoreCase(PLUGIN_SOURCE)){
                     source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
+                }else if(child.getNodeName().equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)){
+                    FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, SequenceMatchSource.class).getValue();
+                    source = new CachingFeatureSource(rawSource);
                 }
             }
         }
@@ -1005,9 +1007,18 @@ public class FeatureTrack extends AbstractTrack {
      * @throws JAXBException
      */
     public void marshalSource(Marshaller m, Element trackElement) throws JAXBException{
-        if(source instanceof PluginSource){
+        FeatureSource rawSource = source;
+        if(rawSource instanceof CachingFeatureSource){
+            rawSource = ((CachingFeatureSource) rawSource).getSource();
+        }
+        //If this grows any more we should more properly implement marshalling among feature sources
+        if(rawSource instanceof PluginSource){
             JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
-                    (PluginSource) source);
+                    (PluginSource) rawSource);
+            m.marshal(element, trackElement);
+        }else if(rawSource instanceof SequenceMatchSource){
+            JAXBElement element = new JAXBElement<SequenceMatchSource>(new QName("", SEQUENCE_MATCH_SOURCE), SequenceMatchSource.class,
+                    (SequenceMatchSource) rawSource);
             m.marshal(element, trackElement);
         }
     }

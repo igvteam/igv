@@ -191,6 +191,29 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         assert checked > 0;
     }
 
+
+    /**
+     * Test loading a session which contains a FeatureSource for
+     * sequence matching.
+     * @throws Exception
+     */
+    @Test
+    public void testLoadFeatureMatchSession() throws Exception{
+        String sessionPath = TestUtils.DATA_DIR + "sessions/match_search_session.xml";
+        IGV.getInstance().doRestoreSession(sessionPath, null, false);
+
+        List<Track> tracks = IGV.getInstance().getAllTracks();
+        FeatureTrack matchTrack = (FeatureTrack) tracks.get(2);
+
+        String queryChr = "chr8";
+        int queryStart = 40823007;
+        int queryEnd = 40863995;
+
+        List<Feature> features = matchTrack.getFeatures(queryChr, queryStart, queryEnd);
+        assertEquals(2, features.size());
+
+    }
+
     private boolean listContainsFeature(List<Feature> featureList, Feature feature){
         for (Feature listFeature : featureList) {
             if ((feature.getChr().equals(listFeature.getChr())) &&
