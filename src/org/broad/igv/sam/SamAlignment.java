@@ -414,48 +414,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 }
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                    byte[] blockBases = new byte[op.nBases];
-                    byte[] blockQualities = new byte[op.nBases];
-                    short[] blockCounts = new short[op.nBases];
-                    AlignmentBlock block = null;
-
-                    //Default value
-                    Arrays.fill(blockQualities, (byte) 126);
-
-                    int nBasesAvailable = readBases.length - fromIdx;
-
-                    // TODO -- represent missing sequence ("*") explicitly for efficiency.
-                    if (readBases == null || readBases.length == 0) {
-                        Arrays.fill(blockBases, (byte) '=');
-                    } else if (nBasesAvailable < op.nBases) {
-                        Arrays.fill(blockBases, (byte) '?');
-                    } else {
-                        System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
-                    }
-
-                    nBasesAvailable = readBaseQualities.length - fromIdx;
-                    if (readBaseQualities == null || readBaseQualities.length == 0 || nBasesAvailable < op.nBases) {
-                        Arrays.fill(blockQualities, (byte) 126);
-                    } else {
-                        System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
-                    }
-
-                    if (readRepresentativeCounts != null) {
-                        System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, op.nBases);
-                    }
-
-                    if (null != fBlockBuilder) {
-                        block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities,
-                                fBlockBuilder.getFlowSignalContext(readBases, fromIdx, op.nBases), this);
-                    } else {
-                        block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, this);
-                    }
+                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
+                            readRepresentativeCounts, blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
-                    }
-                    if (readRepresentativeCounts != null) {
-                        block.setCounts(blockCounts);
                     }
                     alignmentBlocks[blockIdx++] = block;
 
@@ -470,40 +433,13 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     blockStart += op.nBases;
                     gapTypes[gapIdx++] = op.operator;
                 } else if (op.operator == INSERTION) {
-                    AlignmentBlock block = null;
-
                     // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
 
-                    byte[] blockBases = new byte[op.nBases];
-                    byte[] blockQualities = new byte[op.nBases];
-                    short[] blockCounts = new short[op.nBases];
+                    AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
+                            readRepresentativeCounts, blockStart, fromIdx, op.nBases, false);
 
-                    if (readBases == null || readBases.length == 0) {
-                        Arrays.fill(blockBases, (byte) '=');
-                    } else {
-                        System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
-                    }
-
-                    if (readBaseQualities == null || readBaseQualities.length == 0) {
-                        Arrays.fill(blockQualities, (byte) 126);
-                    } else {
-                        System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
-                    }
-
-                    if (readRepresentativeCounts != null) {
-                        System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, op.nBases);
-                    }
-                    if (null != fBlockBuilder) {
-                        block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities,
-                                fBlockBuilder.getFlowSignalContext(readBases, fromIdx, op.nBases), this);
-                    } else {
-                        block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, this);
-                    }
-                    if (readRepresentativeCounts != null) {
-                        block.setCounts(blockCounts);
-                    }
                     insertions[insertionIdx++] = block;
 
                     fromIdx += op.nBases;
@@ -522,8 +458,55 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 end += last.nBases;
             }
         }
+    }
 
+    private AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
+                                               byte[] readBaseQualities,
+                                               short[] readRepresentativeCounts, int blockStart,
+                                               int fromIdx, int nBases, boolean checkNBasesAvailable){
 
+        byte[] blockBases = new byte[nBases];
+        byte[] blockQualities = new byte[nBases];
+        short[] blockCounts = new short[nBases];
+
+        // TODO -- represent missing sequence ("*") explicitly for efficiency.
+        int nBasesAvailable = nBases;
+        if(checkNBasesAvailable){
+            nBasesAvailable = readBases.length - fromIdx;
+        }
+        if (readBases == null || readBases.length == 0) {
+            Arrays.fill(blockBases, (byte) '=');
+        } else if (nBasesAvailable < nBases) {
+            Arrays.fill(blockBases, (byte) '?');
+        } else {
+            System.arraycopy(readBases, fromIdx, blockBases, 0, nBases);
+        }
+
+        nBasesAvailable = nBases;
+        if(checkNBasesAvailable){
+            nBasesAvailable = readBaseQualities.length - fromIdx;
+        }
+        if (readBaseQualities == null || readBaseQualities.length == 0 || nBasesAvailable < nBases) {
+            Arrays.fill(blockQualities, (byte) 126);
+        } else {
+            System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, nBases);
+        }
+
+        if (readRepresentativeCounts != null) {
+            System.arraycopy(readRepresentativeCounts, fromIdx, blockCounts, 0, nBases);
+        }
+
+        AlignmentBlock block;
+        if (fBlockBuilder != null) {
+            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities,
+                    fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases), this);
+        } else {
+            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, this);
+        }
+        if (readRepresentativeCounts != null) {
+            block.setCounts(blockCounts);
+        }
+        return block;
     }
 
     private boolean operatorIsMatch(boolean showSoftClipped, char operator) {
