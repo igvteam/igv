@@ -15,6 +15,7 @@
  */
 package org.broad.igv.sam;
 
+import com.google.common.eventbus.Subscribe;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -35,6 +36,8 @@ import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.DataLoadedEvent;
+import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -112,6 +115,7 @@ public class CoverageTrack extends AbstractTrack {
 
     public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
+        this.dataManager.getEventBus().register(this);
     }
 
     public void setDataSource(CoverageDataSource dataSource) {
@@ -135,6 +139,16 @@ public class CoverageTrack extends AbstractTrack {
 
     public boolean isShowReference() {
         return showReference;
+    }
+
+    /**
+     * Rescale as necessary, and tell components to repaint
+     * @param e
+     */
+    @Subscribe
+    public void receiveDataLoaded(DataLoadedEvent e){
+        rescale(e.context.getReferenceFrame());
+        e.context.getReferenceFrame().getEventBus().post(new ViewChange.Result());
     }
 
     public void rescale() {

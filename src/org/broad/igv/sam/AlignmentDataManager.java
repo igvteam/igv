@@ -10,6 +10,7 @@
  */
 package org.broad.igv.sam;
 
+import com.google.common.eventbus.EventBus;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -18,6 +19,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ArrayHeapObjectSorter;
@@ -61,6 +63,12 @@ public class AlignmentDataManager {
      * will trim a cached interval it's bigger than MAX_INTERVAL_MULTIPLE * current interval size
      */
     static final int MAX_INTERVAL_MULTIPLE = 3;
+
+    /**
+     * This {@code EventBus} is typically used to notify listeners when new data
+     * is loaded
+     */
+    private EventBus eventBus = new EventBus();
 
 
     public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
@@ -383,18 +391,9 @@ public class AlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                addLoadedInterval(context, loadedInterval);
+                addLoadedInterval(loadedInterval);
 
-
-                if (coverageTrack != null) {
-                    coverageTrack.rescale(context.getReferenceFrame());
-                }
-
-                // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
-                if (context.getPanel() != null) {
-                    context.getPanel().invalidate();
-                    context.getPanel().repaint();
-                }
+                getEventBus().post(new DataLoadedEvent(context));
 
                 isLoading = false;
             }
@@ -447,8 +446,7 @@ public class AlignmentDataManager {
         return new AlignmentInterval(chr, start, end, alignmentRows, t.getCounts(), spliceJunctions, downsampledIntervals, renderOptions);
     }
 
-    private void addLoadedInterval(RenderContext context, AlignmentInterval interval) {
-
+    private void addLoadedInterval(AlignmentInterval interval) {
         loadedIntervalMap.setLocusList(FrameManager.getFrames());
         loadedIntervalMap.put(interval);
     }
@@ -529,6 +527,10 @@ public class AlignmentDataManager {
 
     public boolean isShowSpliceJunctions() {
         return showSpliceJunctions;
+    }
+
+    public EventBus getEventBus() {
+        return eventBus;
     }
 
 
