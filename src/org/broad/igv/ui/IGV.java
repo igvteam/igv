@@ -186,6 +186,11 @@ public class IGV {
         return getInstance().rootPane;
     }
 
+    /**
+     * The IGV GUI has one master frame containing all other elements.
+     * This method returns that frame.
+     * @return
+     */
     @api
     public static Frame getMainFrame() {
         return getInstance().mainFrame;
@@ -193,7 +198,7 @@ public class IGV {
 
 
     /**
-     * Creates new form IGV
+     * Creates new IGV
      */
     private IGV(Frame frame) {
 
@@ -1565,6 +1570,7 @@ public class IGV {
      * @param tracks
      * @param panelName
      */
+    @api
     public void addTracks(List<Track> tracks, PanelName panelName){
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
@@ -1757,7 +1763,7 @@ public class IGV {
     }
 
     /**
-     * Group all alignment tracks
+     * Group all alignment tracks by the specified option.
      * @param option
      */
     @api

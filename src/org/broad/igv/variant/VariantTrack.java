@@ -1394,7 +1394,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Used to force a refresh
+     * Features are packed upon loading, effectively a cache.
+     * This clears that cache. Used to force a refresh
      */
     @api
     public void clearPackedFeatures(){

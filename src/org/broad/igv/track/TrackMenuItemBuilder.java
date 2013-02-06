@@ -26,7 +26,7 @@ import java.util.Collection;
 public interface TrackMenuItemBuilder {
 
     /**
-     * @param selectedTracks
+     * @param selectedTracks The tracks currently selected when the user clicks
      * @param te
      * @return A {@code JMenuItem} to be displayed in the menu,
      *         or {@code null} if not applicable to the selectedTracks
