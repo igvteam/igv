@@ -140,9 +140,10 @@ public class AlignmentBlock {
         return sb.toString();
     }
 
-    static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases){
+    static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases, byte[] readQualities){
         List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
         List<Byte> mismatches = null;
+        List<Byte> qualities = null;
         assert readBases.length == refBases.length;
         int lastMMBlockStart = -1;
         for(int ii = 0; ii <= readBases.length; ii++){
@@ -161,7 +162,8 @@ public class AlignmentBlock {
                 //Finish off last mismatch
                 if(mismatches != null){
                     byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[0]));
-                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq);
+                    byte[] quals = ArrayUtils.toPrimitive(qualities.toArray(new Byte[0]));
+                    MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq, quals);
                     mismatchBlocks.add(curMMBlock);
                     mismatches = null;
                     lastMMBlockStart = -1;
@@ -170,8 +172,10 @@ public class AlignmentBlock {
                 if(mismatches == null){
                     lastMMBlockStart = start + ii;
                     mismatches = new ArrayList<Byte>();
+                    qualities = new ArrayList<Byte>();
                 }
                 mismatches.add(readBase);
+                qualities.add(readQualities[ii]);
             }
         }
 
@@ -180,11 +184,13 @@ public class AlignmentBlock {
 
     public static class MismatchBlock {
         public final int start;
-        public final byte[] seq;
+        public final byte[] bases;
+        public final byte[] qualities;
 
-        private MismatchBlock(int start, byte[] seq){
+        private MismatchBlock(int start, byte[] bases, byte[] qualities){
             this.start = start;
-            this.seq = seq;
+            this.bases = bases;
+            this.qualities = qualities;
         }
 
     }

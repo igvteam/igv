@@ -47,7 +47,7 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                 int end = block.getEnd();
                 byte[] refSeq = genome.getSequence(chr, start, end);
 
-                List<AlignmentBlock.MismatchBlock> mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases());
+                List<AlignmentBlock.MismatchBlock> mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases(), block.getQualities());
                 AlignmentBlock.MismatchBlock nextBlock = null;
                 int blockInd = 0;
                 int nextBlockStart = Integer.MAX_VALUE;
@@ -57,7 +57,7 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                 if(mismatchBlocks.size() > 0){
                     nextBlock = mismatchBlocks.get(blockInd++);
                     nextBlockStart = nextBlock.start;
-                    nextBlockEnd = nextBlockStart + nextBlock.seq.length;
+                    nextBlockEnd = nextBlockStart + nextBlock.bases.length;
                 }
 
                 for(int loc = start; loc < end; loc++){
@@ -66,12 +66,12 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                     byte base = block.getBase(idx);
 
                     if(loc >= nextBlockStart && loc < nextBlockEnd){
-                        assertEquals(base, nextBlock.seq[mmIdx++]);
+                        assertEquals(base, nextBlock.bases[mmIdx++]);
                     }else if(loc == nextBlockEnd){
                         if(blockInd < mismatchBlocks.size()){
                             nextBlock = mismatchBlocks.get(blockInd++);
                             nextBlockStart = nextBlock.start;
-                            nextBlockEnd = nextBlockStart + nextBlock.seq.length;
+                            nextBlockEnd = nextBlockStart + nextBlock.bases.length;
                             mmIdx = 0;
                         }else{
                             nextBlock = null;
