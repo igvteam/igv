@@ -292,8 +292,7 @@ public class GobyAlignment implements Alignment {
         }
         final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
                 bases,
-                scores,
-                this);
+                scores);
         alignmentBlock.setSoftClipped(true);
         blocks.add(alignmentBlock);
 
@@ -364,14 +363,12 @@ public class GobyAlignment implements Alignment {
 
                         AlignmentBlock left = AlignmentBlock.getInstance(block.getStart(),
                                 leftBases.toByteArray(new byte[leftBases.size()]),
-                                leftScores.toByteArray(new byte[leftScores.size()]),
-                                this);
+                                leftScores.toByteArray(new byte[leftScores.size()]));
 
                         AlignmentBlock right = AlignmentBlock.getInstance(block.getStart() + leftBases.size()
                                 + var.getFrom().length(),
                                 rightBases.toByteArray(new byte[rightBases.size()]),
-                                rightScores.toByteArray(new byte[rightScores.size()]),
-                                this);
+                                rightScores.toByteArray(new byte[rightScores.size()]));
 
                         blocks.remove(block);
                         newBlocks.add(left);
@@ -396,8 +393,7 @@ public class GobyAlignment implements Alignment {
 
         blocks.add(AlignmentBlock.getInstance(start,
                 bases.toByteArray(new byte[bases.size()]),
-                scores.toByteArray(new byte[scores.size()]),
-                this));
+                scores.toByteArray(new byte[scores.size()])));
         start += bases.size();
         bases.clear();
         scores.clear();

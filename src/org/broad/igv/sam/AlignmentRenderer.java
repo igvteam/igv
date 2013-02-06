@@ -613,7 +613,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 if (renderOptions.showMismatches || renderOptions.showAllBases) {
-                    drawBases(context, rowRect, aBlock, alignmentColor, renderOptions);
+                    drawBases(context, rowRect, alignment, aBlock, alignmentColor, renderOptions);
                 }
             }
 
@@ -676,12 +676,14 @@ public class AlignmentRenderer implements FeatureRenderer {
      *
      * @param context
      * @param rect
+     * @param baseAlignment
      * @param block
      * @param alignmentColor
+     * @param renderOptions
      */
-
     private void drawBases(RenderContext context,
                            Rectangle rect,
+                           Alignment baseAlignment,
                            AlignmentBlock block,
                            Color alignmentColor,
                            RenderOptions renderOptions) {
@@ -729,9 +731,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
         boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
         if (nomeseqMode) {
-            bisinfo = new BisulfiteBaseInfoNOMeseq(reference, block, renderOptions.bisulfiteContext);
+            bisinfo = new BisulfiteBaseInfoNOMeseq(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         } else if (bisulfiteMode) {
-            bisinfo = new BisulfiteBaseInfo(reference, block, renderOptions.bisulfiteContext);
+            bisinfo = new BisulfiteBaseInfo(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         }
 
         // Loop through base pair coordinates

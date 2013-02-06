@@ -338,7 +338,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlock[1];
-            alignmentBlocks[0] = new AlignmentBlock(getStart(), readBases, readBaseQualities, this);
+            alignmentBlocks[0] = new AlignmentBlock(getStart(), readBases, readBaseQualities);
             return;
         }
 
@@ -460,7 +460,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }
 
-    private AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
+    private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
                                                byte[] readBaseQualities,
                                                short[] readRepresentativeCounts, int blockStart,
                                                int fromIdx, int nBases, boolean checkNBasesAvailable){
@@ -499,9 +499,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         AlignmentBlock block;
         if (fBlockBuilder != null) {
             block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities,
-                    fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases), this);
+                    fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
         } else {
-            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities, this);
+            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities);
         }
         if (readRepresentativeCounts != null) {
             block.setCounts(blockCounts);

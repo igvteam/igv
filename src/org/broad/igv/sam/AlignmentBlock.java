@@ -23,39 +23,32 @@ import java.util.List;
 
 public class AlignmentBlock {
 
-    private int start;
-    private byte[] bases;
-    public byte[] qualities;
-    private short[] counts;
+    protected int start;
+    protected byte[] bases;
+    public final byte[] qualities;
+    protected short[] counts;
 
     private boolean softClipped = false;
-    private Alignment baseAlignment = null;
 
-    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
+    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities) {
 
-        return new AlignmentBlock(start, bases, qualities, baseAlignment);
+        return new AlignmentBlock(start, bases, qualities);
     }
 
-    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext, Alignment baseAlignment) {
-        return new AlignmentBlockFS(start, bases, qualities, fContext, baseAlignment);
+    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        return new AlignmentBlockFS(start, bases, qualities, fContext);
     }
 
-    protected AlignmentBlock(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
+    protected AlignmentBlock(int start, byte[] bases, byte[] qualities) {
         this.start = start;
         this.bases = bases;
-        this.baseAlignment = baseAlignment;
         if (qualities == null || qualities.length < bases.length) {
             this.qualities = new byte[bases.length];
             Arrays.fill(this.qualities, (byte) 126);
         } else {
             this.qualities = qualities;
         }
-
         this.counts = null;
-    }
-
-    public Alignment getBaseAlignment() {
-        return baseAlignment;
     }
 
     public boolean contains(int position) {
@@ -166,6 +159,7 @@ public class AlignmentBlock {
                     MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq, quals);
                     mismatchBlocks.add(curMMBlock);
                     mismatches = null;
+                    qualities = null;
                     lastMMBlockStart = -1;
                 }
             }else{
@@ -182,15 +176,10 @@ public class AlignmentBlock {
         return mismatchBlocks;
     }
 
-    public static class MismatchBlock {
-        public final int start;
-        public final byte[] bases;
-        public final byte[] qualities;
+    public static class MismatchBlock extends AlignmentBlock{
 
         private MismatchBlock(int start, byte[] bases, byte[] qualities){
-            this.start = start;
-            this.bases = bases;
-            this.qualities = qualities;
+            super(start, bases, qualities);
         }
 
     }

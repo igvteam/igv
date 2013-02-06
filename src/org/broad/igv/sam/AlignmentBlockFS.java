@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
 /**
@@ -11,8 +22,8 @@ public class AlignmentBlockFS extends AlignmentBlock {
 
     private FlowSignalContext fContext = null;
 
-    protected AlignmentBlockFS(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext, Alignment baseAlignment) {
-        super(start, bases, qualities, baseAlignment);
+    protected AlignmentBlockFS(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        super(start, bases, qualities);
         if (fContext != null && fContext.getNrSignals() == bases.length) {
             this.fContext = fContext;
         }

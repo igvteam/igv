@@ -1,11 +1,22 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 /**
  * 
  */
 package org.broad.igv.sam;
 
-import java.awt.Color;
-
 import org.broad.igv.sam.AlignmentTrack.BisulfiteContext;
+
+import java.awt.*;
 
 /**
  * @author benb
@@ -23,12 +34,13 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 
     /**
 	 * @param inReference
+     * @param baseAlignment
 	 * @param block
 	 * @param bisulfiteContext
 	 */
-	public BisulfiteBaseInfoNOMeseq(byte[] inReference,  AlignmentBlock block,
+	public BisulfiteBaseInfoNOMeseq(byte[] inReference, Alignment baseAlignment, AlignmentBlock block,
 			BisulfiteContext bisulfiteContext) {
-		super(inReference,  block, bisulfiteContext);
+		super(inReference, baseAlignment, block, bisulfiteContext);
 	}
 
 
