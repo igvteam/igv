@@ -856,12 +856,10 @@ public class IGV {
 
 
     final public void doRefresh() {
-
         contentPane.getMainPanel().revalidate();
         mainFrame.repaint();
         //getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
-
     }
 
     final public void refreshCommandBar() {
@@ -1574,6 +1572,7 @@ public class IGV {
     public void addTracks(List<Track> tracks, PanelName panelName){
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
+        doRefresh();
     }
 
     /**
