@@ -16,16 +16,20 @@
 package org.broad.igv.sam;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.broad.igv.feature.genome.Genome;
 
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class AlignmentBlock {
 
-    protected int start;
-    protected byte[] bases;
+    private String chr;
+    private int start;
+    private byte[] bases;
+    private int length = -1;
     public byte[] qualities;
     protected short[] counts;
 
@@ -33,25 +37,31 @@ public class AlignmentBlock {
 
     private SoftReference<byte[]> softBases;
     private SoftReference<byte[]> softQualities;
-    private byte[] reference;
+    private WeakReference<byte[]> weakRefSeq;
 
     /**
      * We save space by only storing the mismatches to the reference
      */
     private List<MismatchBlock> mismatches;
 
-    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities) {
+    /**
+     * The reference genome we store mismatches to
+     */
+    private Genome genome;
 
-        return new AlignmentBlock(start, bases, qualities);
+    public static AlignmentBlock getInstance(String chr, int start, byte[] bases, byte[] qualities) {
+        return new AlignmentBlock(chr, start, bases, qualities);
     }
 
-    public static AlignmentBlock getInstance(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        return new AlignmentBlockFS(start, bases, qualities, fContext);
+    public static AlignmentBlock getInstance(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        return new AlignmentBlockFS(chr, start, bases, qualities, fContext);
     }
 
-    protected AlignmentBlock(int start, byte[] bases, byte[] qualities) {
+    protected AlignmentBlock(String chr, int start, byte[] bases, byte[] qualities) {
+        this.chr = chr;
         this.start = start;
         this.bases = bases;
+        this.length = bases.length;
         if (qualities == null || qualities.length < bases.length) {
             this.qualities = new byte[bases.length];
             Arrays.fill(this.qualities, (byte) 126);
@@ -70,6 +80,7 @@ public class AlignmentBlock {
         if(bases != null) return bases;
         byte[] sbases = softBases.get();
         if(sbases == null){
+            byte[] reference = getReferenceSequence();
             sbases = Arrays.copyOf(reference, reference.length);
             for(MismatchBlock mismatchBlock: this.mismatches){
                 System.arraycopy(mismatchBlock.bases, 0, sbases, mismatchBlock.start - start, mismatchBlock.bases.length);
@@ -79,14 +90,17 @@ public class AlignmentBlock {
         return sbases;
     }
 
-    public int getLength() {
-        if(bases != null) {
-            return bases.length;
-        }else if(reference != null) {
-            return reference.length;
-        }else{
-            throw new IllegalStateException("Have no bases or reference");
+    private byte[] getReferenceSequence() {
+        byte[] refSeq = weakRefSeq.get();
+        if(refSeq == null){
+            refSeq = genome.getSequence(this.chr, getStart(), getEnd());
+            weakRefSeq = new WeakReference<byte[]>(refSeq);
         }
+        return refSeq;
+    }
+
+    public int getLength() {
+        return length;
     }
 
     public byte getBase(int offset) {
@@ -129,7 +143,7 @@ public class AlignmentBlock {
     }
 
     public int getEnd() {
-        return start + getBases().length;
+        return start + getLength();
     }
 
     public boolean isSoftClipped() {
@@ -218,16 +232,17 @@ public class AlignmentBlock {
 
     /**
      * Reduce so that we only store the mismatches between this block and reference
-     * @param refBases
+     * @param genome
      */
-    public void reduce(byte[] refBases){
+    public void reduce(Genome genome){
+        this.genome = genome;
+        byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
         mismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
-        this.reference = refBases;
         this.softBases = new SoftReference<byte[]>(this.bases);
         this.softQualities = new SoftReference<byte[]>(this.qualities);
+        this.weakRefSeq = new WeakReference<byte[]>(refBases);
         this.bases = null;
         qualities = null;
-        counts = null;
     }
 
 

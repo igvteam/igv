@@ -22,8 +22,8 @@ public class AlignmentBlockFS extends AlignmentBlock {
 
     private FlowSignalContext fContext = null;
 
-    protected AlignmentBlockFS(int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
-        super(start, bases, qualities);
+    protected AlignmentBlockFS(String chr, int start, byte[] bases, byte[] qualities, FlowSignalContext fContext) {
+        super(chr, start, bases, qualities);
         if (fContext != null && fContext.getNrSignals() == bases.length) {
             this.fContext = fContext;
         }

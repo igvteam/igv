@@ -290,7 +290,7 @@ public class GobyAlignment implements Alignment {
             bases[i] = (byte) softClippedBasesLeft.charAt(i);
             scores[i] = hasSoftClippedQuality ? softClippedQuality[i] : readQualScores[j++];
         }
-        final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(position,
+        final AlignmentBlock alignmentBlock = AlignmentBlock.getInstance(getChr(), position,
                 bases,
                 scores);
         alignmentBlock.setSoftClipped(true);
@@ -361,11 +361,11 @@ public class GobyAlignment implements Alignment {
                         leftScores = leftScores.subList(0, deletionPosition);
                         rightScores = rightScores.subList(deletionPosition, rightScores.size());
 
-                        AlignmentBlock left = AlignmentBlock.getInstance(block.getStart(),
+                        AlignmentBlock left = AlignmentBlock.getInstance(getChr(), block.getStart(),
                                 leftBases.toByteArray(new byte[leftBases.size()]),
                                 leftScores.toByteArray(new byte[leftScores.size()]));
 
-                        AlignmentBlock right = AlignmentBlock.getInstance(block.getStart() + leftBases.size()
+                        AlignmentBlock right = AlignmentBlock.getInstance(getChr(), block.getStart() + leftBases.size()
                                 + var.getFrom().length(),
                                 rightBases.toByteArray(new byte[rightBases.size()]),
                                 rightScores.toByteArray(new byte[rightScores.size()]));
@@ -391,7 +391,7 @@ public class GobyAlignment implements Alignment {
     private int addBlock(ObjectArrayList<AlignmentBlock> blocks, int start, ByteArrayList bases,
                          ByteArrayList scores) {
 
-        blocks.add(AlignmentBlock.getInstance(start,
+        blocks.add(AlignmentBlock.getInstance(getChr(), start,
                 bases.toByteArray(new byte[bases.size()]),
                 scores.toByteArray(new byte[scores.size()])));
         start += bases.size();

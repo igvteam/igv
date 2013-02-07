@@ -741,11 +741,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             bisinfo = new BisulfiteBaseInfo(reference, baseAlignment, block, renderOptions.bisulfiteContext);
         }
 
-        //Reduce so we don't need to store all bases, just mismatches
-        if(!showAllBases && !haveMismatches){
-            block.reduce(reference);
-        }
-
         if(!haveMismatches){
             //If we don't have the mismatches, we create a dummy mismatch block to loop over.
             //Same as looping over overall block

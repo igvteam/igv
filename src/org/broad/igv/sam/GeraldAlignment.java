@@ -36,7 +36,7 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         this.chr = chr;
         this.insertions = new AlignmentBlock[0];
         this.alignmentBlocks = new AlignmentBlock[1];
-        this.alignmentBlocks[0] = new AlignmentBlock(start, reads, qualities);
+        this.alignmentBlocks[0] = new AlignmentBlock(getChr(), start, reads, qualities);
         this.start = start;
         this.end = start + reads.length;
     }

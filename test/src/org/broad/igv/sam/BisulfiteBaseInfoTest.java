@@ -28,7 +28,7 @@ public class BisulfiteBaseInfoTest {
         byte [] ref = {(byte) 'C', (byte) 'G'};
         byte [] read = {(byte) 'C', (byte) 'G'};
         TestAlignment testAlignment = new TestAlignment();
-        AlignmentBlock block = new AlignmentBlock(0, read, null);
+        AlignmentBlock block = new AlignmentBlock("", 0, read, null);
         BisulfiteBaseInfo bbi = new BisulfiteBaseInfo(ref, testAlignment, block, context);
 
     }

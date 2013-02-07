@@ -338,7 +338,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlock[1];
-            alignmentBlocks[0] = new AlignmentBlock(getStart(), readBases, readBaseQualities);
+            alignmentBlocks[0] = new AlignmentBlock(getChr(), getStart(), readBases, readBaseQualities);
             return;
         }
 
@@ -415,7 +415,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 if (operatorIsMatch(showSoftClipped, op.operator)) {
 
                     AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, blockStart, fromIdx, op.nBases, true);
+                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, true);
 
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
@@ -438,7 +438,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     gapTypes[gapIdx++] = ZERO_GAP;
 
                     AlignmentBlock block = buildAlignmentBlock(fBlockBuilder, readBases, readBaseQualities,
-                            readRepresentativeCounts, blockStart, fromIdx, op.nBases, false);
+                            readRepresentativeCounts, getChr(), blockStart, fromIdx, op.nBases, false);
 
                     insertions[insertionIdx++] = block;
 
@@ -462,7 +462,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     private static AlignmentBlock buildAlignmentBlock(FlowSignalContextBuilder fBlockBuilder, byte[] readBases,
                                                byte[] readBaseQualities,
-                                               short[] readRepresentativeCounts, int blockStart,
+                                               short[] readRepresentativeCounts, String chr, int blockStart,
                                                int fromIdx, int nBases, boolean checkNBasesAvailable){
 
         byte[] blockBases = new byte[nBases];
@@ -498,10 +498,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         AlignmentBlock block;
         if (fBlockBuilder != null) {
-            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities,
+            block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities,
                     fBlockBuilder.getFlowSignalContext(readBases, fromIdx, nBases));
         } else {
-            block = AlignmentBlock.getInstance(blockStart, blockBases, blockQualities);
+            block = AlignmentBlock.getInstance(chr, blockStart, blockBases, blockQualities);
         }
         if (readRepresentativeCounts != null) {
             block.setCounts(blockCounts);
@@ -775,16 +775,24 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public void finish() {
         super.finish();
         SAMFileSource source = this.getFileSource();
-        if (DEFAULT_LAZY_LOAD && source != null) {
-            //Check that we can reload the record before getting rid of it.
-            //SAMTextReader doesn't support this, for instance
-            SAMFileSpan span = source.getFilePointer();
-            try{
-                SAMRecordIterator iter = source.getReader().iterator(span);
-                this.record = null;
-                //this.readSequence = null;
-            }catch(Exception e){
-                this.fileSource = null;
+        if (DEFAULT_LAZY_LOAD) {
+
+            if(source != null){
+                //Check that we can reload the record before getting rid of it.
+                //SAMTextReader doesn't support this, for instance
+                SAMFileSpan span = source.getFilePointer();
+                try{
+                    SAMRecordIterator iter = source.getReader().iterator(span);
+                    this.record = null;
+
+                }catch(Exception e){
+                    this.fileSource = null;
+                }
+            }
+
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            for(AlignmentBlock block: alignmentBlocks){
+                block.reduce(genome);
             }
         }
     }
