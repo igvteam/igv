@@ -15,7 +15,6 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Test;
 
 import java.util.Iterator;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -47,15 +46,15 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                 int end = block.getEnd();
                 byte[] refSeq = genome.getSequence(chr, start, end);
 
-                List<AlignmentBlock.MismatchBlock> mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases(), block.getQualities());
+                AlignmentBlock.MismatchBlock[] mismatchBlocks = AlignmentBlock.createMismatchBlocks(start, refSeq, block.getBases(), block.getQualities());
                 AlignmentBlock.MismatchBlock nextBlock = null;
                 int blockInd = 0;
                 int nextBlockStart = Integer.MAX_VALUE;
                 int nextBlockEnd = Integer.MIN_VALUE;
                 int mmIdx = 0;
 
-                if(mismatchBlocks.size() > 0){
-                    nextBlock = mismatchBlocks.get(blockInd++);
+                if(mismatchBlocks.length > 0){
+                    nextBlock = mismatchBlocks[blockInd++];
                     nextBlockStart = nextBlock.start;
                     nextBlockEnd = nextBlockStart + nextBlock.bases.length;
                 }
@@ -68,8 +67,8 @@ public class AlignmentBlockTest extends AbstractHeadlessTest{
                     if(loc >= nextBlockStart && loc < nextBlockEnd){
                         assertEquals(base, nextBlock.bases[mmIdx++]);
                     }else if(loc == nextBlockEnd){
-                        if(blockInd < mismatchBlocks.size()){
-                            nextBlock = mismatchBlocks.get(blockInd++);
+                        if(blockInd < mismatchBlocks.length){
+                            nextBlock = mismatchBlocks[blockInd++];
                             nextBlockStart = nextBlock.start;
                             nextBlockEnd = nextBlockStart + nextBlock.bases.length;
                             mmIdx = 0;

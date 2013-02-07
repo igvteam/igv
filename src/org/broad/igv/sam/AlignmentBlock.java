@@ -18,8 +18,7 @@ package org.broad.igv.sam;
 import org.apache.commons.lang.ArrayUtils;
 import org.broad.igv.feature.genome.Genome;
 
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,14 +34,14 @@ public class AlignmentBlock {
 
     private boolean softClipped = false;
 
-    private SoftReference<byte[]> softBases;
-    private SoftReference<byte[]> softQualities;
-    private WeakReference<byte[]> weakRefSeq;
+    private Reference<byte[]> softBases;
+    private Reference<byte[]> softQualities;
+    private Reference<byte[]> softRefSeq;
 
     /**
      * We save space by only storing the mismatches to the reference
      */
-    private List<MismatchBlock> mismatches;
+    private MismatchBlock[] mismatches;
 
     /**
      * The reference genome we store mismatches to
@@ -78,25 +77,26 @@ public class AlignmentBlock {
 
     public byte[] getBases() {
         if(bases != null) return bases;
-        byte[] sbases = softBases.get();
+        byte[] sbases = null;//softBases.get();
         if(sbases == null){
             byte[] reference = getReferenceSequence();
             sbases = Arrays.copyOf(reference, reference.length);
             for(MismatchBlock mismatchBlock: this.mismatches){
                 System.arraycopy(mismatchBlock.bases, 0, sbases, mismatchBlock.start - start, mismatchBlock.bases.length);
             }
-            softBases = new SoftReference<byte[]>(sbases);
+            //softBases = new SoftReference<byte[]>(sbases);
         }
         return sbases;
     }
 
     private byte[] getReferenceSequence() {
-        byte[] refSeq = weakRefSeq.get();
-        if(refSeq == null){
-            refSeq = genome.getSequence(this.chr, getStart(), getEnd());
-            weakRefSeq = new WeakReference<byte[]>(refSeq);
-        }
-        return refSeq;
+        return genome.getSequence(this.chr, getStart(), getEnd());
+//        byte[] refSeq = softRefSeq.get();
+//        if(refSeq == null){
+//            refSeq = genome.getSequence(this.chr, getStart(), getEnd());
+//            softRefSeq = new WeakReference<byte[]>(refSeq);
+//        }
+//        return refSeq;
     }
 
     public int getLength() {
@@ -118,14 +118,14 @@ public class AlignmentBlock {
 
     public byte[] getQualities() {
         if(qualities != null) return qualities;
-        byte[] squals = softQualities.get();
+        byte[] squals = null;//softQualities.get();
         if(squals == null){
             squals = new byte[getLength()];
             Arrays.fill(squals, (byte) 126);
             for(MismatchBlock mismatchBlock: this.mismatches){
                 System.arraycopy(mismatchBlock.qualities, 0, squals, mismatchBlock.start - start, mismatchBlock.qualities.length);
             }
-            softQualities = new SoftReference<byte[]>(squals);
+            //softQualities = new SoftReference<byte[]>(squals);
         }
         return squals;
     }
@@ -183,11 +183,18 @@ public class AlignmentBlock {
         return sb.toString();
     }
 
-    static List<MismatchBlock> createMismatchBlocks(int start, byte[] refBases, byte[] readBases, byte[] readQualities){
+    /**
+     *
+     * @param start
+     * @param refBases
+     * @param readBases
+     * @param readQualities
+     * @return
+     */
+    static MismatchBlock[] createMismatchBlocks(int start, byte[] refBases, byte[] readBases, byte[] readQualities){
         List<MismatchBlock> mismatchBlocks = new ArrayList<MismatchBlock>();
         List<Byte> mismatches = null;
         List<Byte> qualities = null;
-        assert readBases.length == refBases.length;
         int lastMMBlockStart = -1;
         for(int ii = 0; ii <= readBases.length; ii++){
 
@@ -196,7 +203,9 @@ public class AlignmentBlock {
             boolean atEnd = false;
             if(ii < readBases.length){
                 readBase = readBases[ii];
-                refBase = refBases[ii];
+                //If reference is cutoff, just fill in with read
+                if(ii < refBases.length) refBase = refBases[ii];
+                else refBase = readBase;
             }else{
                 atEnd = true;
             }
@@ -204,8 +213,8 @@ public class AlignmentBlock {
             if(atEnd || AlignmentUtils.compareBases(refBase, readBase)){
                 //Finish off last mismatch
                 if(mismatches != null){
-                    byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[0]));
-                    byte[] quals = ArrayUtils.toPrimitive(qualities.toArray(new Byte[0]));
+                    byte[] seq = ArrayUtils.toPrimitive(mismatches.toArray(new Byte[mismatches.size()]));
+                    byte[] quals = ArrayUtils.toPrimitive(qualities.toArray(new Byte[qualities.size()]));
                     MismatchBlock curMMBlock = new MismatchBlock(lastMMBlockStart, seq, quals);
                     mismatchBlocks.add(curMMBlock);
                     mismatches = null;
@@ -222,27 +231,38 @@ public class AlignmentBlock {
                 qualities.add(readQualities[ii]);
             }
         }
-
-        return mismatchBlocks;
+        return mismatchBlocks.toArray(new MismatchBlock[mismatchBlocks.size()]);
     }
 
-    public List<MismatchBlock> getMismatches() {
+    public MismatchBlock[] getMismatches() {
         return mismatches;
     }
 
     /**
      * Reduce so that we only store the mismatches between this block and reference
+     * This may do nothing, if there are too many mismatches we keep the original
      * @param genome
      */
     public void reduce(Genome genome){
         this.genome = genome;
         byte[] refBases = genome.getSequence(this.chr, getStart(), getEnd());
-        mismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
-        this.softBases = new SoftReference<byte[]>(this.bases);
-        this.softQualities = new SoftReference<byte[]>(this.qualities);
-        this.weakRefSeq = new WeakReference<byte[]>(refBases);
-        this.bases = null;
-        qualities = null;
+        MismatchBlock[] tmpmismatches = AlignmentBlock.createMismatchBlocks(getStart(), refBases, bases, qualities);
+        if(tmpmismatches.length < (length / 5)) mismatches = tmpmismatches;
+        if(mismatches != null){
+//            this.softBases = new WeakReference<byte[]>(this.bases);
+//            this.softQualities = new WeakReference<byte[]>(this.qualities);
+//            this.softRefSeq = new WeakReference<byte[]>(refBases);
+            this.bases = null;
+            this.qualities = null;
+        }
+    }
+
+    /**
+     * Whether this AlignmentBlock has non-null bases
+     * @return
+     */
+    public boolean hasBases() {
+        return this.bases != null || this.softBases != null;
     }
 
 

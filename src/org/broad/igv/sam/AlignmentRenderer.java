@@ -699,11 +699,10 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         final byte[] reference = isSoftClipped ? softClippedReference : genome.getSequence(chr, start, end);
 
-        byte[] read = block.getBases();
-        List<AlignmentBlock.MismatchBlock> mismatchBlocks = block.getMismatches();
+        AlignmentBlock.MismatchBlock[] mismatchBlocks = block.getMismatches();
 
         boolean haveMismatches = (mismatchBlocks != null);
-        boolean haveBases = (read != null && read.length > 0) || haveMismatches;
+        boolean haveBases = (block.hasBases() && block.getLength() > 0) || haveMismatches;
 
         if (!haveBases || reference == null) {
             return;
@@ -744,29 +743,35 @@ public class AlignmentRenderer implements FeatureRenderer {
         if(!haveMismatches){
             //If we don't have the mismatches, we create a dummy mismatch block to loop over.
             //Same as looping over overall block
-            mismatchBlocks = new ArrayList<AlignmentBlock.MismatchBlock>();
-            mismatchBlocks.add(new AlignmentBlock.MismatchBlock(start, read, block.getQualities()));
+            mismatchBlocks = new AlignmentBlock.MismatchBlock[1];
+            byte[] read = block.getBases();
+            mismatchBlocks[0] = new AlignmentBlock.MismatchBlock(start, read, block.getQualities());
         }
 
         for(AlignmentBlock.MismatchBlock mismatchBlock: mismatchBlocks){
             int curStart = mismatchBlock.start;
             int curEnd = curStart + mismatchBlock.bases.length;
+            byte[] read = mismatchBlock.bases;
 
             for (int loc = curStart; loc < curEnd; loc++) {
 
                 // Index into read array,  just the genomic location offset by
                 // the start of this block
-                int idx = loc - start;
+                int readIdx = loc - curStart;
+                int refIdx = loc - start;
 
-                // Is this base a mismatch?
-                boolean misMatch = haveMismatches || AlignmentUtils.isMisMatch(reference, read, isSoftClipped, idx);
+                //This code is really confusing and should be refactored, but I believe it's correct.
+                //refIdx == readIdx iff haveMismatches == false
+                // if haveMismatches == true the second half is never called
+                //because we know it's a mismatch
+                boolean misMatch = haveMismatches || AlignmentUtils.isMisMatch(reference, read, isSoftClipped, refIdx);
 
                 if (showAllBases || (!bisulfiteMode && misMatch) ||
-                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
-                    char c = (char) read[idx];
+                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(refIdx))))) {
+                    char c = (char) read[readIdx];
 
                     Color color = Globals.nucleotideColors.get(c);
-                    if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
+                    if (bisulfiteMode) color = bisinfo.getDisplayColor(refIdx);
                     if (color == null) {
                         color = Color.black;
                     }
@@ -776,11 +781,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                         color = getShadedColor(qual, color, alignmentColor, prefs);
                     } else if (ShadeBasesOption.FLOW_SIGNAL_DEVIATION_READ == shadeBasesOption || ShadeBasesOption.FLOW_SIGNAL_DEVIATION_REFERENCE == shadeBasesOption) {
                         if (block.hasFlowSignals()) {
-                            color = getFlowSignalColor(reference, read, misMatch, genome, block, chr, start, loc, idx, shadeBasesOption, alignmentColor, color);
+                            color = getFlowSignalColor(reference, misMatch, genome, block, chr, start, loc, refIdx, shadeBasesOption, alignmentColor, color);
                         }
                     }
 
-                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
+                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(refIdx) : 0;
 
                     // If there is room for text draw the character, otherwise
                     // just draw a rectangle to represent the
@@ -793,7 +798,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         continue;
                     }
 
-                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(refIdx);
                     drawBase(g, color, c, pX, pY, dX, dY, bisulfiteMode, bisstatus);
                 }
             }
@@ -837,7 +842,6 @@ public class AlignmentRenderer implements FeatureRenderer {
      * length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
      *
      * @param reference
-     * @param read
      * @param misMatch
      * @param genome
      * @param block
@@ -850,7 +854,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param color
      * @return
      */
-    private Color getFlowSignalColor(byte[] reference, byte[] read, boolean misMatch, Genome genome,
+    private Color getFlowSignalColor(byte[] reference, boolean misMatch, Genome genome,
                                      AlignmentBlock block, String chr, int start, int loc, int idx,
                                      ShadeBasesOption shadeBasesOption,
                                      Color alignmentColor, Color color) {
@@ -863,7 +867,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             // an overcall/undercall situation.  Proper estimation of the reads observed versus expected homopolymer
             // length should use flow signal alignment (SamToFlowspace): https://github.com/iontorrent/Ion-Variant-Hunter
             if (!misMatch) {
-                final byte readbase = read[idx];
                 byte refbase = reference[idx];
                 int pos; // zero based
                 expectedFlowSignal = 100;
@@ -895,7 +898,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
         flowSignalDiff = flowSignalDiff * (maxQ - minQ) / 50;
         byte qual;
-        int pos = start + idx;
         if (Byte.MAX_VALUE < flowSignalDiff) {
             qual = Byte.MAX_VALUE;
         } else if (flowSignalDiff < Byte.MIN_VALUE) {

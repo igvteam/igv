@@ -773,7 +773,7 @@ public class GobyAlignment implements Alignment {
         for (AlignmentBlock block : getAlignmentBlocks()) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
-                byte base = block.getBases()[offset];
+                byte base = block.getBase(offset);
                 return base;
             }
         }

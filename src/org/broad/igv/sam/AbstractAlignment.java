@@ -172,7 +172,7 @@ public abstract class AbstractAlignment implements Alignment {
                         buf = new StringBuffer();
                         buf.append("Insertion: " + new String(block.getBases()) + "<br>");
                         buf.append("Base phred quality = ");
-                        for (offset = 0; offset < block.getBases().length; offset++) {
+                        for (offset = 0; offset < block.getLength(); offset++) {
                             byte quality = block.getQuality(offset);
                             if (0 < offset) {
                                 buf.append(",");
@@ -180,7 +180,7 @@ public abstract class AbstractAlignment implements Alignment {
                             buf.append(quality);
                         }
                         buf.append("<br>");
-                        for (offset = 0; offset < block.getBases().length; offset++) {
+                        for (offset = 0; offset < block.getLength(); offset++) {
                             byte base = block.getBase(offset);
                             buf.append((char) base + ": ");
                             bufAppendFlowSignals(block, buf, offset);

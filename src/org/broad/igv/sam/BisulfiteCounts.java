@@ -1,6 +1,16 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.sam;
 
-import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import org.broad.igv.feature.genome.Genome;
 
 import java.util.HashMap;
@@ -65,11 +75,11 @@ public class BisulfiteCounts {
                 int idx = flipRead ? (idxEnd - idxFw) : idxFw;
 
 
-                // Since we allow soft-cliping, the reference sequence can actually be shorter than the read.  Not sure
+                // Since we allow soft-clipping, the reference sequence can actually be shorter than the read.  Not sure
                 // what to do in this case,  just skip?
                 if (idx < 0 || idx >= reference.length) continue;
 
-                // The read base can be an equals sign, so change thet to the actual ref base
+                // The read base can be an equals sign, so change that to the actual ref base
                 byte refbase =  reference[idx];
 
 
