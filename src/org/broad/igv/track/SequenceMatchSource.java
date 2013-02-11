@@ -117,7 +117,7 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
      * @param chr
      * @param motif
      * @param posStart The 0-based offset from the beginning of the genome that the {@code sequence} is based
-     * @param sequence
+     * @param sequence The nucleotide sequence
      * @return
      */
     public static Iterator<Feature> search(String chr, String motif, int posStart, byte[] sequence){
@@ -165,7 +165,9 @@ public class SequenceMatchSource implements FeatureSource<Feature>{
 
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
-        return search(chr, this.motif, start, genome.getSequence(chr, start, end));
+        byte[] seq = genome.getSequence(chr, start, end);
+        if(seq == null) Collections.emptyList().iterator();
+        return search(chr, this.motif, start, seq);
     }
 
     @Override

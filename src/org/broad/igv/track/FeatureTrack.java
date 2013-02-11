@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -46,10 +47,14 @@ import java.util.*;
 import java.util.List;
 
 /**
+ * Track which displays features, typically showing regions of the genome
+ * in a qualitative way. Features are rendered using the specified FeatureRenderer.
+ * The gene track is an example of a feature track.
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
 @XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, SequenceMatchSource.class})
+@api
 public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
@@ -134,6 +139,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param name
      * @param source
      */
+    @api
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(id, name);
         init(source);

@@ -14,7 +14,8 @@ package org.broad.igv.ui;
 import org.broad.igv.dev.api.api;
 
 /**
- * Identifier for each panel
+ * Identifier for each track panel which is displayed
+ * in the IGV window
  * User: jacob
  * Date: 2013-Jan-31
  */

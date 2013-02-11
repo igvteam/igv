@@ -11,6 +11,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.track.FeatureTrack;
 
@@ -52,6 +53,7 @@ public interface Genome {
      * @param end  end position
      * @return  sequence, or null if not available
      */
+    @api
     byte[] getSequence(String chr, int start, int end);
 
     String getDisplayName();
