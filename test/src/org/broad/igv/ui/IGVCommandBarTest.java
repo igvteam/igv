@@ -11,14 +11,18 @@
 
 package org.broad.igv.ui;
 
+import com.google.common.eventbus.Subscribe;
 import org.broad.igv.feature.AminoAcidManager;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.event.ViewChange;
+import org.broad.igv.ui.panel.FrameManager;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.fest.swing.fixture.JTextComponentFixture;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+
+import javax.swing.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,9 +32,14 @@ import static org.junit.Assert.assertEquals;
  * User: jacob
  * Date: 2012/05/14
  */
-public class CommandBarTest extends AbstractHeadedTest {
+public class IGVCommandBarTest extends AbstractHeadedTest {
 
     private static FrameFixture frame;
+
+    //We use asynchronous events, and there are asserts in there
+    //Here we check that the events were actually dispatched and handled
+    private int expectedEvents = 0;
+    private int actualEvents = expectedEvents;
 
     /**
      * Because loading IGV takes so long, we only load it once per class.
@@ -50,6 +59,19 @@ public class CommandBarTest extends AbstractHeadedTest {
         //JComboBoxFixture chromoBox = frame.comboBox("chromosomeComboBox");
     }
 
+    @Before
+    public void setUp() throws Exception{
+        super.setUp();
+        this.actualEvents = 0;
+        this.expectedEvents = 0;
+    }
+
+    @After
+    public void tearDown() throws Exception{
+        assertEquals("Event handler not triggered properly", expectedEvents, actualEvents);
+        super.tearDown();
+    }
+
     /**
      * Basic test showing usage of FEST and checking combo box
      */
@@ -65,10 +87,15 @@ public class CommandBarTest extends AbstractHeadedTest {
         tstChromoNav("chr20");
     }
 
+    //Tacky state variable, but eh, it's just a test
+    private String enterText = null;
+
     private void tstChromoNav(String chromoText) throws Exception {
+        registerEventHandler(2);
+
         JTextComponentFixture searchFixture = frame.textBox("searchTextField");
         searchFixture.deleteText();
-        String enterText = chromoText;
+        enterText = chromoText;
 
         //Make sure search box has focus
         searchFixture.focus();
@@ -77,9 +104,31 @@ public class CommandBarTest extends AbstractHeadedTest {
 
         searchFixture.enterText(enterText);
         frame.button("goButton").click();
+    }
 
-        JComboBoxFixture comboBox = frame.comboBox("chromosomeComboBox");
-        comboBox.requireSelection(enterText);
+    private void registerEventHandler(int expectedEvents) {
+        this.expectedEvents += expectedEvents;
+        FrameManager.getDefaultFrame().getEventBus().register(this);
+    }
+
+    /**
+     * This is a little funny, we are actually responding to a spurious ChromosomeChangeCause
+     * sent when the dropdown changes
+     * @param e
+     */
+    @Subscribe
+    public void receiveChromoChange(ViewChange.ChromosomeChangeCause e){
+        if(e.source instanceof JComboBox){
+            actualEvents++;
+            JComboBoxFixture comboBox = frame.comboBox("chromosomeComboBox");
+            comboBox.requireSelection(enterText);
+        }else if(e.source instanceof SearchCommand){
+            actualEvents++;
+            assertEquals(enterText, e.chrName);
+        }else{
+            actualEvents = Integer.MIN_VALUE;
+            throw new AssertionError("Got a ChromosomeChangeCause event from unexpected source: " + e.source);
+        }
     }
 
     @Test

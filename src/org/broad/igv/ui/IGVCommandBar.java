@@ -883,7 +883,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if ((searchText != null) && (searchText.length() > 0)) {
             searchTextField.setText(searchText);
             (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
-            chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
+            //This is not necessary, since we receive a ViewChange.Result later
+            //chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
         }
 
         if (log.isDebugEnabled()) {
