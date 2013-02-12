@@ -246,7 +246,7 @@
     </fileset>
 
     <fileset dir="${testtmp.dir}" id="uifileset">
-        <include name="**/CommandBarTest.class"/>
+        <include name="**/IGVCommandBarTest.class"/>
         <include name="**/CommandExecutorTest.class"/>
         <include name="**/MainTest.class"/>
         <include name="**/IGVTestHeaded.class"/>
