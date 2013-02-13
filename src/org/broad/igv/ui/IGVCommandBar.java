@@ -841,8 +841,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        //LRUCache.clearCaches();
         IGV.getInstance().doRefresh();
+        System.gc();
     }
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
