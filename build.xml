@@ -38,6 +38,7 @@
     <path id="@jars">
         <fileset dir="${lib.dir}">
             <include name="*.jar"/>
+            <exclude name="appbundler*.jar"/>
         </fileset>
     </path>
 
@@ -66,6 +67,7 @@
             </patternset>
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
+                <exclude name="appbundler*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
                 <exclude name="**/goby-io-igv.jar"/>
                 <exclude name="**/*AppleJavaExtensions.jar"/>
@@ -173,7 +175,7 @@
             <root classname="${main-class}"/>
         </classfileset>
 
-        <property name="class-path" value="batic-codec.jar goby-io-igv.jar"/>
+        <property name="class-path" value="batik-codec.jar goby-io-igv.jar"/>
 
         <build includedFileset="files"/>
     </target>
@@ -351,5 +353,31 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
         </copy>
+    </target>
+
+    <!-- Build MacOS native app-->
+    <!-- Define the appbundler task -->
+    <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${lib.dir}appbundler-1.0.jar"/>
+
+    <!-- Create the app bundle -->
+    <target name="bundle" depends="build-all">
+        <bundleapp outputdirectory="${dist.dir}"
+                   name="${ant.project.name}"
+                   displayname="${ant.project.name}"
+                   identifier="${main-class}"
+                   shortversion="${version}"
+                   applicationCategory="public.app-category.developer-tools"
+                   mainclassname="${main-class}">
+            <classpath dir="${dist.dir}">
+                <include name="${jar.name}"/>
+                <include name="batik-codec.jar"/>
+                <include name="goby-io-igv.jar"/>
+            </classpath>
+            <!--librarypath dir="${lib.dir}">
+                <include name="*.jar"/>
+                <exclude name="appbundler*.jar"/>
+            </librarypath-->
+            <option value="-Dapple.laf.useScreenMenuBar=true"/>
+        </bundleapp>
     </target>
 </project>
