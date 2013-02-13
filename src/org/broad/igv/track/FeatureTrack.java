@@ -35,6 +35,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.MarshalException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -996,11 +997,22 @@ public class FeatureTrack extends AbstractTrack {
             NodeList childNodes = node.getChildNodes();
             for(int ii= 0; ii < childNodes.getLength(); ii++){
                 Node child = childNodes.item(ii);
-                if(child.getNodeName().equalsIgnoreCase(PLUGIN_SOURCE)){
+                String nodeName = child.getNodeName();
+                if(nodeName.contains("#text"))continue;
+
+                if(nodeName.equalsIgnoreCase(PLUGIN_SOURCE)){
                     source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
-                }else if(child.getNodeName().equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)){
+                }else if(nodeName.equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)){
                     FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, SequenceMatchSource.class).getValue();
                     source = new CachingFeatureSource(rawSource);
+                }else{
+                    try{
+                        FeatureSource newSource = (FeatureSource) IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, Class.forName(nodeName)).getValue();
+                        source = newSource;
+                    }catch(Exception e){
+                        //Lots can go wrong, it just means this isn't a FeatureSource
+                        //Probably not an error
+                    }
                 }
             }
         }
@@ -1017,7 +1029,9 @@ public class FeatureTrack extends AbstractTrack {
         if(rawSource instanceof CachingFeatureSource){
             rawSource = ((CachingFeatureSource) rawSource).getSource();
         }
-        //If this grows any more we should more properly implement marshalling among feature sources
+
+
+        //We apply special treatment for a few classes
         if(rawSource instanceof PluginSource){
             JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
                     (PluginSource) rawSource);
@@ -1026,6 +1040,16 @@ public class FeatureTrack extends AbstractTrack {
             JAXBElement element = new JAXBElement<SequenceMatchSource>(new QName("", SEQUENCE_MATCH_SOURCE), SequenceMatchSource.class,
                     (SequenceMatchSource) rawSource);
             m.marshal(element, trackElement);
+        }else{
+            //Users can write their own FeatureSources, we tag with the fully qualified class name
+            Class<? extends FeatureSource> srcClazz = rawSource.getClass();
+            JAXBElement element = new JAXBElement(new QName("", srcClazz.getName()), srcClazz, rawSource);
+            try{
+                m.marshal(element, trackElement);
+            }catch(MarshalException e){
+                //This happens if the source is not marshallable
+                //Many of our classes can't, and that's not an error
+            }
         }
     }
 
