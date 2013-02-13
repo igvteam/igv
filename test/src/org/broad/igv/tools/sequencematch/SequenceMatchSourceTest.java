@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.track;
+package org.broad.igv.tools.sequencematch;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.tribble.Feature;

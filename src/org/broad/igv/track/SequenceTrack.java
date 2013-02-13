@@ -33,7 +33,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 
 
 /**
@@ -92,12 +91,6 @@ public class SequenceTrack extends AbstractTrack {
             }
 
         }
-    }
-
-    private Image getImageIcon() {
-        String path = "resources/thick_helix.png";
-        URL url = getClass().getResource(path);
-        return new ImageIcon(url).getImage();
     }
 
     private void drawArrow(Graphics2D graphics) {

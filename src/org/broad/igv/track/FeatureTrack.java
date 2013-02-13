@@ -21,6 +21,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
+import org.broad.igv.tools.sequencematch.SequenceMatchSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;

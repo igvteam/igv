@@ -13,9 +13,7 @@
  * Created by JFormDesigner on Tue Jan 29 15:22:45 EST 2013
  */
 
-package org.broad.igv.tools.ui;
-
-import org.broad.igv.track.SequenceMatchSource;
+package org.broad.igv.tools.sequencematch;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

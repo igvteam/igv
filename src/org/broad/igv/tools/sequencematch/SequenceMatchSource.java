@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.track;
+package org.broad.igv.tools.sequencematch;
 
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.BasicFeature;
@@ -20,7 +20,9 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.session.SessionXmlAdapters;
 import org.broad.igv.session.SubtlyImportant;
-import org.broad.igv.tools.ui.SequenceMatchDialog;
+import org.broad.igv.track.FeatureSource;
+import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.util.ParsingUtils;
@@ -52,7 +54,7 @@ import java.util.regex.Pattern;
  * Date: 2013-Jan-22
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class SequenceMatchSource implements FeatureSource<Feature>{
+public class SequenceMatchSource implements FeatureSource<Feature> {
 
     private static Map<String, String> letterToRegex;
     private static Set<String> validInputStrings;
