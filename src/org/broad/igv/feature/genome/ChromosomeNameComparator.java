@@ -96,11 +96,19 @@ public class ChromosomeNameComparator implements Comparator<String> {
             if (alphaCmp != 0) {
                 return alphaCmp;
             } else {
-                int dig1 = Integer.parseInt(chr0.substring(range0[0], range0[1]));
-                int dig2 = Integer.parseInt(chr1.substring(range1[0], range1[1]));
-                int diff = dig1 - dig2;
-                if (diff != 0) {
-                    return diff;
+                long dig1 = 0;
+                long dig2 = 0;
+                try {
+                    dig1 = Long.parseLong(chr0.substring(range0[0], range0[1]));
+                    dig2 = Long.parseLong(chr1.substring(range1[0], range1[1]));
+                } catch (NumberFormatException e) {
+                    // This can occur if numbers are too large for Long.  In this case revert to alpha compare
+                    return chr0.compareTo(chr1);
+                }
+                if (dig1 > dig2) {
+                    return 1;
+                } else if (dig1 < dig2) {
+                    return -1;
                 } else {
                     return compare(chr0.substring(range0[1]), chr1.substring(range1[1]));
                 }
