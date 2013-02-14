@@ -271,18 +271,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         String id = helper.getID(attributes);
         String[] parentIds = helper.getParentIds(attributes, attributeString);
 
-        if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
-                parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
-
-            //Somewhat tacky, but we need to store the phase somewhere in the feature
-            String phaseString = tokens[7].trim();
-            //String old = attributes.put(GFFFeatureSource.PHASE_STRING, phaseString);
-            //if(old != null){
-            //    log.debug("phase string attribute was overwritten internally; old value was: " + old);
-            //}
-        }
-
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
+
+
+        String phaseString = tokens[7].trim();
+        if(!phaseString.equals(".")){
+            int phaseNum = Integer.parseInt(phaseString);
+            f.setReadingFrame(phaseNum);
+        }
 
         f.setName(getName(attributes));
         f.setType(featureType);

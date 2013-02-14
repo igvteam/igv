@@ -35,7 +35,6 @@ public class Exon extends AbstractFeature implements IExon {
      * codon is number "1".
      */
     private int number;
-    private int readingFrame = -1;
 
     /**
      * Coding start position.  This is the leftmost position of the coding region, not neccessarily the 5'utr end
@@ -130,12 +129,6 @@ public class Exon extends AbstractFeature implements IExon {
         this.codingEnd = Math.min(getEnd(), codingEnd);
     }
 
-
-    public void setReadingFrame(int offset) {
-        this.readingFrame = offset;
-    }
-
-
     public void setPhase(int phase) {
         if (getStrand() == Strand.POSITIVE) {
             readingFrame = phase;
@@ -158,11 +151,6 @@ public class Exon extends AbstractFeature implements IExon {
 
     public int getCodingLength() {
         return utr ? 0 : Math.max(0, codingEnd - codingStart);
-    }
-
-
-    public int getReadingShift() {
-        return readingFrame;
     }
 
     public AminoAcidSequence getAminoAcidSequence(Genome genome) {

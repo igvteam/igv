@@ -570,7 +570,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             Rectangle aaRect = new Rectangle(pStart, yOffset - blockHeight / 2, 1, blockHeight);
 
             int aaSeqStartPosition = aaSequence.getStartPosition();
-            int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - exon.getReadingShift()) / 3);
+            int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - exon.getReadingFrame()) / 3);
             //calculated oddness or evenness of first amino acid. This is also done independently in SequenceRenderer
             boolean odd = (firstFullAcidIndex % 2) == 1;
 

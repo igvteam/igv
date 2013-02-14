@@ -13,6 +13,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
@@ -49,15 +50,10 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         }
     }
 
-    @Test
-    public void testGetAll() throws Exception {
-        String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/gene.sorted.gff3";
+    private List<Feature> getGeneFeatures(String filepath, String chr, int start, int end) throws Exception{
         TestUtils.createIndex(filepath);
 
         GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
-        String chr = "chr1";
-        int start = 0;
-        int end = Integer.MAX_VALUE / 2;
 
         Iterator<Feature> feats = source.getFeatures(chr, start, end);
         List<Feature> sourceFeats = new ArrayList<Feature>(2);
@@ -67,7 +63,19 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             assertEquals(chr, feat.getChr());
             sourceFeats.add(feat);
         }
+        return sourceFeats;
+    }
+
+    @Test
+    public void testGetAll() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "gff/gene.sorted.gff3";
+        String chr = "chr1";
+        int start = 0;
+        int end = Integer.MAX_VALUE / 2;
+        List<Feature> sourceFeats = getGeneFeatures(filepath, chr, start, end);
+
         assertEquals(2, sourceFeats.size());
+
 
         GFFParser parser = new GFFParser(filepath);
         List<FeatureTrack> tracks = parser.loadTracks(new ResourceLocator(filepath), genome);
@@ -122,6 +130,32 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         }
         assertEquals(2, geneCount);
         assertEquals(2, rnaCount);
+
+    }
+
+    @Test
+    public void testPhaseString() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/gene.sorted.gff3";
+        String chr = "chr1";
+        int start = 0;
+        int end = Integer.MAX_VALUE / 2;
+        List<Feature> sourceFeats = getGeneFeatures(filepath, chr, start, end);
+
+        String hasPhaseId = "LOC_Os01g01010.1:exon_1";
+        int expPhaseNum = 1;
+        boolean checkedHasPhase = false;
+
+        BasicFeature bf = (BasicFeature) sourceFeats.get(0);
+        for(Exon exon: bf.getExons()){
+            if(exon.getName().equals(hasPhaseId)){
+                checkedHasPhase = true;
+                assertEquals(expPhaseNum, exon.getReadingFrame());
+            }else{
+                assertEquals(-1, exon.getReadingFrame());
+            }
+        }
+
+        assertTrue(checkedHasPhase);
 
     }
 }

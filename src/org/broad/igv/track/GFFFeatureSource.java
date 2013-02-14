@@ -119,22 +119,13 @@ public class GFFFeatureSource extends TribbleFeatureSource {
             for (String pid : parentIds) {
 
                 Exon exon = new Exon(bf.getChr(), bf.getStart(), bf.getEnd(), bf.getStrand());
+                exon.setPhase(bf.getReadingFrame());
 
                 if(bf.getColor() != null) exon.setColor(bf.getColor());
 
-                String sPhase = bf.getAttributes().remove(PHASE_STRING);
                 exon.setAttributes(bf.getAttributes());
 
                 exon.setUTR(GFFCodec.utrTerms.contains(featureType));
-
-
-                if (sPhase != null) {
-                    int phase = parsePhase(sPhase);
-                    if (phase >= 0) {
-                        exon.setPhase(phase);
-
-                    }
-                }
 
                 exon.setName(bf.getName());
 
@@ -292,7 +283,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 } else {
                     exon.setCodingStart(cds.getStart());
                     exon.setCodingEnd(cds.getEnd());
-                    exon.setReadingFrame(cds.getReadingShift());
+                    exon.setReadingFrame(cds.getReadingFrame());
                 }
             }
 
@@ -378,7 +369,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 if (exon.contains(cds)) {
                     exon.setCodingStart(cds.getStart());
                     exon.setCodingEnd(cds.getEnd());
-                    exon.setReadingFrame(cds.getReadingShift());
+                    exon.setReadingFrame(cds.getReadingFrame());
                     foundExon = true;
                     break;
                 }
