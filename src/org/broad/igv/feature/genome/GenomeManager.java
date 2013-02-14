@@ -163,7 +163,7 @@ public class GenomeManager {
 
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new GenomeImpl(chr, name, sequence);
+        newGenome = new GenomeImpl(chr, name, sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
 
@@ -214,7 +214,7 @@ public class GenomeManager {
 
         FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
-        newGenome = new GenomeImpl(item.getId(), item.getDisplayableName(), sequence);
+        newGenome = new GenomeImpl(item.getId(), item.getDisplayableName(), sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
         return newGenome;

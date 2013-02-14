@@ -117,4 +117,15 @@ public class GenomeManagerTest extends AbstractHeadlessTest {
         assertEquals(end, seq.length);
     }
 
+    @Test
+    public void testLoadFastaOrdering() throws Exception{
+        String fastaPath = TestUtils.DATA_DIR + "fasta/out_order.fa";
+        TestUtils.createIndex(fastaPath);
+
+        Genome genome = GenomeManager.getInstance().loadGenome(fastaPath, null);
+        String[] chromos = {"chr5", "chr1"};
+
+        assertArrayEquals(chromos, genome.getAllChromosomeNames().toArray());
+    }
+
 }

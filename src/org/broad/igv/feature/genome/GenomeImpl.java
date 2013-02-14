@@ -55,10 +55,13 @@ public class GenomeImpl implements Genome {
     private FeatureTrack geneTrack;
     private String species;
 
-    public GenomeImpl(String id, String displayName, Sequence sequence) {
-        this(id, displayName, sequence, false);
-    }
-
+    /**
+     *
+     * @param id
+     * @param displayName
+     * @param sequence
+     * @param chromosOrdered Whether the chromosomes are already ordered. If false, they will be sorted.
+     */
     public GenomeImpl(String id, String displayName, Sequence sequence, boolean chromosOrdered) {
         this.id = id;
         this.displayName = displayName;

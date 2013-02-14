@@ -42,7 +42,7 @@ public class GenomeImplTest {
         //contigs into "small" and "large"
         String indexPath = TestUtils.DATA_DIR + "fasta/CE.cns.all.fa.fai";
         Sequence seq = new MockSequence(indexPath);
-        Genome genome = new GenomeImpl("GenomeImpleTest", "GenomeImplTest", seq);
+        Genome genome = new GenomeImpl("GenomeImpleTest", "GenomeImplTest", seq, false);
         List<String> actNames = genome.getAllChromosomeNames();
 
         String[] expNames = {"chr1", "chr2", "chr3", "chrX", "C121713571", "scaffold22502"};
