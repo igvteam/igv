@@ -270,12 +270,10 @@ public class GenomeManager {
 
         String sequencePath = genomeDescriptor.getSequenceLocation();
         Sequence sequence = null;
-        //We preserve ordering only for legacy genomes
         boolean chromosOrdered = false;
         if (sequencePath == null) {
             sequence = null;
         } else if (!isFasta) {
-            // Legacy genomes
             sequencePath = SequenceWrapper.checkSequenceURL(sequencePath);
             IGVSequence igvSequence = new IGVSequence(sequencePath);
             if (cytobandMap != null) {
@@ -289,6 +287,7 @@ public class GenomeManager {
         } else {
             FastaIndexedSequence fastaSequence = new FastaIndexedSequence(sequencePath);
             sequence = new SequenceWrapper(fastaSequence);
+            chromosOrdered = true;
         }
 
         newGenome = new GenomeImpl(id, displayName, sequence, chromosOrdered);
