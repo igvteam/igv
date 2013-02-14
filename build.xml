@@ -378,11 +378,10 @@
     </target>
 
     <!-- Build MacOS native app-->
-    <!-- Define the appbundler task -->
-    <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${lib.dir}appbundler-1.0.jar"/>
-
     <!-- Create the app bundle -->
     <target name="bundle" depends="build-all">
+        <!-- Define the appbundler task -->
+        <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/extras/appbundler-1.0.jar"/>
         <bundleapp outputdirectory="${dist.dir}"
                    name="${ant.project.name}"
                    displayname="${ant.project.name}"
