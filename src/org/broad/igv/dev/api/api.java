@@ -11,6 +11,9 @@
 
 package org.broad.igv.dev.api;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Annotation for a method which indicates it is part of IGVs
  * public API. This method should be documented (correctly) and
@@ -21,7 +24,7 @@ package org.broad.igv.dev.api;
  * User: jacob
  * Date: 2012-Dec-17
  */
-//@Documented
+@Retention(RetentionPolicy.SOURCE)
 public @interface api{
 
     /**

@@ -33,6 +33,7 @@
 
     <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="docs.dir" value="${basedir}/docs"/>
+    <property name="api.docs.dir" value="${docs.dir}/api"/>
 
     <!-- Create class path for manifest -->
     <path id="@jars">
@@ -353,6 +354,27 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
         </copy>
+    </target>
+
+    <target name="create-api-doc">
+        <delete dir="${api.docs.dir}"/>
+        <mkdir dir="${api.docs.dir}"/>
+        <javadoc packagenames="org.broad.igv.*"
+                 sourcepath="src"
+                 defaultexcludes="yes"
+                 destdir="${api.docs.dir}"
+                 author="true"
+                 version="true"
+                 use="true"
+                 windowtitle="Test API">
+            <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>
+            <tag name="todo" scope="all" description="To do:"/>
+            <group title="Group 1 Packages" packages="com.dummy.test.a*"/>
+            <group title="Group 2 Packages" packages="com.dummy.test.b*:com.dummy.test.c*"/>
+            <link offline="true" href="http://download.oracle.com/javase/6/docs/api/" packagelistLoc="C:\tmp"/>
+            <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+        </javadoc>
     </target>
 
     <!-- Build MacOS native app-->
