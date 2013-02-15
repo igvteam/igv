@@ -700,7 +700,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         return 0.0f;
     }
 
-    AlignmentDataManager getDataManager() {
+    public AlignmentDataManager getDataManager() {
         return dataManager;
     }
 

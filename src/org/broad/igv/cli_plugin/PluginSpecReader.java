@@ -351,11 +351,15 @@ public class PluginSpecReader {
      */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Parser {
+        public static String SOURCE_STDOUT = "stdout";
+
         @XmlAttribute boolean strict;
         @XmlAttribute String format;
         @XmlAttribute String decodingCodec;
+        @XmlAttribute String source = SOURCE_STDOUT;
 
         @XmlElement String[] libs;
+
     }
 
     /**

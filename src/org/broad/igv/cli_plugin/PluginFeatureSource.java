@@ -13,6 +13,9 @@ package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.AlignmentInterval;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -20,9 +23,7 @@ import org.broad.igv.track.Track;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * A feature source which derives its information
@@ -43,9 +44,32 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
 
     @Override
     protected String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException {
+        if(track instanceof AlignmentTrack){
+            return createTempFileForAlignmentTrack((AlignmentTrack) track, argument, chr, start, end, zoom);
+        }
+
         FeatureTrack fTrack = (FeatureTrack) track;
         List<Feature> features = fTrack.getFeatures(chr, start, end);
         return super.createTempFile(features, argument);
+    }
+
+    private String createTempFileForAlignmentTrack(AlignmentTrack track, Argument argument, String chr, int start, int end, int zoom) throws IOException {
+
+        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getLoadedIntervals();
+        List<Alignment> alignments = new ArrayList<Alignment>();
+        for(AlignmentInterval interval: loadedIntervals){
+            if(interval.overlaps(chr, start, end, zoom)){
+                Iterator<Alignment> iter = interval.getAlignmentIterator();
+                while(iter.hasNext()){
+                    Alignment al = iter.next();
+                    if(al.getStart() <= end && al.getEnd() >= start){
+                        alignments.add(al);
+                    }
+                }
+            }
+        }
+
+        return super.createTempFile(alignments, argument);
     }
 
     /**

@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureTrack;
@@ -56,6 +57,12 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
     @XmlJavaTypeAdapter(MyMapAdapter.class)
     protected LinkedHashMap<Argument, Object> arguments;
+
+    /**
+     * We store the argument values by id for later retrieval by
+     * other arguments, or the parser. For instance, if a parser
+     * needs to know what the output file was.
+     */
 
     @XmlElement
     protected PluginSpecReader.Parser parser;
@@ -106,9 +113,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         Map<String, Object> attributes = null;
         if (features != null) {
             FeatureEncoder codec = getEncodingCodec(argument);
-
             attributes = codec.encodeAll(outputStream, features);
-
         }
         writer.flush();
         writer.close();
@@ -121,7 +126,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
         List<String> fullCmd = new ArrayList<String>(commands);
 
         attributes.clear();
+
         Map<String, String[]> argValsById = new HashMap<String, String[]>(arguments.size());
+
         for (Map.Entry<Argument, Object> entry : arguments.entrySet()) {
             Argument arg = entry.getKey();
 
@@ -139,6 +146,10 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                     if (arg.getType() == Argument.InputType.TEXT) {
                         sVal = ts.split("\\s+");
                     }
+                    break;
+                case ALIGNMENT_TRACK:
+                    ts = createTempFile((AlignmentTrack) entry.getValue(), arg, chr, start, end, zoom);
+                    sVal = new String[]{ts};
                     break;
                 case FEATURE_TRACK:
                 case DATA_TRACK:
@@ -165,6 +176,11 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
                 }
                 fullCmd.addAll(Arrays.asList(sVal));
             }
+        }
+
+        for(String argId: argValsById.keySet()){
+            String repStr = "$" + argId;
+            parser.source = parser.source.replace(repStr, argValsById.get(argId)[0]);
         }
 
         return fullCmd.toArray(new String[0]);
@@ -233,7 +249,21 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
         //Read back in the data which cli_plugin output
         FeatureDecoder<D> codec = getDecodingCodec();
-        return codec.decodeAll(pr.getInputStream(), parser.strict);
+
+        InputStream dataStream = null;
+        if(parser.source.equals(PluginSpecReader.Parser.SOURCE_STDOUT)){
+            dataStream = pr.getInputStream();
+        }else if(parser.source == null){
+            throw new IllegalArgumentException("Null value for source");
+        }else{
+            try {
+                pr.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            dataStream = new FileInputStream(parser.source);
+        }
+        return codec.decodeAll(dataStream, parser.strict);
     }
 
     /**
@@ -258,10 +288,18 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
      * @param argument
      * @return
      */
-    private final FeatureEncoder<E> instantiateEncodingCodec(Argument argument) {
+    private final FeatureEncoder instantiateEncodingCodec(Argument argument) {
         String encodingCodec = argument.getEncodingCodec();
 
-        if (encodingCodec == null) return new AsciiEncoder(new IGVBEDCodec());
+        if (encodingCodec == null){
+            if(argument.getType() == Argument.InputType.FEATURE_TRACK || argument.getType() == Argument.InputType.MULTI_FEATURE_TRACK){
+                return new AsciiEncoder(new IGVBEDCodec());
+            }else if(argument.getType() == Argument.InputType.ALIGNMENT_TRACK){
+                return new SamAlignmentEncoder();
+            }else{
+                throw new IllegalArgumentException("No encoding codec provided and default not available");
+            }
+        }
 
         try {
             URL[] libURLs = PluginSpecReader.getLibURLs(argument.getLibPaths(), FileUtils.getParent(specPath));
@@ -274,7 +312,7 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             Object ocodec = constructor.newInstance();
             FeatureEncoder<E> codec;
             if (!(ocodec instanceof FeatureEncoder) && ocodec instanceof LineFeatureEncoder) {
-                codec = new AsciiEncoder((LineFeatureEncoder<D>) ocodec);
+                codec = new AsciiEncoder((LineFeatureEncoder<E>) ocodec);
             } else {
                 codec = (FeatureEncoder<E>) ocodec;
             }

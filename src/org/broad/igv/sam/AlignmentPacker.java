@@ -54,6 +54,8 @@ public class AlignmentPacker {
             int end,
             AlignmentTrack.RenderOptions renderOptions) {
 
+        if(renderOptions == null) renderOptions = new AlignmentTrack.RenderOptions();
+
         LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
         boolean pairAlignments = renderOptions.isViewPairs() || renderOptions.isPairedArcView();
 

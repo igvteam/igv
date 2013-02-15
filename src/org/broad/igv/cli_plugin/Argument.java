@@ -12,6 +12,7 @@
 package org.broad.igv.cli_plugin;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.track.FeatureTrack;
 
@@ -91,7 +92,10 @@ public class Argument{
     boolean isValidValue(Object value) {
         switch (this.type) {
             case TEXT:
+            case LONGTEXT:
                 return value instanceof String || value == null;
+            case ALIGNMENT_TRACK:
+                return value instanceof AlignmentTrack;
             case FEATURE_TRACK:
                 return value instanceof FeatureTrack;
             case MULTI_FEATURE_TRACK:

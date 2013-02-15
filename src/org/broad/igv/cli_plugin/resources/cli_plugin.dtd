@@ -103,6 +103,9 @@ strict
 format
     The format returned. Must be a file extension readable by
     IGV.
+source
+    The file from which to read output, or "stdout" if
+    the tool returns data in the standard output stream (default)
 decodingCodec
     Class used for decoding the output.
     Takes precedence over format if both provided
@@ -111,6 +114,7 @@ decodingCodec
 <!ATTLIST parser
     strict (true|false) "true"
     format CDATA "bed"
+    source CDATA "stdout"
     decodingCodec CDATA #IMPLIED>
 
 <!--
@@ -159,9 +163,9 @@ encodingCodec
 <!ATTLIST arg
     name CDATA #REQUIRED
     cmd_arg CDATA ""
-    type (TEXT|LONGTEXT|FEATURE_TRACK|MULTI_FEATURE_TRACK|DATA_TRACK) #REQUIRED
+    type (TEXT|LONGTEXT|FEATURE_TRACK|MULTI_FEATURE_TRACK|ALIGNMENT_TRACK) #REQUIRED
     default CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
-    encodingCodec CDATA "org.broad.igv.feature.tribble.IGVBEDCodec">
+    encodingCodec CDATA #IMPLIED>
 

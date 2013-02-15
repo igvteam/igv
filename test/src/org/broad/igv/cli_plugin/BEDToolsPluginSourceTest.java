@@ -102,9 +102,9 @@ public class BEDToolsPluginSourceTest extends AbstractPluginTest {
             }
         }
 
-        List<String> fullCmd = Arrays.asList(toolPath, cmd);
+        List<String> commands = Arrays.asList(toolPath, cmd);
         PluginSpecReader.Parser parser = command.parser;
-        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(fullCmd, arguments, parser, pluginPath);
+        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(commands, arguments, parser, pluginPath);
         Iterator<Feature> features = combinedFeatureSource.getFeatures("chr1", 0, (int) 1e6);
         List<Feature> featureList = new ArrayList(10);
 
