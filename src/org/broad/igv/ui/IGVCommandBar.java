@@ -763,7 +763,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         detailsBehaviorButton.setPreferredSize(new java.awt.Dimension(32, 32));
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
 
-        boolean showExomeButton = Boolean.parseBoolean(System.getProperty("showExomeButton", "false"));
+        boolean showExomeButton =
+                Boolean.parseBoolean(System.getProperty("showExomeButton", "false")) ||
+                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_EXOME_BUTTON);
         if (showExomeButton) {
             exomeButton = new JideButton();
             exomeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
