@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 package org.broad.igv.feature;
 
@@ -24,9 +17,7 @@ import org.broad.igv.util.collections.MultiMap;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -45,14 +36,15 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
     protected String name = "";
 
     /**
-     * Constructs ...
+     * The 0-based reading frame offset from start position.
+     * Only well defined for Exon-type features
      */
+    protected int readingFrame = -1;
+
     public AbstractFeature() {
     }
 
     /**
-     * Constructs ...
-     *
      * @param chr
      * @param start
      * @param end
@@ -254,5 +246,13 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         attributes.printHtml(buf, max);
         return buf.toString();
 
+    }
+
+    public void setReadingFrame(int offset) {
+        this.readingFrame = offset;
+    }
+
+    public int getReadingFrame(){
+        return this.readingFrame;
     }
 }

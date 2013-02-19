@@ -67,7 +67,7 @@ public class GFFTest{//} extends AbstractHeadlessTest{
         String gffFile = TestUtils.DATA_DIR + "gff/color_sps.gff";
         List<Feature> features = getFeatures(gffFile);
 
-        assertEquals("Error parsing certain features", 5, features.size());
+        assertEquals("Error parsing certain features", 6, features.size());
 
         for(Feature f: features){
             BasicFeature bf = (BasicFeature) f;
@@ -81,15 +81,19 @@ public class GFFTest{//} extends AbstractHeadlessTest{
         }
     }
 
+    @Test
+    public void testGFF2_parentIds() throws Exception{
+        String path = TestUtils.DATA_DIR + "gff/parentIds.gff";
+        List<Feature> features = getFeatures(path);
 
-//    @Ignore
-//    @Test
-//    public void testLoadLargeFile() throws Exception{
-//        //Very large file, as of this writing not in repo
-//        String path = TestUtils.DATA_DIR + "gff/gene_coding_transcript_ncRNA_partiall_confirmed_plus.gff3";
-//        GFFParser parser = new GFFParser(path);
-//
-//        BufferedReader br = new BufferedReader(new FileReader(path));
-//        List<Feature> features = parser.loadFeatures(br, null);
-//    }
+        assertEquals(1, features.size());
+        BasicFeature bf = (BasicFeature) features.get(0);
+
+        int numExons = 17;
+        assertEquals(numExons, bf.getExons().size());
+        Exon lastExon = bf.getExons().get(numExons - 1);
+
+        assertTrue(lastExon.isUTR());
+        assertEquals(3807030 - 1, lastExon.getStart());
+    }
 }

@@ -176,7 +176,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         if(header == null) {
             header = new FeatureFileHeader();
         }
-        header = new FeatureFileHeader();
         String line;
         int nLines = 0;
         try {
@@ -272,18 +271,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         String id = helper.getID(attributes);
         String[] parentIds = helper.getParentIds(attributes, attributeString);
 
-        if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
-                parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
-
-            //Somewhat tacky, but we need to store the phase somewhere in the feature
-            String phaseString = tokens[7].trim();
-            //String old = attributes.put(GFFFeatureSource.PHASE_STRING, phaseString);
-            //if(old != null){
-            //    log.debug("phase string attribute was overwritten internally; old value was: " + old);
-            //}
-        }
-
         BasicFeature f = new BasicFeature(chromosome, start, end, strand);
+
+
+        String phaseString = tokens[7].trim();
+        if(!phaseString.equals(".")){
+            int phaseNum = Integer.parseInt(phaseString);
+            f.setReadingFrame(phaseNum);
+        }
 
         f.setName(getName(attributes));
         f.setType(featureType);
@@ -371,9 +366,12 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public static class GFF2Helper implements Helper {
 
         //TODO Almost identical
-        static String[] idFields = {"systematic_id", "ID", "transcript_id", "name", "primary_name", "gene", "locus", "alias"};
-        static String[] DEFAULT_NAME_FIELDS = {"gene", "name", "primary_name", "locus", "alias", "systematic_id", "ID"};
-        static String[] possParentNames = new String[]{"id", "mRna", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
+        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "primary_name", "systematic_id"};
+        static List<String> idFields = new ArrayList<String>(Arrays.asList(DEFAULT_NAME_FIELDS));
+        static{
+            idFields.add("transcript_id");
+        }
+        static String[] possParentNames = new String[]{"id", "mRNA", "systematic_id", "transcript_id", "gene", "transcriptId", "Parent", "proteinId"};
 
         private String[] nameFields;
 
@@ -411,25 +409,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         /**
-         * parentIds[0] = attributes.get("id");
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("mRNA");
-         * }
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("systematic_id");
-         * }
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("transcript_id");
-         * }
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("gene");
-         * }
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("transcriptId");
-         * }
-         * if (parentIds[0] == null) {
-         * parentIds[0] = attributes.get("proteinId");
-         * }
          *
          * @param attributes
          * @param attributeString
