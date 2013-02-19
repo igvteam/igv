@@ -11,7 +11,7 @@
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="cufflinks"
             id="org.broad.igv.plugin.cufflinks">
-    <tool name="cufflinks" defaultPath="/Users/jacob/Software/cufflinks/cufflinks" visible="false">
+    <tool name="cufflinks" defaultPath="cufflinks" visible="false">
 
         <command name="Arbitrary Input" cmd="">
             <arg name="Output Dir" id="outdir" cmd_arg="-o" type="LONGTEXT" default="./"/>

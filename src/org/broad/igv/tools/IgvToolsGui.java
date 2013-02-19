@@ -526,7 +526,7 @@ public class IgvToolsGui extends JDialog {
                     runButton.setEnabled(false);
                     igvTools.doIndex(ifile, null, indexType, binSize);
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error("Error indexing file", e);
                     showMessage("Error: " + e.getMessage());
                 }
 
