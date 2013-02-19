@@ -53,7 +53,7 @@ public class ExonTest extends AbstractHeadlessTest {
         Exon exon = egfr.getExons().get(exonNum);
         int ind = 0;
         int mult = positive ? 1 : -1;
-        int start = positive ? exon.getCdStart() : exon.getCdEnd();
+        int start = positive ? exon.getCdStart() : exon.getCdEnd() - 1;
         for (Integer offset : genomicOffsets) {
             int genomicPosition = start + mult * offset;
             int AANumber = exon.getAminoAcidNumber(genomicPosition);

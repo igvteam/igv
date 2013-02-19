@@ -37,7 +37,7 @@ public class Exon extends AbstractFeature implements IExon {
     private int number;
 
     /**
-     * Coding start position.  This is the leftmost position of the coding region, not neccessarily the 5'utr end
+     * Coding start position.  This is the leftmost position of the coding region, not necessarily the 5'utr end
      */
     private int codingStart;
     private int codingEnd;
@@ -78,7 +78,9 @@ public class Exon extends AbstractFeature implements IExon {
             return mrnaCoord < 0 ? -1 : mrnaCoord / 3 + 1;
 
         } else if (getStrand() == Strand.NEGATIVE) {
-            int mrnaCoord = mrnaBase + (codingEnd - genomeCoordinate);
+            //Since codingEnd is exclusive-end, we subtract 1 from it
+            //We want mrnaCoord = 0 when genomeCoordinate == codingEnd - 1
+            int mrnaCoord = mrnaBase + (codingEnd - 1 - genomeCoordinate);
             return mrnaCoord < 0 ? -1 : mrnaCoord / 3 + 1;
 
         } else {
