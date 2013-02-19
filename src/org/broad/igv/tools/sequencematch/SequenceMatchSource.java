@@ -25,8 +25,6 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.StringUtils;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
@@ -38,7 +36,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,8 +64,7 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
 
     private static final String codeFilePath = "resources/iupac_regex_table.txt";
     private static void initLetterToRegex() {
-        URL url = SequenceMatchSource.class.getResource(codeFilePath);
-        letterToRegex = loadMap(StringUtils.decodeURL(url.getPath()));
+        letterToRegex = loadMap(SequenceMatchSource.class.getResourceAsStream(codeFilePath));
         validInputStrings = new HashSet<String>(letterToRegex.size());
         for(String key: letterToRegex.keySet()){
             validInputStrings.add(key.toUpperCase());
@@ -131,14 +129,14 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
 
     /**
      * TODO Move this to someplace more general, use it wherever we store lots of this kind of data
-     * @param path
+     * @param inputStream
      * @return
      */
-    public static Map<String, String> loadMap(String path){
+    public static Map<String, String> loadMap(InputStream inputStream){
         BufferedReader reader = null;
         Map<String, String> map = new HashMap<String, String>();
         try {
-            reader = ParsingUtils.openBufferedReader(path);
+            reader = new BufferedReader(new InputStreamReader(inputStream));
             String nextLine = null;
             while ((nextLine = reader.readLine()) != null) {
                 if(nextLine.startsWith("#")) continue;
