@@ -365,7 +365,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             int alpha = 140;
             color = new Color(r, g, b, alpha);
         } else {
-            color = drawAbove ? ARC_COLOR_POS : ARC_COLOR_NEG;
+            color = ARC_COLOR_POS;
         }
 
         //Height of top of an arc of maximum depth
