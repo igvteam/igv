@@ -202,7 +202,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         if ((featureList != null) && !featureList.isEmpty()) {
 
-            // Create a graphics object to draw font names.  Graphics are not cached
+            // Create a graphics object to draw feature names.  Graphics are not cached
             // by font, only by color, so its necessary to create a new one to prevent
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
@@ -213,6 +213,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
             double trackRectangleMaxX = trackRectangle.getMaxX();
+
+            //Draw track name
+            fontGraphics.drawString(track.getName(), (int) (trackRectangleMaxX * 0.85), (int) (trackRectangle.getY() + font.getSize()));
 
             // Draw the lines that represent the bounds of
             // a feature's region
@@ -289,6 +292,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
             g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
                     (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
+
 
         }
     }
