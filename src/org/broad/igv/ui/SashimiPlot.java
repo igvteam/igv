@@ -15,6 +15,7 @@ import com.google.common.eventbus.Subscribe;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.AlignmentDataManager;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.event.ViewChange;
@@ -39,7 +40,7 @@ import java.util.List;
  */
 public class SashimiPlot extends JFrame{
 
-    private SpliceJunctionFinderTrack spliceJunctionTrack;
+    private List<SpliceJunctionFinderTrack> spliceJunctionTracks;
     private ReferenceFrame frame;
 
     /**
@@ -55,7 +56,7 @@ public class SashimiPlot extends JFrame{
     private final double maxEnd;
 
 
-    public SashimiPlot(ReferenceFrame iframe, SpliceJunctionFinderTrack track, FeatureTrack geneTrack){
+    public SashimiPlot(ReferenceFrame iframe, Collection<AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
         this.frame = new ReferenceFrame(iframe);
         this.frame.getEventBus().register(this);
 
@@ -67,22 +68,6 @@ public class SashimiPlot extends JFrame{
 
         BoxLayout boxLayout = new BoxLayout(getContentPane(), BoxLayout.Y_AXIS);
         getContentPane().setLayout(boxLayout);
-
-        spliceJunctionTrack = new SpliceJunctionFinderTrack(track.getResourceLocator(), track.getName(),
-               track.getDataManager(), track.getGenome());
-
-        spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
-        TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
-
-        setDataManager(track.getDataManager());
-        getRenderer().setBackground(getBackground());
-
-        SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
-        geneTrackClone.setDisplayMode(Track.DisplayMode.SQUISHED);
-        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
-
-        //Hacky way of clearing packed features
-        geneTrackClone.setVisibilityWindow(geneTrackClone.getVisibilityWindow());
 
         //Add control elements to the top
         ZoomSliderPanel controlPanel = new ZoomSliderPanel(this.frame);
@@ -101,54 +86,76 @@ public class SashimiPlot extends JFrame{
             }
         });
 
+        spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
+        for(AlignmentTrack alignmentTrack: alignmentTracks){
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(),
+                    alignmentTrack.getDataManager());
 
-        getContentPane().add(trackComponent);
+            spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
+            TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
+
+            initSpliceJunctionComponent(trackComponent, alignmentTrack);
+
+            getContentPane().add(trackComponent);
+            spliceJunctionTracks.add(spliceJunctionTrack);
+        }
+
+        SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
+
+
         getContentPane().add(geneComponent);
 
-        initGeneComponentDims(frame.getWidthInPixels(), geneComponent, geneTrackClone);
-        initMouseAdapters(trackComponent, geneComponent);
-
-
+        initGeneComponent(frame.getWidthInPixels(), geneComponent, geneTrackClone);
         validate();
-
-    }
-
-    private void setDataManager(AlignmentDataManager dataManager) {
-        if(!dataManager.isShowSpliceJunctions()){
-            dataManager.setShowSpliceJunctions(true);
-            dataManager.clear();
-        }
-        getRenderer().setDataManager(dataManager);
     }
 
     private void initSize(int width) {
         setSize(width, 500);
     }
 
-    private void initGeneComponentDims(int prefWidth, Component geneComponent, Track geneTrack){
+    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, Track geneTrack){
+
+        geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
+
+        //Hacky way of clearing packed features
+        geneTrack.setVisibilityWindow(geneTrack.getVisibilityWindow());
+
         Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getHeight() + 10);
         geneComponent.setMaximumSize(maxGeneDim);
         Dimension prefGeneDim = new Dimension(maxGeneDim);
         prefGeneDim.setSize(prefWidth, prefGeneDim.height);
         geneComponent.setPreferredSize(prefGeneDim);
-    }
-
-    public void setShapeType(SashimiJunctionRenderer.ShapeType shapeType) {
-        ((SashimiJunctionRenderer) spliceJunctionTrack.getRenderer()).setShapeType(shapeType);
-        repaint();
-    }
-
-    private void initMouseAdapters(TrackComponent<SpliceJunctionFinderTrack> trackComponent, TrackComponent<SelectableFeatureTrack> geneComponent) {
-        JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
-        trackComponent.addMouseListener(ad1);
-        trackComponent.addMouseMotionListener(ad1);
 
         GeneTrackMouseAdapter ad2 = new GeneTrackMouseAdapter(geneComponent);
         geneComponent.addMouseListener(ad2);
         geneComponent.addMouseMotionListener(ad2);
     }
 
-    private SashimiJunctionRenderer getRenderer(){
+    private void initSpliceJunctionComponent(TrackComponent<SpliceJunctionFinderTrack> trackComponent, AlignmentTrack alignmentTrack) {
+        JunctionTrackMouseAdapter ad1 = new JunctionTrackMouseAdapter(trackComponent);
+        trackComponent.addMouseListener(ad1);
+        trackComponent.addMouseMotionListener(ad1);
+
+        getRenderer(trackComponent.track).setBackground(getBackground());
+
+        setDataManager(trackComponent.track, alignmentTrack.getDataManager());
+    }
+
+    private void setDataManager(SpliceJunctionFinderTrack spliceJunctionTrack, AlignmentDataManager dataManager) {
+        if(!dataManager.isShowSpliceJunctions()){
+            dataManager.setShowSpliceJunctions(true);
+            dataManager.clear();
+        }
+        getRenderer(spliceJunctionTrack).setDataManager(dataManager);
+    }
+
+//    public void setShapeType(SashimiJunctionRenderer.ShapeType shapeType) {
+//        ((SashimiJunctionRenderer) spliceJunctionTrack.getRenderer()).setShapeType(shapeType);
+//        repaint();
+//    }
+
+    private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack){
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
     }
 
@@ -200,10 +207,10 @@ public class SashimiPlot extends JFrame{
             maxDepthItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog("Set Maximum Depth", getRenderer().getMaxDepth());
+                    String input = JOptionPane.showInputDialog("Set Maximum Depth", getRenderer(trackComponent.track).getMaxDepth());
                     try {
                         int newMaxDepth = Integer.parseInt(input);
-                        getRenderer().setMaxDepth(newMaxDepth);
+                        getRenderer(trackComponent.track).setMaxDepth(newMaxDepth);
                         repaint();
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
@@ -213,9 +220,6 @@ public class SashimiPlot extends JFrame{
 
             menu.add(maxDepthItem);
 
-            for(JMenuItem item: getRenderMenuItems(null, SashimiPlot.this)){
-                menu.add(item);
-            }
             return menu;
         }
     }
@@ -230,7 +234,9 @@ public class SashimiPlot extends JFrame{
         protected void handleDataClick(MouseEvent e) {
             trackComponent.track.handleDataClick(createTrackClickEvent(e));
             Set<IExon> selectedExon = trackComponent.track.getSelectedExons();
-            getRenderer().setSelectedExons(selectedExon);
+            for(SpliceJunctionFinderTrack spliceTrack: spliceJunctionTracks){
+                getRenderer(spliceTrack).setSelectedExons(selectedExon);
+            }
             repaint();
         }
 
@@ -317,39 +323,12 @@ public class SashimiPlot extends JFrame{
         protected abstract IGVPopupMenu getPopupMenu(MouseEvent e);
     }
 
-    public static List<JMenuItem> getRenderMenuItems(final SpliceJunctionFinderTrack junctionFinderTrack, final SashimiPlot dialog){
-
-        //JCheckBoxMenuItem setSplice = new JCheckBoxMenuItem("Splice Junction");
-        //setSplice.addActionListener(getChangeClassListener(setSplice, SpliceJunctionRenderer.class, null));
-        //setSplice.setSelected(SpliceJunctionFinderTrack.this.getRenderer().getClass().equals(SpliceJunctionRenderer.class));
-
-        //setRenderingStyle.add(setSplice);
-
-        List<JMenuItem> menuItemList = new ArrayList<JMenuItem>(3);
-
-        Map<String, SashimiJunctionRenderer.ShapeType> renderTypes = new LinkedHashMap<String, SashimiJunctionRenderer.ShapeType>(3);
-        renderTypes.put("Sashimi Ellipse", SashimiJunctionRenderer.ShapeType.ELLIPSE);
-        renderTypes.put("Sashimi Circle", SashimiJunctionRenderer.ShapeType.CIRCLE);
-        renderTypes.put("Sashimi Text", SashimiJunctionRenderer.ShapeType.TEXT);
-        for(final Map.Entry<String, SashimiJunctionRenderer.ShapeType> entry: renderTypes.entrySet()){
-            JMenuItem tmpSashimi = new JCheckBoxMenuItem(entry.getKey());
-            tmpSashimi.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    getSashimiPlot(junctionFinderTrack, dialog, entry.getValue());
-                }
-            });
-            menuItemList.add(tmpSashimi);
-        }
-        return menuItemList;
-    }
-
     /**
      * Show SashimiPlot window, or change settings of {@code currentWindow}
      * @param sashimiPlot
      * @param shapeType
      */
-    public static void getSashimiPlot(SpliceJunctionFinderTrack junctionFinderTrack, SashimiPlot sashimiPlot, SashimiJunctionRenderer.ShapeType shapeType) {
+    public static void getSashimiPlot(SashimiPlot sashimiPlot) {
         if(sashimiPlot == null){
             FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
             dlg.setVisible(true);
@@ -357,11 +336,19 @@ public class SashimiPlot extends JFrame{
 
             FeatureTrack geneTrack = dlg.getSelectedTrack();
 
-            sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), junctionFinderTrack, geneTrack);
-            sashimiPlot.setShapeType(shapeType);
+            //TrackSelectionDialog alDlg = new TrackSelectionDialog(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, IGV.getInstance().getAllTracks());
+            List<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
+            for(Track track: IGV.getInstance().getAllTracks()){
+                if(track instanceof AlignmentTrack){
+                    alignmentTracks.add((AlignmentTrack) track);
+                }
+            }
+
+            sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), alignmentTracks, geneTrack);
+            //sashimiPlot.setShapeType(shapeType);
             sashimiPlot.setVisible(true);
         }else{
-            sashimiPlot.setShapeType(shapeType);
+            //sashimiPlot.setShapeType(shapeType);
         }
 
 
