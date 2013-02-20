@@ -75,6 +75,7 @@ public class SashimiPlot extends JFrame{
         TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
         setDataManager(track.getDataManager());
+        getRenderer().setBackground(getBackground());
 
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         geneTrackClone.setDisplayMode(Track.DisplayMode.EXPANDED);

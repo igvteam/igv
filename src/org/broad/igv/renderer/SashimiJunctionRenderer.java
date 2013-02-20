@@ -71,6 +71,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     private CoverageTrack coverageTrack = null;
     private AlignmentDataManager dataManager = null;
 
+    private Color background;
+
     /**
      * We want the features to alternate above and below, but don't want
      * the arcs to switch around when zooming /panning. So we store the above/below
@@ -92,6 +94,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     public void setDataManager(AlignmentDataManager dataManager) {
         this.dataManager = dataManager;
         this.setCoverageTrack(dataManager.getCoverageTrack());
+    }
+
+    public void setBackground(Color background) {
+        this.background = background;
     }
 
     public enum ShapeType{
@@ -342,11 +348,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                 pixelJunctionEnd, arcEndY);
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
+        g2D.setBackground(background);
         Stroke stroke = new BasicStroke(2.0f);
         g2D.setStroke(stroke);
         g2D.draw(arcPath);
-
-        g2D = context.getGraphic2DForColor(color);
 
         float midX = ((float) pixelJunctionStart + (float) pixelJunctionEnd) / 2;
 
@@ -370,9 +375,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             case TEXT:
                 String text = "" + depth;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
-                float yPos = (float) actArcPeakY;
-                yPos += drawAbove ? 0 : textBounds.getHeight();
-                g2D.drawString(text, (float) (midX - textBounds.getWidth() / 2), yPos);
+
+                float floatX = (float) (midX - textBounds.getWidth() / 2);
+                float floatY = (float) actArcPeakY + (float) textBounds.getHeight() / 2;
+
+                //Clear background so we aren't drawing numbers over arcs
+                int rectHeight = (int) textBounds.getHeight();
+                g2D.clearRect((int) floatX,(int) floatY - rectHeight,(int) textBounds.getWidth(), rectHeight);
+
+                g2D.drawString(text, floatX , floatY);
+
                 break;
         }
 

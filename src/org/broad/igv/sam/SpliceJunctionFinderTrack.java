@@ -27,6 +27,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -38,6 +39,8 @@ import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -105,11 +108,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
 
-        JMenu sashimiItems = new JMenu("Sashimi Plot");
-        for(JMenuItem menuItem: SashimiPlot.getRenderMenuItems(this, null)){
-            sashimiItems.add(menuItem);
-        }
-        popupMenu.add(sashimiItems);
+        JMenuItem sashimi = new JMenuItem("Sashimi Plot");
+        sashimi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SashimiPlot.getSashimiPlot(SpliceJunctionFinderTrack.this, null, SashimiJunctionRenderer.ShapeType.TEXT);
+            }
+        });
+        popupMenu.add(sashimi);
 
         return popupMenu;
     }
