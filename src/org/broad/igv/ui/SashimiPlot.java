@@ -80,6 +80,7 @@ public class SashimiPlot extends JFrame{
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         geneTrackClone.setDisplayMode(Track.DisplayMode.SQUISHED);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
+
         //Hacky way of clearing packed features
         geneTrackClone.setVisibilityWindow(geneTrackClone.getVisibilityWindow());
 
@@ -104,9 +105,12 @@ public class SashimiPlot extends JFrame{
         getContentPane().add(trackComponent);
         getContentPane().add(geneComponent);
 
+        initGeneComponentDims(frame.getWidthInPixels(), geneComponent, geneTrackClone);
         initMouseAdapters(trackComponent, geneComponent);
 
+
         validate();
+
     }
 
     private void setDataManager(AlignmentDataManager dataManager) {
@@ -119,6 +123,14 @@ public class SashimiPlot extends JFrame{
 
     private void initSize(int width) {
         setSize(width, 500);
+    }
+
+    private void initGeneComponentDims(int prefWidth, Component geneComponent, Track geneTrack){
+        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getHeight() + 10);
+        geneComponent.setMaximumSize(maxGeneDim);
+        Dimension prefGeneDim = new Dimension(maxGeneDim);
+        prefGeneDim.setSize(prefWidth, prefGeneDim.height);
+        geneComponent.setPreferredSize(prefGeneDim);
     }
 
     public void setShapeType(SashimiJunctionRenderer.ShapeType shapeType) {
