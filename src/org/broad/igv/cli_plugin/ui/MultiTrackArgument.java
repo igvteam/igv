@@ -46,7 +46,7 @@ public class MultiTrackArgument extends ArgumentPanel {
         Object[] rawRet = trackCheckBoxList.getCheckBoxListSelectedValues();
         List<FeatureTrack> trackList = new ArrayList<FeatureTrack>(rawRet.length);
         for (Object obj : rawRet) {
-            FeatureTrack track = ((TrackWrapper) obj).getTrack();
+            FeatureTrack track = (FeatureTrack) ((TrackWrapper) obj).getTrack();
             trackList.add(track);
         }
         return trackList;

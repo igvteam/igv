@@ -86,7 +86,7 @@ public class FrameManager {
             if (exomeTrack == null || showTrackMenu) {
                 FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(parent);
                 dlg.setVisible(true);
-                if (dlg.isCanceled) return false;
+                if (dlg.getIsCancelled()) return false;
                 exomeTrack = dlg.getSelectedTrack();
             }
         }

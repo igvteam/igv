@@ -11,15 +11,15 @@
 
 package org.broad.igv.ui.panel;
 
-import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrackWrapper {
-    private FeatureTrack track;
+    private Track track;
 
-    public TrackWrapper(FeatureTrack track) {
+    public TrackWrapper(Track track) {
         this.track = track;
     }
 
@@ -27,13 +27,18 @@ public class TrackWrapper {
         return track.getName();
     }
 
-    public FeatureTrack getTrack() {
+    public Track getTrack() {
         return this.track;
     }
 
-    public static List<TrackWrapper> wrapTracks(Iterable<FeatureTrack> tracks) {
+    /**
+     *
+     * @param tracks
+     * @return
+     */
+    public static List<TrackWrapper> wrapTracks(Iterable<? extends Track> tracks) {
         ArrayList<TrackWrapper> wrappers = new ArrayList<TrackWrapper>();
-        for (FeatureTrack t : tracks) {
+        for (Track t : tracks) {
             TrackWrapper trackWrapper = new TrackWrapper(t);
             wrappers.add(trackWrapper);
         }
