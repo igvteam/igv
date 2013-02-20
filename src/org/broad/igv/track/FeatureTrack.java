@@ -1026,6 +1026,7 @@ public class FeatureTrack extends AbstractTrack {
      * @throws JAXBException
      */
     public void marshalSource(Marshaller m, Element trackElement) throws JAXBException{
+        if(source == null) return;
         FeatureSource rawSource = source;
         if(rawSource instanceof CachingFeatureSource){
             rawSource = ((CachingFeatureSource) rawSource).getSource();
