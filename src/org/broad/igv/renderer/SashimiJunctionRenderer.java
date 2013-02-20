@@ -396,7 +396,13 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
         g2D.setBackground(background);
-        Stroke stroke = new BasicStroke(2.0f);
+
+        double minStrokeSize = 0.1f;
+        double maxStrokeSize = 4.0f;
+        double scale = (maxStrokeSize - minStrokeSize) / Math.log(maxDepth);
+        double strokeSize = scale * Math.log(Math.min(depth, maxDepth)) + minStrokeSize;
+
+        Stroke stroke = new BasicStroke((float) strokeSize);
         g2D.setStroke(stroke);
         g2D.draw(arcPath);
 
