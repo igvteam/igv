@@ -1848,6 +1848,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final JMenuItem item = new JMenuItem("Blat read sequence");
             MouseEvent e = te.getMouseEvent();
             final ReferenceFrame frame = te.getFrame();
+            if(frame == null) return;
             final double location = frame.getChromosomePosition(e.getX());
             final Alignment alignment = getAlignmentAt(location, e.getY(), frame);
             if(alignment == null) return;
