@@ -267,7 +267,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param yOffset
      * @param g
      */
-    final private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
+    private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
                                         int yOffset, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();

@@ -398,7 +398,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         g2D.setBackground(background);
 
         double minStrokeSize = 0.1f;
-        double maxStrokeSize = 4.0f;
+        double maxStrokeSize = 3.0f;
         double scale = (maxStrokeSize - minStrokeSize) / Math.log(maxDepth);
         double strokeSize = scale * Math.log(Math.min(depth, maxDepth)) + minStrokeSize;
 

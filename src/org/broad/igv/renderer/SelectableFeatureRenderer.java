@@ -11,11 +11,17 @@
 
 package org.broad.igv.renderer;
 
+import com.google.common.base.Predicate;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IExon;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
+import org.broad.igv.util.collections.CollUtils;
 
 import java.awt.*;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,6 +44,17 @@ public class SelectableFeatureRenderer extends IGVFeatureRenderer {
     public SelectableFeatureRenderer(){
         AA_COLOR_1 = new Color(AA_COLOR_1.getRed(), AA_COLOR_1.getGreen(), AA_COLOR_1.getBlue(), 120);
         AA_COLOR_2 = new Color(AA_COLOR_2.getRed(), AA_COLOR_2.getGreen(), AA_COLOR_2.getBlue(), 120);
+    }
+
+    @Override
+    public void render(List<IGVFeature> featureList, RenderContext context, Rectangle trackRectangle, Track track) {
+        List<IGVFeature> featuresWithExons = CollUtils.filter(featureList, new Predicate<IGVFeature>() {
+            @Override
+            public boolean apply(IGVFeature input) {
+                return input.getExons() != null && input.getExons().size() > 0;
+            }
+        });
+        super.render(featuresWithExons, context, trackRectangle, track);
     }
 
     @Override

@@ -78,7 +78,7 @@ public class SashimiPlot extends JFrame{
         getRenderer().setBackground(getBackground());
 
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
-        geneTrackClone.setDisplayMode(Track.DisplayMode.EXPANDED);
+        geneTrackClone.setDisplayMode(Track.DisplayMode.SQUISHED);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
         //Hacky way of clearing packed features
         geneTrackClone.setVisibilityWindow(geneTrackClone.getVisibilityWindow());
