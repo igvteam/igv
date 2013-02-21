@@ -29,11 +29,11 @@ public class UIUtilities {
     final private static StringBuffer scratchBuffer = new StringBuffer();
 
     /**
-     * Method description
+     * Display a dialog which can be used to select a color
      *
      * @param dialogTitle
-     * @param defaultColor
-     * @return
+     * @param defaultColor The currently selected color
+     * @return  The color the user selected, or null if none/cancelled
      */
     public static Color showColorChooserDialog(String dialogTitle, Color defaultColor) {
 

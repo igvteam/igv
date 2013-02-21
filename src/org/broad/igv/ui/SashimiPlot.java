@@ -21,6 +21,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -221,6 +222,7 @@ public class SashimiPlot extends JFrame{
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String input = JOptionPane.showInputDialog("Set Maximum Depth", getRenderer(trackComponent.track).getMaxDepth());
+                    if(input == null || input.length() == 0) return;
                     try {
                         int newMaxDepth = Integer.parseInt(input);
                         getRenderer(trackComponent.track).setMaxDepth(newMaxDepth);
@@ -231,7 +233,21 @@ public class SashimiPlot extends JFrame{
                 }
             });
 
+            JMenuItem colorItem = new JMenuItem("Set Color");
+            colorItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Color color = UIUtilities.showColorChooserDialog(
+                            "Select Track Color", trackComponent.track.getColor());
+                    SashimiPlot.this.toFront();
+                    if(color == null) return;
+                    trackComponent.track.setColor(color);
+                    trackComponent.repaint();
+                }
+            });
+
             menu.add(maxDepthItem);
+            menu.add(colorItem);
 
             return menu;
         }
