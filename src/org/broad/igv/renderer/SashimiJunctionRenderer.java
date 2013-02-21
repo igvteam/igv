@@ -198,7 +198,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         if(coverageTrack != null){
             //Only want the coverage track to go so high so that the arcs still have room
-            int newHeight = coverageRectangle.height / 4;
+            int newHeight = coverageRectangle.height / 2;
             int newY = coverageRectangle.y + coverageRectangle.height / 2 - newHeight;
             coverageRectangle.setBounds(coverageRectangle.x, newY, coverageRectangle.width, newHeight);
 
@@ -377,13 +377,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         }
 
         //Height of top of an arc of maximum depth
-        int maxPossibleArcHeight = (trackRectangle.height - 1) / 4;
-
-        //proportion of the maximum arc height used by a minimum-height arc
-        double minArcHeightProportion = 0.1;
+        int maxPossibleArcHeight = (trackRectangle.height - 1) / 8;
+        int arcHeight = maxPossibleArcHeight;
+        int minY = (int) trackRectangle.getCenterY() + Math.min(pixelYStartOffset - arcHeight, pixelYEndOffset - arcHeight);
+        //Check if arc goes too high. All arcs going below have the same height,
+        //so no need to check case-by-case
+        if (drawAbove && minY < trackRectangle.getMinY()) {
+            drawAbove = false;
+        }
 
         float depthProportionOfMax = Math.min(1, depth / maxDepth);
-        int arcHeight = maxPossibleArcHeight; //Math.max(5, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
 
         //We adjust up or down depending on whether drawing up or down
         int yPosModifier = drawAbove ? -1 : 1;
@@ -395,6 +398,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         //We use corners of a square as control points because why not
         //The control point is never actually reached
         int arcControlPeakY = arcBeginY + yPosModifier * arcHeight;
+
 
         GeneralPath arcPath = new GeneralPath();
         arcPath.moveTo(pixelJunctionStart, arcBeginY);
