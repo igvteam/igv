@@ -18,6 +18,7 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
 
@@ -56,7 +57,7 @@ public class SashimiPlot extends JFrame{
     private final double maxEnd;
 
 
-    public SashimiPlot(ReferenceFrame iframe, Collection<AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
+    public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
         this.frame = new ReferenceFrame(iframe);
         this.frame.getEventBus().register(this);
 
@@ -137,17 +138,22 @@ public class SashimiPlot extends JFrame{
         trackComponent.addMouseListener(ad1);
         trackComponent.addMouseMotionListener(ad1);
 
-        getRenderer(trackComponent.track).setBackground(getBackground());
-
         setDataManager(trackComponent.track, alignmentTrack.getDataManager());
+        getRenderer(trackComponent.track).setBackground(getBackground());
     }
 
     private void setDataManager(SpliceJunctionFinderTrack spliceJunctionTrack, AlignmentDataManager dataManager) {
         if(!dataManager.isShowSpliceJunctions()){
             dataManager.setShowSpliceJunctions(true);
             dataManager.clear();
+            dataManager.getEventBus().register(this);
         }
         getRenderer(spliceJunctionTrack).setDataManager(dataManager);
+    }
+
+    @Subscribe
+    public void receiveDataLoaded(DataLoadedEvent event){
+        repaint();
     }
 
 //    public void setShapeType(SashimiJunctionRenderer.ShapeType shapeType) {
@@ -326,22 +332,32 @@ public class SashimiPlot extends JFrame{
     /**
      * Show SashimiPlot window, or change settings of {@code currentWindow}
      * @param sashimiPlot
-     * @param shapeType
      */
     public static void getSashimiPlot(SashimiPlot sashimiPlot) {
         if(sashimiPlot == null){
-            FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
-            dlg.setVisible(true);
-            if (dlg.getIsCancelled()) return;
+            FeatureTrack geneTrack = null;
+            if(IGV.getInstance().getFeatureTracks().size() == 1){
+                geneTrack = IGV.getInstance().getFeatureTracks().get(0);
+            }else{
+                FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
+                dlg.setVisible(true);
+                if (dlg.getIsCancelled()) return;
+                geneTrack = dlg.getSelectedTrack();
+            }
 
-            FeatureTrack geneTrack = dlg.getSelectedTrack();
-
-            //TrackSelectionDialog alDlg = new TrackSelectionDialog(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, IGV.getInstance().getAllTracks());
-            List<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
+            Collection<AlignmentTrack> alignmentTracks = new ArrayList<AlignmentTrack>();
             for(Track track: IGV.getInstance().getAllTracks()){
                 if(track instanceof AlignmentTrack){
                     alignmentTracks.add((AlignmentTrack) track);
                 }
+            }
+
+            if(alignmentTracks.size() > 1){
+                TrackSelectionDialog<AlignmentTrack> alDlg = new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
+                alDlg.setVisible(true);
+                if(alDlg.getIsCancelled()) return;
+
+                alignmentTracks = alDlg.getSelectedTracks();
             }
 
             sashimiPlot = new SashimiPlot(FrameManager.getDefaultFrame(), alignmentTracks, geneTrack);

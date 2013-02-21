@@ -15,11 +15,8 @@
 
 package org.broad.igv.ui.panel;
 
-import com.google.common.base.Predicate;
 import com.jidesoft.swing.CheckBoxList;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.util.collections.CollUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -34,7 +31,7 @@ import java.util.List;
  * Dialog used for selecting one or more tracks
  * @author Jacob Silterra
  */
-public class TrackSelectionDialog extends JDialog {
+public class TrackSelectionDialog<T extends Track> extends JDialog {
 
     private boolean isCancelled = false;
     private final SelectionMode mode;
@@ -47,11 +44,6 @@ public class TrackSelectionDialog extends JDialog {
     public enum SelectionMode{
         SINGLE,
         MULTIPLE
-    }
-
-    public TrackSelectionDialog(Frame owner, SelectionMode mode, Predicate<Track> predicate) {
-        this(owner, mode, CollUtils.filter(IGV.getInstance().getAllTracks(), predicate));
-
     }
 
     private void initTrackList(){
@@ -71,7 +63,7 @@ public class TrackSelectionDialog extends JDialog {
      * @param mode
      * @param tracks
      */
-    public TrackSelectionDialog(Frame owner, SelectionMode mode, Collection<? extends Track> tracks){
+    public TrackSelectionDialog(Frame owner, SelectionMode mode, Collection<T> tracks){
         super(owner);
         this.mode = mode;
         initComponents();
@@ -81,13 +73,13 @@ public class TrackSelectionDialog extends JDialog {
         trackList.setListData(wrappers.toArray());
     }
 
-    public Collection<Track> getSelectedTracks() {
+    public Collection<T> getSelectedTracks() {
         if (isCancelled) return null;
         Object[] selectedObjects = trackList.getCheckBoxListSelectedValues();
         if (selectedObjects == null || selectedObjects.length == 0) return null;
-        List<Track> selectedTracks = new ArrayList<Track>(selectedObjects.length);
+        List<T> selectedTracks = new ArrayList<T>(selectedObjects.length);
         for(Object object: selectedObjects){
-            selectedTracks.add(((TrackWrapper) object).getTrack());
+            selectedTracks.add(((TrackWrapper<T>) object).getTrack());
         }
         return selectedTracks;
     }
