@@ -50,13 +50,9 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
     private static Logger log = Logger.getLogger(SashimiJunctionRenderer.class);
 
-    //color for drawing all arcs
-    Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
-    Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
-    Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
-
+    private Color color = ARC_COLOR_POS;
 
     //central horizontal line color
     Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
@@ -122,8 +118,18 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return shapeType;
     }
 
-    private void setCoverageTrack(CoverageTrack coverageTrack) {
-        this.coverageTrack = coverageTrack;
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+        if(this.coverageTrack != null) this.coverageTrack.setColor(color);
+    }
+
+    private void setCoverageTrack(CoverageTrack covTrack) {
+        this.coverageTrack = new CoverageTrack(covTrack);
+        this.coverageTrack.setColor(color);
         //Don't want to color SNPs
         coverageTrack.setSnpThreshold(2.0f);
         coverageTrack.setAutoScale(true);
@@ -183,6 +189,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                        RenderContext context,
                        Rectangle trackRectangle,
                        Track track) {
+
+        this.setColor(track.getColor());
 
         Rectangle coverageRectangle = new Rectangle(trackRectangle);
 
@@ -365,7 +373,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             int alpha = 140;
             color = new Color(r, g, b, alpha);
         } else {
-            color = ARC_COLOR_POS;
+            color = this.color;
         }
 
         //Height of top of an arc of maximum depth

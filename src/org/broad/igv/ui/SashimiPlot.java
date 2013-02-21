@@ -56,6 +56,8 @@ public class SashimiPlot extends JFrame{
      */
     private final double maxEnd;
 
+    private static final List<Color> plotColors = Arrays.asList(Color.cyan, Color.red, Color.gray, Color.blue);
+
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
         this.frame = new ReferenceFrame(iframe);
@@ -88,11 +90,16 @@ public class SashimiPlot extends JFrame{
         });
 
         spliceJunctionTracks = new ArrayList<SpliceJunctionFinderTrack>(alignmentTracks.size());
+        int colorInd = 0;
         for(AlignmentTrack alignmentTrack: alignmentTracks){
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(),
-                    alignmentTrack.getDataManager());
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), alignmentTrack.getDataManager());
 
             spliceJunctionTrack.setRendererClass(SashimiJunctionRenderer.class);
+
+            Color color = plotColors.get(colorInd);
+            colorInd = (colorInd + 1) % plotColors.size();
+            spliceJunctionTrack.setColor(color);
+
             TrackComponent<SpliceJunctionFinderTrack> trackComponent = new TrackComponent<SpliceJunctionFinderTrack>(frame, spliceJunctionTrack);
 
             initSpliceJunctionComponent(trackComponent, alignmentTrack);

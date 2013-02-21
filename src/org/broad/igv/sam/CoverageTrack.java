@@ -95,6 +95,11 @@ public class CoverageTrack extends AbstractTrack {
 
     private AlignmentTrack.RenderOptions renderOptions = null;
 
+    public CoverageTrack(CoverageTrack track){
+        this(track.getResourceLocator(), track.getName(), track.genome);
+        this.setDataManager(track.dataManager);
+        this.setDataSource(track.dataSource);
+    }
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
@@ -304,9 +309,8 @@ public class CoverageTrack extends AbstractTrack {
         private void paint(RenderContext context, Rectangle rect, AlignmentCounts alignmentCounts) {
 
 
-            Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
-            Graphics2D posGraphics = context.getGraphic2DForColor(posStrandColor);
-            Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
+            Color color = getColor();
+            Graphics2D graphics = context.getGraphic2DForColor(color);
 
             DataRange range = getDataRange();
             double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
