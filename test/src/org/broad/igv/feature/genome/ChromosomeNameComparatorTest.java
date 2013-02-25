@@ -30,15 +30,20 @@ public class ChromosomeNameComparatorTest {
                 "scaf2_200_b80"};
         String[] set1 = {"chr1", "chr2", "chr10", "chr1", "chr3", "taoheu", "chrXn_01", "scaf1_101_b50",
                 "scaf1_100_b12"};
-        int[] expVals = {0, -1, -9, 0, -1, +1, -3, -1, +1};
+        int[] expVals = {0, -1, -1, 0, -1, +1, -1, -1, +1};
 
         ChromosomeNameComparator comp = ChromosomeNameComparator.get();
         for (int ii = 0; ii < set0.length; ii++) {
-            assertEquals(expVals[ii], comp.compare(set0[ii], set1[ii]));
+            // Compare signs
+            int tmp = comp.compare(set0[ii], set1[ii]) ;
+            int sign = (tmp == 0 ? 0 : (tmp < 0 ? -1 : 1));
+            assertEquals(expVals[ii], sign);
         }
 
         for (int ii = 0; ii < set0.length; ii++) {
-            assertEquals(-expVals[ii], comp.compare(set1[ii], set0[ii]));
+            int tmp = comp.compare(set1[ii], set0[ii]) ;
+            int sign = (tmp == 0 ? 0 : (tmp < 0 ? -1 : 1));
+            assertEquals(-expVals[ii], sign);
         }
 
     }
