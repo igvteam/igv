@@ -216,8 +216,8 @@ public class TDFReader {
 
         // Version 1 only had mean
         String wf = getVersion() < 2 ? "" : "/" + windowFunction.toString();
-
-        String dsName = "/" + chr + "/z" + zoom + wf;
+        String zoomString = chr.equals(Globals.CHR_ALL) ? "0" : String.valueOf(zoom);
+        String dsName = "/" + chr + "/z" + zoomString + wf;
 
         TDFDataset ds = getDataset(dsName);
 

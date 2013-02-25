@@ -45,7 +45,7 @@ public class DataSourceTrack extends DataTrack {
 
         this.dataSource = dataSource;
         setTrackType(dataSource.getTrackType());
-        List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, -1);
+        List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
 
         float min = (float) dataSource.getDataMin();
         float max = (float) dataSource.getDataMax();
