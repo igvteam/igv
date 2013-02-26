@@ -37,6 +37,11 @@ public class MutationTrack extends FeatureTrack {
 
 
     @Override
+    public boolean isFilterable() {
+        return true;   // Mutation tracks, unlike most FeatureTrack types, can be filtered
+    }
+
+    @Override
     public void overlay(RenderContext context, Rectangle rect) {
         if (!context.getChr().equals(Globals.CHR_ALL) || IGV.getInstance().getSession().getPreferenceAsBoolean(PreferenceManager.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
             renderFeatures(context, rect);

@@ -122,6 +122,9 @@ public class FeatureTrack extends AbstractTrack {
     }
 
 
+
+    // TODO -- there are WAY too many constructors for this class
+
     /**
      * Constructor specifically for BigWig data source
      *
@@ -160,6 +163,11 @@ public class FeatureTrack extends AbstractTrack {
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return false; // Don't filter "feature" tracks
     }
 
     @Override
