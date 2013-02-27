@@ -82,14 +82,17 @@ public class TrackFilter extends Filter {
                 continue;
             }
 
-            // Evaluate tracks
-            Iterator iterator = getFilterElements();
-            while (iterator.hasNext()) {
+            if (track.isFilterable()) {
 
-                FilterElement element = (FilterElement) iterator.next();
-                result = element.evaluate(track, result);
+                // Evaluate tracks
+                Iterator iterator = getFilterElements();
+                while (iterator.hasNext()) {
+
+                    FilterElement element = (FilterElement) iterator.next();
+                    result = element.evaluate(track, result);
+                }
+                track.setVisible(result);
             }
-            track.setVisible(result);
         }
     }
 

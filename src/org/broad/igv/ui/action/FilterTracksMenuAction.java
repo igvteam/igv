@@ -269,7 +269,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
             List<Track> tracks = IGV.getInstance().getAllTracks();
             for (Track track : tracks) {
-                track.setVisible(showAllTracks);
+                track.setVisible(true);
             }
 
         } else {
