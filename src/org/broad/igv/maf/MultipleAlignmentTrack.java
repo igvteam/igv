@@ -61,6 +61,8 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
     MAFReader reader;
 
+    MAFCache loadedAlignments;
+
 
     /**
      * Map of chr alias -> "true" chromosome names.
@@ -188,13 +190,20 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         double origin = context.getOrigin();
         String chr = context.getChr();
 
-        String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
-        int start = (int) origin;
+         int start = (int) origin;
         int end = (int) (origin + rect.width * locScale) + 1;
 
 
         try {
-            List<MultipleAlignmentBlock> alignments = reader.loadAlignments(mafChr, start, end);
+            List<MultipleAlignmentBlock> alignments = null;
+            if (loadedAlignments != null && loadedAlignments.contains(chr, start, end)) {
+                alignments = loadedAlignments.getAlignments();
+            } else {
+                String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
+                alignments = reader.loadAlignments(mafChr, start, end);
+                loadedAlignments = new MAFCache(chr, start, end, alignments);
+            }
+
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
                     renderAlignment(context, rect, ma);
@@ -319,6 +328,29 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
     static String getKey(String chr, int tileNo) {
         return chr + tileNo;
+    }
+
+    static class MAFCache {
+
+        String chr;
+        int start;
+        int end;
+        List<MultipleAlignmentBlock> alignments;
+
+        MAFCache(String chr, int start, int end, List<MultipleAlignmentBlock> alignments) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.alignments = alignments;
+        }
+
+        boolean contains(String chr, int start, int end) {
+            return this.start <= start && this.end >= end && this.chr.equals(chr);
+        }
+
+        public List<MultipleAlignmentBlock> getAlignments() {
+            return alignments;
+        }
     }
 
 }
