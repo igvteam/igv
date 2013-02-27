@@ -1,9 +1,9 @@
 package org.broad.igv.maf;
 
-import com.mongodb.util.MyAsserts;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 
 import static com.mongodb.util.MyAsserts.assertTrue;
@@ -20,9 +20,11 @@ public class MAFParserTest {
 
         String mafFile = TestUtils.DATA_DIR + "maf/ucscSample.maf";
 
+        MAFIndex.blockSize = 1;
+
         MAFParser parser = new MAFParser(mafFile);
 
-        List<MultipleAlignmentBlock> alignments = parser.parse();
+        List<MultipleAlignmentBlock> alignments = parser.loadAlignments("chr1", 0, 1000000);
 
         assertTrue(alignments.size() == 3);
 
@@ -37,12 +39,12 @@ public class MAFParserTest {
         assertEquals(2, gaps.size());
 
         MultipleAlignmentBlock.Gap firstGap = gaps.get(0);
-        assertEquals(43219 + 0.5, firstGap.position, 1.0e-6);
+        assertEquals(43219 + 1, firstGap.position, 1.0e-6);
         assertEquals(1, firstGap.startIdx);
         assertEquals(3, firstGap.size);
 
         MultipleAlignmentBlock.Gap secondGap = gaps.get(1);
-        assertEquals(43219 + 3.5, secondGap.position, 1.0e-6);
+        assertEquals(43219 + 4, secondGap.position, 1.0e-6);
         assertEquals(7, secondGap.startIdx);
         assertEquals(3, secondGap.size);
 
@@ -50,7 +52,8 @@ public class MAFParserTest {
             System.out.println(i + "  " + ma.getGapAdjustedIndex(i));
         }
 
-
+        String indexFile = mafFile + ".index";
+        (new File(indexFile)).delete();
 
     }
 }

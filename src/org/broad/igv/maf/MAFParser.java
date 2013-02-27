@@ -2,6 +2,9 @@ package org.broad.igv.maf;
 
 import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.index.Interval;
+import org.broad.igv.util.index.IntervalTree;
+import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.BufferedReader;
@@ -39,14 +42,51 @@ public class MAFParser implements MAFReader {
     }
 
 
-    private void parseTrackLine(String line) {
-        //To change body of created methods use File | Settings | File Templates.
+    @Override
+    public List<MultipleAlignmentBlock> loadAlignments(String chr, int start, int end) throws IOException {
+
+        IntervalTree ivTree = index.getIntervalTree(chr);
+        if (ivTree == null) return null;
+
+        List<Interval> intervals = ivTree.findOverlapping(start, end);
+        if (intervals.isEmpty()) {
+            return null;
+        }
+
+
+        // Find the starting (left most) interval.  Alignment blocks do not overlap, so we can start at the
+        // minimum file offset and just proceed until the end of the interval.
+        long startPosition = Long.MAX_VALUE;
+        for(Interval iv : intervals) {
+            startPosition = Math.min(startPosition, iv.getValue());
+        }
+
+
+        SeekableStream is = null;
+
+
+        is = SeekableStreamFactory.getStreamFor(path);
+        is.seek(startPosition);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+        List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("a ")) {
+                // TODO -- parse score (optional)
+                MultipleAlignmentBlock block = parseBlock(reader);
+                if (block.getStart() > end || !block.getChr().equals(chr)) {
+                    break;
+                } else {
+                    alignments.add(block);
+                }
+            }
+        }
+        return alignments;
     }
 
-    @Override
-    public List<MultipleAlignmentBlock> loadAligments(String chr, int start, int end, List<String> species) throws IOException {
-        return parse();
-    }
 
     @Override
     public Collection<String> getChrNames() {
@@ -69,33 +109,37 @@ public class MAFParser implements MAFReader {
     }
 
 
-    public List<MultipleAlignmentBlock> parse() throws IOException {
+    void parseHeader() throws IOException {
 
         BufferedReader reader = null;
 
+        try {
+            InputStream is = SeekableStreamFactory.getStreamFor(path);
+            reader = new BufferedReader(new InputStreamReader(is));
 
-        InputStream is = SeekableStreamFactory.getStreamFor(path);
-        reader = new BufferedReader(new InputStreamReader(is));
+            List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
 
-        List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
+            String line;
 
-        String line = reader.readLine();
-        if (line.startsWith("track")) {
-            parseTrackLine(line);
-            line = reader.readLine();
-        }
+            while ((line = reader.readLine()) != null) {
 
-        do {
-            if (line.startsWith("#")) continue;
-
-            if (line.startsWith("a ")) {
-                // TODO -- parse score (optional)
-                alignments.add(parseBlock(reader));
+                if (line.startsWith("a ")) {
+                    return;  // Done with header
+                } else if (line.startsWith("track")) {
+                    parseTrackLine(line);
+                }
             }
-        } while ((line = reader.readLine()) != null);
-
-        return alignments;
+        } finally {
+            if (reader != null) reader.close();
+        }
     }
+
+
+
+    private void parseTrackLine(String line) {
+        //To change body of created methods use File | Settings | File Templates.
+    }
+
 
     /**
      * Parse an alignment block.  The reader has been advanced to the first sequencce

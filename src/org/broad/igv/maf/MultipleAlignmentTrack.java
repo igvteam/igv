@@ -24,7 +24,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.collections.LRUCache;
 
 import javax.swing.*;
 import java.awt.*;
@@ -77,12 +76,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         if (locator.getPath().endsWith(".maf.dict")) {
             reader = new MAFListReader(locator.getPath());
-    //        speciesNames.put(genome.getId(), genome.getDisplayName());
+            //        speciesNames.put(genome.getId(), genome.getDisplayName());
 
         } else {
 
-             MAFParser parser = new MAFParser(locator.getPath()); //  new MAFLocalReader(locator.getPath());
-            parser.parse();
+            MAFParser parser = new MAFParser(locator.getPath()); //  new MAFLocalReader(locator.getPath());
+            //parser.parseHeader();
             reader = parser;
         }
 
@@ -196,9 +195,11 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
         try {
-            List<MultipleAlignmentBlock> alignments = reader.loadAligments(mafChr, start, end, selectedSpecies);
-            for(MultipleAlignmentBlock ma : alignments) {
-                renderAlignment(context, rect, ma);
+            List<MultipleAlignmentBlock> alignments = reader.loadAlignments(mafChr, start, end);
+            if (alignments != null) {
+                for (MultipleAlignmentBlock ma : alignments) {
+                    renderAlignment(context, rect, ma);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -226,7 +227,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         for (String sp : getSelectedSpecies()) {
 
-            MultipleAlignmentBlock.Sequence seq =  ma.getSequence(sp);
+            MultipleAlignmentBlock.Sequence seq = ma.getSequence(sp);
             if (seq != null) {
                 renderer.renderSequence(ma, seq, reference, ma.getGaps(), context, rect, this);
             }
@@ -315,7 +316,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     public Collection<String> getChrNames() {
         return reader.getChrNames();
     }
-
 
 
     static String getKey(String chr, int tileNo) {

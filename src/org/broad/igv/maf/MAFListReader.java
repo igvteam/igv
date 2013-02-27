@@ -41,7 +41,6 @@ public class MAFListReader implements MAFReader {
     private Map<String, String> speciesNames;
 
 
-
     // Map of chr name -> MAF file path
     Map<String, String> filenameMap;
 
@@ -120,7 +119,7 @@ public class MAFListReader implements MAFReader {
                         String name = tokens[1];
                         species.add(id);
                         speciesNames.put(id, name);
-                      } else {
+                    } else {
                         //log.info("Skipping line: " + nextLine);
                     }
                 }
@@ -148,8 +147,9 @@ public class MAFListReader implements MAFReader {
 //    }
 
     @Override
-    public List<MultipleAlignmentBlock> loadAligments(String chr, int start, int end, List<String> species) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public List<MultipleAlignmentBlock> loadAlignments(String chr, int start, int end) throws IOException {
+        MAFReader reader = getReader(chr);
+        return reader == null ? null : reader.loadAlignments(chr, start, end);
     }
 
     private MAFParser getReader(final String chr) {
@@ -159,21 +159,14 @@ public class MAFListReader implements MAFReader {
             if (path == null) {
                 log.info("No MAF file found for chromosome: " + chr);
             } else {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        try {
-                            MAFParser reader = new MAFParser(path);
-                            readerMap.put(chr, reader);
-                            IGV.getInstance().repaintDataAndHeaderPanels();
-                        } catch (Exception e) {
-                            log.error("Error loading MAF reader (" + path + "):  ", e);
-                            MessageUtils.showMessage("Error loading MAF file: " + e.getMessage());
-                        }
-                    }
-                };
-                LongRunningTask.submit(runnable);
+                try {
+                    reader = new MAFParser(path);
+                    readerMap.put(chr, reader);
+                } catch (Exception e) {
+                    log.error("Error loading MAF reader (" + path + "):  ", e);
+                    MessageUtils.showMessage("Error loading MAF file: " + e.getMessage());
+                }
             }
-
         }
         return reader;
     }
@@ -185,10 +178,9 @@ public class MAFListReader implements MAFReader {
 
     @Override
     public String getSpeciesName(String speciesId) {
-        if(speciesNames != null && speciesNames.containsKey(speciesId)) {
+        if (speciesNames != null && speciesNames.containsKey(speciesId)) {
             return speciesNames.get(speciesId);
-        }
-        else {
+        } else {
             return speciesId;
         }
     }

@@ -42,6 +42,12 @@ public class MAFIndex {
      */
     private Map<String, IntervalTree> intervalTrees;
 
+    /**
+     * The # of alignments represented by an interval in the tree.
+     * Note: This is not private so that it can be manipulated by unit tests.
+     */
+    public static int blockSize = 50;
+
     public MAFIndex() {
         intervalTrees = new HashMap<String, IntervalTree>();
     }
@@ -125,7 +131,6 @@ public class MAFIndex {
                         int start = Integer.parseInt(info[0]);
                         int end = Integer.parseInt(info[1]) + start;
                         long offset = Long.parseLong(info[2]);
-                        //System.out.println("Read line "+ l++);
                         iv.insert(new Interval(start, end, offset));
                     } else {
                         // log.info("Skipping line " + line);
@@ -142,7 +147,6 @@ public class MAFIndex {
                         int start = Integer.parseInt(info[0]);
                         int end = Integer.parseInt(info[1]) + start;
                         long offset = Long.parseLong(info[2]);
-                        //System.out.println("Read line "+ l++);
                         iv.insert(new Interval(start, end, offset));
                     }
                     l++;
@@ -172,22 +176,21 @@ public class MAFIndex {
         MAFIndex index = new MAFIndex();
         AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(alignmentFile));
 
-        String lastChr = null;
-
-        int intervalStart = 0;
-        int intervalEnd = 0;
-        int blockCount = 0;
-        int maxBlockCount = 50;
-
-        String line;
-        long lastOffset = 0;
-
-        Set<String> allSpecies = new HashSet<String>();
-        List<String> blockSpecies = new ArrayList<String>();
-        Map<String, RunningAverage> speciesRanks = new HashMap<String, RunningAverage>();
 
         try {
-            boolean readNext = false;
+
+            String lastChr = null;
+            int intervalStart = 0;
+            int intervalEnd = 0;
+            int blockCount = 0;
+            String line;
+            long lastOffset = 0;
+            boolean newBlock = false;
+
+            Set<String> allSpecies = new HashSet<String>();
+            List<String> blockSpecies = new ArrayList<String>();
+            Map<String, RunningAverage> speciesRanks = new HashMap<String, RunningAverage>();
+
             while ((line = reader.readLine()) != null) {
                 //Ignore all comment lines
                 if (line.startsWith("#") || line.trim().length() == 0) {
@@ -195,9 +198,8 @@ public class MAFIndex {
                 }
 
                 if (line.startsWith("a ")) {
-                    readNext = true;
+                    newBlock = true;
                     blockCount++;
-                    lastOffset = reader.getPosition();
 
                     // Merge species list, if any, from previous block and start new one
                     mergeSpecies(blockSpecies, allSpecies, speciesRanks);
@@ -215,33 +217,37 @@ public class MAFIndex {
                         species = srcTokens[0];
                         chr = srcTokens[1];
                     }
+                    if (lastChr == null) lastChr = chr;
+
                     blockSpecies.add(species);
 
-                    if (readNext) {
+                    if (newBlock) {
                         // This will be the reference sequence line (its always first after the "a")
                         int start = Integer.parseInt(tokens[2]);
                         int end = Integer.parseInt(tokens[3]) + start;
 
-                        if (blockCount > maxBlockCount || (lastChr != null && !chr.equals(lastChr))) {
-                            if (intervalEnd > intervalStart) {
-                                index.insertInterval(lastChr, intervalStart, intervalEnd, lastOffset);
-                            }
-                            intervalStart = start;
+                        if ((!chr.equals(lastChr) && blockCount > 0) ||
+                                blockCount > blockSize) {
+
+                            // Record previous interval and start a new one.
+                            index.insertInterval(lastChr, intervalStart, intervalEnd, lastOffset);
+
                             blockCount = 1;
+                            lastOffset = reader.getPosition();
+                            intervalStart = start;
                         }
+
                         lastChr = chr;
                         intervalEnd = end;
-
+                        newBlock = false;
                     }
-                    readNext = false;
+
                 } else if (line.startsWith("i ")) {
                     //We do not handle information lines yet.
                     continue;
                 } else if (line.startsWith("q ")) {
                     //We do not handle quality lines yet.
                     continue;
-                } else {
-                    readNext = false;
                 }
             }
 
@@ -278,14 +284,13 @@ public class MAFIndex {
         for (int i = 0; i < blockSpecies.size(); i++) {
             String sp = blockSpecies.get(i);
             RunningAverage rank = speciesRank.get(sp);
-            if(rank == null) {
+            if (rank == null) {
                 rank = new RunningAverage();
                 speciesRank.put(sp, rank);
             }
             rank.addValue(i);
             speciesRank.put(sp, rank);
         }
-        System.out.println();
     }
 
     private static List<String> sortSpecies(final Collection<String> allSpecies, final Map<String, RunningAverage> speciesRank) {
@@ -293,7 +298,7 @@ public class MAFIndex {
         Collections.sort(speciesList, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                double v =  speciesRank.get(o1).average - speciesRank.get(o2).average;
+                double v = speciesRank.get(o1).average - speciesRank.get(o2).average;
                 return v > 0 ? 1 : (v < 0 ? -1 : 0);
             }
         });

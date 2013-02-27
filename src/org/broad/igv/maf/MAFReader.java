@@ -32,7 +32,7 @@ import java.util.List;
  */
 public interface MAFReader {
 
-    List<MultipleAlignmentBlock> loadAligments(String chr, int start, int end, List<String> species) throws IOException;
+    List<MultipleAlignmentBlock> loadAlignments(String chr, int start, int end) throws IOException;
 
     /**
      * Return the chromosome names represented in this file.   Can return null if unknown.
