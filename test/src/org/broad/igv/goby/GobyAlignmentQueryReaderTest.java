@@ -31,6 +31,7 @@ import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -402,7 +403,8 @@ public class GobyAlignmentQueryReaderTest {
         org.junit.Assert.assertTrue(reader.hasNext());
     }
 
-    @Test
+    // Test below is disabled, it depends on a resource we don't control
+    @Ignore
     public void testOldGobyHybridUrl() throws IOException {
         AlignmentReader reader = new AlignmentReaderImpl("http://gobyweb.apps.campagnelab.org/data/H_T_D/MYHZZJH/MYHZZJH-hybrid-domain.header");
         reader.reposition(10, 1210);
