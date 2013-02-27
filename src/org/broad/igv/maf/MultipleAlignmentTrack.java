@@ -10,10 +10,9 @@
  */
 package org.broad.igv.maf;
 
+import edu.mit.broad.prodinfo.genomicplot.ParseException;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.maf.MAFTile.MASequence;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.AbstractTrack;
@@ -25,6 +24,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.LRUCache;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -44,13 +44,25 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(MultipleAlignmentTrack.class);
     private static int EXPANDED_HEIGHT = 14;
     private static int GAPS_HEIGHT = 25;
-    //List<Rectangle> featureRects = new ArrayList();
-    MAFManager mgr;
-    MAFRenderer renderer = new MAFRenderer();
-    // A hack until full MAF track is implemented.
-    Rectangle visibleNameRect;
 
     Genome genome;
+
+    private String refId;
+    private List<String> selectedSpecies;
+
+    //private Map<String, String> speciesNames;
+
+    MAFRenderer renderer = new MAFRenderer();
+    Rectangle visibleNameRect;
+
+
+    private int tileSize = 500;
+
+    //MafChunk currentChunk
+
+
+    MAFReader reader;
+
 
     /**
      * Map of chr alias -> "true" chromosome names.
@@ -58,12 +70,24 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     private HashMap<String, String> chrMappings;
 
 
-    public MultipleAlignmentTrack(ResourceLocator locator, Genome genome) throws IOException {
+    public MultipleAlignmentTrack(final ResourceLocator locator, Genome genome) throws IOException, ParseException {
         super(locator);
         this.genome = genome;
-        this.mgr = new MAFManager(locator, genome);
 
-        List<String> mafChrNames = mgr.getChrNames();
+
+        if (locator.getPath().endsWith(".maf.dict")) {
+            reader = new MAFListReader(locator.getPath());
+    //        speciesNames.put(genome.getId(), genome.getDisplayName());
+
+        } else {
+
+             MAFParser parser = new MAFParser(locator.getPath()); //  new MAFLocalReader(locator.getPath());
+            parser.parse();
+            reader = parser;
+        }
+
+        refId = reader.getRefId();
+        Collection<String> mafChrNames = getChrNames();
         if (mafChrNames != null) {
             chrMappings = new HashMap();
             for (String mafChr : mafChrNames) {
@@ -71,11 +95,32 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 chrMappings.put(chr, mafChr);
             }
         }
+
+        selectedSpecies = new ArrayList<String>();
+        selectedSpecies.addAll(reader.getSpecies());
     }
+
+
+    public List<String> getSelectedSpecies() {
+        return selectedSpecies;
+    }
+
+    /**
+     * @param selectedSpecies the selectedSpecies to set
+     */
+    public void setSelectedSpecies(List<String> selectedSpecies) {
+        this.selectedSpecies = selectedSpecies;
+    }
+
+    public String getSpeciesName(String speciesId) {
+        String name = reader.getSpeciesName(speciesId);
+        return name == null ? speciesId : name;
+    }
+
 
     @Override
     public int getHeight() {
-        return GAPS_HEIGHT + (mgr.getSelectedSpecies().size() + 1) * EXPANDED_HEIGHT;
+        return GAPS_HEIGHT + (getSelectedSpecies().size() + 1) * EXPANDED_HEIGHT;
     }
 
     @Override
@@ -105,16 +150,9 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
         rect.height = EXPANDED_HEIGHT;
 
-        String ref = mgr.getSpeciesName(mgr.refId);
-        if (ref == null) {
-            ref = mgr.refId;
-        }
-        GraphicUtils.drawVerticallyCenteredText(ref, margin, rect, g2D, true);
-        rect.y += rect.height;
+        for (String sp : getSelectedSpecies()) {
 
-        for (String sp : mgr.getSelectedSpecies()) {
-
-            String name = mgr.getSpeciesName(sp);
+            String name = getSpeciesName(sp);
             if (name == null) {
                 name = sp;
             }
@@ -152,26 +190,28 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         double origin = context.getOrigin();
         String chr = context.getChr();
 
-        String mafChr = chrMappings == null ? null : chrMappings.get(chr);
+        String mafChr = chrMappings == null ? chr : chrMappings.get(chr);
         int start = (int) origin;
         int end = (int) (origin + rect.width * locScale) + 1;
-        MAFTile[] tiles = mgr.getTiles(mafChr, start, end);
-        if (tiles != null) {
-            for (MAFTile tile : tiles) {
-                // render tile
-                if (tile != null) {
-                    renderTile(context, rect, tile);
-                }
+
+
+        try {
+            List<MultipleAlignmentBlock> alignments = reader.loadAligments(mafChr, start, end, selectedSpecies);
+            for(MultipleAlignmentBlock ma : alignments) {
+                renderAlignment(context, rect, ma);
             }
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+
 
     }
 
-    private void renderTile(RenderContext context, Rectangle trackRectangle, MAFTile tile) {
+    private void renderAlignment(RenderContext context, Rectangle trackRectangle, MultipleAlignmentBlock ma) {
 
         int y = trackRectangle.y;
 
-        MASequence reference = tile.refSeq;
+        MultipleAlignmentBlock.Sequence reference = ma.getRefSequence();
         if (reference == null) {
             return;
         }
@@ -179,19 +219,16 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         rect.height = GAPS_HEIGHT;
         rect.y = y;
-        renderer.renderGaps(tile.getGaps(), context, rect);
+        renderer.renderGaps(ma.getGaps(), context, rect);
         rect.y += rect.height;
 
         rect.height = EXPANDED_HEIGHT;
-        renderer.renderAligment(reference, reference, null, context, rect, this);
-        rect.y += rect.height;
 
+        for (String sp : getSelectedSpecies()) {
 
-        for (String sp : mgr.getSelectedSpecies()) {
-
-            MASequence seq = tile.alignedSequences.get(sp);
+            MultipleAlignmentBlock.Sequence seq =  ma.getSequence(sp);
             if (seq != null) {
-                renderer.renderAligment(seq, reference, tile.getGaps(), context, rect, this);
+                renderer.renderSequence(ma, seq, reference, ma.getGaps(), context, rect, this);
             }
 
             rect.y += rect.height;
@@ -250,7 +287,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     private void configureTrack() {
-        MAFConfigurationDialog dialog = new MAFConfigurationDialog(IGV.getMainFrame(), true, mgr);
+        AbstractMultipleAlignmentDialog dialog;
+        if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
+            dialog = new Multiz44ConfigurationDialog(IGV.getMainFrame(), true, this);
+        } else {
+            dialog = null;
+        }
         dialog.setLocationRelativeTo(IGV.getMainFrame());
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
@@ -260,14 +302,25 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         });
         dialog.setVisible(true);
 
-        if (dialog.cancelled) {
+
+        if (dialog.isCancelled()) {
+
         } else {
             List<String> selectedSpecies = dialog.getSelectedSpecies();
-            mgr.setSelectedSpecies(selectedSpecies);
-            PreferenceManager.getInstance().setMafSpecies(selectedSpecies);
+            setSelectedSpecies(selectedSpecies);
             IGV.getInstance().repaint();
         }
-
     }
+
+    public Collection<String> getChrNames() {
+        return reader.getChrNames();
+    }
+
+
+
+    static String getKey(String chr, int tileNo) {
+        return chr + tileNo;
+    }
+
 }
 

@@ -228,6 +228,11 @@ public abstract class AbstractTrack implements Track {
         // No-op, to be overriden by subclasses
     }
 
+    @Override
+    public boolean isFilterable() {
+        return true;   // True by default
+    }
+
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         Rectangle rect = getDisplayableRect(trackRectangle, visibleRectangle);

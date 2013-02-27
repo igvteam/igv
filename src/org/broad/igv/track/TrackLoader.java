@@ -11,6 +11,7 @@
 
 package org.broad.igv.track;
 
+import edu.mit.broad.prodinfo.genomicplot.ParseException;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.bbfile.BBFileReader;
@@ -277,7 +278,7 @@ public class TrackLoader {
 
 
             return newTracks;
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new DataLoadException(e.getMessage(), path);
         }
@@ -424,7 +425,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, ParseException {
 
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
                 locator.getPath().endsWith(".bed.txt"))) {
@@ -880,7 +881,7 @@ public class TrackLoader {
         (new RNAIHairpinParser(locator.getPath())).parse();
     }
 
-    private void loadMultipleAlignmentTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadMultipleAlignmentTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, ParseException {
         MultipleAlignmentTrack t = new MultipleAlignmentTrack(locator, genome);
         t.setName("Multiple Alignments");
         newTracks.add(t);

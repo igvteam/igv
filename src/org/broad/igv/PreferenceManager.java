@@ -17,7 +17,6 @@ package org.broad.igv;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.maf.MAFManager;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.AlignmentTrack.ShadeBasesOption;
@@ -157,7 +156,6 @@ public class PreferenceManager implements PropertyManager {
     final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
     //final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
     final public static String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
-    final public static String MAF_SPECIES_KEY = "MAF_SPECIES_KEY";
 
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
     final public static String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
@@ -443,31 +441,6 @@ public class PreferenceManager implements PropertyManager {
         preferences.putOverride(GENOMES_SERVER_URL, url);
     }
 
-
-    public List<String> getMafSpecies() {
-        String tmp = get(MAF_SPECIES_KEY, null);
-
-        String[] species = null;
-        if (tmp == null) {
-            species = MAFManager.species;
-        } else {
-            species = tmp.split(":");
-        }
-        return Arrays.asList(species);
-    }
-
-    public void setMafSpecies(List<String> species) {
-        StringBuffer buf = new StringBuffer(species.size() * 7);
-        Iterator<String> iter = species.iterator();
-        while (iter.hasNext()) {
-            buf.append(iter.next());
-            if (iter.hasNext()) {
-                buf.append(":");
-            }
-        }
-        put(MAF_SPECIES_KEY, buf.toString());
-
-    }
 
     /**
      * @param bounds
@@ -922,10 +895,9 @@ public class PreferenceManager implements PropertyManager {
     public Object getAntiAliasingHint() {
 
         String pref = get(ENABLE_ANTIALISING);
-        if(pref == null || !pref.equals("false")) {
-             return RenderingHints.VALUE_ANTIALIAS_ON;
-        }
-        else {
+        if (pref == null || !pref.equals("false")) {
+            return RenderingHints.VALUE_ANTIALIAS_ON;
+        } else {
             return RenderingHints.VALUE_ANTIALIAS_OFF;
         }
 
@@ -1151,9 +1123,9 @@ public class PreferenceManager implements PropertyManager {
      * Get a property which is a delimited list of entries
      *
      * @param key
-     * @return  The string array of tokens, or an empty array if not present
+     * @return The string array of tokens, or an empty array if not present
      */
-    private String[] getArray(String key){
+    private String[] getArray(String key) {
         String stringProp = get(key);
         if (stringProp == null) {
             return new String[0];
@@ -1165,12 +1137,12 @@ public class PreferenceManager implements PropertyManager {
     /**
      * Get the path to the CLI plugin specified by the
      * Id and tool name.
-     * @see #putToolPath(String, String, String)
-     * @see #genToolKey
      *
      * @param pluginId
      * @param toolName
      * @return
+     * @see #putToolPath(String, String, String)
+     * @see #genToolKey
      */
     public String getToolPath(String pluginId, String toolName) {
         return get(genToolKey(pluginId, toolName, "path"));
@@ -1179,11 +1151,11 @@ public class PreferenceManager implements PropertyManager {
     /**
      * Set the path to the CLI plugin
      *
-     * @see #getToolPath(String, String)
-     * @see #genToolKey
      * @param pluginId
      * @param toolName
      * @param path
+     * @see #getToolPath(String, String)
+     * @see #genToolKey
      */
     public void putToolPath(String pluginId, String toolName, String path) {
         put(genToolKey(pluginId, toolName, "path"), path);
@@ -1201,7 +1173,7 @@ public class PreferenceManager implements PropertyManager {
         return String.format("%s:%s:%s", pluginId, toolName, key);
     }
 
-    public String[] getIGVPluginList(){
+    public String[] getIGVPluginList() {
         return getArray(IGV_PLUGIN_LIST_KEY);
     }
 

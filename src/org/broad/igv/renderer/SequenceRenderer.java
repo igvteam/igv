@@ -44,7 +44,7 @@ public class SequenceRenderer {
     //Maximum scale at which the track is displayed
     //public static final int MAX_SCALE_FOR_RENDER = 1000;
     public static final int AMINO_ACID_RESOLUTION = 5;
-    static Map<Character, Color> nucleotideColors = new HashMap();
+    public static Map<Character, Color> nucleotideColors = new HashMap();
 
 
     static {

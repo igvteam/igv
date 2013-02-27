@@ -18,9 +18,8 @@
 package org.broad.igv.maf;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.maf.MAFTile.Gap;
-import org.broad.igv.maf.MAFTile.MASequence;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -35,22 +34,22 @@ import java.util.Map;
  */
 public class MAFRenderer {
 
-    static Map<Character, Color> nucleotideColors = new HashMap();
-
-
-    static {
-
-        nucleotideColors.put('A', Color.GREEN);
-        nucleotideColors.put('a', Color.GREEN);
-        nucleotideColors.put('C', Color.BLUE);
-        nucleotideColors.put('c', Color.BLUE);
-        nucleotideColors.put('T', Color.RED);
-        nucleotideColors.put('t', Color.RED);
-        nucleotideColors.put('G', new Color(242, 182, 65));
-        nucleotideColors.put('g', new Color(242, 182, 65));
-        nucleotideColors.put('N', Color.gray);
-        nucleotideColors.put('n', Color.gray);
-    }
+//    static Map<Character, Color> nucleotideColors = new HashMap();
+//
+//
+//    static {
+//
+//        nucleotideColors.put('A', Color.GREEN);
+//        nucleotideColors.put('a', Color.GREEN);
+//        nucleotideColors.put('C', Color.BLUE);
+//        nucleotideColors.put('c', Color.BLUE);
+//        nucleotideColors.put('T', Color.RED);
+//        nucleotideColors.put('t', Color.RED);
+//        nucleotideColors.put('G', new Color(242, 182, 65));
+//        nucleotideColors.put('g', new Color(242, 182, 65));
+//        nucleotideColors.put('N', Color.gray);
+//        nucleotideColors.put('n', Color.gray);
+//    }
 
     /**
      * Constructs ...
@@ -58,7 +57,7 @@ public class MAFRenderer {
     public MAFRenderer() {
     }
 
-    public void renderGaps(List<Gap> gaps, RenderContext context, Rectangle rect) {
+    public void renderGaps(List<MultipleAlignmentBlock.Gap> gaps, RenderContext context, Rectangle rect) {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -66,9 +65,9 @@ public class MAFRenderer {
             return;
         }
 
-        for (Gap gap : gaps) {
+        for (MultipleAlignmentBlock.Gap gap : gaps) {
 
-            int pixelPosition = (int) ((gap.getPosition() - origin) / locScale);
+            int pixelPosition = (int) ((gap.position - origin) / locScale);
 
             Graphics2D g = context.getGraphic2DForColor(Color.BLACK);
 
@@ -79,7 +78,7 @@ public class MAFRenderer {
             textRect.x = pixelPosition - 6;
             textRect.width = 12;
             textRect.height = rect.height - 7;
-            GraphicUtils.drawCenteredText(String.valueOf(gap.getCount()),
+            GraphicUtils.drawCenteredText(String.valueOf(gap.size),
                     textRect, g);
         }
     }
@@ -91,10 +90,11 @@ public class MAFRenderer {
      * @param trackRectangle
      * @param track
      */
-    public void renderAligment(
-            MASequence alignedSequence,
-            MASequence reference,
-            List<Gap> gaps,
+    public void renderSequence(
+            MultipleAlignmentBlock multipleAlignment,
+            MultipleAlignmentBlock.Sequence alignedSequence,
+            MultipleAlignmentBlock.Sequence reference,
+            List<MultipleAlignmentBlock.Gap> gaps,
             RenderContext context,
             Rectangle trackRectangle,
             Track track) {
@@ -106,42 +106,15 @@ public class MAFRenderer {
             return;
         }
 
-// Note -- don't cast these to an int until the range is checked.
-// could get an overflow.
-        double pixelStart = ((alignedSequence.getStart() - origin) / locScale);
-        double pixelEnd = ((alignedSequence.getEnd() - origin) / locScale);
-
-        // If the any part of the alignedSequence fits in the track rectangle draw it
-        if ((pixelEnd >= trackRectangle.getX()) && (pixelStart <= trackRectangle.getMaxX())) {
+        double pixelStart = ((multipleAlignment.getStart() - origin) / locScale);
 
 
-            int w = Math.max(1, (int) (pixelEnd - pixelStart));
-            int h = (int) Math.max(1, trackRectangle.getHeight() - 2);
-            int y = (int) (trackRectangle.getY() + (trackRectangle.getHeight() - h) / 2);
-            Rectangle block = new Rectangle((int) pixelStart, y, w, h);
+        int w = Math.max(1, (int) (trackRectangle.width));
+        int h = (int) Math.max(1, trackRectangle.getHeight() - 2);
+        int y = (int) (trackRectangle.getY() + (trackRectangle.getHeight() - h) / 2);
+        Rectangle rect = new Rectangle((int) pixelStart, y, w, h);
 
-            if (locScale < 1) {
-                drawBases(context, block, alignedSequence, reference, gaps);
-            }
-
-        }
-
-    }
-
-    /**
-     * Method description
-     *
-     * @param context
-     * @param rect
-     * @param alignment
-     */
-    private void drawBases(RenderContext context, Rectangle rect,
-                           MASequence alignment, MASequence ref, List<Gap> gaps) {
-
-        double locScale = context.getScale();
-        double origin = context.getOrigin();
-
-        {
+        if (locScale < 1) {
 
             int pY = (int) rect.getY();
             int dY = (int) rect.getHeight();
@@ -159,24 +132,26 @@ public class MAFRenderer {
             // Loop through base pair coordinates
             int windowStart = (int) origin - 1;
             int windowEnd = (int) context.getEndLocation() + 1;
-            int start = Math.max(windowStart, alignment.getStart());
-            int end = Math.min(windowEnd, alignment.getEnd());
+            int start = Math.max(windowStart, multipleAlignment.getStart());
+            int end = Math.min(windowEnd, multipleAlignment.getEnd());
+
+            byte[] alignmentBytes = alignedSequence.getText().getBytes();
+            byte[] refBytes = reference.getText().getBytes();
 
             for (int loc = start; loc < end; loc++) {
 
                 int pX0 = (int) ((loc - origin) / locScale);
 
-                char c = alignment.getGapAdjustedBase(loc);
-                char refBase = ref.getGapAdjustedBase(loc);
-                if (c == 0 || refBase == 0) {
-                    continue;
-                }
+                int idx = multipleAlignment.getGapAdjustedIndex(loc);
+
+                char c = (char) alignmentBytes[idx];
+                char refBase = (char) refBytes[idx];
 
                 boolean misMatch = Character.toUpperCase(c) != Character.toUpperCase(refBase);
 
-                char charToDraw = misMatch || ref == alignment ? c : '.';
+                char charToDraw = misMatch || reference == alignedSequence ? c : '.';
 
-                Color color = nucleotideColors.get(charToDraw);
+                Color color = SequenceRenderer.nucleotideColors.get(charToDraw);
 
                 if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
 
@@ -202,10 +177,10 @@ public class MAFRenderer {
             // Check for insertion
             if (gaps != null) {
                 Graphics2D gapG = context.getGraphic2DForColor(Color.black);
-                for (Gap gap : gaps) {
-                    for (int idx = gap.startIdx; idx < gap.endIdx; idx++) {
-                        if (alignment.bases.charAt(idx) != '-') {
-                            int pX0 = (int) ((gap.getPosition() - origin) / locScale);
+                for (MultipleAlignmentBlock.Gap gap : gaps) {
+                    for (int idx = gap.startIdx; idx < gap.startIdx + gap.size; idx++) {
+                        if (alignmentBytes[idx] != '-') {
+                            int pX0 = (int) ((gap.position - origin) / locScale);
                             gapG.drawLine(pX0, pY, pX0, pY + dY);
                             break;
                         }

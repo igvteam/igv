@@ -117,6 +117,9 @@ public class FeatureTrack extends AbstractTrack {
     private static final String PLUGIN_SOURCE = "PluginSource";
     private static final String SEQUENCE_MATCH_SOURCE = "SequenceMatchSource";
 
+
+    // TODO -- there are WAY too many constructors for this class
+
     /**
      * Construct with no feature source.  Currently this is only used for the SpliceJunctionFinderTrack subclass.
      *
@@ -187,6 +190,11 @@ public class FeatureTrack extends AbstractTrack {
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return false; // Don't filter "feature" tracks
     }
 
     @Override

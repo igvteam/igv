@@ -36,6 +36,7 @@ import java.util.List;
  */
 public interface Track extends Persistable{
 
+
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, ALTERNATIVE_SPLICE
     }
@@ -51,6 +52,14 @@ public interface Track extends Persistable{
 
 
     void preload(RenderContext context);
+
+    /**
+     * Return true if a track can be filtered by sample annotation.
+     *
+     * @return
+     */
+    boolean isFilterable();
+
 
     /**
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the

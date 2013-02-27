@@ -23,6 +23,8 @@
 
 package org.broad.igv.maf;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,13 +32,18 @@ import java.util.List;
  */
 public interface MAFReader {
 
-    MAFTile loadTile(String chr, int start, int end,
-                     List<String> species);
+    List<MultipleAlignmentBlock> loadAligments(String chr, int start, int end, List<String> species) throws IOException;
 
     /**
-     * Return the sequence (chromosome) names represented in this file.   Can return null if unknown.
+     * Return the chromosome names represented in this file.   Can return null if unknown.
      *
      * @return
      */
-    List<String> getChrNames();
+    Collection<String> getChrNames();
+
+    Collection<String> getSpecies();
+
+    String getSpeciesName(String speciesId);
+
+    String getRefId();
 }

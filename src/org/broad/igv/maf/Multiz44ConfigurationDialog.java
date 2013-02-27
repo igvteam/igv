@@ -38,10 +38,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * NOTE: This is hardcoded for the human 44-way files!  Generalize for release 2.2.
+ * NOTE: This is hardcoded for the human 44-way files.
+ *
  * @author jrobinso
  */
-public class MAFConfigurationDialog extends javax.swing.JDialog {
+public class Multiz44ConfigurationDialog extends AbstractMultipleAlignmentDialog {
 
     enum Category {
 
@@ -66,14 +67,14 @@ public class MAFConfigurationDialog extends javax.swing.JDialog {
     };
     boolean cancelled = false;
 
-    MAFManager mgr;
+    MultipleAlignmentTrack track;
 
     /**
      * Creates new form MAFConfigurationDialog
      */
-    public MAFConfigurationDialog(java.awt.Frame parent, boolean modal, MAFManager mgr) {
+    public Multiz44ConfigurationDialog(java.awt.Frame parent, boolean modal,  MultipleAlignmentTrack track) {
         super(parent, modal);
-        this.mgr = mgr;
+        this.track = track;
         initComponents();
         ((SpeciesSelectionPanel) primatePanel).checkForAllSelections();
         ((SpeciesSelectionPanel) mammalsPanel).checkForAllSelections();
@@ -82,12 +83,18 @@ public class MAFConfigurationDialog extends javax.swing.JDialog {
 
     }
 
+    @Override
     public List<String> getSelectedSpecies() {
         List<String> selectedSpecies = new ArrayList(44);
         selectedSpecies.addAll(((SpeciesSelectionPanel) primatePanel).getSelectedSpecies());
         selectedSpecies.addAll(((SpeciesSelectionPanel) mammalsPanel).getSelectedSpecies());
         selectedSpecies.addAll(((SpeciesSelectionPanel) vertebratePanel).getSelectedSpecies());
         return selectedSpecies;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     /**
@@ -286,8 +293,10 @@ public class MAFConfigurationDialog extends javax.swing.JDialog {
 
         private void init() {
 
-            Set<String> currentSelections = new HashSet(
-                    PreferenceManager.getInstance().getMafSpecies());
+           Set<String> currentSelections = new HashSet(track.getSelectedSpecies());
+           // if(currentSelections == null) {
+           //     currentSelections =
+           // }
 
             int nRows = speciesIds.length / nColumns + 1;
 
@@ -302,13 +311,13 @@ public class MAFConfigurationDialog extends javax.swing.JDialog {
 
             for (int i = 0; i < speciesIds.length; i++) {
                 String sp = speciesIds[i];
-                String label = mgr.getSpeciesName(sp);
+                String label = track.getSpeciesName(sp);
                 if (label == null) {
                     label = sp;
                 }
 
                 checkboxes[i] = new JCheckBox(label);
-                checkboxes[i].setSelected(currentSelections.contains(sp));
+                checkboxes[i].setSelected(currentSelections == null || currentSelections.contains(sp));
                 checkboxes[i].addActionListener(new java.awt.event.ActionListener() {
 
                     public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -1,24 +1,93 @@
-track name=euArc visibility=pack
-##maf version=1 scoring=tba.v8
-# tba.v8 (((human chimp) baboon) (mouse rat))
-# MAF example from UCSC
+track name='hg18 Multiz' visibility=pack
+##maf version=1 scoring=autoMZ.v1
 
-a score=23262.0
-s hg18.chr7    27578828 38 + 158545518 AAA-GGGAATGTTAACCAAATGA---ATTGTCTCTTACGGTG
-s panTro1.chr6 28741140 38 + 161576975 AAA-GGGAATGTTAACCAAATGA---ATTGTCTCTTACGGTG
-s baboon         116834 38 +   4622798 AAA-GGGAATGTTAACCAAATGA---GTTGTCTCTTATGGTG
-s mm4.chr6     53215344 38 + 151104725 -AATGGGAATGTTAAGCAAACGA---ATTGTCTCTCAGTGTG
-s rn3.chr4     81344243 40 + 187371129 -AA-GGGGATGCTAAGCCAATGAGTTGTTGTCTCTCAATGTG
+a score=89960.000000
+s hg18.chr1                       40187 55 + 247249719 AATTAGCATGTAGAATTCTGGTTAAAATTTGGCATAGAACACCCGGGTATTTTTT
+s equCab2.chr1                155667141 55 + 185838109 AGGAAGCATGTACATTTCAGTTTAAAATTTGGCATAAAACACTCAGATTTTCTTG
+q equCab2.chr1                                         9999999999999999999999999999999999999999999999999999999
+i equCab2.chr1                N 0 C 0
+s bosTau4.chr10                27191719 55 + 106383598 AGGAAGCATGTACATATCTGGTCCAAATCTGACATAGAACATCCAGAGTTTTCTT
+q bosTau4.chr10                                        9999999999999999999999999999999999999999999999999999999
+i bosTau4.chr10               C 0 C 0
+s tarSyr1.scaffold_17151           3427 54 -     26561 AGGAAGCATGTATAATTCTAGCTAAAATTTGTTATAAAACACATAGGT-TTTCTT
+q tarSyr1.scaffold_17151                               999999999999999999999999999999999999999999999999-999999
+i tarSyr1.scaffold_17151      C 0 C 0
+s rheMac2.chr7                 87604662 55 - 169801366 AGTTAGCATGTAGAATTTCGATTAAAATTTGGCATACAACACCCAGGCATTTTTT
+q rheMac2.chr7                                         9999999999999999999999999999999999999999999999999999999
+i rheMac2.chr7                C 0 C 0
+s ponAbe2.chr19                   11497 55 +  60714840 AATTAGCATGTAGAATTCTGGTTAAAATTTGGCATAAAACACCCAGGTATTTTTT
+q ponAbe2.chr19                                        9999999999999999999999999999999999999999999999999999999
+i ponAbe2.chr19               C 0 C 0
+s gorGor1.Supercontig_0005299     10179 55 -     22747 AATTAGCATGTAGAATTCTGGTTAAAATTTGGCATGGAANACCCGGGCATTTTTT
+q gorGor1.Supercontig_0005299                          9999999999999999999999999999999999999999999999999999999
+i gorGor1.Supercontig_0005299 C 0 C 0
+s panTro2.chrUn                 9704936 55 +  58616431 AATTAGCATGTAGAATTCTGGTTAAAATTTGGCATAGAACACCCGGGTATTTTTT
+q panTro2.chrUn                                        9999999999999999999999999999999999999999999999999999999
+i panTro2.chrUn               C 0 C 0
+e cavPor3.scaffold_32          16020862 1273 +  25641242 I
+e xenTro2.scaffold_24           3995933 11859 -   4875303 I
+e canFam2.chr30                39825347 3649 -  43206070 I
 
-a score=5062.0
-s hg18.chr7    27699739 6 + 158545518 TAAAGA
-s panTro1.chr6 28862317 6 + 161576975 TAAAGA
-s baboon         241163 6 +   4622798 TAAAGA
-s mm4.chr6     53303881 6 + 151104725 TAAAGA
-s rn3.chr4     81444246 6 + 187371129 taagga
+a score=37296.000000
+s hg18.chr1                       40242 23 + 247249719 CATAATGCACCCAATAACTGTCA
+s panTro2.chrUn                 9704991 23 +  58616431 CATAATGCACCCAATAACTGTCA
+q panTro2.chrUn                                        99999999999999999999999
+i panTro2.chrUn               C 0 C 0
+s gorGor1.Supercontig_0005299     10234 23 -     22747 CATAATGCACCCAATAACTGTCA
+q gorGor1.Supercontig_0005299                          99999999999999999999999
+i gorGor1.Supercontig_0005299 C 0 C 0
+s ponAbe2.chr19                   11552 23 +  60714840 CATAATGCACCCAATAACTGTCA
+q ponAbe2.chr19                                        99999999999999999999999
+i ponAbe2.chr19               C 0 C 0
+s rheMac2.chr7                 87604717 23 - 169801366 CATAATGTACCCAATAACTGTCA
+q rheMac2.chr7                                         99999999999999999999999
+i rheMac2.chr7                C 0 C 0
+s tarSyr1.scaffold_17151           3481 23 -     26561 CATAGTGCACCCCATAATTGTCA
+q tarSyr1.scaffold_17151                               99999999999999999999999
+i tarSyr1.scaffold_17151      C 0 C 0
+s bosTau4.chr10                27191774 22 + 106383598 CAT-GTACTTCCAGTAATTGTCA
+q bosTau4.chr10                                        999-9999999999999999999
+i bosTau4.chr10               C 0 C 0
+s equCab2.chr1                155667196 22 + 185838109 ACT-GTATATCTAGTAGTTGTCA
+q equCab2.chr1                                         999-9999999999999999999
+i equCab2.chr1                C 0 N 0
+s ornAna1.Ultra163               159364 21 -   1587491 cagaatgagttcaataaatgc--
+q ornAna1.Ultra163                                     999999999999999999999--
+i ornAna1.Ultra163            N 0 C 0
+e cavPor3.scaffold_32          16020862 1273 +  25641242 I
+e xenTro2.scaffold_24           3995933 11859 -   4875303 I
+e canFam2.chr30                39825347 3649 -  43206070 I
 
-a score=6636.0
-s hg18.chr7    27707221 13 + 158545518 gcagctgaaaaca
-s panTro1.chr6 28869787 13 + 161576975 gcagctgaaaaca
-s baboon         249182 13 +   4622798 gcagctgaaaaca
-s mm4.chr6     53310102 13 + 151104725 ACAGCTGAAAATA
+
+a score=78447.000000
+s hg18.chr1                       43219 50 + 247249719 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
+s panTro2.chrUn                 9708467 50 +  58616431 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
+q panTro2.chrUn                                        9---999---9999999999999999999999999999999999999999999999
+i panTro2.chrUn               C 0 C 0
+s gorGor1.Supercontig_0005299     13196 50 -     22747 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
+q gorGor1.Supercontig_0005299                          2---233---2211122333333333341444433414155555555554444444
+i gorGor1.Supercontig_0005299 C 0 C 0
+s ponAbe2.chr19                   16249 50 +  60714840 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
+q ponAbe2.chr19                                        9---999---9999999999999999999999999999999999999999999999
+i ponAbe2.chr19               C 0 C 0
+s rheMac2.chr7                 87607283 50 - 169801366 G---ATC---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
+q rheMac2.chr7                                         9---999---9999999999999999999999999999999999999999999999
+i rheMac2.chr7                C 0 C 0
+s cavPor3.scaffold_32          16022892 55 +  25641242 GGACATGGAACAATAATAACTGATGCAC-TGTAGAGCACAATATGATATAGTTTCT
+q cavPor3.scaffold_32                                  9999999999999999999999999999-999999999999999999999999999
+i cavPor3.scaffold_32         C 0 C 0
+s bosTau4.chr10                27195353 50 + 106383598 G---ATC---TCATAATGAATGGAGCAGATCTAGAGTACACAATGCTTCAAGCTTA
+q bosTau4.chr10                                        9---999---9999999999999999999999999999999999999999999999
+i bosTau4.chr10               C 0 C 0
+s equCab2.chr1                155511472 50 + 185838109 G---ATC---TCATCATGAACGGAACAGACCTAGAATACAAGATGCTTCAGACTCA
+q equCab2.chr1                                         9---999---9999999999999999999999999999999999999999999999
+i equCab2.chr1                C 0 C 0
+s canFam2.chr30                39831340 49 -  43206070 G---ATC---TCATAATGAATGGAGCAGATCTA-CATACAACATGCTGCAGGTTCA
+q canFam2.chr30                                        9---999---99999999999999999999999-9999999999999999999999
+i canFam2.chr30               C 0 C 0
+s xenTro2.scaffold_926           254257 48 +    309967 ---TATT---TTA-GATAGTTGTAGCTAATACA-AGTCAACAACATTTCAATCTGA
+i xenTro2.scaffold_926        C 0 I 8205
+s danRer5.chr10                 8647565 42 -  42379582 --CAATG---TGA-AAAATATAGGACAGATGAAATGTACAAGGAGATA--------
+i danRer5.chr10               C 0 C 0
+e tarSyr1.scaffold_17151           3591  4 -     26561 I
+e ornAna1.Contig17617              5497 7476 -     22632 I

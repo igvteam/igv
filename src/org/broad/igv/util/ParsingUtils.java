@@ -48,6 +48,8 @@ public class ParsingUtils {
     public static final Pattern COMMA_PATTERN = Pattern.compile(",");
     public static final Pattern SEMI_COLON_PATTERN = Pattern.compile(";");
     public static final Pattern EQ_PATTERN = Pattern.compile("=");
+    public static final Pattern PERIOD_PATTERN = Pattern.compile("\\.");
+    public static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
 
 
     /**

@@ -58,15 +58,16 @@ public class IntervalTree {
 
 
     // Returns all matches as a list of Intervals
-    public List<Interval> findOverlapping(Interval interval) {
-        logger.debug("Starting search for " + interval);
+    public List<Interval> findOverlapping(int start, int end) {
+
+        Interval searchInterval = new Interval(start, end, 0);
 
         if (root().isNull()) {
             return Collections.emptyList();
         }
 
         List<Interval> results = new ArrayList();
-        searchAll(interval, root(), results);
+        searchAll(searchInterval, root(), results);
         return results;
     }
 
@@ -90,6 +91,32 @@ public class IntervalTree {
             searchAll(interval, node.right, results);
         }
 
+        return results;
+    }
+
+    /**
+     * Return all intervals in tree.
+     * TODO: an iterator would be more effecient.
+     * @return
+     */
+    public List<Interval> getIntervals() {
+        if (root().isNull()) {
+            return Collections.emptyList();
+        }
+        List<Interval> results = new ArrayList(size());
+        getAll(root, results);
+        return results;
+    }
+
+    private List<Interval> getAll(Node node, List<Interval> results) {
+
+        results.add(node.interval);
+        if (!node.left.isNull()) {
+            getAll(node.left, results);
+        }
+        if (!node.right.isNull()) {
+            getAll(node.right, results);
+        }
         return results;
     }
 
