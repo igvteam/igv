@@ -77,8 +77,6 @@ public class IntervalTree {
 
     private List<Interval> searchAll(Interval interval, Node node, List<Interval> results) {
 
-        System.out.println("Visiting " + node.interval);
-
         if (node.interval.overlaps(interval)) {
             results.add(node.interval);
         }

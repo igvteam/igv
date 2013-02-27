@@ -10,7 +10,6 @@
  */
 package org.broad.igv.maf;
 
-import edu.mit.broad.prodinfo.genomicplot.ParseException;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -69,7 +68,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     private HashMap<String, String> chrMappings;
 
 
-    public MultipleAlignmentTrack(final ResourceLocator locator, Genome genome) throws IOException, ParseException {
+    public MultipleAlignmentTrack(final ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;
 

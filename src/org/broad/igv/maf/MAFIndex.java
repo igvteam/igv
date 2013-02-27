@@ -75,7 +75,12 @@ public class MAFIndex {
     }
 
     public IntervalTree getIntervalTree(String chr) {
-        return intervalTrees.get(chr);
+
+        IntervalTree iv = intervalTrees.get(chr);
+        if(iv == null) {
+            iv = intervalTrees.get("*"); // To support legacy MAF indeces, files are split by chromosome
+        }
+        return iv;
     }
 
 
@@ -138,19 +143,29 @@ public class MAFIndex {
                 }
 
             } else {
-                // A "legacy" index, load every 100 lines.
+                // A "legacy" index, created for Broad hosted files that are separated by chromosome.
+                // Every alignment is indexed, which is overkill.  Below we lump them into blocks of 50.
                 IntervalTree iv = new IntervalTree();
                 int l = 0;
+                int intervalStart = 0;
+                int intervalEnd = 0;
+                long lastOffset = 0;
                 while ((line = br.readLine()) != null) {
-                    if (l % 100 == 0) {
-                        String[] info = Globals.tabPattern.split(line);
-                        int start = Integer.parseInt(info[0]);
-                        int end = Integer.parseInt(info[1]) + start;
-                        long offset = Long.parseLong(info[2]);
-                        iv.insert(new Interval(start, end, offset));
+                    String[] info = Globals.tabPattern.split(line);
+                    int start = Integer.parseInt(info[0]);
+                    intervalEnd = Integer.parseInt(info[1]) + start;
+                    if (l % 50 == 0) {
+                        iv.insert(new Interval(intervalStart, intervalEnd, lastOffset));
+                        intervalStart = intervalEnd;
+                        lastOffset = Long.parseLong(info[2]);
                     }
                     l++;
                 }
+
+                if(intervalEnd > intervalStart) {
+                    iv.insert(new Interval(intervalStart, intervalEnd, lastOffset));
+                }
+
                 index.putIntervalTree("*", iv);
             }
         } finally {
