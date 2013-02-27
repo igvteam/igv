@@ -139,14 +139,17 @@ public class SashimiPlot extends JFrame{
         return axis;
     }
 
-    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, Track geneTrack){
+    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, FeatureTrack geneTrack){
 
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
         //Hacky way of clearing packed features
         geneTrack.setVisibilityWindow(geneTrack.getVisibilityWindow());
+        RenderContext context = new RenderContextImpl(geneComponent, null, frame, null);
+        geneTrack.preload(context);
 
-        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getHeight() + 10);
+
+        Dimension maxGeneDim = new Dimension(Integer.MAX_VALUE, geneTrack.getNumberOfFeatureLevels() * geneTrack.getSquishedRowHeight() + 10);
         geneComponent.setMaximumSize(maxGeneDim);
         Dimension prefGeneDim = new Dimension(maxGeneDim);
         prefGeneDim.setSize(prefWidth, prefGeneDim.height);
@@ -379,6 +382,7 @@ public class SashimiPlot extends JFrame{
                 geneTrack = IGV.getInstance().getFeatureTracks().get(0);
             }else{
                 FeatureTrackSelectionDialog dlg = new FeatureTrackSelectionDialog(IGV.getMainFrame());
+                dlg.setTitle("Select Gene Track");
                 dlg.setVisible(true);
                 if (dlg.getIsCancelled()) return;
                 geneTrack = dlg.getSelectedTrack();
@@ -393,6 +397,7 @@ public class SashimiPlot extends JFrame{
 
             if(alignmentTracks.size() > 1){
                 TrackSelectionDialog<AlignmentTrack> alDlg = new TrackSelectionDialog<AlignmentTrack>(IGV.getMainFrame(), TrackSelectionDialog.SelectionMode.MULTIPLE, alignmentTracks);
+                alDlg.setTitle("Select Alignment Tracks");
                 alDlg.setVisible(true);
                 if(alDlg.getIsCancelled()) return;
 
