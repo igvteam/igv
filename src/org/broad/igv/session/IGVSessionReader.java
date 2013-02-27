@@ -70,6 +70,12 @@ public class IGVSessionReader implements SessionReader {
 
 
     /**
+     * Classes that have been registered for use with JAXB
+     */
+    private static List<Class> registeredClasses = new ArrayList<Class>();
+
+
+    /**
      * Map of track id -> track.  It is important to maintain the order in which tracks are added, thus
      * the use of LinkedHashMap. We add tracks here when loaded and remove them when attributes are specified.
      */
@@ -100,6 +106,8 @@ public class IGVSessionReader implements SessionReader {
     static {
         attributeSynonymMap.put("DATA FILE", "DATA SET");
         attributeSynonymMap.put("TRACK NAME", "NAME");
+
+        registerClass(AbstractTrack.class);
     }
 
     /**
@@ -1109,12 +1117,24 @@ public class IGVSessionReader implements SessionReader {
 
 
     private static JAXBContext jc = null;
-    public static JAXBContext getJAXBContext() throws JAXBException {
+    public static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if(jc == null){
-            jc = JAXBContext.newInstance(AbstractTrack.defaultTrackClass);
+            jc = JAXBContext.newInstance(registeredClasses.toArray(new Class[0]), new HashMap<String, Object>());
         }
         return jc;
     }
+
+    /**
+     * Register this class with JAXB, so it can be saved and restored to a session.
+     * The class must conform the JAXBs requirements (e.g. no-arg constructor or factory method)
+     * @param clazz
+     */
+    //@api
+    public static synchronized void registerClass(Class clazz){
+        registeredClasses.add(clazz);
+        jc = null;
+    }
+
 
     /**
      * Unmarshal node. We first attempt to unmarshal into the specified {@code clazz}
