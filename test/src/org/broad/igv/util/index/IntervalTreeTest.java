@@ -63,16 +63,15 @@ public class IntervalTreeTest {
         tree.insert(new Interval(26, 27, 10));
     }
 
-
+    @Test
     public void testSearch() {
-//
-//        final Interval queryInterval = new Interval(1, 2, 0);
-//        List<Interval> intervals = tree.findOverlapping(queryInterval);
-//        Assert.assertNotNull(intervals);
-//
-//        for (Interval iv : intervals) {
-//            Assert.assertTrue(queryInterval.overlaps(iv));
-//        }
+
+        List<Interval> intervals = tree.findOverlapping(1, 2);
+        Assert.assertNotNull(intervals);
+        Assert.assertTrue(intervals.size() > 0);
+        for (Interval iv : intervals) {
+            Assert.assertTrue(iv.overlaps(1, 2));
+        }
     }
 
 

@@ -82,6 +82,11 @@ public class Interval implements Comparable {
                 other.low <= this.high);
     }
 
+    public boolean overlaps(int low, int high) {
+        return (this.low <= high && low <= this.high);
+
+    }
+
 
     public int getLow() {
         return this.low;
