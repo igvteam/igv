@@ -136,45 +136,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         coverageTrack.rescale();
     }
 
-    /**
-     * Draw axis displaying genomic coordinates
-     * @param context
-     * @param trackRectangle
-     */
-    private void drawGenomicAxis(RenderContext context, Rectangle trackRectangle){
-        int numTicks = 4;
-        double pixelPadding = trackRectangle.getWidth() / 20;
-        int yLoc = (int) (trackRectangle.getMaxY() * 0.85);
 
-        double origin = context.getOrigin();
-        double locScale = context.getScale();
-
-        //Pixel start/end positions of ruler
-        double startPix = trackRectangle.getX() + pixelPadding;
-        double endPix = trackRectangle.getMaxX() - pixelPadding;
-
-        double ticIntervalPix = (endPix - startPix)/(numTicks - 1);
-        double ticIntervalCoord = locScale * ticIntervalPix;
-
-        int startCoord = (int) (origin + (locScale * startPix));
-
-        Graphics2D g2D = context.getGraphic2DForColor(Color.black);
-
-        g2D.drawLine((int) startPix, yLoc, (int) endPix, yLoc);
-
-        int ticHeight = 5;
-        for(int tic = 0; tic < numTicks; tic++){
-            int xLoc = (int) (startPix + tic * ticIntervalPix);
-            g2D.drawLine(xLoc, yLoc, xLoc, yLoc - ticHeight);
-
-            int ticCoord = (int) (startCoord + tic * ticIntervalCoord);
-            String text = "" + ticCoord;
-            Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
-            g2D.drawString(text,(int) (xLoc - textBounds.getWidth() / 2),(int) (yLoc + textBounds.getHeight()));
-        }
-
-
-    }
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -193,8 +155,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         this.setColor(track.getColor());
 
         Rectangle coverageRectangle = new Rectangle(trackRectangle);
-
-        drawGenomicAxis(context, trackRectangle);
 
         if(coverageTrack != null){
             //Only want the coverage track to go so high so that the arcs still have room

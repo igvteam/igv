@@ -31,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 
@@ -109,6 +110,9 @@ public class SashimiPlot extends JFrame{
             spliceJunctionTracks.add(spliceJunctionTrack);
         }
 
+        Axis axis = createAxis(frame);
+        getContentPane().add(axis);
+
         SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<SelectableFeatureTrack>(frame, geneTrackClone);
 
@@ -121,6 +125,18 @@ public class SashimiPlot extends JFrame{
 
     private void initSize(int width) {
         setSize(width, 500);
+    }
+
+    private Axis createAxis(ReferenceFrame frame){
+        Axis axis = new Axis(frame);
+
+        Dimension maxDim = new Dimension(Integer.MAX_VALUE, 25);
+        axis.setMaximumSize(maxDim);
+        Dimension prefDim = new Dimension(maxDim);
+        prefDim.setSize(frame.getWidthInPixels(), prefDim.height);
+        axis.setPreferredSize(prefDim);
+
+        return axis;
     }
 
     private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, Track geneTrack){
@@ -414,6 +430,64 @@ public class SashimiPlot extends JFrame{
         @Override
         public void popupMenuCanceled(PopupMenuEvent e) {
             component.repaint();
+        }
+    }
+
+    private static class Axis extends JComponent{
+
+        private ReferenceFrame frame;
+
+        Axis(ReferenceFrame frame){
+            this.frame = frame;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Rectangle visibleRect = getVisibleRect();
+            RenderContext context = new RenderContextImpl(this, (Graphics2D) g, frame, visibleRect);
+            drawGenomicAxis(context, visibleRect);
+        }
+
+        /**
+         * Draw axis displaying genomic coordinates
+         * @param context
+         * @param trackRectangle
+         */
+        private void drawGenomicAxis(RenderContext context, Rectangle trackRectangle){
+            int numTicks = 4;
+            int ticHeight = 5;
+
+            double pixelPadding = trackRectangle.getWidth() / 20;
+            int yLoc = ticHeight + 1;
+
+            double origin = context.getOrigin();
+            double locScale = context.getScale();
+
+            //Pixel start/end positions of ruler
+            double startPix = trackRectangle.getX() + pixelPadding;
+            double endPix = trackRectangle.getMaxX() - pixelPadding;
+
+            double ticIntervalPix = (endPix - startPix)/(numTicks - 1);
+            double ticIntervalCoord = locScale * ticIntervalPix;
+
+            int startCoord = (int) (origin + (locScale * startPix));
+
+            Graphics2D g2D = context.getGraphic2DForColor(Color.black);
+
+            g2D.drawLine((int) startPix, yLoc, (int) endPix, yLoc);
+
+            for(int tic = 0; tic < numTicks; tic++){
+                int xLoc = (int) (startPix + tic * ticIntervalPix);
+                g2D.drawLine(xLoc, yLoc, xLoc, yLoc - ticHeight);
+
+                int ticCoord = (int) (startCoord + tic * ticIntervalCoord);
+                String text = "" + ticCoord;
+                Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
+                g2D.drawString(text,(int) (xLoc - textBounds.getWidth() / 2),(int) (yLoc + textBounds.getHeight()));
+            }
+
+
         }
     }
 }

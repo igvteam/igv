@@ -97,8 +97,8 @@ public class CoverageTrack extends AbstractTrack {
 
     public CoverageTrack(CoverageTrack track){
         this(track.getResourceLocator(), track.getName(), track.genome);
-        this.setDataManager(track.dataManager);
-        this.setDataSource(track.dataSource);
+        if(track.dataManager != null) this.setDataManager(track.dataManager);
+        if(track.dataSource != null) this.setDataSource(track.dataSource);
     }
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
