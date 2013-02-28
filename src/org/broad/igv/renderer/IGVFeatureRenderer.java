@@ -192,9 +192,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
                                 alternateExonColor, track.getColor(), track.getAltColor());
                     } else {
-                        Graphics2D arrowGraphics = hasExons
-                                ? g2D
-                                : context.getGraphic2DForColor(Color.WHITE);
+                        Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
                         drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
                                 displayMode, arrowGraphics);
                     }
@@ -337,8 +335,13 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         boolean colorToggle = true;
 
-        int lastX = Integer.MIN_VALUE;
+        /**
+         * We draw connecting lines exon-by-exon,
+         * need to keep track of the previous start/end locations
+         */
+        int lastExonEndX = Integer.MIN_VALUE;
         int lastY = Integer.MIN_VALUE;
+        int maxLineEndX = Integer.MIN_VALUE;
         IExon lastExon = null;
 
         exonGraph.startFeature();
@@ -393,12 +396,16 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
             Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.blue);
-            if (drawConnectingLine && lastX > Integer.MIN_VALUE && lastY > Integer.MIN_VALUE) {
-                drawConnectingLine(lastX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
-                double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastX) + 1e-12));
-                drawStrandArrows(gene.getStrand(), lastX, pStart, lastY, angle, mode, arrowGraphics);
+            //We draw connecting lines/arrows from previous exon to this one.
+            //Exons may not be strictly sorted, we avoid double-drawing using maxLineEndX
+            if (drawConnectingLine && lastExonEndX > Integer.MIN_VALUE && lastY > Integer.MIN_VALUE
+                    && lastExonEndX >= maxLineEndX) {
+                drawConnectingLine(lastExonEndX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
+                double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastExonEndX) + 1e-12));
+                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, arrowGraphics);
+                maxLineEndX = Math.max(maxLineEndX, pStart);
             }
-            lastX = pEnd;
+            lastExonEndX = pEnd;
             lastY = curYOffset;
 
             if ((pEnd >= trackRectangle.getX()) && (pStart <= trackRectangle.getMaxX())) {
