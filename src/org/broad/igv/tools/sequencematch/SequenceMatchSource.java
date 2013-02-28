@@ -197,7 +197,7 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
          */
         @Override
         public void init() {
-            JMenuItem menuItem = new JMenuItem("Match Sequence");
+            JMenuItem menuItem = new JMenuItem("Match Sequence...");
             menuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

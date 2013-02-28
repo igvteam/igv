@@ -163,7 +163,7 @@ public class IGVMenuBar extends JMenuBar {
 
         //-------------------------------------//
         //"Add tool" option, for loading cli_plugin from someplace else
-        JMenuItem addTool = new JMenuItem("Add tool");
+        JMenuItem addTool = new JMenuItem("Add Tool...");
         addTool.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

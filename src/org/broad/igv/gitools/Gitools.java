@@ -65,9 +65,9 @@ public class Gitools implements IGVPlugin{
         //TODO Add api hook to insert things in tool menu
         boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "true"));
         if(showTDMButton){
-            JMenu gitoolsMenu = new JMenu("Gitools heatmaps");
+            JMenu gitoolsMenu = new JMenu("Gitools Heatmaps");
 
-            JMenuItem directLoadItem = new JMenuItem("Load gene matrix in Gitools");
+            JMenuItem directLoadItem = new JMenuItem("Load Gene Matrix in Gitools");
             directLoadItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -84,7 +84,7 @@ public class Gitools implements IGVPlugin{
             });
             gitoolsMenu.add(directLoadItem);
 
-            JMenuItem gitoolsItem = new JMenuItem("Export gene matrix (TDM)");
+            JMenuItem gitoolsItem = new JMenuItem("Export Gene Matrix (TDM)...");
             gitoolsItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
