@@ -685,6 +685,7 @@ public class CoverageTrack extends AbstractTrack {
                 }
             }
         });
+        copyDetails.setEnabled(details != null);
         popupMenu.add(copyDetails);
     }
 
