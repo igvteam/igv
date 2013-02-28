@@ -522,6 +522,9 @@ public class TrackMenuUtils {
                 }
             }
         });
+
+        //Disable if any tracks are autoscaled
+        item.setEnabled(!checkAutoscale(selectedTracks));
         return item;
     }
 
@@ -573,13 +576,7 @@ public class TrackMenuUtils {
             autoscaleItem.setEnabled(false);
 
         } else {
-            boolean autoScale = false;
-            for (Track t : selectedTracks) {
-                if (t instanceof DataTrack && ((DataTrack) t).isAutoScale()) {
-                    autoScale = true;
-                    break;
-                }
-            }
+            boolean autoScale = checkAutoscale(selectedTracks);
 
             autoscaleItem.setSelected(autoScale);
             autoscaleItem.addActionListener(new ActionListener() {
@@ -597,6 +594,17 @@ public class TrackMenuUtils {
             });
         }
         return autoscaleItem;
+    }
+
+    private static boolean checkAutoscale(Collection<Track> selectedTracks) {
+        boolean autoScale = false;
+        for (Track t : selectedTracks) {
+            if (t instanceof DataTrack && ((DataTrack) t).isAutoScale()) {
+                autoScale = true;
+                break;
+            }
+        }
+        return autoScale;
     }
 
     public static JMenuItem getShowDataRangeItem(final Collection<Track> selectedTracks) {
