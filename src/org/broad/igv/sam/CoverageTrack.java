@@ -44,6 +44,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -652,6 +653,8 @@ public class CoverageTrack extends AbstractTrack {
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
+        addCopyDetailsItem(popupMenu, te);
+
 
 
         addAutoscaleItem(popupMenu);
@@ -668,6 +671,21 @@ public class CoverageTrack extends AbstractTrack {
         popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmp));
 
         return popupMenu;
+    }
+
+    private void addCopyDetailsItem(IGVPopupMenu popupMenu, TrackClickEvent te) {
+        JMenuItem copyDetails = new JMenuItem("Copy Details to Clipboard");
+        final String details = getValueStringAt(te.getFrame().getChrName(), te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+        copyDetails.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (details != null) {
+                    String deets = details.replace("<br>", System.getProperty("line.separator"));
+                    StringUtils.copyTextToClipboard(deets);
+                }
+            }
+        });
+        popupMenu.add(copyDetails);
     }
 
 
