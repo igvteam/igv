@@ -27,6 +27,7 @@ import java.io.IOException;
  * Date: 2012/05/17
  */
 @Ignore
+//@RunWith(IGVTestRunner.class)
 public class AbstractHeadlessTest {
 
     protected static Genome genome;

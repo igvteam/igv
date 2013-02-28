@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import junit.framework.Assert;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.TestUtils;
@@ -52,7 +53,7 @@ import static org.junit.Assert.assertNotNull;
  * Date: Jul 12, 2010
  * Time: 11:25:52 AM
  */
-public class GobyAlignmentQueryReaderTest {
+public class GobyAlignmentQueryReaderTest extends AbstractHeadlessTest{
 
 
     @Test
