@@ -11,6 +11,7 @@
 
 package util;
 
+import org.junit.Ignore;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -25,6 +26,7 @@ import java.io.IOException;
  * User: jacob
  * Date: 2013-Feb-27
  */
+@Ignore
 public class IGVTestRunner extends BlockJUnit4ClassRunner{
 
     public static final String IGNORE_IOEXCEPTIONS_PROPERTY = "ignore.ioexceptions";
