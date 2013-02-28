@@ -11,6 +11,7 @@
 
 package util;
 
+import org.junit.internal.AssumptionViolatedException;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -58,6 +59,7 @@ public class IGVTestRunner extends BlockJUnit4ClassRunner{
             }catch (IOException e){
                 if(ignoreIOExceptions){
                     e.printStackTrace();
+                    throw new AssumptionViolatedException("IOException: " + e.getMessage());
                 }else{
                     throw e;
                 }

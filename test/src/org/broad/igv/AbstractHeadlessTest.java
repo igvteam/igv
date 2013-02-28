@@ -17,6 +17,8 @@ import org.broad.igv.util.TestUtils;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
+import org.junit.runner.RunWith;
+import util.IGVTestRunner;
 
 import java.io.IOException;
 
@@ -27,7 +29,7 @@ import java.io.IOException;
  * Date: 2012/05/17
  */
 @Ignore
-//@RunWith(IGVTestRunner.class)
+@RunWith(IGVTestRunner.class)
 public class AbstractHeadlessTest {
 
     protected static Genome genome;
