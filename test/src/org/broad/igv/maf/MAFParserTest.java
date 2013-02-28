@@ -1,6 +1,7 @@
 package org.broad.igv.maf;
 
 import org.broad.igv.util.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -48,9 +49,16 @@ public class MAFParserTest {
         assertEquals(7, secondGap.startIdx);
         assertEquals(3, secondGap.size);
 
-        for(int i=ma.getStart(); i<ma.getEnd(); i++) {
+        for (int i = ma.getStart(); i < ma.getEnd(); i++) {
             System.out.println(i + "  " + ma.getGapAdjustedIndex(i));
         }
+
+        assertEquals("hg18 Multiz", parser.getTrackName());
+
+        String[] expectedSpeciesOrder = new String[]{"hg18", "tarSyr1", "gorGor1", "panTro2", "ponAbe2", "bosTau4",
+                "equCab2", "ornAna1", "cavPor3", "canFam2", "rheMac2"};
+        Object [] species = parser.getSpecies().toArray();
+        Assert.assertArrayEquals(expectedSpeciesOrder, species);
 
         String indexFile = mafFile + ".index";
         (new File(indexFile)).delete();

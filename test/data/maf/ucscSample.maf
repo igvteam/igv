@@ -1,4 +1,4 @@
-track name='hg18 Multiz' visibility=pack
+track name='hg18 Multiz' visibility=pack speciesOrder="hg18 tarSyr1 gorGor1 panTro2 ponAbe2 bosTau4 equCab2 ornAna1 cavPor3 canFam2 rheMac2"
 ##maf version=1 scoring=autoMZ.v1
 
 a score=89960.000000

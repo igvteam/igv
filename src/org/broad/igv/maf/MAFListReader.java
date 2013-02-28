@@ -103,6 +103,7 @@ public class MAFListReader implements MAFReader {
             if (FileUtils.resourceExists(speciesPath)) {
                 is = ParsingUtils.openInputStream(speciesPath);
             } else {
+                // No file, use default
                 is = MAFUtils.class.getResourceAsStream("species.properties");
             }
 

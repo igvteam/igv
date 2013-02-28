@@ -82,7 +82,10 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         } else {
 
             MAFParser parser = new MAFParser(locator.getPath()); //  new MAFLocalReader(locator.getPath());
-            //parser.parseHeader();
+            String trackName = parser.getTrackName();
+            if(trackName != null) {
+                setName(trackName);
+            }
             reader = parser;
         }
 

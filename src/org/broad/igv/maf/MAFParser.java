@@ -12,8 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author jrobinso
@@ -24,10 +27,16 @@ public class MAFParser implements MAFReader {
 
     String path;
     MAFIndex index;
+    List<String> species;
+    String trackName;
 
     public MAFParser(String path) {
         this.path = path;
-
+        try {
+            parseHeader();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
         String indexPath = path + ".index";
         try {
             if (ParsingUtils.pathExists(indexPath)) {
@@ -41,6 +50,10 @@ public class MAFParser implements MAFReader {
         }
     }
 
+
+    public String getTrackName() {
+        return trackName;
+    }
 
     @Override
     public List<MultipleAlignmentBlock> loadAlignments(String chr, int start, int end) throws IOException {
@@ -57,7 +70,7 @@ public class MAFParser implements MAFReader {
         // Find the starting (left most) interval.  Alignment blocks do not overlap, so we can start at the
         // minimum file offset and just proceed until the end of the interval.
         long startPosition = Long.MAX_VALUE;
-        for(Interval iv : intervals) {
+        for (Interval iv : intervals) {
             startPosition = Math.min(startPosition, iv.getValue());
         }
 
@@ -95,7 +108,7 @@ public class MAFParser implements MAFReader {
 
     @Override
     public Collection<String> getSpecies() {
-        return index.getSpecies();  //To change body of implemented methods use File | Settings | File Templates.
+        return species != null ? species : index.getSpecies();
     }
 
     @Override
@@ -117,16 +130,36 @@ public class MAFParser implements MAFReader {
             InputStream is = SeekableStreamFactory.getStreamFor(path);
             reader = new BufferedReader(new InputStreamReader(is));
 
-            List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
-
             String line;
-
             while ((line = reader.readLine()) != null) {
 
                 if (line.startsWith("a ")) {
                     return;  // Done with header
                 } else if (line.startsWith("track")) {
-                    parseTrackLine(line);
+
+                    String[] tokens = breakQuotedString(line);
+                    for (int i = 0; i < tokens.length; i++) {
+                        String key = null;
+                        String value = null;
+                        String[] kv = tokens[i].split("=");
+                        if (kv.length == 1) {
+                            if (tokens[i].endsWith(("="))) {
+                                key = kv[0].toLowerCase().trim();
+                                value = tokens[++i];
+                            }
+                        } else if (kv.length == 2) {
+                            key = kv[0].toLowerCase().trim();
+                            value = kv[1];
+                        }
+                        if (key != null) {
+                            if (key.equals("name")) {
+                                this.trackName = value;
+                            }
+                            if (key.equals("speciesorder")) {
+                                species = Arrays.asList(Globals.whitespacePattern.split(value));
+                            }
+                        }
+                    }
                 }
             }
         } finally {
@@ -134,10 +167,25 @@ public class MAFParser implements MAFReader {
         }
     }
 
+    private String[] breakQuotedString(String subjectString) {
 
+        List<String> matchList = new ArrayList<String>();
+        Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+        Matcher regexMatcher = regex.matcher(subjectString);
+        while (regexMatcher.find()) {
+            if (regexMatcher.group(1) != null) {
+                // Add double-quoted string without the quotes
+                matchList.add(regexMatcher.group(1));
+            } else if (regexMatcher.group(2) != null) {
+                // Add single-quoted string without the quotes
+                matchList.add(regexMatcher.group(2));
+            } else {
+                // Add unquoted word
+                matchList.add(regexMatcher.group());
+            }
+        }
 
-    private void parseTrackLine(String line) {
-        //To change body of created methods use File | Settings | File Templates.
+        return matchList.toArray(new String[]{});
     }
 
 
@@ -182,4 +230,5 @@ public class MAFParser implements MAFReader {
         }
         return ma;
     }
+
 }
