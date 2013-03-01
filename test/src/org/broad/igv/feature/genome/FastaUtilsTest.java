@@ -32,12 +32,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     @Test
     public void testCreateIndex_01() throws Exception {
         String inPath = TestUtils.DATA_DIR + "fasta/ecoli_out.padded2.fasta";
-        String outPath = TestUtils.DATA_DIR + "out/ecoli_out.padded2.fasta.fai";
-        File outFile = new File(outPath);
-        outFile.delete();
-        outFile.deleteOnExit();
-
-        FastaUtils.createIndexFile(inPath, outPath);
+        String outPath = tstCreateIndex(inPath);
 
         FastaIndex index = new FastaIndex(outPath);
         assertEquals(1, index.getSequenceNames().size());
@@ -46,12 +41,7 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     }
 
     public void tstCreateIndex_02(String inPath) throws Exception {
-        String outPath = inPath + ".fai";
-        File outFile = new File(outPath);
-        outFile.delete();
-        outFile.deleteOnExit();
-
-        FastaUtils.createIndexFile(inPath, outPath);
+        String outPath = tstCreateIndex(inPath);
 
         FastaIndex index = new FastaIndex(outPath);
         assertEquals(2, index.getSequenceNames().size());
@@ -117,33 +107,19 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     @Test(expected = DataLoadException.class)
     public void testCreateIndexUneven() throws Exception {
         String inPath = TestUtils.DATA_DIR + "fasta/fasta_uneven.fa";
-        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
-        File outFile = new File(outPath);
-        outFile.delete();
-        outFile.deleteOnExit();
-
-        FastaUtils.createIndexFile(inPath, outPath);
+        tstCreateIndex(inPath);
     }
 
     @Test(expected = DataLoadException.class)
     public void testCreateIndexBlankLines() throws Exception {
         String inPath = TestUtils.DATA_DIR + "fasta/blank_lines.fas";
-        String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
-        File outFile = new File(outPath);
-        outFile.delete();
-        outFile.deleteOnExit();
-
-        FastaUtils.createIndexFile(inPath, outPath);
+        tstCreateIndex(inPath);
     }
 
     @Test
     public void testCreateIndexEcoli() throws Exception {
         String inPath = TestUtils.LARGE_DATA_DIR + "ecoli.fasta";
-        String outPath = inPath + ".fai";
-        File outFile = new File(outPath);
-
-        outFile.delete();
-        outFile.deleteOnExit();
+        String outPath = tstCreateIndex(inPath);
 
         GenomeManager manager = GenomeManager.getInstance();
         Genome genome = manager.loadGenome(inPath, null);
@@ -182,7 +158,29 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
         tstCreateIndexGoodBlanks(inPath, testFastaBlanks);
     }
 
+
+    private String tstCreateIndex(String inPath) throws Exception{
+        String outPath = inPath + ".fai";
+        File outFile = new File(outPath);
+        outFile.delete();
+        outFile.deleteOnExit();
+
+        FastaUtils.createIndexFile(inPath, outPath);
+        return outPath;
+    }
     public void tstCreateIndexGoodBlanks(String inPath, Map<String, Integer> expectedSizes) throws Exception {
+        String outPath = tstCreateIndex(inPath);
+
+        FastaIndex seq = new FastaIndex(outPath);
+        assertEquals(expectedSizes.size(), seq.getSequenceNames().size());
+        for (String chrom : expectedSizes.keySet()) {
+            assertEquals((int) expectedSizes.get(chrom), seq.getSequenceSize(chrom));
+        }
+    }
+
+    @Test(expected = DataLoadException.class)
+    public void testCreateIndexDuplicateContigs() throws Exception{
+        String inPath = TestUtils.DATA_DIR + "fasta/dup_contigs.fas";
         String outPath = TestUtils.DATA_DIR + "out/tmp.fai";
         File outFile = new File(outPath);
         outFile.delete();
@@ -190,11 +188,6 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
 
         FastaUtils.createIndexFile(inPath, outPath);
 
-        FastaIndex seq = new FastaIndex(outPath);
-        assertEquals(expectedSizes.size(), seq.getSequenceNames().size());
-        for (String chrom : expectedSizes.keySet()) {
-            assertEquals((int) expectedSizes.get(chrom), seq.getSequenceSize(chrom));
-        }
     }
 
 }

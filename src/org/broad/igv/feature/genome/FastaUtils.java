@@ -18,6 +18,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -52,6 +54,7 @@ public class FastaUtils {
             writer = new BufferedWriter(new FileWriter(outputPath));
             String line = null;
             String curContig = null;
+            Set<String> allContigs = new HashSet<String>();
             int basesPerLine = -1, bytesPerLine = -1;
             long location = 0, size = 0, lastPosition = 0;
 
@@ -87,6 +90,12 @@ public class FastaUtils {
                     //Header line
                     curContig = WHITE_SPACE.split(line)[0];
                     curContig = curContig.substring(1);
+                    if(allContigs.contains(curContig)){
+                        throw new DataLoadException("Contig '" + curContig + "' found multiple times in file.", inputPath);
+                    }else{
+                        allContigs.add(curContig);
+                    }
+
                     //Should be starting position of next line
                     location = reader.getPosition();
                     size = 0;
