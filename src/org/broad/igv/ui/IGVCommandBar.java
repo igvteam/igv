@@ -112,12 +112,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
     /**
-     * Special value to pull up dialog with rest of genomes
-     */
-    //public static final GenomeListItem VIEW_MORE_GENOMES = new GenomeListItem("More...", null, "VIEW_MORE_GENOMES", false);
-    private GenomeListItem firstGenome;
-
-    /**
      * Creates new form IGVCommandBar
      */
     public IGVCommandBar() {
@@ -553,7 +547,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
      */
     private DefaultComboBoxModel getModelForGenomeListComboBox() {
         GenomeListItem[] genomes = GenomeManager.getInstance().getGenomes().toArray(new GenomeListItem[0]);
-        firstGenome = genomes[0];
         return new DefaultComboBoxModel(genomes);
     }
 
