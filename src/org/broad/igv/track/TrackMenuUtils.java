@@ -515,6 +515,9 @@ public class TrackMenuUtils {
 
                         for (Track track : selectedTracks) {
                             track.setDataRange(axisDefinition);
+                            if (track instanceof DataTrack) {
+                                ((DataTrack) track).setAutoScale(false);
+                            }
                         }
                         IGV.getInstance().repaint();
                     }
@@ -523,8 +526,6 @@ public class TrackMenuUtils {
             }
         });
 
-        //Disable if any tracks are autoscaled
-        item.setEnabled(!checkAutoscale(selectedTracks));
         return item;
     }
 
