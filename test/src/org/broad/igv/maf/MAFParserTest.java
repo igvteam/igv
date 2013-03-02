@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ */
+
 package org.broad.igv.maf;
 
 import org.broad.igv.util.TestUtils;
@@ -7,7 +18,6 @@ import org.junit.Test;
 import java.io.File;
 import java.util.List;
 
-import static com.mongodb.util.MyAsserts.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 /**
@@ -27,7 +37,7 @@ public class MAFParserTest {
 
         List<MultipleAlignmentBlock> alignments = parser.loadAlignments("chr1", 0, 1000000);
 
-        assertTrue(alignments.size() == 3);
+        assertEquals(3, alignments.size());
 
         // Last alignment has 2 gaps of 3 bases in human relative ot guinea pig
         // s hg18.chr1                       43219 50 + 247249719 G---ATG---TCATAATAAATGGTGCATATCCAGAGTGCAAGATGATTCAGTCTCA
