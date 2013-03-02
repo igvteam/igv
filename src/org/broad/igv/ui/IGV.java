@@ -602,6 +602,9 @@ public class IGV {
         cmdBar.refreshGenomeListComboBox();
         cmdBar.selectGenome(genomeListItem.getId());
         cmdBar.updateChromosFromGenome(genome);
+
+        //TODO Should use EventBus/events for changing genome, clean this up a lot
+        menuBar.createFileMenu();
     }
 
 
@@ -860,6 +863,7 @@ public class IGV {
         mainFrame.repaint();
         //getContentPane().repaint();
         contentPane.getCommandBar().updateComponentStates();
+        menuBar.createFileMenu();
     }
 
     final public void refreshCommandBar() {

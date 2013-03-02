@@ -67,6 +67,7 @@ public class IGVMenuBar extends JMenuBar {
     public static final String GENOMESPACE_REG_TOOLTIP = "Register for GenomeSpace";
     public static final String GENOMESPACE_REG_PAGE = "http://www.genomespace.org/register";
 
+    private JMenu fileMenu;
     private JMenu extrasMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
@@ -103,7 +104,8 @@ public class IGVMenuBar extends JMenuBar {
     private List<AbstractButton> createMenus() {
 
         List<AbstractButton> menus = new ArrayList<AbstractButton>();
-        menus.add(createFileMenu());
+        createFileMenu();
+        menus.add(fileMenu);
 
         boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!affectiveMode) {
@@ -276,10 +278,12 @@ public class IGVMenuBar extends JMenuBar {
     }
 
 
-    private JMenu createFileMenu() {
+    void createFileMenu() {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
+        //We disable certain load items when there is no genome.
+        boolean genomeLoaded = GenomeManager.getInstance().getCurrentGenome() != null;
 
         menuItems.add(new JSeparator());
 
@@ -304,6 +308,13 @@ public class IGVMenuBar extends JMenuBar {
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
 
+        //Disable loading if no genome loaded. Something of an edge case
+        if(!genomeLoaded){
+            for(JComponent menuItem: menuItems){
+                menuItem.setEnabled(false);
+            }
+        }
+
         menuItems.add(new JSeparator());
 
         // Session menu items
@@ -317,7 +328,9 @@ public class IGVMenuBar extends JMenuBar {
 
         menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
         menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        menuItems.add(saveSessionItem);
+        saveSessionItem.setEnabled(genomeLoaded);
 
         menuItems.add(new JSeparator());
 
@@ -379,7 +392,14 @@ public class IGVMenuBar extends JMenuBar {
         }
 
         MenuAction fileMenuAction = new MenuAction("File", null, KeyEvent.VK_F);
-        return MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
+        if (fileMenu == null) {
+            fileMenu = MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
+        } else {
+            fileMenu.removeAll();
+            for (JComponent item : menuItems) {
+                fileMenu.add(item);
+            }
+        }
     }
 
     private void notifyGenomesAddedRemoved(List<GenomeListItem> selectedValues, boolean added) {
@@ -413,7 +433,6 @@ public class IGVMenuBar extends JMenuBar {
                     public void actionPerformed(ActionEvent event) {
                         org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
                         igv.doLoadGenome(monitor);
-
                     }
                 };
 
