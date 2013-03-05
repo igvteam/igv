@@ -14,10 +14,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -83,7 +80,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
             MAFParser parser = new MAFParser(locator.getPath()); //  new MAFLocalReader(locator.getPath());
             String trackName = parser.getTrackName();
-            if(trackName != null) {
+            if (trackName != null) {
                 setName(trackName);
             }
             reader = parser;
@@ -193,7 +190,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         double origin = context.getOrigin();
         String chr = context.getChr();
 
-         int start = (int) origin;
+        int start = (int) origin;
         int end = (int) (origin + rect.width * locScale) + 1;
 
 
@@ -272,14 +269,23 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         IGVPopupMenu menu = new IGVPopupMenu();
 
-        JMenuItem configTrack = new JMenuItem("Configure track...");
-        configTrack.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                configureTrack();
-            }
-        });
 
-        menu.add(configTrack);
+
+        if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
+            menu.addSeparator();
+            JMenuItem configTrack = new JMenuItem("Configure track...");
+            configTrack.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    configureTrack();
+                }
+            });
+            menu.add(configTrack);
+            menu.addSeparator();
+        }
+
+        List<Track> selfAsList = Arrays.asList((Track) this);
+        menu.add(TrackMenuUtils.getRemoveMenuItem(selfAsList));
+
         return menu;
     }
 
