@@ -71,7 +71,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
         // TODO -- something smarter, like scaling by actual density
-        if (levels.getZoomHeaderCount() > 0) {
+        if (levels != null && levels.getZoomHeaderCount() > 0) {
             BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0); // Highest res
             featureVisiblityWindow = firstLevel.getReductionLevel() * 2000;
         }
@@ -93,25 +93,39 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
      */
     private void initMinMax() {
         final int oneMB = 1000000;
-        int z = getZoomLevelForScale(oneMB).getZoomLevel();
+        final BBZoomLevelHeader zoomLevelHeader = getZoomLevelForScale(oneMB);
 
-        ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
-        int n = 0;
+        int nValues = 0;
         double[] values = new double[10000];
-        if (zlIter.hasNext()) {
-            while (zlIter.hasNext()) {
-                ZoomDataRecord rec = zlIter.next();
-                values[n] = (rec.getMeanVal());
-                n++;
-                if (n >= 10000) {
-                    break;
+
+        if (zoomLevelHeader == null) {
+            List<String> chrNames = reader.getChromosomeNames();
+            for (String chr : chrNames) {
+                BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
+                while (iter.hasNext()) {
+                    WigItem item = iter.next();
+                    values[nValues++] = item.getWigValue();
+                    if (nValues >= 10000) break;
                 }
             }
-            dataMin = StatUtils.percentile(values, 0, n, 10);
+        } else {
 
-            // Peg the scale at 100, this seems arbitrary but it maintains some compatibility with earlier releases
-            // for 'large-valued' data, but corrects scaling problems for small-valued data.
-            dataMax = Math.min(100, StatUtils.percentile(values, 0, n, 90));
+            int z = zoomLevelHeader.getZoomLevel();
+            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
+            if (zlIter.hasNext()) {
+                while (zlIter.hasNext()) {
+                    ZoomDataRecord rec = zlIter.next();
+                    values[nValues++] = (rec.getMeanVal());
+                    if (nValues >= 10000) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (nValues > 0) {
+            dataMin = StatUtils.percentile(values, 0, nValues, 10);
+            dataMax = StatUtils.percentile(values, 0, nValues, 90);
         } else {
             dataMin = 0;
             dataMax = 100;
@@ -176,8 +190,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
      * @return
      */
     private BBZoomLevelHeader getZoomLevelForScale(double resolution) {
-        final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
 
+        if (levels == null) return null;
+
+        final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
         BBZoomLevelHeader lastLevel = null;
         for (BBZoomLevelHeader zlHeader : headers) {
             int reductionLevel = zlHeader.getReductionLevel();
@@ -205,6 +221,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         double scale = c.getLength() / (nBins * 700);
 
         BBZoomLevelHeader zlHeader = getZoomLevelForScale(scale);
+        if (zlHeader == null) return null;
+
         int bbLevel = zlHeader.getZoomLevel();
         int reductionLevel = zlHeader.getReductionLevel();
 
@@ -295,6 +313,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                     Chromosome chr = genome.getChromosome(chrName);
 
                     BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
+                    if (lowestResHeader == null) return null;
 
                     int lastGenomeEnd = -1;
                     int end = chr.getLength();
