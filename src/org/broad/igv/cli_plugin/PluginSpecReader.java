@@ -84,7 +84,13 @@ public class PluginSpecReader {
         return reader;
     }
 
+    /**
+     * True if the path exists and is executable, false if not (or null)
+     * @param execPath
+     * @return
+     */
     public static boolean isToolPathValid(String execPath) {
+        if(execPath == null) return false;
         execPath = FileUtils.findExecutableOnPath(execPath);
         File execFile = new File(execPath);
         boolean pathValid = execFile.isFile();

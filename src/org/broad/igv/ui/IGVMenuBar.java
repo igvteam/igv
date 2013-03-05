@@ -230,7 +230,7 @@ public class IGVMenuBar extends JMenuBar {
                         final String cmdName = command.name;
                         JMenuItem cmdItem = new JMenuItem(cmdName);
                         toolMenu.add(cmdItem);
-                        if (isValid || toolPath.length() == 0) {
+                        if (isValid || toolPath == null) {
                             cmdItem.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
@@ -242,7 +242,9 @@ public class IGVMenuBar extends JMenuBar {
                             cmdItem.setEnabled(false);
                         }
                     }
-                    if (toolPath.length() > 0) {
+                    //Hack so we can have a tool which is just general command line stuff
+                    //Don't let the user change the path in that case
+                    if (tool.defaultPath != null) {
                         JMenuItem setPathItem = new JMenuItem(String.format("Set path to %s...", toolName));
                         setPathItem.addActionListener(new ActionListener() {
                             @Override

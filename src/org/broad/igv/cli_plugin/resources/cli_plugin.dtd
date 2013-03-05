@@ -69,7 +69,7 @@ tool_url:
 -->
 <!ELEMENT tool (default?, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
-    defaultPath CDATA #REQUIRED
+    defaultPath CDATA #IMPLIED
     description CDATA #IMPLIED
     visible (true|false) "true"
     toolUrl CDATA #IMPLIED>
