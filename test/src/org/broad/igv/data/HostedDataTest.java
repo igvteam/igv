@@ -26,9 +26,11 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.w3c.dom.Document;
+import util.LongRunning;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
@@ -58,7 +60,7 @@ public class HostedDataTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
-
+    @Category(LongRunning.class)
     @Test
     public void testLoadServerData() throws Exception {
         DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH-mm-ss");
