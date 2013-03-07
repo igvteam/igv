@@ -37,6 +37,7 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.tribble.Feature;
 
@@ -259,6 +260,18 @@ public class IGVMenuBar extends JMenuBar {
                 }
             }
         }
+
+        //TODO TEST CODE ONLY
+        JMenuItem testCancellableDialog = new JMenuItem("Test cancellable progress");
+        testCancellableDialog.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProgressMonitor monitor = new ProgressMonitor();
+                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, null);
+            }
+        });
+        //menuItems.add(testCancellableDialog);
+        //
 
         //-------------------------------------//
 

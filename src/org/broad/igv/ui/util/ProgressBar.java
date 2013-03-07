@@ -13,6 +13,8 @@ package org.broad.igv.ui.util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -101,7 +103,15 @@ public class ProgressBar extends JPanel
         }
     }
 
-    public static ProgressDialog showProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion) {
+    /**
+     * Initialize a ProgressDialog but do not show it
+     * @param dialogsParent
+     * @param title
+     * @param monitor
+     * @param closeOnCompletion
+     * @return
+     */
+    private static ProgressDialog createProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion) {
 
         ProgressDialog progressDialog = null;
 
@@ -123,7 +133,6 @@ public class ProgressBar extends JPanel
             }
         }
 
-
         final ProgressBar bar = new ProgressBar(progressDialog, 0, 100, closeOnCompletion, monitor);
         bar.setSize(500, 25);
         bar.setPreferredSize(bar.getSize());
@@ -138,15 +147,63 @@ public class ProgressBar extends JPanel
         progressDialog.setModal(false);
         progressDialog.setTitle(title);
         progressDialog.setProgressBar(bar);
-        progressDialog.pack();
+
         monitor.addPropertyChangeListener(bar);
         progressDialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+
+        return progressDialog;
+    }
+
+    /**
+     * Create and show a ProgressDialog
+     * @param dialogsParent
+     * @param title
+     * @param monitor
+     * @param closeOnCompletion
+     * @return
+     */
+    public static ProgressDialog showProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion){
+        ProgressDialog progressDialog = createProgressDialog(dialogsParent, title, monitor, closeOnCompletion);
+
+        progressDialog.pack();
         progressDialog.setVisible(true);
         progressDialog.toFront();
 
         return progressDialog;
     }
 
+    /**
+     * Create a show a progress dialog which is cancellable
+     * @param dialogsParent
+     * @param title
+     * @param monitor
+     * @param cancelActionListener The {@code ActionListener} to be called when the cancel button is pressed. Closing the
+     *                             dialog is not necessary, as a separate listener is added for that.
+     * @return
+     */
+    public static ProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor,
+                                                               ActionListener cancelActionListener){
+        final ProgressDialog progressDialog = createProgressDialog(dialogsParent, title, monitor, true);
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.setSize(75, 29);
+        cancelButton.setPreferredSize(cancelButton.getSize());
+        cancelButton.addActionListener(cancelActionListener);
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                progressDialog.setVisible(false);
+            }
+        });
+
+        progressDialog.getContentPane().add(cancelButton);
+        progressDialog.setSize(500, 100);
+
+        progressDialog.setVisible(true);
+        progressDialog.toFront();
+
+        return progressDialog;
+    }
     /**
      * Set the progress bars value.
      *
