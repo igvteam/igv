@@ -21,8 +21,13 @@ public class GenomeListItem {
     private String location;
     private String id;
 
+    public static final GenomeListItem ITEM_MORE;
+
+    static{
+        ITEM_MORE = new GenomeListItem("More...", "", "More...");
+    }
+
     /**
-     * Constructor.
      *
      * @param displayableName The name that can be shown to a user.
      * @param url             The url of the genome archive.

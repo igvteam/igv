@@ -532,13 +532,23 @@ public class IGV {
         return contentPane.getCommandBar().getGenomeDisplayNames();
     }
 
+    void loadGenomeFromServerAction(){
+        GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), ListSelectionModel.SINGLE_SELECTION);
+        dialog.setVisible(true);
+        List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+        if (selectedValues != null && selectedValues.size() >= 1) {
+            GenomeManager.getInstance().addGenomeItems(selectedValues);
+            getContentPane().getCommandBar().refreshGenomeListComboBox();
+            selectGenomeFromList(selectedValues.get(0).getId());
+        }
+    }
+
     /**
      * Load a .genome file directly.  This method really belongs in IGVMenuBar.
      *
      * @param monitor
      * @return
      */
-
     public void doLoadGenome(ProgressMonitor monitor) {
 
         ProgressBar bar = null;

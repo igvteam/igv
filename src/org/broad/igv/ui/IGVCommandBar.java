@@ -208,6 +208,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 if (genomeListItem != null) {
                     final IGV igv = IGV.getInstance();
 
+                    //User selected "more", pull up dialog and revert combo box
+                    if(genomeListItem == GenomeListItem.ITEM_MORE){
+                        selectGenome(GenomeManager.getInstance().getGenomeId());
+                        IGV.getInstance().loadGenomeFromServerAction();
+                        return;
+                    }
+
                     // If we haven't changed genomes we're done.
                     if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
                         return;
@@ -541,8 +548,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
      * @return
      */
     private DefaultComboBoxModel getModelForGenomeListComboBox() {
-        GenomeListItem[] genomes = GenomeManager.getInstance().getGenomes().toArray(new GenomeListItem[0]);
-        return new DefaultComboBoxModel(genomes);
+        List<GenomeListItem> genomes = GenomeManager.getInstance().getGenomes();
+        genomes.add(GenomeListItem.ITEM_MORE);
+        return new DefaultComboBoxModel(genomes.toArray(new GenomeListItem[0]));
     }
 
     /**

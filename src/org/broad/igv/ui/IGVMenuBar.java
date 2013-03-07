@@ -423,7 +423,6 @@ public class IGVMenuBar extends JMenuBar {
         MessageUtils.setStatusBarMessage(msg);
     }
 
-
     private JMenu createGenomesMenu() {
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
@@ -450,15 +449,7 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new MenuAction("Load Genome From Server...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
-                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), ListSelectionModel.SINGLE_SELECTION);
-                dialog.setVisible(true);
-                List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
-                if (selectedValues != null && selectedValues.size() >= 1) {
-                    GenomeManager.getInstance().addGenomeItems(selectedValues);
-                    igv.getContentPane().getCommandBar().refreshGenomeListComboBox();
-                    //notifyGenomesAddedRemoved(selectedValues, true);
-                    igv.selectGenomeFromList(selectedValues.get(0).getId());
-                }
+                IGV.getInstance().loadGenomeFromServerAction();
             }
         };
         menuAction.setToolTipText("Select genomes available on the server to appear in menu");

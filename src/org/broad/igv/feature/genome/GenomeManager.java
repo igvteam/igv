@@ -739,8 +739,8 @@ public class GenomeManager {
         return null;
     }
 
-    public Collection<GenomeListItem> getGenomes() {
-        return genomeItemMap.values();
+    public List<GenomeListItem> getGenomes() {
+        return new ArrayList<GenomeListItem>(genomeItemMap.values());
     }
 
     /**
