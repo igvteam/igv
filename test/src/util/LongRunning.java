@@ -11,6 +11,8 @@
 
 package util;
 
+import org.junit.Ignore;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,6 +40,7 @@ import java.lang.annotation.Target;
  * User: jacob
  * Date: 2013-Mar-05
  */
+@Ignore("Is an annotation, not a test")
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LongRunning {
