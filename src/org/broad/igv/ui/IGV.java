@@ -2271,12 +2271,6 @@ public class IGV {
 
         }
 
-        /**
-         * Do the actual work
-         *
-         * @return
-         * @throws Exception
-         */
         @Override
         public void run() {
 

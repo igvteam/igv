@@ -19,6 +19,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
+ * Panel showing a progress bar, which can optionally close parent window when finished
  * @author eflakes
  */
 public class ProgressBar extends JPanel
@@ -78,8 +79,6 @@ public class ProgressBar extends JPanel
 
     static public class ProgressDialog extends JDialog {
 
-        public static boolean isAlreadyShowing = false;
-
         public ProgressDialog() {
             super();
         }
@@ -89,13 +88,8 @@ public class ProgressBar extends JPanel
         }
     }
 
-    public static ProgressBar showProgressDialog(Frame parent, ProgressMonitor monitor, boolean closeOnCompletion) {
-        return showProgressDialog(parent, "", monitor, closeOnCompletion);
-    }
-
     public static ProgressBar showProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion) {
 
-        ProgressDialog.isAlreadyShowing = true; // To prevent mutiple dialogs at same time
         ProgressDialog progressDialog = null;
 
         if (dialogsParent == null) {
@@ -126,7 +120,6 @@ public class ProgressBar extends JPanel
             @Override
             public void windowClosing(WindowEvent e) {
                 bar.setReady(false);
-                ProgressDialog.isAlreadyShowing = false;
             }
         });
         progressDialog.setModal(false);
@@ -198,7 +191,6 @@ public class ProgressBar extends JPanel
         if (progressParentWindow != null) {
             setValue(100);
             progressParentWindow.setVisible(false);
-            ProgressDialog.isAlreadyShowing = false;
         }
     }
 }
