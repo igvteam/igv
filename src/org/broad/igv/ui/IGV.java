@@ -452,7 +452,7 @@ public class IGV {
 
     public void doDefineGenome(ProgressMonitor monitor) {
 
-        ProgressBar bar = null;
+        ProgressBar.ProgressDialog progressDialog = null;
         File archiveFile = null;
 
         CursorToken token = WaitCursorManager.showWaitCursor();
@@ -466,7 +466,7 @@ public class IGV {
             }
 
             if (monitor != null) {
-                bar = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
+                progressDialog = ProgressBar.showProgressDialog(mainFrame, "Defining Genome...", monitor, false);
             }
 
             String cytobandFileName = genomeBuilderDialog.getCytobandFileName();
@@ -512,8 +512,8 @@ public class IGV {
             log.error("Failed to define genome: " + genomePath, e);
             MessageUtils.showMessage("Unexpected error while importing a genome: " + e.getMessage());
         } finally {
-            if (bar != null) {
-                bar.close();
+            if (progressDialog != null) {
+                progressDialog.setVisible(false);
             }
             WaitCursorManager.removeWaitCursor(token);
         }
@@ -551,7 +551,7 @@ public class IGV {
      */
     public void doLoadGenome(ProgressMonitor monitor) {
 
-        ProgressBar bar = null;
+        ProgressBar.ProgressDialog progressDialog = null;
         File file = null;
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
@@ -566,7 +566,7 @@ public class IGV {
             // If a file selection was made
             if (file != null) {
                 if (monitor != null) {
-                    bar = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
+                    progressDialog = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
                 }
 
                 loadGenome(file.getAbsolutePath(), monitor);
@@ -581,8 +581,8 @@ public class IGV {
                 monitor.fireProgressChange(100);
             }
 
-            if (bar != null) {
-                bar.close();
+            if (progressDialog != null) {
+                progressDialog.setVisible(false);
             }
         }
 
@@ -1386,10 +1386,10 @@ public class IGV {
                 visibleTrackCount + (visibleTrackCount == 1 ? " track" : " tracks"));
     }
 
-    private void closeWindow(final ProgressBar progressBar) {
+    private void closeWindow(final ProgressBar.ProgressDialog progressDialog) {
         UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
-                progressBar.close();
+                progressDialog.setVisible(false);
             }
         });
     }
@@ -2275,8 +2275,8 @@ public class IGV {
         public void run() {
 
             final ProgressMonitor monitor = new ProgressMonitor();
-            final ProgressBar progressBar = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
-            progressBar.setIndeterminate(true);
+            final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
+            progressDialog.getProgressBar().setIndeterminate(true);
             monitor.fireProgressChange(20);
 
             mainFrame.setIconImage(getIconImage());
@@ -2287,7 +2287,7 @@ public class IGV {
             final PreferenceManager preferenceManager = PreferenceManager.getInstance();
             boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
             if (affectiveMode) {
-                closeWindow(progressBar);
+                closeWindow(progressDialog);
                 GenomeManager.getInstance().setCurrentGenome(new AffectiveGenome());
             } else {
                 try {
@@ -2300,7 +2300,7 @@ public class IGV {
                     log.error("Network error initializing genome list: ", ex);
                 } finally {
                     monitor.fireProgressChange(50);
-                    closeWindow(progressBar);
+                    closeWindow(progressDialog);
                 }
 
                 if (igvArgs.getGenomeId() != null) {
@@ -2327,7 +2327,7 @@ public class IGV {
                 }
 
                 final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
-                final ProgressBar bar2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
+                final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
                 indefMonitor.start();
 
 
@@ -2378,7 +2378,7 @@ public class IGV {
 
 
                 indefMonitor.stop();
-                closeWindow(bar2);
+                closeWindow(progressDialog2);
             }
 
             session.recordHistory();

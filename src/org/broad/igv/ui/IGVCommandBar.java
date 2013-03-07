@@ -221,8 +221,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     }
 
                     final ProgressMonitor monitor = new ProgressMonitor();
-                    final ProgressBar bar =
-                            ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
+                    final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
 
                     try {
                         monitor.fireProgressChange(50);
@@ -252,10 +251,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 IGV.getMainFrame(),
                                 "Error loading genome: " + genomeListItem.getDisplayableName());
                     } catch (IOException e) {
-                        if (bar != null) {
-                            bar.close();
-                        }
-
                         int choice =
                                 JOptionPane.showConfirmDialog(
                                         IGV.getMainFrame(), "The genome file [" + e.getMessage() +
@@ -269,8 +264,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     } catch (Exception e) {
                         log.error("Error initializing genome", e);
                     } finally {
-                        if (bar != null) {
-                            bar.close();
+                        if (progressDialog != null) {
+                            progressDialog.setVisible(false);
                         }
                     }
 

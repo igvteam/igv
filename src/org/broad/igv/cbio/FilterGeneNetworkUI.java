@@ -107,8 +107,8 @@ public class FilterGeneNetworkUI extends JDialog {
         network = null;
         final List<String> geneLoci = seedGeneList.getLoci();
         final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
-        final ProgressBar progressBar = ProgressBar.showProgressDialog((Frame) getOwner(), "Loading cBio data...", indefMonitor, true);
-        progressBar.setIndeterminate(true);
+        final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog((Frame) getOwner(), "Loading cBio data...", indefMonitor, true);
+        progressDialog.getProgressBar().setIndeterminate(true);
         indefMonitor.start();
 
         //Since we load the data asynchronously, we run this when finished
@@ -152,8 +152,8 @@ public class FilterGeneNetworkUI extends JDialog {
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
 
-                    if (progressBar != null) {
-                        progressBar.close();
+                    if (progressDialog != null) {
+                        progressDialog.setVisible(false);
                         indefMonitor.stop();
                     }
                 }

@@ -79,16 +79,29 @@ public class ProgressBar extends JPanel
 
     static public class ProgressDialog extends JDialog {
 
+        private ProgressBar progressBar = null;
+
         public ProgressDialog() {
             super();
+
         }
 
         public ProgressDialog(Frame frame) {
             super(frame);
         }
+
+        public ProgressBar getProgressBar() {
+            return progressBar;
+        }
+
+        public void setProgressBar(ProgressBar progressBar) {
+            if(this.progressBar != null) throw new IllegalStateException("ProgressBar already set");
+            this.progressBar = progressBar;
+            getContentPane().add(progressBar);
+        }
     }
 
-    public static ProgressBar showProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion) {
+    public static ProgressDialog showProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor, boolean closeOnCompletion) {
 
         ProgressDialog progressDialog = null;
 
@@ -124,14 +137,14 @@ public class ProgressBar extends JPanel
         });
         progressDialog.setModal(false);
         progressDialog.setTitle(title);
-        progressDialog.getContentPane().add(bar);
+        progressDialog.setProgressBar(bar);
         progressDialog.pack();
         monitor.addPropertyChangeListener(bar);
         progressDialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
         progressDialog.setVisible(true);
         progressDialog.toFront();
 
-        return bar;
+        return progressDialog;
     }
 
     /**
@@ -144,7 +157,9 @@ public class ProgressBar extends JPanel
 
         if (value > 99 && closeOnCompletion) {
             setReady(false); // Accept no more input
-            progressParentWindow.setVisible(false);
+            if(progressParentWindow != null){
+                progressParentWindow.setVisible(false);
+            }
         }
     }
 
@@ -185,12 +200,4 @@ public class ProgressBar extends JPanel
         return isReady;
     }
 
-
-    public void close() {
-        setReady(false);
-        if (progressParentWindow != null) {
-            setValue(100);
-            progressParentWindow.setVisible(false);
-        }
-    }
 }
