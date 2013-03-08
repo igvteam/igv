@@ -19,15 +19,19 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.cli_plugin.ui.RunPlugin;
 import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.feature.tribble.Locus;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
+import org.broad.igv.tools.FeatureSearcher;
 import org.broad.igv.tools.IgvToolsGui;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.action.*;
@@ -39,6 +43,7 @@ import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
@@ -52,8 +57,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
@@ -267,7 +271,17 @@ public class IGVMenuBar extends JMenuBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ProgressMonitor monitor = new ProgressMonitor();
-                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, null);
+                FeatureSource source = new RandomFeatureSource();
+                final FeatureSearcher searcher = new FeatureSearcher(source, GenomeManager.getInstance().getCurrentGenome(),
+                        FrameManager.getDefaultFrame().getChrName(), (int) FrameManager.getDefaultFrame().getOrigin());
+                ActionListener listener = new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        searcher.cancel();
+                    }
+                };
+                LongRunningTask.getThreadExecutor().execute(searcher);
+                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, listener);
             }
         });
         //menuItems.add(testCancellableDialog);
@@ -1060,5 +1074,50 @@ public class IGVMenuBar extends JMenuBar {
         }
         writer.flush();
         writer.close();
+    }
+
+
+    /**
+     * Generates a feature in the search interval, or null, with some
+     * probability of a feature
+     * TODO Move this to test file
+     */
+    private static class RandomFeatureSource implements FeatureSource<Locus>{
+
+        private float probSuccess = 0.00f;
+        private Random generator = new Random();
+
+
+        @Override
+        public Iterator<Locus> getFeatures(String chr, int start, int end) throws IOException {
+            System.out.println(String.format("%s:%d-%d", chr, start, end));
+            if(generator.nextFloat() <= probSuccess){
+                System.out.println("success");
+                Locus feature = new Locus(chr, start, Math.min(start + 50, end));
+                return Arrays.asList(feature).iterator();
+            }else{
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+            return null;
+        }
+
+        @Override
+        public int getFeatureWindowSize() {
+            return 0;
+        }
+
+        @Override
+        public void setFeatureWindowSize(int size) {
+
+        }
     }
 }
