@@ -60,12 +60,19 @@
     <!-- Unzip jars to the tmp directory -->
     <target name="prepare" if="act.include.libs">
         <unzip dest="${tmp.dir}">
+            <!-- Copy almost everything to tmp directory
+            Certain jars we include whole, because we need their manifests
+            Batik and Goby get copied later.
+            Certain jars we just want to ignore (junit, appbundler)-->
             <patternset>
                 <include name="**/*"/>
                 <exclude name="META-INF/**"/>
+                <exclude name="${lib.dir}/*"/>
             </patternset>
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
+                <exclude name="appbundler*.jar"/>
+                <exclude name="**/*junit*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
                 <exclude name="**/goby-io-igv.jar"/>
                 <exclude name="**/*AppleJavaExtensions.jar"/>
