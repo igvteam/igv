@@ -243,7 +243,6 @@
     <!--Hosted data test explicitly excluded, never run automated, can run manual-->
     <fileset dir="${testtmp.dir}" id="allfileset">
         <include name="**/*.class"/>
-        <exclude name="**/*HostedDataTest*.class"/>
         <exclude name="**/*$*.class"/>
     </fileset>
 
