@@ -346,7 +346,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             drawAbove = false;
         }
 
-        float depthProportionOfMax = Math.min(1, depth / maxDepth);
+        //float depthProportionOfMax = Math.min(1, depth / maxDepth);
+        int effDepth = Math.min(maxDepth, depth);
 
         //We adjust up or down depending on whether drawing up or down
         int yPosModifier = drawAbove ? -1 : 1;
@@ -371,8 +372,15 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         double minStrokeSize = 0.1f;
         double maxStrokeSize = 3.0f;
-        double scale = (maxStrokeSize - minStrokeSize) / Math.log(maxDepth);
-        double strokeSize = scale * Math.log(Math.min(depth, maxDepth)) + minStrokeSize;
+
+        double strokeSize = maxStrokeSize;
+
+        //Setting maxDepth to 1 should just max everything out, but 1/0 tends
+        //to make things crash
+        if(maxDepth >= 2){
+            double scale = (maxStrokeSize - minStrokeSize) / Math.log(maxDepth);
+            strokeSize = scale * Math.log(effDepth) + minStrokeSize;
+        }
 
         Stroke stroke = new BasicStroke((float) strokeSize);
         g2D.setStroke(stroke);
@@ -391,12 +399,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Shape shape = null;
         switch(shapeType){
-            case CIRCLE:
-                shape = createDepthCircle(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
-                break;
-            case ELLIPSE:
-                shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
-                break;
+//            case CIRCLE:
+//                shape = createDepthCircle(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+//                break;
+//            case ELLIPSE:
+//                shape = createDepthEllipse(maxPossibleShapeHeight, depthProportionOfMax, midX, actArcPeakY);
+//                break;
             case TEXT:
                 String text = "" + depth;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
