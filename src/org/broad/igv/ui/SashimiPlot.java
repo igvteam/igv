@@ -18,6 +18,8 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
@@ -58,7 +60,11 @@ public class SashimiPlot extends JFrame{
      */
     private final double maxEnd;
 
-    private static final List<Color> plotColors = Arrays.asList(Color.cyan, Color.red, Color.gray, Color.blue);
+    private static final List<Color> plotColors;
+    static{
+        ColorPalette palette = ColorUtilities.getDefaultPalette();
+        plotColors = Arrays.asList(palette.getColors());
+    }
 
 
     public SashimiPlot(ReferenceFrame iframe, Collection<? extends AlignmentTrack> alignmentTracks, FeatureTrack geneTrack){
