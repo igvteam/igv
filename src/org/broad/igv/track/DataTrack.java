@@ -86,35 +86,37 @@ public abstract class DataTrack extends AbstractTrack {
             inViewScores = load(context, chr, adjustedStart, adjustedEnd, zoom);
         }
 
-        //For TDF backwards incompatibility, tell user if CHR_ALL not available
-        if (inViewScores.size() == 0 && Globals.CHR_ALL.equals(chr)) {
+
+        //Not all data sources support whole genome views, tell user if CHR_ALL not available
+        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(chr)) {
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
-        }
+        } else {
+            if (autoScale && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
 
-        if (autoScale && !FrameManager.isGeneListMode() && !FrameManager.isExomeMode()) {
+                InViewInterval inter = computeScale(start, end, inViewScores);
+                if (inter.endIdx > inter.startIdx) {
+                    inViewScores = inViewScores.subList(inter.startIdx, inter.endIdx);
 
-            InViewInterval inter = computeScale(start, end, inViewScores);
-            if (inter.endIdx > inter.startIdx) {
-                inViewScores = inViewScores.subList(inter.startIdx, inter.endIdx);
+                    DataRange dr = getDataRange();
+                    float min = Math.min(0, inter.dataMin);
+                    float base = Math.max(min, dr.getBaseline());
+                    float max = inter.dataMax;
+                    // Pathological case where min ~= max  (no data in view)
+                    if (max - min <= (2 * Float.MIN_VALUE)) {
+                        max = min + 1;
+                    }
 
-                DataRange dr = getDataRange();
-                float min = Math.min(0, inter.dataMin);
-                float base = Math.max(min, dr.getBaseline());
-                float max = inter.dataMax;
-                // Pathological case where min ~= max  (no data in view)
-                if (max - min <= (2 * Float.MIN_VALUE)) {
-                    max = min + 1;
+                    DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
+                    newDR.setType(dr.getType());
+                    setDataRange(newDR);
                 }
 
-                DataRange newDR = new DataRange(min, base, max, dr.isDrawBaseline());
-                newDR.setType(dr.getType());
-                setDataRange(newDR);
             }
-
         }
 
         getRenderer().render(inViewScores, context, rect, this);
+
     }
 
 
