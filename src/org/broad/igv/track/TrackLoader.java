@@ -17,6 +17,7 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
+import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.rnai.RNAIDataSource;
@@ -203,7 +204,11 @@ public class TrackLoader {
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.contains(".dranger")) {
+            }  else if(typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
+                    typeString.endsWith("cds_exp.diff")) {
+                loadCufflinksFile(locator, newTracks, genome);
+            }
+            else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
@@ -578,6 +583,16 @@ public class TrackLoader {
             }
             newTracks.add(track);
         }
+    }
+
+
+    private void loadCufflinksFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        List<CufflinksValue> values = CufflinksParser.parse(locator.getPath());
+        CufflinksDataSource ds = new CufflinksDataSource(values, genome);
+        Track track = new CufflinksTrack(locator, locator.getName(), locator.getPath(), ds);
+        newTracks.add(track);
+
     }
 
     private void loadAffectiveAnnotationTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
