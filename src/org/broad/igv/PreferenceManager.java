@@ -60,6 +60,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
     public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
 
+    public static final String UNLOAD_ON_GENOME_CHANGE = "UNLOAD_ON_GENOME_CHANGE";
+
     /**
      * Added by Chantal Roth, June 25th 2012
      */
@@ -983,6 +985,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(CHART_COLOR_TRACK_NAME, "true");
         defaultValues.put(CHART_TRACK_HEIGHT_KEY, "40");
         defaultValues.put(CHART_SHOW_ALL_HEATMAP, "false");
+        defaultValues.put(UNLOAD_ON_GENOME_CHANGE, "false");
 
         defaultValues.put(SAM_SHOW_DUPLICATES, "false");
         defaultValues.put(SAM_SHOW_SOFT_CLIPPED, "false");

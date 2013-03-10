@@ -1221,6 +1221,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addShowCoverageItem();
             addLoadCoverageDataItem();
 
+            if(spliceJunctionTrack != null) {
+                addShowSpliceJuntionItem();
+            }
+
             addSeparator();
             TrackMenuUtils.addDisplayModeItems(tracks, this);
 
@@ -1843,6 +1847,29 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             add(item);
         }
+
+        private void addShowSpliceJuntionItem() {
+            final JMenuItem item = new JCheckBoxMenuItem("Show junction track");
+            item.setSelected(spliceJunctionTrack != null && spliceJunctionTrack.isVisible());
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            if (spliceJunctionTrack != null) {
+                                spliceJunctionTrack.setVisible(item.isSelected());
+                                refresh();
+                                IGV.getInstance().repaintNamePanels();
+                            }
+                        }
+                    });
+                }
+            });
+            item.setEnabled(spliceJunctionTrack != null);
+            add(item);
+        }
+
 
         public void addLoadCoverageDataItem() {
             // Change track height by attribute
