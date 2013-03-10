@@ -55,6 +55,8 @@ public class IgvToolsGui extends JDialog {
     PrintStream systemOutStream;
     PrintStream systemErrStream;
 
+    static File lastDirectory;
+
     IgvTools igvTools;
 
     public IgvToolsGui() {
@@ -588,6 +590,10 @@ public class IgvToolsGui extends JDialog {
         fileDialog = new JFileChooser();
         // }
 
+        if(lastDirectory != null)  {
+            fileDialog.setCurrentDirectory(lastDirectory);
+        }
+
         fileDialog.setMultiSelectionEnabled(false);
 
         boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
@@ -602,6 +608,7 @@ public class IgvToolsGui extends JDialog {
             return null;
         } else {
             File selected = fileDialog.getSelectedFile();
+            lastDirectory = selected.isDirectory() ? selected : selected.getParentFile();
             return selected;
         }
     }

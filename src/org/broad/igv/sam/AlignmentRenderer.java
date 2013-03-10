@@ -648,8 +648,8 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         }
 
-        // Render insertions if locScale ~ 0.25 (base level)
-        if (locScale < 0.25) {
+        // Render insertions if locScale < 1 bp / pixel (base level)
+        if (locScale < 1) {
             drawInsertions(origin, rowRect, locScale, alignment, context);
         }
 
