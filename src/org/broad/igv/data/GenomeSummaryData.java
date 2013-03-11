@@ -106,22 +106,15 @@ public class GenomeSummaryData {
         }
 
         int lastPixel = -1;
+        int lastGenomeLocation = -1;
         Map<String, Accumulator> dataPoints = new HashMap<String, Accumulator>();
 
         for (int i = 0; i < locs.length; i++) {
 
             int genomeLocation = genome.getGenomeCoordinate(chr, locs[i]);
             int pixel = (int) (genomeLocation / scale);
-            if (i > 0 && pixel != lastPixel) {
-                nDataPts++;
-
-                locations.add(genomeLocation);
-                for (String s : dataMap.get(chr).keySet()) {
-                    Accumulator dp = dataPoints.get(s);
-                    dp.finish();
-                    dataMap.get(chr).get(s).add(dp.getValue());
-                }
-                dataPoints.clear();
+            if (lastPixel >= 0 && pixel != lastPixel) {
+                finishLastLocation(chr, lastGenomeLocation, locations, dataPoints);
             }
 
             for (String s : samples) {
@@ -139,7 +132,22 @@ public class GenomeSummaryData {
             }
 
             lastPixel = pixel;
+            lastGenomeLocation = genomeLocation;
         }
+
+        finishLastLocation(chr, lastGenomeLocation, locations, dataPoints);
+    }
+
+    private void finishLastLocation(String chr, int genomeLocation,IntArrayList locations, Map<String, Accumulator> dataPoints) {
+        nDataPts++;
+
+        locations.add(genomeLocation);
+        for (String s : dataMap.get(chr).keySet()) {
+            Accumulator dp = dataPoints.get(s);
+            dp.finish();
+            dataMap.get(chr).get(s).add(dp.getValue());
+        }
+        dataPoints.clear();
     }
 
     public int[] getLocations() {
