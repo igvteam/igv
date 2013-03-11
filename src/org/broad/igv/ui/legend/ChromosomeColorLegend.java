@@ -56,7 +56,6 @@ public class ChromosomeColorLegend extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         paintLegend(g);
     }
 
@@ -64,7 +63,9 @@ public class ChromosomeColorLegend extends JPanel {
     public void paintLegend(Graphics g) {
 
         Graphics textGraphics = g.create();
-        ((Graphics2D) textGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            ((Graphics2D) textGraphics).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
         textGraphics.setColor(Color.black);
         textGraphics.setFont(FontManager.getFont(10));
 

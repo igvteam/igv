@@ -141,79 +141,80 @@ public class MAFRenderer {
         double locScale = context.getScale();
         double origin = context.getOrigin();
 
-        {
+        int pY = (int) rect.getY();
+        int dY = (int) rect.getHeight();
+        int dX = (int) (1.0 / locScale);
 
-            int pY = (int) rect.getY();
-            int dY = (int) rect.getHeight();
-            int dX = (int) (1.0 / locScale);
+        // Create a graphics to use
+        Graphics2D g = (Graphics2D) context.getGraphics().create();
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
 
-            // Create a graphics to use
-            Graphics2D g = (Graphics2D) context.getGraphics().create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+        if (dX >= 8) {
+            Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
+            g.setFont(f);
+        }
 
-            if (dX >= 8) {
-                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
-                g.setFont(f);
+        // Loop through base pair coordinates
+        int windowStart = (int) origin - 1;
+        int windowEnd = (int) context.getEndLocation() + 1;
+        int start = Math.max(windowStart, alignment.getStart());
+        int end = Math.min(windowEnd, alignment.getEnd());
+
+        for (int loc = start; loc < end; loc++) {
+
+            int pX0 = (int) ((loc - origin) / locScale);
+
+            char c = alignment.getGapAdjustedBase(loc);
+            char refBase = ref.getGapAdjustedBase(loc);
+            if (c == 0 || refBase == 0) {
+                continue;
             }
 
-            // Loop through base pair coordinates
-            int windowStart = (int) origin - 1;
-            int windowEnd = (int) context.getEndLocation() + 1;
-            int start = Math.max(windowStart, alignment.getStart());
-            int end = Math.min(windowEnd, alignment.getEnd());
+            boolean misMatch = Character.toUpperCase(c) != Character.toUpperCase(refBase);
 
-            for (int loc = start; loc < end; loc++) {
+            char charToDraw = misMatch || ref == alignment ? c : '.';
 
-                int pX0 = (int) ((loc - origin) / locScale);
+            Color color = nucleotideColors.get(charToDraw);
 
-                char c = alignment.getGapAdjustedBase(loc);
-                char refBase = ref.getGapAdjustedBase(loc);
-                if (c == 0 || refBase == 0) {
-                    continue;
+            if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
+
+                // Graphics2D gBackground = context.getGraphic2DForColor(background);
+                // gBackground.fillRect(pX0, pY, dX, dY);
+                if (charToDraw == '.') {
+                    color = Color.LIGHT_GRAY;
+                } else if (color == null) {
+                    color = Color.black;
                 }
 
-                boolean misMatch = Character.toUpperCase(c) != Character.toUpperCase(refBase);
-
-                char charToDraw = misMatch || ref == alignment ? c : '.';
-
-                Color color = nucleotideColors.get(charToDraw);
-
-                if ((dX >= 8) && (dY >= 12) || charToDraw == '.') {
-
-                    // Graphics2D gBackground = context.getGraphic2DForColor(background);
-                    // gBackground.fillRect(pX0, pY, dX, dY);
-                    if (charToDraw == '.') {
-                        color = Color.LIGHT_GRAY;
-                    } else if (color == null) {
-                        color = Color.black;
-                    }
-
+                g.setColor(color);
+                drawCenteredText(g, new char[]{charToDraw}, pX0, pY + 2, dX, dY - 2);
+            } else {
+                if (color != null) {
                     g.setColor(color);
-                    drawCenteredText(g, new char[]{charToDraw}, pX0, pY + 2, dX, dY - 2);
-                } else {
-                    if (color != null) {
-                        g.setColor(color);
-                        g.fillRect(pX0, pY, dX - 1, dY);
-                    }
-
-                }
-            }
-
-            // Check for insertion
-            if (gaps != null) {
-                Graphics2D gapG = context.getGraphic2DForColor(Color.black);
-                for (Gap gap : gaps) {
-                    for (int idx = gap.startIdx; idx < gap.endIdx; idx++) {
-                        if (alignment.bases.charAt(idx) != '-') {
-                            int pX0 = (int) ((gap.getPosition() - origin) / locScale);
-                            gapG.drawLine(pX0, pY, pX0, pY + dY);
-                            break;
-                        }
-                    }
+                    g.fillRect(pX0, pY, dX - 1, dY);
                 }
 
             }
         }
+
+        // Check for insertion
+        if (gaps != null) {
+            Graphics2D gapG = context.getGraphic2DForColor(Color.black);
+            for (Gap gap : gaps) {
+                for (int idx = gap.startIdx; idx < gap.endIdx; idx++) {
+                    if (alignment.bases.charAt(idx) != '-') {
+                        int pX0 = (int) ((gap.getPosition() - origin) / locScale);
+                        gapG.drawLine(pX0, pY, pX0, pY + dY);
+                        break;
+                    }
+                }
+            }
+
+        }
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+
     }
 
     private void drawCenteredText(Graphics2D g, char[] chars, int x, int y,

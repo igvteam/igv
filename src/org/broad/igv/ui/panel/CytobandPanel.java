@@ -88,8 +88,6 @@ public class CytobandPanel extends JPanel {
 
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-
         if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
             //Graphics g2 = g.create();
             //g2.setFont(FontManager.getScalableFont(Font.ITALIC, 12));

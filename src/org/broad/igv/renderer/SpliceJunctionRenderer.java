@@ -86,13 +86,16 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-            fontGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            }
             fontGraphics.setFont(font);
 
             //determine whether to show flanking regions
             PreferenceManager prefs = PreferenceManager.getInstance();
-            boolean shouldShowFlankingRegions = prefs.getAsBoolean(
-            PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
+            boolean shouldShowFlankingRegions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
@@ -237,6 +240,10 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
         //Height of top of an arc of maximum depth
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 
@@ -311,6 +318,10 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         g2D.draw(arcPath);
         //Fill the arc
         g2D.fill(arcPath);
+
+        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+        g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+
     }
 
 

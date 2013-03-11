@@ -101,7 +101,6 @@ public class DataPanel extends JComponent implements Paintable {
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         RenderContext context = null;
         try {
 
@@ -244,7 +243,6 @@ public class DataPanel extends JComponent implements Paintable {
 
         boolean drawBars = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_REGION_BARS);
         Graphics2D graphics2D = (Graphics2D) g.create();
-        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         try {
 
             for (RegionOfInterest regionOfInterest : regions) {

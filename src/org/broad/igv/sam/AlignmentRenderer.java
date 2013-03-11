@@ -714,7 +714,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             int dY = (int) rect.getHeight();
             int dX = (int) Math.max(1, (1.0 / locScale));
             Graphics2D g = (Graphics2D) context.getGraphics().create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
             if (dX >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
                 g.setFont(f);

@@ -144,7 +144,6 @@ public class VariantRenderer { //extends FeatureRenderer {
         int tOffset = 6;
         int bOffset = 8;
         Graphics2D g = (Graphics2D) context.getGraphics().create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         if (dX >= 10) {
             if (dY > 24) {

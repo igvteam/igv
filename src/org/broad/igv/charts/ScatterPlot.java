@@ -89,8 +89,6 @@ public class ScatterPlot {
 
         drawGrid(graphics, bounds, clipRect);
 
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-
         graphics.setColor(c);
         graphics.setStroke(s);
 

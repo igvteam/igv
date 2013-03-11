@@ -513,7 +513,6 @@ public class MainPanel extends JPanel implements Paintable {
         int height = applicationHeaderPanel.getHeight();
 
         Graphics2D headerGraphics = (Graphics2D) g.create();
-        headerGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         Rectangle headerRect = new Rectangle(0, 0, width, height);
         applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
         headerGraphics.dispose();
@@ -534,7 +533,6 @@ public class MainPanel extends JPanel implements Paintable {
         for (Component c : components) {
 
             Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
             g2d.translate(0, dy);
 
             if (c instanceof TrackPanelScrollPane) {

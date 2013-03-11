@@ -48,8 +48,7 @@ public class LineplotRenderer extends XYPlotRenderer {
      * @param arect
      */
     @Override
-    public void renderScores(Track track, List<LocusScore> locusScores, RenderContext context,
-                             Rectangle arect) {
+    public void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
 
 
         Rectangle adjustedRect = calculateDrawingRect(arect);
@@ -62,9 +61,12 @@ public class LineplotRenderer extends XYPlotRenderer {
         Color negColor = track.getAltColor();
 
         Graphics2D gPos = context.getGraphic2DForColor(posColor);
-        gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
         Graphics2D gNeg = context.getGraphic2DForColor(negColor);
-        gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
+
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
 
         // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
@@ -139,6 +141,8 @@ public class LineplotRenderer extends XYPlotRenderer {
 
             }
         }
+        gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+        gNeg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
 
     }
 }
