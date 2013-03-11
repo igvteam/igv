@@ -25,13 +25,15 @@ import org.broad.igv.util.collections.IntArrayList;
 import java.util.*;
 
 /**
+ * Summarize (using a windowing function) numeric data points which are associated
+ * with locations on a genome. Stored by chromosome
  * @author jrobinso
  */
 public class GenomeSummaryData {
 
     private static Logger log = Logger.getLogger(GenomeSummaryData.class);
 
-    // Genome coordinates are in KB
+    // Genome coordinates are in kilobases
     private static final double locationUnit = 1000.0;
 
     /**
@@ -43,21 +45,34 @@ public class GenomeSummaryData {
 
     String[] samples;
 
-    Map<String, Map<String, FloatArrayList>> dataMap = new HashMap();
+    /**
+     * Chromosome name -> [sample name -> list of data values]
+     */
+    Map<String, Map<String, FloatArrayList>> dataMap = new HashMap<String, Map<String, FloatArrayList>>();
 
+    /**
+     * Chromosome name -> list of start locations
+     */
     Map<String, IntArrayList> locationMap;
 
+    /**
+     * start locations of currently relevant ordered list of chromosomes, spanning whole genomes
+     */
     int[] locations;
 
+
+    /**
+     * sample name -> list of sample data
+     */
     Map<String, float[]> data;
 
     int nDataPts = 0;
 
-    Set<String> skippedChromosomes = new HashSet();
+    Set<String> skippedChromosomes = new HashSet<String>();
 
 
     /**
-     * Scale in KB / pixel
+     * Scale in kilobases / pixel
      */
     double scale;
 
@@ -67,11 +82,11 @@ public class GenomeSummaryData {
         scale = (genome.getNominalLength() / locationUnit) / nPixels;
 
         List<String> chrNames = genome.getLongChromosomeNames();
-        locationMap = new HashMap();
-        dataMap = new HashMap();
+        locationMap = new HashMap<String, IntArrayList>();
+        dataMap = new HashMap<String, Map<String, FloatArrayList>>();
         for (String chr : chrNames) {
             locationMap.put(chr, new IntArrayList(nPixels / 10));
-            dataMap.put(chr, new HashMap());
+            dataMap.put(chr, new HashMap<String, FloatArrayList>());
             for (String s : samples) {
                 dataMap.get(chr).put(s, new FloatArrayList(nPixels / 10));
             }
@@ -91,7 +106,7 @@ public class GenomeSummaryData {
         }
 
         int lastPixel = -1;
-        Map<String, Accumulator> dataPoints = new HashMap();
+        Map<String, Accumulator> dataPoints = new HashMap<String, Accumulator>();
 
         for (int i = 0; i < locs.length; i++) {
 
@@ -119,7 +134,7 @@ public class GenomeSummaryData {
                 try {
                     dp.add(1, data[i], null);
                 } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error("Error adding to GenomeSummaryData", e);
                 }
             }
 
@@ -144,6 +159,11 @@ public class GenomeSummaryData {
 
     }
 
+    /**
+     * Recalculate:
+     * 0. Start locations for plotting. Shared across all samples
+     * 1. Summary data for a given sample, across all stored chromosomes
+     */
     private synchronized void createDataArrays() {
         locations = new int[nDataPts];
         int offset = 0;
@@ -154,7 +174,7 @@ public class GenomeSummaryData {
             offset += chrLocs.length;
         }
 
-        data = new HashMap();
+        data = new HashMap<String, float[]>();
         for (String s : samples) {
             float[] sampleData = new float[nDataPts];
             offset = 0;
