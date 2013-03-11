@@ -81,7 +81,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         removeMousableRegions();
         Rectangle visibleRect = getVisibleRect();
         paintImpl(g, visibleRect);
@@ -109,11 +108,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         if (!groups.isEmpty()) {
             final Graphics2D graphics2D = (Graphics2D) g.create();
-            graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
             graphics2D.setColor(Color.BLACK);
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
-            greyGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
             greyGraphics.setColor(UIConstants.LIGHT_GREY);
 
             int regionY = 0;
@@ -209,8 +209,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         } else {
                             graphics2D.setBackground(backgroundColor);
                         }
-                        graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                         track.renderName(graphics2D, rect, visibleRect);
                     }
 

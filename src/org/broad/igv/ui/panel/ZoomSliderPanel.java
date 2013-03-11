@@ -84,7 +84,6 @@ public class ZoomSliderPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         updateTickCount();
         //if (this.isEnabled()) {
         paintHorizontal(g);
@@ -95,7 +94,6 @@ public class ZoomSliderPanel extends JPanel {
     protected void paintHorizontal(Graphics g) {
 
         Graphics2D transGraphics = (Graphics2D) g.create();
-        transGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
         transGraphics.setColor(TRANSPARENT_GRAY);
 
         int buttonWidth = zoomPlus.getWidth(null);

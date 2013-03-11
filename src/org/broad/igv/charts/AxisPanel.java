@@ -49,8 +49,6 @@ class AxisPanel extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-
         if (axis == null) return;
 
         final Graphics2D g2D = (Graphics2D) g;

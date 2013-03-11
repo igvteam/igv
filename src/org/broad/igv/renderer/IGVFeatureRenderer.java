@@ -105,7 +105,11 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
-            fontGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
+
 
             fontGraphics.setFont(font);
 
@@ -243,6 +247,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 g2D.drawLine((int) trackRectangleX, (int) trackRectangleMaxY - 1,
                         (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
             }
+
+            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
         }
     }
 
@@ -264,7 +271,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                         int yOffset, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         if (pixelThickStart > pixelStart) {
             g2D.fillRect(pixelStart, yOffset - (thinBlockHeight) / 2,
@@ -284,7 +290,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     final private void drawConnectingLine(int startX, int startY, int endX, int endY, Strand strand, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         float lineThickness = ((BasicStroke) g.getStroke()).getLineWidth();
         if (strand == null) {
@@ -319,8 +324,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                              Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode,
                              boolean alternateExonColor, Color color1, Color color2) {
 
-        Graphics exonNumberGraphics = g2D.create();
-        ((Graphics2D) exonNumberGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+        Graphics2D exonNumberGraphics = (Graphics2D)g2D.create();
+
 
         exonNumberGraphics.setColor(Color.BLACK);
         exonNumberGraphics.setFont(FontManager.getFont(Font.BOLD, 8));
@@ -332,6 +337,11 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         double locationScale = context.getScale();
 
         Graphics2D fontGraphics = context.getGraphic2DForColor(Color.WHITE);
+
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
 
         boolean colorToggle = true;
 
@@ -470,6 +480,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             }
 
         }
+        exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
 
     }
 
@@ -486,7 +498,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                     Graphics2D g2D) {
 
         //Don't draw arrows if we don't have a strand
-        if(!strand.equals(Strand.POSITIVE) && !strand.equals(Strand.NEGATIVE)){
+        if (!strand.equals(Strand.POSITIVE) && !strand.equals(Strand.NEGATIVE)) {
             return;
         }
 
@@ -497,7 +509,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         }
 
         Graphics2D g = (Graphics2D) g2D.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
 
         // Limit drawing to visible region, we don't really know the viewport pEnd,
         int vStart = 0;

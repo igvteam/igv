@@ -122,7 +122,9 @@ public class MAFRenderer {
 
             // Create a graphics to use
             Graphics2D g = (Graphics2D) context.getGraphics().create();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
 
             if (dX >= 8) {
                 Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));

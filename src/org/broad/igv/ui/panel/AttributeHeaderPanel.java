@@ -82,14 +82,16 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
-        ((Graphics2D) graphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+
 
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
         if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
-            graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
 
             // Divide the remaining space to get column widths
             int columnWidth = getAttributeColumnWidth();

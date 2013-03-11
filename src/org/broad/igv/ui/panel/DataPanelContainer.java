@@ -112,7 +112,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
             if (c instanceof DataPanel) {
                 Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
                 Rectangle clipRect = new Rectangle(c.getBounds());
                 clipRect.height = rect.height;
                 g2d.setClip(clipRect);

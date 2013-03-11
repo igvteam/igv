@@ -185,9 +185,7 @@ public class ChartPanel extends JPanel implements Serializable {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-
-            if (scatterPlot != null) {
+             if (scatterPlot != null) {
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
                 scatterPlot.draw((Graphics2D) g, r, g.getClipBounds());
             }

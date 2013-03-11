@@ -75,13 +75,15 @@ public class CytobandPanel extends JPanel {
         cytobandRenderer = (new CytobandRenderer());
     }
 
-    
+
     @Override
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
 
         if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
             //Graphics g2 = g.create();
@@ -145,7 +147,7 @@ public class CytobandPanel extends JPanel {
             int lastMousePressX;
 
             public void mouseClicked(MouseEvent e) {
-                if(currentCytobands == null) return;
+                if (currentCytobands == null) return;
 
                 final int mouseX = e.getX();
                 final int clickCount = e.getClickCount();
@@ -176,7 +178,7 @@ public class CytobandPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(currentCytobands == null) return;
+                if (currentCytobands == null) return;
 
                 if (isDragging) {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
@@ -193,7 +195,7 @@ public class CytobandPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
 
-                if(currentCytobands == null) return;
+                if (currentCytobands == null) return;
 
                 if (!isDragging && (currentRegionRect != null && currentRegionRect.contains(e.getPoint()))) {
                     isDragging = true;

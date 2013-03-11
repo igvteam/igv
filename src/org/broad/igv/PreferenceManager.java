@@ -894,17 +894,6 @@ public class PreferenceManager implements PropertyManager {
     }
 
 
-    public Object getAntiAliasingHint() {
-
-        String pref = get(ENABLE_ANTIALISING);
-        if (pref == null || !pref.equals("false")) {
-            return RenderingHints.VALUE_ANTIALIAS_ON;
-        } else {
-            return RenderingHints.VALUE_ANTIALIAS_OFF;
-        }
-
-    }
-
 
     private void initDefaultValues() {
 

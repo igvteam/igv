@@ -98,14 +98,12 @@ public class GisticTrackRenderer {
             List<GisticScore> scores = gisticTrack.getAmpScores(chr);
             if (scores != null) {
                 Graphics2D g2D = context.getGraphic2DForColor(Color.RED);
-                g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
                 plotScoresOn(scores, g2D, rect, xEnd, scale, context, xStart, yStart);
             }
 
             scores = gisticTrack.getDelScores(chr);
             if (scores != null) {
                 Graphics2D g2D = context.getGraphic2DForColor(Color.BLUE);
-                g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,  PreferenceManager.getInstance().getAntiAliasingHint());
                 plotScoresOn(scores, g2D, rect, xEnd, scale, context, xStart, yStart);
             }
         }

@@ -142,7 +142,9 @@ public class HeatmapLegendPanel extends LegendPanel {
 
         try {
             g2D = (Graphics2D) g.create();
-            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
             g2D.setFont(FontManager.getFont(10));
 
             int npts = 5;
@@ -189,7 +191,9 @@ public class HeatmapLegendPanel extends LegendPanel {
 
         try {
             g2D = (Graphics2D) g.create();
-            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
             g2D.setFont(FontManager.getFont(10));
 
             int npts = 5;

@@ -161,7 +161,9 @@ public class SequenceRenderer {
                 int dX = (int) (1.0 / locScale);
                 // Create a graphics to use
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+                if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                    g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
 
                 //dhmay adding check for adequate track height
                 int fontSize = Math.min(untranslatedSequenceRect.height, Math.min(dX, 12));
@@ -446,7 +448,9 @@ public class SequenceRenderer {
             double origin = context.getOrigin();
 
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(AA_FONT_COLOR).create();
-            fontGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
 
             //The start location of the first codon that overlaps this region
             int readingFrameOfFullSeq = start % 3;
@@ -456,8 +460,9 @@ public class SequenceRenderer {
 
             if (seq != null && seq.length > 0) {
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, PreferenceManager.getInstance().getAntiAliasingHint());
-
+                if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_ANTIALISING)) {
+                    g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
 
                 String nucSequence = new String(seq, indexOfFirstCodonStart, seq.length - indexOfFirstCodonStart);
                 AminoAcidSequence aaSequence = AminoAcidManager.getInstance().
