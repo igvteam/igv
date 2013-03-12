@@ -901,7 +901,7 @@ public class FeatureTrack extends AbstractTrack {
                 int binSize = source.getFeatureWindowSize();
 
                 final Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                if (forward == true) {
+                if (forward) {
                     // Forward
                     int nextStart = packedFeatures.getEnd();
                     String nextChr = chr;
@@ -910,7 +910,7 @@ public class FeatureTrack extends AbstractTrack {
                         while (nextStart < chrLength) {
                             int nextEnd = binSize > 0 ? nextStart + source.getFeatureWindowSize() : chrLength;
                             Iterator<Feature> iter = source.getFeatures(nextChr, nextStart, nextEnd);
-                            // The check on position should not be neccessary, but not all implementations of getFeatures
+                            // The check on position should not be necessary, but not all implementations of getFeatures
                             // obey the contract to return features only in the interval.
                             if (iter != null) {
                                 while (iter.hasNext()) {
@@ -934,7 +934,7 @@ public class FeatureTrack extends AbstractTrack {
                             int nextStart = binSize > 0 ? Math.max(0, nextEnd - source.getFeatureWindowSize()) : 0;
                             Iterator<Feature> iter = source.getFeatures(nextChr, nextStart, nextEnd);
                             if (iter != null && iter.hasNext()) {
-                                // The check on position should not be neccessary, but not all implementations of getFeatures
+                                // The check on position should not be necessary, but not all implementations of getFeatures
                                 // obey the contract to return features only in the interval.
 
                                 Feature prevFeature = null;

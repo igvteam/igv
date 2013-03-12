@@ -112,61 +112,49 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
         final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
 
-        final Action toolAction = new AbstractAction() {
+        final Action toolAction = new EnableWrappedAction(new AbstractAction() {
+            
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 IGV.getInstance().enableExtrasMenu();
-                setEnabled(true);
             }
-        };
+        });
 
-        final Action statusWindowAction = new AbstractAction() {
+        final Action statusWindowAction = new EnableWrappedAction(new AbstractAction() {
+            
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 IGV.getInstance().openStatusWindow();
-                setEnabled(true);
             }
-        };
+        });
 
-        final Action nextAction = new AbstractAction() {
-
+        final Action nextAction = new EnableWrappedAction(new AbstractAction() {
+            
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 nextFeature(true);
-                setEnabled(true);
             }
-        };
-        final Action prevAction = new AbstractAction() {
-
+        });
+        final Action prevAction = new EnableWrappedAction(new AbstractAction() {
+            
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 nextFeature(false);
-                setEnabled(true);
             }
-        };
+        });
 
-        //dhmay adding
-        final Action nextExonAction = new AbstractAction() {
+        final Action nextExonAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 nextExon(true);
-                setEnabled(true);
             }
-        };
-        final Action prevExonAction = new AbstractAction() {
+        });
+        final Action prevExonAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 nextExon(false);
-                setEnabled(true);
             }
-        };
+        });
 
-        final Action regionAction = new AbstractAction() {
+        final Action regionAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 if (FrameManager.isGeneListMode()) {
                     return;
                 }
@@ -179,14 +167,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 null);
                 // TODO -- get this ugly reference to IGV out of here
                 IGV.getInstance().addRegionOfInterest(regionOfInterest);
-                setEnabled(true);
             }
-        };
+        });
 
-        final Action regionCenterAction = new AbstractAction() {
+        final Action regionCenterAction = new EnableWrappedAction(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
                 if (FrameManager.isGeneListMode()) {
                     return;
                 }
@@ -199,9 +185,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 null);
                 // TODO -- get this ugly reference to IGV out of here
                 IGV.getInstance().addRegionOfInterest(regionOfInterest);
-                setEnabled(true);
             }
-        };
+        });
 
         final Action backAction = new AbstractAction() {
 
@@ -354,7 +339,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
      *
      * @param forward the direction, true for forward and false for back
      */
-
     private void nextFeature(boolean forward) {
 
         // Ignore (Disable) if we are in gene list mode
@@ -394,8 +378,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     }
                 }
             } catch (IOException e) {
-                //logger.error("Error c")
-                MessageUtils.showMessage("Error encountered reading features: " + e.getMessage());
+                MessageUtils.showErrorMessage("Error encountered reading features: " + e.getMessage(), e);
 
             }
         } else {
@@ -403,6 +386,30 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
 
+    }
+
+    /**
+     * TODO I'm actually pretty sure this class doesn't do what it's intended to do,
+     * but I just refactored it to condense code, there were no functional changes.
+     * -JS
+     *
+     *
+     */
+    private class EnableWrappedAction extends AbstractAction{
+
+        private Action action;
+
+        private EnableWrappedAction(Action action){
+            this.action = action;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false); // stop any other events from interfering
+            this.action.actionPerformed(e);
+            setEnabled(true);
+
+        }
     }
 
 }
