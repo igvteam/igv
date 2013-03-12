@@ -298,13 +298,6 @@ public class GenomeImpl implements Genome {
         return cumOffset.longValue();
     }
 
-    /**
-     * Covert the chromosome coordinate in BP to genome coordinates in KBP
-     *
-     * @param chr
-     * @param locationBP
-     * @return
-     */
     public int getGenomeCoordinate(String chr, int locationBP) {
         return (int) ((getCumulativeOffset(chr) + locationBP) / 1000);
     }

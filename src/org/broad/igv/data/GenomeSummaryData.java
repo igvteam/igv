@@ -93,6 +93,17 @@ public class GenomeSummaryData {
         }
     }
 
+    /**
+     * Changes scale of summary, ie zoom in or out
+     * Mainly for testing, can't use after adding any data
+     * @param scale
+     */
+    void setScale(double scale){
+        if(nDataPts > 0) throw new IllegalStateException("Can't alter scale after adding data");
+        this.scale = scale;
+        nPixels = (int) (((double) this.genome.getNominalLength() / locationUnit) / scale);
+    }
+
 
     public void addData(String chr, int[] locs, Map<String, float[]> sampleData) {
 
@@ -114,7 +125,8 @@ public class GenomeSummaryData {
             int genomeLocation = genome.getGenomeCoordinate(chr, locs[i]);
             int pixel = (int) (genomeLocation / scale);
             if (lastPixel >= 0 && pixel != lastPixel) {
-                finishLastLocation(chr, lastGenomeLocation, locations, dataPoints);
+                locations.add(lastGenomeLocation);
+                finishLastLocation(chr, dataPoints);
             }
 
             for (String s : samples) {
@@ -135,13 +147,18 @@ public class GenomeSummaryData {
             lastGenomeLocation = genomeLocation;
         }
 
-        finishLastLocation(chr, lastGenomeLocation, locations, dataPoints);
+        locations.add(lastGenomeLocation);
+        finishLastLocation(chr, dataPoints);
     }
 
-    private void finishLastLocation(String chr, int genomeLocation,IntArrayList locations, Map<String, Accumulator> dataPoints) {
+    /**
+     * Mark the previous genomic location as having been completely summarized
+     * @param chr
+     * @param dataPoints  Map sample -> accumulator, which stored data temporarily being accumulated at a given genome location
+     */
+    private void finishLastLocation(String chr, Map<String, Accumulator> dataPoints) {
         nDataPts++;
 
-        locations.add(genomeLocation);
         for (String s : dataMap.get(chr).keySet()) {
             Accumulator dp = dataPoints.get(s);
             dp.finish();

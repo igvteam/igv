@@ -76,6 +76,13 @@ public interface Genome {
 
     long getCumulativeOffset(String chr);
 
+    /**
+     * Covert the chromosome coordinate in basepairs to genome coordinates in kilo-basepairs
+     *
+     * @param chr
+     * @param locationBP
+     * @return The overall genome coordinate, in kilo-bp
+     */
     int getGenomeCoordinate(String chr, int locationBP);
 
     /**
