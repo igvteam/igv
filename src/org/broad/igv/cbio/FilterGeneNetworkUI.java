@@ -106,7 +106,7 @@ public class FilterGeneNetworkUI extends JDialog {
     private void loadcBioData() {
         network = null;
         final List<String> geneLoci = seedGeneList.getLoci();
-        final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
+        final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
         final ProgressBar.ProgressDialog progressDialog = ProgressBar.showProgressDialog((Frame) getOwner(), "Loading cBio data...", indefMonitor, true);
         progressDialog.getProgressBar().setIndeterminate(true);
         indefMonitor.start();
