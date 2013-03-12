@@ -13,8 +13,11 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.tribble.Feature;
 
@@ -168,6 +171,7 @@ public class FeatureSearcher implements Runnable {
 
         while(isRunning && !wasCancelled){
             try {
+                //System.out.println("Searching: " + String.format("%s:%d-%d", chr, start, end));
                 rslt = getFeatures(chr, start, end);
                 if(rslt != null && rslt.hasNext()){
                     //Found something
@@ -185,6 +189,33 @@ public class FeatureSearcher implements Runnable {
         this.isRunning = false;
         if(this.monitor != null){
             this.monitor.stop();
+        }
+    }
+
+    /**
+     * Listener for handling search result
+     */
+    public static interface IFeatureFound{
+        void processResult(Iterator<? extends Feature> searchResult);
+    }
+
+    public static class GotoFeatureHandler implements IFeatureFound{
+        @Override
+        public void processResult(Iterator<? extends Feature> searchResult) {
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            Feature f = searchResult.next();
+
+            String chr = GenomeManager.getInstance().getCurrentGenome().getChromosomeAlias(f.getChr());
+            double newCenter = f.getStart();
+            if (!chr.equals(frame.getChrName())) {
+                // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
+                double range = frame.getEnd() - frame.getOrigin();
+                int newOrigin = (int) Math.max(newCenter - range / 2, 0);
+                int newEnd = (int) (newOrigin + range);
+                frame.jumpTo(chr, newOrigin, newEnd);
+            } else {
+                frame.centerOnLocation(newCenter);
+            }
         }
     }
 }
