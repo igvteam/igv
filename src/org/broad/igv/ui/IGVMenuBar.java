@@ -41,7 +41,6 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.tribble.Feature;
@@ -52,6 +51,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -270,18 +271,40 @@ public class IGVMenuBar extends JMenuBar {
         testCancellableDialog.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProgressMonitor monitor = new ProgressMonitor();
+                IndefiniteProgressMonitor monitor = new IndefiniteProgressMonitor();
                 FeatureSource source = new RandomFeatureSource();
                 final FeatureSearcher searcher = new FeatureSearcher(source, GenomeManager.getInstance().getCurrentGenome(),
-                        FrameManager.getDefaultFrame().getChrName(), (int) FrameManager.getDefaultFrame().getOrigin());
-                ActionListener listener = new ActionListener() {
+                        FrameManager.getDefaultFrame().getChrName(), (int) FrameManager.getDefaultFrame().getOrigin(), monitor);
+                final ActionListener cancelListener = new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         searcher.cancel();
                     }
                 };
+
+                monitor.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if((Integer) evt.getNewValue() >= 100){
+                            cancelListener.actionPerformed(null);
+                        }
+                    }
+                });
                 LongRunningTask.getThreadExecutor().execute(searcher);
-                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, listener);
+                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, cancelListener);
+                while(searcher.isRunning()){
+                    try {
+                        Thread.sleep(100);
+                    } catch ( InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+                Iterator<? extends Feature> result = searcher.getResult();
+                if(result != null){
+                    Feature first = result.next();
+                    FrameManager.getDefaultFrame().jumpTo(first.getChr(), first.getStart(), first.getEnd());
+                }
             }
         });
         //menuItems.add(testCancellableDialog);
@@ -1084,7 +1107,7 @@ public class IGVMenuBar extends JMenuBar {
      */
     private static class RandomFeatureSource implements FeatureSource<Locus>{
 
-        private float probSuccess = 0.00f;
+        private float probSuccess = 0.05f;
         private Random generator = new Random();
 
 

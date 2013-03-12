@@ -2326,7 +2326,7 @@ public class IGV {
                     log.debug("Loadding session data");
                 }
 
-                final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
+                final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor();
                 final ProgressBar.ProgressDialog progressDialog2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
                 indefMonitor.start();
 

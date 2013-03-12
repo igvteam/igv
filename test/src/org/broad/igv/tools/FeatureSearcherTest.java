@@ -42,9 +42,15 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
     }
 
     @Test
+    public void testSearchOutsideWindowBackwards() throws Exception{
+        //tstSearchOutsideWindowBackwards(true);
+        tstSearchOutsideWindowBackwards(false);
+    }
+
+    @Test
     public void testSearchNextChromo() throws Exception{
-        tstSearchNextChromo(true);
-        tstSearchNextChromo(false);
+        tstSearchDifferentChromo(true);
+        tstSearchDifferentChromo(false);
     }
 
     /**
@@ -87,7 +93,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
     public void tstSearchOutsideWindow(boolean sepThread) throws Exception{
 
         FeatureSearcher searcher = new FeatureSearcher(getTestBedSource(), genome, "chr1", 500);
-        searcher.setSearchWindowSize(10000);
+        searcher.setSearchIncrement(10000);
 
         runSearch(searcher, sepThread);
 
@@ -98,10 +104,24 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
         assertEquals(100010, feat.getEnd());
     }
 
-    public void tstSearchNextChromo(boolean sepThread) throws Exception{
+    public void tstSearchOutsideWindowBackwards(boolean sepThread) throws Exception{
 
         FeatureSearcher searcher = new FeatureSearcher(getTestBedSource(), genome, "chr1", 500000);
-        searcher.setSearchWindowSize(10000);
+        searcher.setSearchIncrement(-10000);
+
+        runSearch(searcher, sepThread);
+
+        Feature feat = searcher.getResult().next();
+
+        assertEquals("chr1", feat.getChr());
+        assertEquals(100000, feat.getStart());
+        assertEquals(100010, feat.getEnd());
+    }
+
+    public void tstSearchDifferentChromo(boolean sepThread) throws Exception{
+
+        FeatureSearcher searcher = new FeatureSearcher(getTestBedSource(), genome, "chr1", 500000);
+        searcher.setSearchIncrement(10000);
 
         runSearch(searcher, sepThread);
 
@@ -126,7 +146,7 @@ public class FeatureSearcherTest extends AbstractHeadlessTest {
     @Test
     public void testCancel() throws Exception{
         FeatureSearcher searcher = new FeatureSearcher(getTestBedSource(), genome, "chr3", 0);
-        searcher.setSearchWindowSize(100);
+        searcher.setSearchIncrement(100);
 
         // Be careful monkeying around here.
         // The test will exit and shut down the threadExecutor if there is nothing blocking on this thread

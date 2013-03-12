@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.tribble.Feature;
 
 import java.io.IOException;
@@ -34,12 +35,19 @@ public class FeatureSearcher implements Runnable {
     private FeatureTrack track = null;
     private FeatureSource<? extends Feature> source = null;
 
-    private static final int DEFAULT_SEARCH_WINDOW_SIZE = 100000;
+    private static final int DEFAULT_SEARCH_INCREMENT = 100000;
+
+    /**
+     * After searching a window, the increment over which to move.
+     * If smaller than searchWindowSize, it will be a sliding search with overlap.
+     * If larger, there will be gaps. Make negative to search backwards
+     */
+    private int searchIncrement = DEFAULT_SEARCH_INCREMENT;
 
     /**
      * The window size over which to search, in base pairs
      */
-    private int searchWindowSize = DEFAULT_SEARCH_WINDOW_SIZE;
+    private int searchWindowSize = searchIncrement;
 
     private volatile Iterator<? extends Feature> result = null;
 
@@ -50,11 +58,11 @@ public class FeatureSearcher implements Runnable {
     private String chr;
     private int start;
     private int end;
+    private IndefiniteProgressMonitor monitor;
 
-//    public FeatureSearcher(FeatureTrack track, String chr, int start, int end){
-//        assert track != null;
-//        this.track = track;
-//    }
+    public FeatureSearcher(FeatureSource<? extends Feature> source, Genome genome, String chr, int start){
+        this(source, genome, chr, start, null);
+    }
 
     /**
      *
@@ -62,11 +70,13 @@ public class FeatureSearcher implements Runnable {
      * @param genome
      * @param chr
      * @param start
+     * @param monitor Optional (may be null)
      */
-    public FeatureSearcher(FeatureSource<? extends Feature> source, Genome genome, String chr, int start){
+    public FeatureSearcher(FeatureSource<? extends Feature> source, Genome genome, String chr, int start, IndefiniteProgressMonitor monitor){
         assert source != null;
         this.source = source;
         this.genome = genome;
+        this.monitor = monitor;
         this.initSearchCoords(chr, start);
     }
 
@@ -77,18 +87,26 @@ public class FeatureSearcher implements Runnable {
     }
 
     private void incrementSearchCoords(){
-        this.start += searchWindowSize;
+        this.start += searchIncrement;
         int maxCoord = Integer.MAX_VALUE - searchWindowSize;
+        int minCoord = 0;
+
         if(this.genome != null){
             maxCoord = genome.getChromosome(chr).getLength();
         }
 
-        if (start >= maxCoord) {
-            //System.out.println("start greater than maxcoord " + maxCoord + " in chromosome " + chr);
+        boolean outsideBounds = start >= maxCoord || start < minCoord;
+
+
+        if (outsideBounds) {
+            String lastChr = chr;
+            chr = null;
             if(genome != null){
-                chr = genome.getNextChrName(chr);
-            }else{
-                chr = null;
+                if(start >= maxCoord){
+                    chr = genome.getNextChrName(lastChr);
+                }else if(start < minCoord){
+                    chr = genome.getPrevChrName(lastChr);
+                }
             }
 
             if (chr == null) {
@@ -97,8 +115,8 @@ public class FeatureSearcher implements Runnable {
                 this.cancel();
                 return;
             } else {
-                start = 0;
                 maxCoord = genome.getChromosome(chr).getLength();
+                start = searchIncrement > 0 ? minCoord : maxCoord - searchWindowSize;
             }
         }
         this.end = start + searchWindowSize;
@@ -127,8 +145,15 @@ public class FeatureSearcher implements Runnable {
         return this.result;
     }
 
-    public void setSearchWindowSize(int searchWindowSize) {
-        this.searchWindowSize = searchWindowSize;
+    /**
+     * Set the search increment, can be either positive or negative (to search backwards).
+     * Also sets the searchWindowSize
+     * @param searchIncrement
+     */
+    public void setSearchIncrement(int searchIncrement) {
+        if(this.isRunning) throw new IllegalStateException("Cannot set search increment while searching");
+        this.searchIncrement = searchIncrement;
+        this.searchWindowSize = Math.abs(searchIncrement);
         this.end = this.start + this.searchWindowSize;
     }
 
@@ -136,6 +161,10 @@ public class FeatureSearcher implements Runnable {
     public void run() {
         isRunning = true;
         Iterator<? extends Feature> rslt = null;
+
+        if(this.monitor != null){
+            this.monitor.start();
+        }
 
         while(isRunning && !wasCancelled){
             try {
@@ -154,5 +183,8 @@ public class FeatureSearcher implements Runnable {
             }
         }
         this.isRunning = false;
+        if(this.monitor != null){
+            this.monitor.stop();
+        }
     }
 }
