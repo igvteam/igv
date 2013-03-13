@@ -17,7 +17,7 @@ new FormModel {
 					"alignmentX": 0.0f
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
-						"text": "Enter the pattern to search for, using ACGT and/or IUPAC ambiguity codes. Matches in the current genome sequence will be displayed in a new track.\n"
+						"text": "Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. "
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true
@@ -50,6 +50,27 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "patternField"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 1
+					} ) {
+						name: "radioButtonPanel"
+						"alignmentX": 1.0f
+						"maximumSize": new java.awt.Dimension( 200, 46 )
+						"preferredSize": new java.awt.Dimension( 200, 46 )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "ambiguityCodeButton"
+							"text": "IUPAC Ambiguity Codes"
+							"$buttonGroup": new FormReference( "buttonGroup1" )
+							"selected": true
+							"toolTipText": "Use IUPAC ambiguity codes"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "regexButton"
+							"text": "Regular Expressions"
+							"$buttonGroup": new FormReference( "buttonGroup1" )
+							"toolTipText": "Use java regular expression syntax"
+						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "North"
@@ -87,6 +108,11 @@ new FormModel {
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
 			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "buttonGroup1"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 310 )
 		} )
 	}
 }

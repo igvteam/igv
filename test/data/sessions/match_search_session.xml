@@ -17,7 +17,7 @@
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
         </Track>
         <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="100000" fontSize="10" id="testserch" name="testserch" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
-            <SequenceMatchSource featureWindowSize="100000" genome="hg18" motif="ATGCATGCATGC"/>
+            <SequenceMatchSource featureWindowSize="100000" genome="hg18" pattern="ATGCATGCATGC"/>
         </Track>
     </Panel>
     <PanelLayout dividerFractions="0.8700729927007299"/>

@@ -34,16 +34,16 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class for searching for motif in a shortSeq.
+ * Class for searching for pattern in a shortSeq.
  *
  * We recognize single letter codes, including ambiguity codes,
  * only.
@@ -55,23 +55,7 @@ import java.util.regex.Pattern;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SequenceMatchSource implements FeatureSource<Feature> {
 
-    private static Map<String, String> letterToRegex;
-    private static Set<String> validInputStrings;
-
-    static{
-        initLetterToRegex();
-    }
-
-    private static final String codeFilePath = "resources/iupac_regex_table.txt";
-    private static void initLetterToRegex() {
-        letterToRegex = loadMap(SequenceMatchSource.class.getResourceAsStream(codeFilePath));
-        validInputStrings = new HashSet<String>(letterToRegex.size());
-        for(String key: letterToRegex.keySet()){
-            validInputStrings.add(key.toUpperCase());
-        }
-    }
-
-    @XmlAttribute private String motif;
+    @XmlAttribute private String pattern;
 
     @XmlJavaTypeAdapter(SessionXmlAdapters.Genome.class)
     @XmlAttribute private Genome genome;
@@ -83,91 +67,35 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
 
     /**
      *
-     * @param motif The string to search for, which can include IUPAC ambiguity codes
+     * @param pattern The regex pattern to search
      * @param genome Genome from which to get sequence data
      */
-    public SequenceMatchSource(String motif, Genome genome){
-        this.motif = motif;
+    public SequenceMatchSource(String pattern, Genome genome){
+        this.pattern = pattern;
         this.genome = genome;
     }
-    /**
-     * Replace the ambiguity codes in the motif
-     * with regular expression equivalents
-     * @param motif
-     * @return
-     */
-    static String convertMotifToRegex(String motif){
-        String output = motif;
-        int outloc = 0;
-        for(int inloc=0; inloc < motif.length(); inloc++){
-
-            String inchar = motif.substring(inloc, inloc + 1);
-            String rep = letterToRegex.get(inchar);
-
-            output = output.substring(0, outloc) + rep + motif.substring(inloc + 1);
-            outloc += rep.length();
-        }
-        return output;
-    }
 
     /**
-     * Search the provided sequence for the provided motif
+     * Search the provided sequence for the provided pattern
      * {@code chr} and {@code seqStart} are used in constructing the resulting
      * {@code Feature}s
      * @param chr
-     * @param motif
+     * @param pattern
      * @param posStart The 0-based offset from the beginning of the genome that the {@code sequence} is based
      * @param sequence The nucleotide sequence
      * @return
      */
-    public static Iterator<Feature> search(String chr, String motif, int posStart, byte[] sequence){
-        motif = convertMotifToRegex(motif);
-        Pattern regex = Pattern.compile(motif, Pattern.CASE_INSENSITIVE);
+    public static Iterator<Feature> search(String chr, String pattern, int posStart, byte[] sequence){
+        Pattern regex = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         Matcher matcher = regex.matcher(new String(sequence));
         return new MatchFeatureIterator(chr, posStart, matcher);
-    }
-
-    /**
-     * TODO Move this to someplace more general, use it wherever we store lots of this kind of data
-     * @param inputStream
-     * @return
-     */
-    public static Map<String, String> loadMap(InputStream inputStream){
-        BufferedReader reader = null;
-        Map<String, String> map = new HashMap<String, String>();
-        try {
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-            String nextLine = null;
-            while ((nextLine = reader.readLine()) != null) {
-                if(nextLine.startsWith("#")) continue;
-
-                String[] tokens = nextLine.split("=");
-                if (tokens.length == 2) {
-                    map.put(tokens[0], tokens[1]);
-                }else{
-                    throw new IllegalArgumentException("Incorrect number of tokens at line: " + nextLine);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        return map;
     }
 
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
         byte[] seq = genome.getSequence(chr, start, end);
         if(seq == null) Collections.emptyList().iterator();
-        return search(chr, this.motif, start, seq);
+        return search(chr, this.pattern, start, seq);
     }
 
     @Override
@@ -184,10 +112,6 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
     @Override
     public void setFeatureWindowSize(int size) {
         this.featureWindowSize = size;
-    }
-
-    public static boolean isValidString(String c) {
-        return validInputStrings.contains(c);
     }
 
     public static class SequenceMatchPlugin implements IGVPlugin {

@@ -49,14 +49,14 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
     @Test
     public void testConvertMotifToRegex_Basic() throws Exception{
         String motif = "ACTGACTGACTG";
-        String regex = SequenceMatchSource.convertMotifToRegex(motif);
+        String regex = SequenceMatchDialog.convertMotifToRegex(motif);
         assertEquals(motif, regex);
     }
 
     @Test
     public void testConvertMotifToRegex_02() throws Exception{
         String motif = "ACTGMACTGNACTSG";
-        String regex = SequenceMatchSource.convertMotifToRegex(motif);
+        String regex = SequenceMatchDialog.convertMotifToRegex(motif);
 
         assertTrue(regex.length() >= motif.length());
         assertEquals("ACTG[M,A,C]ACTG.ACT[S,G,C]G", regex);
@@ -67,7 +67,7 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
         String motif = "CTTCGGGGAGCAGCGATGCGACCCTCCGGGACGGCCGGGGCAGCGCTCCTGGCGCTGCTGGCTGCGCTCTGCCCGGCGAGTCGGGCTCTGGAGGAAAAGAAAGGTAAGGGCGTGTCTCGCCGGCTCCCGCGCCGCCCCCGGATCGCGCCCCGGACCCCGCAGCCCGCCCAACCGCG";
 
         int expStart = 55054449;
-        tstSearchGenome_EGFR(motif, expStart);
+        tstSearchGenome_EGFR(motif, expStart, expStart + motif.length());
     }
 
     @Test
@@ -75,13 +75,14 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
         String motif = "CTTYKSVDAGCAGNGATGCRRCCCYCCGGGACGGCCGGGNCAGCGCKCCBGGCGCDGCTGGCTGCGCTCTGCCCGGCGAGTCGGGCTCTGGAGGRMWHGAAAGGNNVGGGCGTGTCTCGCCGGCTCCCGCGCCGCCCCCGGATCGCGCCCCGGACCCCGCAGCCCGCCCAACCGCG";
 
         int expStart = 55054449;
-        tstSearchGenome_EGFR(motif, expStart);
+        String pattern = SequenceMatchDialog.convertMotifToRegex(motif);
+        tstSearchGenome_EGFR(pattern, expStart, expStart + motif.length());
     }
 
     @Test
     public void testSearchNoResult() throws Exception{
         tstSearchGenomeSingResult("GATCRYMKSWHBVDNGATCGATCGATCGATCGATCGATCGATCGATCGATC", "chr7",
-                0, 100000, -1);
+                0, 100000, -1, -1);
     }
 
     /**
@@ -127,31 +128,31 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
         for(int ii=0; ii < reps; ii++) motif += umotif;
 
         tstSearchGenomeSingResult(motif, chromo,
-                0, genome.getChromosome(chromo).getLength(), -1);
+                0, genome.getChromosome(chromo).getLength(), -1, -1);
     }
 
-    public void tstSearchGenome_EGFR(String motif, int expStart) throws Exception {
+    public void tstSearchGenome_EGFR(String motif, int expStart, int expEnd) throws Exception {
         //Our favorite, EGFR
         String chr = "chr7";
         int start = 55052219;
         int end = 55244525;
 
-        tstSearchGenomeSingResult(motif, chr, start, end, expStart);
+        tstSearchGenomeSingResult(motif, chr, start, end, expStart, expEnd);
     }
 
     /**
-     * Test searching for motif in the specified region, asserting that at most 1 feature
+     * Test searching for pattern in the specified region, asserting that at most 1 feature
      * is found and starts at {@code expFeatureStart}. If expFeatureStart < 0, it is assumed
      * no features should be found
-     * @param motif
+     * @param pattern
      * @param chr
      * @param start
      * @param end
      * @param expFeatStart
      * @throws Exception
      */
-    public void tstSearchGenomeSingResult(String motif, String chr, int start, int end, int expFeatStart) throws Exception {
-        SequenceMatchSource source = new SequenceMatchSource(motif, genome);
+    public void tstSearchGenomeSingResult(String pattern, String chr, int start, int end, int expFeatStart, int expFeatureEnd) throws Exception {
+        SequenceMatchSource source = new SequenceMatchSource(pattern, genome);
 
         Iterator<Feature> iter = source.getFeatures(chr, start, end);
         Feature feat = iter.next();
@@ -160,7 +161,10 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
             assertNotNull(feat);
 
             assertEquals(expFeatStart, feat.getStart());
-            assertEquals(expFeatStart + motif.length(), feat.getEnd());
+
+            if(expFeatureEnd > 0){
+                assertEquals(expFeatureEnd, feat.getEnd());
+            }
         }else{
             assertNull(feat);
         }

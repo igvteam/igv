@@ -20,6 +20,14 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Dialog so the user can enter a pattern that can be used
@@ -28,6 +36,62 @@ import java.awt.event.ActionListener;
  * @author Jacob Silterra
  */
 public class SequenceMatchDialog extends JDialog {
+
+    private static Map<String, String> letterToRegex;
+    private static Set<String> validInputStrings;
+
+    static{
+        initLetterToRegex();
+    }
+
+    private static final String codeFilePath = "resources/iupac_regex_table.txt";
+    private static void initLetterToRegex() {
+        letterToRegex = loadMap(SequenceMatchSource.class.getResourceAsStream(codeFilePath));
+        validInputStrings = new HashSet<String>(letterToRegex.size());
+        for(String key: letterToRegex.keySet()){
+            validInputStrings.add(key.toUpperCase());
+        }
+    }
+
+    public static boolean isValidString(String c) {
+        return validInputStrings.contains(c);
+    }
+
+    /**
+     * TODO Move this to someplace more general, use it wherever we store lots of this kind of data
+     * @param inputStream
+     * @return
+     */
+    public static Map<String, String> loadMap(InputStream inputStream){
+        BufferedReader reader = null;
+        Map<String, String> map = new HashMap<String, String>();
+        try {
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            String nextLine = null;
+            while ((nextLine = reader.readLine()) != null) {
+                if(nextLine.startsWith("#")) continue;
+
+                String[] tokens = nextLine.split("=");
+                if (tokens.length == 2) {
+                    map.put(tokens[0], tokens[1]);
+                }else{
+                    throw new IllegalArgumentException("Incorrect number of tokens at line: " + nextLine);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return map;
+    }
 
     private String trackName;
     private String inputPattern;
@@ -45,6 +109,26 @@ public class SequenceMatchDialog extends JDialog {
         return trackName;
     }
 
+    /**
+     * Replace the ambiguity codes in the motif
+     * with regular expression equivalents
+     * @param motif
+     * @return
+     */
+    static String convertMotifToRegex(String motif){
+        String output = motif;
+        int outloc = 0;
+        for(int inloc=0; inloc < motif.length(); inloc++){
+
+            String inchar = motif.substring(inloc, inloc + 1);
+            String rep = letterToRegex.get(inchar);
+
+            output = output.substring(0, outloc) + rep + motif.substring(inloc + 1);
+            outloc += rep.length();
+        }
+        return output;
+    }
+
     private void cancelButtonActionPerformed(ActionEvent e) {
         this.setVisible(false);
     }
@@ -56,7 +140,15 @@ public class SequenceMatchDialog extends JDialog {
 
         String strPattern = patternField.getText().toUpperCase();
 
-        boolean patternIsValid = checkPatternValid(strPattern);
+        //Don't validate regex here, too hard
+        boolean patternIsValid = true;
+        if(ambiguityCodeButton.isSelected()){
+            patternIsValid = checkPatternValid(strPattern);
+            if(patternIsValid){
+                strPattern = convertMotifToRegex(strPattern);
+            }
+        }
+
         if(!patternIsValid){
             // TODO warn user
         }else{
@@ -69,7 +161,7 @@ public class SequenceMatchDialog extends JDialog {
     private boolean checkPatternValid(String strPattern) {
         for(int ii=0; ii < strPattern.length(); ii++){
             String c = strPattern.substring(ii, ii + 1);
-            if(!SequenceMatchSource.isValidString(c)){
+            if(!isValidString(c)){
                 return false;
             }
         }
@@ -87,6 +179,9 @@ public class SequenceMatchDialog extends JDialog {
         label2 = new JLabel();
         label4 = new JLabel();
         patternField = new JTextField();
+        radioButtonPanel = new JPanel();
+        ambiguityCodeButton = new JRadioButton();
+        regexButton = new JRadioButton();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -107,7 +202,7 @@ public class SequenceMatchDialog extends JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
-                textArea1.setText("Enter the pattern to search for, using ACGT and/or IUPAC ambiguity codes. Matches in the current genome sequence will be displayed in a new track.\n");
+                textArea1.setText("Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
@@ -135,6 +230,26 @@ public class SequenceMatchDialog extends JDialog {
                 contentPanel.add(label2);
                 contentPanel.add(label4);
                 contentPanel.add(patternField);
+
+                //======== radioButtonPanel ========
+                {
+                    radioButtonPanel.setAlignmentX(1.0F);
+                    radioButtonPanel.setMaximumSize(new Dimension(200, 46));
+                    radioButtonPanel.setPreferredSize(new Dimension(200, 46));
+                    radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.Y_AXIS));
+
+                    //---- ambiguityCodeButton ----
+                    ambiguityCodeButton.setText("IUPAC Ambiguity Codes");
+                    ambiguityCodeButton.setSelected(true);
+                    ambiguityCodeButton.setToolTipText("Use IUPAC ambiguity codes");
+                    radioButtonPanel.add(ambiguityCodeButton);
+
+                    //---- regexButton ----
+                    regexButton.setText("Regular Expressions");
+                    regexButton.setToolTipText("Use java regular expression syntax");
+                    radioButtonPanel.add(regexButton);
+                }
+                contentPanel.add(radioButtonPanel);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
 
@@ -174,6 +289,11 @@ public class SequenceMatchDialog extends JDialog {
         contentPane.add(dialogPane, BorderLayout.CENTER);
         setSize(400, 300);
         setLocationRelativeTo(getOwner());
+
+        //---- buttonGroup1 ----
+        ButtonGroup buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(ambiguityCodeButton);
+        buttonGroup1.add(regexButton);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -187,6 +307,9 @@ public class SequenceMatchDialog extends JDialog {
     private JLabel label2;
     private JLabel label4;
     private JTextField patternField;
+    private JPanel radioButtonPanel;
+    private JRadioButton ambiguityCodeButton;
+    private JRadioButton regexButton;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
