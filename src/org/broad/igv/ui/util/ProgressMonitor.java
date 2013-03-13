@@ -17,15 +17,19 @@ import java.beans.PropertyChangeSupport;
 
 
 /**
+ * TODO This class probably shouldn't exist, bet we could use built-in progress monitors instead
  * @author eflakes
  */
 public class ProgressMonitor {
 
     final public static String PROGRESS_PROPERTY = "PROGRESS_PROPERTY";
+    final public static String STATUS_PROPERTY = "STATUS_STATUS";
 
     private boolean isReady = false;
     private int oldValue = 0;
     private PropertyChangeSupport propertyChangeSupport;
+
+    private String oldStatus = "";
 
     public ProgressMonitor() {
         propertyChangeSupport = new PropertyChangeSupport(this);
@@ -55,6 +59,15 @@ public class ProgressMonitor {
                             newValue);
             propertyChangeSupport.firePropertyChange(event);
             oldValue = newValue;
+        }
+    }
+
+    public void updateStatus(String newStatus){
+        if(isReady){
+            PropertyChangeEvent event = new PropertyChangeEvent(this, STATUS_PROPERTY,
+                    oldStatus, newStatus);
+            propertyChangeSupport.firePropertyChange(event);
+            oldStatus = newStatus;
         }
     }
 

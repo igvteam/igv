@@ -164,6 +164,11 @@ public class FeatureSearcher implements Runnable {
     public void run() {
         isRunning = true;
         Iterator<? extends Feature> rslt = null;
+        int counter = 0;
+        int updateInterval = 20 * (int) (DEFAULT_SEARCH_INCREMENT / (1.0 * searchIncrement) );
+        //Keep updateInterval above 0
+        updateInterval = Math.max(updateInterval, 100);
+        System.out.println(updateInterval);
 
         if(this.monitor != null){
             this.monitor.start();
@@ -171,7 +176,13 @@ public class FeatureSearcher implements Runnable {
 
         while(isRunning && !wasCancelled){
             try {
-                //System.out.println("Searching: " + String.format("%s:%d-%d", chr, start, end));
+                if(this.monitor != null){
+                    if(counter == 0){
+                        String status = String.format("%s:%d-%d", chr, start, end);
+                        this.monitor.updateStatus(status);
+                    }
+                    counter = (counter + 1) % updateInterval;
+                }
                 rslt = getFeatures(chr, start, end);
                 if(rslt != null && rslt.hasNext()){
                     //Found something

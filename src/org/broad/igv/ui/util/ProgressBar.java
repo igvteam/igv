@@ -13,7 +13,6 @@ package org.broad.igv.ui.util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -176,28 +175,29 @@ public class ProgressBar extends JPanel
      * Create a show a progress dialog which is cancellable
      * @param dialogsParent
      * @param title
-     * @param monitor
      * @param cancelActionListener The {@code ActionListener} to be called when the cancel button is pressed. Closing the
-     *                             dialog is not necessary, as a separate listener is added for that.
+     *                             dialog is not necessary and is performed automatically.
+     * @param monitor Optional (may be null). Status text is updated based on monitor.updateStatus
      * @return
      */
-    public static ProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, ProgressMonitor monitor,
-                                                               ActionListener cancelActionListener){
-        final ProgressDialog progressDialog = createProgressDialog(dialogsParent, title, monitor, true);
+    public static CancellableProgressDialog showCancellableProgressDialog(Frame dialogsParent, String title, ActionListener cancelActionListener, ProgressMonitor monitor){
+        final CancellableProgressDialog progressDialog = new CancellableProgressDialog(dialogsParent);
+        progressDialog.setTitle(title);
+        progressDialog.addCancelActionListener(cancelActionListener);
 
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.setSize(75, 29);
-        cancelButton.setPreferredSize(cancelButton.getSize());
-        cancelButton.addActionListener(cancelActionListener);
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                progressDialog.setVisible(false);
-            }
-        });
+        if(monitor != null && monitor instanceof IndefiniteProgressMonitor) progressDialog.getProgressBar().setIndeterminate(true);
 
-        progressDialog.getContentPane().add(cancelButton);
-        progressDialog.setSize(500, 100);
+        if(monitor != null){
+            monitor.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(evt.getPropertyName().equals(ProgressMonitor.STATUS_PROPERTY)){
+                        progressDialog.setStatus("" + evt.getNewValue());
+                    }
+                }
+            });
+        }
+
 
         progressDialog.setVisible(true);
         progressDialog.toFront();

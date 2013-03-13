@@ -15,8 +15,10 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.FeatureSearcher;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.CancellableProgressDialog;
 import org.broad.igv.ui.util.IndefiniteProgressMonitor;
 import org.broad.igv.ui.util.ProgressBar;
+import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.tribble.Feature;
 
@@ -137,19 +139,21 @@ class FeatureTrackUtils {
             }
         };
 
+        final CancellableProgressDialog dialog = ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", cancelListener, monitor);
+        dialog.getProgressBar().setIndeterminate(true);
+
         monitor.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if((Integer) evt.getNewValue() >= 100){
+                if(evt.getPropertyName().equals(ProgressMonitor.PROGRESS_PROPERTY) &&  (Integer) evt.getNewValue() >= 100){
                     cancelListener.actionPerformed(null);
+                    dialog.setVisible(false);
                     Iterator<? extends Feature> result = searcher.getResult();
                     if(result != null) foundHandler.processResult(result);
                 }
             }
         });
+
         LongRunningTask.getThreadExecutor().execute(searcher);
-        ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, cancelListener);
-
-
     }
 }

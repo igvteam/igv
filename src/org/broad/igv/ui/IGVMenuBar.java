@@ -29,7 +29,6 @@ import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
-import org.broad.igv.tools.FeatureSearcher;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
@@ -42,7 +41,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
-import org.broad.igv.util.LongRunningTask;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
@@ -51,8 +49,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -265,51 +261,6 @@ public class IGVMenuBar extends JMenuBar {
                 }
             }
         }
-
-        //TODO TEST CODE ONLY
-        JMenuItem testCancellableDialog = new JMenuItem("Test cancellable progress");
-        testCancellableDialog.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IndefiniteProgressMonitor monitor = new IndefiniteProgressMonitor();
-                FeatureSource source = new RandomFeatureSource();
-                final FeatureSearcher searcher = new FeatureSearcher(source, GenomeManager.getInstance().getCurrentGenome(),
-                        FrameManager.getDefaultFrame().getChrName(), (int) FrameManager.getDefaultFrame().getOrigin(), monitor);
-                final ActionListener cancelListener = new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        searcher.cancel();
-                    }
-                };
-
-                monitor.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if((Integer) evt.getNewValue() >= 100){
-                            cancelListener.actionPerformed(null);
-                        }
-                    }
-                });
-                LongRunningTask.getThreadExecutor().execute(searcher);
-                ProgressBar.showCancellableProgressDialog(IGV.getMainFrame(), "Searching...", monitor, cancelListener);
-                while(searcher.isRunning()){
-                    try {
-                        Thread.sleep(100);
-                    } catch ( InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-
-                Iterator<? extends Feature> result = searcher.getResult();
-                if(result != null){
-                    Feature first = result.next();
-                    FrameManager.getDefaultFrame().jumpTo(first.getChr(), first.getStart(), first.getEnd());
-                }
-            }
-        });
-        //menuItems.add(testCancellableDialog);
-        //
-
         //-------------------------------------//
 
 
