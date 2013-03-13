@@ -123,7 +123,13 @@ public class CancellableProgressDialog extends JDialog {
         cancelButton.addActionListener(cancelActionListener);
     }
 
-    public void setStatus(String status) {
-        this.statusText.setText(status);
+    public void setStatus(final String status) {
+        Runnable updater = new Runnable() {
+            @Override
+            public void run() {
+                statusText.setText(status);
+            }
+        };
+        UIUtilities.invokeOnEventThread(updater);
     }
 }
