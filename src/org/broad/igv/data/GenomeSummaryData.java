@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -32,13 +25,15 @@ import org.broad.igv.util.collections.IntArrayList;
 import java.util.*;
 
 /**
+ * Summarize (using a windowing function) numeric data points which are associated
+ * with locations on a genome. Stored by chromosome
  * @author jrobinso
  */
 public class GenomeSummaryData {
 
     private static Logger log = Logger.getLogger(GenomeSummaryData.class);
 
-    // Genome coordinates are in KB
+    // Genome coordinates are in kilobases
     private static final double locationUnit = 1000.0;
 
     /**
@@ -50,21 +45,34 @@ public class GenomeSummaryData {
 
     String[] samples;
 
-    Map<String, Map<String, FloatArrayList>> dataMap = new HashMap();
+    /**
+     * Chromosome name -> [sample name -> list of data values]
+     */
+    Map<String, Map<String, FloatArrayList>> dataMap = new HashMap<String, Map<String, FloatArrayList>>();
 
+    /**
+     * Chromosome name -> list of start locations
+     */
     Map<String, IntArrayList> locationMap;
 
+    /**
+     * start locations of currently relevant ordered list of chromosomes, spanning whole genomes
+     */
     int[] locations;
 
+
+    /**
+     * sample name -> list of sample data
+     */
     Map<String, float[]> data;
 
     int nDataPts = 0;
 
-    Set<String> skippedChromosomes = new HashSet();
+    Set<String> skippedChromosomes = new HashSet<String>();
 
 
     /**
-     * Scale in KB / pixel
+     * Scale in kilobases / pixel
      */
     double scale;
 
@@ -74,15 +82,26 @@ public class GenomeSummaryData {
         scale = (genome.getNominalLength() / locationUnit) / nPixels;
 
         List<String> chrNames = genome.getLongChromosomeNames();
-        locationMap = new HashMap();
-        dataMap = new HashMap();
+        locationMap = new HashMap<String, IntArrayList>();
+        dataMap = new HashMap<String, Map<String, FloatArrayList>>();
         for (String chr : chrNames) {
             locationMap.put(chr, new IntArrayList(nPixels / 10));
-            dataMap.put(chr, new HashMap());
+            dataMap.put(chr, new HashMap<String, FloatArrayList>());
             for (String s : samples) {
                 dataMap.get(chr).put(s, new FloatArrayList(nPixels / 10));
             }
         }
+    }
+
+    /**
+     * Changes scale of summary, ie zoom in or out
+     * Mainly for testing, can't use after adding any data
+     * @param scale
+     */
+    void setScale(double scale){
+        if(nDataPts > 0) throw new IllegalStateException("Can't alter scale after adding data");
+        this.scale = scale;
+        nPixels = (int) (((double) this.genome.getNominalLength() / locationUnit) / scale);
     }
 
 
@@ -98,22 +117,16 @@ public class GenomeSummaryData {
         }
 
         int lastPixel = -1;
-        Map<String, Accumulator> dataPoints = new HashMap();
+        int lastGenomeLocation = -1;
+        Map<String, Accumulator> dataPoints = new HashMap<String, Accumulator>();
 
         for (int i = 0; i < locs.length; i++) {
 
             int genomeLocation = genome.getGenomeCoordinate(chr, locs[i]);
             int pixel = (int) (genomeLocation / scale);
-            if (i > 0 && pixel != lastPixel) {
-                nDataPts++;
-
-                locations.add(genomeLocation);
-                for (String s : dataMap.get(chr).keySet()) {
-                    Accumulator dp = dataPoints.get(s);
-                    dp.finish();
-                    dataMap.get(chr).get(s).add(dp.getValue());
-                }
-                dataPoints.clear();
+            if (lastPixel >= 0 && pixel != lastPixel) {
+                locations.add(lastGenomeLocation);
+                finishLastLocation(chr, dataPoints);
             }
 
             for (String s : samples) {
@@ -126,12 +139,32 @@ public class GenomeSummaryData {
                 try {
                     dp.add(1, data[i], null);
                 } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error("Error adding to GenomeSummaryData", e);
                 }
             }
 
             lastPixel = pixel;
+            lastGenomeLocation = genomeLocation;
         }
+
+        locations.add(lastGenomeLocation);
+        finishLastLocation(chr, dataPoints);
+    }
+
+    /**
+     * Mark the previous genomic location as having been completely summarized
+     * @param chr
+     * @param dataPoints  Map sample -> accumulator, which stored data temporarily being accumulated at a given genome location
+     */
+    private void finishLastLocation(String chr, Map<String, Accumulator> dataPoints) {
+        nDataPts++;
+
+        for (String s : dataMap.get(chr).keySet()) {
+            Accumulator dp = dataPoints.get(s);
+            dp.finish();
+            dataMap.get(chr).get(s).add(dp.getValue());
+        }
+        dataPoints.clear();
     }
 
     public int[] getLocations() {
@@ -151,6 +184,11 @@ public class GenomeSummaryData {
 
     }
 
+    /**
+     * Recalculate:
+     * 0. Start locations for plotting. Shared across all samples
+     * 1. Summary data for a given sample, across all stored chromosomes
+     */
     private synchronized void createDataArrays() {
         locations = new int[nDataPts];
         int offset = 0;
@@ -161,7 +199,7 @@ public class GenomeSummaryData {
             offset += chrLocs.length;
         }
 
-        data = new HashMap();
+        data = new HashMap<String, float[]>();
         for (String s : samples) {
             float[] sampleData = new float[nDataPts];
             offset = 0;
