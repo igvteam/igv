@@ -22,6 +22,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Custom test runner, for categorizing/ignoring tests based on input flags.
@@ -78,6 +79,28 @@ public class IGVTestRunner extends BlockJUnit4ClassRunner {
     protected Statement methodInvoker(final FrameworkMethod method, Object test) {
         Statement statement =  super.methodInvoker(method, test);
         return new MethodInvoker(statement);
+    }
+
+    @Override
+    protected void collectInitializationErrors(List<Throwable> errors) {
+        super.collectInitializationErrors(errors);
+
+        /**
+         The purpose here is to prevent throwing errors
+         if we include a class which isn't a test class, and thus has no test methods
+         Usually we annotate these with @Ignore. But unless with annotate the class
+         with RunWith it doesn't use this runner anyway. So it's pointless
+         */
+//        List<Throwable> removeErrors = new ArrayList<Throwable>(1);
+//        for (Throwable error : errors) {
+//            if (error.getMessage().contains("No runnable methods")) {
+//                removeErrors.add(error);
+//            }
+//        }
+//
+//        for(Throwable removeError: removeErrors){
+//            errors.remove(removeError);
+//        }
     }
 
     @Override

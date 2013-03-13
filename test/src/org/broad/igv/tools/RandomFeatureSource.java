@@ -19,6 +19,7 @@ package org.broad.igv.tools;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.tribble.Locus;
 import org.broad.igv.track.FeatureSource;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.Random;
  * Generates a feature in the search interval, or null, with some
  * probability of a feature
  */
+@Ignore
 public class RandomFeatureSource implements FeatureSource<Locus> {
 
     private float probSuccess = 0.05f;
