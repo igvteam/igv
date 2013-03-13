@@ -14,6 +14,7 @@ new FormModel {
 					"axis": 1
 				} ) {
 					name: "contentPanel"
+					"alignmentX": 0.0f
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
 						"text": "Enter the pattern to search for, using ACGT and/or IUPAC ambiguity codes. Matches in the current genome sequence will be displayed in a new track.\n"
@@ -25,6 +26,11 @@ new FormModel {
 						name: "label1"
 						"text": "Track Name:"
 						"labelFor": new FormReference( "nameField" )
+						"horizontalTextPosition": 2
+						"horizontalAlignment": 2
+						"maximumSize": new java.awt.Dimension( 374, 16 )
+						"preferredSize": new java.awt.Dimension( 374, 16 )
+						"alignmentX": 1.0f
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "nameField"
@@ -33,6 +39,11 @@ new FormModel {
 						name: "label2"
 						"text": "Pattern:"
 						"labelFor": new FormReference( "patternField" )
+						"horizontalTextPosition": 2
+						"horizontalAlignment": 2
+						"alignmentX": 1.0f
+						"maximumSize": new java.awt.Dimension( 374, 16 )
+						"preferredSize": new java.awt.Dimension( 374, 16 )
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label4"

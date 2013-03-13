@@ -103,6 +103,7 @@ public class SequenceMatchDialog extends JDialog {
 
             //======== contentPanel ========
             {
+                contentPanel.setAlignmentX(0.0F);
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
@@ -115,12 +116,22 @@ public class SequenceMatchDialog extends JDialog {
                 //---- label1 ----
                 label1.setText("Track Name:");
                 label1.setLabelFor(nameField);
+                label1.setHorizontalTextPosition(SwingConstants.LEFT);
+                label1.setHorizontalAlignment(SwingConstants.LEFT);
+                label1.setMaximumSize(new Dimension(374, 16));
+                label1.setPreferredSize(new Dimension(374, 16));
+                label1.setAlignmentX(1.0F);
                 contentPanel.add(label1);
                 contentPanel.add(nameField);
 
                 //---- label2 ----
                 label2.setText("Pattern:");
                 label2.setLabelFor(patternField);
+                label2.setHorizontalTextPosition(SwingConstants.LEFT);
+                label2.setHorizontalAlignment(SwingConstants.LEFT);
+                label2.setAlignmentX(1.0F);
+                label2.setMaximumSize(new Dimension(374, 16));
+                label2.setPreferredSize(new Dimension(374, 16));
                 contentPanel.add(label2);
                 contentPanel.add(label4);
                 contentPanel.add(patternField);
