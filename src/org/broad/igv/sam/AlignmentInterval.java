@@ -419,26 +419,42 @@ public class AlignmentInterval extends Locus implements Interval {
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
 
+                        // Check insertions
+                        int insertionScore = 0;
+                        AlignmentBlock[] insertions = centerAlignment.getInsertions();
+                        for (AlignmentBlock ins : insertions) {
+                            int s = ins.getStart();
+                            if (s == adjustedCenter || (s-1) == adjustedCenter) {
+                                insertionScore += ins.getBases().length;
+                            }
+                        }
+
+                        float baseScore;
                         if (base == 'N' || base == 'n') {
-                            return 2;  // Base is "n"
+                            baseScore = 2;  // Base is "n"
                         } else if (base == ref) {
-                            return 3;  // Base is reference
+                            baseScore = 3;  // Base is reference
                         } else {
-                            //If base is 0, base not covered (splice junction) or is deletion
+                            //If base is 0, base not covered (splice junction) or is deletion.
                             if (base == 0) {
                                 int delCount = interval.getDelCount(adjustedCenter);
                                 if (delCount > 0) {
-                                    return -delCount;
+                                    baseScore = -delCount;
                                 } else {
                                     //Base not covered, NOT a deletion
-                                    return 1;
+                                    baseScore = 1;
                                 }
                             } else {
                                 int count = interval.getCount(adjustedCenter, base);
                                 byte phred = centerAlignment.getPhred(adjustedCenter);
-                                return -(count + (phred / 100.0f));
+                                baseScore = -(count + (phred / 1000.0f));   // The second bit will always be < 1
                             }
+
+
                         }
+
+                        return baseScore - insertionScore;
+
                     case QUALITY:
                         return -centerAlignment.getMappingQuality();
                     case SAMPLE:
