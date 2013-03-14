@@ -178,11 +178,15 @@ public class GobyAlignment implements Alignment {
         int endAlignmentRefPosition = matchLength + start;
         bases.clear();
         scores.clear();
-
+        int maxIndex = Math.min(readBases.length, readQual.length);
         while (pos < endAlignmentRefPosition) {
             final int index = pos - start + leftPadding;
-            bases.add(readBases[index]);
-            scores.add(readQual[index]);
+            if (index < maxIndex) {
+                bases.add(readBases[index]);
+                scores.add(readQual[index]);
+            } else {
+                break;
+            }
             ++pos;
         }
 
@@ -811,4 +815,5 @@ public class GobyAlignment implements Alignment {
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
+
 }
