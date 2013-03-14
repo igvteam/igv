@@ -241,7 +241,7 @@ public class Main {
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                String firstArg = StringUtils.decodeURL(nonOptionArgs[0]);  // TODO -- why is this url decoded?
+                String firstArg = nonOptionArgs[0];
                 if (firstArg != null && !firstArg.equals("ignore")) {
                     log.info("Loading: " + firstArg);
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
