@@ -20,11 +20,17 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
- * @author User #2
+ * @author jacob
  */
 public class DBProfileEditor extends JDialog {
+
+    public static final String ENABLE_EDITOR_PROPERTY = "enableDBProfileEditor";
+
+    private DBProfile profile = new DBProfile();
 
     public DBProfileEditor(Frame owner, String initProfilePath) {
         super(owner);
@@ -44,16 +50,12 @@ public class DBProfileEditor extends JDialog {
         dataType.setModel(model);
 
         if (initProfilePath != null) {
-            DBProfile profile = DBProfile.parseProfile(initProfilePath);
+            profile = DBProfile.parseProfile(initProfilePath);
 
-            String fullHost = "";
-            String subprotocol = profile.getSubprotocol();
-            String host = profile.getHost();
-            if (subprotocol != null && host != null) {
-                fullHost = subprotocol + "://" + host;
-            }
+            DBName.setText(profile.getName());
+            DBHost.setText(profile.getHost());
+            DBPath.setText(profile.getPath());
 
-            DBPath.setText(fullHost);
             port.setText(profile.getPort());
             username.setText(profile.getUsername());
             password.setText(profile.getPassword());
@@ -69,7 +71,13 @@ public class DBProfileEditor extends JDialog {
             startColField.setText("" + table.getStartColIndex());
             endColField.setText("" + table.getEndColIndex());
             binColField.setText(table.getBinColName());
+
+            dataType.setSelectedItem(table.getFormat());
         }
+    }
+
+    private void cancelButtonActionPerformed(ActionEvent e) {
+        setVisible(false);
     }
 
     private void initComponents() {
@@ -79,7 +87,7 @@ public class DBProfileEditor extends JDialog {
         contentPanel = new JPanel();
         panel4 = new JPanel();
         label4 = new JLabel();
-        nameComboBox = new JComboBox();
+        DBName = new JTextField();
         panel1 = new JPanel();
         label1 = new JLabel();
         DBHost = new JTextField();
@@ -96,13 +104,13 @@ public class DBProfileEditor extends JDialog {
         label3 = new JLabel();
         password = new JPasswordField();
         checkBox1 = new JCheckBox();
+        separator1 = new JSeparator();
         panel7 = new JPanel();
         label7 = new JLabel();
         tableName = new JTextField();
         panel8 = new JPanel();
         label8 = new JLabel();
         dataType = new JComboBox();
-        separator1 = new JSeparator();
         panel9 = new JPanel();
         label9 = new JLabel();
         chromField = new JTextField();
@@ -142,6 +150,7 @@ public class DBProfileEditor extends JDialog {
 
                 //======== panel4 ========
                 {
+                    panel4.setMaximumSize(new Dimension(330, 28));
                     panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
 
                     //---- label4 ----
@@ -150,10 +159,9 @@ public class DBProfileEditor extends JDialog {
                     label4.setMaximumSize(new Dimension(80, 16));
                     panel4.add(label4);
 
-                    //---- nameComboBox ----
-                    nameComboBox.setEditable(true);
-                    nameComboBox.setMaximumRowCount(100);
-                    panel4.add(nameComboBox);
+                    //---- DBName ----
+                    DBName.setEditable(true);
+                    panel4.add(DBName);
                 }
                 contentPanel.add(panel4);
 
@@ -258,6 +266,10 @@ public class DBProfileEditor extends JDialog {
                 }
                 contentPanel.add(panel3);
 
+                //---- separator1 ----
+                separator1.setPreferredSize(new Dimension(0, 1));
+                contentPanel.add(separator1);
+
                 //======== panel7 ========
                 {
                     panel7.setLayout(new BoxLayout(panel7, BoxLayout.X_AXIS));
@@ -293,10 +305,6 @@ public class DBProfileEditor extends JDialog {
                     panel8.add(dataType);
                 }
                 contentPanel.add(panel8);
-
-                //---- separator1 ----
-                separator1.setPreferredSize(new Dimension(0, 1));
-                contentPanel.add(separator1);
 
                 //======== panel9 ========
                 {
@@ -413,26 +421,32 @@ public class DBProfileEditor extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- saveButton ----
                 saveButton.setText("Save Profile");
                 buttonBar.add(saveButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- okButton ----
                 okButton.setText("Load Data");
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -448,7 +462,7 @@ public class DBProfileEditor extends JDialog {
     private JPanel contentPanel;
     private JPanel panel4;
     private JLabel label4;
-    private JComboBox nameComboBox;
+    private JTextField DBName;
     private JPanel panel1;
     private JLabel label1;
     private JTextField DBHost;
@@ -465,13 +479,13 @@ public class DBProfileEditor extends JDialog {
     private JLabel label3;
     private JPasswordField password;
     private JCheckBox checkBox1;
+    private JSeparator separator1;
     private JPanel panel7;
     private JLabel label7;
     private JTextField tableName;
     private JPanel panel8;
     private JLabel label8;
     private JComboBox dataType;
-    private JSeparator separator1;
     private JPanel panel9;
     private JLabel label9;
     private JTextField chromField;

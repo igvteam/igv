@@ -19,6 +19,7 @@ import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.cli_plugin.ui.RunPlugin;
 import org.broad.igv.cli_plugin.ui.SetPluginPathDialog;
+import org.broad.igv.dev.db.DBProfileEditor;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
@@ -259,6 +260,35 @@ public class IGVMenuBar extends JMenuBar {
                 }
             }
         }
+        //-------------------------------------//
+
+        //-----------SQL DB Tools--------------//
+        boolean showDBEditor = Boolean.parseBoolean(System.getProperty(DBProfileEditor.ENABLE_EDITOR_PROPERTY, "false"));
+        if(showDBEditor){
+            JMenu sqlDBProfileEditor = new JMenu("SQL DB Profile Editor");
+            JMenuItem createNewProfile = new JMenuItem("Create New Profile");
+            createNewProfile.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), null);
+                    editor.setVisible(true);
+                }
+            });
+            JMenuItem editExistingProfile = new JMenuItem("Edit Existing Profile");
+            editExistingProfile.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File file = FileDialogUtils.chooseFile("Select .dbxml database profile");
+                    DBProfileEditor editor = new DBProfileEditor(IGV.getMainFrame(), file.getAbsolutePath());
+                    editor.setVisible(true);
+                }
+            });
+            sqlDBProfileEditor.add(createNewProfile);
+            sqlDBProfileEditor.add(editExistingProfile);
+            menuItems.add(sqlDBProfileEditor);
+        }
+
+
         //-------------------------------------//
 
 

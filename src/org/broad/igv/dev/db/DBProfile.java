@@ -143,6 +143,44 @@ public class DBProfile {
         return username;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public void setSubprotocol(String subprotocol) {
+        this.subprotocol = subprotocol;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+
+
     /**
      * Object representation of a single {@code table} element of
      * a database profile. Contains static method for parsing dbXML files
