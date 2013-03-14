@@ -2277,6 +2277,12 @@ public class IGV {
                         ResourceLocator rl = new ResourceLocator(p);
                         if (names != null && idx < names.length) {
                             String name = names[idx];
+
+                            // Decode local file paths
+                            if(!FileUtils.isRemote(name)) {
+                                name = StringUtils.decodeURL(name);
+                            }
+
                             rl.setName(name);
                         }
                         rl.setIndexPath(indexFile);

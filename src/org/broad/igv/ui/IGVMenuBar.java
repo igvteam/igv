@@ -407,8 +407,12 @@ public class IGVMenuBar extends JMenuBar {
                 new MenuAction("Load Genome from File...", null, KeyEvent.VK_I) {
                     @Override
                     public void actionPerformed(ActionEvent event) {
-                        org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                        igv.doLoadGenome(monitor);
+                        try {
+                            org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                            igv.doLoadGenome(monitor);
+                        } catch (Exception e) {
+                            MessageUtils.showErrorMessage(e.getMessage(), e);
+                        }
 
                     }
                 };
