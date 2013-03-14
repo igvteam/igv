@@ -22,7 +22,7 @@ import org.broad.igv.renderer.*;
 import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SubtlyImportant;
 import org.broad.igv.tools.FeatureSearcher;
-import org.broad.igv.tools.sequencematch.SequenceMatchSource;
+import org.broad.igv.tools.motiffinder.MotifFinderSource;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -56,7 +56,7 @@ import java.util.List;
  * @author jrobinso
  */
 @XmlType(factoryMethod = "getNextTrack")
-@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, SequenceMatchSource.class})
+@XmlSeeAlso({VariantTrack.class, PluginFeatureSource.class, MotifFinderSource.class})
 @api
 public class FeatureTrack extends AbstractTrack {
 
@@ -903,7 +903,7 @@ public class FeatureTrack extends AbstractTrack {
                 if(source instanceof CachingFeatureSource){
                     rawSource = ((CachingFeatureSource) source).getSource();
                 }
-                if(rawSource instanceof SequenceMatchSource || rawSource instanceof PluginFeatureSource){
+                if(rawSource instanceof MotifFinderSource || rawSource instanceof PluginFeatureSource){
                     FeatureTrackUtils.nextFeatureSearch(source, chr, packedFeatures.getStart(), packedFeatures.getEnd(),
                             forward, new FeatureSearcher.GotoFeatureHandler());
                 }else{
@@ -966,7 +966,7 @@ public class FeatureTrack extends AbstractTrack {
                 if(nodeName.equalsIgnoreCase(PLUGIN_SOURCE)){
                     source = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, PluginFeatureSource.class).getValue();
                 }else if(nodeName.equalsIgnoreCase(SEQUENCE_MATCH_SOURCE)){
-                    FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, SequenceMatchSource.class).getValue();
+                    FeatureSource rawSource = IGVSessionReader.getJAXBContext().createUnmarshaller().unmarshal(child, MotifFinderSource.class).getValue();
                     source = new CachingFeatureSource(rawSource);
                 }else{
                     try{
@@ -1000,9 +1000,9 @@ public class FeatureTrack extends AbstractTrack {
             JAXBElement element = new JAXBElement<PluginSource>(new QName("", PLUGIN_SOURCE), PluginSource.class,
                     (PluginSource) rawSource);
             m.marshal(element, trackElement);
-        }else if(rawSource instanceof SequenceMatchSource){
-            JAXBElement element = new JAXBElement<SequenceMatchSource>(new QName("", SEQUENCE_MATCH_SOURCE), SequenceMatchSource.class,
-                    (SequenceMatchSource) rawSource);
+        }else if(rawSource instanceof MotifFinderSource){
+            JAXBElement element = new JAXBElement<MotifFinderSource>(new QName("", SEQUENCE_MATCH_SOURCE), MotifFinderSource.class,
+                    (MotifFinderSource) rawSource);
             m.marshal(element, trackElement);
         }else{
             //Users can write their own FeatureSources, we tag with the fully qualified class name

@@ -13,7 +13,7 @@
  * Created by JFormDesigner on Tue Jan 29 15:22:45 EST 2013
  */
 
-package org.broad.igv.tools.sequencematch;
+package org.broad.igv.tools.motiffinder;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,7 +35,7 @@ import java.util.Set;
  *
  * @author Jacob Silterra
  */
-public class SequenceMatchDialog extends JDialog {
+public class MotifFinderDialog extends JDialog {
 
     private static Map<String, String> letterToRegex;
     private static Set<String> validInputStrings;
@@ -46,7 +46,7 @@ public class SequenceMatchDialog extends JDialog {
 
     private static final String codeFilePath = "resources/iupac_regex_table.txt";
     private static void initLetterToRegex() {
-        letterToRegex = loadMap(SequenceMatchSource.class.getResourceAsStream(codeFilePath));
+        letterToRegex = loadMap(MotifFinderSource.class.getResourceAsStream(codeFilePath));
         validInputStrings = new HashSet<String>(letterToRegex.size());
         for(String key: letterToRegex.keySet()){
             validInputStrings.add(key.toUpperCase());
@@ -96,7 +96,7 @@ public class SequenceMatchDialog extends JDialog {
     private String trackName;
     private String inputPattern;
 
-    public SequenceMatchDialog(Frame owner) {
+    public MotifFinderDialog(Frame owner) {
         super(owner);
         initComponents();
     }

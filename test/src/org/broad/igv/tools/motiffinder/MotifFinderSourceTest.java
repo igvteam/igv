@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.tools.sequencematch;
+package org.broad.igv.tools.motiffinder;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.tribble.Feature;
@@ -23,7 +23,7 @@ import static junit.framework.Assert.*;
  * User: jacob
  * Date: 2013-Jan-22
  */
-public class SequenceMatchSourceTest extends AbstractHeadlessTest{
+public class MotifFinderSourceTest extends AbstractHeadlessTest{
 
 
     String shortSeq = "GACTCTGACTGGACTCTGATCAG";
@@ -32,7 +32,7 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
     public void testBasicSearch() throws Exception{
         String motif = "TCTG";
         int posStart = 19389;
-        Iterator<Feature> matchIter = SequenceMatchSource.search(null, motif, posStart, shortSeq.getBytes());
+        Iterator<Feature> matchIter = MotifFinderSource.search(null, motif, posStart, shortSeq.getBytes());
         assertTrue(matchIter.hasNext());
         Feature feat = matchIter.next();
 
@@ -49,14 +49,14 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
     @Test
     public void testConvertMotifToRegex_Basic() throws Exception{
         String motif = "ACTGACTGACTG";
-        String regex = SequenceMatchDialog.convertMotifToRegex(motif);
+        String regex = MotifFinderDialog.convertMotifToRegex(motif);
         assertEquals(motif, regex);
     }
 
     @Test
     public void testConvertMotifToRegex_02() throws Exception{
         String motif = "ACTGMACTGNACTSG";
-        String regex = SequenceMatchDialog.convertMotifToRegex(motif);
+        String regex = MotifFinderDialog.convertMotifToRegex(motif);
 
         assertTrue(regex.length() >= motif.length());
         assertEquals("ACTG[M,A,C]ACTG.ACT[S,G,C]G", regex);
@@ -75,7 +75,7 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
         String motif = "CTTYKSVDAGCAGNGATGCRRCCCYCCGGGACGGCCGGGNCAGCGCKCCBGGCGCDGCTGGCTGCGCTCTGCCCGGCGAGTCGGGCTCTGGAGGRMWHGAAAGGNNVGGGCGTGTCTCGCCGGCTCCCGCGCCGCCCCCGGATCGCGCCCCGGACCCCGCAGCCCGCCCAACCGCG";
 
         int expStart = 55054449;
-        String pattern = SequenceMatchDialog.convertMotifToRegex(motif);
+        String pattern = MotifFinderDialog.convertMotifToRegex(motif);
         tstSearchGenome_EGFR(pattern, expStart, expStart + motif.length());
     }
 
@@ -92,7 +92,7 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
     @Test
     public void testSearchOverlapping() throws Exception{
         String motif = "ATGCATGCATGC";
-        SequenceMatchSource source = new SequenceMatchSource(motif, genome);
+        MotifFinderSource source = new MotifFinderSource(motif, genome);
 
         String queryChr = "chr8";
         int queryStart = 40823007;
@@ -152,7 +152,7 @@ public class SequenceMatchSourceTest extends AbstractHeadlessTest{
      * @throws Exception
      */
     public void tstSearchGenomeSingResult(String pattern, String chr, int start, int end, int expFeatStart, int expFeatureEnd) throws Exception {
-        SequenceMatchSource source = new SequenceMatchSource(pattern, genome);
+        MotifFinderSource source = new MotifFinderSource(pattern, genome);
 
         Iterator<Feature> iter = source.getFeatures(chr, start, end);
         Feature feat = iter.next();

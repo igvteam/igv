@@ -9,7 +9,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  */
 
-package org.broad.igv.tools.sequencematch;
+package org.broad.igv.tools.motiffinder;
 
 import org.broad.igv.dev.api.IGVPlugin;
 import org.broad.igv.feature.BasicFeature;
@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
  * Date: 2013-Jan-22
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class SequenceMatchSource implements FeatureSource<Feature> {
+public class MotifFinderSource implements FeatureSource<Feature> {
 
     @XmlAttribute private String pattern;
 
@@ -63,14 +63,14 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
     @XmlAttribute private int featureWindowSize = (int) 100e3;
 
     @SubtlyImportant
-    private SequenceMatchSource(){}
+    private MotifFinderSource(){}
 
     /**
      *
      * @param pattern The regex pattern to search
      * @param genome Genome from which to get sequence data
      */
-    public SequenceMatchSource(String pattern, Genome genome){
+    public MotifFinderSource(String pattern, Genome genome){
         this.pattern = pattern;
         this.genome = genome;
     }
@@ -114,24 +114,24 @@ public class SequenceMatchSource implements FeatureSource<Feature> {
         this.featureWindowSize = size;
     }
 
-    public static class SequenceMatchPlugin implements IGVPlugin {
+    public static class MotifFinderPlugin implements IGVPlugin {
 
         /**
          * Add menu entry for activating SequenceMatchDialog
          */
         @Override
         public void init() {
-            JMenuItem menuItem = new JMenuItem("Match Sequence...");
+            JMenuItem menuItem = new JMenuItem("Find Motif...");
             menuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    SequenceMatchDialog dialog = new SequenceMatchDialog(IGV.getMainFrame());
+                    MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
                     dialog.setVisible(true);
 
                     String trackName = dialog.getTrackName();
                     String pattern = dialog.getInputPattern();
                     if (pattern != null) {
-                        SequenceMatchSource source = new SequenceMatchSource(pattern, GenomeManager.getInstance().getCurrentGenome());
+                        MotifFinderSource source = new MotifFinderSource(pattern, GenomeManager.getInstance().getCurrentGenome());
                         CachingFeatureSource cachingFeatureSource = new CachingFeatureSource(source);
                         FeatureTrack track = new FeatureTrack(trackName, trackName, cachingFeatureSource);
                         IGV.getInstance().addTracks(Arrays.<Track>asList(track), PanelName.FEATURE_PANEL);
