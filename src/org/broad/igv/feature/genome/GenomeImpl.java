@@ -247,8 +247,8 @@ public class GenomeImpl implements Genome {
 
 
     public String getHomeChromosome() {
-        if (getLongChromosomeNames().size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
-            return getLongChromosomeNames().get(0);
+        if (chromosomeNames.size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
+            return chromosomeNames.get(0);
         } else {
             return Globals.CHR_ALL;
         }
