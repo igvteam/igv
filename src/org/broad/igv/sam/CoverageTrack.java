@@ -93,6 +93,10 @@ public class CoverageTrack extends AbstractTrack {
         this.renderOptions = renderOptions;
     }
 
+    AlignmentTrack.RenderOptions getRenderOptions(){
+        return this.renderOptions;
+    }
+
     private AlignmentTrack.RenderOptions renderOptions = null;
 
     public CoverageTrack(CoverageTrack track){

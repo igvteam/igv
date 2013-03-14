@@ -92,6 +92,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         this.setCoverageTrack(dataManager.getCoverageTrack());
     }
 
+    public AlignmentDataManager getDataManager(){
+        return this.dataManager;
+    }
+
     public void setBackground(Color background) {
         this.background = background;
     }

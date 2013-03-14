@@ -89,12 +89,12 @@ public class AlignmentTileLoader {
 
 
     AlignmentTile loadTile(String chr, int start, int end,
-                           boolean showSpliceJunctions,
+                           SpliceJunctionHelper.LoadOptions loadOptions,
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext) {
 
-        AlignmentTile t = new AlignmentTile(start, end, showSpliceJunctions, downsampleOptions, bisulfiteContext);
+        AlignmentTile t = new AlignmentTile(start, end, loadOptions, downsampleOptions, bisulfiteContext);
 
 
         //assert (tiles.size() > 0);
@@ -296,7 +296,7 @@ public class AlignmentTileLoader {
 
 
         AlignmentTile(int start, int end,
-                      boolean calculateSpliceJunctions,
+                      SpliceJunctionHelper.LoadOptions loadOptions,
                       AlignmentDataManager.DownsampleOptions downsampleOptions,
                       AlignmentTrack.BisulfiteContext bisulfiteContext) {
             this.start = start;
@@ -320,9 +320,9 @@ public class AlignmentTileLoader {
             this.samplingWindowSize = downsampleOptions.getSampleWindowSize();
             this.samplingDepth = Math.max(1, downsampleOptions.getMaxReadCount());
 
-            if (calculateSpliceJunctions) {
+            if (loadOptions != null && loadOptions.showSpliceJunctions) {
                 spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
-                spliceJunctionHelper = new SpliceJunctionHelper();
+                spliceJunctionHelper = new SpliceJunctionHelper(loadOptions);
             }
 
         }

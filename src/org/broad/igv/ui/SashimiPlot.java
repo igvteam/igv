@@ -17,9 +17,11 @@ import org.broad.igv.renderer.SashimiJunctionRenderer;
 import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SpliceJunctionFinderTrack;
+import org.broad.igv.sam.SpliceJunctionHelper;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.DataLoadedEvent;
 import org.broad.igv.ui.event.ViewChange;
 import org.broad.igv.ui.panel.*;
@@ -184,8 +186,20 @@ public class SashimiPlot extends JFrame{
         getRenderer(spliceJunctionTrack).setDataManager(dataManager);
     }
 
+    private void reloadAlignments(TrackComponent<SpliceJunctionFinderTrack> spliceJunctionTrackComponent){
+        AlignmentDataManager dataManager = getRenderer(spliceJunctionTrackComponent.track).getDataManager();
+        RenderContext context = new RenderContextImpl(spliceJunctionTrackComponent, null, frame, spliceJunctionTrackComponent.getVisibleRect());
+        dataManager.preload(context);
+    }
+
     @Subscribe
     public void receiveDataLoaded(DataLoadedEvent event){
+        repaint();
+    }
+
+
+    @Subscribe
+    public void respondViewResult(ViewChange.Result e) {
         repaint();
     }
 
@@ -196,11 +210,6 @@ public class SashimiPlot extends JFrame{
 
     private SashimiJunctionRenderer getRenderer(SpliceJunctionFinderTrack spliceJunctionTrack){
         return (SashimiJunctionRenderer) spliceJunctionTrack.getRenderer();
-    }
-
-    @Subscribe
-    public void respondViewResult(ViewChange.Result e) {
-        repaint();
     }
 
     /**
@@ -225,6 +234,7 @@ public class SashimiPlot extends JFrame{
             RenderContext context = new RenderContextImpl(this, (Graphics2D) g, frame, visibleRect);
             track.render(context, visibleRect);
         }
+
     }
 
     private class JunctionTrackMouseAdapter extends TrackComponentMouseAdapter<SpliceJunctionFinderTrack>{
@@ -242,12 +252,59 @@ public class SashimiPlot extends JFrame{
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
 
-            JMenuItem maxDepthItem = new JMenuItem("Set Max Depth");
-            maxDepthItem.addActionListener(new ActionListener() {
+            JMenuItem minJunctionCoverage = new JMenuItem("Set Min Junction Coverage");
+            minJunctionCoverage.setToolTipText("Junctions below this threshold will be removed from view");
+            minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog("Set Maximum Depth", getRenderer(trackComponent.track).getMaxDepth());
-                    if(input == null || input.length() == 0) return;
+                    /** TODO Right now this is a global preference, the popup implies we set it per track
+                     * We could set it globally based on this menu, that's weird.
+                     *
+                     * We could load with the minimum set to 1, and then filter it out later, that
+                     * might be a good  idea but could also load very slowly at first and be a big waste
+                     * of memory.
+                     *
+                     * We could change the global setting based on this menu action, reload just this track when it's reset,
+                     * which would have the correct initial interaction. But the settings would get changed and when
+                     * SashimiPlot were reloaded it could be in a funny state
+                     *
+                     * On top of this, our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
+                     * filter anything, which is different behavior than the minimum. This might be confusing.
+                     *
+                     *
+                     * Did some refactoring, going to set it for the track and clear that tracks data, but the setting
+                     * will not persist at all. May be weird for users. Still has the problem that max/min do very different
+                     * things.
+                     */
+                    AlignmentDataManager dataManager = getRenderer(trackComponent.track).getDataManager();
+                    SpliceJunctionHelper.LoadOptions loadOptions = dataManager.getSpliceJunctionLoadOptions();
+                    String input = JOptionPane.showInputDialog("Set Minimum Junction Coverage", loadOptions.minJunctionCoverage);
+                    if (input == null || input.length() == 0) return;
+                    try {
+                        int newMinJunctionCoverage = Integer.parseInt(input);
+                        SpliceJunctionHelper.LoadOptions newLoadOptions = new SpliceJunctionHelper.LoadOptions(true,
+                                newMinJunctionCoverage, loadOptions.minJunctionCoverage);
+                        dataManager.setSpliceJunctionLoadOptions(newLoadOptions);
+                        dataManager.clear();
+                        //TODO Change to event bus
+                        trackComponent.track.onAlignmentTrackEvent(new AlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION));
+                        reloadAlignments(trackComponent);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
+                    }
+
+
+                }
+            });
+
+            JMenuItem maxJunctionCoverageRange = new JMenuItem("Set Max Junction Coverage Range");
+            maxJunctionCoverageRange.setToolTipText("The thickness of each line will be proportional to the coverage, up until this value");
+
+            maxJunctionCoverageRange.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String input = JOptionPane.showInputDialog("Set Max Junction Coverage", getRenderer(trackComponent.track).getMaxDepth());
+                    if (input == null || input.length() == 0) return;
                     try {
                         int newMaxDepth = Integer.parseInt(input);
                         getRenderer(trackComponent.track).setMaxDepth(newMaxDepth);
@@ -271,7 +328,8 @@ public class SashimiPlot extends JFrame{
                 }
             });
 
-            menu.add(maxDepthItem);
+            menu.add(minJunctionCoverage);
+            menu.add(maxJunctionCoverageRange);
             menu.add(colorItem);
 
             return menu;
