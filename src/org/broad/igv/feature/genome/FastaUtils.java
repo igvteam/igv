@@ -64,12 +64,15 @@ public class FastaUtils {
             //Number of blank lines in the current contig.
             //-1 for not set
             int numBlanks = -1;
+            int lastBlankLineNum = -1;
+            int curLineNum = 0;
 
 
             //We loop through, generating a new FastaSequenceIndexEntry
             //every time we see a new header line, or when the file ends.
             while (haveTasks) {
                 line = reader.readLine();
+                curLineNum++;
 
                 if (line == null || line.startsWith(">")) {
                     //The last line can have a different number of bases/bytes
@@ -119,13 +122,13 @@ public class FastaUtils {
                         }
                     }
 
-                    //Empty line. This is allowed if it's at the end of the contig
+                    //Empty line. This is allowed if it's at the end of the contig);
                     if (basesThisLine == 0) {
                         numBlanks++;
+                        lastBlankLineNum = curLineNum;
                     } else if (numBlanks >= 1) {
-                        throw new DataLoadException("Blank line in contig " + curContig, inputPath);
+                        throw new DataLoadException(String.format("Blank line at line number %d, followed by data line at %d, in contig %s\nBlank lines are only allowed at the end of a contig", lastBlankLineNum, curLineNum, curContig), inputPath);
                     }
-
 
                     size += basesThisLine;
                 }
