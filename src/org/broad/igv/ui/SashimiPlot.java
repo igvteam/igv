@@ -63,6 +63,10 @@ public class SashimiPlot extends JFrame{
     private final double maxEnd;
 
     private static final List<Color> plotColors;
+
+
+    public static final String SHOW_SASHIMI_PROPERTY = "enableSashimi";
+
     static{
         ColorPalette palette = ColorUtilities.getDefaultPalette();
         plotColors = Arrays.asList(palette.getColors());
