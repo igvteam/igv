@@ -44,7 +44,7 @@ public class CancellableProgressDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        label1 = new JLabel();
+        permText = new JLabel();
         statusText = new JLabel();
         progressBar = new JProgressBar();
         buttonBar = new JPanel();
@@ -65,10 +65,7 @@ public class CancellableProgressDialog extends JDialog {
             //======== contentPanel ========
             {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-
-                //---- label1 ----
-                label1.setText("Searching...");
-                contentPanel.add(label1);
+                contentPanel.add(permText);
 
                 //---- statusText ----
                 statusText.setText("...");
@@ -106,7 +103,7 @@ public class CancellableProgressDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JLabel label1;
+    private JLabel permText;
     private JLabel statusText;
     private JProgressBar progressBar;
     private JPanel buttonBar;

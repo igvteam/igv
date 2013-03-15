@@ -14,8 +14,7 @@ new FormModel {
 				} ) {
 					name: "contentPanel"
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Searching..."
+						name: "permText"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "statusText"

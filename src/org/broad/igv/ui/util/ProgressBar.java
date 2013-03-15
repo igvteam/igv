@@ -192,7 +192,7 @@ public class ProgressBar extends JPanel
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(evt.getPropertyName().equals(ProgressMonitor.STATUS_PROPERTY)){
-                        progressDialog.setStatus("" + evt.getNewValue());
+                        progressDialog.setStatus("Searching: " + evt.getNewValue());
                     }
                 }
             });
