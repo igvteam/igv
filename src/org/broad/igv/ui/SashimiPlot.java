@@ -257,20 +257,10 @@ public class SashimiPlot extends JFrame{
             minJunctionCoverage.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    /** TODO Right now this is a global preference, the popup implies we set it per track
-                     * We could set it globally based on this menu, that's weird.
-                     *
-                     * We could load with the minimum set to 1, and then filter it out later, that
-                     * might be a good  idea but could also load very slowly at first and be a big waste
-                     * of memory.
-                     *
-                     * We could change the global setting based on this menu action, reload just this track when it's reset,
-                     * which would have the correct initial interaction. But the settings would get changed and when
-                     * SashimiPlot were reloaded it could be in a funny state
+                    /** TODO Right now this is a global preference, the popup implies sets it per track and is not persistent
                      *
                      * On top of this, our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
                      * filter anything, which is different behavior than the minimum. This might be confusing.
-                     *
                      *
                      * Did some refactoring, going to set it for the track and clear that tracks data, but the setting
                      * will not persist at all. May be weird for users. Still has the problem that max/min do very different
@@ -375,6 +365,10 @@ public class SashimiPlot extends JFrame{
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if(currentTool.getLastMousePoint() == null){
+                //This shouldn't happen, but does occasionally
+                return;
+            }
             double diff = e.getX() - currentTool.getLastMousePoint().getX();
             // diff > 0 means moving mouse to the right, which drags the frame towards the negative direction
             boolean hitBounds = SashimiPlot.this.frame.getOrigin() <= minOrigin && diff > 0;
