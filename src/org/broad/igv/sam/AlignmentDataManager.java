@@ -277,7 +277,8 @@ public class AlignmentDataManager {
     }
 
     public void preload(RenderContext context){
-        preload(context, getCoverageTrack().getRenderOptions(), true);
+        AlignmentTrack.RenderOptions renderOptions = getCoverageTrack() != null ? getCoverageTrack().getRenderOptions() : null;
+        preload(context, renderOptions, true);
     }
 
     public synchronized void preload(RenderContext context,
