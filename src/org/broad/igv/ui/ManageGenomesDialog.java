@@ -33,6 +33,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -76,6 +77,8 @@ public class ManageGenomesDialog extends JDialog {
         currentGenomeItem = GenomeManager.getInstance().getLoadedGenomeListItemById(genomeId);
         buildList();
         genomeList.setTransferHandler(new SimpleTransferHandler());
+
+        addButton.setEnabled(!GenomeManager.getInstance().isServerGenomeListUnreachable());
     }
 
 
@@ -121,7 +124,13 @@ public class ManageGenomesDialog extends JDialog {
     }
 
     private void addButtonActionPerformed(ActionEvent e) {
-        GenomeSelectionDialog dialog = new GenomeSelectionDialog(null, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getGenomeArchiveList();
+        if(inputListItems == null){
+            IOException exc = new IOException("Unable to reach genome server");
+            MessageUtils.showErrorMessage(exc.getMessage(), exc);
+            return;
+        }
+        GenomeSelectionDialog dialog = new GenomeSelectionDialog(null, inputListItems, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         dialog.setVisible(true);
         List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
         if (selectedValues != null) {

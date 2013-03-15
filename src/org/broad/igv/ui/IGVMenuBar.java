@@ -58,7 +58,8 @@ import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
 
-/**
+/** Main menu bar at top of window. File / genomes / view / etc.
+ * Singleton
  * @author jrobinso
  * @date Apr 4, 2011
  */
@@ -76,11 +77,40 @@ public class IGVMenuBar extends JMenuBar {
 
     private JMenu toolsMenu;
 
+    /**
+     * We store this as a field because we alter it if
+     * we can't access genome server list
+     */
+    private JMenuItem loadFromServerMenuItem;
+
+    private static final String LOAD_GENOME_SERVER_TOOLTIP = "Select genomes available on the server to appear in menu.";
+    private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
+
+    private static IGVMenuBar instance;
+
+    public void notifyGenomeServerReachable(boolean reachable){
+        if(loadFromServerMenuItem != null){
+            loadFromServerMenuItem.setEnabled(reachable);
+            String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
+            loadFromServerMenuItem.setToolTipText(tooltip);
+        }
+    }
+
     public void showAboutDialog() {
         (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
     }
 
-    public IGVMenuBar(IGV igv) {
+    static IGVMenuBar createInstance(IGV igv){
+        if(instance != null) throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
+        instance = new IGVMenuBar(igv);
+        return instance;
+    }
+
+    public static IGVMenuBar getInstance(){
+        return instance;
+    }
+
+    private IGVMenuBar(IGV igv) {
         this.igv = igv;
         setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
         setBorderPainted(true);
@@ -485,8 +515,9 @@ public class IGVMenuBar extends JMenuBar {
                 IGV.getInstance().loadGenomeFromServerAction();
             }
         };
-        menuAction.setToolTipText("Select genomes available on the server to appear in menu");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuAction.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
+        loadFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        menuItems.add(loadFromServerMenuItem);
 
         menuItems.add(new JSeparator());
 

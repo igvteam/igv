@@ -270,7 +270,7 @@ public class IGV {
 
         }
         contentPane = new IGVContentPane(this);
-        menuBar = new IGVMenuBar(this);
+        menuBar = IGVMenuBar.createInstance(this);
 
         rootPane.setContentPane(contentPane);
         rootPane.setJMenuBar(menuBar);
@@ -533,14 +533,32 @@ public class IGV {
     }
 
     void loadGenomeFromServerAction(){
-        GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), ListSelectionModel.SINGLE_SELECTION);
-        dialog.setVisible(true);
-        List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
-        if (selectedValues != null && selectedValues.size() >= 1) {
-            GenomeManager.getInstance().addGenomeItems(selectedValues);
-            getContentPane().getCommandBar().refreshGenomeListComboBox();
-            selectGenomeFromList(selectedValues.get(0).getId());
-        }
+
+        Runnable showDialog = new Runnable() {
+            @Override
+            public void run() {
+                if(GenomeManager.getInstance().getServerGenomeArchiveList() == null){
+                    waitForNotify(10000);
+                }
+
+                Collection<GenomeListItem> inputListItems = GenomeManager.getInstance().getServerGenomeArchiveList();
+                if(inputListItems == null){
+                    IOException exc = new IOException("Unable to reach genome server");
+                    MessageUtils.showErrorMessage(exc.getMessage(), exc);
+                    return;
+                }
+
+                GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getMainFrame(), inputListItems, ListSelectionModel.SINGLE_SELECTION);
+                dialog.setVisible(true);
+                List<GenomeListItem> selectedValues = dialog.getSelectedValuesList();
+                if (selectedValues != null && selectedValues.size() >= 1) {
+                    GenomeManager.getInstance().addGenomeItems(selectedValues);
+                    getContentPane().getCommandBar().refreshGenomeListComboBox();
+                    selectGenomeFromList(selectedValues.get(0).getId());
+                }
+            }
+        };
+        LongRunningTask.submit(showDialog);
     }
 
     /**
@@ -881,8 +899,7 @@ public class IGV {
     }
 
 
-// TODO -- move all of this attribute stuf out of IGV,  perhaps to
-
+    // TODO -- move all of this attribute stuf out of IGV,  perhaps to
     // some Attribute helper class.
 
     final public void doSelectDisplayableAttribute() {

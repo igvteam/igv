@@ -27,6 +27,7 @@ import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -95,6 +96,10 @@ public class GenomeManager {
             PreferenceManager.getInstance().setDefaultGenome(currentGenome.getId());
         }
         this.currentGenome = currentGenome;
+    }
+
+    public boolean isServerGenomeListUnreachable() {
+        return serverGenomeListUnreachable;
     }
 
     /**
@@ -602,6 +607,15 @@ public class GenomeManager {
         return matchingItem != null;
     }
 
+
+    /**
+     * Calls {@link #getServerGenomeArchiveList(Set)} with default set of excluded URLs
+     * @return
+     */
+    public List<GenomeListItem> getServerGenomeArchiveList(){
+        return getServerGenomeArchiveList(excludedArchivesUrls);
+    }
+
     /**
      * Gets a list of all the server genome archive files that
      * IGV knows about.
@@ -637,6 +651,7 @@ public class GenomeManager {
                 dataReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String genomeRecord;
+
                 while ((genomeRecord = dataReader.readLine()) != null) {
 
                     if (genomeRecord.startsWith("<") || genomeRecord.startsWith("(#")) {
@@ -674,6 +689,7 @@ public class GenomeManager {
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                         genomeListURLString + ").    Only locally defined genomes will be available.",
                         PreferenceManager.SHOW_GENOME_SERVER_WARNING);
+
             } finally {
                 if (dataReader != null) {
                     try {
@@ -692,6 +708,7 @@ public class GenomeManager {
             }
         }
 
+        IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
         return serverGenomeArchiveList;
     }
 

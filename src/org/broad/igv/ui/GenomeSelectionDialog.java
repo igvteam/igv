@@ -19,6 +19,7 @@ package org.broad.igv.ui;
 
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,14 +44,18 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
      * @param parent
      * @param listSelectionMode Selection mode for genome list
      */
-    public GenomeSelectionDialog(java.awt.Frame parent, int listSelectionMode) {
+    public GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems, final int listSelectionMode) {
         super(parent);
         initComponents();
-        genomeList.setSelectionMode(listSelectionMode);
-        setLocationRelativeTo(parent);
+        UIUtilities.invokeOnEventThread(new Runnable() {
 
-        initData(GenomeManager.getInstance().getGenomeArchiveList());
+            @Override
+            public void run() {
+                genomeList.setSelectionMode(listSelectionMode);
+            }
+        });
 
+        initData(inputListItems);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -72,7 +77,12 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
     private void rebuildGenomeList(String filterText) {
         if (genomeListModel == null) {
             genomeListModel = new DefaultListModel();
-            genomeList.setModel(genomeListModel);
+            UIUtilities.invokeOnEventThread(new Runnable() {
+                @Override
+                public void run() {
+                    genomeList.setModel(genomeListModel);
+                }
+            });
         }
         genomeListModel.clear();
         filterText = filterText.toLowerCase().trim();
@@ -81,7 +91,6 @@ public class GenomeSelectionDialog extends javax.swing.JDialog {
                 genomeListModel.addElement(listItem);
             }
         }
-
     }
 
     /**
