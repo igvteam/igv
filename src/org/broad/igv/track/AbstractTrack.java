@@ -326,7 +326,7 @@ public abstract class AbstractTrack implements Track {
         if (value == null) {
             value = attributeManager.getAttribute(getName(), key);
         }
-        if(value == null) {
+        if(value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
             value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
         }
         return value;
