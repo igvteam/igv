@@ -22,9 +22,9 @@ package org.broad.igv.util.index;
 // Quick and dirty interval class
 public class Interval implements Comparable {
 
-    private final int low;
-    private final int high;
-    private final long value;
+     final int low;
+     final int high;
+     final long value;
 
     public Interval(int low, int high, long value) {
         assert low <= high;

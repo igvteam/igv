@@ -348,9 +348,15 @@ public class IntervalTree {
         }
     }
 
+    // Note: this method is called millions of times and is optimized for speed, or as optimized as java allows.
     private void update(Node node) {
-        node.max = Math.max(Math.max(node.left.max, node.right.max), node.interval.getHigh());
-        node.min = Math.min(Math.min(node.left.min, node.right.min), node.interval.getLow());
+        int nodeMax = node.left.max > node.right.max ? node.left.max : node.right.max;
+        int intervalHigh = node.interval.high;
+        node.max = nodeMax > intervalHigh ? nodeMax : intervalHigh;
+
+        int nodeMin = node.left.min < node.right.min ? node.left.min : node.right.min;
+        int intervalLow = node.interval.low;
+        node.min = nodeMin < intervalLow ? nodeMin : intervalLow;
     }
 
 

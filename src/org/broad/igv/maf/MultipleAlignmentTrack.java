@@ -190,8 +190,9 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         double origin = context.getOrigin();
         String chr = context.getChr();
 
-        int start = (int) origin;
-        int end = (int) (origin + rect.width * locScale) + 1;
+        // Get some buffer (+/- 100 bases)
+        int start = (int) Math.max(0, origin - 100);
+        int end = (int) (origin + rect.width * locScale) + 100;
 
 
         try {

@@ -101,6 +101,9 @@ public class MAFParser implements MAFReader {
             if (line.startsWith("a ")) {
                 // TODO -- parse score (optional)
                 MultipleAlignmentBlock block = parseBlock(reader);
+                if(block.getEnd() < start) {
+                    continue;
+                }
                 if (block.getStart() > end || !block.getChr().equals(chr)) {
                     break;
                 } else {
@@ -201,7 +204,7 @@ public class MAFParser implements MAFReader {
 
 
     /**
-     * Parse an alignment block.  The reader has been advanced to the first sequencce
+     * Parse an alignment block.
      *
      * @param reader
      */
