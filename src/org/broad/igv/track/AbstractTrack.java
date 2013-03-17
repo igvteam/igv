@@ -339,11 +339,28 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    /**
+     * Return the attribute value.  Attribute lookup occurs in the following order, if all fail null is returned.
+     *
+     *    (1) the track attribute table
+     *    (2) by sampleId, as set in the Resource element of a session or load-from-server menu
+     *    (3) by track name, the visibile display name
+     *    (4) by full path to the file associated with this track
+     * @param attributeName
+     * @return
+     */
     public String getAttributeValue(String attributeName) {
         String key = attributeName.toUpperCase();
         String value = attributes.get(key);
+        final AttributeManager attributeManager = AttributeManager.getInstance();
+        if (value == null && sampleId != null) {
+            value = attributeManager.getAttribute(sampleId, key);
+        }
         if (value == null) {
-            value = AttributeManager.getInstance().getAttribute(getName(), key);
+            value = attributeManager.getAttribute(getName(), key);
+        }
+        if(value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
+            value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
         }
         return value;
     }
