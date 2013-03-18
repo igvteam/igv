@@ -105,7 +105,7 @@ public class ColorUtilities {
 
         int r = rgb[0];
         int g = rgb[1];
-        int b = rgb[3];
+        int b = rgb[2];
 
         // Reject colors too close to white
         if (r > 200 && g > 200 && b > 200) {
