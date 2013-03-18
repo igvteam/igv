@@ -353,8 +353,8 @@ public abstract class AbstractTrack implements Track {
         String key = attributeName.toUpperCase();
         String value = attributes.get(key);
         final AttributeManager attributeManager = AttributeManager.getInstance();
-        if (value == null && sampleId != null) {
-            value = attributeManager.getAttribute(sampleId, key);
+        if (value == null && getSample() != null) {
+            value = attributeManager.getAttribute(getSample(), key);
         }
         if (value == null) {
             value = attributeManager.getAttribute(getName(), key);
@@ -373,8 +373,8 @@ public abstract class AbstractTrack implements Track {
 //        String sample = AttributeManager.getInstance().getSampleFor(getName());
 //        return sample != null ? sample : getName();
 
-        String key = AttributeManager.getInstance().getSampleFor(getName());
-        return key != null ? key : getName();
+        sampleId = AttributeManager.getInstance().getSampleFor(getName());
+        return sampleId != null ? sampleId : getName();
 
     }
 
