@@ -16,6 +16,10 @@ import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
@@ -108,7 +112,6 @@ public class FeatureTrack extends AbstractTrack {
     //Feature selected by the user.  This is repopulated on each handleDataClick() call.
     protected IGVFeature selectedFeature = null;
 
-
     int margin = DEFAULT_MARGIN;
 
     private static boolean drawBorder = true;
@@ -179,6 +182,14 @@ public class FeatureTrack extends AbstractTrack {
     public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id);
         init(source);
+    }
+
+    /**
+     * Create a new track which is a shallow copy of this one
+     * @param featureTrack
+     */
+    public FeatureTrack(FeatureTrack featureTrack) {
+        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
     }
 
     protected void init(FeatureSource source) {
@@ -534,7 +545,7 @@ public class FeatureTrack extends AbstractTrack {
 
         MouseEvent e = te.getMouseEvent();
 
-        //dhmay adding selection of an expanded feature row
+        //Selection of an expanded feature row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             if (levelRects != null) {
                 for (int i = 0; i < levelRects.size(); i++) {
@@ -555,22 +566,22 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
 
-
-        //dhmay adding for feature selection
+        //For feature selection
         selectedFeature = null;
 
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
-            //if nothing already selected, select this feature
-            if (selectedFeature == null)
-                selectedFeature = igvFeature;
+            if (selectedFeature != null && igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature))){
                 //If something already selected, then if it's the same as this feature, deselect, otherwise, select
                 //this feature.
                 //todo: contains() might not do everything I want it to.
-            else if (igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
                 selectedFeature = null;
-            else selectedFeature = igvFeature;
+            }else{
+                //if nothing already selected, or something else selected,
+                // select this feature
+                selectedFeature = igvFeature;
+            }
 
             if (IGV.getInstance().isShowDetailsOnClick()) {
                 openTooltipWindow(te);
@@ -586,7 +597,6 @@ public class FeatureTrack extends AbstractTrack {
                     return true;
                 }
             }
-
         }
 
         return false;
@@ -635,7 +645,7 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
-
+    @Override
     public void render(RenderContext context, Rectangle rect) {
         Rectangle renderRect = new Rectangle(rect);
         renderRect.y = renderRect.y + margin;

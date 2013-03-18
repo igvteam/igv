@@ -26,7 +26,6 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -44,9 +43,12 @@ public class SpliceJunctionHelper {
     List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList();
     Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
     Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
-    PreferenceManager prefs = PreferenceManager.getInstance();
-    int minJunctionCoverage = prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
-    int minReadFlankingWidth = prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH);
+
+    private final LoadOptions loadOptions;
+
+    public SpliceJunctionHelper(LoadOptions loadOptions){
+        this.loadOptions = loadOptions;
+    }
 
     public List<SpliceJunctionFeature> getFeatures() {
         return spliceJunctionFeatures;
@@ -82,9 +84,9 @@ public class SpliceJunctionHelper {
             int junctionEnd = block.getStart();
             if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
                 //only proceed if the flanking regions are both bigger than the minimum
-                if (minReadFlankingWidth == 0 ||
-                        ((junctionStart - flankingStart >= minReadFlankingWidth) &&
-                                (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
+                if (loadOptions.minReadFlankingWidth == 0 ||
+                        ((junctionStart - flankingStart >= loadOptions.minReadFlankingWidth) &&
+                                (flankingEnd - junctionEnd >= loadOptions.minReadFlankingWidth))) {
                     Map<Integer, SpliceJunctionFeature> endJunctionsMap =
                             startEndJunctionsMapThisStrand.get(junctionStart);
                     if (endJunctionsMap == null) {
@@ -110,10 +112,10 @@ public class SpliceJunctionHelper {
 
     public void finish() {
         //get rid of any features without enough coverage
-        if (minJunctionCoverage > 1) {
+        if (loadOptions.minJunctionCoverage > 1) {
             List<SpliceJunctionFeature> coveredFeatures = new ArrayList<SpliceJunctionFeature>(spliceJunctionFeatures.size());
             for (SpliceJunctionFeature feature : spliceJunctionFeatures) {
-                if (feature.getJunctionDepth() >= minJunctionCoverage) {
+                if (feature.getJunctionDepth() >= loadOptions.minJunctionCoverage) {
                     coveredFeatures.add(feature);
                 }
             }
@@ -128,5 +130,24 @@ public class SpliceJunctionHelper {
         });
     }
 
+    public static class LoadOptions {
+
+        private static PreferenceManager prefs = PreferenceManager.getInstance();
+
+        public final boolean showSpliceJunctions;
+        public final int minJunctionCoverage;
+        public final int minReadFlankingWidth;
+
+        public LoadOptions(boolean showSpliceJunctions){
+            this(showSpliceJunctions, prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE),
+                    prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
+        }
+
+        public LoadOptions(boolean showSpliceJunctions, int minJunctionCoverage, int minReadFlankingWidth){
+            this.showSpliceJunctions = showSpliceJunctions;
+            this.minJunctionCoverage = minJunctionCoverage;
+            this.minReadFlankingWidth = minReadFlankingWidth;
+        }
+    }
 
 }

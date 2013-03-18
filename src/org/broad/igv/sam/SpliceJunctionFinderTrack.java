@@ -25,14 +25,12 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.util.ResourceLocator;
 
@@ -51,21 +49,19 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
+
     AlignmentDataManager dataManager;
     PreferenceManager prefs;
     RenderContext context;
-    Genome genome;
 
-    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
+    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track relationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     JComponent parent;
 
-
-    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, Genome genome) {
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager) {
         super(locator, locator.getPath() + "_junctions", name);
 
         super.setDataRange(new DataRange(0, 0, 60));
-        this.genome = genome;
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
@@ -73,13 +69,11 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         IGV.getInstance().addAlignmentTrackEventListener(this);
     }
 
-
     @Override
     protected boolean isShowFeatures(RenderContext context) {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         return context.getScale() < minVisibleScale;
-
     }
 
 
@@ -106,9 +100,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
+
         return popupMenu;
     }
-
 
     @Override
     public void setDataRange(DataRange axisDefinition) {
@@ -163,4 +157,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         }
 
     }
+
+
 }

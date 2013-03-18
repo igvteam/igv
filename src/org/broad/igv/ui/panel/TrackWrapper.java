@@ -16,10 +16,10 @@ import org.broad.igv.track.Track;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackWrapper {
-    private Track track;
+public class TrackWrapper<T extends Track> {
+    private T track;
 
-    public TrackWrapper(Track track) {
+    public TrackWrapper(T track) {
         this.track = track;
     }
 
@@ -27,7 +27,7 @@ public class TrackWrapper {
         return track.getName();
     }
 
-    public Track getTrack() {
+    public T getTrack() {
         return this.track;
     }
 
