@@ -155,6 +155,10 @@ public class Exon extends AbstractFeature implements IExon {
         return utr ? 0 : Math.max(0, codingEnd - codingStart);
     }
 
+    public int getReadingShift() {
+        return readingFrame;
+    }
+
     public AminoAcidSequence getAminoAcidSequence(Genome genome) {
         if (aminoAcidSequence == null ||
                 //If the stored sequence was computed with a different codon table, we reset
@@ -185,8 +189,7 @@ public class Exon extends AbstractFeature implements IExon {
         }
     }
 
-
-    public LocusScore copy() {
+    public Exon copy() {
         Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
         copy.seqBytes = this.seqBytes;
         copy.aminoAcidSequence = this.aminoAcidSequence;
