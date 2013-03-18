@@ -904,7 +904,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                           DisplayStatus bisstatus){
         if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
             g.setColor(color);
-            GraphicUtils.drawCenteredText(g, new char[]{c}, pX, pY + 1, dX, dY - 2);
+            GraphicUtils.drawCenteredText(new char[]{c}, pX, pY + 1, dX, dY - 2, g);
         } else {
 
             int pX0i = pX, dXi = dX;

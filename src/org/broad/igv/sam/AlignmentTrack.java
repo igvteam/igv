@@ -36,6 +36,7 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
+import org.broad.igv.ui.SashimiPlot;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
@@ -1194,6 +1195,20 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addBlatItem(e);
+
+            boolean showSashimi = Boolean.parseBoolean(System.getProperty(SashimiPlot.SHOW_SASHIMI_PROPERTY, "false"));
+            if(showSashimi){
+                addSeparator();
+                JMenuItem sashimi = new JMenuItem("Sashimi Plot");
+                sashimi.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        SashimiPlot.getSashimiPlot(null);
+                    }
+                });
+                add(sashimi);
+            }
+
 
             addSeparator();
             add(TrackMenuUtils.getRemoveMenuItem(tracks));

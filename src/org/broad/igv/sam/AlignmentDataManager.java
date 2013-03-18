@@ -54,7 +54,7 @@ public class AlignmentDataManager {
 
     private AlignmentTrack.ExperimentType experimentType;
 
-    private boolean showSpliceJunctions;
+    private SpliceJunctionHelper.LoadOptions loadOptions = new SpliceJunctionHelper.LoadOptions(false);
 
     static final int CACHE_SIZE = 5;
 
@@ -76,17 +76,14 @@ public class AlignmentDataManager {
         PreferenceManager prefs = PreferenceManager.getInstance();
         reader = new AlignmentTileLoader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        boolean showSpliceJunctions = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions);
         initChrMap(genome);
     }
 
     public void updateGenome(Genome genome) {
         chrMappings.clear();
         initChrMap(genome);
-    }
-
-    public void setShowSpliceJunctions(boolean showSpliceJunctions) {
-        this.showSpliceJunctions = showSpliceJunctions;
     }
 
     /**
@@ -107,11 +104,13 @@ public class AlignmentDataManager {
 
     public void setExperimentType(AlignmentTrack.ExperimentType experimentType) {
         this.experimentType = experimentType;
+        boolean showSpliceJunctions = false;
         if (experimentType == AlignmentTrack.ExperimentType.BISULFITE) {
             showSpliceJunctions = false;
         } else {
             showSpliceJunctions = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
         }
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth);
     }
 
     public AlignmentTrack.ExperimentType getExperimentType() {
@@ -136,6 +135,10 @@ public class AlignmentDataManager {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
+    }
+
+    public CoverageTrack getCoverageTrack() {
+        return coverageTrack;
     }
 
     /**
@@ -271,6 +274,11 @@ public class AlignmentDataManager {
 
             loadedInterval.setAlignmentRows(alignmentRows, renderOptions);
         }
+    }
+
+    public void preload(RenderContext context){
+        AlignmentTrack.RenderOptions renderOptions = getCoverageTrack() != null ? getCoverageTrack().getRenderOptions() : null;
+        preload(context, renderOptions, true);
     }
 
     public synchronized void preload(RenderContext context,
@@ -410,7 +418,6 @@ public class AlignmentDataManager {
 
         NumberFormat format = NumberFormat.getInstance();
         int delta = end - start;
-        //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
 
         String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
@@ -420,8 +427,9 @@ public class AlignmentDataManager {
                 renderOptions != null ? renderOptions.bisulfiteContext : null;
 
 
-        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, showSpliceJunctions,
+        AlignmentTileLoader.AlignmentTile t = reader.loadTile(sequence, start, end, loadOptions,
                 downsampleOptions, peStats, bisulfiteContext);
+        //System.out.println(chr + "\t" + start + "\t" + end + "\t" + (n++) + "   (" + format.format(delta) + ")");
 
         List<Alignment> alignments = t.getAlignments();
 
@@ -526,13 +534,24 @@ public class AlignmentDataManager {
     }
 
     public boolean isShowSpliceJunctions() {
-        return showSpliceJunctions;
+        return loadOptions.showSpliceJunctions;
     }
 
     public EventBus getEventBus() {
         return eventBus;
     }
 
+    public SpliceJunctionHelper.LoadOptions getSpliceJunctionLoadOptions() {
+        return loadOptions;
+    }
+
+    public void setSpliceJunctionLoadOptions(SpliceJunctionHelper.LoadOptions spliceJunctionLoadOptions) {
+        this.loadOptions = spliceJunctionLoadOptions;
+    }
+
+    public void setShowSpliceJunctions(boolean showSpliceJunctions) {
+        this.loadOptions = new SpliceJunctionHelper.LoadOptions(showSpliceJunctions, loadOptions.minJunctionCoverage, loadOptions.minReadFlankingWidth);
+    }
 
     public static class DownsampleOptions {
         private boolean downsample;

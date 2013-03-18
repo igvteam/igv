@@ -53,6 +53,8 @@ public abstract class ViewChange {
         }
     }
 
+    public static class ZoomResult extends Result{}
+
     public static class ChromosomeChangeCause extends Cause{
 
         public final Object source;

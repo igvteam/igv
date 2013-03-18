@@ -47,8 +47,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     static protected final int REGION_STRAND_THICKNESS = 4;
     static final int BLOCK_HEIGHT = 14;
     static final int THIN_BLOCK_HEIGHT = 6;
-    static final Color AA_COLOR_1 = new Color(92, 92, 164);
-    static final Color AA_COLOR_2 = new Color(12, 12, 120);
+    protected Color AA_COLOR_1 = new Color(92, 92, 164);
+    protected Color AA_COLOR_2 = new Color(12, 12, 120);
     static final Color DULL_BLUE = new Color(0, 0, 200);
     static final Color DULL_RED = new Color(200, 0, 0);
     static final int NON_CODING_HEIGHT = 8;
@@ -267,7 +267,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param yOffset
      * @param g
      */
-    final private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
+    private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelThickStart, int pixelThickEnd,
                                         int yOffset, Graphics2D g) {
 
         Graphics2D g2D = (Graphics2D) g.create();
@@ -432,14 +432,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;
-                    blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                    drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
 
                 } else {// Exon contains 5' UTR -- draw non-coding part
                     if (pCdStart > pStart) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pCdStart, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -447,7 +447,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pCdEnd, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        blockGraphics.fillRect(pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pEnd = pCdEnd;
                     }
 
@@ -456,8 +456,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = Math.max(2, pClippedEnd - pClippedStart);
-                        blockGraphics.fillRect(pClippedStart, curYOffset - blockHeight / 2, pClippedWidth, blockHeight);
-
+                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                     }
                 }
 
@@ -483,6 +482,17 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
 
+    }
+
+    /**
+     * Draw an individual rectangle representing an individual exon
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    protected void drawExonRect(Graphics blockGraphics, Exon exon, int x, int y, int width, int height){
+        blockGraphics.fillRect(x, y, width, height);
     }
 
     /**

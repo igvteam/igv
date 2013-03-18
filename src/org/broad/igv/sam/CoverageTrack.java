@@ -93,8 +93,17 @@ public class CoverageTrack extends AbstractTrack {
         this.renderOptions = renderOptions;
     }
 
+    AlignmentTrack.RenderOptions getRenderOptions(){
+        return this.renderOptions;
+    }
+
     private AlignmentTrack.RenderOptions renderOptions = null;
 
+    public CoverageTrack(CoverageTrack track){
+        this(track.getResourceLocator(), track.getName(), track.genome);
+        if(track.dataManager != null) this.setDataManager(track.dataManager);
+        if(track.dataSource != null) this.setDataSource(track.dataSource);
+    }
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
@@ -132,6 +141,10 @@ public class CoverageTrack extends AbstractTrack {
         // Explicitly setting a data range turns off auto-scale
         autoScale = false;
         super.setDataRange(axisDefinition);
+    }
+
+    public void setSnpThreshold(float snpThreshold){
+        this.snpThreshold = snpThreshold;
     }
 
     public float getSnpThreshold() {
@@ -300,9 +313,8 @@ public class CoverageTrack extends AbstractTrack {
         private void paint(RenderContext context, Rectangle rect, AlignmentCounts alignmentCounts) {
 
 
-            Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
-            Graphics2D posGraphics = context.getGraphic2DForColor(posStrandColor);
-            Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
+            Color color = getColor();
+            Graphics2D graphics = context.getGraphic2DForColor(color);
 
             DataRange range = getDataRange();
             double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();

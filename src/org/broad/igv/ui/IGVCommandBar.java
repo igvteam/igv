@@ -787,9 +787,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
         zoomControl = new ZoomSliderPanel();
 
         // zoomControl.setAlignmentX(RIGHT_ALIGNMENT);
-        zoomControl.setPreferredSize(new Dimension(200, 30));
-        zoomControl.setMinimumSize(new Dimension(200, 30));
-        zoomControl.setMaximumSize(new Dimension(200, 30));
+        Dimension dimSize = new Dimension(200, 30);
+        zoomControl.setPreferredSize(dimSize);
+        zoomControl.setMinimumSize(dimSize);
+        zoomControl.setMaximumSize(dimSize);
         zoomControl.setToolTipText("Click + to zoom in,  - to zoom out");
         zoomControl.setOpaque(false);
         this.add(zoomControl, JideBoxLayout.FIX);
