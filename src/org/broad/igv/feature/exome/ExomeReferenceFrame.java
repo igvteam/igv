@@ -166,7 +166,7 @@ public class ExomeReferenceFrame extends ReferenceFrame {
         int pw = widthInPixels <= 0 ? 1000 : widthInPixels;
         this.locationScale = (((double) bp) / pw);
 
-        setZoom(calculateZoom(exomeOrigin, exomeEnd));
+        setZoom(calculateZoom(exomeOrigin, exomeEnd), exomeEnd);
     }
 
     @Override

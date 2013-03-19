@@ -111,7 +111,7 @@ public class ReferenceFrame {
      * A temporary holder. We set the end location and then
      * later zoom/origin/etc. calculations are made
      */
-    protected int setEnd = 0;
+    //protected int setEnd = 0;
 
     public ReferenceFrame(String name) {
         this.name = name;
@@ -130,7 +130,7 @@ public class ReferenceFrame {
         this.nTiles = otherFrame.nTiles;
         this.origin = otherFrame.origin;
         this.pixelX = otherFrame.pixelX;
-        this.setEnd = otherFrame.setEnd;
+        //this.setEnd = otherFrame.setEnd;
         this.widthInPixels = otherFrame.widthInPixels;
         this.zoom = otherFrame.zoom;
     }
@@ -150,10 +150,11 @@ public class ReferenceFrame {
      * @param widthInPixels
      */
     public synchronized void setBounds(int pixelX, int widthInPixels) {
+        int currentEnd = (int) getEnd();
         this.pixelX = pixelX;
         if (this.widthInPixels != widthInPixels) {
             this.widthInPixels = widthInPixels;
-            computeLocationScale();
+            computeLocationScale(currentEnd);
             computeZoom();
         }
     }
@@ -163,12 +164,13 @@ public class ReferenceFrame {
      * min/maxZoom are recalculated and respected,
      * and the locationScale is recomputed
      * @param newZoom
+     * @param setEnd See {@link #computeLocationScale(int)}
      */
-    protected void setZoom(int newZoom){
+    protected void setZoom(int newZoom, int setEnd){
         if(zoom != newZoom){
             synchronized (this){
                 setZoomWithinLimits(newZoom);
-                computeLocationScale();
+                computeLocationScale(setEnd);
             }
         }
     }
@@ -257,7 +259,7 @@ public class ReferenceFrame {
             }
             //IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
-            setZoom(newZoom);
+            setZoom(newZoom, -1);
             // Adjust origin so newCenter is centered
             centerOnLocation(newCenter);
         }
@@ -274,7 +276,7 @@ public class ReferenceFrame {
      */
     public double getScale() {
         if (locationScale <= 0) {
-            computeLocationScale();
+            computeLocationScale(-1);
         }
         return locationScale;
     }
@@ -304,21 +306,24 @@ public class ReferenceFrame {
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
             origin = 0;
-            setEnd = -1;
+            //setEnd = -1;
 
             this.zoom = -1;
-            setZoom(0);
+            setZoom(0, -1);
 
             //chromoObservable.setChangedAndNotify();
         }
     }
 
     /**
-     * Recalculate the locationScale, based on {@link #setEnd}, {@link #origin}, and
+     * Recalculate the locationScale, based on {@code setEnd}, {@link #origin}, and
      * {@link #widthInPixels}
      * DOES NOT alter zoom value
+     * @param setEnd The end location, in base pairs.
+     *               TODO What exactly does a negative value do?
+     *
      */
-    private synchronized void computeLocationScale() {
+    private synchronized void computeLocationScale(int setEnd) {
         Genome genome = getGenome();
 
         //Should consider getting rid of this. We don't have
@@ -326,7 +331,7 @@ public class ReferenceFrame {
         if (genome != null) {
             if (setEnd > 0 && widthInPixels > 0) {
                 this.locationScale = ((setEnd - origin) / widthInPixels);
-                setEnd = -1;
+                //setEnd = -1;
             } else {
                 double virtualPixelSize = getTilesTimesBinsPerTile();
                 double nPixel = Math.max(virtualPixelSize, widthInPixels);
@@ -452,8 +457,8 @@ public class ReferenceFrame {
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
                 this.origin = start;
-                this.setEnd = end;
-                computeLocationScale();
+                //this.setEnd = end;
+                computeLocationScale(end);
                 setZoomWithinLimits(calculateZoom(this.getOrigin(), this.getEnd()));
             }
         }
