@@ -443,7 +443,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                 //Which is what we built already
             }
 
-            //At this point, cdsByID should be a map from transcript id -> list of coding
+            //At this point, cdsByID should be a map from transcript id -> list of coding sequences
 
 
             //We modify some exons live, so we keep track of which ones
@@ -476,7 +476,17 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                         exon.setReadingFrame(cds.getReadingShift());
                         exonSet.add(exon);
                     }
+                }
 
+                /**
+                 * If there are any exon features in the file which don't have
+                 * a corresponding CDS, we simply add them wholesale. The most likely case
+                 * is that they are 5'/3' UTR and will be modified later accordingly.
+                 */
+                for(Exon exon: exons){
+                    if(!foundExons.contains(exon)){
+                        exonSet.add(exon);
+                    }
                 }
 
 
