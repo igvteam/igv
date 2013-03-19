@@ -15,18 +15,13 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -95,22 +90,20 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery_01() throws Exception {
+        genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.sorted.gff";
-        TestUtils.createIndex(filepath);
-        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
 
-        GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
         String chr = "chr5";
         int start = 120960 - 1;
         int end = 125258;
 
-        CloseableTribbleIterator<Feature> features = source.getFeatures(chr, start, end);
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
         int geneCount = 0;
         int rnaCount = 0;
-        while (features.hasNext()) {
+        for (Feature feat: features) {
 
 
-            Feature feat = features.next();
+            //Feature feat = features.next();
             assertEquals(chr, feat.getChr());
 
             BasicFeature bf = (BasicFeature) feat;
@@ -156,6 +149,62 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         }
 
         assertTrue(checkedHasPhase);
+
+    }
+
+    /**
+     * Test the canonical EDEN sample file as described at http://www.sequenceontology.org/gff3.shtml
+     * @throws Exception
+     */
+    @Test
+    public void testEDENSample() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/canonical.eden.sorted.gff3";
+        String chr = "ctg123";
+        int start = 1000 - 1;
+        int end = 10000;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(6, features.size());
+
+        /**
+         * We split different coding sequences / alternative translations as different features
+         */
+        int expmRNAFeats = 4;
+        int actmRNAFeats = 0;
+
+        List<String> expUniquemRNAIDs = Arrays.asList("mRNA00001","mRNA00002","mRNA00003");
+        Set<String> mRNAIds = new HashSet<String>(expUniquemRNAIDs.size());
+
+        for(Feature feature: features){
+            BasicFeature bf = (BasicFeature) feature;
+
+            String ident = bf.getIdentifier();
+            List<Exon> exons = bf.getExons();
+            if(bf.getType().equals("mRNA")){
+                actmRNAFeats++;
+                mRNAIds.add(bf.getIdentifier());
+            }else{
+                continue;
+            }
+
+            assertEquals(7600, exons.get(exons.size()-1).getCdEnd());
+
+            if(ident.equals("mRNA00001")){
+                assertEquals(4, bf.getExonCount());
+                assertEquals(1201 - 1, exons.get(0).getCdStart());
+            }if(ident.equals("mRNA00002")){
+                assertEquals(3, bf.getExonCount());
+                assertEquals(1201 - 1, exons.get(0).getCdStart());
+            }if(ident.equals("mRNA00003")){
+                assertEquals(4, bf.getExonCount());
+            }
+        }
+
+        assertEquals(expmRNAFeats, actmRNAFeats);
+        assertEquals(expUniquemRNAIDs.size(), mRNAIds.size());
+        for(String expUniquemRNAID: expUniquemRNAIDs){
+            assertTrue("Expected mRNA id not found in file: " + expUniquemRNAID, mRNAIds.contains(expUniquemRNAID));
+        }
 
     }
 }
