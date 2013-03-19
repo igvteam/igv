@@ -382,7 +382,7 @@ public class AlignmentDataManager {
         isLoading = true;
 
 
-        // Insure the cache has enough span to hold alignments
+        // Ensure the cache has enough span to hold alignments
         int windowSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_MAX_VISIBLE_RANGE) * 1000;
         int maxIntervalSize = MAX_INTERVAL_MULTIPLE * Math.max( (end - start), windowSize);
         loadedIntervalMap.setMaxIntervalSize(maxIntervalSize);

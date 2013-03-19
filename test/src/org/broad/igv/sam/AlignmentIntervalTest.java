@@ -29,6 +29,7 @@ import static junit.framework.Assert.*;
  * User: jacob
  * Date: 2012-Jul-09
  */
+@Ignore("Caching doesn't actually seem to improve performance, we may get rid of this functionality soon and hence the tests")
 public class AlignmentIntervalTest extends AbstractHeadlessTest {
 
     @Test
