@@ -23,8 +23,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: jacob
@@ -175,30 +174,74 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
         List<String> expUniquemRNAIDs = Arrays.asList("mRNA00001","mRNA00002","mRNA00003");
         Set<String> mRNAIds = new HashSet<String>(expUniquemRNAIDs.size());
 
+        Set<Integer> mRNA3CdStarts = new HashSet<Integer>(Arrays.asList(3300, 3390));
+
         for(Feature feature: features){
             BasicFeature bf = (BasicFeature) feature;
 
             String ident = bf.getIdentifier();
             List<Exon> exons = bf.getExons();
-            if(bf.getType().equals("mRNA")){
+            String type = bf.getType();
+            if(type.equals("mRNA")){
                 actmRNAFeats++;
                 mRNAIds.add(bf.getIdentifier());
+            }else if(type.equals("gene")){
+                assertEquals(bf.getIdentifier(), "gene00001");
+                continue;
             }else{
                 continue;
             }
 
-            assertEquals(7600, exons.get(exons.size()-1).getCdEnd());
+            Exon lastExon = exons.get(exons.size()-1);
+            assertEquals(7600, lastExon.getCdEnd());
+            assertEquals(lastExon.getCdStart(), lastExon.getStart());
+            assertEquals(9000, lastExon.getEnd());
+
+            int midCDSInd = 2;
 
             if(ident.equals("mRNA00001")){
                 assertEquals(4, bf.getExonCount());
                 assertEquals(1201 - 1, exons.get(0).getCdStart());
+
+                Exon secExon = exons.get(1);
+                assertEquals(secExon.getCdStart(), secExon.getStart());
+                assertFalse(secExon.isUTR());
+                assertEquals(3000-1, secExon.getStart());
+                assertEquals(3902, secExon.getEnd());
+
             }if(ident.equals("mRNA00002")){
                 assertEquals(3, bf.getExonCount());
                 assertEquals(1201 - 1, exons.get(0).getCdStart());
+                midCDSInd = 1;
             }if(ident.equals("mRNA00003")){
                 assertEquals(4, bf.getExonCount());
+                boolean passedCdStart = false;
+                for(Exon exon: exons){
+                    if(exon.isUTR()){
+                        assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCodingLength());
+                        assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCdEnd() - exon.getCdEnd());
+                    }else{
+                        //There are two coding sequences which differ only in start position
+                        if(!passedCdStart){
+                            int cdStart = exon.getCdStart();
+                            assertTrue("Exon cdStart not expected, was " + cdStart, mRNA3CdStarts.contains(cdStart));
+                            mRNA3CdStarts.remove(cdStart);
+                            passedCdStart = true;
+                        }
+                    }
+                    assertTrue(exon.getName().contains("exon0000"));
+                }
+                assertTrue(passedCdStart);
             }
+
+            Exon midCDS = exons.get(midCDSInd);
+            assertEquals(4999, midCDS.getStart());
+            assertEquals(5500, midCDS.getEnd());
+            assertEquals(midCDS.getStart(), midCDS.getCdStart());
+            assertEquals(midCDS.getEnd(), midCDS.getCdEnd());
         }
+
+        assertEquals(0, mRNA3CdStarts.size());
 
         assertEquals(expmRNAFeats, actmRNAFeats);
         assertEquals(expUniquemRNAIDs.size(), mRNAIds.size());

@@ -480,12 +480,12 @@ public class GFFFeatureSource extends TribbleFeatureSource {
 
                 /**
                  * If there are any exon features in the file which don't have
-                 * a corresponding CDS, we simply add them wholesale. The most likely case
-                 * is that they are 5'/3' UTR and will be modified later accordingly.
+                 * a corresponding CDS, we add them and set as UTR
                  */
                 for(Exon exon: exons){
                     if(!foundExons.contains(exon)){
                         exonSet.add(exon);
+                        exon.setUTR(true);
                     }
                 }
 
