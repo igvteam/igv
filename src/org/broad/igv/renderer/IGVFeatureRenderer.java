@@ -456,7 +456,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = Math.max(2, pClippedEnd - pClippedStart);
-                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        drawExonRect(blockGraphics, exon, pClippedStart, curYOffset - blockHeight / 2, pClippedWidth, blockHeight);
                     }
                 }
 
