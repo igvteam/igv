@@ -791,9 +791,18 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     @Override
     public void finish() {
         super.finish();
-        if (DEFAULT_LAZY_LOAD && this.getFileSource() != null) {
-            this.record = null;
-            //this.readSequence = null;
+        SAMFileSource source = this.getFileSource();
+        if (DEFAULT_LAZY_LOAD && source != null) {
+            //Check that we can reload the record before getting rid of it.
+            //SAMTextReader doesn't support this, for instance
+            SAMFileSpan span = source.getFilePointer();
+            try{
+                SAMRecordIterator iter = source.getReader().iterator(span);
+                this.record = null;
+                //this.readSequence = null;
+            }catch(Exception e){
+                this.fileSource = null;
+            }
         }
     }
 

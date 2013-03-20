@@ -23,7 +23,6 @@ import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.util.SeekableStream;
@@ -176,7 +175,8 @@ public class SAMReader implements AlignmentReader {
             reader.setValidationStringency(ValidationStringency.SILENT);
 
             //Need to keep the file source, if loading lazily
-            reader.enableFileSource(SamAlignment.DEFAULT_LAZY_LOAD);
+            //TODO Can't reload from SAM files. See SAMTextReader.getIterator
+            //reader.enableFileSource(SamAlignment.DEFAULT_LAZY_LOAD);
 
             return reader;
         } catch (IOException ex) {
