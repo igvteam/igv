@@ -88,7 +88,7 @@ public class ReferenceFrame {
     /**
      * The number of tiles for this zoom level, = 2^zoom
      */
-    private double nTiles = 1;
+    protected double nTiles = 1;
 
     /**
      * The maximum virtual pixel value.
@@ -516,6 +516,10 @@ public class ReferenceFrame {
 
     public double getEnd() {
         return origin + getScale() * widthInPixels;
+    }
+
+    protected double getnTiles() {
+        return nTiles;
     }
 
     public int getZoom() {
