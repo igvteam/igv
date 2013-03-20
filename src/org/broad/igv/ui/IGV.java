@@ -631,6 +631,8 @@ public class IGV {
         cmdBar.selectGenome(genomeListItem.getId());
         cmdBar.updateChromosFromGenome(genome);
 
+        FrameManager.getDefaultFrame().setChromosomeName(Globals.CHR_ALL, true);
+
         //TODO Should use EventBus/events for changing genome, clean this up a lot
         menuBar.createFileMenu();
     }

@@ -34,6 +34,12 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
         frame.setBounds(0, 500);
     }
 
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        frame = null;
+    }
+
     @Test
     public void testSetBounds_chr1() throws Exception{
         frame.setChromosomeName("chr1");
@@ -55,13 +61,34 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
     }
 
     @Test
-    public void testJumpTo() throws Exception{
+    public void testJumpTo_00() throws Exception{
         Locus locus = new Locus("chr1", 1000, 2000);
         frame.jumpTo(locus);
 
         assertEquals(locus.getChr(), frame.getChrName());
         assertEquals(locus.getStart(), frame.getOrigin(), 1.0);
         assertEquals(locus.getEnd(), frame.getEnd(), 1.0);
+        assertConsistent();
+    }
+
+    @Test
+    public void testJumpTo_01() throws Exception{
+        Locus locus = new Locus("chr1", 1000, 2000);
+        frame.jumpTo(locus);
+        double oldLocScale = frame.getScale();
+        int oldZoom = frame.getZoom();
+        int oldMidPoint = frame.getMidpoint();
+        double oldCenter = frame.getCenter();
+
+        int delta = 12344;
+        frame.jumpTo(locus.getChr(), locus.getStart() + delta, locus.getEnd() + delta);
+
+        assertEquals(oldLocScale, frame.getScale());
+        assertEquals(oldZoom, frame.getZoom());
+        assertEquals(oldMidPoint, frame.getMidpoint());
+
+        assertEquals(oldCenter + delta, frame.getCenter(), 1.0);
+
         assertConsistent();
     }
 
@@ -85,14 +112,8 @@ public class ReferenceFrameTest extends AbstractHeadlessTest{
         assertEquals(oldLocScale, scaleMultiplier * frame.getScale(), 1.0);
     }
 
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        frame = null;
-    }
-
     private void assertConsistent(){
-        assertEquals(frame.getEnd(), frame.origin + frame.locationScale*frame.widthInPixels);
+        assertEquals(frame.getEnd(), frame.origin + frame.locationScale * frame.widthInPixels);
         assertEquals(frame.getnTiles(), Math.pow(2, frame.zoom));
     }
 }

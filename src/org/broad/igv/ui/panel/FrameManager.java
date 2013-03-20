@@ -233,12 +233,5 @@ public class FrameManager {
         frames.remove(frame);
     }
 
-
-    public static void reset(String chr) {
-        setToDefaultFrame(null);
-        getDefaultFrame().setChromosomeName(chr);
-        getDefaultFrame().invalidateLocationScale();
-    }
-
 }
 

@@ -243,6 +243,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                         monitor.fireProgressChange(25);
 
+                        FrameManager.getDefaultFrame().setChromosomeName(Globals.CHR_ALL, true);
                         IGV.getInstance().doRefresh();
 
                     } catch (GenomeServerException e) {
@@ -514,9 +515,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     public void updateChromosFromGenome(Genome genome) {
-
-
-        FrameManager.getDefaultFrame().invalidateLocationScale();
 
         for (Chromosome chr : genome.getChromosomes()) {
             final List<Cytoband> cytobands = chr.getCytobands();

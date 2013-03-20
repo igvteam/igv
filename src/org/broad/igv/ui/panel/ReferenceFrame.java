@@ -281,10 +281,6 @@ public class ReferenceFrame {
         return locationScale;
     }
 
-    public void invalidateLocationScale() {
-        this.locationScale = -1;
-    }
-
     /**
      * Calls {@link #setChromosomeName(String, boolean)} with force = false
      * It is preferred that you post an event to the EventBus instead, this is public
@@ -296,17 +292,19 @@ public class ReferenceFrame {
     }
 
     /**
-     * Change the frame to the specified chromosome.
+     * Change the frame to the specified chromosome, clearing all
+     * view parameters (zoom, locationScale) in the process
      *
-     * @param name
-     * @param force
+     * @param name Name of the new chromosome
+     * @param force Whether to force a change to the new chromosome, even if it's
+     *              the same name as the old one
      */
-    synchronized void setChromosomeName(String name, boolean force) {
+    public synchronized void setChromosomeName(String name, boolean force) {
 
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
             origin = 0;
-            //setEnd = -1;
+            this.locationScale = -1;
 
             this.zoom = -1;
             setZoom(0, -1);
@@ -320,7 +318,7 @@ public class ReferenceFrame {
      * {@link #widthInPixels}
      * DOES NOT alter zoom value
      * @param setEnd The end location, in base pairs.
-     *               TODO What exactly does a negative value do?
+     *               If negative, we use the whole chromosome
      *
      */
     private synchronized void computeLocationScale(int setEnd) {
