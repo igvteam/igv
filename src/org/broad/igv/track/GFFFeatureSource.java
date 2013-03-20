@@ -473,7 +473,7 @@ public class GFFFeatureSource extends TribbleFeatureSource {
                         }
                         exon.setCodingStart(cds.getStart());
                         exon.setCodingEnd(cds.getEnd());
-                        exon.setReadingFrame(cds.getReadingShift());
+                        exon.setReadingFrame(cds.getReadingFrame());
                         exonSet.add(exon);
                     }
                 }
