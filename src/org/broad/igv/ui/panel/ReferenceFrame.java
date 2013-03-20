@@ -105,7 +105,7 @@ public class ReferenceFrame {
      */
     protected volatile double locationScale;
 
-    protected Locus initialLocus;
+    protected Locus initialLocus = null;
 
     /**
      * A temporary holder. We set the end location and then
@@ -146,17 +146,29 @@ public class ReferenceFrame {
     }
     /**
      * Set the position and width of the frame, in pixels
+     * The origin/end positions are kept fixed iff valid
      * @param pixelX
      * @param widthInPixels
      */
     public synchronized void setBounds(int pixelX, int widthInPixels) {
-        int currentEnd = (int) getEnd();
         this.pixelX = pixelX;
+
         if (this.widthInPixels != widthInPixels) {
+
+            //If we have what looks like a valid end position we keep it
+            if(this.widthInPixels > 0 && this.initialLocus == null){
+                int start = (int) getOrigin();
+                int end = (int) getEnd();
+                if(start >= 0 && end >= 1){
+                    this.initialLocus = new Locus(getChrName(), start, end);
+                }
+            }
+
             this.widthInPixels = widthInPixels;
-            computeLocationScale(currentEnd);
+            computeLocationScale();
             computeZoom();
         }
+
     }
 
     /**
@@ -164,13 +176,12 @@ public class ReferenceFrame {
      * min/maxZoom are recalculated and respected,
      * and the locationScale is recomputed
      * @param newZoom
-     * @param setEnd See {@link #computeLocationScale(int)}
      */
-    protected void setZoom(int newZoom, int setEnd){
+    protected void setZoom(int newZoom){
         if(zoom != newZoom){
             synchronized (this){
                 setZoomWithinLimits(newZoom);
-                computeLocationScale(setEnd);
+                computeLocationScale();
             }
         }
     }
@@ -259,7 +270,7 @@ public class ReferenceFrame {
             }
             //IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
-            setZoom(newZoom, -1);
+            setZoom(newZoom);
             // Adjust origin so newCenter is centered
             centerOnLocation(newCenter);
         }
@@ -276,7 +287,7 @@ public class ReferenceFrame {
      */
     public double getScale() {
         if (locationScale <= 0) {
-            computeLocationScale(-1);
+            computeLocationScale();
         }
         return locationScale;
     }
@@ -307,29 +318,33 @@ public class ReferenceFrame {
             this.locationScale = -1;
 
             this.zoom = -1;
-            setZoom(0, -1);
+            setZoom(0);
 
             //chromoObservable.setChangedAndNotify();
         }
     }
 
     /**
-     * Recalculate the locationScale, based on {@code setEnd}, {@link #origin}, and
+     * Recalculate the locationScale, based on {@link #initialLocus}, {@link #origin}, and
      * {@link #widthInPixels}
      * DOES NOT alter zoom value
-     * @param setEnd The end location, in base pairs.
-     *               If negative, we use the whole chromosome
      *
      */
-    private synchronized void computeLocationScale(int setEnd) {
+    private synchronized void computeLocationScale() {
         Genome genome = getGenome();
 
         //Should consider getting rid of this. We don't have
         //a chromosome length without a genome, not always a problem
         if (genome != null) {
+
+            // The end location, in base pairs.
+            // If negative, we use the whole chromosome
+            int setEnd = -1;
+            if(this.initialLocus != null) setEnd = this.initialLocus.getEnd();
+
             if (setEnd > 0 && widthInPixels > 0) {
                 this.locationScale = ((setEnd - origin) / widthInPixels);
-                //setEnd = -1;
+                this.initialLocus = null;
             } else {
                 double virtualPixelSize = getTilesTimesBinsPerTile();
                 double nPixel = Math.max(virtualPixelSize, widthInPixels);
@@ -445,18 +460,17 @@ public class ReferenceFrame {
             }
         }
 
-        this.initialLocus = locus;
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
         if (chromosome != null) {
             end = Math.min(chromosome.getLength(), end);
         }
 
         synchronized (this) {
+            this.initialLocus = locus;
             this.chrName = chr;
             if (start >= 0 && end >= 0) {
                 this.origin = start;
-                //this.setEnd = end;
-                computeLocationScale(end);
+                computeLocationScale();
                 setZoomWithinLimits(calculateZoom(this.getOrigin(), this.getEnd()));
             }
         }
