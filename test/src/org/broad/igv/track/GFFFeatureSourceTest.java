@@ -204,8 +204,7 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
                 assertEquals(1201 - 1, exons.get(0).getCdStart());
 
                 Exon secExon = exons.get(1);
-                assertEquals(secExon.getCdStart(), secExon.getStart());
-                assertFalse(secExon.isUTR());
+                assertWholeExonCoding(secExon);
                 assertEquals(3000-1, secExon.getStart());
                 assertEquals(3902, secExon.getEnd());
 
@@ -249,5 +248,101 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
             assertTrue("Expected mRNA id not found in file: " + expUniquemRNAID, mRNAIds.contains(expUniquemRNAID));
         }
 
+    }
+
+    /**
+     * Test a GFF file which has CDS features, but no features of type "exon"
+     * @throws Exception
+     */
+    @Test
+    public void testNoExons() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/NC_009084.gff";
+        String chr = "NC_009084.1";
+        int start = 0;
+        int end = 11302;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(6, features.size());
+
+        for(Feature feat: features){
+            BasicFeature basicFeature = (BasicFeature) feat;
+            if(basicFeature.getType().equals("region")){
+                assertEquals("id0", basicFeature.getIdentifier());
+            }else if(basicFeature.getType().equals("gene")){
+                assertEquals(1, basicFeature.getExonCount());
+                assertTrue(basicFeature.getIdentifier().contains("gene"));
+                assertTrue(basicFeature.getName().contains("A1S_"));
+
+                Exon exon = basicFeature.getExons().get(0);
+                assertTrue("Exon name incorrect: " + exon.getName(), exon.getName().contains("YP_00"));
+
+                assertWholeExonCoding(exon);
+                assertEquals(0, exon.getReadingFrame());
+            }else{
+                throw new AssertionError("Unknown feature type: " + basicFeature.getType());
+            }
+
+        }
+    }
+
+    @Test
+    public void testtRNA() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/musa_trna.gff3";
+        String chr = "chr1";
+        int start = 26766;
+        int end = 26848;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(2, features.size());
+
+        BasicFeature gene = null, tRNA = null;
+        for(Feature feat: features){
+            if(((BasicFeature) feat).getType().equals("gene")){
+                gene = (BasicFeature) feat;
+            }else if(((BasicFeature) feat).getType().equals("tRNA")){
+                tRNA = (BasicFeature) feat;
+            }
+        }
+
+        assertEquals(gene.getIdentifier(), tRNA.getAttributes().get("Parent"));
+
+        assertEquals(1, tRNA.getExonCount());
+        Exon exon = tRNA.getExons().get(0);
+        assertEquals(tRNA.getIdentifier(), exon.getAttributes().get("Parent"));
+        assertWholeExonNonCoding(exon);
+    }
+
+    @Test
+    public void testMusa_GSMUA_Achr1G00030_001() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/musa_trna.gff3";
+        String chr = "chr1";
+        int start = 20900;
+        int end = 26317;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(3, features.size());
+
+        for(Feature feat: features){
+            BasicFeature bf = (BasicFeature) feat;
+            if(bf.getType().equals("mRNA")){
+                assertEquals(8, bf.getExonCount());
+                for(Exon exon: bf.getExons()){
+                    assertEquals(bf.getIdentifier(), exon.getAttributes().get("Parent"));
+                    assertWholeExonCoding(exon);
+                }
+            }
+        }
+    }
+
+    private void assertWholeExonCoding(Exon exon){
+        assertEquals(exon.getCdStart(), exon.getStart());
+        assertEquals(exon.getCdEnd(), exon.getEnd());
+        assertFalse(exon.isUTR());
+    }
+
+    private void assertWholeExonNonCoding(Exon exon){
+        assertEquals(exon.getEnd(), exon.getCdStart());
+        assertEquals(0, exon.getCodingLength());
+        assertTrue(exon.isUTR());
     }
 }
