@@ -36,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -322,9 +323,19 @@ public class SashimiPlot extends JFrame{
                 }
             });
 
+            JMenuItem saveImageItem = new JMenuItem("Save Image...");
+            saveImageItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File defaultFile = new File("Sashimi.png");
+                    IGV.getInstance().createSnapshot(SashimiPlot.this, defaultFile);
+                }
+            });
+
             menu.add(minJunctionCoverage);
             menu.add(maxJunctionCoverageRange);
             menu.add(colorItem);
+            menu.add(saveImageItem);
 
             return menu;
         }
