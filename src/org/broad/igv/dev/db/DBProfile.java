@@ -33,7 +33,7 @@ import java.util.*;
  * User: jacob
  * Date: 2013-Jan-14
  */
-@XmlRootElement
+@XmlRootElement(name = "database")
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DBProfile.DBTable.class)
 public class DBProfile {
@@ -303,6 +303,34 @@ public class DBProfile {
 
         void setDbLocator(ResourceLocator dbLocator) {
             this.dbLocator = dbLocator;
+        }
+
+        public void setBinColName(String binColName) {
+            this.binColName = binColName;
+        }
+
+        public void setChromoColName(String chromoColName) {
+            this.chromoColName = chromoColName;
+        }
+
+        public void setEndColIndex(int endColIndex) {
+            this.endColIndex = endColIndex;
+        }
+
+        public void setFormat(String format) {
+            this.format = format;
+        }
+
+        public void setPosEndColName(String posEndColName) {
+            this.posEndColName = posEndColName;
+        }
+
+        public void setPosStartColName(String posStartColName) {
+            this.posStartColName = posStartColName;
+        }
+
+        public void setStartColIndex(int startColIndex) {
+            this.startColIndex = startColIndex;
         }
 
         /**
