@@ -116,14 +116,14 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
 
     /**
-     * List of know "Name" fields.  Some important fields from the GFF3 spec are listed below.  Note GFF3
+     * List of known "Name" fields.  Some important fields from the GFF3 spec are listed below.  Note GFF3
      * is case sensitive, however GFF2, GTF, and other variants might not be.
      * <p/>
      * ID	  Indicates the ID of the feature.
      * Name   Display name for the feature.
      * Alias  A secondary name for the feature.
      */
-    static String[] nameFields = {"Name", "name", "Alias", "gene", "primary_name", "locus", "alias", "systematic_id", "ID"};
+    static String[] nameFields = {"Name", "name", "Alias", "gene", "primary_name", "locus", "alias", "systematic_id", "ID", "transcript_id"};
 
 
     public GFFCodec(Genome genome) {
@@ -280,7 +280,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
             f.setReadingFrame(phaseNum);
         }
 
-        f.setName(getName(attributes));
+        f.setName(helper.getName(attributes));
         f.setType(featureType);
         f.setDescription(description);
 
@@ -322,20 +322,6 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         return strand;
     }
 
-
-    String getName(MultiMap<String, String> attributes) {
-
-        if (attributes == null || attributes.size() == 0) {
-            return null;
-        }
-        for (String nf : nameFields) {
-            if (attributes.containsKey(nf)) {
-                return attributes.get(nf);
-            }
-        }
-        return "";
-    }
-
     static StringBuffer buf = new StringBuffer();
 
     static String getDescription(MultiMap<String, String> attributes, String type) {
@@ -366,7 +352,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     public static class GFF2Helper implements Helper {
 
         //TODO Almost identical
-        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "primary_name", "systematic_id"};
+        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "primary_name", "systematic_id", "transcript_id"};
         static List<String> idFields = new ArrayList<String>(Arrays.asList(DEFAULT_NAME_FIELDS));
         static{
             idFields.add("transcript_id");
