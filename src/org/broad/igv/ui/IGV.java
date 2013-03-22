@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.affective.AffectiveGenome;
@@ -173,8 +174,9 @@ public class IGV {
         return theInstance;
     }
 
-    //For testing
+    @ForTesting
     static void destroyInstance() {
+        IGVMenuBar.destroyInstance();
         theInstance = null;
     }
 

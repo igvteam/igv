@@ -42,6 +42,11 @@ public class MainTest {
         TestUtils.setUpTestEnvironment();
     }
 
+    @Before
+    public void setUp() throws Exception{
+        AbstractHeadedTest.stopGUI();
+    }
+
 
     @After
     public void tearDown() throws Exception {
@@ -73,7 +78,7 @@ public class MainTest {
         //Need to wait for IGV to load file, genome, and move to locus
         IGV igv = startMain(args, 60000);
 
-        System.out.println(IGV.getInstance());
+        //System.out.println(IGV.getInstance());
 
         assertEquals(genome, igv.getGenomeManager().getGenomeId());
         boolean trackFound = false;

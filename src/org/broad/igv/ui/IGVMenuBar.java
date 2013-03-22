@@ -15,6 +15,7 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.cli_plugin.PluginSpecReader;
 import org.broad.igv.cli_plugin.ui.RunPlugin;
@@ -101,7 +102,12 @@ public class IGVMenuBar extends JMenuBar {
     }
 
     static IGVMenuBar createInstance(IGV igv){
-        if(instance != null) throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
+        if(instance != null){
+            if(igv == instance.igv){
+                return instance;
+            }
+            throw new IllegalStateException("Cannot create another IGVMenuBar, use getInstance");
+        }
         instance = new IGVMenuBar(igv);
         return instance;
     }
@@ -1113,4 +1119,8 @@ public class IGVMenuBar extends JMenuBar {
         writer.close();
     }
 
+    @ForTesting
+    static void destroyInstance() {
+        instance = null;
+    }
 }
