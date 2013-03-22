@@ -97,7 +97,7 @@ public class LoadFromServerAction extends MenuAction {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
             nodeURLs = getResourceUrls(bufferedReader);
         } catch (IOException e) {
-            MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
+            //This is pretty common, if there is no data registry file for the genome the file won't exist
             log.error("Error loading genome registry file", e);
         } finally {
             if (is != null) {
