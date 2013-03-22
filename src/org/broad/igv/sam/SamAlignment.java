@@ -127,7 +127,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * Whether to load read sequence / record / other data lazily.
      * Eventually we will likely remove this flag, here for easy testing
      */
-    public static final boolean DEFAULT_LAZY_LOAD = Boolean.parseBoolean(System.getProperty("DEFAULT_LAZY_LOAD", "false"));
+    public static boolean DEFAULT_LAZY_LOAD = Boolean.parseBoolean(System.getProperty("DEFAULT_LAZY_LOAD", "false"));
 
     public SamAlignment(SAMRecord record) {
         flowOrder = null;

@@ -18,7 +18,6 @@ package org.broad.igv.sam;
 import org.apache.commons.lang.ArrayUtils;
 import org.broad.igv.feature.genome.Genome;
 
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,9 +33,9 @@ public class AlignmentBlock {
 
     private boolean softClipped = false;
 
-    private Reference<byte[]> softBases;
-    private Reference<byte[]> softQualities;
-    private Reference<byte[]> softRefSeq;
+//    private Reference<byte[]> softBases;
+//    private Reference<byte[]> softQualities;
+//    private Reference<byte[]> softRefSeq;
 
     /**
      * We save space by only storing the mismatches to the reference
@@ -262,7 +261,7 @@ public class AlignmentBlock {
      * @return
      */
     public boolean hasBases() {
-        return this.bases != null || this.softBases != null;
+        return this.bases != null;// || this.softBases != null;
     }
 
 

@@ -90,6 +90,10 @@ public class RuntimeUtils {
         if (instrumentation == null) {
             throw new IllegalStateException("No instrumentation available. Need to launch width -javaagent:path/to/RuntimeUtils.jar");
         }
+
+        //Maybe not right
+        if(o == null) return 4;
+
         return instrumentation.getObjectSize(o);
     }
 
@@ -98,8 +102,17 @@ public class RuntimeUtils {
     }
 
     public static long getObjectSizeRecursive(Object o, Set<Object> completedObjs){
+        try{
+            if(o != null && completedObjs.contains(o)) return 0;
+        }catch(Exception e){
+            System.out.println("Error on " + o.getClass() + " skipping");
+            return 0;
+        }
 
         long fullSize = getObjectSize(o);
+
+        if(o == null) return fullSize;
+
         completedObjs.add(o);
 
         //May be off a bit for wrapper classes,
@@ -125,19 +138,23 @@ public class RuntimeUtils {
 
             field.setAccessible(true);
 
-            //Field.get boxes primitives as wrapper classes,
-            //which would artificially inflate the total
-            Class fieldType = field.getType();
-            if(fieldType.isPrimitive()){
-                fullSize += primitiveMemMap.get(fieldType);
-                continue;
-            }
-
             try {
+
                 Object fieldValue = field.get(o);
-                fullSize += getObjectSizeRecursive(fieldValue, completedObjs);
+
+                //Field.get boxes primitives as wrapper classes,
+                //which would artificially inflate the total
+                Class fieldType = field.getType();
+                if(fieldType.isPrimitive()){
+                    fullSize += primitiveMemMap.get(fieldType);
+                }else{
+                    fullSize += getObjectSizeRecursive(fieldValue, completedObjs);
+                }
+                completedObjs.add(fieldValue);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
+            } catch(NullPointerException e){
+                System.out.println("Error on " + o.getClass() + " skipping");
             }
         }
         return fullSize;
