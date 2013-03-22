@@ -1,0 +1,4 @@
+I	protein_coding	exon	335	649	.	+	.	 gene_id "YAL069W"; transcript_id "YAL069W"; exon_number "1"; gene_name "YAL069W"; gene_biotype "protein_coding"; transcript_name "YAL069W"; exon_id "YAL069W.1";
+I	protein_coding	CDS	335	646	.	+	0	 gene_id "YAL069W"; transcript_id "YAL069W"; exon_number "1"; gene_name "YAL069W"; gene_biotype "protein_coding"; transcript_name "YAL069W"; protein_id "YAL069W";
+I	protein_coding	start_codon	335	337	.	+	0	 gene_id "YAL069W"; transcript_id "YAL069W"; exon_number "1"; gene_name "YAL069W"; gene_biotype "protein_coding"; transcript_name "YAL069W";
+I	protein_coding	stop_codon	647	649	.	+	0	 gene_id "YAL069W"; transcript_id "YAL069W"; exon_number "1"; gene_name "YAL069W"; gene_biotype "protein_coding"; transcript_name "YAL069W";
