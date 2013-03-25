@@ -64,12 +64,28 @@ public class GraphicUtils {
     }
 
     public static void drawCenteredText(String text, int x, int y, int w, int h, Graphics g) {
+        drawCenteredText(text, x, y, w, h, g, null);
+    }
+
+    public static void drawCenteredText(String text, int x, int y, int w, int h, Graphics g, Color backgroundColor) {
         FontMetrics fontMetrics = g.getFontMetrics();
 
         Rectangle2D textBounds = fontMetrics.getStringBounds(text, g);
         int xOffset = (int) ((w - textBounds.getWidth()) / 2);
         int yOffset = (int) ((h - textBounds.getHeight()) / 2);
-        g.drawString(text, x + xOffset, y + h - yOffset - (int) (textBounds.getHeight() / 4));
+
+        int xs = x + xOffset;
+        int ys = y + h - yOffset - (int) (textBounds.getHeight() / 4);
+
+        if(backgroundColor != null){
+            Graphics gb = g.create();
+            gb.setColor(backgroundColor);
+            int th = (int) textBounds.getHeight();
+            gb.fillRect(xs, ys - 3*th/4, (int) textBounds.getWidth(), th);
+        }
+
+        g.drawString(text, xs, ys);
+
 
     }
 
