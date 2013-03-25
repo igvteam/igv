@@ -85,8 +85,6 @@ public class GraphicUtils {
         }
 
         g.drawString(text, xs, ys);
-
-
     }
 
     public static void drawVerticallyCenteredText(String text, int margin, Rectangle rect, Graphics g2D, boolean rightJustify) {
@@ -95,7 +93,7 @@ public class GraphicUtils {
 
 
     /**
-     * Draw a block of text centered verticallyin the rectangle
+     * Draw a block of text centered vertically in the rectangle
      *
      * @param text
      * @param rect

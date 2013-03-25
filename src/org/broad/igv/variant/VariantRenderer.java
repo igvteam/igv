@@ -12,7 +12,6 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -75,6 +74,15 @@ public class VariantRenderer { //extends FeatureRenderer {
     }
 
     /**
+     * Whether to use alpha channel by default when rendering variants.
+     * Normally they are dimmed if filtered
+     * @return
+     */
+    protected boolean defaultUseAlpha(){
+        return false;
+    }
+
+    /**
      * Render the site track (the top, summary view of the site).
      *
      * @param variant
@@ -89,16 +97,16 @@ public class VariantRenderer { //extends FeatureRenderer {
                                RenderContext context) {
 
 
-        final boolean filtered = variant.isFiltered();
+        final boolean useAlpha = variant.isFiltered() || defaultUseAlpha();
         final Color alleleColor;
         final Color refColor;
         double percent;
         if (track.getColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
-            refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
+            refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
         } else {
-            alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand; // Red
+            alleleColor = useAlpha ? colorAlleleBandAlpha : colorAlleleBand; // Red
             double af = variant.getAlleleFraction();
             if (af < 0) {
                 double[] afreqs = variant.getAlleleFreqs();
@@ -109,9 +117,9 @@ public class VariantRenderer { //extends FeatureRenderer {
             percent = Math.min(1, af);
             if (percent <= 0) {
                 percent = 0;
-                refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
+                refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
             } else {
-                refColor = filtered ? blueAlpha : blue;                      // Blue
+                refColor = useAlpha ? blueAlpha : blue;                      // Blue
             }
 
         }
@@ -312,4 +320,5 @@ public class VariantRenderer { //extends FeatureRenderer {
         g.drawChars(chars, 0, 1, msgX, msgY);
 
     }
+
 }
