@@ -50,7 +50,7 @@ public class VariantReviewRenderer extends VariantRenderer {
 
     @Override
     protected boolean defaultUseAlpha() {
-        return true;
+        return false;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class VariantReviewRenderer extends VariantRenderer {
 
             String symbol = symbolMap.get(truthStatus);
             symbol = symbol != null ? symbol : "";
-            GraphicUtils.drawCenteredText(symbol, pixelX, bandY - bandHeight, xWidth, bandHeight, g);//Color.white);
+            GraphicUtils.drawCenteredText(symbol, pixelX, bandY - bandHeight, xWidth, bandHeight, g, Color.white);
 
             if(mvc.isReviewed()){
                 g = context.getGraphic2DForColor(Color.red);
