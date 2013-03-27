@@ -19,6 +19,8 @@
 package org.broad.igv.data.cufflinks;
 
 import org.apache.commons.math.stat.StatUtils;
+import org.broad.igv.Globals;
+import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.GenomeSummaryData;
 import org.broad.igv.data.LocusScoreUtils;
@@ -42,6 +44,7 @@ public class CufflinksDataSource implements DataSource {
     double dataMin;
     Map<String, List<LocusScore>> values;
     Map<String, String> chrAliasMap;
+    List<LocusScore> wholeGenomeScores;
 
     public CufflinksDataSource(List<CufflinksValue> valueList, Genome genome) {
 
@@ -83,6 +86,28 @@ public class CufflinksDataSource implements DataSource {
             dataMax = 100;
         }
 
+        GenomeSummaryData genomeSummaryData = new GenomeSummaryData(genome, new String[]{"*"});
+        for (Map.Entry<String, List<LocusScore>> entry : values.entrySet()) {
+            String chr = entry.getKey();
+            List<LocusScore> scores = entry.getValue();
+            int[] positions = new int[scores.size()];
+            float[] values = new float[scores.size()];
+            for (int i = 0; i < scores.size(); i++) {
+                LocusScore s = scores.get(i);
+                positions[i] = s.getStart();
+                values[i] = s.getScore();
+            }
+            Map<String, float[]> tmp = new HashMap<String, float[]>(1);
+            tmp.put("*", values);
+            genomeSummaryData.addData(chr, positions, tmp);
+        }
+        int[] positions = genomeSummaryData.getLocations();
+        float[] values = genomeSummaryData.getData("*");
+        wholeGenomeScores = new ArrayList<LocusScore>(positions.length);
+        for (int i = 0; i < positions.length; i++) {
+            wholeGenomeScores.add(new BasicScore(positions[i], positions[i] + 1, values[i]));
+        }
+
     }
 
     @Override
@@ -97,6 +122,11 @@ public class CufflinksDataSource implements DataSource {
 
     @Override
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
+
+        if (chr.equals(Globals.CHR_ALL)) {
+            return wholeGenomeScores;
+        }
+
         if (chrAliasMap.containsKey(chr)) {
             return values.get(chrAliasMap.get(chr));
         } else {

@@ -105,6 +105,13 @@ public class GenomeSummaryData {
     }
 
 
+    /**
+     * Add data to be condensed for the whole genome view
+     *
+     * @param chr
+     * @param locs Genomic positions
+     * @param sampleData  Map of sample name -> array of values.
+     */
     public void addData(String chr, int[] locs, Map<String, float[]> sampleData) {
 
         IntArrayList locations = locationMap.get(chr);
