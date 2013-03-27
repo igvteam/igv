@@ -15,21 +15,15 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.GFFParser;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: jacob
@@ -95,22 +89,20 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
     @Test
     public void testQuery_01() throws Exception {
+        genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
         String filepath = org.broad.igv.util.TestUtils.DATA_DIR + "gff/aliased.sorted.gff";
-        TestUtils.createIndex(filepath);
-        Genome genome = IgvTools.loadGenome(TestUtils.DATA_DIR + "genomes/hg18_truncated_aliased.genome", true);
 
-        GFFFeatureSource source = new GFFFeatureSource(filepath, genome);
         String chr = "chr5";
         int start = 120960 - 1;
         int end = 125258;
 
-        CloseableTribbleIterator<Feature> features = source.getFeatures(chr, start, end);
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
         int geneCount = 0;
         int rnaCount = 0;
-        while (features.hasNext()) {
+        for (Feature feat: features) {
 
 
-            Feature feat = features.next();
+            //Feature feat = features.next();
             assertEquals(chr, feat.getChr());
 
             BasicFeature bf = (BasicFeature) feat;
@@ -157,5 +149,200 @@ public class GFFFeatureSourceTest extends AbstractHeadlessTest {
 
         assertTrue(checkedHasPhase);
 
+    }
+
+    /**
+     * Test the canonical EDEN sample file as described at http://www.sequenceontology.org/gff3.shtml
+     * @throws Exception
+     */
+    @Test
+    public void testEDENSample() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/canonical.eden.sorted.gff3";
+        String chr = "ctg123";
+        int start = 1000 - 1;
+        int end = 10000;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(6, features.size());
+
+        /**
+         * We split different coding sequences / alternative translations as different features
+         */
+        int expmRNAFeats = 4;
+        int actmRNAFeats = 0;
+
+        List<String> expUniquemRNAIDs = Arrays.asList("mRNA00001","mRNA00002","mRNA00003");
+        Set<String> mRNAIds = new HashSet<String>(expUniquemRNAIDs.size());
+
+        Set<Integer> mRNA3CdStarts = new HashSet<Integer>(Arrays.asList(3300, 3390));
+
+        for(Feature feature: features){
+            BasicFeature bf = (BasicFeature) feature;
+
+            String ident = bf.getIdentifier();
+            List<Exon> exons = bf.getExons();
+            String type = bf.getType();
+            if(type.equals("mRNA")){
+                actmRNAFeats++;
+                mRNAIds.add(bf.getIdentifier());
+            }else if(type.equals("gene")){
+                assertEquals(bf.getIdentifier(), "gene00001");
+                continue;
+            }else{
+                continue;
+            }
+
+            Exon lastExon = exons.get(exons.size()-1);
+            assertEquals(7600, lastExon.getCdEnd());
+            assertEquals(lastExon.getCdStart(), lastExon.getStart());
+            assertEquals(9000, lastExon.getEnd());
+
+            int midCDSInd = 2;
+
+            if(ident.equals("mRNA00001")){
+                assertEquals(4, bf.getExonCount());
+                assertEquals(1201 - 1, exons.get(0).getCdStart());
+
+                Exon secExon = exons.get(1);
+                assertWholeExonCoding(secExon);
+                assertEquals(3000-1, secExon.getStart());
+                assertEquals(3902, secExon.getEnd());
+
+            }if(ident.equals("mRNA00002")){
+                assertEquals(3, bf.getExonCount());
+                assertEquals(1201 - 1, exons.get(0).getCdStart());
+                midCDSInd = 1;
+            }if(ident.equals("mRNA00003")){
+                assertEquals(4, bf.getExonCount());
+                boolean passedCdStart = false;
+                for(Exon exon: exons){
+                    if(exon.isUTR()){
+                        assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCodingLength());
+                        assertEquals("Entire exon is UTR but has coding region: " + exon.getName(), 0, exon.getCdEnd() - exon.getCdEnd());
+                    }else{
+                        //There are two coding sequences which differ only in start position
+                        if(!passedCdStart){
+                            int cdStart = exon.getCdStart();
+                            assertTrue("Exon cdStart not expected, was " + cdStart, mRNA3CdStarts.contains(cdStart));
+                            mRNA3CdStarts.remove(cdStart);
+                            passedCdStart = true;
+                        }
+                    }
+                    assertTrue(exon.getName().contains("exon0000"));
+                }
+                assertTrue(passedCdStart);
+            }
+
+            Exon midCDS = exons.get(midCDSInd);
+            assertEquals(4999, midCDS.getStart());
+            assertEquals(5500, midCDS.getEnd());
+            assertEquals(midCDS.getStart(), midCDS.getCdStart());
+            assertEquals(midCDS.getEnd(), midCDS.getCdEnd());
+        }
+
+        assertEquals(0, mRNA3CdStarts.size());
+
+        assertEquals(expmRNAFeats, actmRNAFeats);
+        assertEquals(expUniquemRNAIDs.size(), mRNAIds.size());
+        for(String expUniquemRNAID: expUniquemRNAIDs){
+            assertTrue("Expected mRNA id not found in file: " + expUniquemRNAID, mRNAIds.contains(expUniquemRNAID));
+        }
+
+    }
+
+    /**
+     * Test a GFF file which has CDS features, but no features of type "exon"
+     * @throws Exception
+     */
+    @Test
+    public void testNoExons() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/NC_009084.gff";
+        String chr = "NC_009084.1";
+        int start = 0;
+        int end = 11302;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(6, features.size());
+
+        for(Feature feat: features){
+            BasicFeature basicFeature = (BasicFeature) feat;
+            if(basicFeature.getType().equals("region")){
+                assertEquals("id0", basicFeature.getIdentifier());
+            }else if(basicFeature.getType().equals("gene")){
+                assertEquals(1, basicFeature.getExonCount());
+                assertTrue(basicFeature.getIdentifier().contains("gene"));
+                assertTrue(basicFeature.getName().contains("A1S_"));
+
+                Exon exon = basicFeature.getExons().get(0);
+                assertTrue("Exon name incorrect: " + exon.getName(), exon.getName().contains("YP_00"));
+
+                assertWholeExonCoding(exon);
+                assertEquals(0, exon.getReadingFrame());
+            }else{
+                throw new AssertionError("Unknown feature type: " + basicFeature.getType());
+            }
+
+        }
+    }
+
+    @Test
+    public void testtRNA() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/musa_trna.gff3";
+        String chr = "chr1";
+        int start = 26766;
+        int end = 26848;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(2, features.size());
+
+        BasicFeature gene = null, tRNA = null;
+        for(Feature feat: features){
+            if(((BasicFeature) feat).getType().equals("gene")){
+                gene = (BasicFeature) feat;
+            }else if(((BasicFeature) feat).getType().equals("tRNA")){
+                tRNA = (BasicFeature) feat;
+            }
+        }
+
+        assertEquals(gene.getIdentifier(), tRNA.getAttributes().get("Parent"));
+
+        assertEquals(1, tRNA.getExonCount());
+        Exon exon = tRNA.getExons().get(0);
+        assertEquals(tRNA.getIdentifier(), exon.getAttributes().get("Parent"));
+        assertWholeExonNonCoding(exon);
+    }
+
+    @Test
+    public void testMusa_GSMUA_Achr1G00030_001() throws Exception{
+        String filepath = TestUtils.DATA_DIR + "gff/musa_trna.gff3";
+        String chr = "chr1";
+        int start = 20900;
+        int end = 26317;
+
+        List<Feature> features = getGeneFeatures(filepath, chr, start, end);
+        assertEquals(3, features.size());
+
+        for(Feature feat: features){
+            BasicFeature bf = (BasicFeature) feat;
+            if(bf.getType().equals("mRNA")){
+                assertEquals(8, bf.getExonCount());
+                for(Exon exon: bf.getExons()){
+                    assertEquals(bf.getIdentifier(), exon.getAttributes().get("Parent"));
+                    assertWholeExonCoding(exon);
+                }
+            }
+        }
+    }
+
+    private void assertWholeExonCoding(Exon exon){
+        assertEquals(exon.getCdStart(), exon.getStart());
+        assertEquals(exon.getCdEnd(), exon.getEnd());
+        assertFalse(exon.isUTR());
+    }
+
+    private void assertWholeExonNonCoding(Exon exon){
+        assertEquals(exon.getEnd(), exon.getCdStart());
+        assertEquals(0, exon.getCodingLength());
+        assertTrue(exon.isUTR());
     }
 }
