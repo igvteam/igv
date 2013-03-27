@@ -55,7 +55,7 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
 
     private String createTempFileForAlignmentTrack(AlignmentTrack track, Argument argument, String chr, int start, int end, int zoom) throws IOException {
 
-        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getLoadedIntervals();
+        Collection<AlignmentInterval> loadedIntervals = track.getDataManager().getAllLoadedIntervals();
         List<Alignment> alignments = new ArrayList<Alignment>();
         for(AlignmentInterval interval: loadedIntervals){
             if(interval.overlaps(chr, start, end, zoom)){

@@ -329,24 +329,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         // Might be offscreen
         if (!context.getVisibleRect().intersects(downsampleRect)) return;
 
-        final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
-        if (loadedIntervals == null) return;
+        final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
+        if (loadedInterval == null) return;
 
         Graphics2D g = context.getGraphic2DForColor(Color.black);
 
-        for (AlignmentInterval loadedInterval : loadedIntervals) {
-            List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-            for (DownsampledInterval interval : intervals) {
-                int x0 = context.bpToScreenPixel(interval.getStart());
-                int x1 = context.bpToScreenPixel(interval.getEnd());
-                int w = Math.max(1, x1 - x0);
-                // If there is room, leave a gap on one side
-                if (w > 5) w--;
-                // Greyscale from 0 -> 100 downsampled
-                //int gray = 200 - interval.getCount();
-                //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
-                g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
-            }
+        List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+        for (DownsampledInterval interval : intervals) {
+            int x0 = context.bpToScreenPixel(interval.getStart());
+            int x1 = context.bpToScreenPixel(interval.getEnd());
+            int w = Math.max(1, x1 - x0);
+            // If there is room, leave a gap on one side
+            if (w > 5) w--;
+            // Greyscale from 0 -> 100 downsampled
+            //int gray = 200 - interval.getCount();
+            //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
+            g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
         }
     }
 
@@ -437,24 +435,24 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * Sort alignment rows based on alignments that intersect location
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
-        dataManager.sortRows(option, referenceFrame, location, tag);
+        dataManager.sortRows(option, referenceFrame.getName(), location, tag);
     }
 
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
-     * @see AlignmentDataManager#repackAlignments(org.broad.igv.ui.panel.ReferenceFrame, org.broad.igv.sam.AlignmentTrack.RenderOptions)
+     * @see AlignmentDataManager#repackAlignments(String, org.broad.igv.sam.AlignmentTrack.RenderOptions)
      * @param option
      * @param referenceFrame
      */
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame, renderOptions);
+            dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
         }
     }
 
     public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame, renderOptions);
+        dataManager.repackAlignments(referenceFrame.getName(), renderOptions);
     }
 
     /**
@@ -507,85 +505,84 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
         ArrayList<ArrayList<ReadInfo>> allelereadinfos = new ArrayList<ArrayList<ReadInfo>>();
-        for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
-            Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
-            while (alignmentIterator.hasNext()) {
-                Alignment alignment = alignmentIterator.next();
-                if ((alignment.isNegativeStrand() && !reverse) || (!alignment.isNegativeStrand() && !forward)) {
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+        Iterator<Alignment> alignmentIterator = interval.getAlignmentIterator();
+        while (alignmentIterator.hasNext()) {
+            Alignment alignment = alignmentIterator.next();
+            if ((alignment.isNegativeStrand() && !reverse) || (!alignment.isNegativeStrand() && !forward)) {
+                continue;
+            }
+            if (!alignment.contains(location)) {
+                continue;
+            }
+            // we don't want the beginning or the end of the alignment! HP might might give misleading results
+            if (alignment.getAlignmentStart() == location || alignment.getAlignmentEnd() == location) {
+                log.info(location + " for read " + alignment.getReadName() + " is at an end, not taking it");
+                continue;
+            }
+            // also throw away positions near the end if we have the same base until the end if the user preference is set that way
+            boolean hideFirstHPs = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
+
+            if (hideFirstHPs) {
+                char baseatpos = (char) alignment.getBase(location);
+                boolean hp = true;
+                for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
+                    if ((char) alignment.getBase(pos) != baseatpos) {
+                        hp = false;
+                        break;
+                    }
+                }
+                if (hp) {
+                    log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at START.");
                     continue;
                 }
-                if (!alignment.contains(location)) {
+                hp = true;
+                for (int pos = location + 1; pos < alignment.getAlignmentEnd(); pos++) {
+                    if ((char) alignment.getBase(pos) != baseatpos) {
+                        hp = false;
+                        break;
+                    }
+                }
+                if (hp) {
+                    log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at END");
                     continue;
                 }
-                // we don't want the beginning or the end of the alignment! HP might might give misleading results
-                if (alignment.getAlignmentStart() == location || alignment.getAlignmentEnd() == location) {
-                    log.info(location + " for read " + alignment.getReadName() + " is at an end, not taking it");
+            }
+            AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+            for (int i = 0; i < blocks.length; i++) {
+                AlignmentBlock block = blocks[i];
+                int posinblock = (int) location - block.getStart();
+                if (!block.contains((int) location) || !block.hasFlowSignals()) {
                     continue;
                 }
-                // also throw away positions near the end if we have the same base until the end if the user preference is set that way
-                boolean hideFirstHPs = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.IONTORRENT_FLOWDIST_HIDE_FIRST_HP);
 
-                if (hideFirstHPs) {
-                    char baseatpos = (char) alignment.getBase(location);
-                    boolean hp = true;
-                    for (int pos = alignment.getAlignmentStart(); pos < location; pos++) {
-                        if ((char) alignment.getBase(pos) != baseatpos) {
-                            hp = false;
-                            break;
-                        }
-                    }
-                    if (hp) {
-                        log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at START.");
-                        continue;
-                    }
-                    hp = true;
-                    for (int pos = location + 1; pos < alignment.getAlignmentEnd(); pos++) {
-                        if ((char) alignment.getBase(pos) != baseatpos) {
-                            hp = false;
-                            break;
-                        }
-                    }
-                    if (hp) {
-                        log.info("Got all same bases " + baseatpos + " for read " + alignment.getReadName() + " at END");
-                        continue;
-                    }
+                int flownr = block.getFlowSignalSubContext(posinblock).getFlowOrderIndex();
+                nrflows++;
+                short flowSignal = block.getFlowSignalSubContext(posinblock).getCurrentSignal();
+
+                char base = (char) block.getBase(posinblock);
+
+                int whichbase = bases.indexOf(base);
+                TreeMap<Short, Integer> map = null;
+                ArrayList<ReadInfo> readinfos = null;
+                if (whichbase < 0) {
+                    bases += base;
+                    map = new TreeMap<Short, Integer>();
+                    alleletrees.add(map);
+                    readinfos = new ArrayList<ReadInfo>();
+                    allelereadinfos.add(readinfos);
+                } else {
+                    map = alleletrees.get(whichbase);
+                    readinfos = allelereadinfos.get(whichbase);
                 }
-                AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                for (int i = 0; i < blocks.length; i++) {
-                    AlignmentBlock block = blocks[i];
-                    int posinblock = (int) location - block.getStart();
-                    if (!block.contains((int) location) || !block.hasFlowSignals()) {
-                        continue;
-                    }
-
-                    int flownr = block.getFlowSignalSubContext(posinblock).getFlowOrderIndex();
-                    nrflows++;
-                    short flowSignal = block.getFlowSignalSubContext(posinblock).getCurrentSignal();
-
-                    char base = (char) block.getBase(posinblock);
-
-                    int whichbase = bases.indexOf(base);
-                    TreeMap<Short, Integer> map = null;
-                    ArrayList<ReadInfo> readinfos = null;
-                    if (whichbase < 0) {
-                        bases += base;
-                        map = new TreeMap<Short, Integer>();
-                        alleletrees.add(map);
-                        readinfos = new ArrayList<ReadInfo>();
-                        allelereadinfos.add(readinfos);
-                    } else {
-                        map = alleletrees.get(whichbase);
-                        readinfos = allelereadinfos.get(whichbase);
-                    }
-                    ReadInfo readinfo = new ReadInfo(alignment.getReadName(), flownr, flowSignal, base);
-                    readinfos.add(readinfo);
-                    if (map.containsKey(flowSignal)) {
-                        // increment
-                        map.put(flowSignal, map.get(flowSignal) + 1);
-                    } else {
-                        // insert
-                        map.put(flowSignal, 1);
-                    }
+                ReadInfo readinfo = new ReadInfo(alignment.getReadName(), flownr, flowSignal, base);
+                readinfos.add(readinfo);
+                if (map.containsKey(flowSignal)) {
+                    // increment
+                    map.put(flowSignal, map.get(flowSignal) + 1);
+                } else {
+                    // insert
+                    map.put(flowSignal, 1);
                 }
             }
         }
@@ -719,14 +716,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         if (downsampleRect != null && y > downsampleRect.y && y <= downsampleRect.y + downsampleRect.height) {
-            Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals(frame);
-            if (loadedIntervals == null) {
+            AlignmentInterval loadedInterval = dataManager.getLoadedInterval(frame.getName());
+            if (loadedInterval == null) {
                 return null;
             } else {
-                for (AlignmentInterval loadedInterval : loadedIntervals) {
-                    List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
-                    DownsampledInterval interval = (DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
-                    if (interval != null) return interval.getValueString();
+                List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
+                DownsampledInterval interval = (DownsampledInterval) FeatureUtils.getFeatureAt(position, 0, intervals);
+                if (interval != null){
+                    return interval.getValueString();
                 }
                 return null;
             }
@@ -953,7 +950,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions.setPairedArcView(option);
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            dataManager.repackAlignments(frame, renderOptions);
+            dataManager.repackAlignments(frame.getName(), renderOptions);
         }
         refresh();
     }

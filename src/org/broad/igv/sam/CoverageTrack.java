@@ -54,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -167,27 +168,31 @@ public class CoverageTrack extends AbstractTrack {
 
     public void rescale() {
         if (autoScale & dataManager != null) {
-            final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals();
-            if (loadedIntervals != null) {
-                rescaleIntervals(loadedIntervals);
+            List<ReferenceFrame> frameList = FrameManager.getFrames();
+            List<AlignmentInterval> intervals = new ArrayList<AlignmentInterval>(frameList.size());
+            for(ReferenceFrame frame: frameList){
+                intervals.add(dataManager.getLoadedInterval(frame.getName()));
             }
+            rescaleIntervals(intervals);
         }
     }
 
     public void rescale(ReferenceFrame frame) {
         if (autoScale & dataManager != null) {
-            rescaleIntervals(dataManager.getLoadedIntervals(frame));
+            rescaleIntervals(Arrays.asList(dataManager.getLoadedInterval(frame.getName())));
         }
     }
 
-    private void rescaleIntervals(Collection<AlignmentInterval> intervals) {
-        if (intervals == null) return;
-        for (AlignmentInterval interval : intervals) {
-            int max = Math.max(10, interval.getMaxCount());
-            DataRange.Type type = getDataRange().getType();
-            super.setDataRange(new DataRange(0, 0, max));
-            getDataRange().setType(type);
+    private void rescaleIntervals(List<AlignmentInterval> intervals) {
+        if (intervals == null || intervals.size() == 0) return;
+
+        int max = 10;
+        for(AlignmentInterval interval: intervals){
+            max = Math.max(max, interval.getMaxCount());
         }
+        DataRange.Type type = getDataRange().getType();
+        super.setDataRange(new DataRange(0, 0, max));
+        getDataRange().setType(type);
     }
 
 
@@ -198,16 +203,14 @@ public class CoverageTrack extends AbstractTrack {
 
         if (context.getScale() < minVisibleScale && !context.getChr().equals(Globals.CHR_ALL)) {
             //
-            Collection<AlignmentInterval> intervals = null;
+            AlignmentInterval interval = null;
             if (dataManager != null) {
                 dataManager.preload(context, renderOptions, true);
-                intervals = dataManager.getLoadedIntervals(context.getReferenceFrame());
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame().getName());
             }
-            if (intervals != null) {
-                for (AlignmentInterval interval : intervals) {
-                    if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
-                        intervalRenderer.paint(context, rect, interval.getCounts());
-                    }
+            if (interval != null) {
+                if (interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
+                    intervalRenderer.paint(context, rect, interval.getCounts());
                 }
             }
         } else if (dataSource != null) {
@@ -261,15 +264,14 @@ public class CoverageTrack extends AbstractTrack {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
-            Collection<AlignmentInterval> intervals = dataManager.getLoadedIntervals(frame);
-            if (intervals == null) return null;
-            for (AlignmentInterval interval : intervals) {
-                if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-                    final int pos = (int) position;
-                    AlignmentCounts counts = interval.getAlignmentCounts(pos);
-                    if (counts != null) {
-                        return counts.getValueStringAt(pos);
-                    }
+            AlignmentInterval interval = dataManager.getLoadedInterval(frame.getName());
+            if (interval == null) return null;
+
+            if (interval.contains(chr, (int) position, (int) position)) {
+                final int pos = (int) position;
+                AlignmentCounts counts = interval.getAlignmentCounts(pos);
+                if (counts != null) {
+                    return counts.getValueStringAt(pos);
                 }
             }
         } else {

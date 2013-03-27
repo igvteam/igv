@@ -37,6 +37,8 @@ import static junit.framework.Assert.*;
  */
 public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
+    private static String frameName = "testFrame";
+
     @Test
     public void testPreloadPanning() throws Exception {
 
@@ -46,11 +48,10 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         final int end = start + 2 * halfwidth;
         int panInterval = halfwidth;
 
-        int numPans = 20 * (end - start) / (panInterval) * AlignmentDataManager.MAX_INTERVAL_MULTIPLE;
-        Collection<AlignmentInterval> intervals = AlignmentDataManagerTest.performPanning(chr, start, end, panInterval, numPans);
+        int numPans = 20 * (end - start) / (panInterval) * 5;
+        AlignmentInterval interval = AlignmentDataManagerTest.performPanning(chr, start, end, panInterval, numPans);
 
-        assertEquals(1, intervals.size());
-
+        assertNotNull(interval);
     }
 
     @Test
@@ -63,7 +64,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
 
         //Load separate intervals, check they don't merge
         AlignmentDataManager manager = getManager171();
-        ReferenceFrame frame = new ReferenceFrame("test");
+        ReferenceFrame frame = new ReferenceFrame(frameName);
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         frame.setBounds(0, end - start);
 
@@ -85,12 +86,10 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
     }
 
     private static void assertManagerHasInterval(AlignmentDataManager manager, String chr, int start, int end) {
-        Collection<AlignmentInterval> intervals = manager.getLoadedIntervals();
+        AlignmentInterval interval = manager.getLoadedInterval(frameName);
+        assertNotNull(interval);
 
-        boolean haveInterval = false;
-        for (AlignmentInterval interval : intervals) {
-            haveInterval |= interval.contains(chr, start, end);
-        }
+        boolean haveInterval = interval.contains(chr, start, end);
         assertTrue(haveInterval);
     }
 
@@ -113,13 +112,13 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      * @return
      * @throws IOException
      */
-    public static Collection<AlignmentInterval> performPanning(String chr, int start, int end, int panInterval, int numPans) throws IOException {
+    public static AlignmentInterval performPanning(String chr, int start, int end, int panInterval, int numPans) throws IOException {
 
         AlignmentDataManager manager = getManager171();
 
         int shift = 0;
 
-        ReferenceFrame frame = new ReferenceFrame("test");
+        ReferenceFrame frame = new ReferenceFrame(frameName);
         AlignmentTrack.RenderOptions renderOptions = new AlignmentTrack.RenderOptions();
         frame.setBounds(0, end - start);
         RenderContextImpl context = new RenderContextImpl(null, null, frame, null);
@@ -134,7 +133,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
             assertManagerHasInterval(manager, chr, locus.getStart(), locus.getEnd());
         }
 
-        return manager.getLoadedIntervals();
+        return manager.getLoadedInterval(frameName);
 
     }
 

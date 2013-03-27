@@ -20,6 +20,8 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import java.util.*;
 
 /**
+ *
+ * @deprecated We don't cache alignment intervals anymore
  * Used for caching data oriented in a genomic interval.
  * Data is stored by sequence name (string), start, end, and zoom.
  * <p/>
@@ -27,6 +29,7 @@ import java.util.*;
  * User: jacob
  * Date: 2012-Jul-13
  */
+@Deprecated
 public class CachedIntervals<T extends Interval> {
 
     private Map<String, List<T>> map = Collections.synchronizedMap(new HashMap<String, List<T>>());

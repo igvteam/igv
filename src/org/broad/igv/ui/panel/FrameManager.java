@@ -34,13 +34,15 @@ public class FrameManager {
     private static ReferenceFrame defaultFrame;
     private static boolean exomeMode = false;
 
+    public static final String DEFAULT_FRAME_NAME = "genome";
+
     static {
         frames.add(getDefaultFrame());
     }
 
     public synchronized static ReferenceFrame getDefaultFrame() {
         if (defaultFrame == null) {
-            defaultFrame = new ReferenceFrame("genome");
+            defaultFrame = new ReferenceFrame(DEFAULT_FRAME_NAME);
             //TODO Would rather put this in IGV.createFrame, but since defaultFrame gets
             //changed we do it here
             if(IGV.hasInstance()){

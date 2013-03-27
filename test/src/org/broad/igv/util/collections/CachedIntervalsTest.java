@@ -17,19 +17,20 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentDataManagerTest;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * User: jacob
  * Date: 2012-Oct-16
  */
+@Ignore("We don't use this class anywhere, should maybe remove it")
 public class CachedIntervalsTest extends AbstractHeadlessTest {
 
     private CachedIntervals cachedIntervals;
