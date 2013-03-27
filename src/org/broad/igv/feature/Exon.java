@@ -92,7 +92,7 @@ public class Exon extends AbstractFeature implements IExon {
     public Exon(String chr, int start, int end, Strand strand) {
         super(chr, start, end, strand);
 
-        // By default the entre exon is a coding region
+        // By default the entire exon is a coding region
         this.codingStart = start;
         this.codingEnd = end;
     }
@@ -185,13 +185,15 @@ public class Exon extends AbstractFeature implements IExon {
         }
     }
 
-
-    public LocusScore copy() {
+    public Exon copy() {
         Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
         copy.seqBytes = this.seqBytes;
         copy.aminoAcidSequence = this.aminoAcidSequence;
         copy.codingEnd = this.codingEnd;
         copy.codingStart = this.codingStart;
+        copy.name = this.name;
+        copy.utr = this.utr;
+        copy.mrnaBase = this.mrnaBase;
         return copy;
     }
 

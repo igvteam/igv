@@ -1,0 +1,17 @@
+##gff-version 3
+#!gff-spec-version 1.20
+#!processor NCBI annotwriter
+##sequence-region NC_009084.1 1 11302
+##species http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=400667
+NC_009084.1	RefSeq	region	1	11302	.	+	.	ID=id0;Dbxref=taxon:400667,ATCC:17978;Is_circular=true;gbkey=Src;genome=plasmid;mol_type=genomic DNA;plasmid-name=pAB2;strain=ATCC 17978
+NC_009084.1	RefSeq	gene	1	951	.	+	.	ID=gene0;Name=A1S_3472;Dbxref=GeneID:4916900;gbkey=Gene;locus_tag=A1S_3472
+NC_009084.1	RefSeq	CDS	1	951	.	+	0	ID=cds0;Name=YP_001083095.1;Parent=gene0;Dbxref=Genbank:YP_001083095.1,GeneID:4916900;gbkey=CDS;product=DNA replication protein;protein_id=YP_001083095.1;transl_table=11
+NC_009084.1	RefSeq	gene	3048	4262	.	+	.	ID=gene1;Name=A1S_3473;Dbxref=GeneID:4916899;gbkey=Gene;locus_tag=A1S_3473
+NC_009084.1	RefSeq	CDS	3048	4262	.	+	0	ID=cds1;Name=YP_001083096.1;Parent=gene1;Dbxref=Genbank:YP_001083096.1,GeneID:4916899;gbkey=CDS;product=hypothetical protein;protein_id=YP_001083096.1;transl_table=11
+NC_009084.1	RefSeq	gene	4357	5133	.	+	.	ID=gene2;Name=A1S_3474;Dbxref=GeneID:4916901;gbkey=Gene;locus_tag=A1S_3474
+NC_009084.1	RefSeq	CDS	4357	5133	.	+	0	ID=cds2;Name=YP_001083097.1;Parent=gene2;Dbxref=Genbank:YP_001083097.1,GeneID:4916901;gbkey=CDS;product=hypothetical protein;protein_id=YP_001083097.1;transl_table=11
+NC_009084.1	RefSeq	gene	6197	8608	.	+	.	ID=gene3;Name=A1S_3475;Dbxref=GeneID:4916903;gbkey=Gene;locus_tag=A1S_3475
+NC_009084.1	RefSeq	CDS	6197	8608	.	+	0	ID=cds3;Name=YP_001083098.1;Parent=gene3;Dbxref=Genbank:YP_001083098.1,GeneID:4916903;gbkey=CDS;product=hypothetical protein;protein_id=YP_001083098.1;transl_table=11
+NC_009084.1	RefSeq	gene	8705	9403	.	+	.	ID=gene4;Name=A1S_3476;Dbxref=GeneID:4916902;gbkey=Gene;locus_tag=A1S_3476
+NC_009084.1	RefSeq	CDS	8705	9403	.	+	0	ID=cds4;Name=YP_001083099.1;Parent=gene4;Dbxref=Genbank:YP_001083099.1,GeneID:4916902;gbkey=CDS;product=secretory lipase;protein_id=YP_001083099.1;transl_table=11
+###

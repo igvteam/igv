@@ -85,13 +85,11 @@ public class GFFParser implements FeatureParser {
     }
 
     public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
-        List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
         int lineNumber = 0;
         GFFCodec codec = new GFFCodec(genome);
+        GFFFeatureSource.GFFCombiner combiner = new GFFFeatureSource.GFFCombiner();
         try {
-
-
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
 
@@ -101,10 +99,10 @@ public class GFFParser implements FeatureParser {
                     try {
                         Feature f = codec.decode(line);
                         if (f != null) {
-                            features.add(f);
+                            combiner.addFeature((BasicFeature) f);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        log.error("Error parsing: " + line, e);
                     }
                 }
             }
@@ -122,7 +120,7 @@ public class GFFParser implements FeatureParser {
         trackProperties = TrackLoader.getTrackProperties(codec.getHeader());
 
         //Combine the features
-        List<Feature> iFeatures = (new GFFFeatureSource.GFFCombiner()).combineFeatures(features.iterator());
+        List<Feature> iFeatures = combiner.combineFeatures();
 
         if (IGV.hasInstance()) {
             FeatureDB.addFeatures(iFeatures);

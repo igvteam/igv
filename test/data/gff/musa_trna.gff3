@@ -1,0 +1,26 @@
+##gff-version 3
+##name=Banana (Musa acuminata)
+##source=http://banana-genome.cirad.fr/download.php downloaded=2012-08-17
+##Sampled for testing purposes
+chr1	manual_curation	gene	20901	26316	.	-	1	ID=GSMUA_Achr1G00030_001;Name=GSMUA_Achr1G00030_001
+chr1	manual_curation	mRNA	20901	26316	.	-	1	ID=GSMUA_Achr1T00030_001;Name=GSMUA_Achr1T00030_001;Parent=GSMUA_Achr1G00030_001
+chr1	manual_curation	polypeptide	20901	26316	.	-	1	Dbxref=TrEMBL:Q9M873,TrEMBL:Q93V85,TrEMBL:Q8LNT1,TrEMBL:D7KZK2,TrEMBL:C5WXC6,TrEMBL:B9SX37,TrEMBL:A3C623,TrEMBL:A2Z8W2,TIGR:Os12g18960.2,TIGR:Os12g18960.1,TIGR:Os10g35140.1,TIGR:Os08g44750.1,TIGR:Os08g06640.1,TIGR:Os03g53350.1,TIGR:Os02g02310.1,TIGR:Os01g10580.1,SwissProt:Q56072,SwissProt:P74436,SwissProt:P42194,SwissProt:P31125,SwissProt:O34416,SwissProt:O32256,SwissProt:O29973,SwissProt:O29740,InterPro:IPR000620;Derives_from=GSMUA_Achr1T00030_001;ID=GSMUA_Achr1P00030_001;Name=GSMUA_Achr1P00030_001;Ontology_term=CC_gene:AF_0510,CC_gene:eamA,CC_gene:pecM,CC_gene:AF_0266,CC_gene:yvbV,CC_gene:yoaV,CC_gene:sll0355,CC_functional_completeness:complete,PRODUCT:Uncharacterized transporter sll0355,GO:0016020,CC_evidence_code:ISS,CC_status:in_progress,CC_evidence:automatic,CC_EC_number:no_EC_number;alternative_splicing=to_fill;annotator_comment=to_fill;date=Tue Dec  7 21:17:29 CET 2010;inference={gaze};note=GSMUA_Achr1T00030_001~ Uncharacterized transporter sll0355~ sll0355~ complete;original_location=complement(join(26239..26316%2C25888..26172%2C25695..25742%2C24842..24964%2C23853..24002%2C21501..21672%2C21221..21281%2C20901..21009));owner=musa
+chr1	manual_curation	exon	20901	21009	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	20901	21009	.	-	2	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	21221	21281	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	21221	21281	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	21501	21672	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	21501	21672	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	23853	24002	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	23853	24002	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	24842	24964	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	24842	24964	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	25695	25742	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	25695	25742	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	25888	26172	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	25888	26172	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	exon	26239	26316	.	-	1	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	CDS	26239	26316	.	-	0	Parent=GSMUA_Achr1T00030_001
+chr1	manual_curation	gene	26767	26847	.	+	1	ID=GSMUA_Achr1G00032_001;Name=GSMUA_Achr1G00032_001
+chr1	manual_curation	tRNA	26767	26847	.	+	1	ID=GSMUA_Achr1T00032_001;Name=GSMUA_Achr1T00032_001;Parent=GSMUA_Achr1G00032_001
+chr1	manual_curation	exon	26767	26847	.	+	1	Parent=GSMUA_Achr1T00032_001
