@@ -17,7 +17,10 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
-import org.broad.igv.data.cufflinks.*;
+import org.broad.igv.data.cufflinks.CufflinksDataSource;
+import org.broad.igv.data.cufflinks.CufflinksParser;
+import org.broad.igv.data.cufflinks.CufflinksTrack;
+import org.broad.igv.data.cufflinks.CufflinksValue;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.rnai.RNAIDataSource;
@@ -113,6 +116,7 @@ public class TrackLoader {
     public List<Track> load(ResourceLocator locator, Genome genome) {
 
         final String path = locator.getPath();
+        log.info("Loading resource, path " + path);
         try {
             String typeString = locator.getType();
             if (typeString == null) {
