@@ -11,8 +11,6 @@
 
 package org.broad.igv.track;
 
-import org.broad.igv.dev.api.api;
-
 import javax.swing.*;
 import java.util.Collection;
 
@@ -21,8 +19,8 @@ import java.util.Collection;
  *
  * User: jacob
  * Date: 2012-Dec-21
+ * @api
  */
-@api
 public interface TrackMenuItemBuilder {
 
     /**

@@ -33,7 +33,6 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.dev.affective.AffectiveGenome;
 import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.feature.RegionOfInterest;
@@ -136,8 +135,8 @@ public class IGV {
     /**
      * Add an entry to the "Tools" menu
      * @param menu
+     * @api
      */
-    @api
     public void addOtherToolMenu(JComponent menu){
         otherToolMenus.add(menu);
         if(menuBar != null) menuBar.refreshToolsMenu();
@@ -192,8 +191,8 @@ public class IGV {
      * The IGV GUI has one master frame containing all other elements.
      * This method returns that frame.
      * @return
+     * @api
      */
-    @api
     public static Frame getMainFrame() {
         return getInstance().mainFrame;
     }
@@ -967,8 +966,8 @@ public class IGV {
      * @param paintOffscreen Whether to include offScreen data in the snapshot. Components must implement
      *                       the {@link Paintable} interface for this to work
      * @throws IOException
+     * @api
      */
-    @api
     public String createSnapshotNonInteractive(Component target, File file, boolean paintOffscreen) throws IOException {
 
         log.debug("Creating snapshot: " + file.getName());
@@ -1421,8 +1420,8 @@ public class IGV {
      * Used for port command options
      *
      * @param locus
+     * @api
      */
-    @api
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
     }
@@ -1602,8 +1601,8 @@ public class IGV {
      * Add tracks to the specified panel
      * @param tracks
      * @param panelName
+     * @api
      */
-    @api
     public void addTracks(List<Track> tracks, PanelName panelName){
         TrackPanel panel = getTrackPanel(panelName.getName());
         panel.addTracks(tracks);
@@ -1799,8 +1798,8 @@ public class IGV {
     /**
      * Group all alignment tracks by the specified option.
      * @param option
+     * @api
      */
-    @api
     public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
         for (Track t : getAllTracks()) {
             if (t instanceof AlignmentTrack) {

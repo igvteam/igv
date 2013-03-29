@@ -385,11 +385,11 @@
                  author="true"
                  version="true"
                  use="true"
-                 windowtitle="Test API">
+                 windowtitle="IGV API Documentation">
 
             <tag name="api_since" description="Since: " scope="all"/>
             <tag name="api_until" description="Until: "/>
-            <doclet name="de.kruis.padoclet.PublishedApiDoclet" path="${basedir}/ant/publishedApiDoclet1.5-0.4.jar">
+            <doclet name="de.kruis.padoclet.PublishedApiDoclet" path="${basedir}/docs/lib/publishedApiDoclet1.5-0.4.jar">
                 <param name="-padDefaultIsExclude"/>
                 <param name="-padFilterDefault" value=".*"/>
                 <param name="-padExcludeTag" value="noapi"/>

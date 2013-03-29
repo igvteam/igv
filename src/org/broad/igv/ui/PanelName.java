@@ -11,15 +11,13 @@
 
 package org.broad.igv.ui;
 
-import org.broad.igv.dev.api.api;
-
 /**
  * Identifier for each track panel which is displayed
  * in the IGV window
  * User: jacob
  * Date: 2013-Jan-31
+ * @api
  */
-@api
 public enum PanelName {
     FEATURE_PANEL(IGV.FEATURE_PANEL_NAME),
     DATA_PANEL(IGV.DATA_PANEL_NAME);
