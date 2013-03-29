@@ -37,7 +37,6 @@ public class VCFVariant implements Variant {
     VariantContext variantContext;
     List<Allele> alternateAlleles;
     private ZygosityCount zygosityCount;
-    private boolean isIndel;
 
     String chr;
     private double[] alleleFreqs;
@@ -47,7 +46,6 @@ public class VCFVariant implements Variant {
     public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
         this.chr = chr;
-        isIndel = variantContext.getType() == VariantContext.Type.INDEL;
         init();
     }
 
@@ -235,7 +233,7 @@ public class VCFVariant implements Variant {
 
     @Override
     public int getStart() {
-        return isIndel ? variantContext.getStart() : variantContext.getStart() - 1;
+        return variantContext.isIndel() ? variantContext.getStart() : variantContext.getStart() - 1;
     }
 
     @Override
