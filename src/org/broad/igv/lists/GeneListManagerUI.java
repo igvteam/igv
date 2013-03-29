@@ -912,8 +912,8 @@ public class GeneListManagerUI extends JDialog {
      * and taking some action based on that. Listeners
      * implementing this interface can be used as callbacks
      * once a GeneList is selected from GeneListManagerUI
-     * User: jacob
-     * Date: 2013-Jan-04
+     * @author jacob
+     * @date 2013-Jan-04
      * @api
      */
     public interface GeneListListener {

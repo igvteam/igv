@@ -22,8 +22,8 @@ import java.util.List;
  * A FeatureSource wrapper which provides caching.
  * The cache is only cleared when the source is closed.
  *
- * User: jacob
- * Date: 2012/05/15
+ * @author jacob
+ * @date 2012/05/15
  */
 public class CachingFeatureSource extends AbstractCacher implements FeatureSource {
 

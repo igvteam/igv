@@ -23,7 +23,6 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.dev.affective.AffectiveUtils;
-import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
@@ -1138,8 +1137,8 @@ public class GenomeManager {
      * IGV always has exactly 1 genome loaded at a time.
      * This returns the currently loaded genome
      * @return
+     * @api
      */
-    @api
     public Genome getCurrentGenome() {
         return currentGenome;
     }

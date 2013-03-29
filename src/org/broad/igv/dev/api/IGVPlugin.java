@@ -13,8 +13,8 @@ package org.broad.igv.dev.api;
 
 /**
  * Interface to implement to interact with IGV GUI.
- * User: jacob
- * Date: 2012-Dec-21
+ * @author  jacob
+ * @date 2012-Dec-21
  * @api
  */
 

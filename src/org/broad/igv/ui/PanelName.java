@@ -14,8 +14,8 @@ package org.broad.igv.ui;
 /**
  * Identifier for each track panel which is displayed
  * in the IGV window
- * User: jacob
- * Date: 2013-Jan-31
+ * @author jacob
+ * @date 2013-Jan-31
  * @api
  */
 public enum PanelName {
