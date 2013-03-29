@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/*
+ *  PublishedApiDoclet - a filter proxy for any javadoc doclet
+ *  
+ *  Copyright (C) 2006  Anselm Kruis <a.kruis@science-computing.de>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
+-->
+
+<project name="PublishedApiDoclet" default="jar">
+    <description>
+        This project is a JavaDoc doclet, that acts as a filter to select the 
+    	subset of a java API, that will be documented by another doclet. 
+    	Technically the PublishedApiDoclet is a filterind doclet proxy.
+    </description>
+
+	<!-- the program version -->
+	<property name="pad.version" value="0.4"/>
+	
+	<!-- the java version. This branch supports only 1.5 -->
+	<property name="pad.javaversion" value="1.5"/>
+	
+	<property name="src" location="src"/>
+	<property name="bin" location="bin"/>
+	<property name="doc" location="doc"/>
+
+	<property name="pad.jarfile" location="publishedApiDoclet${pad.javaversion}-${pad.version}.jar"/>
+	
+    <!-- ================================= 
+          target: jar              
+         ================================= -->
+    <target name="jar" depends="compile, javadoc" description="build the jar archive">
+    	<delete file="${pad.jarfile}"/>
+        <jar destfile="${pad.jarfile}" 
+        	manifest="${src}/MANIFEST.MF" 
+        	index="true"
+        	duplicate="fail">
+        	<manifest>
+        		<attribute name="Specification-Version" value="${pad.javaversion}"/>
+        		<attribute name="Implementation-Version" value="${pad.javaversion}-${pad.version}"/> 
+        	</manifest>
+       
+			<fileset dir="${bin}">
+			    <include name="**/*.class"/>
+    			<exclude name="exclude"/>
+			</fileset>
+        	<zipfileset dir="${doc}" prefix="docs"/>
+			<zipfileset dir="${basedir}" prefix="source" includes="src/**/* *.xml *.txt *.odt">
+			</zipfileset>        	
+        </jar>
+    </target>
+
+    <!-- ================================= 
+          target: compile                  
+         ================================= -->
+    <target name="compile">
+    	<javac srcdir="${src}"
+         destdir="${bin}"
+         classpath="${java.home}/lib/tools.jar"
+         debug="on"
+    	 source="${pad.javaversion}"
+	     target="${pad.javaversion}"
+		/>
+    </target>
+
+	<!-- ================================= 
+          target: javadoc                  
+         ================================= -->
+    <target name="javadoc" depends="compile">
+    	<delete dir="${doc}"/>
+        <javadoc access="private" 
+            	author="true" 
+            	destdir="${doc}" 
+            	nodeprecated="false" 
+            	nodeprecatedlist="false" 
+            	noindex="false" 
+            	nonavbar="false" 
+            	notree="false" 
+            	packagenames="de.kruis.padoclet" 
+            	source="${pad.javaversion}" 
+            	sourcepath="${src}" 
+            	splitindex="false" 
+            	use="true" 
+            	version="true" 
+            	verbose="true"
+            	>
+				<packageset dir="${src}">
+					<include name="**/*"/>
+				</packageset>
+            	<doclet name="de.kruis.padoclet.PublishedApiDoclet" path="bin">
+            		<param name="-padFilterDefault" value="src"/>
+            		<param name="-padDefaultIsExclude"/>
+            		<param name="-padWarnOn" value="all"/>
+            	</doclet>
+            	</javadoc>
+        </target>
+</project>
+

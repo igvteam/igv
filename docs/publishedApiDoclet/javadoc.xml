@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/*
+ *  PublishedApiDoclet - a filter proxy for any javadoc doclet
+ *  
+ *  Copyright (C) 2006  Anselm Kruis <a.kruis@science-computing.de>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
+-->
+
+<project default="javadoc">
+	
+	<property name="doc" location="doc_published"/>
+	<property name="doc_intern" location="doc_intern"/>
+	<property name="pad.javaversion" value="1.5"/>
+	
+    <target name="javadoc">
+    	<echo message="Just display the help messages"/>
+        <javadoc access="public" 
+        	author="true" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false" 
+        	source="${pad.javaversion}" 
+        	sourcepath="src" 
+        	splitindex="false" 
+        	version="true" 
+        	verbose="true"
+        	>
+			<packageset dir="src">
+				<include name="**/*"/>
+			</packageset>
+        	<doclet name="de.kruis.padoclet.PublishedApiDoclet" path="bin">
+        		<!-- specify the doclet -->
+        		<param name="-J-DPublishedApiDoclet.delegate=de.kruis.padoclet.RefCheckDoclet"/>
+        		<!-- show the help message -->
+        		<param name="-padHelp"/>
+        		<!-- show the help message -->
+        		<param name="-rcHelp"/>
+			</doclet>
+        </javadoc>
+
+    	<delete dir="${doc}" />
+    	<echo message="Running doclet de.kruis.padoclet.RefCheckDoclet for published doc"/>
+        <javadoc access="public" 
+        	author="true" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false" 
+        	source="${pad.javaversion}" 
+        	sourcepath="src" 
+        	splitindex="false" 
+        	version="true" 
+        	verbose="true"
+        	>
+			<packageset dir="src">
+				<include name="**/*"/>
+			</packageset>
+        	<doclet name="de.kruis.padoclet.PublishedApiDoclet" path="bin">
+        		<!-- specify the doclet -->
+        		<param name="-J-DPublishedApiDoclet.delegate=de.kruis.padoclet.RefCheckDoclet"/>
+        		<!-- priority filter: accept tags, if the text matches "sample" -->
+        		<param name="-padFilterDefault" value="sample\d*"/>
+        		<!-- define two exclude tags: @pad.exclude and @undocumented -->
+        		<param name="-padExcludeTag" value="pad.exclude,undocumented"/>
+			</doclet>
+        </javadoc>
+    	<echo message="Running RefCheck and standard doclet for published doc"/>
+        <javadoc access="public" 
+        	author="true" 
+        	destdir="${doc}" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false" 
+        	source="${pad.javaversion}" 
+        	sourcepath="src" 
+        	splitindex="false" 
+        	use="true" 
+        	version="true" 
+        	verbose="true"
+        	>
+			<packageset dir="src">
+				<include name="**/*"/>
+			</packageset>
+        	<doclet name="de.kruis.padoclet.PublishedApiDoclet" path="bin">
+        		<!-- priority filter: accept tags, if the text matches "sample" -->
+        		<param name="-padFilterDefault" value="sample\d*"/>
+        		<!-- define two exclude tags: @pad.exclude and @undocumented -->
+        		<param name="-padExcludeTag" value="pad.exclude,undocumented"/>
+        		<!-- enable the reference checks -->
+        		<param name="-padWarnOn"  value="all"/>
+			</doclet>
+        </javadoc>
+
+    	<delete dir="${doc_intern}" />
+    	<echo message="Running RefCheck and standard doclet for internal doc"/>
+        <javadoc access="private" 
+        	author="true" 
+        	destdir="${doc_intern}" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false" 
+        	source="${pad.javaversion}" 
+        	sourcepath="src" 
+        	splitindex="false" 
+        	use="true" 
+        	version="true" 
+        	verbose="true"
+        	>
+			<packageset dir="src">
+				<include name="**/*"/>
+			</packageset>
+        	<doclet name="de.kruis.padoclet.PublishedApiDoclet" path="bin">
+        		<!-- priority filter: accept tags, if the text matches "sample" -->
+        		<param name="-padFilterDefault" value="sample\d*"/>
+        		<param name="-padDefaultPriority" value="2"/>
+        		<!-- define two exclude tags: @pad.exclude and @undocumented -->
+        		<param name="-padExcludeTag" value="pad.exclude,undocumented"/>
+        		<!-- enable the reference checks -->
+        		<param name="-padWarnOn"  value="all"/>
+			</doclet>
+        </javadoc>
+    </target>
+</project>

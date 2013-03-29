@@ -1,0 +1,40 @@
+<!-- 
+/*
+ *  PublishedApiDoclet - a filter proxy for any javadoc doclet
+ *  
+ *  Copyright (C) 2006, 2010  Anselm Kruis <a.kruis@science-computing.de>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
+-->
+<html><head></head>
+<body>
+<p>This packages contains javadoc examples only.</p>
+
+<p>The main purpose of this package is to provide you with some examples
+for the usage of the PublishedApiDoclet tags. Please be aware, that these
+examples currently do not fully cover the posibilities of PublishedApiDoclet.
+Extentions are highly welcome. </p>
+
+<p>Note: 
+ Every @pad...-tag within this package and its subpackages
+carries the <code>sample</code> label. Therefore I can use the 
+<code>--padDefaultIsExclude</code> option, to exclude the sample from the 
+javadoc documentation of the real source of PublishedApiDoclet.   
+To format the sample documentation, I use <code>--padFilterDefault sample</code>.
+</p>
+@pad.exclude src
+</body>
+</html>
