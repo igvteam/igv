@@ -136,6 +136,14 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
             String[] sVal = null;
             String ts = null;
             switch (arg.getType()) {
+                case BOOL:
+                    boolean selected = (Boolean) entry.getValue();
+                    if(selected){
+                        //Output the cmd_arg, but it doesn't take an argument
+                    }else{
+                        continue;
+                    }
+                    break;
                 case LONGTEXT:
                 case TEXT:
                     ts = (String) entry.getValue();
@@ -174,7 +182,9 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
 
                     fullCmd.add(cmdArg);
                 }
-                fullCmd.addAll(Arrays.asList(sVal));
+                if(sVal != null){
+                    fullCmd.addAll(Arrays.asList(sVal));
+                }
             }
         }
 

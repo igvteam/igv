@@ -18,6 +18,8 @@
             <arg name="Max Intron Length" cmd_arg="--max-intron-length" type="TEXT" default="300000"/>
             <arg name="Min Isoform Fraction" cmd_arg="--min-isoform-fraction" type="TEXT" default="0.00001"/>
             <arg name="Pre mRNA Fraction" cmd_arg="--pre-mrna-fraction" default="0.15" type="TEXT"/>
+            <arg name="Perform Quartile Normalization" cmd_arg="--upper-quartile-norm" default="false" type="BOOL"/>
+            <arg name="Use multi-read correct" cmd_arg="--multi-read-correct" default="false" type="BOOL"/>
             <arg name="Other arguments" cmd_arg="" type="LONGTEXT" default=""/>
             <arg name="Track" cmd_arg="" type="ALIGNMENT_TRACK"/>
             <parser source="$outdir/transcripts.gtf" format="gtf"/>

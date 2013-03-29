@@ -75,6 +75,7 @@ public class Argument{
 
     @XmlEnum
     public enum InputType {
+        BOOL,
         TEXT,
         LONGTEXT,
         FEATURE_TRACK,
@@ -134,6 +135,10 @@ public class Argument{
 
     public boolean isOutput() {
         return output;
+    }
+
+    public void setOutput(boolean output){
+        this.output = output;
     }
 
     public String getId() {
