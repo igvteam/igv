@@ -118,6 +118,9 @@
                target="${javac.target}" source="${javac.target}">
             <classpath refid="@jars"/>
         </javac>
+        <copy todir="${tmp.dir}/META-INF/services" overwrite="true">
+            <fileset dir="${basedir}/services"/>
+        </copy>
     </target>
 
     <target name="build-runtime-utils" description="Create RuntimeUtils.jar in testlib directory. Necessary for profiling"
@@ -361,24 +364,38 @@
         </copy>
     </target>
 
+    <!--
+    We use publishedApiDoclet to generate documentation only for those methods/fields
+    which are marked as part of the api.
+
+    See http://developer.berlios.de/projects/padoclet/
+    and
+    http://developer.berlios.de/forum/forum.php?forum_id=22147
+    -->
     <target name="create-api-doc">
         <delete dir="${api.docs.dir}"/>
         <mkdir dir="${api.docs.dir}"/>
-        <javadoc packagenames="org.broad.igv.*"
+        <javadoc access="public"
+                 useexternalfile="yes"
+                 additionalparam="-quiet"
+                 destdir="${api.docs.dir}"
+                 packagenames="org.broad.igv.*"
                  sourcepath="src"
                  defaultexcludes="yes"
-                 destdir="${api.docs.dir}"
                  author="true"
                  version="true"
                  use="true"
                  windowtitle="Test API">
-            <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>
-            <tag name="todo" scope="all" description="To do:"/>
-            <group title="Group 1 Packages" packages="com.dummy.test.a*"/>
-            <group title="Group 2 Packages" packages="com.dummy.test.b*:com.dummy.test.c*"/>
-            <link offline="true" href="http://download.oracle.com/javase/6/docs/api/" packagelistLoc="C:\tmp"/>
-            <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+
+            <tag name="api_since" description="Since: " scope="all"/>
+            <tag name="api_until" description="Until: "/>
+            <doclet name="de.kruis.padoclet.PublishedApiDoclet" path="${basedir}/ant/publishedApiDoclet1.5-0.4.jar">
+                <param name="-padDefaultIsExclude"/>
+                <param name="-padFilterDefault" value=".*"/>
+                <param name="-padExcludeTag" value="noapi"/>
+                <param name="-padIncludeTag" value="api"/>
+            </doclet>
+
         </javadoc>
     </target>
 
