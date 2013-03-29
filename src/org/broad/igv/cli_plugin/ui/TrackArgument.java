@@ -29,7 +29,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * @author User #2
+ * @author Jacob Silterra
  */
 public class TrackArgument extends ArgumentPanel {
     public TrackArgument(Argument argument) {
@@ -58,8 +58,8 @@ public class TrackArgument extends ArgumentPanel {
     }
 
     @Override
-    public FeatureTrack getValue() {
-        return (FeatureTrack) trackComboBox.getSelectedItem();
+    public Track getValue() {
+        return (Track) trackComboBox.getSelectedItem();
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables

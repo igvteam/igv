@@ -54,6 +54,8 @@ public class ArgumentPanel extends JPanel {
             case TEXT:
                 panel = new TextArgument(argument);
                 break;
+            case DATA_TRACK:
+            case ALIGNMENT_TRACK:
             case FEATURE_TRACK:
                 panel = new TrackArgument(argument);
                 break;
@@ -61,7 +63,7 @@ public class ArgumentPanel extends JPanel {
                 panel = new MultiTrackArgument(argument);
                 break;
             default:
-                throw new IllegalArgumentException("Could not create ArgumentPanel for argument of type" + argument.getType());
+                throw new IllegalArgumentException("Could not create ArgumentPanel for argument of type " + argument.getType());
         }
         return panel;
 

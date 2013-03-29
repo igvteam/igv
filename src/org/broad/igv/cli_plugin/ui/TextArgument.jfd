@@ -1,9 +1,9 @@
-JFDML JFormDesigner: "5.1.0.0.51" Java: "1.6.0_31" encoding: "UTF-8"
+JFDML JFormDesigner: "5.1.0.2.64" Java: "1.6.0_37" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
-		add( new FormContainer( "org.broad.igv.dev.plugin.ArgumentPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+		add( new FormContainer( "org.broad.igv.cli_plugin.ui.ArgumentPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 			"axis": 0
 		} ) {
 			name: "this"

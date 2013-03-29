@@ -11,11 +11,14 @@
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="cufflinks"
             id="org.broad.igv.plugin.cufflinks">
-    <tool name="cufflinks" defaultPath="cufflinks" visible="false">
+    <tool name="cufflinks" defaultPath="cufflinks" visible="true">
 
         <command name="Arbitrary Input" cmd="">
             <arg name="Output Dir" id="outdir" cmd_arg="-o" type="LONGTEXT" default="./"/>
-            <arg name="Arguments" cmd_arg="" type="LONGTEXT" default=""/>
+            <arg name="Max Intron Length" cmd_arg="--max-intron-length" type="TEXT" default="300000"/>
+            <arg name="Min Isoform Fraction" cmd_arg="--min-isoform-fraction" type="TEXT" default="0.00001"/>
+            <arg name="Pre mRNA Fraction" cmd_arg="--pre-mrna-fraction" default="0.15" type="TEXT"/>
+            <arg name="Other arguments" cmd_arg="" type="LONGTEXT" default=""/>
             <arg name="Track" cmd_arg="" type="ALIGNMENT_TRACK"/>
             <parser source="$outdir/transcripts.gtf" format="gtf"/>
         </command>
