@@ -92,6 +92,8 @@ public class Argument{
 
     boolean isValidValue(Object value) {
         switch (this.type) {
+            case BOOL:
+                return value instanceof Boolean;
             case TEXT:
             case LONGTEXT:
                 return value instanceof String || value == null;

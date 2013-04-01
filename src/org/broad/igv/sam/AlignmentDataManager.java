@@ -339,7 +339,8 @@ public class AlignmentDataManager {
                 log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
                 AlignmentInterval loadedInterval = loadInterval(chr, start, end, renderOptions);
-                addLoadedInterval(context.getReferenceFrame(), loadedInterval);
+                ReferenceFrame frame = context != null ? context.getReferenceFrame() : null;
+                addLoadedInterval(frame, loadedInterval);
 
                 getEventBus().post(new DataLoadedEvent(context));
 
@@ -395,7 +396,8 @@ public class AlignmentDataManager {
     }
 
     private void addLoadedInterval(ReferenceFrame frame, AlignmentInterval interval) {
-        loadedIntervalMap.put(frame.getName(), interval);
+        String frameName = frame != null ? frame.getName() : FrameManager.DEFAULT_FRAME_NAME;
+        loadedIntervalMap.put(frameName, interval);
     }
 
     /**
