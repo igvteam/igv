@@ -13,13 +13,10 @@ package org.broad.igv.gs.dm;
 
 
 import biz.source_code.base64Coder.Base64Coder;
+import com.google.gson.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -51,28 +48,27 @@ public class DMUtils {
      * @param directoryURL
      * @return
      * @throws IOException
-     * @throws JSONException
      */
-    public static GSDirectoryListing getDirectoryListing(URL directoryURL) throws IOException, JSONException {
+    public static GSDirectoryListing getDirectoryListing(URL directoryURL) throws IOException{
 
         String str = HttpUtils.getInstance().getContentsAsJSON(directoryURL);
-        JSONTokener tk = new JSONTokener(str);
-        JSONObject obj = new JSONObject(tk);
+        JsonParser parser = new JsonParser();
+        JsonObject obj = parser.parse(str).getAsJsonObject();
 
-        JSONObject directory = (JSONObject) obj.get("directory");
-        String dirUrlString = directory.get("url").toString();
+        JsonObject directory = obj.get("directory").getAsJsonObject();
+        String dirUrlString = directory.get("url").getAsString();
 
         LinkedList<GSFileMetadata> elements = new LinkedList();
         if (obj.has("contents")) {
             Object c = obj.get("contents");
-            List<JSONObject> contents = new ArrayList();
-            if (c instanceof JSONObject) {
-                contents.add((JSONObject) c);
+            List<JsonObject> contents = new ArrayList();
+            if (c instanceof JsonObject) {
+                contents.add((JsonObject) c);
             } else {
-                JSONArray tmp = (JSONArray) c;
-                int l = tmp.length();
+                JsonArray tmp = (JsonArray) c;
+                int l = tmp.size();
                 for (int i = 0; i < l; i++) {
-                    contents.add((JSONObject) tmp.get(i));
+                    contents.add((JsonObject) tmp.get(i));
                 }
             }
 
@@ -80,8 +76,8 @@ public class DMUtils {
             ArrayList<GSFileMetadata> fileElements = new ArrayList();
             int contentsLength = contents.size();
             for (int i = 0; i < contentsLength; i++) {
-                JSONObject o = contents.get(i);
-                GSFileMetadata metaData = new GSFileMetadata(o);
+                JsonObject o = contents.get(i);
+                GSFileMetadata metaData = GSFileMetadata.deserializeElement(o);
                 if (metaData.isDirectory()) {
                     dirElements.add(metaData);
                 } else {
@@ -128,26 +124,23 @@ public class DMUtils {
     }
 
 
-    public static GSFileMetadata createDirectory(String putURL) throws IOException, JSONException {
+    public static GSFileMetadata createDirectory(String putURL) throws IOException{
 
-        JSONObject dirMeta = new JSONObject();
-        try {
-            dirMeta.put("isDirectory", true);
-            System.out.println(dirMeta.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JsonObject dirMeta = new JsonObject();
+
+        dirMeta.add("isDirectory", new JsonPrimitive(true));
+        System.out.println(dirMeta.toString());
 
         String body = "{\"isDirectory\":true}";
         String response = HttpUtils.getInstance().createGenomeSpaceDirectory(new URL(putURL), body);
 
-        JSONTokener tk = new JSONTokener(response);
-        JSONObject obj = new JSONObject(tk);
-        return new GSFileMetadata(obj);
+        JsonParser parser = new JsonParser();
+        JsonElement obj = parser.parse(response);
+        return GSFileMetadata.deserializeElement(obj);
 
     }
 
-    static void deleteFileOrDirectory(String delURL) throws IOException, JSONException{
+    static void deleteFileOrDirectory(String delURL) throws IOException{
         HttpUtils.getInstance().delete(new URL(delURL));
     }
 

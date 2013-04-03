@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 /*
@@ -22,25 +15,20 @@
 
 package org.broad.igv.gs;
 
-import java.awt.event.*;
-
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.gs.dm.GSDirectoryListing;
 import org.broad.igv.gs.dm.GSFileMetadata;
 import org.broad.igv.ui.util.MessageUtils;
-import org.json.JSONException;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * @author Jim Robinson
@@ -59,7 +47,7 @@ public class GSFileBrowser extends JDialog {
 
     Mode mode = Mode.OPEN;
 
-    public static void main(String[] args) throws IOException, JSONException {
+    public static void main(String[] args) throws IOException {
         GSFileBrowser fb = (new GSFileBrowser(null, GSFileBrowser.Mode.SAVE));
         fb.setVisible(true);
         System.out.println(fb.getPath());
@@ -67,11 +55,11 @@ public class GSFileBrowser extends JDialog {
 
     String userRootUrl = null;
 
-    public GSFileBrowser(Frame owner) throws IOException, JSONException {
+    public GSFileBrowser(Frame owner) throws IOException {
         this(owner, Mode.OPEN);
     }
 
-    public GSFileBrowser(Frame owner, Mode mode) throws IOException, JSONException {
+    public GSFileBrowser(Frame owner, Mode mode) throws IOException {
         super(owner);
         setModal(true);
         initComponents();
@@ -87,7 +75,7 @@ public class GSFileBrowser extends JDialog {
 
     }
 
-    void init(Mode mode) throws JSONException, IOException {
+    void init(Mode mode) throws IOException {
 
         if (folderIcon == null) {
             folderIcon = new ImageIcon(getClass().getResource("/images/Folder-icon.png"));
@@ -105,8 +93,6 @@ public class GSFileBrowser extends JDialog {
                         try {
                             fetchContents(new URL(md.getUrl()));
                         } catch (IOException e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        } catch (JSONException e1) {
                             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
                     } else {
@@ -152,7 +138,7 @@ public class GSFileBrowser extends JDialog {
     }
 
 
-    private void fetchContents(URL url) throws IOException, JSONException {
+    private void fetchContents(URL url) throws IOException {
 
         dirListing = DMUtils.getDirectoryListing(url);
         String dirUrlString = dirListing.getDirectory().getUrl();
@@ -240,8 +226,6 @@ public class GSFileBrowser extends JDialog {
             } catch (IOException e1) {
                 log.error("Error creating directory: " + putURL, e1);
                 MessageUtils.showMessage("<html>Error creating directory: " + e1 + "<br>" + e1.getMessage());
-            } catch (JSONException e1) {
-                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
 

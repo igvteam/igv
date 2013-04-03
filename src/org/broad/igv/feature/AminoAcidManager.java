@@ -18,13 +18,10 @@ package org.broad.igv.feature;
 import com.google.common.base.Objects;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
+import com.google.gson.*;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.*;
 import org.broad.igv.util.ParsingUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,7 +73,7 @@ public class AminoAcidManager {
         initAANameMap();
         try {
             loadDefaultTranslationTables();
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log.error(e);
         }
     }
@@ -89,7 +86,7 @@ public class AminoAcidManager {
                 instance = newInstance;
             } catch (IOException e) {
                 handleExceptionLoading(e);
-            } catch (JSONException e) {
+            } catch (JsonParseException e) {
                 handleExceptionLoading(e);
             }
         }
@@ -327,7 +324,7 @@ public class AminoAcidManager {
      * @param codonTablesPath
      * @return
      */
-    synchronized void loadCodonTables(String codonTablesPath) throws IOException, JSONException {
+    synchronized void loadCodonTables(String codonTablesPath) throws IOException, JsonParseException {
         LinkedHashMap<CodonTableKey, CodonTable> newCodonTables = new LinkedHashMap<CodonTableKey, CodonTable>(20);
         CodonTable defaultCodonTable = null;
 
@@ -337,19 +334,15 @@ public class AminoAcidManager {
         }
 
         if (codonTablesPath.endsWith(".json")) {
-            JSONObject allData = readJSONFromStream(is);
+            JsonObject allData = readJSONFromStream(is);
             int defaultId = -1;
-            try {
-                defaultId = allData.getInt("defaultid");
-            } catch (JSONException e) {
-                //pass;
+            defaultId = allData.get("defaultid").getAsInt();
+            JsonArray codonArray = allData.get("Genetic-code-table").getAsJsonArray();
+            if (codonArray.size() == 0) {
+                throw new JsonParseException("JSON File has empty array for Genetic-code-table");
             }
-            JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
-            if (codonArray.length() == 0) {
-                throw new JSONException("JSON File has empty array for Genetic-code-table");
-            }
-            for (int ca = 0; ca < codonArray.length(); ca++) {
-                CodonTable curTable = CodonTable.createFromJSON(codonTablesPath, codonArray.getJSONObject(ca));
+            for (int ca = 0; ca < codonArray.size(); ca++) {
+                CodonTable curTable = CodonTable.createFromJSON(codonTablesPath, codonArray.get(ca).getAsJsonObject());
                 newCodonTables.put(curTable.getKey(), curTable);
                 if (defaultCodonTable == null || curTable.getId() == defaultId) {
                     defaultCodonTable = curTable;
@@ -379,10 +372,16 @@ public class AminoAcidManager {
         currentCodonTable = defaultCodonTable;
     }
 
-    private static JSONObject readJSONFromStream(InputStream is) throws JSONException {
+//    private static JsonObject readJSONFromStream(InputStream is) throws JsonParseException {
+//        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+//        JSONTokener tokener = new JSONTokener(reader);
+//        return new JsonObject(tokener);
+//    }
+
+    private static JsonObject readJSONFromStream(InputStream is){
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        JSONTokener tokener = new JSONTokener(reader);
-        return new JSONObject(tokener);
+        JsonParser parser = new JsonParser();
+        return parser.parse(reader).getAsJsonObject();
     }
 
     /**
@@ -433,32 +432,33 @@ public class AminoAcidManager {
         return currentCodonTable;
     }
 
-    private static void loadDefaultTranslationTables() throws JSONException {
+    private static void loadDefaultTranslationTables() throws JsonParseException {
         InputStream is = AminoAcidManager.class.getResourceAsStream(DEFAULT_TRANS_TABLE_PATH);
-        JSONObject allData = readJSONFromStream(is);
-        JSONArray organisms = allData.getJSONArray("organisms");
+        JsonObject allData = readJSONFromStream(is);
+        JsonArray organisms = allData.get("organisms").getAsJsonArray();
 
-        for (int ind = 0; ind < organisms.length(); ind++) {
-            JSONObject obj = organisms.getJSONObject(ind);
+        for (int ind = 0; ind < organisms.size(); ind++) {
+            JsonObject obj = organisms.get(ind).getAsJsonObject();
 
             //Process each translation table setting
-            String genomeId = obj.getString("genomeId");
+            String genomeId = obj.get("genomeId").getAsString();
 
             String codonTablePath = DEFAULT_CODON_TABLE_PATH;
             try {
                 Object tmpPath = obj.get("codonTablePath");
-                if (tmpPath != null && tmpPath != JSONObject.NULL && tmpPath instanceof String) {
+                if (tmpPath != null && tmpPath != JsonNull.INSTANCE && tmpPath instanceof String) {
                     codonTablePath = (String) tmpPath;
                 }
-            } catch (JSONException e) {
+            } catch (JsonParseException e) {
                 log.error("No codon table path found in " + DEFAULT_TRANS_TABLE_PATH + ". Using default: " + codonTablePath);
             }
 
-            JSONObject chromosomes = obj.getJSONObject("chromosomes");
-            Iterator<String> iterator = chromosomes.keys();
-            while (iterator.hasNext()) {
-                String chromoName = iterator.next();
-                int id = chromosomes.getInt(chromoName);
+            JsonObject chromosomes = obj.get("chromosomes").getAsJsonObject();
+            Iterator<Map.Entry<String, JsonElement>> iterator = chromosomes.entrySet().iterator();
+            while(iterator.hasNext()){
+                Map.Entry<String, JsonElement> entry = iterator.next();
+                String chromoName = entry.getKey();
+                int id = entry.getValue().getAsInt();
                 CodonTableKey key = new CodonTableKey(codonTablePath, id);
                 genomeChromoTable.put(genomeId, chromoName, key);
             }
@@ -556,18 +556,18 @@ public class AminoAcidManager {
             this.codonMap = Collections.unmodifiableMap(codonMap);
         }
 
-        private static CodonTable createFromJSON(String sourcePath, JSONObject jsonObject) throws JSONException {
-            int id = jsonObject.getInt("id");
+        private static CodonTable createFromJSON(String sourcePath, JsonObject jsonObject) throws JsonParseException {
+            int id = jsonObject.get("id").getAsInt();
 
-            JSONArray jsonnames = jsonObject.getJSONArray("name");
-            List<String> names = new ArrayList<String>(jsonnames.length());
-            for (int nn = 0; nn < jsonnames.length(); nn++) {
-                names.add(jsonnames.getString(nn));
+            JsonArray jsonnames = jsonObject.get("name").getAsJsonArray();
+            List<String> names = new ArrayList<String>(jsonnames.size());
+            for (int nn = 0; nn < jsonnames.size(); nn++) {
+                names.add(jsonnames.get(nn).getAsString());
             }
 
             //Data is written as several long strings which line up
-            String aas = jsonObject.getString("ncbieaa");
-            String startString = jsonObject.getString("sncbieaa");
+            String aas = jsonObject.get("ncbieaa").getAsString();
+            String startString = jsonObject.get("sncbieaa").getAsString();
 
             return build(sourcePath, id, names, aas, startString);
         }
