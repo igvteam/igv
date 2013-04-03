@@ -1,19 +1,12 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2012 The Broad Institute, Inc.
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ *
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
 package org.broad.igv.gs.dm;
@@ -28,8 +21,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -46,17 +44,6 @@ public class DMUtils {
     private static final String UPLOAD_SERVICE = "uploadurl";
     public static final String DEFAULT_DIRECTORY = "defaultdirectory";
     public static final String PERSONAL_DIRECTORY = "personaldirectory";
-
-
-    public static GSDirectoryListing listDefaultDirectory() {
-        try {
-            URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
-                    DEFAULT_DIRECTORY);
-            return getDirectoryListing(defaultURL);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * Fetch the contents of the GenomeSpace directory.
@@ -121,11 +108,10 @@ public class DMUtils {
      */
     public static void uploadFile(File localFile, String gsPath) throws IOException, URISyntaxException {
 
-
         byte[] md5 = computeMD5(localFile);
         String base64String = new String(Base64Coder.encode(md5));
         long contentLength = localFile.length();
-        String contentType = "application/text"; //"text";
+        String contentType = "application/text";
 
         String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + UPLOAD_SERVICE +
                 gsPath + "?Content-Length=" + contentLength +
@@ -138,9 +124,7 @@ public class DMUtils {
         headers.put("Content-Length", String.valueOf(contentLength));
         headers.put("Content-Type", contentType);
 
-
         HttpUtils.getInstance().uploadGenomeSpaceFile(uploadURL, localFile, headers);
-
     }
 
 
@@ -151,7 +135,7 @@ public class DMUtils {
             dirMeta.put("isDirectory", true);
             System.out.println(dirMeta.toString());
         } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
         String body = "{\"isDirectory\":true}";
@@ -161,6 +145,10 @@ public class DMUtils {
         JSONObject obj = new JSONObject(tk);
         return new GSFileMetadata(obj);
 
+    }
+
+    static void deleteFileOrDirectory(String delURL) throws IOException, JSONException{
+        HttpUtils.getInstance().delete(new URL(delURL));
     }
 
 

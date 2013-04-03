@@ -491,6 +491,10 @@ public class HttpUtils {
 
     }
 
+    public HttpURLConnection delete(URL url) throws IOException{
+        return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
+    }
+
     private HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
@@ -538,6 +542,9 @@ public class HttpUtils {
             conn.setRequestProperty("Accept", "text/plain");
         }
 
+        //We sometimes load very large files, trying to cache those can crash the server
+        //This is essentially a server bug, however through experience it has been found
+        //that setting useCaches to false works around it.
         conn.setUseCaches(false);  // <= very important!
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(Globals.READ_TIMEOUT);
@@ -757,7 +764,6 @@ public class HttpUtils {
     public static boolean isURL(String f) {
         return f.startsWith("http:") || f.startsWith("ftp:") || f.startsWith("https:") || URLmatcher.matcher(f).matches();
     }
-
 
     public static class ProxySettings {
         boolean auth = false;
