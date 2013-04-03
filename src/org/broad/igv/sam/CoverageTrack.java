@@ -188,6 +188,7 @@ public class CoverageTrack extends AbstractTrack {
 
         int max = 10;
         for(AlignmentInterval interval: intervals){
+            if(interval == null) continue;
             max = Math.max(max, interval.getMaxCount());
         }
         DataRange.Type type = getDataRange().getType();

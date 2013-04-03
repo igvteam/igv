@@ -24,10 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-//import org.broadinstitute.sting.utils.variantcontext.Allele;
-
 /**
- * @author Jim Robinson
+ * @author Jim Robinson, jacob
  * @date Aug 1, 2011
  */
 public class VCFVariant implements Variant {
@@ -43,6 +41,8 @@ public class VCFVariant implements Variant {
     private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
     private double coveredSampleFraction = Double.NaN;
 
+    private int start = -1;
+
     public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
         this.chr = chr;
@@ -56,7 +56,6 @@ public class VCFVariant implements Variant {
             zygosityCount.incrementCount(genotype);
         }
 
-        // TODO -- deal with multiple value allele freq, e.g. [0.01,0.001]
         String afString = null;
         String[] alleleFreqKeys = {"AF", "GMAF"};
         try {
@@ -233,7 +232,10 @@ public class VCFVariant implements Variant {
 
     @Override
     public int getStart() {
-        return variantContext.isIndel() ? variantContext.getStart() : variantContext.getStart() - 1;
+        if(this.start < 0){
+            calcStart();
+        }
+        return this.start;
     }
 
     @Override
@@ -318,5 +320,46 @@ public class VCFVariant implements Variant {
             return noCall;
         }
 
+    }
+
+    /**
+     * VCFs specify padding bases at the beginning of indels so they can be positioned properly.
+     * We display the variant only where it actually differs from the reference. So we find the longest
+     * common prefix between the reference and variants
+     */
+    private void calcStart(){
+        int prefixLength = 0;
+
+        if(variantContext.getType() == VariantContext.Type.INDEL || variantContext.getType() == VariantContext.Type.MIXED){
+            prefixLength = findCommonPrefixLength();
+        }
+        this.start = (variantContext.getStart() - 1) + prefixLength;
+    }
+
+    /**
+     * Find the length of the common prefix between the reference and ALL
+     * variant alleles
+     * @return
+     */
+    private int findCommonPrefixLength(){
+        String ref = variantContext.getReference().getDisplayString();
+        int prefixLength = 0;
+        boolean foundmisMatch = false;
+        for(int refPos = 0; refPos < ref.length() ; refPos++){
+            char refChar = ref.charAt(refPos);
+            for(Allele var: getAlternateAlleles()){
+                byte[] varBases = var.getBases();
+                if(refPos >= varBases.length || varBases[refPos] != refChar){
+                    foundmisMatch = true;
+                    break;
+                }
+            }
+            if(foundmisMatch){
+                break;
+            }else{
+                prefixLength++;
+            }
+        }
+        return prefixLength;
     }
 }
