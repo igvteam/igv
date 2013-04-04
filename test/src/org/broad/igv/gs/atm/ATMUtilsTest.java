@@ -18,11 +18,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.Assert.*;
 
@@ -55,18 +54,18 @@ public class ATMUtilsTest {
         for (WebToolDescriptor wt : webTools) {
             toolMap.put(wt.getName(), wt);
         }
-        WebToolDescriptor igvDesc = toolMap.get("IGV");
-        assertNotNull("IGV Descriptor", igvDesc);
-
+        String toolName = "IGV";
+        WebToolDescriptor igvDesc = toolMap.get(toolName);
+        assertEquals(toolName, igvDesc.getName());
+        checkWebToolDescriptor(igvDesc);
     }
 
     @Test
     public void testGetWebTool() throws Exception {
         String toolname = "IGV";
         WebToolDescriptor igvDesc = ATMUtils.getWebTool(toolname);
-        assertNotNull("IGV Descriptor", igvDesc);
         assertEquals(toolname, igvDesc.getName());
-
+        checkWebToolDescriptor(igvDesc);
     }
 
     @Test
@@ -78,6 +77,22 @@ public class ATMUtilsTest {
         String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(igvDesc, file));
         assertTrue(url.startsWith(igvDesc.getBaseUrl() + "?sessionURL="));
         assertTrue(url.endsWith(file));
+    }
+
+    private void checkWebToolDescriptor(WebToolDescriptor desc) throws Exception{
+//        assertNotNull("Descriptor is null", desc);
+//        assertNotNull("Author is null", desc.getAuthor());
+//        assertNotNull("BasUrl is null", desc.getBaseUrl());
+//        assertNotNull("Description is null", desc.getDescription());
+//        assertNotNull("Id is null", desc.getId());
+//        assertNotNull("name is null",desc.getName());
+        checkFieldsNotNull(desc);
+        for(FileParameter param: desc.getFileParameters()){
+            checkFieldsNotNull(param);
+            for(GSDataFormat format: param.getFormats()){
+                checkFieldsNotNull(format);
+            }
+        }
     }
 
     @Test
@@ -93,9 +108,35 @@ public class ATMUtilsTest {
 
         String toolname = ("UCSC Genome Browser");
         WebToolDescriptor ucscDesc = ATMUtils.getWebTool(toolname);
+        checkWebToolDescriptor(ucscDesc);
 
         String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(ucscDesc));
         assertNotNull(url);
+    }
+
+    private void checkFieldsNotNull(Object obj) throws Exception{
+        checkFieldsNotNull(obj, Collections.<String>emptySet());
+    }
+
+    /**
+     * Check that all fields in obj are not null
+     * @param obj
+     * @param excludedFieldNames Names of fields we don't check
+     */
+    private void checkFieldsNotNull(Object obj, Set<String> excludedFieldNames) throws Exception{
+        assertNotNull(obj);
+        Field[] fields = obj.getClass().getFields();
+        for(Field field: fields){
+            field.setAccessible(true);
+            String fieldName = field.getName();
+            if(excludedFieldNames.contains(fieldName)){
+                continue;
+            }
+
+            Object value = field.get(obj);
+            assertNotNull(field.getName() + " is null", value);
+        }
+
     }
 
     static class GSTestAuthenticator extends Authenticator {
