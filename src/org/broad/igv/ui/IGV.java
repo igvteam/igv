@@ -1103,6 +1103,12 @@ public class IGV {
 
     }
 
+    /**
+     * Set the session to the file specified by {@code sessionPath}
+     * If you want to create a new session, consider {@link #newSession()}
+     * as that preserves the gene track.
+     * @param sessionPath
+     */
     public void resetSession(String sessionPath) {
 
         LRUCache.clearCaches();
@@ -1134,6 +1140,11 @@ public class IGV {
 
     }
 
+    /**
+     * Creates a new IGV session, and restores the gene track afterwards.
+     * For that reason, if one wishes to keep the default gene track, this method
+     * should be used, rather than resetSession
+     */
     public void newSession() {
         resetSession(null);
         setGenomeTracks(GenomeManager.getInstance().getCurrentGenome().getGeneTrack());
