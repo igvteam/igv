@@ -14,11 +14,13 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.*;
 
 /**
  * @author Jim Robinson
@@ -57,6 +59,17 @@ public class GenomeImplTest {
 
     }
 
+
+    @Test
+    public void testGetLongChromosomeNames_manySmall() throws Exception{
+        String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
+        Sequence sequence = new MockSequence(mockIndexPath);
+        GenomeImpl genome = new GenomeImpl("mock_many_small", "mock_many_small", sequence, true);
+
+        assertNotNull(genome.getLongChromosomeNames());
+        assertTrue("No 'Long' chromosome names found", genome.getLongChromosomeNames().size() > 0);
+    }
+
     /**
      * Class which loads FastaIndex and returns information contained therein,
      * but doesn't actually load full fasta file. For testing
@@ -88,5 +101,30 @@ public class GenomeImplTest {
         public int getChromosomeLength(String chrname) {
             return index.getSequenceSize(chrname);
         }
+    }
+
+    public static void generateJunkIndex() throws Exception{
+        //Generate index file with many small contigs
+        int numContigs = 10000;
+        int contigMeanSize = 3000;
+        int contigSizeRange = 400;
+        PrintWriter writer = new PrintWriter(new FileWriter(TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai"));
+
+        int position = -1;
+        int basesPerLine = 80;
+        int bytesPerLine = 81;
+        for(int ci = 0; ci < numContigs; ci++){
+            String chr = "" + ci;
+            int size = contigMeanSize + (int) (contigSizeRange * (Math.random() - 0.5));
+
+            String line = String.format("%s\t%d\t%d\t%d\t%d", chr, size, position, basesPerLine, bytesPerLine);
+            writer.println(line);
+        }
+        writer.flush();
+        writer.close();
+    }
+
+    public static void main(String[] args) throws Exception{
+        //generateJunkIndex();
     }
 }
