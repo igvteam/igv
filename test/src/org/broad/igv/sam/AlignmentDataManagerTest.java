@@ -337,6 +337,7 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testQueryLargeFile2() throws Exception {
         String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.454.bam";
