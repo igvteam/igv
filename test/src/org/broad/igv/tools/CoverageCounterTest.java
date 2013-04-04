@@ -44,9 +44,9 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
      */
     @Test
     public void testMappingQualityFlag() throws IOException {
-        String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
-        String queryString = "1:16731624-16731624";
-        int minMapQuality = 30;
+        String bamURL = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
+        String queryString = "chr1:152522155-152522155";
+        int minMapQuality = 40;
         File wigFile = new File(TestUtils.DATA_DIR + "out/testMapQual.wig");
         int windowSize = 1;
 
@@ -58,7 +58,7 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
 
         String totalCount = dc.attributes.get("totalCount");
 
-        assertEquals("19", totalCount);
+        assertEquals("7", totalCount);
     }
 
     @Test
