@@ -45,7 +45,7 @@ public class GenomeImpl implements Genome {
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
-    private ArrayList longChromosomeNames;
+    private ArrayList<String> longChromosomeNames;
     private LinkedHashMap<String, Chromosome> chromosomeMap;
     private long totalLength = -1;
     private long nominalLength = -1;
@@ -413,12 +413,31 @@ public class GenomeImpl implements Genome {
     @Override
     public List<String> getLongChromosomeNames() {
         if (longChromosomeNames == null) {
-            longChromosomeNames = new ArrayList(getAllChromosomeNames().size());
+            longChromosomeNames = new ArrayList<String>(getAllChromosomeNames().size());
             long genomeLength = getTotalLength();
+            int maxChromoLength = -1;
             for (String chrName : getAllChromosomeNames()) {
                 Chromosome chr = getChromosome(chrName);
-                if (chr.getLength() > (genomeLength / 3000)) {
+                int length = chr.getLength();
+                maxChromoLength = Math.max(maxChromoLength, length);
+                if (length > (genomeLength / 3000)) {
                     longChromosomeNames.add(chrName);
+                }
+            }
+
+            /**
+             * At this point, we should have some long chromosome names.
+             * However, some genomes (draft ones perhaps) maybe have many small ones
+             * which aren't big enough. We arbitrarily take those which are above
+             * half the size of the max, only if the first method didn't work.
+             */
+            if (longChromosomeNames.size() == 0) {
+                for (String chrName : getAllChromosomeNames()) {
+                    Chromosome chr = getChromosome(chrName);
+                    int length = chr.getLength();
+                    if (length > maxChromoLength / 2) {
+                        longChromosomeNames.add(chrName);
+                    }
                 }
             }
         }
