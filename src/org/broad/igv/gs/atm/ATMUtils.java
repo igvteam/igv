@@ -11,13 +11,13 @@
 
 package org.broad.igv.gs.atm;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,34 +33,34 @@ import java.util.List;
  */
 public class ATMUtils {
 
+    private static final Gson gson = new Gson();
 
     /**
      * Parse the contents of the URL as a JSON string encoding a list of WebToolDescriptor objects.
      *
      * @return
      * @throws IOException
-     * @throws JSONException
      */
-    public static List<WebToolDescriptor> getWebTools() throws IOException, JSONException {
+    public static List<WebToolDescriptor> getWebTools() throws IOException {
         URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) + "webtool/descriptor");
         String contents = HttpUtils.getInstance().getContentsAsJSON(url);
-        JSONTokener tk = new JSONTokener(contents);
-        JSONArray array = new JSONArray(tk);
-        // JSONObject webDescArray = (JSONObject) array.get(1);
+
+        JsonParser parser = new JsonParser();
+        JsonArray array = parser.parse(contents).getAsJsonArray();
         List<WebToolDescriptor> webTools = parseWebtools(array);
         return webTools;
     }
 
 
-    public static WebToolDescriptor getWebTool(String name) throws IOException, JSONException {
+    public static WebToolDescriptor getWebTool(String name) throws IOException{
 
         name = name.replace(" ", "%20");
 
         URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) + "webtool/" +
                 name + "/descriptor");
         String contents = HttpUtils.getInstance().getContentsAsJSON(url);
-        JSONTokener tk = new JSONTokener(contents);
-        JSONObject obj = new JSONObject(tk);
+
+        JsonElement obj = (new JsonParser()).parse(contents);
         return parseWebTool(obj);
     }
 
@@ -69,15 +69,12 @@ public class ATMUtils {
      *
      * @param webDescArray
      * @return
-     * @throws JSONException
      */
-    private static List<WebToolDescriptor> parseWebtools(JSONArray webDescArray) throws JSONException {
-        int count = webDescArray.length();
+    private static List<WebToolDescriptor> parseWebtools(JsonArray webDescArray){
+        int count = webDescArray.size();
         List<WebToolDescriptor> webTools = new ArrayList();
         for (int i = 0; i < count; i++) {
-            JSONObject obj = webDescArray.getJSONObject(i);
-            //JSONObject obj = ar.getJSONObject(1);
-
+            JsonElement obj = webDescArray.get(i);
             final WebToolDescriptor webToolDescriptor = parseWebTool(obj);
 
             webTools.add(webToolDescriptor);
@@ -85,98 +82,14 @@ public class ATMUtils {
         return webTools;
     }
 
-    private static WebToolDescriptor parseWebTool(JSONObject obj) throws JSONException {
-        String name = obj.getAsString("name");
-        String id = obj.getAsString("internalId");
-        String author = obj.getAsString("author");
-        String description = obj.getAsString("description");
-        String baseUrl = obj.getAsString("baseUrl");
-
-        JSONArray fileParamArray = obj.getJSONArray("fileParameters");
-        List<FileParameter> fileParams = parseFileParameters(fileParamArray);
-        return new WebToolDescriptor(name, id, author, description, baseUrl, fileParams);
+    private static WebToolDescriptor parseWebTool(JsonElement obj){
+        return gson.fromJson(obj, WebToolDescriptor.class);
     }
-
-    /**
-     * Parse a SubToolDescriptor JSONArray
-     *
-     * @param subToolsArray
-     * @return
-     * @throws JSONException
-     */
-    private static List<SubToolDescriptor> parseSubtools(JSONArray subToolsArray) throws JSONException {
-
-        List<SubToolDescriptor> subtoolDescriptors = new ArrayList();
-        if (subToolsArray.length() > 0) {
-            int nTools = subToolsArray.length();
-            for (int n = 0; n < nTools; n++) {
-                JSONObject stObj = subToolsArray.getJSONArray(n).getJSONObject(1);
-                String stName = stObj.getAsString("name");
-                String stId = stObj.getAsString("id");
-                String stVersion = stObj.getAsString("version");
-                String stAuthor = stObj.getAsString("author");
-                String stDescription = stObj.getAsString("description");
-                String stHelp = stObj.getAsString("help");
-                String stUrlModifier = stObj.getAsString("urlModifier");
-                JSONArray stFileParams = stObj.getJSONArray("fileParameters").getJSONArray(1);
-                List<FileParameter> fileParams = parseFileParameters(stFileParams);
-
-                subtoolDescriptors.add(new SubToolDescriptor(stName, stId, stVersion, stAuthor,
-                        stDescription, stHelp, stUrlModifier, fileParams));
-            }
-        }
-        return subtoolDescriptors;
-    }
-
-    /**
-     * Parse a FileParameter JSONArray
-     *
-     * @param fileParamsArray
-     * @return
-     * @throws JSONException
-     */
-    private static List<FileParameter> parseFileParameters(JSONArray fileParamsArray) throws JSONException {
-
-        List<FileParameter> fileParameters = new ArrayList();
-
-        if (fileParamsArray.length() > 0) {
-            int nFileParams = fileParamsArray.length();
-            for (int n = 0; n < nFileParams; n++) {
-                JSONObject fObj = fileParamsArray.getJSONObject(n);
-                String fpName = fObj.getAsString("name");
-                String parentInternalId = fObj.getAsString("parentInternalId");
-                String fpRequired = fObj.getAsString("required");
-                String fpCompositeFilename = fObj.getAsString("compositeFilename");
-                String fpNameDelimiters = fObj.getAsString("nameDelimiters");
-                JSONArray formats = fObj.getJSONArray("formats");
-
-                List<GSDataFormat> dataFormats = new ArrayList();
-                if (formats.length() > 0) {
-                    int nFormats = formats.length();
-                    for (int f = 0; f < nFormats; f++) {
-                        JSONObject format = formats.getJSONObject(f);
-                        String fName = format.getAsString("name");
-                        String fDescription = format.getAsString("description");
-                        String fUrl = format.getAsString("url");
-                        String fExt = format.getAsString("fileExtension");
-                        dataFormats.add(new GSDataFormat(fName, fExt, fUrl));
-                    }
-                }
-
-                fileParameters.add(new FileParameter(fpName, fpRequired,
-                        fpCompositeFilename, fpNameDelimiters, dataFormats));
-            }
-        }
-
-        return fileParameters;
-    }
-
 
     /**
      * Return a launch URL with no parameters
      */
     public static String getWebtoolLaunchURL(WebToolDescriptor descriptor) throws IOException {
-
         return getWebtoolLaunchURL(descriptor, null);
     }
 
@@ -202,6 +115,5 @@ public class ATMUtils {
 
         return HttpUtils.getInstance().getContentsAsString(new URL(url));
     }
-
 
 }
