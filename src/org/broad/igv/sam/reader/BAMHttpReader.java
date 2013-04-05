@@ -15,9 +15,10 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.seekablestream.SeekableBufferedStream;
+import net.sf.samtools.seekablestream.SeekableFTPStream;
+import net.sf.samtools.seekablestream.SeekableStream;
 import net.sf.samtools.util.CloseableIterator;
-import net.sf.samtools.util.SeekableBufferedStream;
-import net.sf.samtools.util.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.exceptions.DataLoadException;
@@ -27,7 +28,6 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.util.stream.SeekablePicardStream;
-import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
@@ -147,11 +147,11 @@ public class BAMHttpReader implements AlignmentReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            org.broad.tribble.util.SeekableStream tribbleStream = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
+            SeekableStream tribbleStream = IGVSeekableStreamFactory.getStreamFor(url.toExternalForm());
             String source = url.toExternalForm();
             is = new SeekablePicardStream(tribbleStream, source);
         } else if (protocol.equals("ftp")) {
-            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
+            SeekableStream tribbleStream = new SeekableFTPStream(url);
             String source = url.toExternalForm();
             is = new SeekablePicardStream(tribbleStream, source);
         } else {

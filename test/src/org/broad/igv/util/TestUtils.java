@@ -13,6 +13,7 @@ package org.broad.igv.util;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
+import net.sf.samtools.util.ftp.FTPClient;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
@@ -20,7 +21,6 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ftp.FTPClient;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
 

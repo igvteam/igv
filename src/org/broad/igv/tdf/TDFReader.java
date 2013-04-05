@@ -15,6 +15,7 @@
  */
 package org.broad.igv.tdf;
 
+import net.sf.samtools.seekablestream.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
@@ -26,7 +27,6 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.tribble.util.SeekableStream;
 
 import java.io.IOException;
 import java.nio.BufferUnderflowException;

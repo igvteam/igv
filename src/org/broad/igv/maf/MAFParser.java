@@ -11,12 +11,12 @@
 
 package org.broad.igv.maf;
 
+import net.sf.samtools.seekablestream.SeekableStream;
+import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import org.broad.igv.Globals;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.index.Interval;
 import org.broad.igv.util.index.IntervalTree;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;

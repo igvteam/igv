@@ -11,12 +11,12 @@
 
 package org.broad.igv.feature.tribble;
 
+import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broad.tribble.util.BlockCompressedInputStream;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 

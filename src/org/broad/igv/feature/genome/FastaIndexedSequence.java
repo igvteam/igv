@@ -11,10 +11,10 @@
 
 package org.broad.igv.feature.genome;
 
+import net.sf.samtools.seekablestream.SeekableStream;
+import net.sf.samtools.seekablestream.SeekableStreamFactory;
 import org.apache.log4j.Logger;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

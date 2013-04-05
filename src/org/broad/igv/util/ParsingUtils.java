@@ -12,6 +12,9 @@ package org.broad.igv.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import net.sf.samtools.util.ftp.FTPClient;
+import net.sf.samtools.util.ftp.FTPReply;
+import net.sf.samtools.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
@@ -21,9 +24,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ftp.FTPClient;
-import org.broad.tribble.util.ftp.FTPReply;
-import org.broad.tribble.util.ftp.FTPUtils;
 
 import java.awt.*;
 import java.io.*;

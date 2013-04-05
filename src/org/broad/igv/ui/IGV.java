@@ -24,6 +24,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import com.jidesoft.swing.JideSplitPane;
+import net.sf.samtools.seekablestream.SeekableFileStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
@@ -56,7 +57,6 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
 import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.variant.VariantTrack;
-import org.broad.tribble.util.SeekableFileStream;
 
 import javax.swing.*;
 import java.awt.*;

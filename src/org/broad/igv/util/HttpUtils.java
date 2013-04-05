@@ -12,6 +12,10 @@
 package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
+import net.sf.samtools.seekablestream.SeekableHTTPStream;
+import net.sf.samtools.util.ftp.FTPClient;
+import net.sf.samtools.util.ftp.FTPStream;
+import net.sf.samtools.util.ftp.FTPUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
@@ -20,10 +24,6 @@ import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.stream.IGVUrlHelper;
-import org.broad.tribble.util.SeekableHTTPStream;
-import org.broad.tribble.util.ftp.FTPClient;
-import org.broad.tribble.util.ftp.FTPStream;
-import org.broad.tribble.util.ftp.FTPUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -650,7 +650,7 @@ public class HttpUtils {
                     if (firstBytes.length > 1000) {
                         int end = firstBytes.length;
                         int start = end - 100;
-                        SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(url));
+                        SeekableHTTPStream str = new SeekableHTTPStream(url);
                         str.seek(start);
                         int len = end - start;
                         byte[] buffer = new byte[len];
@@ -709,7 +709,7 @@ public class HttpUtils {
 
         byte[] expectedBytes = {'T', 'C', 'G', 'C', 'T', 'T', 'G', 'A', 'A', 'C', 'C', 'C', 'G', 'G',
                 'G', 'A', 'G', 'A', 'G', 'G'};
-        SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
+        SeekableHTTPStream str = new SeekableHTTPStream(new URL(testURL));
         str.seek(25350000);
         byte[] buffer = new byte[80000];
         str.read(buffer);
