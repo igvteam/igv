@@ -12,6 +12,7 @@
 package org.broad.igv.tools.motiffinder;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.Strand;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
@@ -92,7 +93,7 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
     @Test
     public void testSearchOverlapping() throws Exception{
         String motif = "ATGCATGCATGC";
-        MotifFinderSource source = new MotifFinderSource(motif, genome);
+        MotifFinderSource source = new MotifFinderSource(motif, Strand.POSITIVE, genome);
 
         String queryChr = "chr8";
         int queryStart = 40823007;
@@ -152,7 +153,7 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
      * @throws Exception
      */
     public void tstSearchGenomeSingResult(String pattern, String chr, int start, int end, int expFeatStart, int expFeatureEnd) throws Exception {
-        MotifFinderSource source = new MotifFinderSource(pattern, genome);
+        MotifFinderSource source = new MotifFinderSource(pattern, Strand.POSITIVE, genome);
 
         Iterator<Feature> iter = source.getFeatures(chr, start, end);
         Feature feat = iter.next();

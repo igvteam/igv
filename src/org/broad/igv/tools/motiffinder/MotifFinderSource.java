@@ -12,10 +12,7 @@
 package org.broad.igv.tools.motiffinder;
 
 import org.broad.igv.dev.api.IGVPlugin;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.CachingFeatureSource;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.session.SessionXmlAdapters;
@@ -61,6 +58,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     @XmlAttribute private Genome genome;
 
     @XmlAttribute private int featureWindowSize = (int) 100e3;
+    @XmlAttribute private Strand strand = Strand.POSITIVE;
 
     @SubtlyImportant
     private MotifFinderSource(){}
@@ -70,8 +68,9 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * @param pattern The regex pattern to search
      * @param genome Genome from which to get sequence data
      */
-    public MotifFinderSource(String pattern, Genome genome){
+    public MotifFinderSource(String pattern, Strand strand, Genome genome){
         this.pattern = pattern;
+        this.strand = strand;
         this.genome = genome;
     }
 
@@ -95,6 +94,9 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
         byte[] seq = genome.getSequence(chr, start, end);
         if(seq == null) Collections.emptyList().iterator();
+
+
+
         return search(chr, this.pattern, start, seq);
     }
 
@@ -130,8 +132,9 @@ public class MotifFinderSource implements FeatureSource<Feature> {
 
                     String trackName = dialog.getTrackName();
                     String pattern = dialog.getInputPattern();
+                    Strand strand = Strand.POSITIVE; //dialog.getStrand();
                     if (pattern != null) {
-                        MotifFinderSource source = new MotifFinderSource(pattern, GenomeManager.getInstance().getCurrentGenome());
+                        MotifFinderSource source = new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome());
                         CachingFeatureSource cachingFeatureSource = new CachingFeatureSource(source);
                         FeatureTrack track = new FeatureTrack(trackName, trackName, cachingFeatureSource);
                         IGV.getInstance().addTracks(Arrays.<Track>asList(track), PanelName.FEATURE_PANEL);
