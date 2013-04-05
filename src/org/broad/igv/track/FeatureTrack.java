@@ -16,10 +16,6 @@ import org.broad.igv.cli_plugin.PluginFeatureSource;
 import org.broad.igv.cli_plugin.PluginSource;
 import org.broad.igv.dev.api.api;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.*;
@@ -730,8 +726,8 @@ public class FeatureTrack extends AbstractTrack {
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("renderFeatures: " + getName());
+        if (log.isTraceEnabled()) {
+            log.trace("renderFeatures: " + getName());
         }
 
         String chr = context.getChr();

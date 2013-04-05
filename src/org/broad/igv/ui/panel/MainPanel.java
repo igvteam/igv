@@ -493,8 +493,8 @@ public class MainPanel extends JPanel implements Paintable {
     static class SplitPane extends JideSplitPane {
         @Override
         public void doLayout() {
-            if (log.isDebugEnabled()) {
-                log.debug("Layout");
+            if (log.isTraceEnabled()) {
+                log.trace("Layout");
             }
             super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
         }
