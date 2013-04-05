@@ -1577,6 +1577,7 @@ public class IGV {
                 public void run() {
                     try {
                         List<Track> tracks = load(locator);
+                        log.debug(tracks.size() + " new tracks loaded");
                         addTracks(tracks, locator);
                     } catch (Exception e) {
                         log.error("Error loading track", e);
@@ -1596,6 +1597,8 @@ public class IGV {
             try {
                 t.join();
             } catch (InterruptedException ignore) {
+                log.error(ignore.getMessage(), ignore);
+                messages.append("Thread interrupted: " + ignore.getMessage());
             }
         }
 
@@ -1870,6 +1873,7 @@ public class IGV {
      * for linking tracks for overlay.
      */
     public void resetOverlayTracks() {
+        log.debug("Resetting Overlay Tracks");
         overlayTracksMap.clear();
         overlaidTracks.clear();
 
@@ -2225,6 +2229,7 @@ public class IGV {
 
 
     private void resetGroups() {
+        log.debug("Resetting Groups");
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(groupByAttribute);
         }

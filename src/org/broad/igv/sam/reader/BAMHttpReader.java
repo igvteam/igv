@@ -182,10 +182,9 @@ public class BAMHttpReader implements AlignmentReader {
         }
     }
 
-
-    // TODO -- revisit caching scheme,  do something for ftp loads
     File getIndexFile(URL url, String indexPath) throws IOException {
 
+        log.debug("Getting index for " + url + ". Index path " + indexPath);
         String urlString = url.toString();
         indexFile = getTmpIndexFile(urlString);
 

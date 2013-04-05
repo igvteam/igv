@@ -178,6 +178,7 @@ public class HttpUtils {
      * @throws IOException
      */
     public InputStream openConnectionStream(URL url) throws IOException {
+        log.debug("Opening connection stream to  " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             String userInfo = url.getUserInfo();
             String host = url.getHost();
@@ -206,7 +207,7 @@ public class HttpUtils {
 
 
     public boolean resourceAvailable(URL url) {
-
+        log.debug("Checking if resource is available: " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
         }

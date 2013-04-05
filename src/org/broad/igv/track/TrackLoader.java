@@ -966,6 +966,7 @@ public class TrackLoader {
                 try {
                     if ((new File(covPath)).exists() || (HttpUtils.isRemoteURL(covPath) &&
                             HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
+                        log.debug("Loading TDF for coverage: " + covPath);
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
                         covTrack.setDataSource(ds);
@@ -986,7 +987,7 @@ public class TrackLoader {
                 newTracks.add(spliceJunctionTrack);
                 alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
             }
-
+            log.debug("Alignment track loaded");
             newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {

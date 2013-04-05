@@ -46,7 +46,7 @@ public class AlignmentReaderFactory {
     }
 
     public static AlignmentReader getReader(ResourceLocator locator, boolean requireIndex) throws IOException {
-
+        log.debug("Getting alignment reader for " + locator);
         String pathLowerCase = locator.getPath().toLowerCase();
 
         AlignmentReader reader = null;
@@ -75,7 +75,7 @@ public class AlignmentReaderFactory {
                 try {
                     reader = new BAMHttpReader(locator, requireIndex);
                 } catch (MalformedURLException e) {
-                    log.error("", e);
+                    log.error(e.getMessage(), e);
                     throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
                 }
 
