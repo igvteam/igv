@@ -75,8 +75,7 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         SiteSelector criteria = new SiteSelector(parser);
         //Convert from 0-based to 1-based
         criteria.addInterval(chromoNameToStandard(chr), start + 1, end);
-        //TODO DON'T COMMIT THIS
-        SiteIterator<MongoVariantContext> iterator  = kb.getCalls(criteria);//kb.getConsensusSites(criteria);
+        SiteIterator<MongoVariantContext> iterator  = kb.getConsensusSites(criteria);
         List<VCFVariant> variants = new ArrayList<VCFVariant>();
         while(iterator.hasNext()){
             MongoVariantContext mvc = iterator.next();
