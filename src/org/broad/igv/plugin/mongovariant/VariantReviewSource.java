@@ -23,6 +23,9 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.*;
 import org.broadinstitute.sting.utils.GenomeLocParser;
+import org.broadinstitute.variant.variantcontext.Allele;
+import org.broadinstitute.variant.variantcontext.Genotype;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,16 +120,16 @@ public class VariantReviewSource implements FeatureSource<VCFVariant> {
         return new GenomeLocParser(dict);
     }
 
-//    static MongoVariantContext createMVC(int allele0, int allele1, String callsetName, VariantContext variantContext, TruthStatus truthStatus){
-//        List<org.broadinstitute.variant.variantcontext.Allele> alleleList = variantContext.getAlleles();
-//
-//        MongoGenotype mgt = new MongoGenotype(allele0, allele1);
-//        Genotype gt = mgt.toGenotype(alleleList);
-//        MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
-//        mvc.setReviewed(true);
-//        mvc.setChr(chromoNameToStandard(mvc.getChr()));
-//        return mvc;
-//    }
+    static MongoVariantContext createMVC(int allele0, int allele1, String callsetName, VariantContext variantContext, TruthStatus truthStatus){
+        List<Allele> alleleList = variantContext.getAlleles();
+
+        MongoGenotype mgt = new MongoGenotype(allele0, allele1);
+        Genotype gt = mgt.toGenotype(alleleList);
+        MongoVariantContext mvc = MongoVariantContext.create(callsetName, variantContext, truthStatus, gt);
+        mvc.setReviewed(true);
+        mvc.setChr(chromoNameToStandard(mvc.getChr()));
+        return mvc;
+    }
 
     public static VariantTrack loadVariantReview(ResourceLocator locator, List<Track> newTracks){
         //TODO Figure out how to name the samples properly

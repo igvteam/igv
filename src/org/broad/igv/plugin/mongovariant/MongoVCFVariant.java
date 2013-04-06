@@ -25,7 +25,7 @@ public class MongoVCFVariant extends VCFVariant{
     private final MongoVariantContext mongoVariantContext;
 
     public MongoVCFVariant(MongoVariantContext mongoVariantContext, String chr) {
-        super(null, chr);//mongoVariantContext.getVariantContext(), chr);
+        super(mongoVariantContext.getVariantContext(), chr);
         this.mongoVariantContext = mongoVariantContext;
     }
 
