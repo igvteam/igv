@@ -79,6 +79,7 @@ public class SAMReader implements AlignmentReader {
         try {
             is = ParsingUtils.openInputStreamGZ(new ResourceLocator(samFile));
             BufferedInputStream bis = new BufferedInputStream(is);
+            SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
             reader = new SAMFileReader(bis);
             header = reader.getFileHeader();
         } catch (IOException e) {
