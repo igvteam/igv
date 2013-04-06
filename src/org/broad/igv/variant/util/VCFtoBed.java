@@ -22,8 +22,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.VariantContext;
+import org.broadinstitute.variant.vcf.VCFCodec;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

@@ -23,7 +23,7 @@ import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broadinstitute.sting.gatk.walkers.na12878kb.core.NA12878DBArgumentCollection;
-import org.broadinstitute.sting.utils.variantcontext.VariantContext;
+import org.broadinstitute.variant.variantcontext.VariantContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

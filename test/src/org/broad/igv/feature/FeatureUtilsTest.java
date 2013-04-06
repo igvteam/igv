@@ -24,7 +24,7 @@ import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.variant.vcf.VCFCodec;
 import org.junit.*;
 
 import java.io.IOException;

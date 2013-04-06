@@ -2484,6 +2484,7 @@ public class IGV {
                 String line = null;
                 try {
                     while((line = br.readLine()) != null){
+                        if(line.startsWith("##")) continue;
                         pluginClassNames.add(line);
                     }
                 } catch (IOException e) {

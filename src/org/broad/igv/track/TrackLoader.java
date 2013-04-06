@@ -73,7 +73,7 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
+import org.broadinstitute.variant.vcf.VCFHeader;
 
 import java.io.File;
 import java.io.IOException;

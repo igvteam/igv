@@ -17,8 +17,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.AsciiFeatureCodec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.variant.vcf.VCF3Codec;
+import org.broadinstitute.variant.vcf.VCFCodec;
 
 import java.io.BufferedReader;
 import java.io.IOException;

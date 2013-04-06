@@ -34,7 +34,7 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
-import org.broadinstitute.sting.utils.variantcontext.GenotypeType;
+import org.broadinstitute.variant.variantcontext.GenotypeType;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
