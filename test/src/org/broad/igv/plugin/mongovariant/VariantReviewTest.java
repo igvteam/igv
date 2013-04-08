@@ -69,8 +69,7 @@ public class VariantReviewTest extends AbstractHeadlessTest{
         //Convert from exclusive end to inclusive end
         builder.start(start + 1).stop(end).chr(chr).alleles(alleles);
         VariantContext vc = builder.make();
-        //TODO Uncomment the following line when vcf dependencies sorted out
-        //mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, vc, truthStatus);
+        mvc = VariantReviewSource.createMVC(allele0, allele1, callsetName, vc, truthStatus);
 
         int errorsResetting = 0;
         try{

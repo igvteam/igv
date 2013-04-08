@@ -40,7 +40,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author jrobinso
@@ -184,6 +186,24 @@ public class TestUtils {
         assertEquals(exp.getChr(), act.getChr());
         assertEquals(exp.getStart(), act.getStart());
         assertEquals(exp.getEnd(), act.getEnd());
+    }
+
+    /**
+     *
+     * @param featureIterator
+     * @return Number of features in the iterator
+     * @throws Exception
+     */
+    public static int assertFeatureIteratorSorted(Iterator<? extends Feature> featureIterator){
+        int lastStart = -1;
+        int count = 0;
+        while (featureIterator.hasNext()) {
+            Feature f0 = featureIterator.next();
+            assertTrue(f0.getStart() >= lastStart);
+            lastStart = f0.getStart();
+            count++;
+        }
+        return count;
     }
 
     /*

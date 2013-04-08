@@ -25,7 +25,8 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Iterator;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 public class SQLCodecSourceTest {
 
@@ -42,25 +43,13 @@ public class SQLCodecSourceTest {
         return reader;
     }
 
-    public static int checkFeatureIteratorSorted(Iterator<Feature> featureIterator) throws Exception {
-        int lastStart = -1;
-        int count = 0;
-        while (featureIterator.hasNext()) {
-            Feature f0 = featureIterator.next();
-            assertTrue(f0.getStart() >= lastStart);
-            lastStart = f0.getStart();
-            count++;
-        }
-        return count;
-    }
-
     //Check that querying returns sorted features
     @Test
     public void testQueryBEDUnsorted() throws Exception {
         String path = "sql/Unigene.unsorted.db";
         SQLCodecSource reader = getUnigene(path);
         Iterator<Feature> features = reader.getFeatures("chr2", 0, Integer.MAX_VALUE / 4);
-        int count = checkFeatureIteratorSorted(features);
+        int count = TestUtils.assertFeatureIteratorSorted(features);
         assertEquals(71, count);
     }
 
@@ -70,7 +59,7 @@ public class SQLCodecSourceTest {
         String path = "sql/Unigene.unsorted.db";
         SQLCodecSource reader = getUnigene(path);
         CloseableTribbleIterator<Feature> features = reader.iterator();
-        int count = checkFeatureIteratorSorted(features);
+        int count = TestUtils.assertFeatureIteratorSorted(features);
         assertEquals(71, count);
     }
 

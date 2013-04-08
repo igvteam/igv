@@ -12,11 +12,13 @@
 package org.broad.igv.tools.motiffinder;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.regex.Matcher;
 
 import static junit.framework.Assert.*;
 
@@ -27,22 +29,86 @@ import static junit.framework.Assert.*;
 public class MotifFinderSourceTest extends AbstractHeadlessTest{
 
 
-    String shortSeq = "GACTCTGACTGGACTCTGATCAG";
+    String shortSeq = "GACTCTGACTGGAGTCTGATCAG";
+    //revComp =       "CTGATCAGACTCCAGTCAGAGTC";
 
     @Test
     public void testBasicSearch() throws Exception{
-        String motif = "TCTG";
-        int posStart = 19389;
+        int posStart = 0;//19389;
+        //Motif is twice on positive strand, once on negative
+        String motif = "ACT";
+
         Iterator<Feature> matchIter = MotifFinderSource.search(null, motif, posStart, shortSeq.getBytes());
-        assertTrue(matchIter.hasNext());
+        assertTrue("No matches found for motif " + motif, matchIter.hasNext());
+
+        int count = 0;
+        int lastStart = -1;
+        while(matchIter.hasNext()){
+            Feature feat = matchIter.next();
+            count++;
+            assertTrue("Features out of order", feat.getStart() >= lastStart);
+            checkPatternMatches(motif, feat, shortSeq.getBytes());
+            lastStart = feat.getStart();
+        }
+        assertEquals("Unexpected number of features", 3, count);
+    }
+
+    @Test
+    public void testBasicSearchNegStrand_end() throws Exception{
+        int posStart = 19389;
+        //Motif is at the end of this sequence on the negative strand
+        String motif = "CTGATC";
+        Strand strand = Strand.NEGATIVE;
+
+        Iterator<Feature> matchIter = MotifFinderSource.searchSingleStrand(null, strand, motif, posStart, shortSeq.getBytes());
+        assertTrue("No matches found for motif " + motif, matchIter.hasNext());
+        Feature feat = matchIter.next();
+
+        int expStart = posStart + shortSeq.length() - motif.length();
+        int expEnd = expStart + motif.length();
+        assertEquals(expStart, feat.getStart());
+        assertEquals(expEnd, feat.getEnd());
+        checkPatternMatches(motif, feat, shortSeq.getBytes());
+
+        assertFalse(matchIter.hasNext());
+    }
+
+    @Test
+    public void testBasicSearchNegStrand_few() throws Exception{
+        int posStart = 19389;
+        //Should have several hits
+        String motif = "TG";
+        String revSeq = "CA";
+        Strand strand = Strand.NEGATIVE;
+
+        Iterator<Feature> matchIter = MotifFinderSource.searchSingleStrand(null, strand, motif, posStart, shortSeq.getBytes());
+        assertTrue("No matches found for motif " + motif, matchIter.hasNext());
+
+        while(matchIter.hasNext()){
+            Feature feat = matchIter.next();
+            checkPatternMatches(motif, feat, shortSeq.getBytes());
+        }
+    }
+
+    @Test
+    public void testBasicSearchPosStrand() throws Exception{
+        int posStart = 19389;
+        String motif = "TCTG";
+        Strand strand = Strand.POSITIVE;
+
+        Iterator<Feature> matchIter = MotifFinderSource.searchSingleStrand(null, strand, motif, posStart, shortSeq.getBytes());
+        assertTrue("No matches found for motif " + motif, matchIter.hasNext());
         Feature feat = matchIter.next();
 
         assertEquals(posStart + 3, feat.getStart());
         assertEquals(posStart + 7, feat.getEnd());
+        checkPatternMatches(motif, feat, shortSeq.getBytes());
 
         feat = matchIter.next();
         assertEquals(posStart + 14, feat.getStart());
         assertEquals(posStart + 18, feat.getEnd());
+        checkPatternMatches(motif, feat, shortSeq.getBytes());
+
 
         assertFalse(matchIter.hasNext());
     }
@@ -93,24 +159,31 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
     @Test
     public void testSearchOverlapping() throws Exception{
         String motif = "ATGCATGCATGC";
-        MotifFinderSource source = new MotifFinderSource(motif, Strand.POSITIVE, genome);
+        MotifFinderSource source = new MotifFinderSource(motif, genome);
 
         String queryChr = "chr8";
         int queryStart = 40823007;
         int queryEnd = 40863995;
 
         Iterator<Feature> iter = source.getFeatures(queryChr, queryStart, queryEnd);
-        Feature feat = iter.next();
+        BasicFeature feat = (BasicFeature) iter.next();
 
         int expFeatureStart = 40843500;
         int exFeatureEnd = 40843512;
 
         assertEquals(expFeatureStart, feat.getStart());
         assertEquals(exFeatureEnd, feat.getEnd());
+        checkPatternMatches(motif, feat);
 
-        feat = iter.next();
+        feat = (BasicFeature) iter.next();
+        assertEquals(expFeatureStart + 2, feat.getStart());
+        assertEquals(exFeatureEnd + 2, feat.getEnd());
+        checkPatternMatches(motif, feat);
+
+        feat = (BasicFeature) iter.next();
         assertEquals(expFeatureStart + 4, feat.getStart());
         assertEquals(exFeatureEnd + 4, feat.getEnd());
+        checkPatternMatches(motif, feat);
     }
 
     /**
@@ -153,12 +226,13 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
      * @throws Exception
      */
     public void tstSearchGenomeSingResult(String pattern, String chr, int start, int end, int expFeatStart, int expFeatureEnd) throws Exception {
-        MotifFinderSource source = new MotifFinderSource(pattern, Strand.POSITIVE, genome);
+        MotifFinderSource source = new MotifFinderSource(pattern, genome);
 
         Iterator<Feature> iter = source.getFeatures(chr, start, end);
-        Feature feat = iter.next();
 
         if(expFeatStart >= 0){
+
+            Feature feat = iter.next();
             assertNotNull(feat);
 
             assertEquals(expFeatStart, feat.getStart());
@@ -166,10 +240,22 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
             if(expFeatureEnd > 0){
                 assertEquals(expFeatureEnd, feat.getEnd());
             }
+
+            checkPatternMatches(pattern, feat);
         }else{
-            assertNull(feat);
+            assertFalse("Iterator should be empty but isn't", iter.hasNext());
         }
 
         assertFalse(iter.hasNext());
+    }
+
+    private void checkPatternMatches(String pattern, Feature feature){
+        byte[] sequence = genome.getSequence(feature.getChr(), feature.getStart(), feature.getEnd());
+        checkPatternMatches(pattern, feature, sequence);
+    }
+
+    private void checkPatternMatches(String pattern, Feature feature, byte[] sequence){
+        Matcher matcher = MotifFinderSource.getMatcher(pattern, ((BasicFeature) feature).getStrand(), sequence);
+        assertTrue("No match found for pattern " + pattern + " at " + feature.getStart(), matcher.find());
     }
 }
