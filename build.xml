@@ -131,7 +131,7 @@
     </target>
 
 
-    <target name="compileTests" depends="compile" if="compile.tests" description="Compile test files to testtmp directory">
+    <target name="compileTests" depends="init" if="compile.tests" description="Compile test files to testtmp directory, WITHOUT compiling main source files">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
                target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
             <classpath refid="test.classpath"/>
@@ -275,7 +275,7 @@
      >ant -Dfilesetpattern IGVToolsTest tests
      would simply run IGVToolsTest.
      -->
-    <target name="actruntests" depends="compile, compileTests">
+    <target name="actruntests" depends="compileTests">
         <delete dir="${test.reports}"/>
         <mkdir dir="${test.reports}"/>
 
@@ -312,13 +312,19 @@
         <fail message="Test failure detected, check test results." if="tests.failed"/>
     </target>
 
-    <target name="tests">
+    <!-- Run tests without compiling source files. Primarily used
+    for testing packaged jar-->
+    <target name="test_nocompile">
         <antcall target="makereports">
             <param name="filesetid" value="allfileset"/>
         </antcall>
     </target>
 
-    <target name="uitests">
+    <target name="tests" depends="compile">
+        <antcall target="test_nocompile"/>
+    </target>
+
+    <target name="uitests" depends="compile">
         <antcall target="makereports">
             <param name="filesetid" value="uifileset"/>
         </antcall>
