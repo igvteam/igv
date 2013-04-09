@@ -43,7 +43,8 @@ public class MutationTrack extends FeatureTrack {
 
     @Override
     public void overlay(RenderContext context, Rectangle rect) {
-        if (!context.getChr().equals(Globals.CHR_ALL) || IGV.getInstance().getSession().getPreferenceAsBoolean(PreferenceManager.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
+        if (!context.getChr().equals(Globals.CHR_ALL) ||
+                IGV.getInstance().getSession().getPreferenceAsBoolean(PreferenceManager.OVERLAY_MUTATIONS_WHOLE_GENOME)) {
             renderFeatures(context, rect);
         }
     }

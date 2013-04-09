@@ -474,4 +474,28 @@ public class ParsingUtils {
             return false;
         }
     }
+
+    /**
+     * Return the "IGV extension" (basically the extension after strippin trailing qualifiers) for the input path.
+     * his is the string IGV uses to identify the format and data type of the file.
+     *
+     * @param path
+     * @return
+     */
+    public static String getIGVExtension(String path) {
+
+        // _sorted.txt is an old alignment format.
+        if(path.endsWith("_sorted.txt")) {
+            return "_sorted.txt";
+        }
+
+        // String off gzip first
+        if(path.endsWith(".gz")) path = path.substring(0, path.length()-3);
+
+        // Now common qualifiers
+        if(path.endsWith(".txt") || path.endsWith(".xls"))  path = path.substring(0, path.length()-4);
+
+        int idx = path.lastIndexOf('.');
+        return idx < 0 ? path : path.substring(idx+1, path.length());
+    }
 }

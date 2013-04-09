@@ -17,6 +17,8 @@
 package org.broad.igv.feature;
 
 import com.google.common.base.Predicate;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -54,7 +56,7 @@ public class FeatureUtils {
      * Segregate a list of possibly overlapping features into a list of
      * non-overlapping lists of features.
      */
-    public static List<List<IGVFeature>> segreateFeatures(List<IGVFeature> features, double scale) {
+    public static List<List<IGVFeature>> segregateFeatures(List<IGVFeature> features, double scale) {
 
         // Create a list to hold the lists of non-overlapping features
         List<List<IGVFeature>> segmentedLists = new ArrayList();
@@ -386,6 +388,76 @@ public class FeatureUtils {
         }
 
         return returnList;
+    }
+
+
+    /**
+     * Export a gene in "edx" format
+     * LYZ
+     * hg19 12	+	69742133	69748013	69742188	69746999
+     * 4
+     * 69742133	69742324	0
+     * 69743887	69744052	1
+     * 69745999	69746078	1
+     * 69746932	69748013	2
+     * 69742083	69742374	AAGGGTGGAGCC
+     *
+     * @param feature
+     */
+    public static void exportEDX(IGVFeature feature) {
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+
+        System.out.println(feature.getName());
+        System.out.print(genome.getId() + "\t");
+        String str = feature.getStrand() == Strand.POSITIVE ? "+" : "-";
+        System.out.print(feature.getChr() + "\t" + str + "\t" + feature.getStart() + "\t" + feature.getEnd() + "\t");
+
+        List<Exon> exons = feature.getExons();
+
+        // Find coding start & end
+        int cdStart = 0;
+        int cdEnd = 0;
+        for (Exon ex : exons) {
+            if (ex.getCdStart() > ex.getStart()) {
+                cdStart = ex.getCdStart();
+                break;
+            }
+        }
+        for (int i = 0; i < exons.size(); i++) {
+            Exon ex = exons.get(i);
+            if (ex.getCdEnd() < ex.getEnd()) {
+                cdEnd = ex.getCdEnd();
+                break;
+            }
+        }
+        System.out.println(cdStart + "\t" + cdEnd);
+        System.out.println(exons.size());
+
+        for(Exon ex : exons) {
+            int rs = ex.getReadingFrame();
+            int fs = rs == 0 ? 0 : 3 - rs;
+            System.out.println(ex.getStart() + "\t" + ex.getEnd() + "\t" + fs);
+        }
+
+
+        // Sequence
+        int buffer = 10;
+        for(int i=0; i<exons.size(); i++) {
+            Exon ex = exons.get(i);
+            // Buffer -- 50 bp by default but can be smaller
+
+            int seqStart = ex.getStart() - buffer;
+
+            int nextExonStart = (i < exons.size() - 1 ? exons.get(i+1).getStart() : Integer.MAX_VALUE);
+            buffer = Math.min(50, (nextExonStart - ex.getEnd()) / 2);
+            int seqEnd = ex.getEnd() + buffer;
+
+            byte [] sequence = genome.getSequence(feature.getChr(), seqStart, seqEnd);
+            String seqString = new String(sequence);
+            System.out.println(seqStart + "\t" + seqEnd + "\t" + seqString);
+        }
+
     }
 
 

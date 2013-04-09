@@ -161,6 +161,8 @@ public class TrackLoader {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
+            } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+                this.loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
             } else if (isIndexed(path, genome)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf.list")) {
@@ -208,11 +210,10 @@ public class TrackLoader {
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
-            }  else if(typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
+            } else if (typeString.endsWith("fpkm_tracking") || typeString.endsWith("gene_exp.diff") ||
                     typeString.endsWith("cds_exp.diff")) {
                 loadCufflinksFile(locator, newTracks, genome);
-            }
-            else if (typeString.contains(".dranger")) {
+            } else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
@@ -225,18 +226,11 @@ public class TrackLoader {
                 loadGobyCountsArchive(locator, newTracks, genome);
             } else if (GFFFeatureSource.isGFF(locator.getPath())) {
                 loadGFFfile(locator, newTracks, genome);
-            } else if (AbstractFeatureParser.canParse(locator.getPath())) {
-                loadFeatureFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".mut")) { //  MutationParser.isMutationAnnotationFile(locator)) {
-                this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".maf") || typeString.endsWith(".maf.annotated")) {
-                if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
-                    loadMutFile(locator, newTracks, genome);
-                } else {
-                    loadMultipleAlignmentTrack(locator, newTracks, genome);
-                }
+            } else if (typeString.endsWith(".maf")) {
+                loadMultipleAlignmentTrack(locator, newTracks, genome);
+
             } else if (typeString.endsWith(".maf.dict")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".peak.bin")) {
@@ -1051,8 +1045,8 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        MutationTrackLoader parser = new MutationTrackLoader();
-        List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator, genome);
+        MutationTrackLoader loader = new MutationTrackLoader();
+        List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
             track.setRendererClass(MutationRenderer.class);

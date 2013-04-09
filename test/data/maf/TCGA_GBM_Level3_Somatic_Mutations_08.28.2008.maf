@@ -1,0 +1,696 @@
+#samples TCGA-02-0001-01C-01W,TCGA-02-0003-01A-01W,TCGA-02-0004-01A-01W,TCGA-02-0006-01B-01W,TCGA-02-0007-01A-01W,TCGA-02-0009-01A-01W,TCGA-02-0010-01A-01W,TCGA-02-0011-01B-01W,TCGA-02-0014-01A-01W,TCGA-02-0015-01A-01W,TCGA-02-0016-01A-01W,TCGA-02-0021-01A-01W,TCGA-02-0023-01B-01W,TCGA-02-0024-01B-01W,TCGA-02-0025-01A-01W,TCGA-02-0026-01B-01W,TCGA-02-0027-01A-01W,TCGA-02-0028-01A-01W,TCGA-02-0033-01A-01W,TCGA-02-0034-01A-01W,TCGA-02-0037-01A-01W,TCGA-02-0038-01A-01W,TCGA-02-0043-01A-01W,TCGA-02-0046-01A-01W,TCGA-02-0047-01A-01W,TCGA-02-0048-01A-01W,TCGA-02-0052-01A-01W,TCGA-02-0054-01A-01W,TCGA-02-0055-01A-01W,TCGA-02-0057-01A-01W,TCGA-02-0058-01A-01W,TCGA-02-0060-01A-01W,TCGA-02-0064-01A-01W,TCGA-02-0068-01A-01W,TCGA-02-0069-01A-01W,TCGA-02-0070-01A-01W,TCGA-02-0071-01A-01W,TCGA-02-0074-01A-01W,TCGA-02-0075-01A-01W,TCGA-02-0079-01A-01W,TCGA-02-0080-01A-01W,TCGA-02-0083-01A-01W,TCGA-02-0084-01A-01W,TCGA-02-0085-01A-01W,TCGA-02-0086-01A-01W,TCGA-02-0089-01A-01W,TCGA-02-0099-01A-01W,TCGA-02-0102-01A-01W,TCGA-02-0104-01A-01W,TCGA-02-0107-01A-01W,TCGA-02-0113-01A-01W,TCGA-02-0114-01A-01W,TCGA-02-0115-01A-01W,TCGA-02-0116-01A-01W,TCGA-06-0122-01A-01W,TCGA-06-0124-01A-01W,TCGA-06-0125-01A-01W,TCGA-06-0126-01A-01W,TCGA-06-0127-01A-01W,TCGA-06-0128-01A-01W,TCGA-06-0129-01A-01W,TCGA-06-0130-01A-01W,TCGA-06-0133-01A-01W,TCGA-06-0133-01A-02W,TCGA-06-0137-01A-01W,TCGA-06-0138-01A-01W,TCGA-06-0139-01A-01W,TCGA-06-0141-01A-01W,TCGA-06-0142-01A-01W,TCGA-06-0143-01A-01W,TCGA-06-0145-01A-01W,TCGA-06-0145-01A-02W,TCGA-06-0145-01A-03W,TCGA-06-0145-01A-04W,TCGA-06-0145-01A-05W,TCGA-06-0145-01A-06W,TCGA-06-0147-01A-01W,TCGA-06-0148-01A-01W,TCGA-06-0148-01A-03W,TCGA-06-0150-01A-01W,TCGA-06-0151-01A-01W,TCGA-06-0152-01A-02W,TCGA-06-0154-01A-02W,TCGA-06-0156-01A-01W,TCGA-06-0157-01A-01W,TCGA-06-0158-01A-01W,TCGA-06-0159-01A-01W,TCGA-06-0166-01A-01W,TCGA-06-0167-01A-01W,TCGA-06-0168-01A-01W,TCGA-06-0169-01A-01W,TCGA-06-0171-01A-02W,TCGA-06-0173-01A-01W,TCGA-06-0174-01A-01W,TCGA-06-0176-01A-02W,TCGA-06-0178-01A-01W,TCGA-06-0184-01A-01W,TCGA-06-0185-01A-01W,TCGA-06-0187-01A-01W,TCGA-06-0188-01A-01W,TCGA-06-0189-01A-01W,TCGA-06-0190-01A-01W,TCGA-06-0195-01B-01W,TCGA-06-0197-01A-02W,TCGA-06-0201-01A-01W,TCGA-06-0206-01A-01W,TCGA-06-0208-01A-01W,TCGA-06-0209-01A-01W,TCGA-06-0210-01A-01W,TCGA-06-0213-01A-01W,TCGA-06-0214-01A-02W,TCGA-06-0219-01A-01W,TCGA-06-0221-01A-01W,TCGA-06-0237-01A-02W,TCGA-06-0238-01A-02W,TCGA-06-0241-01A-02W,TCGA-06-0644-01A-02W,TCGA-06-0645-01A-01W,TCGA-06-0646-01A-01W,TCGA-06-0648-01A-01W,TCGA-08-0245-01A-01W,TCGA-08-0246-01A-01W,TCGA-08-0344-01A-01W,TCGA-08-0347-01A-01W,TCGA-08-0349-01A-01W,TCGA-08-0351-01A-01W,TCGA-08-0352-01A-01W,TCGA-08-0353-01A-01W,TCGA-08-0354-01A-01W,TCGA-08-0356-01A-01W,TCGA-08-0357-01A-01W,TCGA-08-0358-01A-01W,TCGA-08-0359-01A-01W,TCGA-08-0360-01A-01W,TCGA-08-0373-01A-01W,TCGA-08-0375-01A-01W,TCGA-08-0380-01A-01W,TCGA-08-0385-01A-01W,TCGA-08-0386-01A-01W,TCGA-08-0389-01A-01W,TCGA-08-0390-01A-01W,TCGA-12-0615-01A-01W,TCGA-12-0616-01A-01W,TCGA-12-0618-01A-01W,TCGA-12-0619-01A-01W,Tumor_Sample_Barcode
+Hugo_Symbol	Entrez_Gene_Id	Center	NCBI_Build	Chromosome	Start_position	End_position	Strand	Variant_Classification	Variant_Type	Reference_Allele	Tumor_Seq_Allele1	Tumor_Seq_Allele2	dbSNP_RS	dbSNP_Val_Status	Tumor_Sample_Barcode	Matched_Norm_Sample_Barcode	Match_Norm_Seq_Allele1	Match_Norm_Seq_Allele2	Tumor_Validation_Allele1	Tumor_Validation_Alliele2	Match_Norm_Validation_Allele1	Match_Norm_Validation_Allele2	Verification_Status	Validation_Status	Mutation_Status	Sequencing_Phase
+PRKCZ	5590	BCM	36	1	2072180	2072180	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0206-01A-01W	TCGA-06-0206-10A-01W	G	G	A	G	G	G	Unknown	Valid	Somatic
+PRKCZ	5590	BCM	36	1	2106249	2106249	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+CHD5	26038	genome.wustl.edu	36	1	6112865	6112865	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0189-01A-01W	TCGA-06-0189-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+TAS1R1	80835	broad.mit.edu	36.1	1	6559159	6559159	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+FRAP1	2475	genome.wustl.edu	36	1	11224264	11224264	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CASP9	842	BCM	36	1	15717209	15717209	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+EPHA2	1969	BCM	36	1	16347951	16347951	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+EPHA8	2046	broad.mit.edu	36.1	1	22775426	22775426	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0389-01A-01W	TCGA-08-0389-11A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+EPHA8	2046	broad.mit.edu	36.1	1	22788070	22788070	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ID3	3399	broad.mit.edu	36.1	1	23758222	23758222	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MAP3K6	9064	broad.mit.edu	36.1	1	27555547	27555547	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+LCK	3932	broad.mit.edu	36.1	1	32514106	32514106	+	Silent	SNP	G	A	G	rs1126767	unknown	TCGA-06-0210-01A-01W	TCGA-06-0210-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CSF3R	1441	broad.mit.edu	36.1	1	36704987	36704987	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0241-01A-02W	TCGA-06-0241-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+CSF3R	1441	broad.mit.edu	36.1	1	36707876	36707876	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+COL11A1	1301	broad.mit.edu	36.1	1	103225800	103225800	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110057673	110057673	+	Silent	SNP	T	C	C			TCGA-02-0068-01A-01W	TCGA-02-0068-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110057673	110057673	+	Silent	SNP	T	C	C			TCGA-08-0246-01A-01W	TCGA-08-0246-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110057673	110057673	+	Silent	SNP	T	C	C			TCGA-08-0389-01A-01W	TCGA-08-0389-11A-01W	C	C	T	C				Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059280	110059280	+	Silent	SNP	C	C	T			TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	C	T	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059280	110059280	+	Silent	SNP	C	C	T			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	C	T	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059280	110059280	+	Silent	SNP	C	C	T			TCGA-06-0169-01A-01W	TCGA-06-0169-10A-01W	C	T	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059354	110059354	+	Missense_Mutation	SNP	T	C	C			TCGA-02-0006-01B-01W	TCGA-02-0006-10A-01W	C	C	T	C	T	T		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059354	110059354	+	Missense_Mutation	SNP	T	C	C			TCGA-02-0047-01A-01W	TCGA-02-0047-10A-01W	C	C	T	C	T	T		Valid	Somatic	Phase_II	Sequenom
+GSTM5	2949	broad.mit.edu	36.1	1	110059354	110059354	+	Missense_Mutation	SNP	T	C	C			TCGA-06-0150-01A-01W	TCGA-06-0150-10A-01W	C	T	T	C	T	T		Valid	Somatic	Phase_II	Sequenom
+CHI3L2	1117	genome.wustl.edu	36	1	111579885	111579885	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TRIM33	51592	broad.mit.edu	36.1	1	114742087	114742087	+	Nonsense_Mutation	SNP	T	A	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W			T	A	T	T		Valid	Somatic	Phase_I	Sequenom
+ARNT	405	genome.wustl.edu	36	1	149055490	149055490	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+ADAM15	8751	BCM	36	1	153299877	153299877	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+DDR2	4921	broad.mit.edu	36.1	1	161003642	161003642	+	Splice_Site_SNP	SNP	G	G	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_II	Sequenom
+DDR2	4921	broad.mit.edu	36.1	1	161016536	161016536	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+DDR2	4921	broad.mit.edu	36.1	1	161016608	161016608	+	Missense_Mutation	SNP	G	A	G			TCGA-12-0615-01A-01W	TCGA-12-0615-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+POU2F1	5451	BCM	36	1	165625522	165625522	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	A	G	G	G	Somatic	Valid	Somatic
+SAC	55811	broad.mit.edu	36.1	1	166068972	166068972	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0157-01A-01W	TCGA-06-0157-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+SAC	55811	broad.mit.edu	36.1	1	166073110	166073110	+	Splice_Site_SNP	SNP	C	C	T			TCGA-12-0616-01A-01W	TCGA-12-0616-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ASPM	259266	broad.mit.edu	36.1	1	195340175	195340175	+	Missense_Mutation	SNP	A	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+ASPM	259266	broad.mit.edu	36.1	1	195365053	195365053	+	Missense_Mutation	SNP	A	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+LAX1	54900	genome.wustl.edu	36	1	202010148	202010148	+	Missense_Mutation	SNP	A	A	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	A	A	A	T	A	A	Valid	Valid	Somatic	Phase_I
+ETNK2	55224	broad.mit.edu	36.1	1	202387575	202387575	+	Missense_Mutation	SNP	G	G	G	rs3737655	unknown	TCGA-06-0190-01A-01W	TCGA-06-0190-10B-01W			G	T	G	G		Valid	Somatic	Phase_II	Sequenom
+PIK3C2B	5287	broad.mit.edu	36.1	1	202674772	202674772	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+MDM4	4194	genome.wustl.edu	36	1	202774027	202774027	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0129-01A-01W	TCGA-06-0129-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+LRRN2	10446	BCM	36	1	202854501	202854501	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+CD46	4179	BCM	36	1	206025059	206025059	+	Missense_Mutation	SNP	A	A	G	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	A	G	A	A	Somatic	Valid	Somatic
+PROX1	5629	broad.mit.edu	36.1	1	212237253	212237253	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CENPF	1063	genome.wustl.edu	36	1	212853776	212853776	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+CENPF	1063	genome.wustl.edu	36	1	212888794	212888794	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+MARK1	4139	broad.mit.edu	36.1	1	218875861	218875861	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0385-01A-01W	TCGA-08-0385-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+MARK1	4139	broad.mit.edu	36.1	1	218875890	218875890	+	Missense_Mutation	SNP	G	G	T			TCGA-08-0344-01A-01W	TCGA-08-0344-11A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+SOX11	6664	broad.mit.edu	36.1	2	5751538	5751538	+	Nonsense_Mutation	SNP	G	T	T			TCGA-06-0173-01A-01W	TCGA-06-0173-10B-01W			G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+SOX11	6664	broad.mit.edu	36.1	2	5751587	5751587	+	Missense_Mutation	SNP	A	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+MYCN	4613	broad.mit.edu	36.1	2	15999768	15999768	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+MYCN	4613	broad.mit.edu	36.1	2	16003370	16003370	+	Silent	SNP	A	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+ALK	238	broad.mit.edu	36.1	2	29269621	29269621	+	Silent	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+MSH2	4436	genome.wustl.edu	36	2	47484039	47484039	+	Missense_Mutation	SNP	C	C	A	Unknown	Unknown	TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	C	C	C	A	C	C	Valid	Valid	Somatic	Phase_I
+MSH2	4436	genome.wustl.edu	36	2	47557079	47557079	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+MSH6	2956	BCM	36	2	47880076	47880076	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+MSH6	2956	BCM	36	2	47881696	47881696	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+MSH6	2956	BCM	36	2	47881792	47881792	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+MSH6	2956	BCM	36	2	47886856	47886856	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+BCL11A	53335	broad.mit.edu	36.1	2	60541333	60541333	+	Missense_Mutation	SNP	G	A	A			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+BCL11A	53335	broad.mit.edu	36.1	2	60541349	60541349	+	Silent	SNP	G	A	G			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+BCL11A	53335	broad.mit.edu	36.1	2	60542011	60542011	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0133-01A-02W	TCGA-06-0133-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+BCL11A	53335	broad.mit.edu	36.1	2	60542382	60542382	+	Missense_Mutation	SNP	C	T	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+BCL11A	53335	broad.mit.edu	36.1	2	60542638	60542638	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+BCL11A	53335	broad.mit.edu	36.1	2	60542986	60542986	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+IL1RL1	9173	BCM	36	2	102332064	102332064	+	Missense_Mutation	SNP	T	T	C	novel	unknown	TCGA-02-0007-01A-01W	TCGA-02-0007-10A-01W	T	T	T	C	T	T	Unknown	Valid	Somatic
+GYPC	2995	genome.wustl.edu	36	2	127170093	127170093	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+COL3A1	1281	broad.mit.edu	36.1	2	189576409	189576409	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+COL3A1	1281	broad.mit.edu	36.1	2	189576733	189576733	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+COL3A1	1281	broad.mit.edu	36.1	2	189577093	189577093	+	Silent	SNP	G	A	G			TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W			A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+COL3A1	1281	broad.mit.edu	36.1	2	189578332	189578332	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+STAT1	6772	BCM	36	2	191571219	191571219	+	Missense_Mutation	SNP	T	T	A	novel	unknown	TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	T	T	A	T	T	T	Somatic	Valid	Somatic
+FN1	2335	broad.mit.edu	36.1	2	215948361	215948361	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+FN1	2335	broad.mit.edu	36.1	2	215948606	215948606	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+FN1	2335	broad.mit.edu	36.1	2	215953978	215953978	+	Silent	SNP	G	A	A			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+FN1	2335	broad.mit.edu	36.1	2	215959733	215959733	+	Silent	SNP	G	G	T			TCGA-06-0241-01A-02W	TCGA-06-0241-10A-01W	C	C	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+FN1	2335	broad.mit.edu	36.1	2	215997243	215997243	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+FN1	2335	broad.mit.edu	36.1	2	215998200	215998200	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+STK36	27148	genome.wustl.edu	36	2	219249113	219249113	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+DES	1674	broad.mit.edu	36.1	2	219994348	219994348	+	Missense_Mutation	SNP	T	A	T			TCGA-02-0047-01A-01W	TCGA-02-0047-10A-01W	T	T	A	T	T	T		Valid	Somatic	Phase_II	Sequenom
+DES	1674	broad.mit.edu	36.1	2	219998918	219998918	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0158-01A-01W	TCGA-06-0158-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+EPHA4	2043	genome.wustl.edu	36	2	222055424	222055424	+	Silent_Mutation	SNP	G	G	A	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+EPHA4	2043	genome.wustl.edu	36	2	222055639	222055639	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+IRS1	3667	genome.wustl.edu	36	2	227368280	227368280	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic	Phase_I
+IRS1	3667	genome.wustl.edu	36	2	227370416	227370416	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0033-01A-01W	TCGA-02-0033-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+DGKD	8527	broad.mit.edu	36.1	2	233961724	233961724	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+NDUFA10	4705	genome.wustl.edu	36	2	240599706	240599706	+	Splice_Site_SNP	SNP	C	C	T	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CHL1	10752	broad.mit.edu	36.1	3	357596	357596	+	Missense_Mutation	SNP	A	A	G			TCGA-02-0084-01A-01W	TCGA-02-0084-10A-01W			A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+CHL1	10752	broad.mit.edu	36.1	3	366197	366197	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+NEK10	152110	genome.wustl.edu	36	3	27208682	27208682	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+TGFBR2	7048	broad.mit.edu	36.1	3	30666785	30666785	+	Missense_Mutation	SNP	A	A	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	A	A	A	T	A	A		Valid	Somatic	Phase_I	Sequenom
+MLH1	4292	genome.wustl.edu	36	3	37017543	37017543	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+MLH1	4292	genome.wustl.edu	36	3	37042321	37042321	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+MLH1	4292	genome.wustl.edu	36	3	37056750	37056750	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	A	A	G	G	A	A	Valid	Valid	Somatic	Phase_I
+CTNNB1	1499	genome.wustl.edu	36	3	41240577	41240577	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+CCR5	1234	broad.mit.edu	36.1	3	46389649	46389649	+	Silent	SNP	C	A	C			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+LTF	4057	genome.wustl.edu	36	3	46454625	46454625	+	Splice_Site_SNP	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+LTF	4057	genome.wustl.edu	36	3	46471868	46471868	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+SEMA3B	7869	genome.wustl.edu	36	3	50288996	50288996	+	Missense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-01W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-02W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-03W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-04W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-05W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PRKCD	5580	BCM	36	3	53188716	53188716	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0145-01A-06W	TCGA-06-0145-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+EPHA3	2042	broad.mit.edu	36.1	3	89342222	89342222	+	Missense_Mutation	SNP	G	G	T			TCGA-08-0356-01A-01W	TCGA-08-0356-11A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+EPHA3	2042	broad.mit.edu	36.1	3	89604347	89604347	+	Missense_Mutation	SNP	A	A	T			TCGA-08-0344-01A-01W	TCGA-08-0344-11A-01W	A	A	A	T	A	A		Valid	Somatic	Phase_I	Sequenom
+EPHA6	285220	broad.mit.edu	36.1	3	98189215	98189215	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+RPN1	6184	genome.wustl.edu	36	3	129846483	129846483	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+EPHB1	2047	broad.mit.edu	36.1	3	136403133	136403133	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	A	A	A	G	A	A		Valid	Somatic	Phase_II	Sequenom
+ATR	545	broad.mit.edu	36.1	3	143659194	143659194	+	Nonsense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+SLC2A2	6514	broad.mit.edu	36.1	3	172205794	172205794	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PIK3CA	5290	BCM	36	3	180399335	180399355	+	In_Frame_Del	Del	CTGTGGGGCATCCACTTGATG	CTGTGGGGCATCCACTTGATG	---------------------	novel	unknown	TCGA-06-0166-01A-01W	TCGA-06-0166-10A-01W	CTGTGGGGCATCCACTTGATG	CTGTGGGGCATCCACTTGATG	CTGTGGGGCATCCACTTGATG	---------------------	CTGTGGGGCATCCACTTGATG	CTGTGGGGCATCCACTTGATG	Unknown	Valid	Somatic
+PIK3CA	5290	BCM	36	3	180399357	180399359	+	In_Frame_Del	Del	CCC	CCC	---	novel	unknown	TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	CCC	CCC	CCC	---	CCC	CCC	Unknown	Valid	Somatic
+PIK3CA	5290	BCM	36	3	180399570	180399570	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0116-01A-01W	TCGA-02-0116-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+PIK3CA	5290	BCM	36	3	180404247	180404247	+	Missense_Mutation	SNP	T	T	A	novel	unknown	TCGA-02-0047-01A-01W	TCGA-02-0047-10A-01W	T	T	T	A	T	T	Somatic	Valid	Somatic
+PIK3CA	5290	BCM	36	3	180410674	180410674	+	Missense_Mutation	SNP	T	T	C	novel	unknown	TCGA-02-0037-01A-01W	TCGA-02-0037-10A-01W	T	T	C	T	T	T	Somatic	Valid	Somatic
+DGKG	1608	BCM	36	3	187469360	187469361	+	Frame_Shift_Ins	Ins	--	--	AC	novel	unknown	TCGA-02-0054-01A-01W	TCGA-02-0054-10A-01W	--	--	--	AC	--	AC	Unknown	Valid	Somatic
+TNK2	10188	broad.mit.edu	36.1	3	197090344	197090344	+	Silent	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TNK2	10188	broad.mit.edu	36.1	3	197096286	197096286	+	Nonsense_Mutation	SNP	G	A	G			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+TNK2	10188	broad.mit.edu	36.1	3	197098255	197098255	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0189-01A-01W	TCGA-06-0189-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TNK2	10188	broad.mit.edu	36.1	3	197106537	197106537	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+FGFR3	2261	genome.wustl.edu	36	4	1777688	1777688	+	Missense_Mutation	SNP	A	A	C	Unknown	Unknown	TCGA-06-0159-01A-01W	TCGA-06-0159-10A-01W	A	A	A	C	A	A	Valid	Valid	Somatic	Phase_I
+STK32B	55351	broad.mit.edu	36.1	4	5551672	5551672	+	Silent	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+GPR78	27201	genome.wustl.edu	36	4	8633952	8633952	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0009-01A-01W	TCGA-02-0009-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+SLIT2	9353	broad.mit.edu	36.1	4	19868613	19868613	+	Silent	SNP	C	C	T			TCGA-06-0143-01A-01W	TCGA-06-0143-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+SLIT2	9353	broad.mit.edu	36.1	4	20156799	20156799	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0128-01A-01W	TCGA-06-0128-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_II	Sequenom
+SLIT2	9353	broad.mit.edu	36.1	4	20206469	20206469	+	Silent	SNP	C	C	T			TCGA-02-0009-01A-01W	TCGA-02-0009-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+CHIC2	26511	genome.wustl.edu	36	4	54574999	54574999	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PDGFRA	5156	broad.mit.edu	36.1	4	54825918	54825918	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0245-01A-01W	TCGA-08-0245-11A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+PDGFRA	5156	genome.wustl.edu	36	4	54828591	54828591	+	Missense_Mutation	SNP	G	C	G	Unknown	Unknown	TCGA-06-0174-01A-01W	TCGA-06-0174-10B-01W	G	G	G	C	G	G	Valid	Valid	Somatic	Phase_I
+PDGFRA	5156	broad.mit.edu	36.1	4	54835503	54835503	+	Missense_Mutation	SNP	T	A	A			TCGA-08-0347-01A-01W	TCGA-08-0347-11A-01W	T	T	A	T	T	T		Valid	Somatic	Phase_I	Sequenom
+KIT	3815	broad.mit.edu	36.1	4	55256515	55256515	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0644-01A-02W	TCGA-06-0644-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+KIT	3815	broad.mit.edu	36.1	4	55286837	55286837	+	Silent	SNP	G	A	G			TCGA-12-0616-01A-01W	TCGA-12-0616-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+KIT	3815	genome.wustl.edu	36	4	55288766	55288766	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+ANK2	287	broad.mit.edu	36.1	4	114390413	114390413	+	Silent	SNP	C	C	T			TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ANK2	287	broad.mit.edu	36.1	4	114498481	114498481	+	Silent	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+ANK2	287	broad.mit.edu	36.1	4	114498501	114498501	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ANK2	287	broad.mit.edu	36.1	4	114498900	114498900	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0354-01A-01W	TCGA-08-0354-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ANK2	287	broad.mit.edu	36.1	4	114499325	114499325	+	Missense_Mutation	SNP	G	G	T			TCGA-02-0064-01A-01W	TCGA-02-0064-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_II	Sequenom
+FBXW7	55294	genome.wustl.edu	36	4	153463593	153463593	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+FBXW7	55294	genome.wustl.edu	36	4	153471357	153471357	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+GRIA2	2891	BCM	36	4	158462195	158462197	+	In_Frame_Del	Del	AAT	AAT	---	novel	unknown	TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W	AAT	AAT	AAT	---	AAT	AAT	Unknown	Valid	Somatic
+TERT	7015	genome.wustl.edu	36	5	1332521	1332521	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TERT	7015	genome.wustl.edu	36	5	1346683	1346683	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PDZD2	23037	broad.mit.edu	36.1	5	32109753	32109753	+	Silent	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+PDZD2	23037	broad.mit.edu	36.1	5	32124997	32124997	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+ISL1	3670	broad.mit.edu	36.1	5	50722999	50722999	+	Missense_Mutation	SNP	G	C	C			TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	G	G	G	C	G	G		Valid	Somatic	Phase_II	Sequenom
+PIK3R1	5295	genome.wustl.edu	36	5	67624894	67624894	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0003-01A-01W	TCGA-02-0003-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+PIK3R1	5295	genome.wustl.edu	36	5	67625310	67625312	+	In_Frame_Del	Del	AGA	AGA	-	Unknown	Unknown	TCGA-02-0021-01A-01W	TCGA-02-0021-10A-01W	AGA	AGA	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+PIK3R1	5295	genome.wustl.edu	36	5	67626841	67626841	+	Missense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+PIK3R1	5295	genome.wustl.edu	36	5	67626855	67626855	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0074-01A-01W	TCGA-02-0074-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+PIK3R1	5295	genome.wustl.edu	36	5	67626884	67626885	+	Frame_Shift_Del	Del	GA	GA	-	Unknown	Unknown	TCGA-06-0129-01A-01W	TCGA-06-0129-10A-01W	GA	GA	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+PIK3R1	5295	genome.wustl.edu	36	5	67627006	67627008	+	In_Frame_Del	Del	GGT	GGT	-	Unknown	Unknown	TCGA-06-0133-01A-02W	TCGA-06-0133-10A-01W	GGT	GGT	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+CAST	831	broad.mit.edu	36.1	5	96037025	96037025	+	Silent	SNP	G	A	A			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CAST	831	broad.mit.edu	36.1	5	96112135	96112135	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+CAST	831	broad.mit.edu	36.1	5	96132051	96132051	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+APC	324	broad.mit.edu	36.1	5	112204016	112204016	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PDGFRB	5159	BCM	36	5	149477555	149477555	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+PDGFRB	5159	BCM	36	5	149495455	149495455	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+SPARC	6678	broad.mit.edu	36.1	5	151029489	151029489	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MAPK9	5601	broad.mit.edu	36.1	5	179624427	179624427	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+MAPK9	5601	broad.mit.edu	36.1	5	179640065	179640065	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+FLT4	2324	genome.wustl.edu	36	5	179978410	179978410	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0201-01A-01W	TCGA-06-0201-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+F13A1	2162	broad.mit.edu	36.1	6	6211846	6211846	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+HLA-E	3133	broad.mit.edu	36.1	6	30568297	30568297	+	Missense_Mutation	SNP	G	C	C			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W			C	G	G	G		Valid	Somatic	Phase_I	Sequenom
+HLA-E	3133	broad.mit.edu	36.1	6	30568297	30568297	+	Missense_Mutation	SNP	G	C	C			TCGA-02-0079-01A-01W	TCGA-02-0079-10A-01W			C	G	G	G		Valid	Somatic	Phase_I	Sequenom
+HLA-E	3133	broad.mit.edu	36.1	6	30568297	30568297	+	Missense_Mutation	SNP	G	C	C			TCGA-08-0373-01A-01W	TCGA-08-0373-11A-01W			C	G	G	G		Valid	Somatic	Phase_I	Sequenom
+HLA-E	3133	broad.mit.edu	36.1	6	30568302	30568302	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W			G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+SPDEF	25803	broad.mit.edu	36.1	6	34616933	34616933	+	Missense_Mutation	SNP	G	C	G			TCGA-06-0154-01A-02W	TCGA-06-0154-10A-01W	G	G	G	C	G	G		Valid	Somatic	Phase_II	Sequenom
+MAPK13	5603	BCM	36	6	36212465	36212465	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+PIM1	5292	BCM	36	6	37247171	37247171	+	Missense_Mutation	SNP	A	A	G	novel	unknown	TCGA-02-0011-01B-01W	TCGA-02-0011-10A-01W	A	A	A	G	A	A	Somatic	Valid	Somatic
+PPP2R5D	5528	broad.mit.edu	36.1	6	43083723	43083723	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+GCLC	2729	broad.mit.edu	36.1	6	53487015	53487015	+	Silent	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+DST	667	genome.wustl.edu	36	6	56466808	56466808	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56534115	56534115	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56564994	56564994	+	Missense_Mutation	SNP	G	C	G	Unknown	Unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	G	G	G	C	G	G	Valid	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56576971	56576971	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0145-01A-04W	TCGA-06-0145-10A-04W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56580657	56580657	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56581605	56581605	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	C	T	T	T	Unknown	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56591932	56591932	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+DST	667	genome.wustl.edu	36	6	56607311	56607311	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0148-01A-01W	TCGA-06-0148-10A-01W	C	C	C	G	C	C	Unknown	Valid	Somatic	Phase_I
+BAI3	577	genome.wustl.edu	36	6	69760544	69760544	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+BAI3	577	genome.wustl.edu	36	6	70127963	70127963	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0133-01A-02W	TCGA-06-0133-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+BAI3	577	genome.wustl.edu	36	6	70149531	70149531	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TPBG	7162	broad.mit.edu	36.1	6	83132625	83132625	+	Missense_Mutation	SNP	A	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	A	G	G	A	A	A		Valid	Somatic	Phase_II	Sequenom
+EPHA7	2045	BCM	36	6	94177152	94177152	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+EPHA7	2045	BCM	36	6	94177566	94177566	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0003-01A-01W	TCGA-02-0003-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+FOXO3	2309	broad.mit.edu	36.1	6	108989360	108989360	+	Missense_Mutation	SNP	G	C	C			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	G	G	C	G	G		Valid	Somatic	Phase_I	Sequenom
+FOXO3	2309	broad.mit.edu	36.1	6	108989596	108989596	+	Silent	SNP	C	C	T			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+FOXO3	2309	broad.mit.edu	36.1	6	109091836	109091836	+	Silent	SNP	G	C	G			TCGA-08-0389-01A-01W	TCGA-08-0389-11A-01W	G	G	G	C				Valid	Somatic	Phase_I	Sequenom
+ROS1	6098	broad.mit.edu	36.1	6	117769074	117769074	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+ROS1	6098	broad.mit.edu	36.1	6	117790458	117790458	+	Splice_Site_SNP	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+C6orf60	79632	broad.mit.edu	36.1	6	119337318	119337318	+	Missense_Mutation	SNP	C	A	C			TCGA-02-0104-01A-01W	TCGA-02-0104-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+C6orf60	79632	broad.mit.edu	36.1	6	119343120	119343120	+	Missense_Mutation	SNP	C	C	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	G	C	C	C		Valid	Somatic	Phase_II	Sequenom
+NMBR	4829	BCM	36	6	142441713	142441713	+	Missense_Mutation	SNP	G	G	T	novel	unknown	TCGA-06-0178-01A-01W	TCGA-06-0178-10B-01W	G	G	G	T	G	G	Somatic	Valid	Somatic
+NMBR	4829	BCM	36	6	142451232	142451232	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+ESR1	2099	broad.mit.edu	36.1	6	152307176	152307176	+	Silent	SNP	C	C	T			TCGA-06-0645-01A-01W	TCGA-06-0645-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+RADIL	55698	broad.mit.edu	36.1	7	4809833	4809833	+	Missense_Mutation	SNP	T	C	T			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	C	T	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+RADIL	55698	broad.mit.edu	36.1	7	4828640	4828640	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0157-01A-01W	TCGA-06-0157-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+MMD2	221938	broad.mit.edu	36.1	7	4922229	4922229	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0246-01A-01W	TCGA-08-0246-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+PMS2	5395	BCM	36	7	6005414	6005414	+	Nonsense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+MEOX2	4223	genome.wustl.edu	36	7	15692146	15692146	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+SNX13	23161	BCM	36	7	17881916	17881916	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	A	rs2953555	unknown	TCGA-02-0048-01A-01W	TCGA-02-0048-10A-01W	G	G	A	A	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	G	rs2953555	unknown	TCGA-02-0023-01B-01W	TCGA-02-0023-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	G	rs2953555	unknown	TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	G	rs2953555	unknown	TCGA-08-0245-01A-01W	TCGA-08-0245-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	G	rs2953555	unknown	TCGA-08-0386-01A-01W	TCGA-08-0386-11A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32980852	32980852	+	Missense_Mutation	SNP	G	A	G	rs2953555	unknown	TCGA-12-0616-01A-01W	TCGA-12-0616-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32981419	32981419	+	Silent	SNP	C	C	G	rs3750114	unknown	TCGA-02-0064-01A-01W	TCGA-02-0064-10A-01W	C	C	C	G	C	C		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	C			TCGA-06-0187-01A-01W	TCGA-06-0187-10B-01W	G	G	C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	C			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	C	G	C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	G			TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	G	G	C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	G			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W			C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	G			TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	G	G	C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+FKBP9	11328	broad.mit.edu	36.1	7	32994758	32994758	+	Silent	SNP	G	C	G			TCGA-06-0208-01A-01W	TCGA-06-0208-10A-01W			C	G	G	G		Valid	Somatic	Phase_II	Sequenom
+GLI3	2737	BCM	36	7	42046363	42046363	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+EGFR	1956	genome.wustl.edu	36	7	55177569	55177569	+	Missense_Mutation	SNP	T	G	G	Unknown	Unknown	TCGA-06-0237-01A-02W	TCGA-06-0237-10A-01W	T	T	T	G	T	T	Valid	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55178574	55178574	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0390-01A-01W	TCGA-08-0390-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	BCM	36	7	55187768	55187768	+	Missense_Mutation	SNP	C	T	T	novel	unknown	TCGA-06-0154-01A-02W	TCGA-06-0154-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+EGFR	1956	genome.wustl.edu	36	7	55189204	55189204	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0021-01A-01W	TCGA-02-0021-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55189212	55189212	+	Silent	SNP	C	T	T			TCGA-06-0148-01A-03W	TCGA-06-0148-10A-01W	C	C	T	T	C	C		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	genome.wustl.edu	36	7	55189212	55189212	+	Silent_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-06-0148-01A-01W	TCGA-06-0148-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55189217	55189217	+	Missense_Mutation	SNP	A	C	C			TCGA-08-0246-01A-01W	TCGA-08-0246-11A-01W	A	A	C	A	A	A		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	broad.mit.edu	36.1	7	55189237	55189237	+	Missense_Mutation	SNP	A	A	C			TCGA-02-0007-01A-01W	TCGA-02-0007-10A-01W	A	A	C	A	A	A		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	genome.wustl.edu	36	7	55189315	55189315	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	G	G	A	A	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55189316	55189316	+	Missense_Mutation	SNP	C	T	T			TCGA-06-0148-01A-03W	TCGA-06-0148-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	genome.wustl.edu	36	7	55189316	55189316	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0054-01A-01W	TCGA-02-0054-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55189316	55189316	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0148-01A-01W	TCGA-06-0148-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55189316	55189316	+	Missense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-06-0157-01A-01W	TCGA-06-0157-10A-01W	C	C	T	T	C	C	Unknown	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55189324	55189324	+	Missense_Mutation	SNP	G	G	T			TCGA-06-0127-01A-01W	TCGA-06-0127-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	broad.mit.edu	36.1	7	55191104	55191104	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0349-01A-01W	TCGA-08-0349-11A-02W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	broad.mit.edu	36.1	7	55200531	55200531	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0380-01A-01W	TCGA-08-0380-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	genome.wustl.edu	36	7	55200533	55200533	+	Missense_Mutation	SNP	G	C	C	Unknown	Unknown	TCGA-02-0116-01A-01W	TCGA-02-0116-10A-01W	G	G	G	C	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	broad.mit.edu	36.1	7	55200537	55200537	+	Missense_Mutation	SNP	G	G	T			TCGA-12-0616-01A-01W	TCGA-12-0616-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+EGFR	1956	genome.wustl.edu	36	7	55200537	55200537	+	Missense_Mutation	SNP	G	T	T	Unknown	Unknown	TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	G	G	T	T	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55200537	55200537	+	Missense_Mutation	SNP	G	T	T	Unknown	Unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55200603	55200603	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0003-01A-01W	TCGA-02-0003-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55208201	55208201	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+EGFR	1956	genome.wustl.edu	36	7	55208288	55208288	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+GNAI1	2770	broad.mit.edu	36.1	7	79671071	79671071	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+COL1A2	1278	genome.wustl.edu	36	7	93886799	93886799	+	Silent_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+COL1A2	1278	genome.wustl.edu	36	7	93892889	93892889	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0126-01A-01W	TCGA-06-0126-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+SLC25A13	10165	broad.mit.edu	36.1	7	95676178	95676178	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+SLC25A13	10165	broad.mit.edu	36.1	7	95744518	95744518	+	Silent	SNP	G	A	G			TCGA-06-0142-01A-01W	TCGA-06-0142-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+TRRAP	8295	genome.wustl.edu	36	7	98400280	98400280	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+TRRAP	8295	genome.wustl.edu	36	7	98447697	98447697	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+CYP3A4	1576	genome.wustl.edu	36	7	99219625	99219625	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TRIP6	7205	broad.mit.edu	36.1	7	100306136	100306136	+	Missense_Mutation	SNP	G	C	G			TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	G	G	G	C	G	G		Valid	Somatic	Phase_II	Sequenom
+SERPINE1	5054	broad.mit.edu	36.1	7	100558550	100558550	+	Silent	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+SRPK2	6733	broad.mit.edu	36.1	7	104569728	104569728	+	Silent	SNP	T	C	T			TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+RINT1	60561	BCM	36	7	104994978	104994978	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+MET	4233	genome.wustl.edu	36	7	116168234	116168234	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+MET	4233	BCM	36	7	116199281	116199281	+	Splice_Site_SNP	SNP	T	T	C	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	T	C	T	T	Somatic	Valid	Somatic
+MET	4233	broad.mit.edu	36.1	7	116206205	116206205	+	Missense_Mutation	SNP	G	C	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	C	G	G	G		Valid	Somatic	Phase_I	Sequenom
+ST7	7982	broad.mit.edu	36.1	7	116546849	116546849	+	Splice_Site_SNP	SNP	A	A	G			TCGA-02-0021-01A-01W	TCGA-02-0021-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+WNT2	7472	BCM	36	7	116705516	116705516	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+TRIM24	8805	BCM	36	7	137886376	137886376	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0171-01A-02W	TCGA-06-0171-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+NOS3	4846	genome.wustl.edu	36	7	150327287	150327287	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NOS3	4846	genome.wustl.edu	36	7	150329333	150329333	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+SHH	6469	BCM	36	7	155288984	155288984	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-06-0124-01A-01W	TCGA-06-0124-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PTK2B	2185	broad.mit.edu	36.1	8	27349782	27349782	+	Splice_Site_SNP	SNP	C	C	T	rs7005936	by-cluster,by-frequency,by-2hit-2allele,by-hapmap	TCGA-08-0358-01A-01W	TCGA-08-0358-11A-03W	C	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+FGFR1	2260	genome.wustl.edu	36	8	38391465	38391465	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0060-01A-01W	TCGA-02-0060-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+FGFR1	2260	broad.mit.edu	36.1	8	38398609	38398609	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0245-01A-01W	TCGA-08-0245-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+PRKDC	5591	genome.wustl.edu	36	8	48873436	48873436	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+PRKDC	5591	genome.wustl.edu	36	8	48912493	48912493	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+PRKDC	5591	genome.wustl.edu	36	8	48929313	48929313	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+LYN	4067	genome.wustl.edu	36	8	57025643	57025643	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PLAG1	5324	genome.wustl.edu	36	8	57241776	57241776	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+EYA1	2138	broad.mit.edu	36.1	8	72290418	72290418	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0241-01A-02W	TCGA-06-0241-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+EYA1	2138	broad.mit.edu	36.1	8	72319450	72319450	+	Missense_Mutation	SNP	C	A	C			TCGA-12-0618-01A-01W	TCGA-12-0618-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+PI15	51050	broad.mit.edu	36.1	8	75920181	75920181	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0080-01A-01W	TCGA-02-0080-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+PI15	51050	broad.mit.edu	36.1	8	75923999	75923999	+	Missense_Mutation	SNP	T	A	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	T	A	T	T		Valid	Somatic	Phase_I	Sequenom
+NBN	4683	genome.wustl.edu	36	8	91017009	91017009	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+RUNX1T1	862	broad.mit.edu	36.1	8	93157428	93157428	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+CSMD3	114788	broad.mit.edu	36.1	8	113325934	113325934	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0219-01A-01W	TCGA-06-0219-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+CSMD3	114788	broad.mit.edu	36.1	8	113585318	113585318	+	Silent	SNP	G	A	G			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+TNFRSF11B	4982	BCM	36	8	120014420	120014420	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+DOCK8	81704	broad.mit.edu	36.1	9	276581	276581	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0145-01A-01W	TCGA-06-0145-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+DOCK8	81704	broad.mit.edu	36.1	9	369836	369836	+	Missense_Mutation	SNP	G	G	T			TCGA-02-0026-01B-01W	TCGA-02-0026-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_II	Sequenom
+DMRT3	58524	broad.mit.edu	36.1	9	980868	980868	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0353-01A-01W	TCGA-08-0353-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+VLDLR	7436	broad.mit.edu	36.1	9	2641922	2641922	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+MTAP	4507	broad.mit.edu	36.1	9	21827925	21827925	+	Missense_Mutation	SNP	G	C	G			TCGA-06-0156-01A-01W	TCGA-06-0156-10A-01W	G	G	G	C	G	G		Valid	Somatic	Phase_I	Sequenom
+CDKN2A	1029	genome.wustl.edu	36	9	21961053	21961053	+	Missense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+CDKN2A	1029	BCM	36	9	21961127	21961128	+	Frame_Shift_Del	Del	AG	AG	--	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	AG	AG	AG	--	AG	AG	Unknown	Valid	Somatic
+CDKN2A	1029	genome.wustl.edu	36	9	21964782	21964782	+	Nonsense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+ELAVL2	1993	genome.wustl.edu	36	9	23691590	23691590	+	Missense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	T	C	C	Valid	Valid	Somatic	Phase_I
+C9orf72	203228	broad.mit.edu	36.1	9	27552474	27552474	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+CNTFR	1271	BCM	36	9	34542713	34542713	+	Missense_Mutation	SNP	G	A	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+RNF38	152006	broad.mit.edu	36.1	9	36346448	36346448	+	Missense_Mutation	SNP	T	A	T			TCGA-06-0138-01A-01W	TCGA-06-0138-10C-01W	T	T	T	A	T	T		Valid	Somatic	Phase_II	Sequenom
+PAX5	5079	genome.wustl.edu	36	9	36836902	36836902	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-06-0214-01A-02W	TCGA-06-0214-10A-01W	T	T	T	C	T	T	Valid	Valid	Somatic	Phase_I
+ANXA1	301	BCM	36	9	74974800	74974800	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+ROR2	4920	BCM	36	9	93527042	93527042	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+ROR2	4920	BCM	36	9	93535351	93535351	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+PTCH1	5727	BCM	36	9	97249179	97249179	+	Nonsense_Mutation	SNP	G	A	A	novel	unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+PTCH1	5727	BCM	36	9	97270875	97270875	+	Missense_Mutation	SNP	G	G	T	novel	unknown	TCGA-06-0151-01A-01W	TCGA-06-0151-10A-01W	G	G	G	T	G	G	Somatic	Valid	Somatic
+KLF4	9314	genome.wustl.edu	36	9	109287936	109287936	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+KLF4	9314	genome.wustl.edu	36	9	109289919	109289919	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+AKAP2	11217	broad.mit.edu	36.1	9	111938487	111938487	+	Missense_Mutation	SNP	C	A	C			TCGA-06-0210-01A-01W	TCGA-06-0210-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+AKAP2	11217	broad.mit.edu	36.1	9	111939141	111939141	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0025-01A-01W	TCGA-02-0025-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+MUSK	4593	broad.mit.edu	36.1	9	112499476	112499476	+	Silent	SNP	C	C	T	rs41279051	unknown	TCGA-08-0357-01A-01W	TCGA-08-0357-11A-01W	C	T	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+TNC	3371	broad.mit.edu	36.1	9	116837402	116837402	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0188-01A-01W	TCGA-06-0188-10B-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TNC	3371	broad.mit.edu	36.1	9	116878675	116878675	+	Missense_Mutation	SNP	C	T	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TNC	3371	broad.mit.edu	36.1	9	116888335	116888335	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+GARNL3	84253	broad.mit.edu	36.1	9	129135128	129135128	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0190-01A-01W	TCGA-06-0190-10B-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+NUP214	8021	broad.mit.edu	36.1	9	133064091	133064091	+	Silent	SNP	C	C	T			TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TSC1	7248	genome.wustl.edu	36	9	134761810	134761810	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+VAV2	7410	genome.wustl.edu	36	9	135631024	135631024	+	Splice_Site_SNP	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+COL5A1	1289	broad.mit.edu	36.1	9	136820826	136820826	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+NOTCH1	4851	genome.wustl.edu	36	9	138509420	138509420	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NOTCH1	4851	genome.wustl.edu	36	9	138510658	138510658	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+KLF6	1316	genome.wustl.edu	36	10	3814279	3814279	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+KLF6	1316	genome.wustl.edu	36	10	3817172	3817172	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	T	C	T	T	Valid	Valid	Somatic	Phase_I
+GATA3	2625	genome.wustl.edu	36	10	8140468	8140468	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+GATA3	2625	genome.wustl.edu	36	10	8155865	8155865	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+UPF2	26019	broad.mit.edu	36.1	10	12038348	12038348	+	Missense_Mutation	SNP	C	T	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+UPF2	26019	broad.mit.edu	36.1	10	12061106	12061106	+	Missense_Mutation	SNP	C	A	C			TCGA-02-0084-01A-01W	TCGA-02-0084-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+DHTKD1	55526	broad.mit.edu	36.1	10	12199705	12199705	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CDC123	8872	broad.mit.edu	36.1	10	12331616	12331616	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0141-01A-01W	TCGA-06-0141-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MYO3A	53904	broad.mit.edu	36.1	10	26399055	26399055	+	Missense_Mutation	SNP	C	A	C			TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+APBB1IP	54518	broad.mit.edu	36.1	10	26865111	26865111	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0154-01A-02W	TCGA-06-0154-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+BAMBI	25805	genome.wustl.edu	36	10	29011215	29011215	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+ZEB1	6935	genome.wustl.edu	36	10	31831344	31831344	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+ZEB1	6935	genome.wustl.edu	36	10	31850626	31850626	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0167-01A-01W	TCGA-06-0167-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+GDF10	2662	broad.mit.edu	36.1	10	48049503	48049503	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+CHAT	1103	BCM	36	10	50497778	50497778	+	Missense_Mutation	SNP	G	A	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+CHAT	1103	BCM	36	10	50505694	50505694	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+ANXA7	310	broad.mit.edu	36.1	10	74826987	74826987	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+MYST4	23522	broad.mit.edu	36.1	10	76407199	76407199	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MYST4	23522	broad.mit.edu	36.1	10	76458537	76458537	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MYST4	23522	broad.mit.edu	36.1	10	76459127	76459127	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MYST4	23522	broad.mit.edu	36.1	10	76459177	76459177	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+BMPR1A	657	genome.wustl.edu	36	10	88669030	88669030	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89643789	89643789	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	broad.mit.edu	36.1	10	89643821	89643821	+	Missense_Mutation	SNP	A	A	G			TCGA-08-0359-01A-01W	TCGA-08-0359-11A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	broad.mit.edu	36.1	10	89675288	89675288	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0208-01A-01W	TCGA-06-0208-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	BCM	36	10	89680799	89680800	+	Frame_Shift_Del	Del	TA	TA	--	novel	unknown	TCGA-06-0197-01A-02W	TCGA-06-0197-10A-01W	TA	TA	TA	--	TA	TA	Unknown	Valid	Somatic
+PTEN	5728	BCM	36	10	89680805	89680806	+	Frame_Shift_Del	Del	AC	AC	--	novel	unknown	TCGA-02-0052-01A-01W	TCGA-02-0052-10A-01W	AC	AC	AC	--	AC	AC	Unknown	Valid	Somatic
+PTEN	5728	genome.wustl.edu	36	10	89682772	89682772	+	Missense_Mutation	SNP	C	A	C	Unknown	Unknown	TCGA-06-0190-01A-01W	TCGA-06-0190-10B-01W	C	C	C	A	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89682783	89682783	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	BCM	36	10	89682810	89682811	+	Frame_Shift_Del	Del	GT	GT	--	novel	unknown	TCGA-06-0156-01A-01W	TCGA-06-0156-10A-01W	GT	GT	GT	--	GT	GT	Unknown	Valid	Somatic
+PTEN	5728	broad.mit.edu	36.1	10	89682884	89682884	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0138-01A-01W	TCGA-06-0138-10C-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	broad.mit.edu	36.1	10	89682884	89682884	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	broad.mit.edu	36.1	10	89682884	89682884	+	Nonsense_Mutation	SNP	C	C	T			TCGA-08-0380-01A-01W	TCGA-08-0380-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	genome.wustl.edu	36	10	89682885	89682885	+	Frame_Shift_Del	Del	G	G	-	Unknown	Unknown	TCGA-02-0027-01A-01W	TCGA-02-0027-10A-01W	G	G	G	-	G	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89682887	89682887	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	A	A	A	G	A	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89682891	89682891	+	Missense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-06-0187-01A-01W	TCGA-06-0187-10B-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	broad.mit.edu	36.1	10	89682941	89682941	+	Nonsense_Mutation	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	genome.wustl.edu	36	10	89682972	89682972	+	Missense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-06-0195-01B-01W	TCGA-06-0195-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	broad.mit.edu	36.1	10	89682975	89682975	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0079-01A-01W	TCGA-02-0079-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	BCM	36	10	89701862	89701862	+	Missense_Mutation	SNP	C	T	T	novel	unknown	TCGA-02-0021-01A-01W	TCGA-02-0021-10A-01W	C	C	C	G	C	C	Unknown	Valid	Somatic
+PTEN	5728	genome.wustl.edu	36	10	89701862	89701862	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0166-01A-01W	TCGA-06-0166-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89701879	89701879	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0038-01A-01W	TCGA-02-0038-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89701893	89701893	+	Nonsense_Mutation	SNP	T	G	T	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	T	T	G	T	T	T	Valid	Valid	Somatic	Phase_I
+PTEN	5728	BCM	36	10	89701913	89701914	+	Frame_Shift_Ins	Ins	--	--	GA	novel	unknown	TCGA-06-0150-01A-01W	TCGA-06-0150-10A-01W	--	--	--	GA	--	--	Unknown	Valid	Somatic
+PTEN	5728	genome.wustl.edu	36	10	89701940	89701940	+	Missense_Mutation	SNP	T	C	C	Unknown	Unknown	TCGA-02-0007-01A-01W	TCGA-02-0007-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+PTEN	5728	broad.mit.edu	36.1	10	89707652	89707652	+	Nonsense_Mutation	SNP	C	C	T			TCGA-02-0004-01A-01W	TCGA-02-0004-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	genome.wustl.edu	36	10	89707658	89707658	+	Nonsense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0113-01A-01W	TCGA-02-0113-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89707676	89707676	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+PTEN	5728	broad.mit.edu	36.1	10	89707742	89707742	+	Nonsense_Mutation	SNP	A	A	T			TCGA-08-0352-01A-01W	TCGA-08-0352-11A-02W	A	A	T	A	A	A		Valid	Somatic	Phase_I	Sequenom
+PTEN	5728	genome.wustl.edu	36	10	89710659	89710659	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0124-01A-01W	TCGA-06-0124-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PTEN	5728	BCM	36	10	89710781	89710784	+	Frame_Shift_Del	Del	CTTA	CTTA	----	novel	unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	CTTA	CTTA	CTTA	----	CTTA	CTTA	Unknown	Valid	Somatic
+PTEN	5728	genome.wustl.edu	36	10	89710784	89710787	+	Frame_Shift_Del	Del	ACTT	ACTT	-	Unknown	Unknown	TCGA-06-0206-01A-01W	TCGA-06-0206-10A-01W	ACTT	ACTT	ACTT	-	ACTT	ACTT	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89710784	89710787	+	Frame_Shift_Del	Del	ACTT	-	-	Unknown	Unknown	TCGA-06-0125-01A-01W	TCGA-06-0125-10A-01W	ACTT	ACTT	-	-	ACTT	ACTT	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89710788	89710788	+	Nonsense_Mutation	SNP	T	A	T	Unknown	Unknown	TCGA-02-0071-01A-01W	TCGA-02-0071-10A-01W	T	T	T	A	T	T	Valid	Valid	Somatic	Phase_I
+PTEN	5728	genome.wustl.edu	36	10	89710832	89710832	+	Nonsense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+FGFR2	2263	genome.wustl.edu	36	10	123288210	123288210	+	Missense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0033-01A-01W	TCGA-02-0033-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+DMBT1	1755	genome.wustl.edu	36	10	124348403	124348403	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+ADAM12	8038	genome.wustl.edu	36	10	128009005	128009005	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	C	C	T	T	Valid	Valid	Somatic	Phase_I
+DOCK1	1793	broad.mit.edu	36.1	10	128719946	128719946	+	Missense_Mutation	SNP	A	A	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	A	A	T	A	A	A		Valid	Somatic	Phase_I	Sequenom
+DOCK1	1793	broad.mit.edu	36.1	10	129073048	129073048	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+DOCK1	1793	broad.mit.edu	36.1	10	129121678	129121678	+	Missense_Mutation	SNP	G	G	T			TCGA-06-0152-01A-02W	TCGA-06-0152-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+DPYSL4	10570	broad.mit.edu	36.1	10	133863896	133863896	+	Silent	SNP	C	C	T			TCGA-06-0147-01A-01W	TCGA-06-0147-10A-01W	C	T	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+DPYSL4	10570	broad.mit.edu	36.1	10	133863896	133863896	+	Silent	SNP	C	T	T			TCGA-02-0001-01C-01W	TCGA-02-0001-10A-01W	C	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+PSMD13	5719	broad.mit.edu	36.1	11	234115	234115	+	Missense_Mutation	SNP	G	A	A	rs7128044	unknown	TCGA-08-0353-01A-01W	TCGA-08-0353-11A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_II	Sequenom
+PSMD13	5719	broad.mit.edu	36.1	11	234115	234115	+	Missense_Mutation	SNP	G	A	G	rs7128044	unknown	TCGA-02-0025-01A-01W	TCGA-02-0025-10A-01W	A	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+PSMD13	5719	broad.mit.edu	36.1	11	234115	234115	+	Missense_Mutation	SNP	G	A	G	rs7128044	unknown	TCGA-08-0356-01A-01W	TCGA-08-0356-11A-01W			G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	309855	309855	+	Missense_Mutation	SNP	A	C	C			TCGA-06-0143-01A-01W	TCGA-06-0143-10A-01W	A	A	C	A	A	A		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310606	310606	+	Missense_Mutation	SNP	G	T	T			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	G	T	G	G		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310649	310649	+	Silent	SNP	G	A	A	rs11553885	unknown	TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310730	310730	+	Silent	SNP	C	T	T			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310754	310754	+	Silent	SNP	A	G	G			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310763	310763	+	Silent	SNP	G	A	A			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+IFITM3	10410	broad.mit.edu	36.1	11	310803	310803	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+TRIM3	10612	broad.mit.edu	36.1	11	6434421	6434421	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+ILK	3611	BCM	36	11	6586561	6586561	+	Missense_Mutation	SNP	A	G	G	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	A	A	A	G	A	A	Somatic	Valid	Somatic
+OR5P2	120065	broad.mit.edu	36.1	11	7774741	7774741	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0238-01A-02W	TCGA-06-0238-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+ADM	133	genome.wustl.edu	36	11	10284521	10284521	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+PIK3C2A	5286	broad.mit.edu	36.1	11	17083357	17083357	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_II	Sequenom
+LDHA	3939	genome.wustl.edu	36	11	18380975	18380975	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+LDHA	3939	genome.wustl.edu	36	11	18381850	18381850	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+NUMA1	4926	broad.mit.edu	36.1	11	71403056	71403056	+	Silent	SNP	G	A	A			TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ATM	472	broad.mit.edu	36.1	11	107611687	107611687	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ATM	472	broad.mit.edu	36.1	11	107620796	107620796	+	Missense_Mutation	SNP	T	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+ATM	472	broad.mit.edu	36.1	11	107729766	107729766	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+SNF1LK2	23235	broad.mit.edu	36.1	11	111095932	111095932	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+SNF1LK2	23235	broad.mit.edu	36.1	11	111096956	111096956	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+CBL	867	broad.mit.edu	36.1	11	118654485	118654485	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+CBL	867	broad.mit.edu	36.1	11	118661372	118661372	+	Nonsense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435692	122435692	+	Silent	SNP	G	A	A			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	A	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435692	122435692	+	Silent	SNP	G	A	A			TCGA-08-0375-01A-01W	TCGA-08-0375-11A-01W	A	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435727	122435727	+	Missense_Mutation	SNP	G	A	A			TCGA-08-0375-01A-01W	TCGA-08-0375-11A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435776	122435776	+	Silent	SNP	A	A	G			TCGA-08-0347-01A-01W	TCGA-08-0347-11A-01W	A	G	A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435776	122435776	+	Silent	SNP	A	G	G			TCGA-08-0375-01A-01W	TCGA-08-0375-11A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435894	122435894	+	Missense_Mutation	SNP	T	C	C			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	T	T	T	C	T	T		Valid	Somatic	Phase_I	Sequenom
+HSPA8	3312	broad.mit.edu	36.1	11	122435923	122435923	+	Silent	SNP	G	A	A			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK1	1111	BCM	36	11	125008322	125008322	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0145-01A-02W	TCGA-06-0145-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+CHEK1	1111	BCM	36	11	125008322	125008322	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0145-01A-04W	TCGA-06-0145-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+CHEK1	1111	BCM	36	11	125008322	125008322	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0145-01A-05W	TCGA-06-0145-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+CHEK1	1111	BCM	36	11	125028953	125028953	+	Splice_Site_SNP	SNP	G	G	A	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+FLI1	2313	broad.mit.edu	36.1	11	128143273	128143273	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+FLI1	2313	broad.mit.edu	36.1	11	128186040	128186040	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0009-01A-01W	TCGA-02-0009-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+ING4	51147	broad.mit.edu	36.1	12	6630758	6630758	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ING4	51147	broad.mit.edu	36.1	12	6630798	6630798	+	Nonsense_Mutation	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+ING4	51147	broad.mit.edu	36.1	12	6632445	6632445	+	Silent	SNP	G	A	G			TCGA-06-0148-01A-01W	TCGA-06-0148-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ZNF384	171017	genome.wustl.edu	36	12	6647395	6647395	+	Missense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+ZNF384	171017	genome.wustl.edu	36	12	6652748	6652748	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+A2M	2	genome.wustl.edu	36	12	9116623	9116623	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+A2M	2	genome.wustl.edu	36	12	9121242	9121242	+	Silent_Mutation	SNP	G	G	A	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+A2M	2	genome.wustl.edu	36	12	9150104	9150104	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0024-01B-01W	TCGA-02-0024-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+PIK3C2G	5288	broad.mit.edu	36.1	12	18326302	18326302	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+PIK3C2G	5288	broad.mit.edu	36.1	12	18358164	18358164	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0375-01A-01W	TCGA-08-0375-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+PIK3C2G	5288	broad.mit.edu	36.1	12	18444021	18444021	+	Missense_Mutation	SNP	T	C	T			TCGA-06-0201-01A-01W	TCGA-06-0201-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_II	Sequenom
+PIK3C2G	5288	broad.mit.edu	36.1	12	18468201	18468201	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+PIK3C2G	5288	broad.mit.edu	36.1	12	18549503	18549503	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0145-01A-01W	TCGA-06-0145-10A-01W	A	A	G	A	A	A		Valid	Somatic	Phase_II	Sequenom
+KRAS	3845	genome.wustl.edu	36	12	25289551	25289551	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+NELL2	4753	broad.mit.edu	36.1	12	43212631	43212631	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ERBB3	2065	BCM	36	12	54780232	54780232	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+INHBE	83729	broad.mit.edu	36.1	12	56136494	56136494	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+GLI1	2735	broad.mit.edu	36.1	12	56151942	56151942	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0133-01A-02W	TCGA-06-0133-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+DDIT3	1649	broad.mit.edu	36.1	12	56197363	56197363	+	Missense_Mutation	SNP	C	A	C			TCGA-06-0238-01A-02W	TCGA-06-0238-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_II	Sequenom
+DTX3	196403	broad.mit.edu	36.1	12	56288721	56288721	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0107-01A-01W	TCGA-02-0107-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CENTG1	116986	BCM	36	12	56407992	56407992	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+CENTG1	116986	BCM	36	12	56408033	56408033	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+CYP27B1	1594	genome.wustl.edu	36	12	56444898	56444898	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CYP27B1	1594	genome.wustl.edu	36	12	56445112	56445112	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0080-01A-01W	TCGA-02-0080-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+AVIL	10677	broad.mit.edu	36.1	12	56482213	56482213	+	Nonsense_Mutation	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TBK1	29110	broad.mit.edu	36.1	12	63162022	63162022	+	Silent	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TBK1	29110	broad.mit.edu	36.1	12	63175611	63175611	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+IRAK3	11213	broad.mit.edu	36.1	12	64925008	64925008	+	Missense_Mutation	SNP	T	C	T			TCGA-02-0085-01A-01W	TCGA-02-0085-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_II	Sequenom
+HELB	92797	broad.mit.edu	36.1	12	64990195	64990195	+	Missense_Mutation	SNP	C	T	T			TCGA-08-0245-01A-01W	TCGA-08-0245-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+CAND1	55832	broad.mit.edu	36.1	12	65991847	65991847	+	Splice_Site_SNP	SNP	G	A	G			TCGA-02-0070-01A-01W	TCGA-02-0070-10A-01W			G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+MDM2	4193	broad.mit.edu	36.1	12	67516737	67516737	+	Missense_Mutation	SNP	T	C	T			TCGA-02-0085-01A-01W	TCGA-02-0085-10A-01W	T	T	T	C	T	T		Valid	Somatic	Phase_I	Sequenom
+UNG	7374	BCM	36	12	108019967	108019967	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+PTPN11	5781	genome.wustl.edu	36	12	111372572	111372572	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+PTPN11	5781	genome.wustl.edu	36	12	111395220	111395220	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0171-01A-02W	TCGA-06-0171-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+KSR2	283455	broad.mit.edu	36.1	12	116501335	116501335	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0648-01A-01W	TCGA-06-0648-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+KSR2	283455	broad.mit.edu	36.1	12	116777704	116777704	+	Silent	SNP	G	A	G			TCGA-08-0354-01A-01W	TCGA-08-0354-11A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+TAOK3	51347	broad.mit.edu	36.1	12	117103657	117103657	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	G	G	A	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MSI1	4440	broad.mit.edu	36.1	12	119280036	119280036	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+MSI1	4440	broad.mit.edu	36.1	12	119286911	119286911	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+IL31	386653	genome.wustl.edu	36	12	121222973	121222973	+	Nonsense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+EP400	57634	BCM	36	12	131012246	131012246	+	Nonsense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+EP400	57634	BCM	36	12	131076211	131076211	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+EP400	57634	BCM	36	12	131094732	131094732	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+FLT1	2321	BCM	36	13	27829760	27829760	+	Missense_Mutation	SNP	C	C	A	novel	unknown	TCGA-06-0173-01A-01W	TCGA-06-0173-10B-01W	C	C	A	C	C	C	Somatic	Valid	Somatic
+BRCA2	675	broad.mit.edu	36.1	13	31788650	31788650	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+BRCA2	675	broad.mit.edu	36.1	13	31809250	31809250	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0169-01A-01W	TCGA-06-0169-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+BRCA2	675	broad.mit.edu	36.1	13	31809542	31809542	+	Missense_Mutation	SNP	T	G	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	T	T	G	T	T	T		Valid	Somatic	Phase_I	Sequenom
+RB1	5925	broad.mit.edu	36.1	13	47834984	47834984	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+RB1	5925	broad.mit.edu	36.1	13	47845597	47845597	+	Nonsense_Mutation	SNP	C	C	T			TCGA-06-0195-01B-01W	TCGA-06-0195-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+RB1	5925	genome.wustl.edu	36	13	47925250	47925250	+	Splice_Site_SNP	SNP	T	C	T	Unknown	Unknown	TCGA-02-0052-01A-01W	TCGA-02-0052-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+RB1	5925	BCM	36	13	47928486	47928486	+	Missense_Mutation	SNP	G	G	C	novel	unknown	TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W	G	G	C	G	G	G	Somatic	Valid	Somatic
+RB1	5925	broad.mit.edu	36.1	13	47931824	47931824	+	Splice_Site_SNP	SNP	G	G	T			TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	G	G	G	T	G	G		Valid	Somatic	Phase_I	Sequenom
+RB1	5925	broad.mit.edu	36.1	13	47931840	47931840	+	Missense_Mutation	SNP	A	A	T			TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	A	A	T	A	A	A		Valid	Somatic	Phase_I	Sequenom
+RB1	5925	genome.wustl.edu	36	13	47931968	47931968	+	Nonsense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0033-01A-01W	TCGA-02-0033-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+RB1	5925	genome.wustl.edu	36	13	47937375	47937375	+	Nonsense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-02-0007-01A-01W	TCGA-02-0007-10A-01W	C	C	T	T	C	C	Valid	Valid	Somatic	Phase_I
+RB1	5925	broad.mit.edu	36.1	13	47945496	47945496	+	Splice_Site_SNP	SNP	G	C	G			TCGA-06-0206-01A-01W	TCGA-06-0206-10A-01W	G	G	C	G	G	G		Valid	Somatic	Phase_I	Sequenom
+ABCC4	10257	broad.mit.edu	36.1	13	94484895	94484895	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ABCC4	10257	broad.mit.edu	36.1	13	94613377	94613377	+	Missense_Mutation	SNP	C	C	G			TCGA-02-0037-01A-01W	TCGA-02-0037-10A-01W	C	C	C	G	C	C		Valid	Somatic	Phase_I	Sequenom
+ABCC4	10257	broad.mit.edu	36.1	13	94656844	94656844	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+LAMP1	3916	broad.mit.edu	36.1	13	113008879	113008879	+	Missense_Mutation	SNP	C	C	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	G	C	C		Valid	Somatic	Phase_I	Sequenom
+LAMP1	3916	broad.mit.edu	36.1	13	113021973	113021973	+	Splice_Site_SNP	SNP	G	A	G			TCGA-02-0116-01A-01W	TCGA-02-0116-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+KTN1	3895	broad.mit.edu	36.1	14	55148856	55148856	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+RTN1	6252	broad.mit.edu	36.1	14	59263887	59263887	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0021-01A-01W	TCGA-02-0021-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+NRXN3	9369	broad.mit.edu	36.1	14	79397758	79397758	+	Splice_Site_SNP	SNP	G	A	G			TCGA-02-0016-01A-01W	TCGA-02-0016-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+SERPINA3	12	genome.wustl.edu	36	14	94150664	94150664	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+HSP90AA1	3320	BCM	36	14	101617806	101617806	+	Missense_Mutation	SNP	T	T	C	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	T	T	T	C	T	T	Unknown	Valid	Somatic
+HSP90AA1	3320	BCM	36	14	101675353	101675353	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+RYR3	6263	broad.mit.edu	36.1	15	31682814	31682814	+	Silent	SNP	C	C	T			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+RYR3	6263	broad.mit.edu	36.1	15	31710758	31710758	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0126-01A-01W	TCGA-06-0126-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+SLC12A6	9990	BCM	36	15	32316305	32316305	+	Missense_Mutation	SNP	C	C	A	novel	unknown	TCGA-06-0133-01A-01W	TCGA-06-0133-10A-01W	C	C	C	A	C	C	Somatic	Valid	Somatic
+SLC12A6	9990	BCM	36	15	32317006	32317006	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0102-01A-01W	TCGA-02-0102-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+TCF12	6938	BCM	36	15	55330914	55330914	+	Splice_Site_SNP	SNP	G	G	A	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+TCF12	6938	BCM	36	15	55341606	55341607	+	Frame_Shift_Del	Del	CT	CT	--	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	CT	CT	CT	--	CT	CT	Unknown	Valid	Somatic
+TCF12	6938	BCM	36	15	55342601	55342601	+	Splice_Site_SNP	SNP	G	G	C	novel	unknown	TCGA-06-0128-01A-01W	TCGA-06-0128-10A-01W	G	G	G	C	G	G	Unknown	Valid	Somatic
+PML	5371	genome.wustl.edu	36	15	72077554	72077554	+	Missense_Mutation	SNP	C	A	C	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	A	C	C	Valid	Valid	Somatic	Phase_I
+CTSH	1512	genome.wustl.edu	36	15	77008808	77008808	+	Splice_Site_SNP	SNP	C	C	T	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CTSH	1512	genome.wustl.edu	36	15	77010877	77010877	+	Silent_Mutation	SNP	G	G	A	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+ADAMTSL3	57188	BCM	36	15	82233332	82233332	+	Nonsense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+ADAMTSL3	57188	BCM	36	15	82481336	82481336	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+NTRK3	4916	genome.wustl.edu	36	15	86528499	86528499	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	T	T	C	T	T	T	Valid	Valid	Somatic	Phase_I
+IQGAP1	8826	BCM	36	15	88818012	88818012	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+FURIN	5045	genome.wustl.edu	36	15	89225202	89225202	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+FURIN	5045	genome.wustl.edu	36	15	89225687	89225687	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+FURIN	5045	genome.wustl.edu	36	15	89225991	89225991	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+MAPK8IP3	23162	broad.mit.edu	36.1	16	1758607	1758607	+	Missense_Mutation	SNP	G	A	A			TCGA-06-0139-01A-01W	TCGA-06-0139-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+TSC2	7249	genome.wustl.edu	36	16	2038750	2038750	+	Missense_Mutation	SNP	C	A	C	Unknown	Unknown	TCGA-02-0047-01A-01W	TCGA-02-0047-10A-01W	C	C	A	C	C	C	Valid	Valid	Somatic	Phase_I
+TSC2	7249	genome.wustl.edu	36	16	2064367	2064367	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TSC2	7249	genome.wustl.edu	36	16	2070190	2070190	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+ABCA3	21	genome.wustl.edu	36	16	2290056	2290056	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+PDPK1	5170	broad.mit.edu	36.1	16	2547714	2547714	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0389-01A-01W	TCGA-08-0389-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+SOCS1	8651	genome.wustl.edu	36	16	11256592	11256592	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PRKCB1	5579	broad.mit.edu	36.1	16	24073589	24073589	+	Silent	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PRKCB1	5579	broad.mit.edu	36.1	16	24138810	24138810	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0185-01A-01W	TCGA-06-0185-10B-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+SPN	6693	broad.mit.edu	36.1	16	29582896	29582896	+	Missense_Mutation	SNP	C	A	C			TCGA-08-0354-01A-01W	TCGA-08-0354-11A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+ITGAL	3683	broad.mit.edu	36.1	16	30398015	30398015	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0353-01A-01W	TCGA-08-0353-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+CYLD	1540	genome.wustl.edu	36	16	49341571	49341571	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CMTM3	123920	broad.mit.edu	36.1	16	65200871	65200871	+	Silent	SNP	C	C	T			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+CES3	23491	genome.wustl.edu	36	16	65554895	65554895	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0139-01A-01W	TCGA-06-0139-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+CES3	23491	genome.wustl.edu	36	16	65555760	65555760	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+BCAR1	9564	BCM	36	16	73821184	73821184	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	G	G	G	A	G	G	Wildtype	Valid	Somatic
+BCAR1	9564	BCM	36	16	73821401	73821401	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+TP53	7157	broad.mit.edu	36.1	17	7514713	7514713	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0373-01A-01W	TCGA-08-0373-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7514728	7514728	+	Nonsense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-02-0024-01B-01W	TCGA-02-0024-10A-01W	G	G	A	A	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	BCM	36	17	7517636	7517636	+	Frame_Shift_Del	Del	G	G	-	novel	unknown	TCGA-06-0128-01A-01W	TCGA-06-0128-10A-01W	G	G	G	-	G	G	Unknown	Valid	Somatic
+TP53	7157	genome.wustl.edu	36	17	7517651	7517651	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0188-01A-01W	TCGA-06-0188-10B-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517652	7517652	+	Splice_Site_SNP	SNP	C	C	T	Unknown	Unknown	TCGA-06-0188-01A-01W	TCGA-06-0188-10B-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7517819	7517819	+	Missense_Mutation	SNP	G	A	G	rs28934574	unknown	TCGA-02-0004-01A-01W	TCGA-02-0004-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7517819	7517819	+	Missense_Mutation	SNP	G	A	G	rs28934574	Unknown	TCGA-02-0003-01A-01W	TCGA-02-0003-10A-01W	G	G	A	G	G	G	Unknown	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517819	7517819	+	Missense_Mutation	SNP	G	A	G	rs28934574	Unknown	TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	G	G	A	G	G	G	Unknown	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517821	7517821	+	Missense_Mutation	SNP	T	G	T	Unknown	Unknown	TCGA-06-0195-01B-01W	TCGA-06-0195-10A-01W	T	T	T	G	T	T	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517830	7517830	+	Missense_Mutation	SNP	G	C	G	Unknown	Unknown	TCGA-02-0001-01C-01W	TCGA-02-0001-10A-01W	G	G	G	C	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517831	7517831	+	Missense_Mutation	SNP	G	A	G	rs17849781	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7517836	7517836	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	BCM	36	17	7517845	7517845	+	Missense_Mutation	SNP	C	C	T	rs28934576	unknown	TCGA-06-0206-01A-01W	TCGA-06-0206-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+TP53	7157	broad.mit.edu	36.1	17	7517846	7517846	+	Missense_Mutation	SNP	G	A	A			TCGA-02-0080-01A-01W	TCGA-02-0080-10A-01W	G	G	A	A	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7517846	7517846	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7517846	7517846	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0084-01A-01W	TCGA-02-0084-10A-01W			A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7517846	7517846	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0373-01A-01W	TCGA-08-0373-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7517849	7517849	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0058-01A-01W	TCGA-02-0058-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7517854	7517854	+	Missense_Mutation	SNP	A	A	G			TCGA-06-0197-01A-02W	TCGA-06-0197-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7517867	7517867	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0195-01B-01W	TCGA-06-0195-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518234	7518234	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0034-01A-01W	TCGA-02-0034-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518263	7518263	+	Missense_Mutation	SNP	C	T	C	rs11540652	Valid	TCGA-02-0033-01A-01W	TCGA-02-0033-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518263	7518263	+	Missense_Mutation	SNP	C	T	C	rs11540652	Valid	TCGA-06-0241-01A-02W	TCGA-06-0241-10A-01W	C	C	T	T	C	C	Unknown	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518272	7518272	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-06-0150-01A-01W	TCGA-06-0150-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7518273	7518273	+	Missense_Mutation	SNP	C	C	T	rs28934575	unknown	TCGA-02-0048-01A-01W	TCGA-02-0048-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7518273	7518273	+	Missense_Mutation	SNP	C	C	T	rs28934575	Unknown	TCGA-06-0190-01A-01W	TCGA-06-0190-10B-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7518275	7518275	+	Missense_Mutation	SNP	C	C	T	rs28934572	unknown	TCGA-02-0026-01B-01W	TCGA-02-0026-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7518303	7518303	+	Missense_Mutation	SNP	T	C	C	Unknown	Unknown	TCGA-02-0074-01A-01W	TCGA-02-0074-10A-01W	T	T	C	C	T	T	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7518915	7518915	+	Missense_Mutation	SNP	T	C	T			TCGA-06-0644-01A-02W	TCGA-06-0644-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7518915	7518915	+	Missense_Mutation	SNP	T	C	T			TCGA-08-0351-01A-01W	TCGA-08-0351-11A-01W			C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7518928	7518928	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0359-01A-01W	TCGA-08-0359-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7518928	7518928	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518933	7518933	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-06-0159-01A-01W	TCGA-06-0159-10A-01W	T	T	T	C	T	T	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518937	7518937	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0054-01A-01W	TCGA-02-0054-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518975	7518974	+	Frame_Shift_Del	Del	AT	-	-	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	AT	AT	AT	-	AT	AT	Unknown	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7518990	7518990	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-06-0237-01A-02W	TCGA-06-0237-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7518997	7518997	+	Missense_Mutation	SNP	G	A	A			TCGA-08-0245-01A-01W	TCGA-08-0245-11A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7519120	7519120	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519121	7519121	+	Missense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0003-01A-01W	TCGA-02-0003-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519126	7519126	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0046-01A-01W	TCGA-02-0046-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519128	7519128	+	Missense_Mutation	SNP	C	T	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	T	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519131	7519131	+	Missense_Mutation	SNP	C	C	T	rs28934578	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519131	7519131	+	Missense_Mutation	SNP	C	C	T	rs28934578	Unknown	TCGA-02-0037-01A-01W	TCGA-02-0037-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519132	7519132	+	Missense_Mutation	SNP	G	C	C	Unknown	Unknown	TCGA-02-0011-01B-01W	TCGA-02-0011-10A-01W	G	G	G	C	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7519137	7519137	+	Missense_Mutation	SNP	A	A	C			TCGA-02-0048-01A-01W	TCGA-02-0048-10A-01W	A	A	C	A	A	A		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7519165	7519165	+	Missense_Mutation	SNP	T	C	T			TCGA-12-0619-01A-01W	TCGA-12-0619-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7519182	7519182	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0130-01A-01W	TCGA-06-0130-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7519182	7519182	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	broad.mit.edu	36.1	17	7519188	7519188	+	Missense_Mutation	SNP	C	C	G			TCGA-02-0084-01A-01W	TCGA-02-0084-10A-01W	C	C	G	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	broad.mit.edu	36.1	17	7519233	7519233	+	Missense_Mutation	SNP	C	A	C			TCGA-08-0359-01A-01W	TCGA-08-0359-11A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7519237	7519238	+	Frame_Shift_Del	Del	TC	-	-	Unknown	Unknown	TCGA-06-0221-01A-01W	TCGA-06-0221-10A-01W	TC	TC	TC	-	TC	TC	Unknown	Valid	Somatic	Phase_I
+TP53	7157	BCM	36	17	7519251	7519251	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0034-01A-01W	TCGA-02-0034-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+TP53	7157	broad.mit.edu	36.1	17	7519257	7519257	+	Missense_Mutation	SNP	A	A	C	rs28934873	unknown	TCGA-08-0360-01A-01W	TCGA-08-0360-11A-01W			C	A	A	A		Valid	Somatic	Phase_I	Sequenom
+TP53	7157	genome.wustl.edu	36	17	7519267	7519267	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+TP53	7157	genome.wustl.edu	36	17	7520037	7520037	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0159-01A-01W	TCGA-06-0159-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TP53	7157	BCM	36	17	7520118	7520122	+	Frame_Shift_Del	Del	AGGGA	AGGGA	-----	novel	unknown	TCGA-06-0156-01A-01W	TCGA-06-0156-10A-01W	AGGGA	AGGGA	AGGGA	-----	AGGGA	AGGGA	Unknown	Valid	Somatic
+HS3ST3A1	9955	broad.mit.edu	36.1	17	13340587	13340587	+	Silent	SNP	G	A	G			TCGA-06-0187-01A-01W	TCGA-06-0187-10B-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+MAPK7	5598	genome.wustl.edu	36	17	19225977	19225977	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26580304	26580304	+	Nonsense_Mutation	SNP	G	G	T	Unknown	Unknown	TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	G	G	G	T	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26581118	26581118	+	Missense_Mutation	SNP	G	G	A	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	A	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26609550	26609550	+	Missense_Mutation	SNP	A	A	T	Unknown	Unknown	TCGA-02-0107-01A-01W	TCGA-02-0107-10A-01W	A	A	A	T	A	A	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26610175	26610175	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-02-0033-01A-01W	TCGA-02-0033-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26610182	26610182	+	Missense_Mutation	SNP	C	C	A	Unknown	Unknown	TCGA-06-0190-01A-01W	TCGA-06-0190-10B-01W	C	C	C	A	C	C	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26677105	26677108	+	Frame_Shift_Del	Del	CTCT	CTCT	-	Unknown	Unknown	TCGA-02-0107-01A-01W	TCGA-02-0107-10A-01W	CTCT	CTCT	CTCT	-	CTCT	CTCT	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26677114	26677114	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26678919	26678919	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0214-01A-02W	TCGA-06-0214-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26678984	26678984	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-06-0201-01A-01W	TCGA-06-0201-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26686128	26686128	+	Nonsense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0124-01A-01W	TCGA-06-0124-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26688511	26688511	+	Splice_Site_SNP	SNP	G	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26689934	26689934	+	Frame_Shift_Del	Del	G	G	-	Unknown	Unknown	TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	G	G	G	-	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26691678	26691678	+	Nonsense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26691722	26691722	+	Nonsense_Mutation	SNP	C	A	C	Unknown	Unknown	TCGA-06-0124-01A-01W	TCGA-06-0124-10A-01W	C	C	C	A	C	C	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26691733	26691733	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+NF1	4763	genome.wustl.edu	36	17	26691739	26691739	+	Frame_Shift_Del	Del	C	C	-	Unknown	Unknown	TCGA-02-0086-01A-01W	TCGA-02-0086-10A-01W	C	C	C	-	C	C	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35116841	35116841	+	Missense_Mutation	SNP	T	A	T	Unknown	Unknown	TCGA-02-0080-01A-01W	TCGA-02-0080-10A-01W	T	T	A	T	A	A	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35116922	35116922	+	Splice_Site_SNP	SNP	T	A	T	Unknown	Unknown	TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	T	T	T	A	T	T	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35119867	35119867	+	Missense_Mutation	SNP	A	A	T	Unknown	Unknown	TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	A	A	A	T	A	A	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35121736	35121736	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	T	T	T	C	T	T	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35121760	35121760	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0116-01A-01W	TCGA-02-0116-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35121767	35121767	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0089-01A-01W	TCGA-02-0089-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35121782	35121782	+	Missense_Mutation	SNP	A	A	G	Unknown	Unknown	TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	A	A	A	G	A	A	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35121805	35121805	+	Missense_Mutation	SNP	T	A	T	Unknown	Unknown	TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	T	T	T	A	T	T	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35127257	35127257	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0102-01A-01W	TCGA-02-0102-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35133731	35133731	+	Missense_Mutation	SNP	T	A	T	Unknown	Unknown	TCGA-02-0107-01A-01W	TCGA-02-0107-10A-01W	T	T	T	A	T	T	Valid	Valid	Somatic	Phase_I
+ERBB2	2064	genome.wustl.edu	36	17	35134527	35134527	+	Missense_Mutation	SNP	T	C	T	Unknown	Unknown	TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	T	T	T	C	T	T	Valid	Valid	Somatic	Phase_I
+STAT3	6774	BCM	36	17	37735120	37735121	+	Frame_Shift_Del	Del	AG	AG	--	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	AG	AG	AG	--	AG	AG	Unknown	Valid	Somatic
+AOC3	8639	broad.mit.edu	36.1	17	38258247	38258247	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_II	Sequenom
+AOC3	8639	broad.mit.edu	36.1	17	38258459	38258459	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+BRCA1	672	broad.mit.edu	36.1	17	38499730	38499730	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+GRN	2896	broad.mit.edu	36.1	17	39782623	39782623	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+GRN	2896	broad.mit.edu	36.1	17	39784050	39784050	+	Silent	SNP	G	A	G			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ITGB3	3690	broad.mit.edu	36.1	17	42723325	42723325	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0141-01A-01W	TCGA-06-0141-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ITGB3	3690	broad.mit.edu	36.1	17	42724694	42724694	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ITGB3	3690	broad.mit.edu	36.1	17	42724749	42724749	+	Silent	SNP	G	A	G			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ITGB3	3690	broad.mit.edu	36.1	17	42731868	42731868	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ITGB3	3690	broad.mit.edu	36.1	17	42742529	42742529	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+PDK2	5164	BCM	36	17	45539183	45539183	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+COL1A1	1277	BCM	36	17	45619111	45619111	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	A	G	G	G	Somatic	Valid	Somatic
+COL1A1	1277	BCM	36	17	45623200	45623200	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+COL1A1	1277	BCM	36	17	45628312	45628312	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+COL1A1	1277	BCM	36	17	45630091	45630091	+	Splice_Site_Indel	Del	C	C	-	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	C	C	C	-	C	C	Unknown	Valid	Somatic
+PRKCA	5578	broad.mit.edu	36.1	17	62215484	62215484	+	Silent	SNP	G	A	A			TCGA-06-0189-01A-01W	TCGA-06-0189-10A-01W	A	A	A	G	A	A		Valid	Somatic	Phase_I	Sequenom
+PRKCA	5578	broad.mit.edu	36.1	17	62215542	62215542	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+KPNA2	3838	broad.mit.edu	36.1	17	63463748	63463748	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0141-01A-01W	TCGA-06-0141-10A-01W	A	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+KPNA2	3838	broad.mit.edu	36.1	17	63470943	63470943	+	Silent	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+TIMP2	7077	BCM	36	17	74363373	74363373	+	Nonsense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+LGALS3BP	3959	broad.mit.edu	36.1	17	74479275	74479275	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0015-01A-01W	TCGA-02-0015-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+LGALS3BP	3959	broad.mit.edu	36.1	17	74479447	74479447	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+LGALS3BP	3959	broad.mit.edu	36.1	17	74480082	74480082	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0344-01A-01W	TCGA-08-0344-11A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+KIAA1632	57724	BCM	36	18	41700876	41700876	+	Missense_Mutation	SNP	C	C	G	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	G	C	C	Somatic	Valid	Somatic
+C18orf25	147339	genome.wustl.edu	36	18	42074101	42074101	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	A	G	G	G	Valid	Valid	Somatic	Phase_I
+SMAD2	4087	broad.mit.edu	36.1	18	43645498	43645498	+	Silent	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+SMAD4	4089	broad.mit.edu	36.1	18	46858703	46858703	+	Nonsense_Mutation	SNP	G	A	G			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+ONECUT2	9480	broad.mit.edu	36.1	18	53294846	53294846	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0171-01A-02W	TCGA-06-0171-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+PHLPP	23239	broad.mit.edu	36.1	18	58790915	58790915	+	Missense_Mutation	SNP	T	C	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	T	T	T	C	T	T		Valid	Somatic	Phase_I	Sequenom
+CRLF1	9244	broad.mit.edu	36.1	19	18571416	18571416	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0168-01A-01W	TCGA-06-0168-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+MAG	4099	broad.mit.edu	36.1	19	40485323	40485323	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0174-01A-01W	TCGA-06-0174-10B-01W	C	C	C	T	C	C		Valid	Somatic	Phase_II	Sequenom
+MLL4	9757	broad.mit.edu	36.1	19	40903582	40903582	+	Missense_Mutation	SNP	C	A	A			TCGA-02-0057-01A-01W	TCGA-02-0057-10A-01W	C	C	C	A				Valid	Somatic	Phase_I	Sequenom
+MLL4	9757	broad.mit.edu	36.1	19	40908522	40908522	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+MLL4	9757	broad.mit.edu	36.1	19	40916372	40916372	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+SPRED3	399473	broad.mit.edu	36.1	19	43574459	43574459	+	Missense_Mutation	SNP	G	A	G			TCGA-08-0349-01A-01W	TCGA-08-0349-11A-02W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+AXL	558	genome.wustl.edu	36	19	46435815	46435815	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+PRKD2	25865	broad.mit.edu	36.1	19	51892838	51892838	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0080-01A-01W	TCGA-02-0080-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+PRKD2	25865	broad.mit.edu	36.1	19	51895928	51895928	+	Silent	SNP	C	C	T			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+GRLF1	2909	BCM	36	19	52115128	52115128	+	Nonsense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+GLTSCR2	29997	broad.mit.edu	36.1	19	52951764	52951764	+	Missense_Mutation	SNP	C	C	T			TCGA-08-0357-01A-01W	TCGA-08-0357-11A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+KLK8	11202	broad.mit.edu	36.1	19	56195600	56195600	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+JAG1	182	BCM	36	20	10581166	10581166	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+MYLK2	85366	broad.mit.edu	36.1	20	29871752	29871752	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0043-01A-01W	TCGA-02-0043-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+C20orf160	140706	genome.wustl.edu	36	20	30066439	30066439	+	Silent_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-06-0142-01A-01W	TCGA-06-0142-10A-01W	G	G	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+C20orf160	140706	genome.wustl.edu	36	20	30081283	30081283	+	Silent_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	Unknown	Unknown	Unknown	Unknown	Valid	Valid	Somatic	Phase_I
+HCK	3055	broad.mit.edu	36.1	20	30135886	30135886	+	Silent	SNP	G	A	G			TCGA-12-0619-01A-01W	TCGA-12-0619-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+HCK	3055	broad.mit.edu	36.1	20	30152895	30152895	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0646-01A-01W	TCGA-06-0646-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+KIF3B	9371	BCM	36	20	30361377	30361377	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+ASXL1	171023	genome.wustl.edu	36	20	30486006	30486006	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0055-01A-01W	TCGA-02-0055-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+ASXL1	171023	genome.wustl.edu	36	20	30486129	30486129	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TOP1	7150	genome.wustl.edu	36	20	39177465	39177465	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+GNAS	2778	BCM	36	20	56849073	56849073	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	G	G	A	G	G	G	Somatic	Valid	Somatic
+GNAS	2778	BCM	36	20	56863479	56863479	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Somatic	Valid	Somatic
+RIPK4	54101	broad.mit.edu	36.1	21	42035063	42035063	+	Silent	SNP	G	A	G			TCGA-06-0154-01A-02W	TCGA-06-0154-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_II	Sequenom
+ITGB2	3689	broad.mit.edu	36.1	21	45131203	45131203	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0014-01A-01W	TCGA-02-0014-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+ITGB2	3689	broad.mit.edu	36.1	21	45144662	45144662	+	Splice_Site_SNP	SNP	C	C	T			TCGA-06-0158-01A-01W	TCGA-06-0158-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+ITGB2	3689	broad.mit.edu	36.1	21	45155087	45155087	+	Silent	SNP	C	C	T			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+COL6A2	1292	genome.wustl.edu	36	21	46358384	46358384	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+COL6A2	1292	genome.wustl.edu	36	21	46363443	46363443	+	Silent_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-06-0195-01B-01W	TCGA-06-0195-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+COL6A2	1292	genome.wustl.edu	36	21	46367276	46367276	+	Silent_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0099-01A-01W	TCGA-02-0099-10A-01W	G	G	A	G	G	G	Unknown	Valid	Somatic	Phase_I
+ATP6V1E1	529	broad.mit.edu	36.1	22	16455484	16455484	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+BCL2L13	23786	BCM	36	22	16590158	16590158	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Somatic	Valid	Somatic
+BCR	613	genome.wustl.edu	36	22	21926057	21926057	+	Missense_Mutation	SNP	G	A	A	Unknown	Unknown	TCGA-02-0102-01A-01W	TCGA-02-0102-10A-01W	G	G	A	A	G	G	Valid	Valid	Somatic	Phase_I
+MN1	4330	genome.wustl.edu	36	22	26476992	26476992	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+CHEK2	11200	broad.mit.edu	36.1	22	27413910	27413910	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0069-01A-01W	TCGA-02-0069-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27413910	27413910	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27413910	27413910	+	Missense_Mutation	SNP	G	A	G			TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27413910	27413910	+	Missense_Mutation	SNP	G	A	G			TCGA-06-0209-01A-01W	TCGA-06-0209-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-02-0075-01A-01W	TCGA-02-0075-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-06-0122-01A-01W	TCGA-06-0122-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-06-0141-01A-01W	TCGA-06-0141-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-06-0142-01A-01W	TCGA-06-0142-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-06-0143-01A-01W	TCGA-06-0143-10A-01W	A	A	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421781	27421781	+	Silent	SNP	C	A	A			TCGA-06-0151-01A-01W	TCGA-06-0151-10A-01W	C	C	C	A	C	C		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421808	27421808	+	Silent	SNP	G	A	G			TCGA-02-0064-01A-01W	TCGA-02-0064-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421808	27421808	+	Silent	SNP	G	A	G			TCGA-06-0122-01A-01W	TCGA-06-0122-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421808	27421808	+	Silent	SNP	G	A	G			TCGA-06-0142-01A-01W	TCGA-06-0142-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421808	27421808	+	Silent	SNP	G	A	G			TCGA-06-0143-01A-01W	TCGA-06-0143-10A-01W	G	G	A	G	G	G		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421808	27421808	+	Silent	SNP	G	A	G			TCGA-06-0151-01A-01W	TCGA-06-0151-10A-01W	G	G	A	G				Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421840	27421840	+	Missense_Mutation	SNP	T	C	T			TCGA-02-0084-01A-01W	TCGA-02-0084-10A-01W	T	T	C	T	T	T		Valid	Somatic	Phase_I	Sequenom
+CHEK2	11200	broad.mit.edu	36.1	22	27421841	27421841	+	Silent	SNP	G	A	G			TCGA-02-0115-01A-01W	TCGA-02-0115-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+C22orf24	25775	broad.mit.edu	36.1	22	30660275	30660275	+	Silent	SNP	G	A	G			TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	G	G	G	A	G	G		Valid	Somatic	Phase_I	Sequenom
+CSNK1E	1454	broad.mit.edu	36.1	22	37019247	37019247	+	Missense_Mutation	SNP	C	C	T			TCGA-02-0010-01A-01W	TCGA-02-0010-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+EP300	2033	BCM	36	22	39894533	39894533	+	Missense_Mutation	SNP	C	C	T	novel	unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Unknown	Valid	Somatic
+EP300	2033	BCM	36	22	39904088	39904088	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-02-0028-01A-01W	TCGA-02-0028-10A-01W	G	G	G	A	G	G	Unknown	Valid	Somatic
+MAPK8IP2	23542	broad.mit.edu	36.1	22	49395592	49395592	+	Missense_Mutation	SNP	C	T	T			TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+CDKL5	6792	broad.mit.edu	36.1	X	18574049	18574049	+	Splice_Site_SNP	SNP	C	C	T			TCGA-06-0137-01A-01W	TCGA-06-0137-10A-01W	C	C	T	C	C	C		Valid	Somatic	Phase_I	Sequenom
+RPS6KA3	6197	BCM	36	X	20103288	20103288	+	Missense_Mutation	SNP	A	T	T	novel	unknown	TCGA-06-0157-01A-01W	TCGA-06-0157-10A-01W	A	A	A	T	A	A	Somatic	Valid	Somatic
+SYP	6855	broad.mit.edu	36.1	X	48935116	48935116	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0157-01A-01W	TCGA-06-0157-10A-01W	C	C	C	T	C	C		Valid	Somatic	Phase_I	Sequenom
+MLLT7	4303	genome.wustl.edu	36	X	70237836	70237836	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I
+TAF1	6872	BCM	36	X	70504111	70504111	+	Missense_Mutation	SNP	G	G	A	novel	unknown	TCGA-06-0213-01A-01W	TCGA-06-0213-10A-01W	G	G	G	A	G	G	Wildtype	Valid	Somatic
+TAF1	6872	BCM	36	X	70591395	70591395	+	Missense_Mutation	SNP	G	G	C	novel	unknown	TCGA-06-0176-01A-02W	TCGA-06-0176-10A-01W	G	G	C	G	G	G	Somatic	Valid	Somatic
+BTK	695	broad.mit.edu	36.1	X	100497740	100497740	+	Missense_Mutation	SNP	C	C	T			TCGA-06-0184-01A-01W	TCGA-06-0184-10B-01W	C	C	T	C	C	C		Valid	Somatic	Phase_II	Sequenom
+DCX	1641	genome.wustl.edu	36	X	110442569	110442569	+	Missense_Mutation	SNP	G	A	G	Unknown	Unknown	TCGA-02-0083-01A-01W	TCGA-02-0083-10A-01W	G	G	G	A	G	G	Valid	Valid	Somatic	Phase_I
+AIFM1	9131	genome.wustl.edu	36	X	129111203	129111203	+	Missense_Mutation	SNP	C	C	T	Unknown	Unknown	TCGA-02-0114-01A-01W	TCGA-02-0114-10A-01W	C	C	C	T	C	C	Valid	Valid	Somatic	Phase_I

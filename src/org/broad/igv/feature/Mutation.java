@@ -268,7 +268,7 @@ public class Mutation implements IGVFeature {
     }
 
     public String getIdentifier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public AminoAcidSequence getAminoAcidSequence(int exonIndex) {

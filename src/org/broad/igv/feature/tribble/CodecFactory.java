@@ -39,7 +39,7 @@ public class CodecFactory {
 
     static {
         validExtensions.addAll(Arrays.asList("vcf4", "vcf", "bed", "refflat", "genepred", "ensgene", "refgene", "ucscgene",
-                "repmask", "gff3", "gvf", "gff", "gtf", "psl"));
+                "repmask", "gff3", "gvf", "gff", "gtf", "psl", "mut", "maf"));
     }
 
     /**
@@ -84,13 +84,9 @@ public class CodecFactory {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec(genome);
-
-        }
-//   Mutation codec disabled until we deal with the multiple sample problem
-//        else if (fn.endsWith(".mut") || (fn.endsWith(".maf") && MUTCodec.isMutationAnnotationFile(path))) {
-//            return new MUTCodec(path, genome);
-//        }
-        else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
+        } else if (MUTCodec.isMutationAnnotationFile(path)) {
+            return new MUTCodec(path, genome);
+        } else if (fn.endsWith(".narrowpeak") || fn.endsWith(".broadpeak")) {
             return new EncodePeakCodec(genome);
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec(genome);

@@ -176,6 +176,30 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         assertEquals("http://www.broadinstitute.org/epigenomics/dataportal/track_00196.portal.bw", props.getDataURL());
     }
 
+
+    @Test
+    public void testGetIGVExtension() {
+
+        String path = "/foo/bar/mydata_sorted.txt";
+        assertEquals("_sorted.txt", ParsingUtils.getIGVExtension(path));
+
+        path = "/foo/bar/mydata.igv";
+        assertEquals("igv", ParsingUtils.getIGVExtension(path));
+
+        path = "/foo/bar/mydata.igv.gz";
+        assertEquals("igv", ParsingUtils.getIGVExtension(path));
+
+        path = "/foo/bar/mydata.igv.txt";
+        assertEquals("igv", ParsingUtils.getIGVExtension(path));
+
+        path = "/foo/bar/mydata.igv.xls";
+        assertEquals("igv", ParsingUtils.getIGVExtension(path));
+
+        path = "/foo/bar/mydata.igv.txt.gz";
+        assertEquals("igv", ParsingUtils.getIGVExtension(path));
+
+    }
+
     //@Test
     public void compareSpeedPatternDotSplit() throws Exception {
         int nTrials = 500000;
