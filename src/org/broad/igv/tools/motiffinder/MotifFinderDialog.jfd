@@ -17,24 +17,16 @@ new FormModel {
 					"alignmentX": 0.0f
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
-						"text": "Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. "
+						"text": "Enter the pattern for which to search. Matches in the reference genome sequence will be displayed in a new track. "
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true
 						"wrapStyleWord": true
 					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Track Name:"
-						"labelFor": new FormReference( "nameField" )
-						"horizontalTextPosition": 2
-						"horizontalAlignment": 2
-						"maximumSize": new java.awt.Dimension( 374, 16 )
-						"preferredSize": new java.awt.Dimension( 374, 16 )
-						"alignmentX": 1.0f
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "nameField"
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+						name: "vSpacer1"
+						"minimumSize": new java.awt.Dimension( 12, 20 )
+						"preferredSize": new java.awt.Dimension( 10, 20 )
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label2"
@@ -51,6 +43,19 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "patternField"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label1"
+						"text": "Track Name:"
+						"labelFor": new FormReference( "nameField" )
+						"horizontalTextPosition": 2
+						"horizontalAlignment": 2
+						"maximumSize": new java.awt.Dimension( 374, 16 )
+						"preferredSize": new java.awt.Dimension( 374, 16 )
+						"alignmentX": 1.0f
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "nameField"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 1

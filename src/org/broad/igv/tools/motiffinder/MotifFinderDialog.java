@@ -174,11 +174,12 @@ public class MotifFinderDialog extends JDialog {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         textArea1 = new JTextArea();
-        label1 = new JLabel();
-        nameField = new JTextField();
+        vSpacer1 = new JPanel(null);
         label2 = new JLabel();
         label4 = new JLabel();
         patternField = new JTextField();
+        label1 = new JLabel();
+        nameField = new JTextField();
         radioButtonPanel = new JPanel();
         ambiguityCodeButton = new JRadioButton();
         regexButton = new JRadioButton();
@@ -202,23 +203,17 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
                 //---- textArea1 ----
-                textArea1.setText("Enter the pattern for which to search. Matches in the current genome sequence will be displayed in a new track. ");
+                textArea1.setText("Enter the pattern for which to search. Matches in the reference genome sequence will be displayed in a new track. ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
                 contentPanel.add(textArea1);
 
-                //---- label1 ----
-                label1.setText("Track Name:");
-                label1.setLabelFor(nameField);
-                label1.setHorizontalTextPosition(SwingConstants.LEFT);
-                label1.setHorizontalAlignment(SwingConstants.LEFT);
-                label1.setMaximumSize(new Dimension(374, 16));
-                label1.setPreferredSize(new Dimension(374, 16));
-                label1.setAlignmentX(1.0F);
-                contentPanel.add(label1);
-                contentPanel.add(nameField);
+                //---- vSpacer1 ----
+                vSpacer1.setMinimumSize(new Dimension(12, 20));
+                vSpacer1.setPreferredSize(new Dimension(10, 20));
+                contentPanel.add(vSpacer1);
 
                 //---- label2 ----
                 label2.setText("Pattern:");
@@ -231,6 +226,17 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(label2);
                 contentPanel.add(label4);
                 contentPanel.add(patternField);
+
+                //---- label1 ----
+                label1.setText("Track Name:");
+                label1.setLabelFor(nameField);
+                label1.setHorizontalTextPosition(SwingConstants.LEFT);
+                label1.setHorizontalAlignment(SwingConstants.LEFT);
+                label1.setMaximumSize(new Dimension(374, 16));
+                label1.setPreferredSize(new Dimension(374, 16));
+                label1.setAlignmentX(1.0F);
+                contentPanel.add(label1);
+                contentPanel.add(nameField);
 
                 //======== radioButtonPanel ========
                 {
@@ -303,11 +309,12 @@ public class MotifFinderDialog extends JDialog {
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JTextArea textArea1;
-    private JLabel label1;
-    private JTextField nameField;
+    private JPanel vSpacer1;
     private JLabel label2;
     private JLabel label4;
     private JTextField patternField;
+    private JLabel label1;
+    private JTextField nameField;
     private JPanel radioButtonPanel;
     private JRadioButton ambiguityCodeButton;
     private JRadioButton regexButton;
