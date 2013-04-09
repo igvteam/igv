@@ -264,6 +264,12 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
 
     }
 
+    @Test
+    public void testLoadBAMFtp() throws Exception{
+        String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/HG00171.hg18.bam";
+        tstLoadFi(path, 2, false);
+    }
+
     /**
      * Test loading segmented data file from a sql database, using a profile
      *
