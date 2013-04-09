@@ -206,6 +206,7 @@ public class MotifFinderDialog extends JDialog {
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
+                textArea1.setWrapStyleWord(true);
                 contentPanel.add(textArea1);
 
                 //---- label1 ----

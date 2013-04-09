@@ -21,6 +21,7 @@ new FormModel {
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true
+						"wrapStyleWord": true
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label1"

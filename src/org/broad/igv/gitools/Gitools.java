@@ -62,7 +62,6 @@ public class Gitools implements IGVPlugin{
     }
 
     private static void addMenuItems(){
-        //TODO Add api hook to insert things in tool menu
         boolean showTDMButton = Boolean.parseBoolean(System.getProperty(Gitools.ENABLE_PROPERTY, "true"));
         if(showTDMButton){
             JMenu gitoolsMenu = new JMenu("Gitools Heatmaps");
