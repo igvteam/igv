@@ -314,13 +314,13 @@
 
     <!-- Run tests without compiling source files. Primarily used
     for testing packaged jar-->
-    <target name="test_nocompile">
+    <target name="tests_nocompile">
         <antcall target="makereports">
             <param name="filesetid" value="allfileset"/>
         </antcall>
     </target>
 
-    <target name="tests" depends="compile, test_nocompile"/>
+    <target name="tests" depends="compile, tests_nocompile"/>
 
     <target name="uitests" depends="compile">
         <antcall target="makereports">
