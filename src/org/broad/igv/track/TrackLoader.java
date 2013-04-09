@@ -226,6 +226,8 @@ public class TrackLoader {
                 loadGobyCountsArchive(locator, newTracks, genome);
             } else if (GFFFeatureSource.isGFF(locator.getPath())) {
                 loadGFFfile(locator, newTracks, genome);
+            } else if (AbstractFeatureParser.canParse(locator.getPath())) {
+                loadFeatureFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf")) {
