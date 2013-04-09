@@ -95,7 +95,9 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     static Matcher getMatcher(String pattern, Strand strand, byte[] sequence){
         byte[] seq = sequence;
         if(strand == Strand.NEGATIVE){
-            seq = seq.clone();
+            //sequence could be quite long, cloning it might take up a lot of memory
+            //and is un-necessary if we are careful.
+            //seq = seq.clone();
             SequenceUtil.reverseComplement(seq);
         }
         Pattern regex = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
@@ -111,7 +113,7 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * @param pattern
      * @param posStart The 0-based offset from the beginning of the genome that the {@code sequence} is based
      *                 Always relative to positive strand
-     * @param sequence The positive-strand nucleotide sequence
+     * @param sequence The positive-strand nucleotide sequence. This may be altered during execution!
      * @return
      */
     public static Iterator<Feature> search(String chr, String pattern, int posStart, byte[] sequence){

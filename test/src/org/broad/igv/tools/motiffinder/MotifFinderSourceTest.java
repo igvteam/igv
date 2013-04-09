@@ -15,7 +15,6 @@ import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.tribble.Feature;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -192,7 +191,6 @@ public class MotifFinderSourceTest extends AbstractHeadlessTest{
      * this is a loose performance test. Takes ~13 seconds on my machine
      * @throws Exception
      */
-    @Ignore("Runs out of heap space in testrunner, should make searching more efficient")
     @Test
     public void testSearchWholeChromo() throws Exception{
         String chromo = "chr1";
