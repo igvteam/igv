@@ -131,7 +131,7 @@
     </target>
 
 
-    <target name="compileTests" depends="init" if="compile.tests" description="Compile test files to testtmp directory, WITHOUT compiling main source files">
+    <target name="compileTests" if="compile.tests" description="Compile test files to testtmp directory, WITHOUT compiling main source files">
         <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true"
                target="${javac.target}" source="${javac.target}" encoding="${java.encoding}">
             <classpath refid="test.classpath"/>
@@ -320,9 +320,7 @@
         </antcall>
     </target>
 
-    <target name="tests" depends="compile">
-        <antcall target="test_nocompile"/>
-    </target>
+    <target name="tests" depends="compile, test_nocompile"/>
 
     <target name="uitests" depends="compile">
         <antcall target="makereports">
