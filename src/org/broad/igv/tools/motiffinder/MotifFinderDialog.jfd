@@ -57,27 +57,6 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "nameField"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-						"axis": 1
-					} ) {
-						name: "radioButtonPanel"
-						"alignmentX": 1.0f
-						"maximumSize": new java.awt.Dimension( 200, 46 )
-						"preferredSize": new java.awt.Dimension( 200, 46 )
-						add( new FormComponent( "javax.swing.JRadioButton" ) {
-							name: "ambiguityCodeButton"
-							"text": "IUPAC Ambiguity Codes"
-							"$buttonGroup": new FormReference( "buttonGroup1" )
-							"selected": true
-							"toolTipText": "Use IUPAC ambiguity codes"
-						} )
-						add( new FormComponent( "javax.swing.JRadioButton" ) {
-							name: "regexButton"
-							"text": "Regular Expressions"
-							"$buttonGroup": new FormReference( "buttonGroup1" )
-							"toolTipText": "Use java regular expression syntax"
-						} )
-					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "North"
 				} )

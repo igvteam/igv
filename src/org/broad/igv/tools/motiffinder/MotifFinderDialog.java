@@ -15,6 +15,9 @@
 
 package org.broad.igv.tools.motiffinder;
 
+import net.sf.samtools.util.SequenceUtil;
+import org.broad.igv.ui.util.MessageUtils;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -28,6 +31,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Dialog so the user can enter a pattern that can be used
@@ -38,7 +43,7 @@ import java.util.Set;
 public class MotifFinderDialog extends JDialog {
 
     private static Map<String, String> letterToRegex;
-    private static Set<String> validInputStrings;
+    private static Set<String> validIUPACInputStrings;
 
     static{
         initLetterToRegex();
@@ -47,14 +52,19 @@ public class MotifFinderDialog extends JDialog {
     private static final String codeFilePath = "resources/iupac_regex_table.txt";
     private static void initLetterToRegex() {
         letterToRegex = loadMap(MotifFinderSource.class.getResourceAsStream(codeFilePath));
-        validInputStrings = new HashSet<String>(letterToRegex.size());
+        validIUPACInputStrings = new HashSet<String>(letterToRegex.size());
         for(String key: letterToRegex.keySet()){
-            validInputStrings.add(key.toUpperCase());
+            validIUPACInputStrings.add(key.toUpperCase());
         }
     }
 
-    public static boolean isValidString(String c) {
-        return validInputStrings.contains(c);
+    /**
+     * Returns true if character c is a valid IUPAC Ambiguity code
+     * @param c Single character
+     * @return
+     */
+    public static boolean isIUPACChar(String c) {
+        return validIUPACInputStrings.contains(c);
     }
 
     /**
@@ -140,31 +150,65 @@ public class MotifFinderDialog extends JDialog {
 
         String strPattern = patternField.getText().toUpperCase();
 
-        //Don't validate regex here, too hard
-        boolean patternIsValid = true;
-        if(ambiguityCodeButton.isSelected()){
-            patternIsValid = checkPatternValid(strPattern);
-            if(patternIsValid){
-                strPattern = convertMotifToRegex(strPattern);
-            }
-        }
+        boolean isIUPAC = checkIUPACPatternValid(strPattern);
+        boolean isRegex = checkNucleotideRegex(strPattern);
+        boolean patternIsValid = isIUPAC || isRegex;
 
         if(!patternIsValid){
-            // TODO warn user
-        }else{
-            this.trackName = nameField.getText();
-            this.inputPattern = strPattern;
-            this.setVisible(false);
+            MessageUtils.showMessage("Please enter a valid pattern.\n" +
+                    "Patterns using IUPAC ambiguity codes should contain no special characters.\n" +
+                    "Regular expressions should contain only 'ACTGN' in addition to special characters");
+            return;
         }
+
+        if (isIUPAC) {
+            strPattern = convertMotifToRegex(strPattern);
+        }
+
+        this.trackName = nameField.getText();
+        this.inputPattern = strPattern;
+        this.setVisible(false);
+
     }
 
-    private boolean checkPatternValid(String strPattern) {
+    /**
+     * Determines whether this string pattern is interpretable as
+     * a set of IUPAC nucleotide characters
+     * @param strPattern Upper case string pattern
+     * @return
+     */
+    static boolean checkIUPACPatternValid(String strPattern) {
         for(int ii=0; ii < strPattern.length(); ii++){
             String c = strPattern.substring(ii, ii + 1);
-            if(!isValidString(c)){
+            if(!isIUPACChar(c)){
                 return false;
             }
         }
+        return true;
+    }
+
+    /**
+     * Determine whether it's a valid regex.
+     * Also, any letters should be one of AGCTN (case insensitive)
+     * @param strPattern
+     * @return
+     */
+    static boolean checkNucleotideRegex(String strPattern){
+        try {
+            //First check if it's valid regex
+            Pattern pattern = Pattern.compile(strPattern);
+            byte[] bytes = strPattern.getBytes();
+            for(byte c: bytes){
+                if(Character.isLetter(c)){
+                    boolean validBase = SequenceUtil.isValidBase(c);
+                    validBase |= c == 'N';
+                    if(!validBase) return false;
+                }
+            }
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+
         return true;
     }
 
@@ -180,9 +224,6 @@ public class MotifFinderDialog extends JDialog {
         patternField = new JTextField();
         label1 = new JLabel();
         nameField = new JTextField();
-        radioButtonPanel = new JPanel();
-        ambiguityCodeButton = new JRadioButton();
-        regexButton = new JRadioButton();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -237,26 +278,6 @@ public class MotifFinderDialog extends JDialog {
                 label1.setAlignmentX(1.0F);
                 contentPanel.add(label1);
                 contentPanel.add(nameField);
-
-                //======== radioButtonPanel ========
-                {
-                    radioButtonPanel.setAlignmentX(1.0F);
-                    radioButtonPanel.setMaximumSize(new Dimension(200, 46));
-                    radioButtonPanel.setPreferredSize(new Dimension(200, 46));
-                    radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.Y_AXIS));
-
-                    //---- ambiguityCodeButton ----
-                    ambiguityCodeButton.setText("IUPAC Ambiguity Codes");
-                    ambiguityCodeButton.setSelected(true);
-                    ambiguityCodeButton.setToolTipText("Use IUPAC ambiguity codes");
-                    radioButtonPanel.add(ambiguityCodeButton);
-
-                    //---- regexButton ----
-                    regexButton.setText("Regular Expressions");
-                    regexButton.setToolTipText("Use java regular expression syntax");
-                    radioButtonPanel.add(regexButton);
-                }
-                contentPanel.add(radioButtonPanel);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
 
@@ -296,11 +317,6 @@ public class MotifFinderDialog extends JDialog {
         contentPane.add(dialogPane, BorderLayout.CENTER);
         setSize(400, 300);
         setLocationRelativeTo(getOwner());
-
-        //---- buttonGroup1 ----
-        ButtonGroup buttonGroup1 = new ButtonGroup();
-        buttonGroup1.add(ambiguityCodeButton);
-        buttonGroup1.add(regexButton);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -315,9 +331,6 @@ public class MotifFinderDialog extends JDialog {
     private JTextField patternField;
     private JLabel label1;
     private JTextField nameField;
-    private JPanel radioButtonPanel;
-    private JRadioButton ambiguityCodeButton;
-    private JRadioButton regexButton;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
