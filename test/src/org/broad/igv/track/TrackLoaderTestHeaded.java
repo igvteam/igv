@@ -13,6 +13,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.AbstractHeadedTest;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Assert;
@@ -22,6 +23,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -64,5 +67,21 @@ public class TrackLoaderTestHeaded extends AbstractHeadedTest {
         Assert.assertEquals(1, tracks.size());
     }
 
+    @Test
+    public void testLoadBAMFtpHeaded() throws Exception{
+        String path = "ftp://ftp.broadinstitute.org/pub/igv/TEST/HG00171.hg18.bam";
+        Integer expected_tracks = 2;
 
+
+        List<Track> tracks = IGV.getInstance().getAllTracks();
+        int initTracks = tracks.size();
+
+        ResourceLocator locator = new ResourceLocator(path);
+
+        IGV.getInstance().load(locator);
+
+        tracks = IGV.getInstance().getAllTracks();
+
+        assertEquals(initTracks + expected_tracks, tracks.size());
+    }
 }
