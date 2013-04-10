@@ -338,7 +338,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
                 featurePopupMenu.add(getCopySequenceItem(f));
-                featurePopupMenu.add(getBlatItem(f));
+               // featurePopupMenu.add(getBlatItem(f));
             }
         }
 
