@@ -81,13 +81,13 @@ public abstract class PluginSource<E extends Feature, D extends Feature>{
     @SubtlyImportant
     protected PluginSource(){}
 
-    public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
+    public PluginSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttrs, String specPath) {
         this.commands = commands;
         this.arguments = arguments;
-        this.parser = parsingAttrs;
+        this.parser = outputAttrs.parser;
         this.specPath = specPath;
 
-        String[] libs = parsingAttrs.libs;
+        String[] libs = this.parser.libs;
         libs = libs != null ? libs : new String[]{};
         try {
             decodingLibURLs = PluginSpecReader.getLibURLs(libs, FileUtils.getParent(specPath));

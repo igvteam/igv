@@ -31,14 +31,16 @@ import java.util.*;
 import java.util.List;
 
 /**
- * @author User #2
+ * @author jacob
  */
 public class RunPlugin extends JDialog {
 
     private List<Argument> argumentList;
     private List<String> cmd = new ArrayList<String>();
     private Map<Argument, ArgumentPanel> argumentComponents;
-    private PluginSpecReader.Parser parsingAttrs;
+
+    private List<PluginSpecReader.Output> outputAttrs;
+    private Map<PluginSpecReader.Output, ArgumentPanel> outputComponents;
 
     private String specPath;
 
@@ -54,12 +56,19 @@ public class RunPlugin extends JDialog {
 
         specPath = pluginSpecReader.getSpecPath();
         argumentList = command.argumentList;
-        parsingAttrs = command.parser;
+        outputAttrs = command.outputList;
         initArgumentComponents(toolName, toolPath, cmdName, cmdVal);
     }
 
+    /**
+     * Initialize the components based on the input arguments. Text inputs become text boxes,
+     * track inputs become dropdown boxes, etc.
+     * @param toolName
+     * @param toolPath
+     * @param cmdName
+     * @param cmdVal
+     */
     private void initArgumentComponents(String toolName, String toolPath, String cmdName, String cmdVal) {
-
 
         if (toolPath != null && toolPath.length() > 0) {
             this.cmd.add(toolPath);
@@ -68,6 +77,7 @@ public class RunPlugin extends JDialog {
             this.cmd.add(cmdVal);
         }
         argumentComponents = new LinkedHashMap<Argument, ArgumentPanel>(this.argumentList.size());
+        outputComponents = new LinkedHashMap<PluginSpecReader.Output, ArgumentPanel>(this.outputAttrs.size());
 
         String titleText = toolName;
         if (cmdName.length() > 0) {
@@ -75,6 +85,7 @@ public class RunPlugin extends JDialog {
         }
         setTitle(titleText);
 
+        //Inputs
         Dimension minSize = getMinimumSize();
         for (Argument argument : argumentList) {
             ArgumentPanel panel = ArgumentPanel.create(argument);
@@ -84,10 +95,24 @@ public class RunPlugin extends JDialog {
             }
         }
 
+        //Outputs
+        //This is somewhat hacky now, because we expect only one type of output
+        //That being a track, where the user just needs to give a name
+        for(PluginSpecReader.Output output: outputAttrs){
+            TextArgument panel = new TextArgument();
+            panel.setArgName(output.name);
+            String defValue = output.defaultValue != null ? output.defaultValue : toolName + " " + cmdName;
+            panel.setValue(defValue);
+            this.contentPanel.add(panel);
+            outputComponents.put(output, panel);
+        }
+
         this.validate();
 
+        List<ArgumentPanel> components = new ArrayList<ArgumentPanel>(argumentComponents.values());
+        components.addAll(outputComponents.values());
         double minWidth = minSize.getWidth();
-        for (ArgumentPanel panel : argumentComponents.values()) {
+        for (ArgumentPanel panel : components) {
 
             //If track names are long, feature track combo box can get big
             //TODO Multi-intersect box is in a scrollpanel so it doesn't enlarge quite the same. Maybe we want that, maybe not
@@ -97,11 +122,9 @@ public class RunPlugin extends JDialog {
             this.setMinimumSize(minSize);
         }
         this.validate();
-
-        outputName.setText(toolName + " " + cmdName);
     }
 
-    private Track genNewTrack() {
+    private List<Track> genNewTrack() {
         //Retrieve the actual argument values
         LinkedHashMap<Argument, Object> argumentValues = new LinkedHashMap<Argument, Object>(argumentComponents.size());
         for (Map.Entry<Argument, ArgumentPanel> argComp : argumentComponents.entrySet()) {
@@ -109,12 +132,16 @@ public class RunPlugin extends JDialog {
             argumentValues.put(argComp.getKey(), value);
         }
 
-        String name = outputName.getText();
-
         //TODO PluginDataSource is already written, just need to know when to use it
-        PluginFeatureSource source = new PluginFeatureSource(cmd, argumentValues, parsingAttrs, specPath);
-        FeatureTrack newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, source);
-        return newTrack;
+        List<Track> newTracks = new ArrayList<Track>(outputAttrs.size());
+        for(PluginSpecReader.Output outputAttr: outputAttrs){
+            //TODO Hacky, only works for output components being TextArgument, which they are as of this comment writing
+            String name = (String) outputComponents.get(outputAttr).getValue();
+            PluginFeatureSource source = new PluginFeatureSource(cmd, argumentValues, outputAttr, specPath);
+            FeatureTrack newTrack = new FeatureTrack(UUID.randomUUID().toString(), name, source);
+            newTracks.add(newTrack);
+        }
+        return newTracks;
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -122,8 +149,8 @@ public class RunPlugin extends JDialog {
     }
 
     void okButtonActionPerformed(ActionEvent e) {
-        Track newTrack = genNewTrack();
-        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
+        List<Track> newTrack = genNewTrack();
+        IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTracks(newTrack);
 
         this.setVisible(false);
 
@@ -135,9 +162,7 @@ public class RunPlugin extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        panel1 = new JPanel();
-        label1 = new JLabel();
-        outputName = new JTextField();
+        vSpacer1 = new JPanel(null);
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -160,24 +185,7 @@ public class RunPlugin extends JDialog {
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
-
-            //======== panel1 ========
-            {
-                panel1.setMaximumSize(new Dimension(2000, 28));
-                panel1.setMinimumSize(new Dimension(200, 28));
-                panel1.setPreferredSize(new Dimension(200, 28));
-                panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
-
-                //---- label1 ----
-                label1.setText("Output Track Name:");
-                panel1.add(label1);
-
-                //---- outputName ----
-                outputName.setText("result");
-                outputName.setMaximumSize(new Dimension(500, 28));
-                panel1.add(outputName);
-            }
-            dialogPane.add(panel1, BorderLayout.CENTER);
+            dialogPane.add(vSpacer1, BorderLayout.CENTER);
 
             //======== buttonBar ========
             {
@@ -222,9 +230,7 @@ public class RunPlugin extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JPanel panel1;
-    private JLabel label1;
-    private JTextField outputName;
+    private JPanel vSpacer1;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

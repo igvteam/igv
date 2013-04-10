@@ -39,7 +39,7 @@ public class Argument{
     @XmlAttribute(name = CMD_ARG)
     private String cmdArg;
 
-    @XmlAttribute(name="default")
+    @XmlAttribute
     private String defaultValue;
 
     /**

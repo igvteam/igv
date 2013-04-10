@@ -14,9 +14,11 @@
     <tool name="Shell Input" defaultPath="" visible="false"
           description="Command line interface with user-supplied executable">
         <command name="Shell Input" cmd="">
-            <arg name="Shell command" cmd_arg="" type="LONGTEXT" default=""/>
+            <arg name="Shell command" cmd_arg="" type="LONGTEXT" defaultValue=""/>
             <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
-            <parser format="bed"/>
+            <output>
+                <parser format="bed"/>
+            </output>
         </command>
     </tool>
 </cli_plugin>

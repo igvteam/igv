@@ -20,22 +20,8 @@ new FormModel {
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "North"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-					"axis": 0
-				} ) {
-					name: "panel1"
-					"maximumSize": new java.awt.Dimension( 2000, 28 )
-					"minimumSize": new java.awt.Dimension( 200, 28 )
-					"preferredSize": new java.awt.Dimension( 200, 28 )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Output Track Name:"
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "outputName"
-						"text": "result"
-						"maximumSize": new java.awt.Dimension( 500, 28 )
-					} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+					name: "vSpacer1"
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"
 				} )

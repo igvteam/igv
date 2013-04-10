@@ -102,7 +102,7 @@ public class PluginSpecReaderTest {
             multiinter_command = commands.get(ind++);
         }
 
-        PluginSpecReader.Parser parser = multiinter_command.parser;
+        PluginSpecReader.Parser parser = multiinter_command.outputList.get(0).parser;
         assertEquals("bed", parser.format);
         assertEquals(true, parser.strict);
         assertTrue(parser.decodingCodec.contains("BEDToolsDecoder"));

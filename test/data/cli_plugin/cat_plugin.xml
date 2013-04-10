@@ -12,13 +12,17 @@
 <cli_plugin api_version="alpha" plugin_version="1.0" name="cat"
             id="org.broadinstitute.igv.plugin.cat">
     <tool name="cat" defaultPath="cat">
-        <default>
+        <default_arg>
             <arg name="Arguments" cmd_arg="" type="TEXT"/>
             <arg name="Track A" cmd_arg="" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="" type="FEATURE_TRACK"
                  encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
-            <parser format="bed" strict="true"/>
-        </default>
+        </default_arg>
+        <default_output>
+            <output>
+                <parser format="bed" strict="true"/>
+            </output>
+        </default_output>
         <command name="Concatenate" cmd=""/>
     </tool>
 </cli_plugin>

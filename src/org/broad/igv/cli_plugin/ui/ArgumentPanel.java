@@ -41,6 +41,10 @@ public class ArgumentPanel extends JPanel {
         return null;
     }
 
+    void setArgName(String newName){
+        this.argName.setText(newName);
+    }
+
     /**
      * Create the appropriate ArgumentPanel for this argument.
      *

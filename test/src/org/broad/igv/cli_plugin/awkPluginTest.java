@@ -58,7 +58,8 @@ public class awkPluginTest extends AbstractPluginTest {
             }
         }
 
-        PluginSpecReader.Parser parsingAttrs = command.parser;
+        List<PluginSpecReader.Output> outputAttrs = command.outputList;
+        PluginSpecReader.Output outputAttr = outputAttrs.get(0);
 
         String testFile = TestUtils.DATA_DIR + "bed/Unigene.sample.bed";
         FeatureTrack track = (FeatureTrack) (new TrackLoader()).load(new ResourceLocator(testFile), genome).get(0);
@@ -74,7 +75,7 @@ public class awkPluginTest extends AbstractPluginTest {
         }
 
         List<String> fullCmd = Arrays.asList(toolPath);
-        PluginFeatureSource source = new PluginFeatureSource(fullCmd, arguments, parsingAttrs, pluginPath);
+        PluginFeatureSource source = new PluginFeatureSource(fullCmd, arguments, outputAttr, pluginPath);
         List<Feature> feats = new ArrayList<Feature>();
         Iterator<Feature> featIter = source.getFeatures("chr2", 0, Integer.MAX_VALUE);
         Feature feat;

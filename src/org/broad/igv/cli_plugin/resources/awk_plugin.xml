@@ -12,14 +12,19 @@
 <cli_plugin api_version="alpha" plugin_version="0.1" name="awk"
             id="org.broad.igv.plugin.awk">
     <tool name="awk" defaultPath="awk" visible="false">
-        <default>
-            <arg name="Arguments" cmd_arg="" type="TEXT" default=""/>
+        <default_arg>
+            <arg name="Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
             <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
-            <parser format="bed"/>
-        </default>
+        </default_arg>
+
+        <default_output>
+            <output name="Output Track">
+                <parser format="bed"/>
+            </output>
+        </default_output>
 
         <command name="Arbitrary Input" cmd="">
-            <arg name="Arguments" cmd_arg="" type="LONGTEXT" default="{print}"/>
+            <arg name="Arguments" cmd_arg="" type="LONGTEXT" defaultValue="{print}"/>
             <arg name="Track" cmd_arg="" type="FEATURE_TRACK"/>
         </command>
         <command name="Filter by size" cmd="">

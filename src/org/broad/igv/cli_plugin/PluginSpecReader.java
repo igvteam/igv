@@ -313,14 +313,24 @@ public class PluginSpecReader {
         public void afterUnmarshal(Object target, Object parent) {
             super.afterUnmarshal(target, parent);
             if(target instanceof Tool){
+
                 Tool tool = (Tool) target;
-                boolean hasDefault = tool.defaultSettings != null;
-                if(hasDefault){
-                    for(Command command: ((Tool) target).commandList){
-                        if(command.argumentList == null) command.argumentList = tool.defaultSettings.argumentList;
-                        if(command.parser == null) command.parser = tool.defaultSettings.parser;
-                    }
+
+                /**
+                 * We rewrite the arguments/outputs from the defaults, if
+                 * defaults are available and nothing is overriding them.
+                 * Note that defaultArgs and defaultOutputs should be independent of each other
+                 */
+                boolean hasDefaultArgs = tool.defaultArgs != null;
+                boolean hasDefaultOutputs = tool.defaultOutputs != null;
+
+                if(!hasDefaultArgs && !hasDefaultOutputs) return;
+
+                for (Command command : ((Tool) target).commandList) {
+                    if (hasDefaultArgs && command.argumentList == null) command.argumentList = tool.defaultArgs.argumentList;
+                    if (hasDefaultOutputs && command.outputList == null) command.outputList = tool.defaultOutputs.outputList;
                 }
+
             }
 
         }
@@ -343,13 +353,43 @@ public class PluginSpecReader {
         @XmlAttribute public String toolUrl;
 
         /**
-         * Contains the default settings for commands, including
-         * parser and arguments.
+         * Contains the default settings for input arguments
          */
-        @XmlElement(name = "default") private Command defaultSettings;
+        @XmlElement(name = "default_arg") private Command defaultArgs;
+
+        /**
+         * Contains the default settings for parsing output
+         */
+        @XmlElement(name = "default_output") private Command defaultOutputs;
 
         @XmlElement(name = "command") public List<Command> commandList;
     }
+
+
+    /**
+     * Description of output returned from tool
+     * User: jacob
+     * Date: 2012-Dec-27
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class Output {
+        @XmlAttribute public String name;
+        @XmlAttribute public String defaultValue;
+        @XmlAttribute OutputType type = OutputType.TRACK;
+        @XmlElement public Parser parser;
+    }
+
+    /**
+     * Type of data returned from tool
+     */
+    @XmlEnum
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static enum OutputType{
+        @XmlEnumValue("track")
+        TRACK
+    }
+
+
     /**
      * Description of how to parse each line read back from command line tool
      * User: jacob
@@ -377,7 +417,8 @@ public class PluginSpecReader {
         @XmlAttribute public String cmd = "";
 
         @XmlElement(name = "arg") public List<Argument> argumentList;
-        @XmlElement public Parser parser;
+        @XmlElement(name = "output") public List<Output> outputList;
+
     }
 
     public static URL[] getLibURLs(String[] libPaths, String absRoot) throws MalformedURLException {

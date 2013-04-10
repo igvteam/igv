@@ -36,8 +36,8 @@ public class PluginDataSource extends PluginSource<LocusScore, LocusScore> imple
     private double dataMax;
     private WindowFunction windowFunction;
 
-    public PluginDataSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
-        super(commands, arguments, parsingAttrs, specPath);
+    public PluginDataSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttr, String specPath) {
+        super(commands, arguments, outputAttr, specPath);
     }
 
     protected String createTempFile(Track track, Argument argument, String chr, int start, int end, int zoom) throws IOException {

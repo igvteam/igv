@@ -85,7 +85,7 @@ public class CufflinksPluginTest extends AbstractPluginTest{
 
         List<String> commands = Arrays.asList(toolPath);
 
-        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(commands, arguments, command.parser, pluginPath);
+        PluginFeatureSource combinedFeatureSource = new PluginFeatureSource(commands, arguments, command.outputList.get(0), pluginPath);
 
         return combinedFeatureSource.getFeatures(chr, start, end);
     }

@@ -38,8 +38,8 @@ public class PluginFeatureSource extends PluginSource implements FeatureSource<F
     @SubtlyImportant
     private PluginFeatureSource(){}
 
-    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Parser parsingAttrs, String specPath) {
-        super(commands, arguments, parsingAttrs, specPath);
+    public PluginFeatureSource(List<String> commands, LinkedHashMap<Argument, Object> arguments, PluginSpecReader.Output outputAttrs, String specPath) {
+        super(commands, arguments, outputAttrs, specPath);
     }
 
     @Override

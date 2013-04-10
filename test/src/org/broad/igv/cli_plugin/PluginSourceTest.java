@@ -60,7 +60,7 @@ public class PluginSourceTest extends AbstractHeadlessTest {
 
 
         List<String> cmd = Arrays.asList(reader.getToolPath(tool), command.cmd);
-        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, command.parser, reader.getSpecPath());
+        PluginFeatureSource pluginSource = new PluginFeatureSource(cmd, arguments, command.outputList.get(0), reader.getSpecPath());
 
         //-------------------------//
 

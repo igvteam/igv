@@ -49,7 +49,7 @@ Each tool represents a command line executable.
 Attributes
 name
     The name of the tool as it appears to the user
-default_path
+defaultPath
     Default path to the executable. This can be an absolute path, if it
     is a relative path the users PATH environment variable
     is checked for the relevant tool. The developer is reminded
@@ -64,22 +64,27 @@ visible
     Whether the tool should show up in the tools menu.
     Default is "true", because if "false" there's no way
     for the user to access it. Intended to be used by developers
-tool_url:
+toolUrl:
     url where the user can go for help on this command line tool.
 -->
-<!ELEMENT tool (default?, command+)>
+<!ELEMENT tool (default_arg?, default_output?, command+)>
 <!ATTLIST tool name CDATA #REQUIRED
     defaultPath CDATA #IMPLIED
     description CDATA #IMPLIED
     visible (true|false) "true"
     toolUrl CDATA #IMPLIED>
 
-<!-- default element
+<!-- default_arg element
 Default properties for each command.
-If no arguments are provided, the defaults are used. If ANY
-arguments are provided, they override all defaults.
-If a parser is provided, the default is not used.-->
-<!ELEMENT default (arg*, parser?)>
+If no arguments are provided, the defaults are used.
+If ANY arguments are provided, no other defaults are used.-->
+<!ELEMENT default_arg (arg+)>
+
+<!-- default_output element
+Default properties for each command.
+If outputs are provided, the defaults are used.
+If ANY outputs are provided, no other defaults are used.-->
+<!ELEMENT default_output (output+)>
 
 <!-- command element
 Different commands available to the provided executable.
@@ -88,9 +93,18 @@ Attributes
     Human readable name
  cmd
     The exact text passed to the command line for this command-->
-<!ELEMENT command (arg*, parser?)>
+<!ELEMENT command (arg*, output*)>
 <!ATTLIST command name CDATA #REQUIRED
     cmd CDATA "">
+
+<!-- output element
+A plugin can return multiple things.
+Right now we only accept outputs of type "track"
+-->
+<!ELEMENT output (parser?)>
+<!ATTLIST output name CDATA "Output Track"
+    type (track) #IMPLIED
+    defaultValue CDATA #IMPLIED>
 
 
 <!-- parser element
@@ -144,6 +158,9 @@ type
     whether text, a track, etc. Data from tracks uses
     encoding_codec to be written to file
 
+defaultValue
+    When the argument is first displayed to the user, the default value.
+
 id
     Unique identifier for this argument. Can be used by later
     arguments to refer to this value
@@ -164,7 +181,7 @@ encodingCodec
     name CDATA #REQUIRED
     cmd_arg CDATA ""
     type (BOOL|TEXT|LONGTEXT|FEATURE_TRACK|MULTI_FEATURE_TRACK|ALIGNMENT_TRACK) #REQUIRED
-    default CDATA #IMPLIED
+    defaultValue CDATA #IMPLIED
     id ID #IMPLIED
     output (true|false|TRUE|FALSE) "true"
     encodingCodec CDATA #IMPLIED>

@@ -21,7 +21,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author User #2
+ * @author jacob
  */
 public class TextArgument extends ArgumentPanel {
 
@@ -41,6 +41,10 @@ public class TextArgument extends ArgumentPanel {
     @Override
     public String getValue() {
         return argValue.getText();
+    }
+
+    void setValue(String newValue){
+        this.argValue.setText(newValue);
     }
 
     private void initComponents() {
