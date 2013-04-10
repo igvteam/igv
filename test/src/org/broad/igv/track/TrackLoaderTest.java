@@ -66,6 +66,12 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
+    public void testLoadBEDFtp() throws Exception {
+        String filepath = "ftp://ftp.broadinstitute.org/distribution/igv/TEST/cpgIslands%20with%20spaces.hg18.bed";
+        tstLoadFi(filepath, 1, false);
+    }
+
+    @Test
     public void testLoadBEDNotIndexed() throws Exception {
         String filepath = TestUtils.DATA_DIR + "bed/intervalTest.bed";
         if (TrackLoader.isIndexed(filepath, null)) {
