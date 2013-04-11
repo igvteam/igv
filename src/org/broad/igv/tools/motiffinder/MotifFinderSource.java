@@ -31,10 +31,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +60,8 @@ public class MotifFinderSource implements FeatureSource<Feature> {
 
     @XmlAttribute private int featureWindowSize = (int) 100e3;
 
+    @XmlAttribute private Strand strand;
+
     @SubtlyImportant
     private MotifFinderSource(){}
 
@@ -66,27 +70,29 @@ public class MotifFinderSource implements FeatureSource<Feature> {
      * @param pattern The regex pattern to search
      * @param genome Genome from which to get sequence data
      */
-    public MotifFinderSource(String pattern, Genome genome){
+    public MotifFinderSource(String pattern, Strand strand, Genome genome){
         this.pattern = pattern;
+        assert strand == Strand.POSITIVE || strand == Strand.NEGATIVE;
+        this.strand = strand;
         this.genome = genome;
     }
 
     /**
-     * See {@link #search(String, String, int, byte[])} for explanation of parameters
-     * @param chr
-     * @param strand POSITIVE or NEGATIVE
+     * See {@link #search(String, Strand, String, int, byte[])} for explanation of parameters
      * @param pattern
+     * @param strand POSITIVE or NEGATIVE
+     * @param chr
      * @param posStart
      * @param sequence
      * @return
      */
-    static Iterator<Feature> searchSingleStrand(String chr, Strand strand, String pattern, int posStart, byte[] sequence){
+    static Iterator<Feature> searchSingleStrand(String pattern, Strand strand, String chr, int posStart, byte[] sequence){
         Matcher matcher = getMatcher(pattern, strand, sequence);
         return new MatchFeatureIterator(chr, strand, posStart, sequence.length, matcher);
     }
 
     /**
-     * See {@link #search(String, String, int, byte[])} for explanation of parameters
+     * See {@link #search(String, Strand, String, int, byte[])} for explanation of parameters
      * @param pattern
      * @param strand
      * @param sequence
@@ -108,33 +114,38 @@ public class MotifFinderSource implements FeatureSource<Feature> {
     /**
      * Search the provided sequence for the provided pattern
      * {@code chr} and {@code seqStart} are used in constructing the resulting
-     * {@code Feature}s. Search is performed over positive and negative strand
-     * @param chr
+     * {@code Feature}s. Search is performed over the specified {@code strand}
      * @param pattern
+     * @param strand
+     * @param chr
      * @param posStart The 0-based offset from the beginning of the genome that the {@code sequence} is based
      *                 Always relative to positive strand
      * @param sequence The positive-strand nucleotide sequence. This may be altered during execution!
      * @return
      */
-    public static Iterator<Feature> search(String chr, String pattern, int posStart, byte[] sequence){
+    public static Iterator<Feature> search(String pattern, Strand strand, String chr, int posStart, byte[] sequence){
 
-        //Get positive strand features
-        Iterator<Feature> posIter = searchSingleStrand(chr, Strand.POSITIVE, pattern, posStart, sequence);
+        switch(strand){
+            case POSITIVE:
+                return searchSingleStrand(pattern, strand, chr, posStart, sequence);
+            case NEGATIVE:
+                Iterator<Feature> negIter = searchSingleStrand(pattern, Strand.NEGATIVE, chr, posStart, sequence);
+                List<Feature> negStrandFeatures = new ArrayList<Feature>();
 
-        //Get negative strand features.
-        List<Feature> negStrandFeatures = new ArrayList<Feature>();
-        Iterator<Feature> negIter = searchSingleStrand(chr, Strand.NEGATIVE, pattern, posStart, sequence);
-        Iterators.addAll(negStrandFeatures, negIter);
-        Collections.reverse(negStrandFeatures);
+                Iterators.addAll(negStrandFeatures, negIter);
+                Collections.reverse(negStrandFeatures);
 
-        return Iterators.mergeSorted(Arrays.asList(posIter, negStrandFeatures.iterator()), FeatureUtils.FEATURE_START_COMPARATOR);
+                return negStrandFeatures.iterator();
+            default:
+                throw new IllegalArgumentException("Strand must be either POSITIVE or NEGATIVE");
+        }
     }
 
     @Override
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
         byte[] seq = genome.getSequence(chr, start, end);
         if(seq == null) Collections.emptyList().iterator();
-        return search(chr, this.pattern, start, seq);
+        return search(this.pattern, this.strand, chr, start, seq);
     }
 
     @Override
@@ -170,10 +181,18 @@ public class MotifFinderSource implements FeatureSource<Feature> {
                     String trackName = dialog.getTrackName();
                     String pattern = dialog.getInputPattern();
                     if (pattern != null) {
-                        MotifFinderSource source = new MotifFinderSource(pattern, GenomeManager.getInstance().getCurrentGenome());
-                        CachingFeatureSource cachingFeatureSource = new CachingFeatureSource(source);
-                        FeatureTrack track = new FeatureTrack(trackName, trackName, cachingFeatureSource);
-                        IGV.getInstance().addTracks(Arrays.<Track>asList(track), PanelName.FEATURE_PANEL);
+                        MotifFinderSource sourcePos = new MotifFinderSource(pattern, Strand.POSITIVE, GenomeManager.getInstance().getCurrentGenome());
+                        MotifFinderSource sourceNeg = new MotifFinderSource(pattern, Strand.NEGATIVE, GenomeManager.getInstance().getCurrentGenome());
+                        CachingFeatureSource cachingFeatureSourcePos = new CachingFeatureSource(sourcePos);
+                        CachingFeatureSource cachingFeatureSourceNeg = new CachingFeatureSource(sourceNeg);
+
+                        String posTrackName = trackName + " Positive Strand";
+                        String negTrackName = trackName + " Negative Strand";
+                        FeatureTrack posTrack = new FeatureTrack(posTrackName, posTrackName, cachingFeatureSourcePos);
+                        FeatureTrack negTrack = new FeatureTrack(negTrackName, negTrackName, cachingFeatureSourceNeg);
+                        negTrack.setColor(Color.RED);
+
+                        IGV.getInstance().addTracks(Arrays.<Track>asList(posTrack, negTrack), PanelName.FEATURE_PANEL);
                     }
                 }
             });

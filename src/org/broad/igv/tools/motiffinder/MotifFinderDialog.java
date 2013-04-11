@@ -217,11 +217,11 @@ public class MotifFinderDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        textArea1 = new JTextArea();
-        vSpacer1 = new JPanel(null);
         label2 = new JLabel();
         label4 = new JLabel();
         patternField = new JTextField();
+        textArea1 = new JTextArea();
+        vSpacer1 = new JPanel(null);
         label1 = new JLabel();
         nameField = new JTextField();
         buttonBar = new JPanel();
@@ -243,8 +243,20 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.setAlignmentX(0.0F);
                 contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
+                //---- label2 ----
+                label2.setText("Search Pattern:");
+                label2.setLabelFor(patternField);
+                label2.setHorizontalTextPosition(SwingConstants.LEFT);
+                label2.setHorizontalAlignment(SwingConstants.LEFT);
+                label2.setAlignmentX(1.0F);
+                label2.setMaximumSize(new Dimension(374, 16));
+                label2.setPreferredSize(new Dimension(374, 16));
+                contentPanel.add(label2);
+                contentPanel.add(label4);
+                contentPanel.add(patternField);
+
                 //---- textArea1 ----
-                textArea1.setText("Enter the pattern for which to search. Matches in the reference genome sequence will be displayed in a new track. ");
+                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAA(A){3,}+) ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
@@ -256,20 +268,8 @@ public class MotifFinderDialog extends JDialog {
                 vSpacer1.setPreferredSize(new Dimension(10, 20));
                 contentPanel.add(vSpacer1);
 
-                //---- label2 ----
-                label2.setText("Pattern:");
-                label2.setLabelFor(patternField);
-                label2.setHorizontalTextPosition(SwingConstants.LEFT);
-                label2.setHorizontalAlignment(SwingConstants.LEFT);
-                label2.setAlignmentX(1.0F);
-                label2.setMaximumSize(new Dimension(374, 16));
-                label2.setPreferredSize(new Dimension(374, 16));
-                contentPanel.add(label2);
-                contentPanel.add(label4);
-                contentPanel.add(patternField);
-
                 //---- label1 ----
-                label1.setText("Track Name:");
+                label1.setText("Search Results Track Name:");
                 label1.setLabelFor(nameField);
                 label1.setHorizontalTextPosition(SwingConstants.LEFT);
                 label1.setHorizontalAlignment(SwingConstants.LEFT);
@@ -324,11 +324,11 @@ public class MotifFinderDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JTextArea textArea1;
-    private JPanel vSpacer1;
     private JLabel label2;
     private JLabel label4;
     private JTextField patternField;
+    private JTextArea textArea1;
+    private JPanel vSpacer1;
     private JLabel label1;
     private JTextField nameField;
     private JPanel buttonBar;

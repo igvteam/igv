@@ -205,6 +205,8 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         IGV.getInstance().doRestoreSession(sessionPath, null, false);
 
         List<Track> tracks = IGV.getInstance().getAllTracks();
+
+        //Positive strand
         FeatureTrack matchTrack = (FeatureTrack) tracks.get(2);
 
         String queryChr = "chr8";
@@ -212,7 +214,12 @@ public class IGVSessionReaderTestHeaded extends AbstractHeadedTest{
         int queryEnd = 40863995;
 
         List<Feature> features = matchTrack.getFeatures(queryChr, queryStart, queryEnd);
-        assertEquals(3, features.size());
+        assertEquals(2, features.size());
+
+        //Negative strand
+        matchTrack = (FeatureTrack) tracks.get(3);
+        features = matchTrack.getFeatures(queryChr, queryStart, queryEnd);
+        assertEquals(1, features.size());
 
     }
 

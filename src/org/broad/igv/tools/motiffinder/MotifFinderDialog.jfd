@@ -15,22 +15,9 @@ new FormModel {
 				} ) {
 					name: "contentPanel"
 					"alignmentX": 0.0f
-					add( new FormComponent( "javax.swing.JTextArea" ) {
-						name: "textArea1"
-						"text": "Enter the pattern for which to search. Matches in the reference genome sequence will be displayed in a new track. "
-						"editable": false
-						"background": new java.awt.Color( 238, 238, 238, 255 )
-						"lineWrap": true
-						"wrapStyleWord": true
-					} )
-					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
-						name: "vSpacer1"
-						"minimumSize": new java.awt.Dimension( 12, 20 )
-						"preferredSize": new java.awt.Dimension( 10, 20 )
-					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label2"
-						"text": "Pattern:"
+						"text": "Search Pattern:"
 						"labelFor": new FormReference( "patternField" )
 						"horizontalTextPosition": 2
 						"horizontalAlignment": 2
@@ -44,9 +31,22 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "patternField"
 					} )
+					add( new FormComponent( "javax.swing.JTextArea" ) {
+						name: "textArea1"
+						"text": "Enter nucleotide sequence (e.g. ACCGCT), or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAA(A){3,}+) "
+						"editable": false
+						"background": new java.awt.Color( 238, 238, 238, 255 )
+						"lineWrap": true
+						"wrapStyleWord": true
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+						name: "vSpacer1"
+						"minimumSize": new java.awt.Dimension( 12, 20 )
+						"preferredSize": new java.awt.Dimension( 10, 20 )
+					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label1"
-						"text": "Track Name:"
+						"text": "Search Results Track Name:"
 						"labelFor": new FormReference( "nameField" )
 						"horizontalTextPosition": 2
 						"horizontalAlignment": 2
