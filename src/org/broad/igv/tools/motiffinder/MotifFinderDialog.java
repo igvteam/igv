@@ -21,8 +21,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +102,9 @@ public class MotifFinderDialog extends JDialog {
         return map;
     }
 
-    private String trackName;
+    private String posTrackName;
+    private String negTrackName;
+
     private String inputPattern;
 
     public MotifFinderDialog(Frame owner) {
@@ -115,8 +116,12 @@ public class MotifFinderDialog extends JDialog {
         return inputPattern;
     }
 
-    public String getTrackName() {
-        return trackName;
+    public String getPosTrackName() {
+        return posTrackName;
+    }
+
+    public String getNegTrackName() {
+        return negTrackName;
     }
 
     /**
@@ -145,7 +150,7 @@ public class MotifFinderDialog extends JDialog {
 
     private void okButtonActionPerformed(ActionEvent e) {
 
-        this.trackName = null;
+        this.posTrackName = null;
         this.inputPattern = null;
 
         String strPattern = patternField.getText().toUpperCase();
@@ -165,7 +170,11 @@ public class MotifFinderDialog extends JDialog {
             strPattern = convertMotifToRegex(strPattern);
         }
 
-        this.trackName = nameField.getText();
+        this.posTrackName = posNameField.getText();
+        this.negTrackName = negNameField.getText();
+        if(this.posTrackName.equalsIgnoreCase(negTrackName)){
+            MessageUtils.showMessage("Track names must be different");
+        }
         this.inputPattern = strPattern;
         this.setVisible(false);
 
@@ -212,6 +221,20 @@ public class MotifFinderDialog extends JDialog {
         return true;
     }
 
+    private void posNameFieldFocusLost(FocusEvent e) {
+        updateNegNameFieldFromPos(null);
+    }
+
+    private void posNameFieldKeyTyped(KeyEvent e) {
+        updateNegNameFieldFromPos(e);
+    }
+
+    private void updateNegNameFieldFromPos(KeyEvent e){
+        String posText = this.posNameField.getText();
+        if(e != null) posText += e.getKeyChar();
+        this.negNameField.setText(posText + " Negative");
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -222,8 +245,12 @@ public class MotifFinderDialog extends JDialog {
         patternField = new JTextField();
         textArea1 = new JTextArea();
         vSpacer1 = new JPanel(null);
+        panel1 = new JPanel();
         label1 = new JLabel();
-        nameField = new JTextField();
+        posNameField = new JTextField();
+        panel2 = new JPanel();
+        label3 = new JLabel();
+        negNameField = new JTextField();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -261,6 +288,9 @@ public class MotifFinderDialog extends JDialog {
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
+                textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getStyle() | Font.ITALIC, textArea1.getFont().getSize() - 2f));
+                textArea1.setMargin(new Insets(0, 25, 0, 5));
+                textArea1.setFocusable(false);
                 contentPanel.add(textArea1);
 
                 //---- vSpacer1 ----
@@ -268,16 +298,53 @@ public class MotifFinderDialog extends JDialog {
                 vSpacer1.setPreferredSize(new Dimension(10, 20));
                 contentPanel.add(vSpacer1);
 
-                //---- label1 ----
-                label1.setText("Search Results Track Name:");
-                label1.setLabelFor(nameField);
-                label1.setHorizontalTextPosition(SwingConstants.LEFT);
-                label1.setHorizontalAlignment(SwingConstants.LEFT);
-                label1.setMaximumSize(new Dimension(374, 16));
-                label1.setPreferredSize(new Dimension(374, 16));
-                label1.setAlignmentX(1.0F);
-                contentPanel.add(label1);
-                contentPanel.add(nameField);
+                //======== panel1 ========
+                {
+                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+
+                    //---- label1 ----
+                    label1.setText("Positive Strand Result Track:");
+                    label1.setLabelFor(posNameField);
+                    label1.setHorizontalTextPosition(SwingConstants.LEFT);
+                    label1.setHorizontalAlignment(SwingConstants.LEFT);
+                    label1.setMaximumSize(new Dimension(374, 16));
+                    label1.setPreferredSize(new Dimension(200, 16));
+                    label1.setAlignmentX(1.0F);
+                    panel1.add(label1);
+
+                    //---- posNameField ----
+                    posNameField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            posNameFieldFocusLost(e);
+                        }
+                    });
+                    posNameField.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyTyped(KeyEvent e) {
+                            posNameFieldKeyTyped(e);
+                        }
+                    });
+                    panel1.add(posNameField);
+                }
+                contentPanel.add(panel1);
+
+                //======== panel2 ========
+                {
+                    panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+                    //---- label3 ----
+                    label3.setText("Negative Strand Result Track:");
+                    label3.setLabelFor(negNameField);
+                    label3.setHorizontalTextPosition(SwingConstants.LEFT);
+                    label3.setHorizontalAlignment(SwingConstants.LEFT);
+                    label3.setMaximumSize(new Dimension(374, 16));
+                    label3.setPreferredSize(new Dimension(200, 16));
+                    label3.setAlignmentX(1.0F);
+                    panel2.add(label3);
+                    panel2.add(negNameField);
+                }
+                contentPanel.add(panel2);
             }
             dialogPane.add(contentPanel, BorderLayout.NORTH);
 
@@ -329,8 +396,12 @@ public class MotifFinderDialog extends JDialog {
     private JTextField patternField;
     private JTextArea textArea1;
     private JPanel vSpacer1;
+    private JPanel panel1;
     private JLabel label1;
-    private JTextField nameField;
+    private JTextField posNameField;
+    private JPanel panel2;
+    private JLabel label3;
+    private JTextField negNameField;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

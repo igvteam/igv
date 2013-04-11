@@ -178,7 +178,8 @@ public class MotifFinderSource implements FeatureSource<Feature> {
                     MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
                     dialog.setVisible(true);
 
-                    String trackName = dialog.getTrackName();
+                    String posTrackName = dialog.getPosTrackName();
+                    String negTrackName = dialog.getNegTrackName();
                     String pattern = dialog.getInputPattern();
                     if (pattern != null) {
                         MotifFinderSource sourcePos = new MotifFinderSource(pattern, Strand.POSITIVE, GenomeManager.getInstance().getCurrentGenome());
@@ -186,8 +187,6 @@ public class MotifFinderSource implements FeatureSource<Feature> {
                         CachingFeatureSource cachingFeatureSourcePos = new CachingFeatureSource(sourcePos);
                         CachingFeatureSource cachingFeatureSourceNeg = new CachingFeatureSource(sourceNeg);
 
-                        String posTrackName = trackName + " Positive Strand";
-                        String negTrackName = trackName + " Negative Strand";
                         FeatureTrack posTrack = new FeatureTrack(posTrackName, posTrackName, cachingFeatureSourcePos);
                         FeatureTrack negTrack = new FeatureTrack(negTrackName, negTrackName, cachingFeatureSourceNeg);
                         negTrack.setColor(Color.RED);
