@@ -1193,7 +1193,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             // addSeparator();
            // addBlatItem(e);
 
-            boolean showSashimi = Boolean.parseBoolean(System.getProperty(SashimiPlot.SHOW_SASHIMI_PROPERTY, "false"));
+            boolean showSashimi = !Globals.isProduction();
+
             if(showSashimi){
                 addSeparator();
                 JMenuItem sashimi = new JMenuItem("Sashimi Plot");
