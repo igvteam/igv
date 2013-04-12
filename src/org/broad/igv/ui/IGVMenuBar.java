@@ -182,7 +182,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuItems.add(new JSeparator());
+        //menuItems.add(new JSeparator());
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -197,7 +197,7 @@ public class IGVMenuBar extends JMenuBar {
                 menuItems.add(entry);
             }
         }
-        menuItems.add(new JSeparator());
+        //menuItems.add(new JSeparator());
 
 
         //-------------------------------------//
