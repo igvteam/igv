@@ -14,6 +14,7 @@ package org.broad.igv.track;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.blat.BlatClient;
 import org.broad.igv.dev.api.api;
