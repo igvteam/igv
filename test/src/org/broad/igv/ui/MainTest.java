@@ -68,10 +68,10 @@ public class MainTest {
     @Test
     public void testFileLocusArgs() throws Exception {
 
-        String trackName = "NA12878.SLX.bam";
-        String filePath = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/" + trackName;
+        String trackName = "NA12878.SLX.sample.bam";
+        String filePath = TestUtils.DATA_DIR + "bam/" + trackName;
         String genome = "hg18";
-        String locus = "chr1:64,098,103-64,098,175";
+        String locus = "chr1:9,703,210-9,727,225";
 
         String[] args = new String[]{filePath, locus, "-g", genome};
 
