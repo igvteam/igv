@@ -35,7 +35,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -178,20 +180,29 @@ public class MotifFinderSource implements FeatureSource<Feature> {
                     MotifFinderDialog dialog = new MotifFinderDialog(IGV.getMainFrame());
                     dialog.setVisible(true);
 
+                    String pattern = dialog.getInputPattern();
+
                     String posTrackName = dialog.getPosTrackName();
                     String negTrackName = dialog.getNegTrackName();
-                    String pattern = dialog.getInputPattern();
+
+                    String[] trackNames = {posTrackName, negTrackName};
+                    Color[] colors = {null, Color.RED};
+                    Strand[] strands = {Strand.POSITIVE, Strand.NEGATIVE};
+                    List<Track> trackList = new ArrayList<Track>(trackNames.length);
+
                     if (pattern != null) {
-                        MotifFinderSource sourcePos = new MotifFinderSource(pattern, Strand.POSITIVE, GenomeManager.getInstance().getCurrentGenome());
-                        MotifFinderSource sourceNeg = new MotifFinderSource(pattern, Strand.NEGATIVE, GenomeManager.getInstance().getCurrentGenome());
-                        CachingFeatureSource cachingFeatureSourcePos = new CachingFeatureSource(sourcePos);
-                        CachingFeatureSource cachingFeatureSourceNeg = new CachingFeatureSource(sourceNeg);
+                        for(int ii=0; ii < trackNames.length; ii++){
 
-                        FeatureTrack posTrack = new FeatureTrack(posTrackName, posTrackName, cachingFeatureSourcePos);
-                        FeatureTrack negTrack = new FeatureTrack(negTrackName, negTrackName, cachingFeatureSourceNeg);
-                        negTrack.setColor(Color.RED);
+                            MotifFinderSource src = new MotifFinderSource(pattern, strands[ii], GenomeManager.getInstance().getCurrentGenome());
+                            CachingFeatureSource cachingSrc= new CachingFeatureSource(src);
 
-                        IGV.getInstance().addTracks(Arrays.<Track>asList(posTrack, negTrack), PanelName.FEATURE_PANEL);
+                            FeatureTrack track = new FeatureTrack(trackNames[ii], trackNames[ii], cachingSrc);
+                            if(colors[ii] != null) track.setColor(colors[ii]);
+
+                            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+                            trackList.add(track);
+                        }
+                        IGV.getInstance().addTracks(trackList, PanelName.FEATURE_PANEL);
                     }
                 }
             });
