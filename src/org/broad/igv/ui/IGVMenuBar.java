@@ -848,8 +848,8 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(ABOUT_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        MenuAction toolMenuAction = new MenuAction("Help");
-        return MenuAndToolbarUtils.createMenu(menuItems, toolMenuAction);
+        MenuAction helpMenuAction = new MenuAction("Help");
+        return MenuAndToolbarUtils.createMenu(menuItems, helpMenuAction);
     }
 
     private JMenu createGenomeSpaceMenu() {

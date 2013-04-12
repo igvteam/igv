@@ -338,7 +338,10 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopyDetailsItem(f, te));
                 featurePopupMenu.add(getCopySequenceItem(f));
-               // featurePopupMenu.add(getBlatItem(f));
+
+                if (!Globals.isProduction()) {
+                    featurePopupMenu.add(getBlatItem(f));
+                }
             }
         }
 
@@ -984,7 +987,6 @@ public class TrackMenuUtils {
         });
         return item;
     }
-
 
 
     /**

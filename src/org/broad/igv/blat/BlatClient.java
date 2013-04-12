@@ -7,6 +7,7 @@ import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
@@ -233,6 +234,7 @@ public class BlatClient {
                         FeatureSource<PSLRecord> source = new FeatureCollectionSource(features, genome);
                         FeatureTrack newTrack = new FeatureTrack("Blat", "Blat", source);
                         newTrack.setUseScore(true);
+                        newTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
                         IGV.getInstance().getTrackPanel(IGV.FEATURE_PANEL_NAME).addTrack(newTrack);
 
                         BlatQueryWindow win = new BlatQueryWindow(userSeq, features);
