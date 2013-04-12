@@ -126,7 +126,6 @@ public class Globals {
 
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
         production = Boolean.parseBoolean(System.getProperty("production", "false"));
-        toolsMenuEnabled = Boolean.parseBoolean(System.getProperty("enable.tools", "false"));
     }
 
     public static void setHeadless(boolean bool) {
