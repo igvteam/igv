@@ -29,7 +29,7 @@ public class CufflinksParserTest extends AbstractHeadlessTest {
     @Test
     public void testsample_genesFPKM() throws Exception{
         String path = TestUtils.DATA_DIR + "cufflinks/sample_genes.fpkm_tracking";
-        List<CufflinksValue> values = CufflinksParser.parse(path);
+        List<? extends CufflinksValue> values = CufflinksParser.parse(path);
 
         String[] expGenes = new String[]{"STPG1", "HS3ST1","CFLAR","TFPI", "NDUFAF7"};
         int index = 0;
@@ -44,7 +44,7 @@ public class CufflinksParserTest extends AbstractHeadlessTest {
     @Test
     public void testsamplegene_expdiff() throws Exception{
         String path = TestUtils.DATA_DIR + "cufflinks/sample_gene_exp.diff";
-        List<CufflinksValue> values = CufflinksParser.parse(path);
+        List<? extends CufflinksValue> values = CufflinksParser.parse(path);
 
         String[] expGenes = new String[]{"TSPAN6", "TNMD", "DPM1", "SCYL3"};
         int index = 0;

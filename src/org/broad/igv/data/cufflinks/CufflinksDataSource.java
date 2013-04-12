@@ -38,7 +38,7 @@ public class CufflinksDataSource implements DataSource {
     Map<String, String> chrAliasMap;
     List<LocusScore> wholeGenomeScores;
 
-    public CufflinksDataSource(List<CufflinksValue> valueList, Genome genome) {
+    public CufflinksDataSource(List<? extends CufflinksValue> valueList, Genome genome) {
 
         chrAliasMap = new HashMap<String, String>();
         // Sample the first 10,000 values to set scale
