@@ -99,6 +99,7 @@ public class Globals {
     //is named rather than the full path given
     public static String BEDtoolsPath = "/usr/local/bin/bedtools"; //"bedtools"
     public static boolean toolsMenuEnabled = false;
+    public static boolean production;
 
     static {
         Properties properties = new Properties();
@@ -124,7 +125,7 @@ public class Globals {
         nucleotideColors.put('n', Color.gray.brighter());
 
         BEDtoolsPath = System.getProperty("BEDtoolsPath", BEDtoolsPath);
-
+        production = Boolean.parseBoolean(System.getProperty("production", "false"));
         toolsMenuEnabled = Boolean.parseBoolean(System.getProperty("enable.tools", "false"));
     }
 
@@ -158,6 +159,10 @@ public class Globals {
 
     public static String versionString() {
         return "<html>Version " + VERSION + " (" + BUILD + ")<br>" + TIMESTAMP;
+    }
+
+    public static boolean isProduction() {
+         return production;
     }
 
 
