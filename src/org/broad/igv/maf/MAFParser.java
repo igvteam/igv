@@ -92,7 +92,7 @@ public class MAFParser implements MAFReader {
         is = SeekableStreamFactory.getStreamFor(path);
         is.seek(startPosition);
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is), 256000);
 
         List<MultipleAlignmentBlock> alignments = new ArrayList<MultipleAlignmentBlock>();
 
