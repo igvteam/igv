@@ -33,13 +33,13 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
-						"text": "Enter nucleotide sequence (e.g. ACCGCT), or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAA(A){3,}+) "
+						"text": "Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR),\nor regular expression of nucleotides (e.g. TATAA(A){3,}+). "
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true
 						"wrapStyleWord": true
 						"font": new com.jformdesigner.model.SwingDerivedFont( null, 2, -2, false )
-						"margin": new java.awt.Insets( 0, 25, 0, 5 )
+						"margin": new java.awt.Insets( 0, 25, 0, 0 )
 						"focusable": false
 					} )
 					add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
@@ -121,7 +121,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 300 )
+			"size": new java.awt.Dimension( 450, 300 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"

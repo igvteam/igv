@@ -289,13 +289,13 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(patternField);
 
                 //---- textArea1 ----
-                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAA(A){3,}+) ");
+                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR),\nor regular expression of nucleotides (e.g. TATAA(A){3,}+). ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
                 textArea1.setWrapStyleWord(true);
                 textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getStyle() | Font.ITALIC, textArea1.getFont().getSize() - 2f));
-                textArea1.setMargin(new Insets(0, 25, 0, 5));
+                textArea1.setMargin(new Insets(0, 25, 0, 0));
                 textArea1.setFocusable(false);
                 contentPanel.add(textArea1);
 
@@ -330,10 +330,8 @@ public class MotifFinderDialog extends JDialog {
                         public void inputMethodTextChanged(InputMethodEvent e) {
                             posNameFieldInputMethodTextChanged(e);
                         }
-
                         @Override
-                        public void caretPositionChanged(InputMethodEvent e) {
-                        }
+                        public void caretPositionChanged(InputMethodEvent e) {}
                     });
                     posNameField.addKeyListener(new KeyAdapter() {
                         @Override
@@ -398,7 +396,7 @@ public class MotifFinderDialog extends JDialog {
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(400, 300);
+        setSize(450, 300);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
