@@ -174,6 +174,7 @@ public class MotifFinderDialog extends JDialog {
         this.negTrackName = negNameField.getText();
         if(this.posTrackName.equalsIgnoreCase(negTrackName)){
             MessageUtils.showMessage("Track names must be different");
+            return;
         }
         this.inputPattern = strPattern;
         this.setVisible(false);
@@ -222,17 +223,22 @@ public class MotifFinderDialog extends JDialog {
     }
 
     private void posNameFieldFocusLost(FocusEvent e) {
-        updateNegNameFieldFromPos(null);
+        updateNegNameFieldFromPos();
     }
 
-    private void posNameFieldKeyTyped(KeyEvent e) {
-        updateNegNameFieldFromPos(e);
-    }
-
-    private void updateNegNameFieldFromPos(KeyEvent e){
+    private void updateNegNameFieldFromPos(){
         String posText = this.posNameField.getText();
-        if(e != null) posText += e.getKeyChar();
         this.negNameField.setText(posText + " Negative");
+    }
+
+    private void posNameFieldInputMethodTextChanged(InputMethodEvent e) {
+        updateNegNameFieldFromPos();
+    }
+
+    private void posNameFieldKeyReleased(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_ENTER){
+            updateNegNameFieldFromPos();
+        }
     }
 
     private void initComponents() {
@@ -319,10 +325,20 @@ public class MotifFinderDialog extends JDialog {
                             posNameFieldFocusLost(e);
                         }
                     });
+                    posNameField.addInputMethodListener(new InputMethodListener() {
+                        @Override
+                        public void inputMethodTextChanged(InputMethodEvent e) {
+                            posNameFieldInputMethodTextChanged(e);
+                        }
+
+                        @Override
+                        public void caretPositionChanged(InputMethodEvent e) {
+                        }
+                    });
                     posNameField.addKeyListener(new KeyAdapter() {
                         @Override
-                        public void keyTyped(KeyEvent e) {
-                            posNameFieldKeyTyped(e);
+                        public void keyReleased(KeyEvent e) {
+                            posNameFieldKeyReleased(e);
                         }
                     });
                     panel1.add(posNameField);

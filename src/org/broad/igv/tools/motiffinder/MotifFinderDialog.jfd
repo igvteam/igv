@@ -64,7 +64,8 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "posNameField"
 							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "posNameFieldFocusLost", true ) )
-							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyTyped", "posNameFieldKeyTyped", true ) )
+							addEvent( new FormEvent( "java.awt.event.InputMethodListener", "inputMethodTextChanged", "posNameFieldInputMethodTextChanged", true ) )
+							addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "posNameFieldKeyReleased", true ) )
 						} )
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
