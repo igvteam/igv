@@ -33,7 +33,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextArea" ) {
 						name: "textArea1"
-						"text": "Enter nucleotide sequence (e.g. ACCGCT),  or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAAA(A){3,}). "
+						"text": "Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). "
 						"editable": false
 						"background": new java.awt.Color( 238, 238, 238, 255 )
 						"lineWrap": true

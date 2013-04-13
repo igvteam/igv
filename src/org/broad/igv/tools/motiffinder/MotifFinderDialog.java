@@ -289,7 +289,7 @@ public class MotifFinderDialog extends JDialog {
                 contentPanel.add(patternField);
 
                 //---- textArea1 ----
-                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT),  or nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), or regular expression of nucleotides (e.g. TATAAA(A){3,}). ");
+                textArea1.setText("Enter nucleotide sequence (e.g. ACCGCT), \nor nucleotide sequence with IUPAC ambiguity codes (e.g. AAARNR), \nor regular expression of nucleotides (e.g. TATAAA(A){3,}). ");
                 textArea1.setEditable(false);
                 textArea1.setBackground(new Color(238, 238, 238));
                 textArea1.setLineWrap(true);
