@@ -708,7 +708,9 @@ public class GenomeManager {
             }
         }
 
-        IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+        if(IGVMenuBar.getInstance() != null){
+            IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+        }
         return serverGenomeArchiveList;
     }
 

@@ -284,6 +284,8 @@
 
             <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <jvmarg value="-Dfile.encoding=${java.encoding}"/>
+            <jvmarg value="-Dinclude.longrunning=${include.longrunning}"/>
+            <jvmarg value="-Dignore.ioexceptions=${ignore.ioexceptions}"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <sysproperty key="make.fail" value="${make.fail}"/>
 
