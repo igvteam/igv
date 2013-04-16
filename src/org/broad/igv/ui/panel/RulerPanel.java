@@ -28,7 +28,7 @@ import org.broad.igv.feature.exome.ExomeBlock;
 import org.broad.igv.feature.exome.ExomeReferenceFrame;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeImpl;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
@@ -297,7 +297,7 @@ public class RulerPanel extends JPanel {
 
                 String displayName = null;
                 if (chrName.startsWith("gi|")) {
-                    displayName = GenomeImpl.getNCBIName(chrName);
+                    displayName = Genome.getNCBIName(chrName);
                 } else {
                     displayName = chrName.replace("chr", "");
                 }

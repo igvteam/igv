@@ -20,7 +20,7 @@ package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.genome.GenomeImpl;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -72,8 +72,8 @@ public class SearchCommandTest extends AbstractHeadlessTest {
             synonymsList.add(synonyms);
         }
 
-        if (genome instanceof GenomeImpl) {
-            ((GenomeImpl) genome).addChrAliases(synonymsList);
+        if (genome instanceof Genome) {
+            ((Genome) genome).addChrAliases(synonymsList);
         }
 
         SearchCommand cmd;

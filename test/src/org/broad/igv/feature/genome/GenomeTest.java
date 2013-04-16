@@ -26,14 +26,14 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 10/31/11
  */
-public class GenomeImplTest {
+public class GenomeTest {
     @Test
     public void testGetNCBIName() throws Exception {
 
         String ncbiID = "gi|125745044|ref|NC_002229.3|";
         String ncbiName = "NC_002229.3";
 
-        assertEquals(ncbiName, GenomeImpl.getNCBIName(ncbiID));
+        assertEquals(ncbiName, Genome.getNCBIName(ncbiID));
 
     }
 
@@ -44,7 +44,7 @@ public class GenomeImplTest {
         //contigs into "small" and "large"
         String indexPath = TestUtils.DATA_DIR + "fasta/CE.cns.all.fa.fai";
         Sequence seq = new MockSequence(indexPath);
-        Genome genome = new GenomeImpl("GenomeImpleTest", "GenomeImplTest", seq, false);
+        Genome genome = new Genome("GenomeeTest", "GenomeTest", seq, false);
         List<String> actNames = genome.getAllChromosomeNames();
 
         String[] expNames = {"chr1", "chr2", "chr3", "chrX", "C121713571", "scaffold22502"};
@@ -64,7 +64,7 @@ public class GenomeImplTest {
     public void testGetLongChromosomeNames_manySmall() throws Exception{
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
-        GenomeImpl genome = new GenomeImpl("mock_many_small", "mock_many_small", sequence, true);
+        Genome genome = new Genome("mock_many_small", "mock_many_small", sequence, true);
 
         assertNotNull(genome.getLongChromosomeNames());
         assertTrue("No 'Long' chromosome names found", genome.getLongChromosomeNames().size() > 0);

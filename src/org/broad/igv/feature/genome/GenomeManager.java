@@ -117,7 +117,7 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
 
-            GenomeImpl newGenome = null;
+            Genome newGenome = null;
 
             if (monitor != null) {
                 monitor.fireProgressChange(25);
@@ -155,8 +155,8 @@ public class GenomeManager {
 
     }
 
-    private GenomeImpl loadGenbankFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;
+    private Genome loadGenbankFile(String genomePath) throws IOException {
+        Genome newGenome;
         GenbankParser genbankParser = new GenbankParser(genomePath);
 
         String chr = genbankParser.getAccession();
@@ -167,7 +167,7 @@ public class GenomeManager {
 
         byte[] seq = genbankParser.getSequence();
         Sequence sequence = new InMemorySequence(chr, seq);
-        newGenome = new GenomeImpl(chr, name, sequence, true);
+        newGenome = new Genome(chr, name, sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
 
@@ -186,8 +186,8 @@ public class GenomeManager {
      * @return
      * @throws IOException
      */
-    private GenomeImpl loadFastaFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;// Assume its a fasta
+    private Genome loadFastaFile(String genomePath) throws IOException {
+        Genome newGenome;// Assume its a fasta
         String fastaPath = null;
         String fastaIndexPath = null;
         if (genomePath.endsWith(".fai")) {
@@ -218,7 +218,7 @@ public class GenomeManager {
 
         FastaIndexedSequence fastaSequence = new FastaIndexedSequence(fastaPath);
         Sequence sequence = new SequenceWrapper(fastaSequence);
-        newGenome = new GenomeImpl(item.getId(), item.getDisplayableName(), sequence, true);
+        newGenome = new Genome(item.getId(), item.getDisplayableName(), sequence, true);
         newGenome.loadUserDefinedAliases();
         setCurrentGenome(newGenome);
         return newGenome;
@@ -254,8 +254,8 @@ public class GenomeManager {
      * @return
      * @throws IOException
      */
-    private GenomeImpl loadDotGenomeFile(String genomePath) throws IOException {
-        GenomeImpl newGenome;
+    private Genome loadDotGenomeFile(String genomePath) throws IOException {
+        Genome newGenome;
         File archiveFile = getArchiveFile(genomePath);
 
         GenomeDescriptor genomeDescriptor = parseGenomeArchiveFile(archiveFile);
@@ -294,7 +294,7 @@ public class GenomeManager {
             chromosOrdered = true;
         }
 
-        newGenome = new GenomeImpl(id, displayName, sequence, chromosOrdered);
+        newGenome = new Genome(id, displayName, sequence, chromosOrdered);
         if (cytobandMap != null) {
             newGenome.setCytobands(cytobandMap);
         }
