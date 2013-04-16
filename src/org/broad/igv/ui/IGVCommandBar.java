@@ -341,8 +341,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
         UIUtilities.invokeOnEventThread(new Runnable() {
             @Override
             public void run() {
-                roiToggleButton.setEnabled(!chrName.equals(Globals.CHR_ALL));
-                zoomControl.setEnabled(!chrName.equals(Globals.CHR_ALL));
+                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
 
                 if (chromosomeComboBox.getSelectedItem() != null) {
                     if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
@@ -363,7 +363,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         String p = "";
 
         final String chrName = getDefaultReferenceFrame().getChrName();
-        if (!chrName.equals(Globals.CHR_ALL) && !FrameManager.isGeneListMode()) {
+        if (!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode()) {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;
@@ -374,6 +374,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 searchTextField.setText(position);
                 forwardButton.setEnabled(history.canGoForward());
                 backButton.setEnabled(history.canGoBack());
+                roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
+                zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName));
             }
         });
 
